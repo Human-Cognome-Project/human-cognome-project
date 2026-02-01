@@ -1,0 +1,32 @@
+[project]
+name = "hcp"
+version = "0.1.0"
+description = "Human Cognome Project - Structural decomposition and reconstruction of expression"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+]
+physics = [
+    "openmm>=8.0",
+    "taichi>=1.7",
+]
+cli = [
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
