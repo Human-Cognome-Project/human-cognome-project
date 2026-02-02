@@ -1,0 +1,25 @@
+[project]
+name = "hcp"
+version = "0.1.0"
+description = "Human Cognome Project — structural decomposition and reconstruction of expression"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg[binary]>=3.1",
+    "lmdb>=1.4",
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
