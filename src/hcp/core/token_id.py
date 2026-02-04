@@ -55,4 +55,5 @@ def token_depth(token_id: str) -> int:
 
 # Common base addresses
 MODE_UNIVERSAL = encode_pair(0)   # "AA" — universal/computational
+MODE_TEXT = encode_pair(1)         # "AB" — text mode
 MODE_SOURCE_UNIVERSAL = encode_pair(BASE * BASE - BASE)  # "zA" — source PBMs for universal

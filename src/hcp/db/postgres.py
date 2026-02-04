@@ -49,7 +49,6 @@ def init_schema(conn):
                 token0_id   TEXT NOT NULL,
                 token1_id   TEXT NOT NULL,
                 fbr         INTEGER NOT NULL DEFAULT 1,
-                position    INTEGER,
                 PRIMARY KEY (scope_id, token0_id, token1_id)
             );
 
@@ -61,6 +60,15 @@ def init_schema(conn):
                 ON pbm_entries(token1_id);
             CREATE INDEX IF NOT EXISTS idx_tokens_category
                 ON tokens(category);
+
+            CREATE TABLE IF NOT EXISTS namespace_allocations (
+                pattern     TEXT PRIMARY KEY,
+                name        TEXT NOT NULL,
+                description TEXT,
+                alloc_type  TEXT NOT NULL,
+                parent      TEXT REFERENCES namespace_allocations(pattern),
+                metadata    JSONB DEFAULT '{}'::jsonb
+            );
         """)
     conn.commit()
 
@@ -93,24 +101,41 @@ def insert_scope(cur, scope_id, name, scope_type, parent_id=None, metadata=None)
           json.dumps(metadata or {})))
 
 
-def insert_pbm_entry(cur, scope_id, token0_id, token1_id, fbr=1, position=None):
+def insert_namespace(cur, pattern, name, alloc_type, description=None,
+                     parent=None, metadata=None):
+    """Insert a namespace allocation, updating on conflict."""
+    cur.execute("""
+        INSERT INTO namespace_allocations
+            (pattern, name, alloc_type, description, parent, metadata)
+        VALUES (%s, %s, %s, %s, %s, %s::jsonb)
+        ON CONFLICT (pattern) DO UPDATE SET
+            name = EXCLUDED.name,
+            alloc_type = EXCLUDED.alloc_type,
+            description = EXCLUDED.description,
+            parent = EXCLUDED.parent,
+            metadata = namespace_allocations.metadata || EXCLUDED.metadata
+    """, (pattern, name, alloc_type, description, parent,
+          json.dumps(metadata or {})))
+
+
+def insert_pbm_entry(cur, scope_id, token0_id, token1_id, fbr=1):
     """Insert a PBM entry, incrementing FBR on conflict."""
     cur.execute("""
-        INSERT INTO pbm_entries (scope_id, token0_id, token1_id, fbr, position)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO pbm_entries (scope_id, token0_id, token1_id, fbr)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT (scope_id, token0_id, token1_id) DO UPDATE SET
             fbr = pbm_entries.fbr + EXCLUDED.fbr
-    """, (scope_id, token0_id, token1_id, fbr, position))
+    """, (scope_id, token0_id, token1_id, fbr))
 
 
 def get_pbm(conn, scope_id):
     """Retrieve all PBM entries for a scope."""
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT token0_id, token1_id, fbr, position
+            SELECT token0_id, token1_id, fbr
             FROM pbm_entries
             WHERE scope_id = %s
-            ORDER BY position NULLS LAST, token0_id, token1_id
+            ORDER BY fbr DESC, token0_id, token1_id
         """, (scope_id,))
         return cur.fetchall()
 

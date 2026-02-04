@@ -2,7 +2,12 @@
 
 ## Purpose
 
-This document defines how Token IDs are allocated across the namespace. It serves as the canonical reference for where things live in the addressing scheme and how new categories and tokens are assigned.
+This document provides a human-readable overview of the namespace addressing scheme. The canonical source of truth for all namespace allocations is the `namespace_allocations` table in the core database (`hcp_core`).
+
+```sql
+SELECT pattern, name, description, alloc_type, parent
+FROM namespace_allocations ORDER BY pattern;
+```
 
 ## Addressing Recap
 
@@ -16,85 +21,6 @@ XX.XX.XX.XX.XX
 │   └────────────── Category within mode
 └────────────────── Mode (LoD scope marker)
 ```
-
-## Top-Level Mode Allocations
-
-| Mode pair | Contents |
-|-----------|----------|
-| `AA`      | Universal / computational — byte codes, NSM primitives, structural tokens, abbreviation classes |
-| `z*`      | Replicable source PBMs — created works, documents, stored expressions |
-
-### Source PBM Addressing
-
-Source PBMs are addressed under `z*` with their scope category mirrored in the subsequent pairs:
-
-| Address pattern | Contents |
-|-----------------|----------|
-| `zA.AA.AA.AA.{count}` | Source PBMs for encoding tables (universal/computational sources) |
-
-All other mode pairs are unallocated and assigned as needed.
-
-## Universal Namespace (AA)
-
-### AA.AA — Encoding Tables
-
-Each character encoding standard is a scope at this level. Its defined characters are one pair deeper.
-
-| Address pattern | Contents |
-|-----------------|----------|
-| `AA.AA.XX` | Encoding table category (ASCII, Latin-1, ISO 8859-*, CP*, EBCDIC, KOI8, Unicode blocks) |
-| `AA.AA.XX.XX` | Individual characters defined by that table |
-
-When a new encoding table is ingested:
-1. The table itself gets an address at `AA.AA.XX`
-2. Each new character it defines gets an address at `AA.AA.XX.XX`
-3. Characters that already have addresses from a previous table are referenced, not duplicated
-
-### AA.AB — NSM Primitives
-
-The ~65 Natural Semantic Metalanguage primitives. These are the conceptual atoms — the lowest level of meaning decomposition.
-
-| Address pattern | Contents |
-|-----------------|----------|
-| `AA.AB.XX` | Individual NSM primitives |
-
-### AA.AC — Structural Tokens
-
-Tokens that exist for system-internal purposes: delimiters, scope markers, TBD placeholders.
-
-| Address pattern | Contents |
-|-----------------|----------|
-| `AA.AC.XX` | Structural token category |
-| `AA.AC.XX.XX` | Individual structural tokens |
-
-### AA.AD — Abbreviation Classes
-
-Source-specific shortcodes, notation conventions, and abbreviations. Every abbreviation that appears in source data gets its own token here. Multiple abbreviations can map to the same canonical concept, but each distinct form that appears in any source is its own token.
-
-| Address pattern | Contents |
-|-----------------|----------|
-| `AA.AD.XX` | Abbreviation category (PoS labels, linguistic notation, formatting codes, etc.) |
-| `AA.AD.XX.XX` | Individual abbreviation tokens |
-
-Examples:
-- Kaikki `adj` → token in AA.AD
-- Some other source `(Adj.)` → different token in AA.AD
-- Both reference the same canonical PoS concept, but both exist as independent tokens because both appeared in source data
-
-**Rule: If it appears in a source, it has a token. No silent translations.**
-
-## Language / Expression Namespaces (TBD)
-
-Mode pairs for language data will be allocated as ingestion begins. Proposed structure for text:
-
-| Level | Pair | Contents |
-|-------|------|----------|
-| Mode  | 1st  | Alphabet / writing system grouping |
-| Category | 2nd | Language or PoS grouping |
-| Sub-category | 3rd | Further classification as needed |
-| Token | 4th-5th | Individual words / morphemes |
-
-Specific allocations will be recorded here as they are assigned.
 
 ## Ingestion Rules
 
@@ -111,3 +37,73 @@ A high TBD count on ingestion signals a missing prerequisite source.
 
 ### No shortcuts
 Every distinct form that appears in source data gets its own token. Source-specific abbreviations, notation variants, and shortcodes are all independent tokens in the abbreviation class (AA.AD). Canonical mappings between them are recorded as bonds, not as ingestion-time substitutions.
+
+**Rule: If it appears in a source, it has a token. No silent translations.**
+
+## Current Namespace Structure
+
+### Universal Mode (AA)
+
+```
+AA                          Universal mode
+├── AA.AA                   Encoding Tables & Definitions
+│   ├── AA.AA.AA.AA.{n}     Byte Codes (0-255)
+│   └── AA.AA.AA.AB.{n}     NSM Primitives (~65)
+├── AA.AB                   Text Encodings
+│   └── AA.AB.AA.{table}.{byte}  Encoding table entries (UTF-8, Latin-1, etc.)
+├── AA.AC                   Structural Tokens
+└── AA.AD                   Abbreviation Classes
+```
+
+### Text Mode (AB)
+
+```
+AB                          Text mode
+├── AB.AA                   ASCII/Unicode Characters
+│   └── AB.AA.AA.{cat}.{n}  Character tokens by category
+└── AB.AB                   English Language Family (planned)
+    └── AB.AB.{POS}.{n}.{n} Words (double-duty 3rd pair)
+```
+
+#### Word Addressing (AB.AB)
+
+The 3rd pair uses double-duty encoding:
+- 1st character: Major POS (A=morpheme, B=noun, C=verb, D=adj, etc.)
+- 2nd character: Sub-POS (grammatical subdivision)
+
+Example sub-categories:
+- Nouns: countable, uncountable, plural-only, collective
+- Verbs: transitive, intransitive, ambitransitive
+- Morphemes: prefix, suffix, infix, interfix
+
+Morphemes come first in the address space as foundational word parts.
+
+## Key Concepts
+
+### Atomization
+The breakdown of a token into its component parts from the layer below.
+- Unicode chars → byte sequences (per encoding table)
+- Words → morphemes/letters
+- Stored in token metadata with encoding table context
+
+### Composition (future)
+Building up from tokens to semantic concepts. Reserved for later work.
+
+### Grammar as NSM Bridge
+Grammar profiles (word order, agreement patterns from WALS) act as the transformation layer between universal NSM primitives and language-specific expression. The grammar mesh shapes interpretation space.
+
+## Architecture Notes
+
+### Database Strategy
+- **PostgreSQL**: Workbench for analysis, writes, cross-shard assembly
+- **LMDB**: Read-only inference layer (optimized snapshots from Postgres)
+- **Shards**: ~2GB target size for hot-loading multiple shards simultaneously
+
+### Shard Types
+- Language shards (English, etc.) with accompanying PBMs
+- Operational shards (variables, logging) sized to workload
+
+### Token ID Efficiency
+- IDs encode shard routing path directly (no lookup needed)
+- Within-shard storage can drop common prefix (implied context)
+- Full IDs for cross-shard communication
