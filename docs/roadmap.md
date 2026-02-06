@@ -53,3 +53,13 @@ Extend the same structural primitives beyond text to other forms of expression.
 - What is the right granularity for LoD levels?
 - How does temporal flow (linear time interaction) integrate with the PBM model?
 - How do we validate that the system captures "real" cognitive structure vs. imposing one?
+
+## Performance Reality
+
+This is not computationally hard. Physics engines already solve harder problems at consumer hardware speeds.
+
+99% of modern software is GUI on database functions. The enterprise world runs these operations through abstraction layers designed in the 1970s, requiring server farms for workloads that a gaming GPU handles casually. Physics engines are the most optimized database engines ever built — they're just called "physics engines" because they process vertex positions instead of customer records.
+
+The HCP operates on this insight: Token IDs and bond strengths are simpler data than collision meshes and particle systems. A gaming laptop has more than enough power to run cognitive modeling at real-time speeds. The bottleneck was never hardware — it was recognizing that the tool already exists.
+
+Shards are scene elements. Load the next configuration. Hot-swap context like texture streaming. The game industry solved memory management for exactly this use case decades ago.

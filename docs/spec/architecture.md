@@ -51,3 +51,20 @@ Conceptual forces act as boundary conditions for particle structures. The assemb
 ## No Engine Lock-In
 
 The architecture describes computational operations, not a specific implementation. The Python prototype in `work/` implements core data structures. Physics engine integration (Godot, Rapier, custom) is exploratory — the architecture must remain engine-agnostic.
+
+## Why This Is Fast
+
+Physics engines are database engines. The game industry spent decades building the fastest parallel data processing systems on the planet — they just called them "physics engines" because they were querying polygon positions instead of customer records.
+
+The operations are identical:
+- **Collision detection** = spatial query
+- **Force propagation** = relational update
+- **Rigid body grouping** = join operation
+- **LoD management** = query optimization
+- **Particle systems** = batch insert/update
+
+Consumer GPUs run millions of particles at 60+ fps, translating into millions of pixels — on a $400 card, not server hardware. The entire enterprise database industry runs on server farms to achieve what a gaming laptop does casually for water ripples.
+
+Token lookup is a hash table hit. Atomization traversal is pointer chasing. PBM construction is pair counting. None of this approaches the computational density of soft body deformation or fluid dynamics. The HCP is feeding simpler data into engines already optimized for harder problems.
+
+The performance ceiling for cognitive modeling isn't future hardware — it's already in every gaming PC, every phone with a GPU, every console. The bottleneck was never compute. It was recognizing what tool the problem actually needed.
