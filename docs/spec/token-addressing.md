@@ -56,11 +56,18 @@ Letters-only also avoids digit/letter ambiguity in mixed contexts. The only excl
 | Mode prefix | Contents                                          |
 |-------------|---------------------------------------------------|
 | `AA`        | Universal / computational: byte codes, NSM primitives, structural tokens |
+| `AB`        | Text mode: language families (AB.AB = English, etc.) |
+| `v*`        | People entities (specific named individuals) |
+| `w*`        | Place entities (specific named locations) |
+| `x*`        | Thing entities (specific named things/orgs, common labels like months/days) |
+| `y*`        | Name components — the shared atoms that People/Places/Things decompose to |
 | `z*`        | Replicable source PBMs — created works, documents, stored expressions |
 
-The `z` prefix places created works at the end of sort order, visually distinct from structural/computational namespaces. The full `z*` space (50 second-pair values × deeper pairs) provides extensive room for cataloguing stored works.
+The upper range (`v`–`z`) places entities, name components, and stored works at the end of sort order, visually distinct from structural/computational and linguistic namespaces. These namespaces are cross-linguistic — name components and entities belong to all language shards, not any single one.
 
-Other mode allocations are TBD as modalities are defined.
+Every entity in `v*`, `w*`, or `x*` must atomize to name components in `y*`, even when the entity has only a single component. This mirrors the atomization chain at every other LoD level (phrases → words → characters → bytes).
+
+The full space per prefix (50 second-pair values × deeper pairs) provides extensive room for growth. People, Places, and Things each get their own prefix due to expected rapid growth as sources are ingested.
 
 ## LoD-Dependent Addressing
 

@@ -58,33 +58,127 @@ AA                          Universal mode
 ### Text Mode (AB)
 
 ```
-AB                          Text mode
-├── AB.AA                   ASCII/Unicode Characters
-│   └── AB.AA.AA.{cat}.{n}  Character tokens by category
-└── AB.AB                   English Language Family (planned)
-    └── AB.AB.{POS}.{n}.{n} Words (double-duty 3rd pair)
+AB                              Text mode
+├── AB.AA                       Unicode Characters
+│   └── AB.AA.AA.{cat}.{n}      Character tokens by category (2,032 tokens)
+└── AB.AB                       English Language Family (1.16M tokens)
+    ├── AB.AB.A{sub}.{n}.{n}    Layer A: Affixes (3,696 tokens)
+    ├── AB.AB.B{sub}.{n}.{n}    Layer B: Fragments (reserved)
+    ├── AB.AB.C{sub}.{n}.{n}    Layer C: Words (1,146,520 tokens)
+    ├── AB.AB.D{sub}.{n}.{n}    Layer D: Derivatives (3,979 tokens)
+    └── AB.AB.E{sub}.{n}.{n}    Layer E: Multi-word (9,084 tokens)
 ```
 
 #### Word Addressing (AB.AB)
 
 The 3rd pair uses double-duty encoding:
-- 1st character: Major POS (A=morpheme, B=noun, C=verb, D=adj, etc.)
-- 2nd character: Sub-POS (grammatical subdivision)
+- 1st character: Layer (by derivation, bottom to top)
+- 2nd character: Sub-category within layer
 
-Example sub-categories:
-- Nouns: countable, uncountable, plural-only, collective
-- Verbs: transitive, intransitive, ambitransitive
-- Morphemes: prefix, suffix, infix, interfix
+##### Layers (by derivation chain)
 
-Morphemes come first in the address space as foundational word parts.
+| Layer | Prefix | Description | Count |
+|-------|--------|-------------|-------|
+| A | AA-AF | Affixes: prefix, suffix, infix, interfix, circumfix | 3,696 |
+| B | B* | Fragments (reserved for incomplete words) | - |
+| C | CA-CR | Words: noun, verb, adj, adv, prep, conj, etc. | 1,146,520 |
+| D | DA-DE | Derivatives: abbreviation, initialism, acronym, contraction, clipping | 3,979 |
+| E | EA-EC | Multi-word: phrase, prep_phrase, proverb | 9,084 |
+
+Reading bottom-up: affixes → fragments → words → derivatives → multi-word.
+Each layer atomizes to the layer below (or to characters if at word level).
+
+##### Layer A: Affixes
+
+| Sub | Prefix | POS | Count |
+|-----|--------|-----|-------|
+| AA | prefix | 2,281 |
+| AB | suffix | 1,319 |
+| AC | infix | 51 |
+| AD | interfix | 39 |
+| AE | circumfix | 5 |
+| AF | affix (generic) | 1 |
+
+##### Layer C: Words
+
+| Sub | Prefix | POS | Count |
+|-----|--------|-----|-------|
+| CA | noun | 787,662 |
+| CB | verb | 180,945 |
+| CC | adj | 148,596 |
+| CD | adv | 23,729 |
+| CE | prep | 509 |
+| CF | conj | 209 |
+| CG | det | 173 |
+| CH | pron | 608 |
+| CI | intj | 3,024 |
+| CJ | num | 456 |
+| CK | symbol | 409 |
+| CL | particle | 36 |
+| CM | punct | 50 |
+| CN | article | 5 |
+| CR | character | 109 |
+
+##### Layer D: Derivatives
+
+| Sub | Prefix | Type | Count |
+|-----|--------|------|-------|
+| DA | abbreviation | 3,465 |
+| DB | initialism | 21 |
+| DD | contraction | 493 |
+
+##### Layer E: Multi-word
+
+| Sub | Prefix | Type | Count |
+|-----|--------|------|-------|
+| EA | phrase | 4,690 |
+| EB | prep_phrase | 2,864 |
+| EC | proverb | 1,530 |
+
+### Name Components Mode (yA)
+
+```
+yA                              Name components (cross-linguistic)
+└── yA.{n}.{n}                  150,528 name component tokens
+```
+
+Name components are single words that appear in proper nouns: personal names, place names, organization names, temporal labels (months, days), etc. They are cross-linguistic — shared across all language shards.
+
+Every entity in v*/w*/x* (People/Places/Things) atomizes to name components in y*.
+
+### Entity Modes (v*, w*, x*) — Reserved
+
+```
+vA.*                            People entities (future)
+wA.*                            Place entities (future)
+xA.*                            Thing entities (future)
+```
+
+Specific named entities. Each atomizes to y* name components.
+
+### Source PBM Mode (zA) — Reserved
+
+```
+zA.*                            Stored PBMs, documents, expressions
+```
+
+#### Atomization Rules
+
+- **Affixes (A)** → Character Token IDs
+- **Words (C)** → Character Token IDs
+- **Derivatives (D)** → Character Token IDs + link to root form
+- **Phrases (E)** → Word Token IDs if all components exist; else Character Token IDs
+
+Derivatives don't have independent definitions; they reference their expanded form.
 
 ## Key Concepts
 
 ### Atomization
 The breakdown of a token into its component parts from the layer below.
-- Unicode chars → byte sequences (per encoding table)
-- Words → morphemes/letters
-- Stored in token metadata with encoding table context
+- Phrases → word tokens (if all components exist)
+- Words → character tokens
+- Characters → byte tokens (per encoding table)
+- Stored in token metadata as an array of Token IDs
 
 ### Composition (future)
 Building up from tokens to semantic concepts. Reserved for later work.

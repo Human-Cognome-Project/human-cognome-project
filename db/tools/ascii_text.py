@@ -1,6 +1,9 @@
-"""Ingest ASCII text-mode tokens into the core database.
+"""ARCHIVED: Working copy of ASCII text ingestion script.
 
-Creates 128 text-mode tokens under AB.AA.AA.{group}.{count},
+STATUS: Completed - data is in hcp_core
+REVIEW BEFORE REUSE: Address scheme changed from AB.AA.AA to AA.AB.AA
+
+Creates 128 text-mode tokens under AA.AB.AA.{group}.{count},
 each referencing its byte code counterpart in AA.AA.AA.AA.{value}.
 
 Groups (4th pair):
@@ -12,12 +15,12 @@ Groups (4th pair):
     AF — Punctuation & symbols: 33
 """
 
-from ..core.token_id import encode_token_id, MODE_TEXT
-from ..core.byte_codes import BYTE_TABLE, ByteCategory
-from ..db.postgres import connect, init_schema, insert_token, insert_scope
+from src.hcp.core.token_id import encode_token_id, MODE_TEXT
+from src.hcp.core.byte_codes import BYTE_TABLE, ByteCategory
+from src.hcp.db.postgres import connect, init_schema, insert_token, insert_scope
 
-# Text mode scope for ASCII characters: AB.AA.AA
-SCOPE_ASCII_TEXT = encode_token_id(1, 0, 0)
+# Text mode scope for ASCII characters: AA.AB.AA
+SCOPE_ASCII_TEXT = encode_token_id(0, 1, 0)
 
 # Group codes (4th pair values)
 GROUP_CONTROL = 0       # AA
@@ -49,7 +52,7 @@ _GROUP_NAMES = {
 
 def ascii_text_token_id(group: int, index: int) -> str:
     """Get the Token ID for an ASCII text token."""
-    return encode_token_id(1, 0, 0, group, index)
+    return encode_token_id(0, 1, 0, group, index)
 
 
 def byte_token_id(value: int) -> str:
@@ -74,7 +77,7 @@ def ingest_ascii_text(conn):
 
         # Register group sub-scopes
         for group_id, group_name in _GROUP_NAMES.items():
-            scope_id = encode_token_id(1, 0, 0, group_id)
+            scope_id = encode_token_id(0, 1, 0, group_id)
             insert_scope(cur, scope_id, group_name, "text_token_group",
                          parent_id=SCOPE_ASCII_TEXT)
 
