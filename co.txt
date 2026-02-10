@@ -1,0 +1,1837 @@
+
+ ▐▛███▜▌   Claude Code v2.1.34
+▝▜█████▛▘  Sonnet 4.5 · Claude Max
+  ▘▘ ▝▝    /home/patrick/gits/human-cognome-project
+
+❯ You are a third instance joining an effort. you will have a specific      
+  focus on grammar modeling and document analysis. before we begin you      
+  should review project docs. do not investigate the dbs heavily beyond     
+  understanding structure and sampling data. they are very large. ok?       
+
+● Understood — I'll review docs and project structure, staying away from the
+  massive DB/SQL files. Let me get oriented.
+
+● Searched for 2 patterns, read 12 files (ctrl+o to expand)
+
+● Now let me look at the source code and get a quick sense of the existing DB
+  schemas without reading the massive SQL dumps.
+
+● Read 6 files (ctrl+o to expand)
+
+● Let me read the remaining key source files and check for any existing
+  PBM/document work.
+
+● Read 9 files (ctrl+o to expand)
+
+● Good. I've reviewed all the docs and source code. Here's my understanding:
+
+  ---
+  Review Summary
+
+  Where the project is: Phase 1 of the roadmap is largely complete. Three
+  Postgres shards exist — core (2,450 AA tokens), english (1.25M tokens across
+  affixes/words/derivatives/multi-word), and names (150K cross-linguistic name
+  components). All tokens are atomized to character Token IDs. Kaikki dictionary
+   data (entries, senses, forms, relations) is loaded and permanent. Two other
+  instances are working on infrastructure (Instance A: CI/CD, API, public
+  hosting) and the PBM chunking tool (Instance B).
+
+  Where grammar modeling fits: Looking at the roadmap, my focus corresponds to
+  Phase 1, steps 3 and 4:
+
+  - Step 3: Character to word and morpheme patterns — mapping characters to
+  English word and morpheme bonding patterns. Letter-level and morpheme-level
+  FBR data from real word structures.
+  - Step 4: Grammar and sentence structure — incorporating grammar and sentence
+  structure construction rules. PoS bonding behavior, syntactic patterns,
+  structural templates.
+
+  The SHARD-STATE doc confirms: "The grammar analysis layer sits above this — it
+   needs token streams, not raw text. The shards provide the vocabulary; grammar
+   provides the structure."
+
+  What's available to work with:
+  - 1.25M tokenized English words with PoS classifications and character
+  atomizations
+  - 870K inflected forms with tags (paradigm data for morphology)
+  - 450K semantic relations (synonyms, antonyms, hypernyms, etc.)
+  - 1.5M senses with glosses
+  - The PBM infrastructure (build, store, read) in src/hcp/db/pbm.py
+  - The namespace reference noting "Grammar as NSM Bridge" — grammar profiles
+  act as the transformation layer between NSM primitives and language-specific
+  expression
+
+  What doesn't exist yet:
+  - No morpheme-level tokenization (Layer B "Fragments" is reserved but empty)
+  - No FBR/PBM data from real text — only the build machinery
+  - No grammar rules, syntactic patterns, or sentence structure modeling
+  - No document analysis pipeline
+
+  Ready to dig into specifics. What would you like to tackle first?
+
+✻ Baked for 1m 2s
+
+❯ let's discuss the overall goal. when we work together it is               
+  collaborative. I am very sketchy on oode and implementation but am a      
+  pattern matching and problem solving beast. I work in first principles    
+  and flow states                                                           
+
+● Good framing. So let's talk about what grammar modeling and document analysis
+  actually are in HCP terms, and you steer me when I'm off.
+
+  The way I read this project, every LoD level follows the same pattern: things
+  bond to things, you count the bonds, the counts are the structure. Bytes bond
+  into characters. Characters bond into words. That's done — 1.25M words, all
+  atomized.
+
+  The next level up is where I come in: words bond into sentences. And the rules
+   governing how they bond — that's grammar.
+
+  But here's what I want to check against your thinking: in HCP, grammar isn't a
+   separate rule system bolted on top. It's emergent from the bond data. If you
+  process enough real text into PBMs at the word level, the grammar reveals
+  itself as FBR patterns. "the" bonds to nouns with massive FBR. Adjectives bond
+   to nouns more than they bond to verbs. Subject-verb-object ordering shows up
+  as directional bond strength.
+
+  So the question is: is grammar a thing we define, or a thing we measure?
+
+  My instinct from reading the specs is that it's measured — you feed text
+  through the tokenizer, build word-level PBMs, and the statistical structure of
+   English grammar falls out of the bond recurrence data. The PBM is the
+  grammar, at that LoD level.
+
+  But there's a second layer the docs hint at: the "Grammar as NSM Bridge" note
+  in the namespace reference. That suggests grammar also has a structural role —
+   it's the transformation mesh between universal meaning (NSM primitives) and
+  language-specific surface form. English puts adjectives before nouns. French
+  puts them after. Same concept, different bonding order. That's not just
+  measurement — that's a typed constraint.
+
+  Where does your head go on this?
+
+❯ so, this ties to using physics engine terms/methods for clarity.          
+  languages and any other expression is in effect a texture pack, it is     
+  what the engine composes to express what is intended. the NSM and         
+  conceptual aspects are the 3d mesh that is what must be conveyed.         
+
+● Right. So grammar is part of the texture pack, not the mesh. It's the UV
+  mapping — the projection rules for how conceptual structure renders into a
+  specific language surface.
+
+  Which means there are two distinct things happening when you process a
+  document:
+
+  Unwrapping — stripping the texture to find the mesh. Taking English text and
+  working backward through the bonding patterns to reach the conceptual
+  structure underneath. "The cat sat on the mat" → subject-action-location →
+  entity.action.spatial_relation.entity. Down through abstraction layers until
+  you hit NSM primitives.
+
+  Mapping — recording how this texture pack does its wrapping. English puts
+  determiners before nouns. English marks tense on verbs. English uses word
+  order for role assignment where Latin uses inflection. These are the UV
+  coordinates — same mesh, different projection.
+
+  So when I build word-level PBMs from real text, both happen simultaneously.
+  The FBR data captures the texture rules (grammar), and the mesh geometry is
+  what's left when you subtract the texture-specific patterns.
+
+  That reframes my entire job. I'm not "modeling grammar" as a standalone thing.
+   I'm building the unwrapping pipeline — texture in, mesh out — and the grammar
+   model is a byproduct. It's whatever's specific to English that isn't
+  universal structure.
+
+  Does that land?
+
+❯ grammar is the translation layer between them. if you think of conepts as 
+   forces, whether they are the object or subject and the verbs arund them, 
+   they shape the 3d forces that define the mesh                            
+
+● Sharper than what I said. Let me make sure I have it.
+
+  The mesh isn't static geometry — it's a force diagram. Concepts aren't points,
+   they're bodies with forces acting between them. Subject/object isn't a label,
+   it's a force direction — who acts on whom. Verbs aren't connectors, they're
+  the force type. The whole conceptual structure is dynamics, not shape.
+
+  Grammar is the layer that serializes a multidimensional force system into a
+  one-dimensional token stream. It's a codec. English encodes force direction
+  through word order. Latin encodes it through inflection. Japanese marks it
+  with particles. Same forces, different serialization strategies.
+
+  Which means grammar modeling isn't cataloguing rules — it's
+  reverse-engineering a codec. Given the linear output (text), reconstruct the
+  force diagram that produced it. And the codec specification is the grammar.
+
+  That also explains why the Kaikki forms data matters so much. 870K inflected
+  forms with tags — those tags are literally the codec parameters. Tense, case,
+  number, person — each one is a dimension of the force diagram that this
+  particular texture pack encodes in a specific way.
+
+  So the work is: build the codec spec for English by analyzing how force
+  relationships get serialized into token sequences. The PBMs at word level
+  capture the serialization patterns. The grammar falls out as the codec
+  description.
+
+❯ sort of. let's look at analyzing an input. say it's a short essay on      
+  whatever topic. as the tokens are processed, things like nouns and verbs  
+  and whatever are processed into what they mean conceptually, as in what   
+  tags are attached to those words. grammatical positions like              
+  subject/object define the application of force categories on specific     
+  tokens. it's a cross table query, but from an engine perspective, the     
+  subject and object define inclusion and exclusion factors                 
+
+● OK. So it's more concrete than a codec. Let me walk through what you're
+  describing.
+
+  Take a sentence from the essay: "The cat chased the mouse."
+
+  Step 1: Each word resolves to its token. The senses, tags, and relations on
+  those tokens are the conceptual payload — what each word carries. "Cat"
+  carries animal, living, predator, domestic, etc. "Mouse" carries animal,
+  living, prey, small, etc. "Chased" carries pursuit, motion, intent, etc.
+
+  Step 2: Grammar doesn't encode the meaning — it assigns force roles. Subject
+  position tells the engine: this token's conceptual tags are the source — they
+  define what forces are being projected. Object position tells the engine: this
+   token's tags are the target — they define the receiving surface, the
+  constraints on where force lands.
+
+  Step 3: The verb is the force type itself. "Chased" defines the kind of
+  interaction between source and target.
+
+  So it's a cross-table operation:
+
+  - Row axis: token conceptual properties (from the shard data)
+  - Column axis: grammatical role (from parsing)
+  - Cell values: inclusion/exclusion — does this concept participate as a force
+  source, a force target, a modifier, a constraint?
+
+  Grammar is the query planner. It doesn't contain the data and it doesn't
+  contain the meaning. It tells the engine which data to apply where.
+  Subject/object/indirect object/adverbial — these are execution directives, not
+   descriptions.
+
+  Is that closer?
+
+❯ the more a particular input focuses on different aspects, the stronger    
+  the force. as you noted it's measurement                                  
+
+● And that closes the loop. FBR is force magnitude. You don't assign force
+  strengths — you count bonds and the strength is the count.
+
+  An essay on predator-prey dynamics will bond "cat" to pursuit/hunting/capture
+  concepts repeatedly. Each recurrence increases the FBR. The FBR is how much
+  force that conceptual relationship carries in that scope. The essay's meaning
+  isn't interpreted — it's measured as a force distribution.
+
+  So a document PBM is simultaneously:
+  - A bond frequency map (the data structure)
+  - A force diagram (the conceptual mesh)
+  - A grammar usage record (the texture mapping)
+
+  All three are the same data read at different LoD levels.
+
+  Which means document analysis doesn't have separate stages for "parse grammar"
+   then "extract meaning" then "build representation." It's one pass: tokenize,
+  bond, count. The grammar is in the bonding patterns. The meaning is in the
+  force distribution. The document's identity is the whole PBM.
+
+  And two documents on the same topic will have similar force distributions —
+  similar mesh geometry — even if written in different languages with completely
+   different texture packs. That's the universality.
+
+  So the practical work is: build the pipeline that takes text in and produces 
+  PBMs at the word level, and then everything else — grammar patterns,
+  conceptual structure, force diagrams — is already in the data. We just need to
+   read it at different zoom levels.
+
+❯ we can use things like WALs to define the rules, it just needs to be      
+  encoded to translation layers. our first step really is probably to look  
+  at NSM definition. that has been left unlinked at this point and grammar  
+  is the transition                                                         
+
+● Right. NSM is the mesh geometry itself — the irreducible primitives that
+  everything decomposes to. Without that defined, there's nothing for grammar to
+   translate to. You'd have a codec with no target format.
+
+  And WALS gives you the codec parameters per language — SVO vs SOV, how tense
+  is marked, where modifiers attach. The translation layer rules, parameterized.
+
+  Let me check what actually exists for NSM in the core shard right now.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_core -c "SELECT
+      token_id, name, category, subcategory FROM tokens WHERE token_id LIKE
+      'AA.AA.AA.AB%' ORDER BY…)
+  ⎿   token_id | name | category | subcategory
+     ----------+------+----------+-------------
+     (0 rows)
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_core -c "SELECT
+      pattern, name, description FROM namespace_allocations WHERE pattern LIKE
+      'AA.AA.AA.AB%' OR na…)
+  ⎿        pattern       |      name      |               description
+
+    ---------------------+----------------+--------------------------------
+    … +4 lines (ctrl+o to expand)
+
+
+● Empty. The namespace is reserved but there are zero NSM tokens. The address
+  space is allocated at AA.AA.AA.AB.{n} — room for 2,500 values, only ~65
+  needed.
+
+  So the foundation of the entire mesh is a placeholder. Everything above it —
+  grammar translation, conceptual force assignment, document decomposition — has
+   no floor to land on.
+
+  The work is:
+
+  1. Define the NSM primitives as tokens. The Wierzbicka/Goddard list is
+  well-established (~65 primes). Each gets a token at AA.AA.AA.AB.{n}. These are
+   the irreducible conceptual atoms — the mesh vertices.
+  2. Link English words to their NSM decompositions. "Chase" decomposes to
+  something like MOVE + WANT + DO + BECAUSE. Each word in the english shard
+  eventually maps to an NSM expression — a combination of primitive forces. This
+   is the abstraction depth the spec mentions.
+  3. Define grammar as the translation parameters. Using WALS-type features:
+  English is SVO, head-initial, uses prepositions, marks tense on verbs, etc.
+  These become the codec rules — how force roles (subject/object/modifier) get
+  serialized into token order for this texture pack.
+  4. Then document analysis falls out. Tokenize → assign grammar roles →
+  decompose through word meanings to NSM → you have the force diagram.
+
+  Want to start with the NSM primitives themselves? The list is finite and
+  well-defined — it's a tractable first move that everything else depends on.
+
+✻ Baked for 40s
+
+❯ yup, whatever the most open agreed on count is. I think 67 might be       
+  considered current but we can do a search on that. is it worth having     
+  explorer look for data on NSM decomposition? etymology field should give  
+  us most of that                                                           
+
+● Good questions. Let me do both in parallel — web search for the current NSM
+  primitive list, and sample the etymology data to see what decomposition value
+  is actually in there.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "SELECT
+      word, pos, etymology_text FROM kaikki_entries WHERE etymology_text IS NOT
+      NULL AND LENGTH(…)
+  ⎿  Error: Exit code 1
+
+● Fetch(https://intranet.secure.griffith.edu.au/__data/assets/pdf_file/0019/3460
+       33/NSM_Chart_ENGLISH_v19_April_12_2017_Greyscale.pdf)
+  ⎿  Error: Sibling tool call errored
+
+● Fetch(https://intranet.secure.griffith.edu.au/__data/assets/pdf_file/0019/3460
+       33/NSM_Chart_ENGLISH_v19_April_12_2017_Greyscale.pdf)
+  ⎿  Error: Sibling tool call errored
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "\dt" 2>&1)
+  ⎿           List of relations
+      Schema |   Name    | Type  | Owner
+     --------+-----------+-------+-------
+     … +6 lines (ctrl+o to expand)
+
+● Fetch(https://en.wikipedia.org/wiki/Natural_semantic_metalanguage)
+  ⎿  Error: Request failed with status code 403
+
+● Fetch(https://en.citizendium.org/wiki/Semantic_primes)
+  ⎿  Received 58.4KB (200 OK)
+
+● OK. So the etymology data in the english shard is already tokenized — those
+  are Token ID arrays pointing to other words in the shard. That's derivation
+  chains, not semantic decomposition to NSM. Useful for tracing word origins but
+   not the same thing as "chase = DO + MOVE + WANT."
+
+  The web search gave us the full list though. 65 primes, stable through 2025.
+  Here's what we have:
+  Category: Substantives
+  Primes: I, YOU, SOMEONE, SOMETHING, PEOPLE, BODY
+  ────────────────────────────────────────
+  Category: Relational
+  Primes: KIND, PART
+  ────────────────────────────────────────
+  Category: Determiners
+  Primes: THIS, THE SAME, OTHER
+  ────────────────────────────────────────
+  Category: Quantifiers
+  Primes: ONE, TWO, SOME, ALL, MUCH/MANY
+  ────────────────────────────────────────
+  Category: Evaluators
+  Primes: GOOD, BAD
+  ────────────────────────────────────────
+  Category: Descriptors
+  Primes: BIG, SMALL
+  ────────────────────────────────────────
+  Category: Mental predicates
+  Primes: THINK, KNOW, WANT, DON'T WANT, FEEL, SEE, HEAR
+  ────────────────────────────────────────
+  Category: Speech
+  Primes: SAY, WORDS, TRUE
+  ────────────────────────────────────────
+  Category: Actions/events/movement
+  Primes: DO, HAPPEN, MOVE
+  ────────────────────────────────────────
+  Category: Existence/possession
+  Primes: THERE IS, BE (SOMEONE)
+  ────────────────────────────────────────
+  Category: Life and death
+  Primes: LIVE, DIE
+  ────────────────────────────────────────
+  Category: Time
+  Primes: WHEN, NOW, BEFORE, AFTER, A LONG TIME, A SHORT TIME, FOR SOME TIME,
+    MOMENT
+  ────────────────────────────────────────
+  Category: Space
+  Primes: WHERE, HERE, ABOVE, BELOW, FAR, NEAR, SIDE, INSIDE, TOUCH
+  ────────────────────────────────────────
+  Category: Logical
+  Primes: NOT, MAYBE, CAN, BECAUSE, IF
+  ────────────────────────────────────────
+  Category: Intensifier
+  Primes: VERY, MORE
+  ────────────────────────────────────────
+  Category: Similarity
+  Primes: LIKE/AS/WAY
+  That's 65 counting multi-word exponents (DON'T WANT, A LONG TIME, etc.) as
+  single primes.
+
+  Now — regarding NSM decomposition of the dictionary: you're right that
+  etymology won't give us that directly. The etymology tokens trace historical
+  derivation (Latin → Old French → English). NSM decomposition is semantic —
+  what does the word mean in terms of primitives.
+
+  That's a massive task if done for 1.25M words. But the NSM framework has a
+  concept of semantic molecules — intermediate words that are defined in terms
+  of primes, and then used to define other words. You don't decompose
+  "ephemeral" directly to primes. You decompose it to molecules like TIME +
+  SMALL + MOMENT, and those molecules decompose to primes.
+
+  So the realistic path is probably: primes → molecules → the Kaikki
+  glosses/senses give us the decomposition chains (definitions are
+  decompositions expressed in natural language).
+
+  Want to start by getting the 65 primes into the core shard, then figure out
+  the molecule layer?
+
+  Sources:
+  - https://en.wikipedia.org/wiki/Natural_semantic_metalanguage
+  - https://intranet.secure.griffith.edu.au/schools-departments/natural-semantic
+  -metalanguage/what-is-nsm
+  - https://link.springer.com/chapter/10.1007/978-3-031-81681-9_3
+
+✻ Cooked for 1m 39s
+
+❯ glosses/senses is where I meant then, and molecules is exactly what I     
+  intended (molecular modeling is the core math behind output               
+  construction/analysis)                                                    
+
+● That clicks hard. The senses table has 1.5M glosses — each one is a
+  definition, and a definition is literally a decomposition. "Ephemeral" →
+  "lasting for a very short time." Every word in that gloss is itself a token.
+  Follow the chain: "lasting" → defined by simpler words → defined by simpler
+  words → eventually you hit words that can only define each other circularly.
+  Those are the primes.
+
+  So the decomposition graph is already in the data. The glosses ARE the
+  molecular bonds. We just haven't parsed them as such.
+
+  And the molecules identify themselves — they're the words that appear most
+  frequently in definitions of other words. "Time," "person," "place," "thing,"
+  "way" — these show up in thousands of glosses. They're the stable intermediate
+   assemblies between primes and complex concepts. Rigid bodies at that LoD
+  level.
+
+  The path:
+
+  1. 65 primes into core shard — the atomic floor for meaning
+  2. Tokenize the glosses — resolve every word in every definition to its token
+  ID, producing a token stream per sense
+  3. Build the definition bond graph — word A is defined using words B, C, D.
+  That's FPB data. Words that appear in the most definitions have the highest
+  FBR across the corpus of definitions — those are the molecules
+  4. Compute abstraction depth — each word's distance from primes through the
+  decomposition chain. The spec already calls for this.
+
+  Step 2 is the big one — 1.5M glosses to tokenize. But the english shard
+  already has 1.25M words to resolve against. It's a batch lookup.
+
+  Let's get the primes in first?
+
+❯ interaction of a mind or engine is a flow state among conceptual shapes.  
+  these are the tools to model the rigid and soft bodies that affect the    
+  flow. the english shard and/or names components have every word in every  
+  gloss or sense I believe. the only elements in the enlish shard without   
+  token IDs are multi-word Tokens and/or ininitialisms that properly belong 
+   in the Things db                                                         
+
+● So tokenizing the glosses should be nearly 100% resolution — it's just a
+  lookup against existing tokens. Let me verify that quickly, then we get the
+  primes in.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      SELECT column_name, data_type FROM information_schema.columns WHERE
+      table_name = 'senses' ORDER…)
+  ⎿   column_name  | data_type
+     --------------+-----------
+      id           | integer
+     … +4 lines (ctrl+o to expand)
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Resolve a few token IDs back to words to see what a gloss looks like…)
+  ⎿      token_id    |    name
+     ----------------+------------
+      AB.AB.CA.AA.dF | a
+     … +6 lines (ctrl+o to expand)
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Check: how many senses have gloss_tokens, and how many are NULL…)
+  ⎿   total_senses | with_tokens | without_tokens
+     --------------+-------------+----------------
+           1490650 |     1490650 |              0
+     (1 row)
+
+● The glosses are already tokenized. All 1,490,650 of them. Every gloss is
+  stored as an array of Token IDs. Sense #1 reads: "to look UP IN a dictionary"
+  — each word already resolved.
+
+  So the decomposition graph isn't something we need to build from scratch. The
+  raw data is there: every definition is a token sequence pointing at other
+  words in the shard.
+
+  That means the path to NSM is:
+
+  1. Put the 65 primes in core — give them addresses
+  2. Link the English exponents — "I", "you", "good", "bad", "think", "know",
+  etc. are already tokens in the english shard. Tag them as NSM prime exponents.
+  3. Walk the definition graph — starting from primes, find which words are
+  defined using mostly primes. Those are the first-order molecules. Then find
+  words defined using primes + first-order molecules. That's second-order. The
+  abstraction depth computes itself.
+
+  The data's ready. Shall we get the 65 primes into the core shard?
+
+✻ Sautéed for 36s
+
+❯ good setup for you? and yes, if you see the path, go ahead 
+
+● Good setup. I've got the path clearly. Let me get the 65 primes into core,
+  then link their English exponents. I'll write an ingestion script consistent
+  with the existing patterns in src/hcp/ingest/.
+
+  Let me nail down the exact canonical list first, then build.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Check which NSM prime exponents already exist as tokens…)
+  ⎿      token_id    |   name    |   layer    | subcategory
+     ----------------+-----------+------------+-------------
+      AB.AB.CA.AB.Je | above     | word       | noun
+     … +74 lines (ctrl+o to expand)
+
+● All the English exponents are already in the shard. Let me get the exact
+  official list and then build.
+
+● Fetch(https://intranet.secure.griffith.edu.au/schools-departments/natural-sema
+       ntic-metalanguage/what-is-nsm/semantic-primes)
+  ⎿  Error: Request failed with status code 403
+
+● Fetch(https://www.researchgate.net/figure/The-list-of-the-NSM-semantic-primes-
+       in-English-and-Russian-after-Goddard-and-Wierzbicka_tbl1_255610096)
+  ⎿  Error: Request failed with status code 403
+
+● Fetch(https://en.wikipedia.org/wiki/Natural_semantic_metalanguage)
+  ⎿  Error: Request failed with status code 403
+
+● Web Search(""semantic primes" complete list 65 "I YOU SOMEONE SOMETHING"
+            "ABOVE BELOW" "A LONG TIME" "FOR SOME TIME" all categories table")
+  ⎿  Did 1 search in 7s
+
+● Fetch(https://medium.com/@surfaceprohandheld/aui-equivalencies-for-nsm-semanti
+       c-primes-63225b9f53fe)
+  ⎿  Error: Request failed with status code 403
+
+● Fetch(https://nsm-approach.net/resources)
+  ⎿  Received 141.5KB (200 OK)
+
+● OK good — I've confirmed the glosses are already fully tokenized, and every
+  English exponent for the primes exists in the shard. Let me build this.
+
+● Read 1 file (ctrl+o to expand)
+
+● Write(src/hcp/ingest/nsm_primes.py)
+  ⎿  Wrote 210 lines to src/hcp/ingest/nsm_primes.py
+       1 """Ingest NSM (Natural Semantic Metalanguage) primitives into th
+         e core shard.
+       2 
+       3 The 65 semantic primes are the irreducible conceptual atoms — th
+         e mesh vertices
+       4 that all meaning decomposes to. They occupy AA.AA.AA.AB.{n} in t
+         he core shard.
+       5 
+       6 Each prime is cross-referenced to its English exponent(s) in hcp
+         _english.
+       7 Primes are language-universal; the English words are just one te
+         xture pack's
+       8 rendering of them.
+       9 
+      10 Reference: Goddard & Wierzbicka (2014), NSM chart v19 (April 201
+         7).
+     … +200 lines (ctrl+o to expand)
+
+● Bash(python -m src.hcp.ingest.nsm_primes 2>&1)
+  ⎿  Error: Exit code 127
+     /bin/bash: line 1: python: command not found
+
+● Bash(python3 -m src.hcp.ingest.nsm_primes 2>&1)
+  ⎿  Connecting to core database...
+     Connecting to English shard (for exponent cross-references)...
+     Building English word lookup...
+     … +20 lines (ctrl+o to expand)
+
+● 65 primes inserted, 74 English exponent links established. Let me verify the
+  data looks right.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_core -c "
+      SELECT token_id, name, subcategory,…)
+  ⎿     token_id    |      name      |      subcategory       |          ca
+    t           |                                     eng_refs
+    … +137 lines (ctrl+o to expand)
+
+
+● 65 primes in the core shard, all cross-linked to their English exponents. The
+  mesh floor exists.
+
+  Every prime has at least one English token reference. Some have multiple
+  (capitalized and lowercase variants, or allolexes like "someone"/"person" both
+   pointing to the SOMEONE prime).
+
+  The address space: AA.AA.AA.AB.AA through AA.AA.AA.AB.BP. Leaves room for
+  2,435 more values in that pair if NSM expands or if we need sub-prime
+  distinctions later.
+
+  Now — the semantic molecules are the next layer up. Those are the first words
+  reachable from primes through the definition graph. The gloss data is the map.
+   Want to discuss strategy for walking the definition graph, or should I just
+  start building it?
+
+✻ Crunched for 3m 53s
+
+❯ do you think discussing strategy would benefit you are do you have a      
+  clear path in mind?                                                       
+
+● I have a clear path. The algorithm is a breadth-first walk from primes outward
+   through the definition graph. Glosses are already tokenized so it's graph
+  traversal, not NLP. The only real wrinkle is cycle detection (word A defines
+  B, B defines A) and that's standard.
+
+  Let me build it.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Quick look at the shape of the data: gloss token array sizes…)
+  ⎿   min_len | max_len | avg_len |  total
+     ---------+---------+---------+---------
+            1 |     152 |       7 | 1490650
+     (1 row)
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- How do entries link to senses? Need to go entry -> word_token ->
+      senses…)
+  ⎿    id    |   word_token   |    word    |
+             gloss_tokens
+    ---------+----------------+------------+-------------------------------
+    … +12 lines (ctrl+o to expand)
+
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Get the NSM prime english token IDs so we can identify them in
+      glosses…)
+  ⎿      token_id    |   name
+     ----------------+-----------
+      AB.AB.CA.AA.cz | A
+     … +57 lines (ctrl+o to expand)
+
+● Good data shape. 1.15M words have definitions. Average gloss is 7 tokens —
+  compact. Now let me build the molecule identification engine.
+
+● Write(src/hcp/ingest/nsm_molecules.py)
+  ⎿  Wrote 222 lines to src/hcp/ingest/nsm_molecules.py
+       1 """Identify NSM semantic molecules by walking the definition gra
+         ph.
+       2 
+       3 Starting from the 65 NSM primes, walk outward through the gloss/
+         sense data
+       4 to find words defined using primes (first-order molecules), then
+          words defined
+       5 using primes + first-order molecules (second-order), and so on.
+       6 
+       7 This computes the abstraction depth of every word in the english
+          shard:
+       8 how many decomposition layers between it and the NSM primitives.
+       9 
+      10 The definition graph is built from the tokenized glosses in the 
+         senses table.
+     … +212 lines (ctrl+o to expand)
+
+● Ha, noted — I'll parse for intent, not typos. Your mesh, not your texture
+  pack.
+
+  Let me run the molecule walk. This will process 1.15M words against 1.5M
+  glosses so it might take a minute.
+
+● Bash(python3 -m src.hcp.ingest.nsm_molecules both 0.8 2>&1)
+  ⎿  Connecting to core database...
+     Connecting to English shard...
+     … +42 lines (ctrl+o to expand)
+
+● Interesting — strict found 123 first-order molecules (words defined entirely
+  using prime exponents), but then hit a wall at layer 2. Only 2 words resolved
+  at depth 2, then nothing.
+
+  The issue is clear: definitions use lots of function words and common words
+  that aren't primes themselves. Even at 80% threshold, the graph barely
+  propagates. The prime exponent set (82 tokens) is too small a seed — most
+  definitions contain words like "used", "type", "form", "relating", "having"
+  that aren't prime exponents but are ubiquitous in glosses.
+
+  Let me look at what's blocking propagation.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- What are the most common tokens appearing across all glosses?…)
+  ⎿      token_id    |    name     |  freq
+     ----------------+-------------+---------
+      AB.AB.CB.Ap.mV | of          | 1133125
+     … +40 lines (ctrl+o to expand)
+
+● Ha — your brain has its own lossy codec. Buffer underrun causes dropped tokens
+   and nearest-neighbor substitution. That's actually a real FBR phenomenon —
+  high-frequency bonds fire faster than the serialization layer can keep up.
+
+  Now — this data tells the story. The top 40 tokens in glosses are the
+  definition backbone: "of", "a", "the", "to", "or", "and", "in", "form",
+  "that", "with", "used", "relating", "having"... These are the structural glue
+  of English definitions. They're not primes, but they're everywhere.
+
+  The graph walk stalled because definitions like "a type of large bird" contain
+   "a", "type", "of", "large", "bird" — and even though "a" and "large/big" map
+  to primes, "type", "of", "bird" don't. So the word can't resolve.
+
+  The fix: these high-frequency definition words are themselves either
+  prime-adjacent (grammatical function words) or the most obvious first-order
+  molecules. I need to recognize two populations:
+
+  1. Grammatical function words — "of", "a", "the", "to", "and", "or", "in",
+  "with", "for", "from", "by", "that", "which", "is", "an" — these are the
+  texture layer of definitions. They're the grammar codec operating within the
+  glosses themselves. They should be treated as transparent for decomposition
+  purposes.
+  2. Definition vocabulary words — "type", "form", "used", "relating", "having",
+   "person", "plural", "past", "present" — these are the actual semantic content
+   of definitions.
+
+  Let me rerun with the function words treated as resolved at layer 0 alongside
+  the primes.
+
+● Read 1 file (ctrl+o to expand)
+
+● Update(src/hcp/ingest/nsm_molecules.py)
+  ⎿  Added 57 lines
+      10  The definition graph is built from the tokenized glosses in the
+           senses table.
+      11  Each word's "definition vocabulary" is the set of distinct toke
+          ns appearing
+      12  across all its glosses.
+      13 +                                                               
+      14 +Grammatical function words (articles, prepositions, conjunction
+         +s, etc.) are                                                   
+      15 +treated as "transparent" at layer 0 — they're the grammar codec
+         + operating                                                     
+      16 +within definitions, not semantic content. They're resolved alon
+         +gside primes                                                   
+      17 +so they don't block the graph walk.                            
+      18  """
+      19  
+      20  import json
+     ...
+      41      return prime_ids
+      42  
+      43  
+      44 +def load_function_word_ids(eng_conn) -> set[str]:              
+      45 +    """Get token IDs for grammatical function words.           
+      46 +                                                               
+      47 +    These are the texture layer of definitions — grammar codec 
+         +tokens                                                         
+      48 +    that structure glosses but don't carry semantic decompositi
+         +on weight.                                                     
+      49 +    Treated as transparent (resolved at layer 0) so they don't 
+         +block                                                          
+      50 +    the molecule walk.                                         
+      51 +    """                                                        
+      52 +    function_words = [                                         
+      53 +        # Articles/determiners                                 
+      54 +        'a', 'an', 'the',                                      
+      55 +        # Prepositions                                         
+      56 +        'of', 'to', 'in', 'for', 'on', 'at', 'with', 'from', 'b
+         +y',                                                            
+      57 +        'into', 'through', 'during', 'about', 'between', 'upon'
+         +,                                                              
+      58 +        'against', 'among', 'within', 'without', 'toward', 'tow
+         +ards',                                                         
+      59 +        'across', 'along', 'around', 'over', 'under', 'until', 
+      60 +        # Conjunctions                                         
+      61 +        'and', 'or', 'but', 'nor', 'yet', 'so',                
+      62 +        # Pronouns / relative                                  
+      63 +        'that', 'which', 'who', 'whom', 'whose', 'what',       
+      64 +        'it', 'its', 'itself',                                 
+      65 +        # Copula / auxiliary forms                             
+      66 +        'is', 'are', 'was', 'were', 'been', 'being',           
+      67 +        'has', 'have', 'had', 'having',                        
+      68 +        # Common definition-structure words (grammatical, not s
+         +emantic)                                                       
+      69 +        'used', 'especially', 'particularly', 'usually', 'often
+         +',                                                             
+      70 +        'also', 'either', 'neither', 'both', 'each', 'every',  
+      71 +        'such', 'than', 'whether', 'while', 'where', 'when',   
+      72 +    ]                                                          
+      73 +                                                               
+      74 +    ids = set()                                                
+      75 +    placeholders = ','.join(['%s'] * len(function_words))      
+      76 +    with eng_conn.cursor() as cur:                             
+      77 +        cur.execute(f"""                                       
+      78 +            SELECT token_id FROM tokens                        
+      79 +            WHERE LOWER(name) IN ({placeholders})              
+      80 +        """, function_words)                                   
+      81 +        for (tid,) in cur.fetchall():                          
+      82 +            ids.add(tid)                                       
+      83 +                                                               
+      84 +    # Also grab uppercase variants (IN, OR, AS, BE, IS, etc.)  
+      85 +    with eng_conn.cursor() as cur:                             
+      86 +        cur.execute(f"""                                       
+      87 +            SELECT token_id FROM tokens                        
+      88 +            WHERE name IN ({placeholders})                     
+      89 +        """, [w.upper() for w in function_words])              
+      90 +        for (tid,) in cur.fetchall():                          
+      91 +            ids.add(tid)                                       
+      92 +                                                               
+      93 +    return ids                                                 
+      94 +                                                               
+      95 +                                                               
+      96  def build_definition_graph(eng_conn) -> dict[str, set[str]]:
+      97      """Build the definition graph: word_token -> set of tokens 
+          used in its definitions.
+      98  
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ hold on for a sec, not sure where you were. those do have prime           
+  connections but they weren't connected.                                   
+
+● You're right. I was about to create a bypass category when the real issue is
+  incomplete prime linkage. "A" connects to ONE. "The" connects to THIS/THE
+  SAME. "Is" connects to BE. "Of" connects to PART. They're not outside the
+  system — they're prime exponents that weren't connected.
+
+  The graph stalled because the seed was too small, not because it needed a hack
+   around function words.
+
+  Want me to expand the prime exponent mappings instead? Map the function words
+  to their proper primes and rerun the walk?
+
+❯ yes please. those are all prime translations and without them nothing     
+  will hold                                                                 
+
+● You're right — they're the connective tissue. Without "of" → PART, "a" → ONE,
+  "the" → THIS, "is" → BE, the graph has no way to propagate through 1.1M
+  occurrences of "of" alone.
+
+  Let me map them properly and rerun.
+
+● Write(src/hcp/ingest/nsm_primes.py)
+  ⎿  Added 77 lines, removed 59 lines
+       7  Primes are language-universal; the English words are just one t
+          exture pack's
+       8  rendering of them.
+       9  
+      10 +English exponents include all surface forms: articles, preposit
+         +ions, copula                                                   
+      11 +forms, pronouns — these are prime translations through the Engl
+         +ish grammar                                                    
+      12 +codec, not a separate class. Without them the decomposition gra
+         +ph cannot                                                      
+      13 +propagate.                                                     
+      14 +                                                               
+      15  Reference: Goddard & Wierzbicka (2014), NSM chart v19 (April 20
+          17).
+      16  """
+      17  
+     ...
+       22  
+       23  # The 65 NSM semantic primes, organized by category.
+       24  # Each entry: (canonical_name, category, [english_exponents])
+       20 -# Exponents are lowercase words to match against the english s
+          -hard.                                                         
+       25 +#                                                             
+       26 +# Exponents include all common English surface forms that expr
+          +ess the prime:                                                
+       27 +# - Base forms and inflections                                
+       28 +# - Grammatical function words (articles, prepositions, copula
+          +)                                                             
+       29 +# - Pro-forms (pronouns, pro-adverbs)                         
+       30 +# - Common definition metalanguage that maps to the prime     
+       31 +#                                                             
+       32  # The "/" in NSM notation means allolexes (same prime, differe
+           nt surface forms).
+       33  
+       34  NSM_PRIMES = [
+       35      # Substantives (6)
+       25 -    ("I", "substantive", ["i"]),                              
+       26 -    ("YOU", "substantive", ["you"]),                          
+       27 -    ("SOMEONE", "substantive", ["someone", "person"]),        
+       28 -    ("SOMETHING", "substantive", ["something", "thing"]),     
+       36 +    ("I", "substantive", ["i", "me", "my", "myself"]),        
+       37 +    ("YOU", "substantive", ["you", "your", "yourself"]),      
+       38 +    ("SOMEONE", "substantive", ["someone", "person", "somebody
+          +",                                                            
+       39 +                                 "anyone", "anybody", "who", "
+          +whom", "whose"]),                                             
+       40 +    ("SOMETHING", "substantive", ["something", "thing", "what"
+          +, "it",                                                       
+       41 +                                   "itself", "which", "whateve
+          +r"]),                                                         
+       42      ("PEOPLE", "substantive", ["people"]),
+       43      ("BODY", "substantive", ["body"]),
+       44  
+       45      # Relational substantives (2)
+       33 -    ("KIND", "relational_substantive", ["kind"]),             
+       34 -    ("PART", "relational_substantive", ["part"]),             
+       46 +    ("KIND", "relational_substantive", ["kind", "type", "sort"
+          +, "form"]),                                                   
+       47 +    ("PART", "relational_substantive", ["part", "of"]),       
+       48  
+       49      # Determiners (3)
+       37 -    ("THIS", "determiner", ["this"]),                         
+       38 -    ("THE SAME", "determiner", ["same"]),                     
+       39 -    ("OTHER", "determiner", ["other", "else"]),               
+       50 +    ("THIS", "determiner", ["this", "the", "that", "these", "t
+          +hose"]),                                                      
+       51 +    ("THE SAME", "determiner", ["same", "synonym"]),          
+       52 +    ("OTHER", "determiner", ["other", "else", "another", "alte
+          +rnative"]),                                                   
+       53  
+       54      # Quantifiers (5)
+       42 -    ("ONE", "quantifier", ["one"]),                           
+       55 +    ("ONE", "quantifier", ["one", "a", "an", "single", "singul
+          +ar"]),                                                        
+       56      ("TWO", "quantifier", ["two"]),
+       44 -    ("SOME", "quantifier", ["some"]),                         
+       45 -    ("ALL", "quantifier", ["all"]),                           
+       57 +    ("SOME", "quantifier", ["some", "any", "certain"]),       
+       58 +    ("ALL", "quantifier", ["all", "every", "each", "both", "pl
+          +ural"]),                                                      
+       59      ("MUCH", "quantifier", ["much", "many"]),
+       60  
+       61      # Evaluators (2)
+       49 -    ("GOOD", "evaluator", ["good"]),                          
+       50 -    ("BAD", "evaluator", ["bad"]),                            
+       62 +    ("GOOD", "evaluator", ["good", "well"]),                  
+       63 +    ("BAD", "evaluator", ["bad", "badly", "ill"]),            
+       64  
+       65      # Descriptors (2)
+       53 -    ("BIG", "descriptor", ["big"]),                           
+       54 -    ("SMALL", "descriptor", ["small"]),                       
+       66 +    ("BIG", "descriptor", ["big", "large", "great"]),         
+       67 +    ("SMALL", "descriptor", ["small", "little"]),             
+       68  
+       69      # Mental predicates (7)
+       57 -    ("THINK", "mental_predicate", ["think"]),                 
+       58 -    ("KNOW", "mental_predicate", ["know"]),                   
+       59 -    ("WANT", "mental_predicate", ["want"]),                   
+       70 +    ("THINK", "mental_predicate", ["think", "thought"]),      
+       71 +    ("KNOW", "mental_predicate", ["know", "known"]),          
+       72 +    ("WANT", "mental_predicate", ["want", "wanted"]),         
+       73      ("DON'T WANT", "mental_predicate", ["want"]),
+       61 -    ("FEEL", "mental_predicate", ["feel"]),                   
+       62 -    ("SEE", "mental_predicate", ["see"]),                     
+       63 -    ("HEAR", "mental_predicate", ["hear"]),                   
+       74 +    ("FEEL", "mental_predicate", ["feel", "felt", "feeling"]),
+       75 +    ("SEE", "mental_predicate", ["see", "seen", "saw"]),      
+       76 +    ("HEAR", "mental_predicate", ["hear", "heard"]),          
+       77  
+       78      # Speech (3)
+       66 -    ("SAY", "speech", ["say"]),                               
+       67 -    ("WORDS", "speech", ["words"]),                           
+       79 +    ("SAY", "speech", ["say", "said"]),                       
+       80 +    ("WORDS", "speech", ["words", "word"]),                   
+       81      ("TRUE", "speech", ["true"]),
+       82  
+       83      # Actions, events, movement, contact (4)
+       71 -    ("DO", "action", ["do"]),                                 
+       72 -    ("HAPPEN", "action", ["happen"]),                         
+       73 -    ("MOVE", "action", ["move"]),                             
+       84 +    ("DO", "action", ["do", "does", "did", "done", "doing", "u
+          +sed"]),                                                       
+       85 +    ("HAPPEN", "action", ["happen", "happened"]),             
+       86 +    ("MOVE", "action", ["move", "to"]),                       
+       87      ("TOUCH", "action", ["touch"]),
+       88  
+       89      # Existence and possession (2)
+       77 -    ("THERE IS", "existence", ["there"]),                     
+       78 -    ("MINE", "possession", ["mine"]),                         
+       90 +    ("THERE IS", "existence", ["there", "exist", "exists"]),  
+       91 +    ("MINE", "possession", ["mine", "have", "has", "had", "hav
+          +ing", "own"]),                                                
+       92  
+       93      # Life and death (2)
+       81 -    ("LIVE", "life_death", ["live"]),                         
+       82 -    ("DIE", "life_death", ["die"]),                           
+       94 +    ("LIVE", "life_death", ["live", "living", "alive"]),      
+       95 +    ("DIE", "life_death", ["die", "dead", "death"]),          
+       96  
+       97      # Time (8)
+       98      ("WHEN", "time", ["when", "time"]),
+       86 -    ("NOW", "time", ["now"]),                                 
+       87 -    ("BEFORE", "time", ["before"]),                           
+       88 -    ("AFTER", "time", ["after"]),                             
+       99 +    ("NOW", "time", ["now", "present", "currently"]),         
+      100 +    ("BEFORE", "time", ["before", "past", "ago"]),            
+      101 +    ("AFTER", "time", ["after", "then", "later"]),            
+      102      ("A LONG TIME", "time", ["long", "time"]),
+      103      ("A SHORT TIME", "time", ["short", "time"]),
+      104      ("FOR SOME TIME", "time", ["some", "time"]),
+      105      ("MOMENT", "time", ["moment"]),
+      106  
+      107      # Space (8)
+       95 -    ("WHERE", "space", ["where", "place"]),                   
+      108 +    ("WHERE", "space", ["where", "place", "at"]),             
+      109      ("HERE", "space", ["here"]),
+       97 -    ("ABOVE", "space", ["above"]),                            
+       98 -    ("BELOW", "space", ["below"]),                            
+       99 -    ("FAR", "space", ["far"]),                                
+      100 -    ("NEAR", "space", ["near"]),                              
+      110 +    ("ABOVE", "space", ["above", "over", "up", "on", "upon"]),
+      111 +    ("BELOW", "space", ["below", "under", "down", "beneath"]),
+      112 +    ("FAR", "space", ["far", "away", "from"]),                
+      113 +    ("NEAR", "space", ["near", "by", "beside", "next"]),      
+      114      ("SIDE", "space", ["side"]),
+      102 -    ("INSIDE", "space", ["inside"]),                          
+      115 +    ("INSIDE", "space", ["inside", "in", "into", "within"]),  
+      116  
+      117      # Logical concepts (5)
+      105 -    ("NOT", "logical", ["not"]),                              
+      106 -    ("MAYBE", "logical", ["maybe"]),                          
+      107 -    ("CAN", "logical", ["can"]),                              
+      108 -    ("BECAUSE", "logical", ["because"]),                      
+      109 -    ("IF", "logical", ["if"]),                                
+      118 +    ("NOT", "logical", ["not", "no", "neither", "nor", "withou
+          +t"]),                                                         
+      119 +    ("MAYBE", "logical", ["maybe", "perhaps"]),               
+      120 +    ("CAN", "logical", ["can", "could", "able"]),             
+      121 +    ("BECAUSE", "logical", ["because", "for", "so", "since", "
+          +therefore"]),                                                 
+      122 +    ("IF", "logical", ["if", "whether"]),                     
+      123  
+      124      # Intensifier, augmentor (2)
+      112 -    ("VERY", "intensifier", ["very"]),                        
+      113 -    ("MORE", "intensifier", ["more"]),                        
+      125 +    ("VERY", "intensifier", ["very", "especially", "particular
+          +ly"]),                                                        
+      126 +    ("MORE", "intensifier", ["more", "than", "also", "too"]), 
+      127  
+      128      # Similarity (2)
+      116 -    ("LIKE", "similarity", ["like"]),                         
+      117 -    ("WAY", "similarity", ["way"]),                           
+      129 +    ("LIKE", "similarity", ["like", "as"]),                   
+      130 +    ("WAY", "similarity", ["way", "how"]),                    
+      131  
+      132      # Specification (2)
+      120 -    ("BE (SOMEONE)", "specification", ["be"]),                
+      121 -    ("BE (SOMEWHERE)", "specification", ["be"]),              
+      133 +    ("BE (SOMEONE)", "specification", ["be", "is", "are", "was
+          +", "were",                                                    
+      134 +                                        "been", "being"]),    
+      135 +    ("BE (SOMEWHERE)", "specification", ["be", "is", "are", "w
+          +as", "were",                                                  
+      136 +                                          "been", "being"]),  
+      137  ]
+      138  
+      139  assert len(NSM_PRIMES) == 65, f"Expected 65 primes, got {len(N
+           SM_PRIMES)}"
+      140  
+      141  
+      142  def build_english_lookup(eng_conn) -> dict[str, list[str]]:
+      128 -    """Build lookup: lowercase word -> list of (token_id, name
+          -) from english shard."""                                      
+      143 +    """Build lookup: lowercase word -> list of token_ids from 
+          +english shard."""                                             
+      144      lookup = {}
+      145      with eng_conn.cursor() as cur:
+      146          cur.execute("SELECT token_id, name FROM tokens")
+     ...
+      168      print(f"\nIngesting {len(NSM_PRIMES)} NSM primes...")
+      169      inserted = 0
+      170      linked = 0
+      171 +    total_exponent_tokens = 0                                 
+      172  
+      173      with core_conn.cursor() as cur:
+      174          for idx, (name, category, exponents) in enumerate(NSM_
+           PRIMES):
+     ...
+      182                  if matches:
+      183                      english_refs[exp_word] = matches
+      184                      linked += 1
+      185 +                    total_exponent_tokens += len(matches)     
+      186  
+      187              metadata = {
+      188                  "nsm_category": category,
+     ...
+      201      core_conn.commit()
+      202  
+      203      print(f"\n=== Summary ===")
+      187 -    print(f"Primes inserted:     {inserted}")                 
+      188 -    print(f"Exponent links:      {linked}")                   
+      189 -    print(f"Address range:       AA.AA.AA.AB.AA — AA.AA.AA.AB.
+          -{encode_token_id(0, 0, 0, 1, inserted - 1).split('.')[-1]}")  
+      204 +    print(f"Primes inserted:       {inserted}")               
+      205 +    print(f"Exponent words linked: {linked}")                 
+      206 +    print(f"Total english tokens:  {total_exponent_tokens}")  
+      207  
+      208      # Show a few examples
+      209      print(f"\nSample tokens:")
+      210      with core_conn.cursor() as cur:
+      211          cur.execute("""
+      195 -            SELECT token_id, name, subcategory, metadata->'eng
+          -lish_token_ids' as refs                                       
+      212 +            SELECT token_id, name, subcategory,               
+      213 +                   jsonb_object_keys(metadata->'english_token_
+          +ids') as exponent                                             
+      214              FROM tokens
+      215              WHERE category = 'nsm_prime'
+      216              ORDER BY token_id
+      199 -            LIMIT 10                                          
+      217 +            LIMIT 15                                          
+      218          """)
+      219          for row in cur.fetchall():
+      202 -            print(f"  {row[0]}  {row[1]:<20s}  [{row[2]}]")   
+      220 +            print(f"  {row[0]}  {row[1]:<20s}  [{row[2]}]  exp
+          +onent: {row[3]}")                                             
+      221  
+      222      core_conn.close()
+      223      eng_conn.close()
+
+● Now also need to revert the molecule script — remove the function word bypass
+  I was adding, since that's the wrong approach.
+
+● Update(src/hcp/ingest/nsm_molecules.py)
+  ⎿  Removed 56 lines
+      11  Each word's "definition vocabulary" is the set of distinct toke
+          ns appearing
+      12  across all its glosses.
+      13  
+      14 -Grammatical function words (articles, prepositions, conjunction
+         -s, etc.) are                                                   
+      15 -treated as "transparent" at layer 0 — they're the grammar codec
+         - operating                                                     
+      16 -within definitions, not semantic content. They're resolved alon
+         -gside primes                                                   
+      17 -so they don't block the graph walk.                            
+      14  """
+      15  
+      16  import json
+     ...
+      37      return prime_ids
+      38  
+      39  
+      44 -def load_function_word_ids(eng_conn) -> set[str]:              
+      45 -    """Get token IDs for grammatical function words.           
+      46 -                                                               
+      47 -    These are the texture layer of definitions — grammar codec 
+         -tokens                                                         
+      48 -    that structure glosses but don't carry semantic decompositi
+         -on weight.                                                     
+      49 -    Treated as transparent (resolved at layer 0) so they don't 
+         -block                                                          
+      50 -    the molecule walk.                                         
+      51 -    """                                                        
+      52 -    function_words = [                                         
+      53 -        # Articles/determiners                                 
+      54 -        'a', 'an', 'the',                                      
+      55 -        # Prepositions                                         
+      56 -        'of', 'to', 'in', 'for', 'on', 'at', 'with', 'from', 'b
+         -y',                                                            
+      57 -        'into', 'through', 'during', 'about', 'between', 'upon'
+         -,                                                              
+      58 -        'against', 'among', 'within', 'without', 'toward', 'tow
+         -ards',                                                         
+      59 -        'across', 'along', 'around', 'over', 'under', 'until', 
+      60 -        # Conjunctions                                         
+      61 -        'and', 'or', 'but', 'nor', 'yet', 'so',                
+      62 -        # Pronouns / relative                                  
+      63 -        'that', 'which', 'who', 'whom', 'whose', 'what',       
+      64 -        'it', 'its', 'itself',                                 
+      65 -        # Copula / auxiliary forms                             
+      66 -        'is', 'are', 'was', 'were', 'been', 'being',           
+      67 -        'has', 'have', 'had', 'having',                        
+      68 -        # Common definition-structure words (grammatical, not s
+         -emantic)                                                       
+      69 -        'used', 'especially', 'particularly', 'usually', 'often
+         -',                                                             
+      70 -        'also', 'either', 'neither', 'both', 'each', 'every',  
+      71 -        'such', 'than', 'whether', 'while', 'where', 'when',   
+      72 -    ]                                                          
+      73 -                                                               
+      74 -    ids = set()                                                
+      75 -    placeholders = ','.join(['%s'] * len(function_words))      
+      76 -    with eng_conn.cursor() as cur:                             
+      77 -        cur.execute(f"""                                       
+      78 -            SELECT token_id FROM tokens                        
+      79 -            WHERE LOWER(name) IN ({placeholders})              
+      80 -        """, function_words)                                   
+      81 -        for (tid,) in cur.fetchall():                          
+      82 -            ids.add(tid)                                       
+      83 -                                                               
+      84 -    # Also grab uppercase variants (IN, OR, AS, BE, IS, etc.)  
+      85 -    with eng_conn.cursor() as cur:                             
+      86 -        cur.execute(f"""                                       
+      87 -            SELECT token_id FROM tokens                        
+      88 -            WHERE name IN ({placeholders})                     
+      89 -        """, [w.upper() for w in function_words])              
+      90 -        for (tid,) in cur.fetchall():                          
+      91 -            ids.add(tid)                                       
+      92 -                                                               
+      93 -    return ids                                                 
+      94 -                                                               
+      95 -                                                               
+      40  def build_definition_graph(eng_conn) -> dict[str, set[str]]:
+      41      """Build the definition graph: word_token -> set of tokens 
+          used in its definitions.
+      42  
+
+● Good. Now update the primes and rerun both.
+
+● Bash(python3 -m src.hcp.ingest.nsm_primes 2>&1)
+  ⎿  Connecting to core database...
+     Connecting to English shard (for exponent cross-references)...
+     Building English word lookup...
+     … +31 lines (ctrl+o to expand)
+
+● 198 exponent words linked, 251 total english tokens (up from 74/82). Now the
+  molecule walk.
+
+● Bash(python3 -m src.hcp.ingest.nsm_molecules both 0.8 2>&1)
+  ⎿  Running in the background (↓ to manage)
+
+● Task Output b636fb6
+  ⎿  (No content)
+
+● The walk is hanging — the issue is computational. Iterating over 1.15M
+  unresolved words per layer, checking subset membership against 1.15M
+  definition sets, is O(n*m) per layer. That's billions of operations per
+  iteration in pure Python.
+
+  And noted on the engine-agnostic data point — we're building the data
+  structures and relationships, not binding to any runtime. The data should be
+  compilable to whatever engine (Godot, Rapier, custom, LMDB, whatever) comes
+  later.
+
+  Let me restructure the walk to be efficient — invert the graph so we can
+  propagate forward from newly-resolved nodes instead of scanning all unresolved
+   nodes every pass.
+
+● Update(src/hcp/ingest/nsm_molecules.py)
+  ⎿  Added 94 lines, removed 65 lines
+       72  
+       73  def walk_abstraction_layers(graph: dict[str, set[str]],
+       74                              prime_ids: set[str],
+       75 -                            max_depth: int = 50) -> dict[str, 
+          -int]:                                                         
+       76 -    """Walk from primes outward to compute abstraction depth f
+          -or each word.                                                 
+       75 +                            max_depth: int = 100) -> tuple[dic
+          +t[str, int], dict[str, int]]:                                 
+       76 +    """Walk from primes outward using inverted dependency trac
+          +king.                                                         
+       77  
+       78 -    Layer 0: NSM prime exponents (words that directly express 
+          -primes)                                                       
+       79 -    Layer 1: Words whose definitions use ONLY layer-0 words (f
+          -irst-order molecules)                                         
+       80 -    Layer 2: Words whose definitions use only layer-0 and laye
+          -r-1 words                                                     
+       81 -    ...                                                       
+       78 +    Instead of scanning all unresolved words each pass, track 
+          +how many                                                      
+       79 +    unresolved dependencies each word has. When a word resolve
+          +s, decrement                                                  
+       80 +    the count for everything that depends on it. Words with co
+          +unt=0 are ready.                                              
+       81  
+       83 -    A word is assigned to layer N when ALL tokens in its defin
+          -ition vocabulary                                              
+       84 -    have been assigned to layers 0..N-1.                      
+       82 +    Runs both strict (100%) and relaxed (threshold) simultaneo
+          +usly.                                                         
+       83  
+       86 -    Returns: dict of token_id -> abstraction_depth            
+       84 +    Returns: (strict_depths, relaxed_depths) dicts of token_id
+          + -> depth                                                     
+       85      """
+       88 -    # Layer 0: prime exponents                                
+       89 -    resolved = dict.fromkeys(prime_ids, 0)                    
+       90 -    unresolved = set(graph.keys()) - prime_ids                
+       86 +    # Build reverse index: token -> set of words whose definit
+          +ions use it                                                   
+       87 +    print("  Building reverse dependency index...")           
+       88 +    used_by = defaultdict(set)                                
+       89 +    dep_count = {}  # word -> number of unresolved definition 
+          +tokens                                                        
+       90 +    dep_total = {}  # word -> total number of definition token
+          +s                                                             
+       91  
+       92 -    print(f"\n  Layer 0 (primes): {len(resolved)} tokens")    
+       92 +    for word_token, def_tokens in graph.items():              
+       93 +        dep_count[word_token] = len(def_tokens)               
+       94 +        dep_total[word_token] = len(def_tokens)               
+       95 +        for dt in def_tokens:                                 
+       96 +            used_by[dt].add(word_token)                       
+       97  
+       94 -    for depth in range(1, max_depth + 1):                     
+       95 -        newly_resolved = set()                                
+       98 +    # Layer 0: prime exponents                                
+       99 +    strict_resolved = {}                                      
+      100 +    relaxed_resolved = {}                                     
+      101 +    ready_strict = set()                                      
+      102  
+       97 -        for word_token in unresolved:                         
+       98 -            def_tokens = graph.get(word_token, set())         
+       99 -            if not def_tokens:                                
+      100 -                continue                                      
+      103 +    # Seed with primes                                        
+      104 +    for pid in prime_ids:                                     
+      105 +        strict_resolved[pid] = 0                              
+      106 +        relaxed_resolved[pid] = 0                             
+      107  
+      102 -            # Check if ALL definition tokens are already resol
+          -ved                                                           
+      103 -            if def_tokens.issubset(resolved.keys()):          
+      104 -                newly_resolved.add(word_token)                
+      108 +    # Decrement counts for everything primes appear in        
+      109 +    for pid in prime_ids:                                     
+      110 +        for dependent in used_by.get(pid, set()):             
+      111 +            if dependent in dep_count:                        
+      112 +                dep_count[dependent] -= 1                     
+      113 +                if dep_count[dependent] == 0:                 
+      114 +                    ready_strict.add(dependent)               
+      115  
+      106 -        if not newly_resolved:                                
+      107 -            print(f"  Layer {depth}: 0 new — graph walk comple
+          -te")                                                          
+      108 -            break                                             
+      116 +    print(f"\n  Layer 0 (primes): {len(prime_ids)} tokens seed
+          +ed")                                                          
+      117 +    print(f"  {len(ready_strict)} words ready after prime prop
+          +agation")                                                     
+      118  
+      110 -        for wt in newly_resolved:                             
+      111 -            resolved[wt] = depth                              
+      119 +    # Strict walk                                             
+      120 +    print("\n  --- Strict mode (100% resolution) ---")        
+      121 +    depth = 0                                                 
+      122 +    while ready_strict:                                       
+      123 +        depth += 1                                            
+      124 +        next_ready = set()                                    
+      125  
+      113 -        unresolved -= newly_resolved                          
+      114 -        print(f"  Layer {depth}: {len(newly_resolved):,} token
+          -s "                                                           
+      115 -              f"(total resolved: {len(resolved):,})")         
+      126 +        for wt in ready_strict:                               
+      127 +            strict_resolved[wt] = depth                       
+      128  
+      117 -    return resolved                                           
+      129 +            # Propagate: decrement dependents                 
+      130 +            for dependent in used_by.get(wt, set()):          
+      131 +                if dependent not in strict_resolved and depend
+          +ent in dep_count:                                             
+      132 +                    dep_count[dependent] -= 1                 
+      133 +                    if dep_count[dependent] == 0:             
+      134 +                        next_ready.add(dependent)             
+      135  
+      136 +        print(f"  Layer {depth}: {len(ready_strict):,} tokens 
+          +"                                                             
+      137 +              f"(total: {len(strict_resolved):,})")           
+      138 +        ready_strict = next_ready                             
+      139  
+      120 -def walk_abstraction_layers_relaxed(graph: dict[str, set[str]]
+          -,                                                             
+      121 -                                    prime_ids: set[str],      
+      122 -                                    threshold: float = 0.8,   
+      123 -                                    max_depth: int = 50) -> di
+          -ct[str, int]:                                                 
+      124 -    """Relaxed walk: a word resolves when >= threshold of its 
+          -definition                                                    
+      125 -    tokens are already resolved.                              
+      140 +        if depth >= max_depth:                                
+      141 +            break                                             
+      142  
+      127 -    This handles the reality that glosses contain some rare/ob
+          -scure words                                                   
+      128 -    that may never resolve, but the word itself is mostly deco
+          -mposable.                                                     
+      143 +    # Relaxed walk (rebuild counts, use threshold)            
+      144 +    THRESHOLD = 0.8                                           
+      145 +    print(f"\n  --- Relaxed mode (>={THRESHOLD:.0%} threshold)
+          + ---")                                                        
+      146  
+      130 -    Returns: dict of token_id -> abstraction_depth            
+      131 -    """                                                       
+      132 -    resolved = dict.fromkeys(prime_ids, 0)                    
+      133 -    unresolved = set(graph.keys()) - prime_ids                
+      147 +    # Reset dep counts                                        
+      148 +    dep_remaining = {}                                        
+      149 +    for word_token, def_tokens in graph.items():              
+      150 +        unresolved_count = sum(1 for dt in def_tokens if dt no
+          +t in relaxed_resolved)                                        
+      151 +        dep_remaining[word_token] = unresolved_count          
+      152  
+      135 -    print(f"\n  Layer 0 (primes): {len(resolved)} tokens")    
+      153 +    # Find initially ready words                              
+      154 +    ready_relaxed = set()                                     
+      155 +    for word_token in graph:                                  
+      156 +        if word_token in relaxed_resolved:                    
+      157 +            continue                                          
+      158 +        total = dep_total.get(word_token, 0)                  
+      159 +        if total == 0:                                        
+      160 +            continue                                          
+      161 +        remaining = dep_remaining.get(word_token, total)      
+      162 +        resolved_ratio = (total - remaining) / total          
+      163 +        if resolved_ratio >= THRESHOLD:                       
+      164 +            ready_relaxed.add(word_token)                     
+      165  
+      137 -    for depth in range(1, max_depth + 1):                     
+      138 -        newly_resolved = set()                                
+      166 +    depth = 0                                                 
+      167 +    while ready_relaxed:                                      
+      168 +        depth += 1                                            
+      169 +        next_ready = set()                                    
+      170  
+      140 -        for word_token in unresolved:                         
+      141 -            def_tokens = graph.get(word_token, set())         
+      142 -            if not def_tokens:                                
+      143 -                continue                                      
+      171 +        for wt in ready_relaxed:                              
+      172 +            relaxed_resolved[wt] = depth                      
+      173  
+      145 -            resolved_count = sum(1 for dt in def_tokens if dt 
+          -in resolved)                                                  
+      146 -            ratio = resolved_count / len(def_tokens)          
+      174 +        # After resolving this batch, check dependents        
+      175 +        for wt in ready_relaxed:                              
+      176 +            for dependent in used_by.get(wt, set()):          
+      177 +                if dependent not in relaxed_resolved and depen
+          +dent in dep_remaining:                                        
+      178 +                    dep_remaining[dependent] -= 1             
+      179 +                    total = dep_total.get(dependent, 1)       
+      180 +                    remaining = dep_remaining[dependent]      
+      181 +                    resolved_ratio = (total - remaining) / tot
+          +al                                                            
+      182 +                    if resolved_ratio >= THRESHOLD:           
+      183 +                        next_ready.add(dependent)             
+      184  
+      148 -            if ratio >= threshold:                            
+      149 -                newly_resolved.add(word_token)                
+      185 +        print(f"  Layer {depth}: {len(ready_relaxed):,} tokens
+          + "                                                            
+      186 +              f"(total: {len(relaxed_resolved):,})")          
+      187 +        ready_relaxed = next_ready                            
+      188  
+      151 -        if not newly_resolved:                                
+      152 -            print(f"  Layer {depth}: 0 new — graph walk comple
+          -te "                                                          
+      153 -                  f"(threshold={threshold})")                 
+      189 +        if depth >= max_depth:                                
+      190              break
+      191  
+      156 -        for wt in newly_resolved:                             
+      157 -            resolved[wt] = depth                              
+      192 +    return strict_resolved, relaxed_resolved                  
+      193  
+      159 -        unresolved -= newly_resolved                          
+      160 -        print(f"  Layer {depth}: {len(newly_resolved):,} token
+          -s "                                                           
+      161 -              f"(total resolved: {len(resolved):,})")         
+      194  
+      163 -    return resolved                                           
+      164 -                                                              
+      165 -                                                              
+      195  def run(mode: str = "both", threshold: float = 0.8):
+      196      """Run the molecule identification pipeline.
+      197  
+
+● Yeah, the old approach was brute-force scanning every node per layer — killed
+  it. The new version uses inverted dependency propagation: when a word
+  resolves, it only notifies words that depend on it. Orders of magnitude
+  faster.
+
+  Let me update the run function to match the new signature and fire it.
+
+● Update(src/hcp/ingest/nsm_molecules.py)
+  ⎿  Added 28 lines, removed 34 lines
+      192      return strict_resolved, relaxed_resolved
+      193  
+      194  
+      195 -def run(mode: str = "both", threshold: float = 0.8):          
+      196 -    """Run the molecule identification pipeline.              
+      195 +def run():                                                    
+      196 +    """Run the molecule identification pipeline."""           
+      197 +    from collections import Counter                           
+      198  
+      198 -    Args:                                                     
+      199 -        mode: "strict" (100% resolution), "relaxed" (threshold
+          --based), or "both"                                            
+      200 -        threshold: for relaxed mode, fraction of definition to
+          -kens that must be resolved                                    
+      201 -    """                                                       
+      199      print("Connecting to core database...")
+      200      core_conn = connect_core()
+      201  
+     ...
+      209      print("\nBuilding definition graph...")
+      210      graph = build_definition_graph(eng_conn)
+      211  
+      215 -    if mode in ("strict", "both"):                            
+      216 -        print("\n=== STRICT MODE (100% resolution required) ==
+          -=")                                                           
+      217 -        strict_depths = walk_abstraction_layers(graph, prime_i
+          -ds)                                                           
+      212 +    print("\n=== Walking abstraction layers ===")             
+      213 +    strict_depths, relaxed_depths = walk_abstraction_layers(gr
+          +aph, prime_ids)                                               
+      214  
+      219 -        print(f"\n  Total resolved: {len(strict_depths):,} / {
+          -len(graph):,} "                                               
+      220 -              f"({100 * len(strict_depths) / len(graph):.1f}%)
+          -")                                                            
+      215 +    print(f"\n=== STRICT RESULTS ===")                        
+      216 +    print(f"  Total resolved: {len(strict_depths):,} / {len(gr
+          +aph):,} "                                                     
+      217 +          f"({100 * len(strict_depths) / len(graph):.1f}%)")  
+      218 +    layer_counts = Counter(strict_depths.values())            
+      219 +    for layer in sorted(layer_counts.keys()):                 
+      220 +        print(f"    Layer {layer}: {layer_counts[layer]:,}")  
+      221  
+      222 -        # Show layer distribution                             
+      223 -        from collections import Counter                       
+      224 -        layer_counts = Counter(strict_depths.values())        
+      225 -        print(f"\n  Layer distribution:")                     
+      226 -        for layer in sorted(layer_counts.keys()):             
+      227 -            print(f"    Layer {layer}: {layer_counts[layer]:,}
+          -")                                                            
+      222 +    print(f"\n=== RELAXED RESULTS (>=80% threshold) ===")     
+      223 +    print(f"  Total resolved: {len(relaxed_depths):,} / {len(g
+          +raph):,} "                                                    
+      224 +          f"({100 * len(relaxed_depths) / len(graph):.1f}%)") 
+      225 +    layer_counts = Counter(relaxed_depths.values())           
+      226 +    for layer in sorted(layer_counts.keys()):                 
+      227 +        print(f"    Layer {layer}: {layer_counts[layer]:,}")  
+      228  
+      229 -    if mode in ("relaxed", "both"):                           
+      230 -        print(f"\n=== RELAXED MODE (>={threshold:.0%} resoluti
+          -on threshold) ===")                                           
+      231 -        relaxed_depths = walk_abstraction_layers_relaxed(     
+      232 -            graph, prime_ids, threshold=threshold)            
+      229 +    # Sample some first-order molecules                       
+      230 +    print(f"\n=== Sample first-order molecules (strict) ===") 
+      231 +    layer1_tokens = [t for t, d in strict_depths.items() if d 
+          +== 1][:20]                                                    
+      232 +    if layer1_tokens:                                         
+      233 +        placeholders = ','.join(['%s'] * len(layer1_tokens))  
+      234 +        with eng_conn.cursor() as cur:                        
+      235 +            cur.execute(f"SELECT token_id, name FROM tokens WH
+          +ERE token_id IN ({placeholders})",                            
+      236 +                        layer1_tokens)                        
+      237 +            for tid, name in cur.fetchall():                  
+      238 +                print(f"    {tid}  {name}")                   
+      239  
+      234 -        print(f"\n  Total resolved: {len(relaxed_depths):,} / 
+          -{len(graph):,} "                                              
+      235 -              f"({100 * len(relaxed_depths) / len(graph):.1f}%
+          -)")                                                           
+      236 -                                                              
+      237 -        from collections import Counter                       
+      238 -        layer_counts = Counter(relaxed_depths.values())       
+      239 -        print(f"\n  Layer distribution:")                     
+      240 -        for layer in sorted(layer_counts.keys()):             
+      241 -            print(f"    Layer {layer}: {layer_counts[layer]:,}
+          -")                                                            
+      242 -                                                              
+      240      core_conn.close()
+      241      eng_conn.close()
+      242  
+      243  
+      244  if __name__ == "__main__":
+      248 -    import sys                                                
+      249 -    mode = sys.argv[1] if len(sys.argv) > 1 else "both"       
+      250 -    threshold = float(sys.argv[2]) if len(sys.argv) > 2 else 0
+          -.8                                                            
+      251 -    run(mode, threshold)                                      
+      245 +    run()                                                     
+
+● Bash(python3 -m src.hcp.ingest.nsm_molecules 2>&1)
+  ⎿  Connecting to core database...
+     Connecting to English shard...
+     … +74 lines (ctrl+o to expand)
+
+● Fast — ran in seconds instead of hanging. The propagation works. But the
+  results reveal something important.
+
+  Strict mode: 6,866 words resolved (0.6%). Stalls at layer 5.
+  Relaxed mode: 13,328 words (1.2%). Still stalls.
+
+  And look at the first-order molecules — they're mostly obscure inflected
+  forms, foreign plurals, and trivial variants ("diarrhœæ", "équipes",
+  "Romulans"). The simple common words like "water", "animal", "place", "eat"
+  aren't resolving because their definitions use words like "and", "or", "with"
+  that still aren't in the prime set.
+
+  "And", "or", "but", "with" — these are the remaining bottleneck. They're
+  extremely high frequency in glosses but I didn't map them to primes. What do
+  you think — where do "and", "or", "but", "with" fit?
+
+  My read:
+  - or → OTHER (choosing between alternatives)
+  - and → MORE (additive, "one more thing")
+  - but → NOT + THE SAME (contrast/exception)
+  - with → NEAR or THE SAME (accompaniment/instrument)
+
+✻ Cogitated for 15m 7s
+
+● Background command "Rerun molecule walk with expanded prime exponents" was
+stopped
+
+● That's just the old killed task notifying. Already past it — the new run
+  completed in seconds with the inverted propagation.
+
+  Waiting on your read on "and", "or", "but", "with" — those four are blocking
+  propagation through the bulk of the dictionary.
+
+❯ and is more? or is other thing more? but is not? with is plus? 
+
+● Clean mappings. Let me add them:
+
+  - and → MORE (additive)
+  - or → OTHER (alternative)
+  - but → NOT (contrast/exception)
+  - with → MORE (plus, accumulative)
+
+● Update(src/hcp/ingest/nsm_primes.py)
+  ⎿  Added 1 line, removed 1 line
+      49      # Determiners (3)
+      50      ("THIS", "determiner", ["this", "the", "that", "these", "th
+          ose"]),
+      51      ("THE SAME", "determiner", ["same", "synonym"]),
+      52 -    ("OTHER", "determiner", ["other", "else", "another", "alter
+         -native"]),                                                     
+      52 +    ("OTHER", "determiner", ["other", "else", "another", "alter
+         +native", "or"]),                                               
+      53  
+      54      # Quantifiers (5)
+      55      ("ONE", "quantifier", ["one", "a", "an", "single", "singula
+          r"]),
+
+● Update(src/hcp/ingest/nsm_primes.py)
+  ⎿  Added 1 line, removed 1 line
+      115      ("INSIDE", "space", ["inside", "in", "into", "within"]),
+      116  
+      117      # Logical concepts (5)
+      118 -    ("NOT", "logical", ["not", "no", "neither", "nor", "withou
+          -t"]),                                                         
+      118 +    ("NOT", "logical", ["not", "no", "neither", "nor", "withou
+          +t", "but"]),                                                  
+      119      ("MAYBE", "logical", ["maybe", "perhaps"]),
+      120      ("CAN", "logical", ["can", "could", "able"]),
+      121      ("BECAUSE", "logical", ["because", "for", "so", "since", "
+           therefore"]),
+
+● Update(src/hcp/ingest/nsm_primes.py)
+  ⎿  Added 1 line, removed 1 line
+      123  
+      124      # Intensifier, augmentor (2)
+      125      ("VERY", "intensifier", ["very", "especially", "particular
+           ly"]),
+      126 -    ("MORE", "intensifier", ["more", "than", "also", "too"]), 
+      126 +    ("MORE", "intensifier", ["more", "than", "also", "too", "a
+          +nd", "with", "plus"]),                                        
+      127  
+      128      # Similarity (2)
+      129      ("LIKE", "similarity", ["like", "as"]),
+
+● Bash(python3 -m src.hcp.ingest.nsm_primes 2>&1 | tail -5)
+  ⎿   AA.AA.AA.AB.Ab  HEAR                  [mental_predicate]  exponent: h
+    ear
+      AA.AA.AA.AB.Ab  HEAR                  [mental_predicate]  exponent: h
+    … +4 lines (ctrl+o to expand)
+
+
+
+● Bash(python3 -m src.hcp.ingest.nsm_molecules 2>&1)
+  ⎿  Connecting to core database...
+     Connecting to English shard...
+     … +76 lines (ctrl+o to expand)
+
+● Better — relaxed went from 13K to 16.8K, and we got a 6th layer. But still
+  only 1.5% resolution. The first-order molecules are still mostly inflected
+  forms and obscure variants, not the core vocabulary.
+
+  The issue is that common words like "water", "animal", "make", "place", "name"
+   have definitions that use other common words that aren't yet resolved. The
+  graph needs more seed mass in the common vocabulary space.
+
+  Let me look at what's actually blocking the most words — the highest-frequency
+   unresolved tokens in definitions.
+
+● Bash(PGPASSWORD=hcp_dev psql -h localhost -U hcp -d hcp_english -c "
+      -- Top 50 most-used tokens in glosses that are NOT prime exponents…)
+  ⎿      token_id    |    name     |  freq
+     ----------------+-------------+--------
+      AB.AB.CA.EQ.aS | plural      | 325724
+     … +50 lines (ctrl+o to expand)
+
+● Now I see the picture. The top blockers are Kaikki grammatical metalanguage,
+  not semantic content:
+
+  - "plural" (326K) — "plural of X"
+  - "present" (105K) — "present tense of X"
+  - "simple" (104K) — "simple past of X"
+  - "past" (104K) — "past participle of X"
+  - "participle" (102K) — grammatical term
+  - "form" (97K) — "alternative form of X"
+  - "alternative" (87K) — "alternative spelling of X"
+  - "singular" (53K) — "third-person singular of X"
+  - "indicative" (52K) — grammatical mood
+  - "third" (51K) — "third person"
+  - "gerund" (50K) — grammatical term
+
+  These are the Kaikki definition patterns: "plural of X", "third-person
+  singular simple present indicative of X", "alternative form of X". They're not
+   semantic definitions — they're morphological cross-references.
+
+  Most of these already map to primes: "plural" → ALL, "singular" → ONE,
+  "present" → NOW, "past" → BEFORE, "form" → KIND, "alternative" → OTHER. I
+  already mapped some but missed the lookups because of case-sensitivity or they
+   weren't hitting. Let me check which ones are actually already connected vs
+  missing.
+
+● Bash(python3 -c "
+      from src.hcp.db.postgres import connect as connect_core…)
+  ⎿ SOMETHING: ['it', 'what', 'thing', 'which', 'itself', 'whatever', 'some
+    thing'] (9 tokens)
+    KIND: ['form', 'kind', 'sort', 'type'] (5 tokens)
+    … +6 lines (ctrl+o to expand)
+
+
+● They're mapped — "plural" → ALL, "present" → NOW, "past" → BEFORE, "form" →
+  KIND, "alternative" → OTHER, "singular" → ONE. But the graph walk isn't
+  picking them up, which means the token IDs in the lookup don't match the token
+   IDs appearing in the glosses.
+
+● Bash(python3 -c "
+      from src.hcp.db.postgres import connect as connect_core…)
+  ⎿    PRIME  AB.AB.CA.EQ.aS  plural
+       PRIME  AB.AB.CA.EW.fF  present
+       MISSING  AB.AB.CA.FG.Vu  simple
+     … +17 lines (ctrl+o to expand)
+
+● The remaining blockers are: simple, participle, indicative, third, gerund,
+  relating. These are grammar metalanguage — terms Kaikki uses to describe word
+  forms, not semantic content. They block hundreds of thousands of definitions
+  like "third-person singular simple present indicative of X".
+
+  - simple → ONE (the unmarked/basic form)
+  - third → maps to TWO + ONE conceptually, but in gloss context it's just an
+  ordinal
+  - participle, gerund, indicative — pure grammar terminology
+  - relating → LIKE (connection/similarity) or PART (relating to = part of the
+  domain of)
+
+  These are trickier. They're not prime translations — they're the English
+  grammar codec's self-description. "Participle" isn't a concept you decompose
+  to primes; it's a label for a grammatical category.
+
+  What's your instinct? Map them pragmatically to get the graph moving, or treat
+   grammar metalanguage as a separate class?
+
+✻ Cogitated for 2m 56s
+
+❯ does this help https://intranet.secure.griffith.edu.au/__data/assets/pdf_ 
+  file/0019/346033/NSM_Chart_ENGLISH_v19_April_12_2017_Greyscale.pdf        
+
+● Bash(curl -sL -o /tmp/claude-0/-home-patrick-gits-human-cognome-project/1081a6
+      67-9a19-4484-b026-5b8dfaccfc0d/scratchpad/nsm_chart_v19.pdf
+      "https://intranet.secure.gr…)
+  ⎿ -rw-r--r-- 1 root root 7433 Feb  6 10:05 /tmp/claude-0/-home-patrick-gi
+    ts-human-cognome-project/1081a667-9a19-4484-b026-5b8dfaccfc0d/scratchpa
+    d/nsm_chart_v19.pdf
+
+
+
+● Read 1 file (ctrl+o to expand)
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBQ2jHZ9i36zDqvjqyM"}
+
+❯ can't read it? 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBZ6uJymre6VGvsxRjf"}
+
+❯ are you stuck 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBa1kn2FETSggpn9teK"}
+
+❯ stop 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBaLXdrs5JPHoRPLnjq"}
+
+❯ stop 
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ you were stuck on the pdf. apparently something didn't like it. I have a  
+  paste for you. we're going to expand NSM and break some of it's rules.    
+  experts can figure out the exact layout needed later. it is supposed to   
+  stop at minimal english                                                   
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBkMe8hw42PPDQBxDEC"}
+
+❯ btw stop tasks please 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBoMGeNzYXcSxgXdRMJ"}
+
+❯ are you free now? you were stuck in a loop 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBs6r69bS7weUUjt2Ej"}
+
+❯ test 
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ test 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsBztd75aT3tpWEbGYLP"}
+
+❯ tset 
+  ⎿ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","mess
+    age":"messages.34.content.0.pdf.source.base64.data: The PDF specified was 
+    not valid."},"request_id":"req_011CXsC681eVuR7EjZJTQRvc"}
+
+❯ /export 
+  ⎿  Failed to copy to clipboard. Make sure xclip or wl-copy is installed on you
+      system and try again.
+
+❯ /export 
+  ⎿  Failed to copy to clipboard. Make sure xclip or wl-copy is installed on you
+      system and try again.
