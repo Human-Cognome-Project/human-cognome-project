@@ -1,0 +1,427 @@
+[
+  {
+    "id": 84,
+    "title": "Frankenstein; Or, The Modern Prometheus",
+    "authors": [
+      {
+        "name": "Shelley, Mary Wollstonecraft",
+        "birth_year": 1797,
+        "death_year": 1851
+      }
+    ],
+    "subjects": [
+      "Frankenstein's monster (Fictitious character) -- Fiction",
+      "Frankenstein, Victor (Fictitious character) -- Fiction",
+      "Gothic fiction",
+      "Horror tales",
+      "Monsters -- Fiction",
+      "Science fiction",
+      "Scientists -- Fiction"
+    ],
+    "bookshelves": [
+      "Category: British Literature",
+      "Category: Classics of Literature",
+      "Category: Novels",
+      "Category: Science-Fiction & Fantasy",
+      "Gothic Fiction",
+      "Movie Books",
+      "Precursors of Science Fiction",
+      "Science Fiction by Women"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 135937,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/84.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/84.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/84.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/84.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/84/pg84.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/84/pg84-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/84.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/84/84-0.txt"
+    }
+  },
+  {
+    "id": 2701,
+    "title": "Moby Dick; Or, The Whale",
+    "authors": [
+      {
+        "name": "Melville, Herman",
+        "birth_year": 1819,
+        "death_year": 1891
+      }
+    ],
+    "subjects": [
+      "Adventure stories",
+      "Ahab, Captain (Fictitious character) -- Fiction",
+      "Mentally ill -- Fiction",
+      "Psychological fiction",
+      "Sea stories",
+      "Ship captains -- Fiction",
+      "Whales -- Fiction",
+      "Whaling -- Fiction",
+      "Whaling ships -- Fiction"
+    ],
+    "bookshelves": [
+      "Best Books Ever Listings",
+      "Category: Adventure",
+      "Category: American Literature",
+      "Category: Classics of Literature",
+      "Category: Novels"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 114793,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/2701.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/2701.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/2701.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/2701.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/2701/pg2701.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/2701/pg2701-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/2701.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/2701/2701-0.txt"
+    }
+  },
+  {
+    "id": 1342,
+    "title": "Pride and Prejudice",
+    "authors": [
+      {
+        "name": "Austen, Jane",
+        "birth_year": 1775,
+        "death_year": 1817
+      }
+    ],
+    "subjects": [
+      "Courtship -- Fiction",
+      "Domestic fiction",
+      "England -- Fiction",
+      "Love stories",
+      "Sisters -- Fiction",
+      "Social classes -- Fiction",
+      "Young women -- Fiction"
+    ],
+    "bookshelves": [
+      "Best Books Ever Listings",
+      "Category: British Literature",
+      "Category: Classics of Literature",
+      "Category: Novels",
+      "Category: Romance",
+      "Harvard Classics"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 82842,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/1342.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/1342.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/1342.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/1342.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/1342/pg1342-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/1342.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/1342/1342-0.txt"
+    }
+  },
+  {
+    "id": 2641,
+    "title": "A Room with a View",
+    "authors": [
+      {
+        "name": "Forster, E. M. (Edward Morgan)",
+        "birth_year": 1879,
+        "death_year": 1970
+      }
+    ],
+    "subjects": [
+      "British -- Italy -- Fiction",
+      "England -- Fiction",
+      "Florence (Italy) -- Fiction",
+      "Humorous stories",
+      "Young women -- Fiction"
+    ],
+    "bookshelves": [
+      "Category: British Literature",
+      "Category: Novels",
+      "Category: Romance",
+      "Italy"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 55377,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/2641.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/2641.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/2641.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/2641.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/2641/pg2641.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/2641/pg2641-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/2641.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/2641/2641-0.txt"
+    }
+  },
+  {
+    "id": 145,
+    "title": "Middlemarch",
+    "authors": [
+      {
+        "name": "Eliot, George",
+        "birth_year": 1819,
+        "death_year": 1880
+      }
+    ],
+    "subjects": [
+      "Bildungsromans",
+      "City and town life -- Fiction",
+      "Didactic fiction",
+      "Domestic fiction",
+      "England -- Fiction",
+      "Love stories",
+      "Married people -- Fiction",
+      "Young women -- Fiction"
+    ],
+    "bookshelves": [
+      "Best Books Ever Listings",
+      "Category: British Literature",
+      "Category: Classics of Literature",
+      "Category: Novels",
+      "Historical Fiction"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 54079,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/145.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/145.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/145.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/145.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/145/pg145.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/145/pg145-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/145.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/145/145-0.txt"
+    }
+  },
+  {
+    "id": 43,
+    "title": "The Strange Case of Dr. Jekyll and Mr. Hyde",
+    "authors": [
+      {
+        "name": "Stevenson, Robert Louis",
+        "birth_year": 1850,
+        "death_year": 1894
+      }
+    ],
+    "subjects": [
+      "Horror tales",
+      "London (England) -- Fiction",
+      "Multiple personality -- Fiction",
+      "Physicians -- Fiction",
+      "Psychological fiction",
+      "Science fiction",
+      "Self-experimentation in medicine -- Fiction"
+    ],
+    "bookshelves": [
+      "Category: British Literature",
+      "Category: Classics of Literature",
+      "Category: Crime, Thrillers and Mystery",
+      "Category: Novels",
+      "Horror",
+      "Movie Books",
+      "Precursors of Science Fiction"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 53674,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/43.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/43.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/43.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/43.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/43/pg43.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/files/43/43-0.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/43.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/43/43-0.txt"
+    }
+  },
+  {
+    "id": 11,
+    "title": "Alice's Adventures in Wonderland",
+    "authors": [
+      {
+        "name": "Carroll, Lewis",
+        "birth_year": 1832,
+        "death_year": 1898
+      }
+    ],
+    "subjects": [
+      "Alice (Fictitious character from Carroll) -- Juvenile fiction",
+      "Children's stories",
+      "Fantasy fiction",
+      "Imaginary places -- Juvenile fiction"
+    ],
+    "bookshelves": [
+      "Category: British Literature",
+      "Category: Children & Young Adult Reading",
+      "Category: Classics of Literature",
+      "Category: Novels",
+      "Children's Literature"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 52940,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/11.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/11.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/11.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/11.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/11/pg11.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/11/pg11-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/11.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/11/11-0.txt"
+    }
+  },
+  {
+    "id": 2554,
+    "title": "Crime and Punishment",
+    "authors": [
+      {
+        "name": "Dostoyevsky, Fyodor",
+        "birth_year": 1821,
+        "death_year": 1881
+      }
+    ],
+    "subjects": [
+      "Crime -- Psychological aspects -- Fiction",
+      "Detective and mystery stories",
+      "Murder -- Fiction",
+      "Psychological fiction",
+      "Saint Petersburg (Russia) -- Fiction"
+    ],
+    "bookshelves": [
+      "Best Books Ever Listings",
+      "Category: Classics of Literature",
+      "Category: Crime, Thrillers and Mystery",
+      "Category: Novels",
+      "Category: Russian Literature",
+      "Crime Fiction",
+      "Harvard Classics"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 50199,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/2554.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/2554.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/2554.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/2554.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/2554/pg2554.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/2554/pg2554-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/2554.txt.utf-8"
+    }
+  },
+  {
+    "id": 37106,
+    "title": "Little Women; Or, Meg, Jo, Beth, and Amy",
+    "authors": [
+      {
+        "name": "Alcott, Louisa May",
+        "birth_year": 1832,
+        "death_year": 1888
+      }
+    ],
+    "subjects": [
+      "Autobiographical fiction",
+      "Bildungsromans",
+      "Domestic fiction",
+      "Family life -- New England -- Fiction",
+      "March family (Fictitious characters) -- Fiction",
+      "Mothers and daughters -- Fiction",
+      "New England -- Fiction",
+      "Sisters -- Fiction",
+      "Young women -- Fiction"
+    ],
+    "bookshelves": [
+      "Category: American Literature",
+      "Category: Children & Young Adult Reading",
+      "Category: Classics of Literature",
+      "Category: Novels"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 49985,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/37106.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/37106.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/37106.kf8.images",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/ebooks/37106.txt.utf-8",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/37106.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/37106/pg37106.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/37106/pg37106-h.zip"
+    }
+  },
+  {
+    "id": 1260,
+    "title": "Jane Eyre: An Autobiography",
+    "authors": [
+      {
+        "name": "Bront\u00eb, Charlotte",
+        "birth_year": 1816,
+        "death_year": 1855
+      }
+    ],
+    "subjects": [
+      "Bildungsromans",
+      "Charity-schools -- Fiction",
+      "Country homes -- Fiction",
+      "England -- Fiction",
+      "Fathers and daughters -- Fiction",
+      "Governesses -- Fiction",
+      "Love stories",
+      "Married people -- Fiction",
+      "Mentally ill women -- Fiction",
+      "Orphans -- Fiction",
+      "Young women -- Fiction"
+    ],
+    "bookshelves": [
+      "Category: British Literature",
+      "Category: Classics of Literature",
+      "Category: Novels",
+      "Category: Romance"
+    ],
+    "languages": [
+      "en"
+    ],
+    "copyright": false,
+    "download_count": 45255,
+    "formats": {
+      "text/html": "https://www.gutenberg.org/ebooks/1260.html.images",
+      "application/epub+zip": "https://www.gutenberg.org/ebooks/1260.epub3.images",
+      "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/1260.kf8.images",
+      "application/rdf+xml": "https://www.gutenberg.org/ebooks/1260.rdf",
+      "image/jpeg": "https://www.gutenberg.org/cache/epub/1260/pg1260.cover.medium.jpg",
+      "application/octet-stream": "https://www.gutenberg.org/cache/epub/1260/pg1260-h.zip",
+      "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/1260.txt.utf-8",
+      "text/plain; charset=us-ascii": "https://www.gutenberg.org/files/1260/1260-0.txt"
+    }
+  }
+]
