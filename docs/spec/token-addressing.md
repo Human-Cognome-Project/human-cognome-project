@@ -60,14 +60,16 @@ Letters-only also avoids digit/letter ambiguity in mixed contexts. The only excl
 | `v*`        | People entities (specific named individuals) |
 | `w*`        | Place entities (specific named locations) |
 | `x*`        | Thing entities (specific named things/orgs, common labels like months/days) |
-| `y*`        | Name components — the shared atoms that People/Places/Things decompose to |
+| ~~`y*`~~    | ~~Name components~~ — **RETIRED.** See [Decision 002](../decisions/002-names-shard-elimination.md) |
 | `z*`        | Replicable source PBMs — created works, documents, stored expressions |
 
-The upper range (`v`–`z`) places entities, name components, and stored works at the end of sort order, visually distinct from structural/computational and linguistic namespaces. These namespaces are cross-linguistic — name components and entities belong to all language shards, not any single one.
+The upper range (`v`–`z`) places entities and stored works at the end of sort order, visually distinct from structural/computational and linguistic namespaces. Entity namespaces are cross-linguistic — entities belong to all language shards, not any single one.
 
-Every entity in `v*`, `w*`, or `x*` must atomize to name components in `y*`, even when the entity has only a single component. This mirrors the atomization chain at every other LoD level (phrases → words → characters → bytes).
+Every entity in `v*`, `w*`, or `x*` atomizes to word tokens in the appropriate language shard (e.g. AB.AB for English). A "name" is a Proper Noun construct — a bond pattern assembled from word tokens — not a token-level attribute. Words that function as names carry capitalized form variants and may have PoS = `label` if they have no independent dictionary definition.
 
 The full space per prefix (50 second-pair values × deeper pairs) provides extensive room for growth. People, Places, and Things each get their own prefix due to expected rapid growth as sources are ingested.
+
+> **Planned change:** The entity namespaces (`v*`, `w*`, `x*`) will eventually shift to sequential allocation rather than scattered single-letter prefixes. Current allocation is provisional.
 
 ## LoD-Dependent Addressing
 

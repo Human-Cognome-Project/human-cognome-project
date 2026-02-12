@@ -135,16 +135,11 @@ Each layer atomizes to the layer below (or to characters if at word level).
 | EB | prep_phrase | 2,864 |
 | EC | proverb | 1,530 |
 
-### Name Components Mode (yA)
+### ~~Name Components Mode (yA)~~ — RETIRED
 
-```
-yA                              Name components (cross-linguistic)
-└── yA.{n}.{n}                  150,528 name component tokens
-```
+> **Decision 002 (2026-02-12):** The yA namespace and hcp_names database are retired. A "name" is a Proper Noun construct (bond pattern), not a token property. Name-bearing words move to hcp_english as regular tokens with capitalized form variants. Words that are only names get PoS = `label`. See [Decision 002](../decisions/002-names-shard-elimination.md).
 
-Name components are single words that appear in proper nouns: personal names, place names, organization names, temporal labels (months, days), etc. They are cross-linguistic — shared across all language shards.
-
-Every entity in v*/w*/x* (People/Places/Things) atomizes to name components in y*.
+The hcp_names database (~150,528 tokens) is preserved pending migration of useful data into hcp_english.
 
 ### Entity Modes (v*, w*, x*) — Reserved
 
@@ -154,7 +149,9 @@ wA.*                            Place entities (future)
 xA.*                            Thing entities (future)
 ```
 
-Specific named entities. Each atomizes to y* name components.
+Specific named entities. Each atomizes to word tokens in the appropriate language shard (e.g. AB.AB for English words). A Proper Noun is a bond pattern assembled from word tokens — the entity namespace records the construct, while the component words live in their language shard.
+
+> **Planned change:** These namespaces will eventually shift to sequential allocation rather than scattered single-letter prefixes. Current allocation is provisional.
 
 ### Source PBM Mode (zA) — Reserved
 
