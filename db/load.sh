@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 # load.sh — Load SQL dumps into local PostgreSQL
 #
-# Usage: ./db/load.sh [core|english|all]
+# Usage: ./db/load.sh [core|english|names|all]
 # Default: all
+#
+# Environment:
+#   HCP_DB_USER  — PostgreSQL user (default: hcp)
+#   HCP_DB_HOST  — PostgreSQL host (default: localhost)
+#   PGPASSWORD   — PostgreSQL password (set externally or defaults to hcp_dev)
 
 set -euo pipefail
 
-DB_USER="hcp"
-DB_HOST="localhost"
+DB_USER="${HCP_DB_USER:-hcp}"
+DB_HOST="${HCP_DB_HOST:-localhost}"
 SCRIPT_DIR="$(dirname "$0")"
+export PGPASSWORD="${PGPASSWORD:-hcp_dev}"
 
 load_db() {
     local dbname="$1"
@@ -18,7 +24,7 @@ load_db() {
         return
     fi
     echo "Loading $sqlfile into $dbname..."
-    PGPASSWORD="hcp_dev" psql -U "$DB_USER" -h "$DB_HOST" -d "$dbname" -f "$sqlfile" -q
+    psql -U "$DB_USER" -h "$DB_HOST" -d "$dbname" -f "$sqlfile" -q
     echo "  Done."
 }
 
@@ -31,12 +37,16 @@ case "$TARGET" in
     english)
         load_db "hcp_english" "$SCRIPT_DIR/english.sql"
         ;;
+    names)
+        load_db "hcp_names" "$SCRIPT_DIR/names.sql"
+        ;;
     all)
         load_db "hcp_core" "$SCRIPT_DIR/core.sql"
         load_db "hcp_english" "$SCRIPT_DIR/english.sql"
+        load_db "hcp_names" "$SCRIPT_DIR/names.sql"
         ;;
     *)
-        echo "Usage: $0 [core|english|all]"
+        echo "Usage: $0 [core|english|names|all]"
         exit 1
         ;;
 esac
