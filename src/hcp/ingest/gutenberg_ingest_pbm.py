@@ -15,8 +15,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from collections import Counter
-import psycopg2
-from psycopg2.extras import execute_values
+import psycopg
 
 
 @dataclass
@@ -199,21 +198,21 @@ class GutenbergPBMIngester:
 
     def __init__(self):
         # Connect to databases
-        self.conn_pbm = psycopg2.connect(
+        self.conn_pbm = psycopg.connect(
             host="localhost",
-            database="hcp_en_pbm",
+            dbname="hcp_en_pbm",
             user="hcp",
             password="hcp_dev"
         )
-        self.conn_english = psycopg2.connect(
+        self.conn_english = psycopg.connect(
             host="localhost",
-            database="hcp_english",
+            dbname="hcp_english",
             user="hcp",
             password="hcp_dev"
         )
-        self.conn_names = psycopg2.connect(
+        self.conn_names = psycopg.connect(
             host="localhost",
-            database="hcp_names",
+            dbname="hcp_names",
             user="hcp",
             password="hcp_dev"
         )
@@ -342,9 +341,8 @@ class GutenbergPBMIngester:
                 for (token0, token1), count in bond_counts.items()
             ]
 
-            execute_values(
-                cur,
-                "INSERT INTO fpb_bonds (doc_token_id, token0_id, token1_id, fbr) VALUES %s",
+            cur.executemany(
+                "INSERT INTO fpb_bonds (doc_token_id, token0_id, token1_id, fbr) VALUES (%s, %s, %s, %s)",
                 bond_data
             )
 
