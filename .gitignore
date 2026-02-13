@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 *.egg-info/
+.venv/
+.pytest_cache/
 
 # Data downloads (fetched by sources/fetch.sh)
 sources/data/
