@@ -16,5 +16,10 @@ sources/data/
 *.swp
 .DS_Store
 
-# Claude
+# Claude / MCP
 .claude/
+.mcp.json
+
+# Local infrastructure notes
+infra/
+resources/
