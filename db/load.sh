@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # load.sh — Load SQL dumps into local PostgreSQL
 #
-# Usage: ./db/load.sh [core|english|names|all]
+# Usage: ./db/load.sh [core|english|all]
 # Default: all
 #
 # Environment:
@@ -37,16 +37,12 @@ case "$TARGET" in
     english)
         load_db "hcp_english" "$SCRIPT_DIR/english.sql"
         ;;
-    names)
-        load_db "hcp_names" "$SCRIPT_DIR/names.sql"
-        ;;
     all)
         load_db "hcp_core" "$SCRIPT_DIR/core.sql"
         load_db "hcp_english" "$SCRIPT_DIR/english.sql"
-        load_db "hcp_names" "$SCRIPT_DIR/names.sql"
         ;;
     *)
-        echo "Usage: $0 [core|english|names|all]"
+        echo "Usage: $0 [core|english|all]"
         exit 1
         ;;
 esac
