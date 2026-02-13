@@ -3,10 +3,6 @@ __pycache__/
 *.pyc
 *.egg-info/
 
-# Godot
-.godot/
-*.import
-
 # Data downloads (fetched by sources/fetch.sh)
 sources/data/
 
