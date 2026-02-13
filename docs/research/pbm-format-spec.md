@@ -9,12 +9,12 @@
 
 ## 1. Overview
 
-A PBM (Pattern-Based Memory) is a faithful, lossless encoding of content in HCP's own token representation. This document specifies:
+A PBM (Pair Bond Map) is a faithful, lossless encoding of content in HCP's own token representation. This document specifies:
 
 1. How PBM content is physically stored (Section 2)
 2. What structural marker tokens are needed (Section 3)
-3. How the zA namespace organizes PBM storage (Section 4)
-4. What metadata accompanies a PBM (Section 5)
+3. Namespace organization — fiction/non-fiction split and entity references (Section 4)
+4. What metadata accompanies a PBM, including copyright/IP (Section 5)
 5. The complete database schema for hcp_en_pbm (Section 6)
 
 ### Design Principles
@@ -23,6 +23,8 @@ A PBM (Pattern-Based Memory) is a faithful, lossless encoding of content in HCP'
 - **Store what can't be computed.** Inter-word whitespace, positional capitalization, line breaks, and alignment geometry are all deterministic from the token sequence plus structural markers. They are NOT stored.
 - **Decomposed references everywhere.** Per Decision 005, every token reference uses the (ns, p2, p3, p4, p5) decomposed pair structure with a generated `token_id` column. No monolithic ID strings. No JSONB arrays. No TEXT[] arrays.
 - **Immutable source PBMs.** A source PBM is never modified after creation. Processing or extraction produces new (derived) PBMs linked to the source via metadata.
+- **Fiction/non-fiction separation.** Following established library science principles, fiction and non-fiction occupy completely separate namespace ranges with no shared entity space. This prevents entity collision ("Paris" the city vs. "Paris" the Trojan prince) and allows each domain to maintain its own internal relationship graph.
+- **Library science foundations.** PBM organization leans on established cataloging and classification principles where they apply. The fiction/non-fiction split, document type taxonomy, and provenance tracking all draw from library science practice.
 
 ---
 
@@ -64,7 +66,19 @@ Given a PBM's content stream (ordered by position), reconstruction proceeds left
 
 The reconstruction rules are not stored in the PBM. They will live in the engine's rule tables (future work, stored in the databases as tokenized callable formulas per the design notes).
 
-### 2.4 Example: A Simple Paragraph
+### 2.4 Capitalization Handling
+
+Capitalization in PBMs is resolved through three mechanisms. No separate shift-cap modifier token exists or is needed.
+
+1. **Positional capitalization** (sentence-initial, after sentence-ending punctuation, paragraph-initial): computed by reconstruction rules, NOT stored. The engine applies the rule: "after closing punctuation followed by whitespace, capitalize the first alphanumeric of the next word." This is structural and deterministic.
+
+2. **Names and proper nouns**: the correct capitalized spelling IS the token. Label tokens in the language shard (AB namespace) have capitalization baked into their atomization — they decompose to capital byte codes. The scanner does exact match first and only relaxes case if no exact match is found. The PBM simply references the token as it exists; no modifier is needed.
+
+3. **ALL CAPS emphasis**: uses the `all_caps_start`/`all_caps_end` inline formatting markers (AA.AE.AB.AM/AN). Content tokens between these markers are rendered in all-caps by the reconstruction engine.
+
+There is no shift-cap token, no case-modifier token, and no per-word capitalization flag. Capitalization is either structural (computed), inherent (baked into the token), or emphatic (formatting marker).
+
+### 2.5 Example: A Simple Paragraph
 
 Source text:
 > The **quick** brown fox jumped over the lazy dog. It was *very* fast.
@@ -284,34 +298,76 @@ All 91 tokens are universal (not language-specific) and belong in hcp_core.
 
 ---
 
-## 4. zA Namespace Organization
+## 4. Namespace Organization
 
-### 4.1 Existing Allocation
+### 4.1 Fiction / Non-Fiction Split
 
-From namespace_allocations in hcp_core:
+The most fundamental organizational principle — drawn from library science — is the complete separation of fiction and non-fiction. These are **separate worlds with separate entity spaces**. Each side gets 4 namespace letters: one for PBMs (documents) and three for entities (people, places, things).
+
+**Non-fiction (upper range — source data):**
+
+| Prefix | Purpose | Contents |
+|--------|---------|----------|
+| z* | PBMs | Non-fiction documents, factual content, reference works |
+| y* | People entities | Real people (historical, contemporary) |
+| x* | Place entities | Real places (geographic, political) |
+| w* | Thing entities | Real things, organizations, concepts |
+
+**Fiction (lower range):**
+
+| Prefix | Purpose | Contents |
+|--------|---------|----------|
+| v* | PBMs | Fiction documents, literary works |
+| u* | People entities | Characters (literary, mythological) |
+| t* | Place entities | Fictional locations (Middle-earth, Narnia) |
+| s* | Thing entities | Fictional objects, concepts, organizations |
+
+**Why this matters:**
+- "Paris" in non-fiction = the city in France (x* entity, factual relationships)
+- "Paris" in fiction = could be a Trojan prince (u* entity) or the real city used in a fictional context
+- Fictional entity databases can be enormous — Tolkien's Middle-earth, Sanderson's Cosmere, the Marvel universe
+- Separate namespace ranges prevent any collision; each domain maintains its own internal relationship graph
+- Proper noun resolution during ingestion routes to the correct entity DB based on fiction/non-fiction classification
+
+Both sides share the same language shards (AB for English), the same structural tokens (AA), and the same PBM content format. Only the namespace prefixes differ.
+
+> **Note:** This allocation is the current working scheme and may shift in the future. The principle (fiction/non-fiction separation with dedicated entity namespaces per side) is stable; the specific letter assignments are provisional.
+
+### 4.2 PBM Namespace Structure
+
+Within the PBM namespaces (z* for non-fiction, v* for fiction), the internal structure is identical:
 
 ```
-z*              Source PBMs (mode)
-zA              Source PBMs (Universal) — shard: hcp_en_pbm
-├── zA.AA       Source PBMs (Universal Direct) — byte-level computational content
-│   └── zA.AA.AA.AA.{count}  Encoding table source PBMs
-├── zA.AB       Source PBMs (Text Mode) — text-mode content
-│   ├── zA.AB.A*   Tables (A=CSV, B=TSV, C=SSV, etc.)
-│   ├── zA.AB.B*   Dictionaries
-│   └── zA.AB.C*   Books
+z*                          Non-fiction PBMs
+├── zA                      Universal/text-mode PBMs — shard: hcp_en_pbm
+│   ├── zA.AA               Byte-level computational content
+│   │   └── zA.AA.AA.AA.{n} Encoding table source PBMs
+│   └── zA.AB               Text-mode content
+│       ├── zA.AB.A*         Tables (A=CSV, B=TSV, C=SSV, etc.)
+│       ├── zA.AB.B*         Dictionaries, lexicons, reference works
+│       ├── zA.AB.C*         Books (non-fiction)
+│       ├── zA.AB.D*         Articles, papers, essays
+│       └── zA.AB.E*         Correspondence, letters, messages
+│
+v*                          Fiction PBMs
+├── vA                      Fiction text-mode PBMs — shard: TBD
+│   └── vA.AB               Text-mode fiction content
+│       ├── vA.AB.C*         Books (fiction)
+│       ├── vA.AB.D*         Stories, scripts, screenplays
+│       └── vA.AB.E*         Poetry, lyrics
 ```
 
-### 4.2 Addressing Convention
+### 4.3 Addressing Convention
 
-The zA.AB 3rd pair uses **double-duty encoding** (1st character = document type, 2nd character = format variant):
+The 3rd pair uses **double-duty encoding** (1st character = document type, 2nd character = format variant):
 
 | 1st char | Document type | Examples |
 |----------|--------------|----------|
 | A | Table-form | CSV, TSV, SSV data |
 | B | Dictionary-form | Lexicons, glossaries, reference works |
 | C | Book-form | Monographs, textbooks, novels |
-| D | Article-form | Journal articles, essays, papers |
-| E | Correspondence | Letters, emails, messages |
+| D | Article-form | Journal articles, essays, papers, stories |
+| E | Correspondence | Letters, emails, messages, poetry |
 | F-Z, a-z | Reserved | Future document types |
 
 | 2nd char | Variant meaning |
@@ -319,7 +375,7 @@ The zA.AB 3rd pair uses **double-duty encoding** (1st character = document type,
 | A | Primary/canonical form |
 | B-Z, a-z | Alternate forms, editions, or format variants |
 
-### 4.3 Document Addressing
+### 4.4 Document Addressing
 
 A complete PBM token ID:
 
@@ -330,16 +386,31 @@ zA.AB.CA.AA.AA
 │  │  │└─────── Format variant (A = primary)
 │  │  └──────── Document type (C = book)
 │  └─────────── Text mode content
-└────────────── Source PBM mode
+└────────────── Non-fiction PBM mode
 ```
 
 The 4th and 5th pairs address individual documents and subdivisions within a document type + variant. With 2,500 values per pair:
 - Pair 4 alone: 2,500 document series per type+variant
 - Pairs 4+5: 6.25 million individual documents per type+variant
 
-### 4.4 Derived PBMs
+### 4.5 Entity References from PBMs
 
-A derived PBM (e.g., extracted article content from an HTML page) gets its own token ID in the zA namespace. It is a first-class PBM — structurally identical to a source PBM. The derivation relationship is recorded in metadata (see Section 5.5), not in the address.
+When a proper noun appears in text being encoded into a PBM:
+
+1. The **surface form** (label token) lives in the language shard (AB namespace) with correct capitalization baked into the token's atomization. The PBM content stream references this label token.
+2. The **entity reference** lives in the appropriate entity DB (y*/x*/w* for non-fiction, u*/t*/s* for fiction). This link is recorded in position-anchored metadata (key=`entity_ref`, value=entity token ID).
+3. The PBM content stream stays purely about surface text. Entity resolution is a metadata concern.
+
+This clean separation means:
+- The content stream is readable without entity resolution
+- Entity DBs can be populated and refined independently of PBMs
+- The same label token ("Paris") can link to different entities depending on context (non-fiction vs. fiction)
+
+The entity DB schema itself is being designed by a separate librarian specialist. The PBM format's only requirement is the ability to reference into those DBs via position-anchored metadata, which the `entity_ref` key provides.
+
+### 4.6 Derived PBMs
+
+A derived PBM (e.g., extracted article content from an HTML page) gets its own token ID in the appropriate PBM namespace. It is a first-class PBM — structurally identical to a source PBM. The derivation relationship is recorded in metadata (see Section 5.5), not in the address.
 
 This means a book and its extracted chapter are two separate PBMs with two separate token IDs and two separate content streams. They are connected by a relationship record, not by address hierarchy.
 
@@ -360,9 +431,11 @@ Metadata is organized into:
 5. **Document relationships** — links between PBMs
 6. **Position-anchored metadata** — metadata attached to specific content positions (link URLs, footnote ordinals, blob IDs for non-text content)
 
-### 5.2 Document Provenance
+### 5.2 Document Provenance and Copyright
 
-Stored per document. One row per provenance fact.
+Stored per document. One row per provenance record.
+
+**Source tracking fields:**
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -373,7 +446,21 @@ Stored per document. One row per provenance fact.
 | source_checksum | SHA-256 of the original source file | `a1b2c3...` |
 | encoder_version | Version of the encoder that produced this PBM | `plaintext-v1` |
 | content_language | Primary language of the content | References a token in AA or AB namespace |
-| rights_status | Copyright/licensing status | `public_domain`, `fair_use`, `licensed`, `unknown` |
+
+**Copyright and IP fields:**
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| rights_status | Overall copyright status | `public_domain`, `copyrighted`, `licensed`, `unknown` |
+| copyright_holder | Who holds the copyright | `Tolkien Estate`, `Project Gutenberg` |
+| copyright_year | Year copyright was established or last renewed | `1954` |
+| license_type | Specific license if applicable | `CC-BY-4.0`, `MIT`, `all_rights_reserved`, `fair_use` |
+| reproduction_rights | What the system may do with reconstructed output | `unrestricted`, `analysis_only`, `no_reproduction` |
+| ip_notes | Free text for complex IP situations | `Out of print; rights status unclear` |
+
+Copyright status governs what the system can do with reconstructed output. The engine must consult these fields before generating or reproducing content from a PBM. A copyrighted PBM can be analyzed and its content referenced, but reproduction rights determine whether it can be reconstructed as output.
+
+**Entity-level IP** is tracked separately in the entity databases (y*/x*/w* or u*/t*/s*), not in PBM metadata. For example, "Frodo" = Tolkien Estate IP (tracked on the entity record), "Napoleon" = public domain. The entity DB schema handles this; the PBM only needs to reference entities cleanly (see Section 4.5).
 
 ### 5.3 Tab Level Definitions
 
@@ -419,11 +506,12 @@ Links between PBMs recording derivation, extraction, and other structural relati
 
 ### 5.6 Position-Anchored Metadata
 
-Some structural markers require additional data tied to a specific position in the content stream. Examples:
+Some structural markers and content tokens require additional data tied to a specific position in the content stream. Examples:
 - `link_start` needs a URL
 - `footnote_ref` needs an ordinal or label
 - `image_ref` needs a blob reference
 - `code_block_start` may need a language identifier
+- Proper noun label tokens need an entity reference (see Section 4.5)
 
 This is stored in a position-anchored metadata table:
 
@@ -431,10 +519,12 @@ This is stored in a position-anchored metadata table:
 |-------|-------------|
 | document (decomposed ref) | Which PBM |
 | position | Position in the content stream |
-| key | Metadata key (`url`, `ordinal`, `blob_id`, `language`, `alt_text`, etc.) |
+| key | Metadata key (`url`, `ordinal`, `blob_id`, `language`, `alt_text`, `entity_ref`, etc.) |
 | value | Metadata value (TEXT) |
 
 This avoids putting metadata into the content stream or using JSONB. One row per key-value pair per position.
+
+The `entity_ref` key is how PBMs link to entity databases. When a proper noun at position N references a known entity, position_metadata stores `(N, 'entity_ref', 'yA.AB.AA.AC')` (or the appropriate entity token ID from y*/x*/w*/u*/t*/s*). This keeps entity resolution out of the content stream while making it queryable.
 
 ---
 
@@ -567,7 +657,13 @@ CREATE TABLE document_provenance (
                                  || COALESCE('.' || lang_p5, '')
                     ) STORED,
 
-    rights_status   TEXT                  -- 'public_domain', 'fair_use', 'licensed', 'unknown'
+    -- Copyright and IP
+    rights_status       TEXT,             -- 'public_domain', 'copyrighted', 'licensed', 'unknown'
+    copyright_holder    TEXT,             -- Who holds the copyright
+    copyright_year      SMALLINT,         -- Year copyright established or last renewed
+    license_type        TEXT,             -- 'CC-BY-4.0', 'MIT', 'all_rights_reserved', 'fair_use', etc.
+    reproduction_rights TEXT,             -- 'unrestricted', 'analysis_only', 'no_reproduction'
+    ip_notes            TEXT              -- Free text for complex IP situations
 );
 
 CREATE INDEX idx_provenance_doc ON document_provenance (doc_ns, doc_p2, doc_p3, doc_p4, doc_p5);
@@ -758,14 +854,16 @@ This section describes the logical flow for creating a PBM. Encoder implementati
 
 ### 7.1 Steps
 
-1. **Allocate a PBM token ID** in the zA namespace, following the addressing convention (Section 4).
-2. **Strip the file format container.** The encoder reads the source file and extracts content. The file format is an ingestion concern only.
-3. **Tokenize content.** Each word, punctuation mark, and structural element is resolved to an existing token in the appropriate shard (AB.AB for English words, AA.AE for structural markers, AA.AA for characters).
-4. **Insert structural markers.** Paragraph breaks, section breaks, formatting toggles, alignment markers — all inserted as tokens at the appropriate positions in the content stream.
-5. **Handle anomalies.** Unrecognizable words get wrapped in `sic_start`/`sic_end` and stored character-by-character. Unresolvable references get `tbd` markers.
-6. **Write the content stream.** Insert all rows into `pbm_content` in a single transaction.
-7. **Write metadata.** Provenance, tab definitions, position-anchored metadata, TBD log entries.
-8. **Register the document.** Insert the PBM token into the `tokens` table.
+1. **Classify fiction vs. non-fiction.** This determines the PBM namespace (z* or v*) and which entity DBs to consult for proper noun resolution (y*/x*/w* or u*/t*/s*).
+2. **Allocate a PBM token ID** in the appropriate namespace, following the addressing convention (Section 4).
+3. **Strip the file format container.** The encoder reads the source file and extracts content. The file format is an ingestion concern only.
+4. **Tokenize content.** Each word, punctuation mark, and structural element is resolved to an existing token in the appropriate shard (AB.AB for English words, AA.AE for structural markers, AA.AA for characters).
+5. **Insert structural markers.** Paragraph breaks, section breaks, formatting toggles, alignment markers — all inserted as tokens at the appropriate positions in the content stream.
+6. **Resolve proper nouns.** When a proper noun is encountered, reference the label token (AB namespace) in the content stream. If the entity is known, record the entity reference in position_metadata.
+7. **Handle anomalies.** Unrecognizable words get wrapped in `sic_start`/`sic_end` and stored character-by-character. Unresolvable references get `tbd` markers.
+8. **Write the content stream.** Insert all rows into `pbm_content` in a single transaction.
+9. **Write metadata.** Provenance (including copyright/IP status), tab definitions, position-anchored metadata (entity refs, link URLs, etc.), TBD log entries.
+10. **Register the document.** Insert the PBM token into the `tokens` table.
 
 ### 7.2 Round-Trip Verification
 
@@ -783,11 +881,15 @@ These are identified but deferred to later phases:
 
 2. **Cross-shard PBM content.** A PBM references tokens from multiple shards (AA for markers, AB for words). The content table stores references — it does not duplicate token data. Cross-shard resolution is a read-time concern. The engine needs a shard routing layer (read ns prefix → look up shard_registry → query correct DB).
 
-3. **Shard splitting.** When hcp_en_pbm exceeds the 2GB target, how is it split? Options: by document type (books vs. articles), by content volume, by time period. Deferred until real data volume requires it.
+3. **Shard splitting.** When hcp_en_pbm exceeds the 2GB target, how is it split? Options: by document type (books vs. articles), by content volume, by fiction/non-fiction. Deferred until real data volume requires it.
 
-4. **Concurrent ingestion.** Multiple encoders running simultaneously need token ID allocation coordination. Options: sequence-based allocation with advisory locks, pre-allocated ranges per encoder. Deferred to Phase 2.
+4. **Fiction PBM shard.** The v* namespace needs its own database (analogous to hcp_en_pbm for z*). Creation deferred until fiction ingestion begins.
 
-5. **PBM versioning.** Source PBMs are immutable. But if an encoder bug is found and PBMs need re-ingestion, how is the old PBM superseded? The `revision_of` relationship type handles this — the new PBM links to the old one. The old PBM is not deleted (it may have derived PBMs pointing to it).
+5. **Concurrent ingestion.** Multiple encoders running simultaneously need token ID allocation coordination. Options: sequence-based allocation with advisory locks, pre-allocated ranges per encoder. Deferred to Phase 2.
+
+6. **PBM versioning.** Source PBMs are immutable. But if an encoder bug is found and PBMs need re-ingestion, how is the old PBM superseded? The `revision_of` relationship type handles this — the new PBM links to the old one. The old PBM is not deleted (it may have derived PBMs pointing to it).
+
+7. **Entity DB integration.** The entity databases (y*/x*/w* for non-fiction, u*/t*/s* for fiction) are being designed by a separate librarian specialist. The PBM format references entities via position_metadata `entity_ref` keys. Full integration testing deferred until entity DBs exist.
 
 ---
 
@@ -800,12 +902,14 @@ The following actions are needed from the DB specialist to implement this specif
 2. **Create all 8 tables** per the schemas in Section 6
 3. **Insert the 91 structural marker tokens** (Section 3) into `hcp_core.tokens`
 4. **Register the new AA.AE namespace** in `hcp_core.namespace_allocations`
-5. **Verify shard_registry** entry for zA → hcp_en_pbm is correct
+5. **Update namespace_allocations** for the fiction/non-fiction split (Appendix A)
+6. **Update existing v*/w*/x* allocations** to reflect the new scheme
+7. **Verify shard_registry** entry for zA → hcp_en_pbm is correct
 
 ### Phase 2: Validation (after text encoder is built)
-6. **Load a test PBM** (plain text document) and verify round-trip reconstruction
-7. **Performance baseline** — measure insert throughput and sequential read speed for pbm_content
-8. **Index tuning** — adjust indexes based on actual query patterns
+8. **Load a test PBM** (plain text document) and verify round-trip reconstruction
+9. **Performance baseline** — measure insert throughput and sequential read speed for pbm_content
+10. **Index tuning** — adjust indexes based on actual query patterns
 
 ---
 
@@ -814,6 +918,7 @@ The following actions are needed from the DB specialist to implement this specif
 New entries needed in `hcp_core.namespace_allocations`:
 
 ```sql
+-- PBM structural marker tokens
 INSERT INTO namespace_allocations (pattern, name, description, alloc_type, parent) VALUES
 ('AA.AE',       'PBM Structural Tokens',  'Structural marker tokens for PBM document encoding', 'category', 'AA'),
 ('AA.AE.AA',    'Block-Level Markers',     'Document structure: paragraphs, sections, lists, tables', 'subcategory', 'AA.AE'),
@@ -821,7 +926,24 @@ INSERT INTO namespace_allocations (pattern, name, description, alloc_type, paren
 ('AA.AE.AC',    'Annotation Markers',      'Anomalies, footnotes, citations, editorial marks', 'subcategory', 'AA.AE'),
 ('AA.AE.AD',    'Alignment/Layout Markers', 'Alignment, indentation, and layout intent', 'subcategory', 'AA.AE'),
 ('AA.AE.AE',    'Non-Text Content Markers', 'References to images, figures, embedded objects, math', 'subcategory', 'AA.AE');
+
+-- Fiction/non-fiction namespace split (updates to existing allocations)
+-- Non-fiction (upper range)
+UPDATE namespace_allocations SET description = 'Non-fiction PBMs — factual documents, reference works' WHERE pattern = 'z*';
+INSERT INTO namespace_allocations (pattern, name, description, alloc_type, parent) VALUES
+('y*',  'People Entities (Non-Fiction)', 'Real people — historical and contemporary', 'mode', NULL),
+('x*',  'Place Entities (Non-Fiction)',  'Real places — geographic and political', 'mode', NULL),
+('w*',  'Thing Entities (Non-Fiction)',  'Real things, organizations, concepts', 'mode', NULL);
+
+-- Fiction (lower range)
+INSERT INTO namespace_allocations (pattern, name, description, alloc_type, parent) VALUES
+('v*',  'PBMs (Fiction)',                'Fiction PBMs — literary works, fictional content', 'mode', NULL),
+('u*',  'People Entities (Fiction)',     'Characters — literary, mythological, invented', 'mode', NULL),
+('t*',  'Place Entities (Fiction)',      'Fictional locations — invented geographies', 'mode', NULL),
+('s*',  'Thing Entities (Fiction)',      'Fictional objects, concepts, organizations', 'mode', NULL);
 ```
+
+> **Note:** The previous v*/w*/x* entity allocations are superseded by this scheme. The y* namespace (previously RETIRED per Decision 002 for name components) is re-allocated for real-world people entities. This is a clean break — y* name components were eliminated, and the letter is reused for a different purpose.
 
 ## Appendix B: Full Structural Token INSERT
 

@@ -8,7 +8,7 @@
 
 ## What a PBM Is
 
-A PBM (Pattern-Based Memory) is a **faithful, lossless encoding of content** in HCP's own token representation. It is a strict formula for exact reproduction of the source content. Nothing more.
+A PBM (Pair Bond Map) is a **faithful, lossless encoding of content** in HCP's own token representation. It is a strict formula for exact reproduction of the source content. Nothing more.
 
 - A PBM does not interpret, analyze, or extract meaning
 - A PBM does not store the source file format — only the content
@@ -89,9 +89,21 @@ Processing/extraction produces new PBMs. The source PBM is never modified.
 ## Capitalization Handling
 
 - **Positional capitalization** (sentence-initial, after punctuation, etc.): reconstruction rules, not stored. Pattern logic: "after X, do Y on next character."
-- **Label tokens** (proper nouns, names): capitalized form is the primary spelling in the token itself. PBM just references the token.
-- **Non-structural capitalization** (ALL CAPS, brand names like "iPhone"): inline markers. ALL CAPS gets its own marker convention. Mixed-case brand names stored as their token form.
+- **Label tokens** (proper nouns, names): the correct capitalized spelling IS the token — capitalization is baked into the label token's atomization (capital byte codes). The scanner does exact match first, relaxes case only if no match found. PBM just references the token.
+- **ALL CAPS emphasis**: formatting marker (`all_caps_start`/`all_caps_end`). Content tokens between these markers are rendered in all-caps by the reconstruction engine.
+- **No shift-cap token.** There is no per-word capitalization modifier. Capitalization is either structural (positional — computed), inherent (baked into the token), or emphatic (ALL CAPS marker).
+- **Mixed case brand names** ("iPhone", "McDonald's"): these are proper noun / token identity issues resolved during analysis and DB population, NOT PBM encoding concerns. The PBM references whatever token exists.
+- **Unknown words**: if the encoder encounters a word not in the DB, it creates a new token. Classification (proper noun, brand, misspelling, etc.) is an analysis concern, not encoding.
 - **Misspellings / anomalies**: `<sic>` tag. Faithful reproduction with explicit anomaly marking.
+
+## Bootstrap / MVP Philosophy
+
+This is MVP/bootstrap work. The format needs to be correct and functional, not perfect. Early priorities:
+- Get the PBM storage format right
+- Get basic text encoding working (round-trip verified)
+- Don't solve classification, literary analysis, or proper noun categorization yet
+
+As early as possible, one of the first inference tasks will be for the system to improve its own ingestion and storage. Future specialists will handle literary analysis and proper noun DB population. Build for correctness now; refinement comes from the engine itself.
 
 ## Formatting Markers
 
@@ -102,16 +114,36 @@ Inline formatting uses markdown-style conventions within the PBM:
 
 These are reconstruction instructions, not content. The engine can strip them for analysis or factor them in as emphasis/formatting signals.
 
-## Namespace Allocation
+## Fiction / Non-Fiction Split
 
-- zA namespace already allocated for source PBMs
-  - zA.AB.C* = Books
-  - zA.AB.A* = Tables
-  - zA.AB.B* = Dictionaries
+This is the fundamental library science split applied at the database level. Fiction and non-fiction are **separate worlds with separate entity spaces**.
+
+### Why the split matters
+
+- "Paris" in non-fiction = the city in France (real entity, factual relationships)
+- "Paris" in fiction = could be a character in Troy, or the real city used in a fictional context
+- Fictional entities have their own internal relationships that may not coincide with reality
+- Mixing them in one DB creates entity collision and ambiguity
+
+### Architecture per expression mode (4 databases)
+
+| | PBMs (source documents) | Proper Nouns (entities) |
+|---|---|---|
+| **Non-fiction** | Factual content | Real people, places, organizations |
+| **Fiction** | Fictional content | Characters, fictional places, invented entities |
+
+Each expression mode gets this pair of pairs. The PBM stores reference the content; the Proper Noun stores reference the entities named within that content. Proper noun resolution during ingestion routes to the correct DB based on fiction/non-fiction classification.
+
+### Namespace allocation (8 letters, 4 per side)
+
+**Non-fiction (upper range):** z* = PBMs, y* = People, x* = Places, w* = Things
+**Fiction (lower range):** v* = PBMs, u* = People, t* = Places, s* = Things
+
+- zA currently allocated for non-fiction source PBMs (shard: hcp_en_pbm)
+- vA to be allocated for fiction PBMs (shard: TBD)
 - PBM tokens reference content tokens from language shards (AB namespace for English)
 - Inline markers and structural tokens from core (AA namespace)
-- Proper noun resolution connects to label tokens in language shards
-- y* namespace reserved for proper nouns/abbreviations — future per-expression-mode expansion
+- Label tokens in language shards handle surface forms; entity DBs (y*/x*/w* or u*/t*/s*) hold the full entity space and relationship graph
 
 ## Open Questions for PBM Specialist
 
