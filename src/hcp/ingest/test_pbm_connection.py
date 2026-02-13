@@ -1,6 +1,6 @@
 """Test database connectivity and basic operations."""
 
-import psycopg2
+import psycopg
 
 def test_connections():
     """Test connections to all required databases."""
@@ -9,9 +9,9 @@ def test_connections():
 
     for dbname in databases:
         try:
-            conn = psycopg2.connect(
+            conn = psycopg.connect(
                 host="localhost",
-                database=dbname,
+                dbname=dbname,
                 user="hcp",
                 password="hcp_dev"
             )
@@ -27,9 +27,9 @@ def test_simple_insert():
     """Test simple insert into hcp_en_pbm."""
 
     try:
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host="localhost",
-            database="hcp_en_pbm",
+            dbname="hcp_en_pbm",
             user="hcp",
             password="hcp_dev"
         )
