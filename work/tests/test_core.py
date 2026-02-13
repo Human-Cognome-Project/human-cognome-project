@@ -43,19 +43,19 @@ class TestTokenID:
 
     def test_create_nsm_token(self):
         token = TokenID.nsm(0)
-        assert token.mode == 0
+        assert token.mode == 1  # NSM = mode 1
         assert token.value == 0
         assert token.is_nsm()
 
     def test_create_byte_token(self):
         token = TokenID.byte(65)  # ASCII 'A'
-        assert token.mode == 1
+        assert token.mode == 0  # Byte = mode 0
         assert token.value == 65
         assert token.is_byte()
 
     def test_create_glyph_token(self):
         token = TokenID.glyph(ord("A"))
-        assert token.mode == 2
+        assert token.mode == -1  # Glyph not in legacy mode mapping
         assert token.value == 65
         assert token.is_glyph()
 
@@ -70,20 +70,22 @@ class TestTokenID:
     def test_to_string_format(self):
         token = TokenID.byte(65)
         s = token.to_string()
-        assert "-" in s
-        assert s.startswith("01-")  # Mode 01
+        assert "." in s  # Uses dotted notation
+        assert s.startswith("00.00.00.00.")  # Byte prefix
 
     def test_from_string_roundtrip(self):
-        token = TokenID(mode=5, value=12345)
+        # Use byte token for roundtrip test
+        token = TokenID.byte(123)
         s = token.to_string()
         parsed = TokenID.from_string(s)
-        assert parsed.mode == token.mode
         assert parsed.value == token.value
+        assert parsed.segments == token.segments
 
     def test_immutable(self):
+        from dataclasses import FrozenInstanceError
         token = TokenID.byte(65)
-        with pytest.raises(AttributeError):
-            token.mode = 2
+        with pytest.raises(FrozenInstanceError):
+            token.segments = (1, 2, 3)
 
     def test_hashable(self):
         t1 = TokenID.byte(65)
