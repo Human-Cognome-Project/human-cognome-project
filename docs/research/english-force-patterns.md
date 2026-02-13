@@ -1,26 +1,53 @@
 # English Force Patterns
 
-**Purpose:** Define the physics constants that govern structural assembly and disassembly of English sentences. These are the force rules the inference engine (NAPIER) needs to interpret input and construct output structurally.
+**Purpose:** Define the physics constants that govern structural assembly and disassembly of English sentences. These are the force rules the inference engine (NAPIER) needs to interpret input structurally and construct output thoughtfully.
 
-**Scope:** English only. Other languages will have different constants but use the same force types.
+**Role:** This document defines the **translation layer** between NAPIER's texture engine (surface text) and mesh engine (conceptual shape). The same forces drive both directions — decomposing surface text into conceptual mesh on input, and wrapping conceptual mesh into well-formed surface text on output.
+
+**Scope:** English-specific constants only. Other languages use different constants with the same force types. The force TYPES are universal (hcp_core); the force VALUES here are English-specific (hcp_english). See [force-pattern-db-requirements.md](force-pattern-db-requirements.md) for the core/shard split.
 
 **Source:** Derived from *Analysing Sentences* (4th ed., Burton-Roberts). See [sentence-analysis-framework.md](sentence-analysis-framework.md) for the full textbook digest.
 
 ---
 
+## Critical: Forces Are LoD-Relative
+
+Forces are **not** monolithic or global. They are relative to their specific LoD level and aggregate upward.
+
+```
+WORD LEVEL:    Forces resolve individual tokens into phrase-level structures.
+               Sub-cat patterns, category compatibility, word-level ordering.
+
+PHRASE LEVEL:  Internal word-level forces collapse into aggregate shapes.
+               "the tall old man" → NP[definite, human, male, modified]
+               Phrase is now a rigid body. Internal detail invisible to higher levels.
+
+CLAUSE LEVEL:  Phrase-level shapes interact via clause-level forces.
+               NP[agent] + VP[action] → Subject–Predicate bonding.
+               VP's internal structure (sub-cat filled, complements present) is aggregate.
+
+SENTENCE+:     Clause-level shapes interact. Embedding, coordination, discourse.
+```
+
+At each level, lower-level detail is consumed. You don't need to know the internal binding of a noun phrase to understand its role as a subject — you only need its aggregate conceptual shape. **Force values at each LoD level are contextual, not absolute.**
+
+For MVP, the right STRUCTURE for LoD stacking and aggregation matters more than perfect force values. Rough-approximated constants with the correct architecture will outperform precise constants in a flat structure.
+
+---
+
 ## Force Type Inventory
 
-The architecture defines two conceptual forces: **gravitational** (attraction/clustering) and **albedo** (reflectivity/representativeness). For language, these manifest as specific, enumerable force patterns:
+The architecture defines two conceptual forces: **gravitational** (attraction/clustering) and **albedo** (reflectivity/representativeness). For language, these manifest as specific, enumerable force patterns operating at specific LoD levels:
 
-| Force Type | What It Does | Physics Analogy |
-|---|---|---|
-| Attraction | Pulls tokens toward each other for assembly | Gravitational force |
-| Binding energy | Holds assembled tokens together; cost to disassemble | Bond energy |
-| Ordering constraint | Enforces positional sequence | Directional force field |
-| Category compatibility | Determines what CAN bond with what | Charge compatibility |
-| Valency | Determines how MANY bonds a token requires/permits | Electron shells |
-| Movement force | Pulls tokens from deep-structure to surface position | Electromagnetic attraction |
-| Structural repair | Inserts tokens to satisfy unmet constraints | Virtual particle creation |
+| Force Type | What It Does | Primary LoD Level | Physics Analogy |
+|---|---|---|---|
+| Attraction | Pulls tokens toward each other for assembly | All levels | Gravitational force |
+| Binding energy | Holds assembled tokens together; cost to disassemble | All levels | Bond energy |
+| Ordering constraint | Enforces positional sequence | Level-specific | Directional force field |
+| Category compatibility | Determines what CAN bond with what | All levels | Charge compatibility |
+| Valency | Determines how MANY bonds a token requires/permits | WORD→PHRASE | Electron shells |
+| Movement force | Pulls tokens from deep-structure to surface position | CLAUSE/SENTENCE | Electromagnetic attraction |
+| Structural repair | Inserts tokens to satisfy unmet constraints | CLAUSE | Virtual particle creation |
 
 ---
 
@@ -404,14 +431,16 @@ Preference rankings for common ambiguity types. These will be partially derived 
 
 ---
 
-## Open Questions for Project Lead
+## Resolved Design Questions
 
-1. **Numeric scale:** What range should binding energies use? A simple ordinal (1-5) or a continuous scale (0.0-1.0)? The physics engine likely needs continuous values, but the linguistics only distinguishes ~4 levels (high/moderate/low/none).
+*These questions were originally open. Resolved with Project Lead's architectural framing (2026-02-12).*
 
-2. **Sub-cat storage:** Verb sub-categorization is the largest and most complex constant set. Should each verb have its sub-cat pattern as a dimension on the token, or as a separate lookup table linked to the token? (I know storage isn't my domain, but this affects how the inference engine accesses the force constants.)
+1. **Numeric scale:** → Float 0.0–1.0 per force per LoD level. 1.0 = absolute constraint (violation = ungrammatical). Below 1.0 = preference (violation = higher energy). For MVP, hand-assigned ordinal values (high=0.9, moderate=0.6, low=0.3) are sufficient. Architecture matters more than exact numbers.
 
-3. **Calibration from data:** Some of these force constants are absolute rules (auxiliary ordering, coordination constraint) and some are preferences (modifier ordering, ambiguity resolution). The absolute rules are known from the grammar. The preferences need calibration from corpus data. Should we distinguish these two types formally?
+2. **Sub-cat storage:** → Sub-cat is a force constant dimension on the token. Pattern definitions in a lookup table in the language shard. Words map to patterns (junction table with frequency weights for multi-pattern words). See [force-pattern-db-requirements.md](force-pattern-db-requirements.md) Section 4.
 
-4. **Cross-linguistic universals:** Some of these forces are English-specific (head-initial ordering, specific auxiliary order). Some are universal (head-complement attraction is strong in every language, coordination requires same category universally). Should the universal forces be separated from the language-specific constants?
+3. **Absolute vs. preference:** → Yes, distinguish formally. ABSOLUTE (1.0) = inviolable, physics engine rejects parse. PREFERENCE (<1.0) = increases energy cost, doesn't invalidate. Both types exist in grammar and DB.
 
-5. **Granularity of sub-cat for clausal complements:** The believe-vs-persuade distinction (Type I vs Type II) is a critical force constant — same surface, different structure, disambiguated by the verb's entry. How fine-grained do we go? Every verb in the language needs its clausal sub-cat pattern cataloged.
+4. **Cross-linguistic universals:** → Force CATEGORIES (that attraction exists, that valency is a thing) → hcp_core. Force CONSTANTS (English is SVO, English auxiliary chain) → language shards. Same engine, different language file.
+
+5. **Clausal sub-cat granularity:** → Enumerate PATTERN TYPES (~15 for verbs, ~4 for nouns, ~5 for adjectives, ~3 for prepositions). Each word classifies into one or more patterns. Patterns are the constants; word-to-pattern mapping is vocabulary. Multiple-pattern words get frequency weights.
