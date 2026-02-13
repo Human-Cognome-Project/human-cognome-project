@@ -431,6 +431,137 @@ Preference rankings for common ambiguity types. These will be partially derived 
 
 ---
 
+## 10. The Bridge: Grammatical Forces ↔ Concept Mesh
+
+The force patterns defined above are the **texture-side** half of the translation layer. The other half is the concept mesh — ~2,784 concept tokens in AA namespace that form the internal vocabulary of the engine:
+
+| Layer | Address | Count | Content |
+|---|---|---|---|
+| NSM Primes | AA.AA.AA.AB.* | 65 | Atomic concepts: I, YOU, THINK, KNOW, SEE, DO, GOOD, BAD... |
+| nsm_aa | AA.AC.AA.AA.* | 65 | First molecular layer: operational forms of primes + connectives |
+| nsm_ab | AA.AC.AA.AB.* | 302 | Second molecular layer: easy, control, shape, colour, animal... |
+| nsm_ac | AA.AC.AA.AC.* | 2,352 | Third molecular layer: full conceptual vocabulary |
+
+**None of these tokens have surface expressions.** The name labels are developer convenience. These ARE the mesh — the conceptual shapes that the force patterns translate surface language to and from.
+
+### 10.1 How the Bridge Works
+
+Each concept token in AA.AC has an `eng_refs` metadata field listing the English surface tokens (AB namespace) that can express it. The force patterns determine which bridge to cross:
+
+```
+SURFACE (AB)                    FORCES                     MESH (AA.AC)
+─────────────                   ──────                     ────────────
+"She read the book"      →  grammatical analysis    →  concept assembly
+                            (sub-cat, functions)       (concept tokens + roles)
+
+"She"                    →  Subject of S (agent)    →  [person] + [specification]
+"read"                   →  V_TRANS head            →  [see] + [word] frame
+"the book"               →  NP complement (dO)      →  [thing] + [word]
+
+Conceptual mesh result:  [person:agent] →DO→ [see+word:action] →_TO→ [thing+word:patient]
+```
+
+### 10.2 NSM Definition Frames = Mesh-Side Force Templates
+
+The nsm_aa concept definitions encode structural frames using markers that map directly to grammatical functions:
+
+**"do" (AA.AC.AA.AA.Aj):**
+```
+"Lisa {does} something."                               → agent + action (intransitive)
+"Lisa {does} something {_to} Tony."                     → agent + action + patient
+"Lisa {does} something {_with} this thing."             → agent + action + instrument
+"Lisa {does} something {_to} Tony {_with} this thing."  → agent + action + patient + instrument
+```
+
+**"say" (AA.AC.AA.AA.Ad):**
+```
+"Tony {says} something."                                → agent + speech_act
+"Tony {says} something {_to} Lisa."                     → agent + speech_act + addressee
+"Tony {says} something {_about} this living thing."     → agent + speech_act + topic
+```
+
+**"know" (AA.AC.AA.AA.An):**
+```
+"Tony {knows} something {_about} Lisa."                 → experiencer + knowledge + topic
+```
+
+**"move" (AA.AC.AA.AA.Ay):**
+```
+"Lisa sees something {move}."                           → entity + motion (intransitive)
+"Lisa {moves} near_to this thing."                      → agent + motion + goal
+```
+
+### 10.3 Grammatical Function → Conceptual Role Mapping
+
+The force patterns (texture side) determine grammatical functions. Those functions map to conceptual roles (mesh side):
+
+| Grammatical Function | Typical Conceptual Role | NSM Frame Marker |
+|---|---|---|
+| Subject of active S | Agent (doer) | First NP in definition: "Lisa {does}..." |
+| Direct object (dO) | Patient (affected) | `{_to}` marker: "{does} something {_to} Tony" |
+| Indirect object (iO) | Recipient/Beneficiary | `{_to}` (ditransitive): "gives something {_to} Lisa" |
+| PP[with] complement | Instrument | `{_with}` marker: "{does} something {_with} this thing" |
+| PP[about] complement | Topic | `{_about}` marker: "{says} something {_about} Lisa" |
+| Subject of intensive V | Theme (described) | "{is} something" / "{seems} something" |
+| Subject-predicative (sP) | Property/State | The complement of intensive V |
+| Subject of passive S | Patient (affected) | Was patient in deep structure |
+| Adverbial (manner) | Manner | How the action is done |
+| Adverbial (place) | Location | Where the action occurs |
+| Adverbial (time) | Temporal | When the action occurs |
+
+### 10.4 Sub-categorization → Frame Selection
+
+The verb's sub-cat pattern selects which NSM definition frame applies:
+
+| Verb Sub-cat | NSM Frame Pattern | Conceptual Structure |
+|---|---|---|
+| V_INTRANS | "X {does} something." | agent→action |
+| V_TRANS | "X {does} something {_to} Y." | agent→action→patient |
+| V_DITRANS | "X {does} something {_to} Y {_with} Z." | agent→action→recipient+theme |
+| V_INTENS | "X {is} something." | theme→property |
+| V_PREP | "X {does} something {_P} Y." | agent→action→role(determined by P) |
+| V_THAT | "X {knows/says} [clause]." | experiencer/agent→proposition |
+
+The sub-cat pattern is a texture-side force constant. The NSM frame is the mesh-side template it activates. The mapping between them is the core of the translation layer.
+
+### 10.5 The eng_refs Bridge Points
+
+Each concept token stores `eng_refs` — an array of AB-namespace token IDs that can express that concept. Example:
+
+```
+AA.AC.AA.AA.AA ("see") → eng_refs: [AB.AB.CA.Ez.RQ, AB.AB.CA.Ez.RP, ...]
+```
+
+These references are the bridge points:
+- **On input (parsing):** Surface token "see" (AB.AB.CA.Ez.RQ) → looked up in concept eng_refs → maps to concept `see` (AA.AC.AA.AA.AA)
+- **On output (generation):** Concept `see` → eng_refs consulted → surface token "see" selected based on context
+
+The force patterns control the CONTEXT of selection:
+- Which frame slot is being filled? (agent, patient, instrument)
+- What grammatical function does this position require? (subject, dO, PP[with])
+- What ordering constraints apply? (head-initial, complement before adjunct)
+- What category compatibility rules constrain the choice? (transitive V needs NP complement)
+
+### 10.6 LoD Aggregation in the Bridge
+
+The bridge operates at different LoD levels with different granularity:
+
+**Word → Concept (finest grain):**
+Individual surface tokens map to individual concept tokens via eng_refs. "read" → `see` + `word`.
+
+**Phrase → Concept Assembly:**
+The phrase's internal structure (determined by word-level forces) aggregates into a conceptual frame. VP "read the book" → [action:see+word, patient:thing+word]. The phrase presents to the clause level as: [directed-action-on-word-thing].
+
+**Clause → Proposition:**
+The clause's grammatical structure (subject-predicate, determined by clause-level forces) maps to a propositional concept. "She read the book" → [person:agent DO:see+word TO:thing+word]. This is a complete conceptual unit — a proposition.
+
+**Sentence → Discourse Contribution:**
+Multi-clause sentences aggregate propositions into discourse-level structures. Subordination, coordination, and discourse connectives organize propositions.
+
+At each level, the lower-level detail collapses. The discourse level doesn't need to know that "the book" was DET+NOM with an empty modifier stack. It just needs: [entity:word-thing, definite].
+
+---
+
 ## Resolved Design Questions
 
 *These questions were originally open. Resolved with Project Lead's architectural framing (2026-02-12).*

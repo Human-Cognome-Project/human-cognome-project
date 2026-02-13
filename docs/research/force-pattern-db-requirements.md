@@ -21,11 +21,18 @@ The linguistics force patterns are the **translation layer** between NAPIER's tw
 TEXTURE (surface text)  ←→  FORCE PATTERNS  ←→  MESH (conceptual shape)
 ```
 
-On **input** (interpretation): surface text is decomposed through force rules into a conceptual mesh. "She read the book" → [agent] [action:directed] [entity:affected].
+On **input** (interpretation): surface text is decomposed through force rules into a conceptual mesh assembled from AA.AC concept tokens (~2,784 concepts: 65 NSM primes + ~2,719 molecular concepts).
 
-On **output** (construction): a conceptual mesh is wrapped into well-formed surface text through the same force rules. [agent] [action:directed] [entity:affected] → "She read the book" (English) or "Elle a lu le livre" (French).
+On **output** (construction): a conceptual mesh is wrapped into well-formed surface text through the same force rules, using `eng_refs` metadata on concept tokens to select appropriate surface forms.
 
 The same force definitions drive both directions. The physics is symmetric.
+
+**The mesh side is already enumerated.** Concept tokens in AA.AC have:
+- `eng_refs` (metadata): array of AB-namespace token IDs that can express this concept
+- `definition` (metadata, nsm_aa layer): NSM definition frames showing structural argument patterns
+- `is_universal` (metadata): whether the concept is cross-linguistically universal
+
+The force patterns govern WHICH bridge to cross between surface tokens and concept tokens, and in what structural configuration. See [english-force-patterns.md](english-force-patterns.md) Section 10 for the complete bridge mapping.
 
 ---
 
