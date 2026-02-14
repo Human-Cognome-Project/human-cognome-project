@@ -670,41 +670,46 @@ These exist in hcp_english as regular word tokens (nouns, adjectives, etc.) but 
 | satan | AB.AB.CA.Ev.Py | noun |
 | victor | AB.AB.CA.GB.gG | noun |
 
-**Question for linguistics/DB specialist:** Should entity names reference the existing word token (e.g., `AB.AB.CA.GB.gG` for "victor") and rely on the shift-cap mechanism for capitalization? Or should separate label tokens be created? The design notes say label tokens carry capitalized forms baked in, which suggests creating labels. But many of these words (adam, henry, caroline) already function as both common words and proper names. Need a policy decision.
+**RESOLVED — Label Token Policy (2026-02-14):** Three tiers:
+1. **Regular words** (victor, elizabeth, henry, geneva, etc.): Use existing word token. Capitalization handled by shift-cap. NO new label created.
+2. **Name-only words** (Clerval, Safie, Frankenstein, Ingolstadt, etc.): Words with no independent dictionary definition. Create as label tokens.
+3. **Proper Nouns**: Constructs in entity DBs — bond patterns assembled from word + label tokens.
 
-### 6.3 Tokens Completely Missing (need creation)
+### 6.3 Label Tokens Created (2026-02-14)
 
-These names do not exist in hcp_english at all and would need new tokens:
-
-```
-Arve, Belrive, Chamounix, Clerval, Evian, Justine, Krempe,
-Lacey, Lavenza, Manoir, Orkney, Plainpalais, Safie, Servox, Werter
-```
-
-Plus label variants needed for names that only exist as word tokens:
+15 new label tokens created at `AB.AB.CA.HX.Ta` through `AB.AB.CA.HX.Tt`:
 
 ```
-Adam (label), Alps (label), Archangel (label), Blanc (label),
-Caroline (label), Daniel (label), Derby (label), Ernest (label),
-Frankenstein (label), Geneva (label), Henry (label),
-Leghorn (label), Lucerne (label), Mary (label), Mont (label),
-Oxford (label), Rhine (label), Satan (label), Victor (label)
+Clerval (Ta), Lavenza (Tb), Safie (Tc), Krempe (Td), Justine (Te),
+Chamounix (Th), Plainpalais (Ti), Belrive (Tj), Servox (Tk),
+Evian (Tl), Manoir (Tp), Rhone (Tq), Werter (Tr), Arve (Ts),
+Frankenstein (Tt)
 ```
 
-**Also needed but not yet checked:**
-```
-Albertus, Goethe, Matlock, Orkney, Rhone
-```
+### 6.4 Summary (Final)
 
-### 6.4 Summary
-
-| Category | Count | Action |
+| Category | Count | Status |
 |----------|-------|--------|
-| Label tokens already exist | 46 | Ready to use |
-| Word tokens exist, need label variants | ~20 | Policy decision needed |
-| Completely missing tokens | ~15 | Must create before entity DB population |
-| Uncertain / need to check | ~5 | Check individually |
-| **Total unique name tokens needed** | **~86** | Across all entity types |
+| Label tokens already existed | 46 | Used directly |
+| Word tokens used as-is (tier 1) | ~20 | Per label token policy |
+| New label tokens created | 15 | Done (AB.AB.CA.HX.Ta-Tt) |
+| **Total tokens referenced by entities** | **~81** | Across all entity types |
+
+### 6.5 Entity DB Population (2026-02-14)
+
+| Database | Table | Rows |
+|----------|-------|------|
+| hcp_fic_entities | tokens | 20 |
+| hcp_fic_entities | entity_names | 40 |
+| hcp_fic_entities | entity_properties | 113 |
+| hcp_fic_entities | entity_relationships | 26 |
+| hcp_fic_entities | entity_appearances | 20 |
+| hcp_fic_entities | entity_rights | 20 |
+| hcp_nf_entities | tokens | 49 |
+| hcp_nf_entities | entity_names | 30 |
+| hcp_nf_entities | entity_properties | 41 |
+| hcp_nf_entities | entity_appearances | 31 |
+| hcp_nf_entities | entity_rights | 49 |
 
 ---
 
