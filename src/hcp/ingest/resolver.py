@@ -396,13 +396,15 @@ class Resolver:
 
         # Step 4: Hyphenated compound split
         if '-' in normalized:
-            parts = normalized.split('-')
+            norm_parts = normalized.split('-')
+            orig_parts = text.split('-')  # Preserve original chars for surface
             resolved_parts = []
             all_found = True
-            for part in parts:
+            for i, part in enumerate(norm_parts):
                 part_id = self.word_cache.get(part) or self.word_cache.get(part.lower())
                 if part_id:
-                    resolved_parts.append(ResolvedToken(part_id, part, 'split'))
+                    surface = orig_parts[i] if i < len(orig_parts) else part
+                    resolved_parts.append(ResolvedToken(part_id, surface, 'split'))
                 else:
                     all_found = False
                     break
