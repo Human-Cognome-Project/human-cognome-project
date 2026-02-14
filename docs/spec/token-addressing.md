@@ -55,21 +55,43 @@ Letters-only also avoids digit/letter ambiguity in mixed contexts. The only excl
 
 | Mode prefix | Contents                                          |
 |-------------|---------------------------------------------------|
-| `AA`        | Universal / computational: byte codes, NSM primitives, structural tokens |
+| `AA`        | Universal / computational: byte codes, NSM primitives, structural tokens, force infrastructure, PBM markers, entity classification |
 | `AB`        | Text mode: language families (AB.AB = English, etc.) |
-| `v*`        | People entities (specific named individuals) |
-| `w*`        | Place entities (specific named locations) |
-| `x*`        | Thing entities (specific named things/orgs, common labels like months/days) |
-| ~~`y*`~~    | ~~Name components~~ — **RETIRED.** See [Decision 002](../decisions/002-names-shard-elimination.md) |
-| `z*`        | Replicable source PBMs — created works, documents, stored expressions |
+| `s*`        | Fiction thing entities (objects, organizations, species, concepts, events) |
+| `t*`        | Fiction place entities (settlements, geographic features, buildings, regions) |
+| `u*`        | Fiction people entities (characters, collectives, deities, named creatures) |
+| `v*`        | Fiction PBMs (novels, stories, poetry, scripts) |
+| `w*`        | Non-fiction thing entities (objects, organizations, concepts, events) |
+| `x*`        | Non-fiction place entities (geographic, political, structural) |
+| `y*`        | Non-fiction people entities (historical and contemporary) |
+| `z*`        | Non-fiction PBMs — documents, reference works, factual content |
 
-The upper range (`v`–`z`) places entities and stored works at the end of sort order, visually distinct from structural/computational and linguistic namespaces. Entity namespaces are cross-linguistic — entities belong to all language shards, not any single one.
+The upper range (`s`–`z`) places entities, PBMs, and stored works at the end of sort order, visually distinct from structural/computational and linguistic namespaces.
 
-Every entity in `v*`, `w*`, or `x*` atomizes to word tokens in the appropriate language shard (e.g. AB.AB for English). A "name" is a Proper Noun construct — a bond pattern assembled from word tokens — not a token-level attribute. Words that function as names carry capitalized form variants and may have PoS = `label` if they have no independent dictionary definition.
+Entity namespaces are cross-linguistic — entities belong to all language shards, not any single one. Every entity atomizes to word tokens in the appropriate language shard (e.g., AB.AB for English). A "name" is a Proper Noun construct — a bond pattern assembled from word tokens — not a token-level attribute. Words that function as names carry capitalized form variants and may have PoS = `label` if they have no independent dictionary definition.
 
-The full space per prefix (50 second-pair values × deeper pairs) provides extensive room for growth. People, Places, and Things each get their own prefix due to expected rapid growth as sources are ingested.
+### Fiction / Non-Fiction Split
 
-> **Planned change:** The entity namespaces (`v*`, `w*`, `x*`) will eventually shift to sequential allocation rather than scattered single-letter prefixes. Current allocation is provisional.
+The most fundamental organizational principle — drawn from library science — is the complete separation of fiction and non-fiction. Each side gets 4 namespace letters:
+
+| Side | PBMs | People | Places | Things |
+|------|------|--------|--------|--------|
+| **Non-fiction** | z* | y* | x* | w* |
+| **Fiction** | v* | u* | t* | s* |
+
+This prevents entity collision ("Paris" the city vs. "Paris" the Trojan prince) and allows each domain to maintain its own internal relationship graph. Both sides share the same language shards (AB for English), the same structural tokens (AA), and the same PBM content format.
+
+### Bootstrap Database Hosting
+
+| Database | Namespaces | Purpose |
+|----------|------------|---------|
+| hcp_core | AA | Universal tokens |
+| hcp_english | AB | English language family |
+| hcp_en_pbm | zA | Non-fiction PBMs |
+| hcp_fic_entities | u*, t*, s* | All fiction entities (combined, splits later) |
+| hcp_nf_entities | y*, x*, w* | All non-fiction entities (combined, splits later) |
+
+The shard_registry in hcp_core routes namespace prefixes to databases. When any entity type exceeds ~500MB, it splits into its own database — the registry update is transparent to the engine.
 
 ## LoD-Dependent Addressing
 

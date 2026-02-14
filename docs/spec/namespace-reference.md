@@ -52,7 +52,24 @@ AA                          Universal mode
 ├── AA.AB                   Text Encodings
 │   └── AA.AB.AA.{table}.{byte}  Encoding table entries (UTF-8, Latin-1, etc.)
 ├── AA.AC                   Structural Tokens
-└── AA.AD                   Abbreviation Classes
+│   ├── AA.AC.AA             Conceptual Mesh (NSM primitives + structural tokens, 2,719 tokens)
+│   └── AA.AC.AB             Force Infrastructure (25 tokens)
+│       ├── AA.AC.AB.AA      Force types (7)
+│       ├── AA.AC.AB.AB      Relationship types (7)
+│       ├── AA.AC.AB.AC      LoD levels (8)
+│       └── AA.AC.AB.AD      Structural principles (3)
+├── AA.AD                   Abbreviation Classes
+├── AA.AE                   PBM/Document Structural Tokens (91 tokens)
+│   ├── AA.AE.AA             Block-level markers (32)
+│   ├── AA.AE.AB             Inline formatting markers (22)
+│   ├── AA.AE.AC             Annotation markers (14)
+│   ├── AA.AE.AD             Alignment/layout markers (13)
+│   └── AA.AE.AE             Non-text content markers (10)
+└── AA.AF                   Entity Classification Tokens
+    ├── AA.AF.AA             Person sub-types (4)
+    ├── AA.AF.AB             Place sub-types (6)
+    ├── AA.AF.AC             Thing sub-types (7)
+    └── AA.AF.AD             Entity relationship types
 ```
 
 ### Text Mode (AB)
@@ -61,12 +78,17 @@ AA                          Universal mode
 AB                              Text mode
 ├── AB.AA                       Unicode Characters
 │   └── AB.AA.AA.{cat}.{n}      Character tokens by category (2,032 tokens)
-└── AB.AB                       English Language Family (1.16M tokens)
+└── AB.AB                       English Language Family (~1.4M tokens)
     ├── AB.AB.A{sub}.{n}.{n}    Layer A: Affixes (3,696 tokens)
     ├── AB.AB.B{sub}.{n}.{n}    Layer B: Fragments (reserved)
-    ├── AB.AB.C{sub}.{n}.{n}    Layer C: Words (1,146,520 tokens)
+    ├── AB.AB.C{sub}.{n}.{n}    Layer C: Words (~1.29M tokens)
     ├── AB.AB.D{sub}.{n}.{n}    Layer D: Derivatives (3,979 tokens)
-    └── AB.AB.E{sub}.{n}.{n}    Layer E: Multi-word (9,084 tokens)
+    ├── AB.AB.E{sub}.{n}.{n}    Layer E: Multi-word (9,084 tokens)
+    └── AB.AB.FA.{sub}.{n}      Sub-cat Patterns (30 tokens)
+        ├── AB.AB.FA.AA          Verb patterns (17)
+        ├── AB.AB.FA.AB          Noun patterns (5)
+        ├── AB.AB.FA.AC          Adjective patterns (5)
+        └── AB.AB.FA.AD          Preposition patterns (3)
 ```
 
 #### Word Addressing (AB.AB)
@@ -81,9 +103,10 @@ The 3rd pair uses double-duty encoding:
 |-------|--------|-------------|-------|
 | A | AA-AF | Affixes: prefix, suffix, infix, interfix, circumfix | 3,696 |
 | B | B* | Fragments (reserved for incomplete words) | - |
-| C | CA-CR | Words: noun, verb, adj, adv, prep, conj, etc. | 1,146,520 |
+| C | CA-CR | Words: noun, verb, adj, adv, prep, conj, etc. | ~1,290,000 |
 | D | DA-DE | Derivatives: abbreviation, initialism, acronym, contraction, clipping | 3,979 |
 | E | EA-EC | Multi-word: phrase, prep_phrase, proverb | 9,084 |
+| F | FA | Sub-categorization patterns | 30 |
 
 Reading bottom-up: affixes → fragments → words → derivatives → multi-word.
 Each layer atomizes to the layer below (or to characters if at word level).
@@ -103,7 +126,7 @@ Each layer atomizes to the layer below (or to characters if at word level).
 
 | Sub | Prefix | POS | Count |
 |-----|--------|-----|-------|
-| CA | noun | 787,662 |
+| CA | noun | 930,925 |
 | CB | verb | 180,945 |
 | CC | adj | 148,596 |
 | CD | adv | 23,729 |
@@ -118,6 +141,8 @@ Each layer atomizes to the layer below (or to characters if at word level).
 | CM | punct | 50 |
 | CN | article | 5 |
 | CR | character | 109 |
+
+Note: CA (noun) count includes ~143K label tokens from the names merge (Decision 002/Migration 004).
 
 ##### Layer D: Derivatives
 
@@ -135,29 +160,102 @@ Each layer atomizes to the layer below (or to characters if at word level).
 | EB | prep_phrase | 2,864 |
 | EC | proverb | 1,530 |
 
-### ~~Name Components Mode (yA)~~ — RETIRED
+##### Layer F: Sub-categorization Patterns
 
-> **Decision 002 (2026-02-12):** The yA namespace and hcp_names database are retired. A "name" is a Proper Noun construct (bond pattern), not a token property. Name-bearing words move to hcp_english as regular tokens with capitalized form variants. Words that are only names get PoS = `label`. See [Decision 002](../decisions/002-names-shard-elimination.md).
+| Sub | Prefix | Type | Count |
+|-----|--------|------|-------|
+| FA.AA | verb patterns | 17 |
+| FA.AB | noun patterns | 5 |
+| FA.AC | adjective patterns | 5 |
+| FA.AD | preposition patterns | 3 |
 
-The hcp_names database (~150,528 tokens) is preserved pending migration of useful data into hcp_english.
-
-### Entity Modes (v*, w*, x*) — Reserved
-
-```
-vA.*                            People entities (future)
-wA.*                            Place entities (future)
-xA.*                            Thing entities (future)
-```
-
-Specific named entities. Each atomizes to word tokens in the appropriate language shard (e.g. AB.AB for English words). A Proper Noun is a bond pattern assembled from word tokens — the entity namespace records the construct, while the component words live in their language shard.
-
-> **Planned change:** These namespaces will eventually shift to sequential allocation rather than scattered single-letter prefixes. Current allocation is provisional.
-
-### Source PBM Mode (zA) — Reserved
+### Non-Fiction Namespaces
 
 ```
-zA.*                            Stored PBMs, documents, expressions
+z*                              Non-fiction PBMs
+├── zA                          Source PBMs (universal/text-mode)
+│   ├── zA.AA                   Byte-level computational content
+│   └── zA.AB                   Text-mode content
+│       ├── zA.AB.A*             Tables (CSV, TSV, etc.)
+│       ├── zA.AB.B*             Dictionaries, lexicons
+│       ├── zA.AB.C*             Books (non-fiction)
+│       ├── zA.AB.D*             Articles, papers, essays
+│       └── zA.AB.E*             Correspondence, letters
+
+y*                              Non-fiction People Entities
+├── yA                          Real people (English-primary shard)
+│   ├── yA.AA.*                 Individuals
+│   ├── yA.BA.*                 Collectives
+│   ├── yA.CA.*                 Deities/divine figures
+│   └── yA.DA.*                 Named creatures
+
+x*                              Non-fiction Place Entities
+├── xA                          Real places (English-primary shard)
+│   ├── xA.AA.*                 Settlements
+│   ├── xA.BA.*                 Geographic features
+│   ├── xA.CA.*                 Buildings/structures
+│   ├── xA.DA.*                 Regions/territories
+│   ├── xA.EA.*                 Worlds/planes
+│   └── xA.FA.*                 Celestial bodies
+
+w*                              Non-fiction Thing Entities
+├── wA                          Real things (English-primary shard)
+│   ├── wA.AA.*                 Objects/artifacts
+│   ├── wA.BA.*                 Organizations
+│   ├── wA.CA.*                 Species/races
+│   ├── wA.DA.*                 Concepts/systems
+│   ├── wA.EA.*                 Events
+│   ├── wA.FA.*                 Languages
+│   └── wA.GA.*                 Materials/substances
 ```
+
+### Fiction Namespaces
+
+```
+v*                              Fiction PBMs
+├── vA                          Fiction text-mode PBMs
+│   └── vA.AB                   Text-mode fiction content
+│       ├── vA.AB.C*             Books (fiction)
+│       ├── vA.AB.D*             Stories, scripts, screenplays
+│       └── vA.AB.E*             Poetry, lyrics
+
+u*                              Fiction People Entities
+├── uA                          Fiction characters (English-primary shard)
+│   ├── uA.AA.*                 Individuals
+│   ├── uA.BA.*                 Collectives
+│   ├── uA.CA.*                 Deities/divine figures
+│   └── uA.DA.*                 Named creatures
+
+t*                              Fiction Place Entities
+├── tA                          Fiction places (English-primary shard)
+│   ├── tA.AA.*                 Settlements
+│   ├── tA.BA.*                 Geographic features
+│   ├── tA.CA.*                 Buildings/structures
+│   ├── tA.DA.*                 Regions/territories
+│   ├── tA.EA.*                 Worlds/planes
+│   └── tA.FA.*                 Celestial bodies
+
+s*                              Fiction Thing Entities
+├── sA                          Fiction things (English-primary shard)
+│   ├── sA.AA.*                 Objects/artifacts
+│   ├── sA.BA.*                 Organizations
+│   ├── sA.CA.*                 Species/races
+│   ├── sA.DA.*                 Concepts/systems
+│   ├── sA.EA.*                 Events
+│   ├── sA.FA.*                 Languages
+│   └── sA.GA.*                 Materials/substances
+```
+
+### Database Hosting
+
+| Database | Namespaces | Contents |
+|----------|------------|----------|
+| hcp_core | AA | Universal tokens, encoding, structural, force infrastructure |
+| hcp_english | AB | English language family (~1.4M tokens) |
+| hcp_en_pbm | zA | Non-fiction PBMs (documents, content streams) |
+| hcp_fic_entities | u*, t*, s* | All fiction entities (bootstrap — splits later) |
+| hcp_nf_entities | y*, x*, w* | All non-fiction entities (bootstrap — splits later) |
+| (future) | vA | Fiction PBMs |
 
 #### Atomization Rules
 
@@ -192,6 +290,7 @@ Grammar profiles (word order, agreement patterns from WALS) act as the transform
 
 ### Shard Types
 - Language shards (English, etc.) with accompanying PBMs
+- Entity shards (fiction/non-fiction, split by entity type when needed)
 - Operational shards (variables, logging) sized to workload
 
 ### Token ID Efficiency
