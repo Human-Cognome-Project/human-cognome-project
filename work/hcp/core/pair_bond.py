@@ -67,6 +67,8 @@ class PairBondMap:
     def __init__(self) -> None:
         # left_token -> right_token -> BondRecurrence
         self._bonds: dict[TokenID, dict[TokenID, BondRecurrence]] = defaultdict(dict)
+        # Reverse index: right_token -> left_token -> BondRecurrence
+        self._reverse: dict[TokenID, dict[TokenID, BondRecurrence]] = defaultdict(dict)
         # Token sequence for reconstruction
         self._sequence: list[TokenID] = []
         # Total bond count
@@ -75,7 +77,9 @@ class PairBondMap:
     def add_bond(self, left: TokenID, right: TokenID, position: int | None = None) -> BondRecurrence:
         """Add or increment a pair bond."""
         if right not in self._bonds[left]:
-            self._bonds[left][right] = BondRecurrence(PairBond(left, right))
+            recurrence = BondRecurrence(PairBond(left, right))
+            self._bonds[left][right] = recurrence
+            self._reverse[right][left] = recurrence  # Reverse index
 
         recurrence = self._bonds[left][right]
         recurrence.increment(position)
@@ -98,11 +102,7 @@ class PairBondMap:
 
     def get_backward_bonds(self, token: TokenID) -> dict[TokenID, BondRecurrence]:
         """Get all backward bonds to a token (which tokens precede this one)."""
-        result = {}
-        for left, rights in self._bonds.items():
-            if token in rights:
-                result[left] = rights[token]
-        return result
+        return dict(self._reverse.get(token, {}))
 
     def bond_strength(self, left: TokenID, right: TokenID) -> float:
         """

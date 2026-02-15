@@ -62,7 +62,9 @@ class ActivationSpreader:
         pbm: PairBondMap,
         decay_factor: float = 0.7,
         min_activation: float = 0.01,
-        max_depth: int = 5,
+        max_depth: int = 3,
+        max_tokens: int = 500,
+        max_degree: int = 100,
     ) -> None:
         """
         Initialize activation spreader.
@@ -72,17 +74,23 @@ class ActivationSpreader:
             decay_factor: Activation multiplier per hop (0-1)
             min_activation: Stop spreading below this level
             max_depth: Maximum traversal depth
+            max_tokens: Maximum tokens to activate (prevents explosion)
+            max_degree: Skip high-degree nodes (hub avoidance)
         """
         self.pbm = pbm
         self.decay_factor = decay_factor
         self.min_activation = min_activation
         self.max_depth = max_depth
+        self.max_tokens = max_tokens
+        self.max_degree = max_degree
 
     def spread(self, seed_tokens: Sequence[TokenID]) -> dict[TokenID, float]:
         """
         Spread activation from seed tokens through bond network.
 
         Returns dict mapping tokens to their final activation levels.
+
+        OPTIMIZED: Limits total tokens, skips high-degree hubs.
         """
         # Initialize activation at seed tokens
         activation: dict[TokenID, float] = defaultdict(float)
@@ -96,6 +104,10 @@ class ActivationSpreader:
             if not current_wave:
                 break
 
+            # Early termination if we have enough tokens
+            if len(activation) >= self.max_tokens:
+                break
+
             next_wave: set[TokenID] = set()
             wave_decay = self.decay_factor ** (depth + 1)
 
@@ -104,6 +116,11 @@ class ActivationSpreader:
 
                 # Spread forward (token -> what follows)
                 forward_bonds = self.pbm.get_forward_bonds(token)
+
+                # Skip high-degree hubs (common words like "the", "and")
+                if len(forward_bonds) > self.max_degree:
+                    continue
+
                 for next_token, recurrence in forward_bonds.items():
                     strength = self.pbm.bond_strength(token, next_token)
                     spread_amount = token_activation * strength * wave_decay
@@ -114,6 +131,10 @@ class ActivationSpreader:
 
                 # Spread backward (what precedes -> token)
                 backward_bonds = self.pbm.get_backward_bonds(token)
+
+                if len(backward_bonds) > self.max_degree:
+                    continue
+
                 for prev_token, recurrence in backward_bonds.items():
                     strength = self.pbm.bond_strength(prev_token, token)
                     spread_amount = token_activation * strength * wave_decay
@@ -136,36 +157,54 @@ class ActivationSpreader:
     def get_activated_bonds(
         self,
         seed_tokens: Sequence[TokenID],
+        max_bonds: int = 100,
     ) -> list[ActivatedBond]:
         """
         Get bonds sorted by activation level.
 
-        Activation of a bond = average of its endpoint activations.
+        Activation of a bond = geometric mean of endpoint activations.
+
+        OPTIMIZED: Only checks bonds connected to activated tokens,
+        not all bonds in the PBM.
         """
         token_activation = self.spread(seed_tokens)
         seed_set = set(seed_tokens)
 
+        # Only process tokens with activation (not all tokens)
+        activated_tokens = set(token_activation.keys())
+
         activated_bonds = []
-        for recurrence in self.pbm.all_bonds():
-            bond = recurrence.bond
-            left_act = token_activation.get(bond.left, 0.0)
-            right_act = token_activation.get(bond.right, 0.0)
+        seen_bonds: set[tuple] = set()
 
-            if left_act > 0 or right_act > 0:
-                # Bond activation = geometric mean of endpoints
-                bond_activation = math.sqrt(left_act * right_act) if left_act > 0 and right_act > 0 else max(left_act, right_act) * 0.5
+        # Iterate only over activated tokens' bonds
+        for token in activated_tokens:
+            token_act = token_activation[token]
 
-                # Calculate path length (min distance from any seed)
-                path_length = self._estimate_path_length(bond, seed_set, token_activation)
+            # Forward bonds from this token
+            for right_token, recurrence in self.pbm.get_forward_bonds(token).items():
+                bond_key = (token, right_token)
+                if bond_key in seen_bonds:
+                    continue
+                seen_bonds.add(bond_key)
 
-                activated_bonds.append(ActivatedBond(
-                    bond=bond,
-                    recurrence=recurrence,
-                    activation=bond_activation,
-                    path_length=path_length,
-                ))
+                right_act = token_activation.get(right_token, 0.0)
+                if token_act > 0 or right_act > 0:
+                    bond_activation = (
+                        math.sqrt(token_act * right_act)
+                        if token_act > 0 and right_act > 0
+                        else max(token_act, right_act) * 0.5
+                    )
 
-        return sorted(activated_bonds, key=lambda b: -b.activation)
+                    activated_bonds.append(ActivatedBond(
+                        bond=recurrence.bond,
+                        recurrence=recurrence,
+                        activation=bond_activation,
+                        path_length=self._estimate_path_length(recurrence.bond, seed_set, token_activation),
+                    ))
+
+        # Sort and limit
+        activated_bonds.sort(key=lambda b: -b.activation)
+        return activated_bonds[:max_bonds]
 
     def _estimate_path_length(
         self,
@@ -301,8 +340,8 @@ class ContextRetriever:
         Returns:
             ContextResult with activated bonds
         """
-        # Spread activation from query
-        activated = self.spreader.get_activated_bonds(query_tokens)
+        # Spread activation from query (pass limit for early termination)
+        activated = self.spreader.get_activated_bonds(query_tokens, max_bonds=max_bonds * 2)
 
         # Apply identity filter if present
         if self.identity_filter:
