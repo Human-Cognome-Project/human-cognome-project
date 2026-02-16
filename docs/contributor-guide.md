@@ -5,13 +5,39 @@
 - Python 3.12+
 - PostgreSQL 16+ (for DB-dependent code)
 
-## Setup
+## Virtual Environments
+
+There are two separate venvs. Use the right one for your task.
+
+### HCP dev (pip venv)
+
+For all core HCP work — token encoding, DB operations, ingestion, tests.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+source /opt/project/repo/.venv/bin/activate
+# or create fresh:
+python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 ```
+
+Python 3.12, psycopg v3, pytest, lmdb, sqlalchemy.
+
+### OpenMM (micromamba)
+
+For physics engine / molecular simulation work. Separate Python 3.11 environment.
+
+```bash
+# Interactive session:
+source /opt/project/openmm-env/activate.sh
+
+# One-shot command:
+CUDA_VISIBLE_DEVICES=1 /tmp/bin/micromamba run -n openmm -r /opt/project/openmm-env python script.py
+```
+
+- OpenMM 8.2, CUDA 11.8, numpy, scipy
+- **Pinned to GPU 1** (GTX 750 Ti, 2GB, CUDA CC 5.0) via `CUDA_VISIBLE_DEVICES=1`
+- GPU 0 (GTX 1070, 8GB, CC 6.1) available — change to `CUDA_VISIBLE_DEVICES=0`
+- CUDA 11.8 is the last toolkit supporting CC 5.0 — do NOT upgrade
+- micromamba binary: `/tmp/bin/micromamba` (v2.5.0)
 
 ## Active Code Tree
 
