@@ -50,9 +50,13 @@ These are first-pass specs derived from working notes. They need review, critiqu
 - Earlier exploration code, mostly superseded by `src/`
 - May contain useful reference implementations
 
+### PBM Shard (`hcp_en_pbm`) — DROPPED
+
+The initial PBM implementation (110 documents, 21.3M rows) was incorrect. It stored a flat word-by-word transcript with explicit positions — not an aggregated bond map. No element of the PBM storage algorithm (pair bonds, recurrence counts, bond types) was implemented. Database dropped 2026-02-16. Will be recreated with the correct schema: aggregated bond pairs per document (token_a, token_b, count).
+
 ## What Doesn't Exist Yet
 
-- PBM construction from real text (next phase)
+- PBM construction from real text (correct implementation pending)
 - LMDB compiled inference layer
 - Entity classification (v*/w*/x* shards for People/Places/Things)
 - NSM primitive mappings beyond stub definitions

@@ -252,7 +252,7 @@ s*                              Fiction Thing Entities
 |----------|------------|----------|
 | hcp_core | AA | Universal tokens, encoding, structural, force infrastructure |
 | hcp_english | AB | English language family (~1.4M tokens) |
-| hcp_en_pbm | zA | Non-fiction PBMs (documents, content streams) |
+| hcp_en_pbm | zA | Non-fiction PBMs — DROPPED: prior implementation was incorrect (flat word list, not bond maps). Will be recreated with correct aggregated bond pair schema. |
 | hcp_fic_entities | u*, t*, s* | All fiction entities (bootstrap — splits later) |
 | hcp_nf_entities | y*, x*, w* | All non-fiction entities (bootstrap — splits later) |
 | (future) | vA | Fiction PBMs |
