@@ -22,5 +22,8 @@ sources/data/
 infra/
 resources/
 
+# Discord relay (infrastructure, not core project)
+relay/
+
 # Entity catalogs (working files — real data is in entity DBs)
 docs/research/*-entities.md
