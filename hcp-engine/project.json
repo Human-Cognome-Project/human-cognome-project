@@ -1,0 +1,48 @@
+{
+    "project_name": "HCPEngine",
+    "version": "1.0.0",
+    "project_id": "{E3C372F0-697F-4935-B13B-94C9E2B2DA72}",
+    "origin": "The primary repo for HCPEngine goes here: i.e. http://www.mydomain.com",
+    "license": "What license HCPEngine uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
+    "display_name": "HCPEngine",
+    "summary": "A short description of HCPEngine.",
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [
+        "HCPEngine"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de-sdk",
+    "external_subdirectories": [
+        "Gem"
+    ],
+    "restricted": "HCPEngine",
+    "gem_names": [
+        "Atom",
+        "AudioSystem",
+        "CameraFramework",
+        "DebugDraw",
+        "DiffuseProbeGrid",
+        "EMotionFX",
+        "EditorPythonBindings",
+        "GameState",
+        "HCPEngine",
+        "ImGui",
+        "LandscapeCanvas",
+        "LyShine",
+        "MiniAudio",
+        "PhysX5",
+        "PrefabBuilder",
+        "PrimitiveAssets",
+        "RemoteTools",
+        "SaveData",
+        "ScriptAutomation",
+        "ScriptCanvasPhysics",
+        "ScriptEvents",
+        "StartingPointInput",
+        "TextureAtlas",
+        "WhiteBox"
+    ],
+    "engine_version": "2.5.2"
+}

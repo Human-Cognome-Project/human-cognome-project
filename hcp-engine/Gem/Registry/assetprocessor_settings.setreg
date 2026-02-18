@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder HCPEngine/Assets": {
+                    "watch": "@GEMROOT:HCPEngine@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder HCPEngine/Registry": {
+                    "watch": "@GEMROOT:HCPEngine@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+
+set(FILES
+    Include/HCPEngine/HCPEngineBus.h
+    Include/HCPEngine/HCPEngineTypeIds.h
+    Source/HCPEngineSystemComponent.cpp
+    Source/HCPEngineSystemComponent.h
+    Source/HCPVocabulary.cpp
+    Source/HCPVocabulary.h
+    Source/HCPTokenizer.cpp
+    Source/HCPTokenizer.h
+    Source/HCPParticlePipeline.cpp
+    Source/HCPParticlePipeline.h
+    Source/HCPStorage.cpp
+    Source/HCPStorage.h
+)
