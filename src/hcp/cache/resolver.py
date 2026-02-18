@@ -3,7 +3,7 @@
 Handles three request types from the engine:
   1. "chunk"      → single token lookup (normal vocab resolution)
   2. "chunk_0 chunk_1" → boolean forward walk (boilerplate prefix check)
-  3. "<var>chunk" → var DB mint-or-return for unresolved sequences
+  3. "AA.AE.AF.AA.AC chunk" → var DB mint-or-return (var_request token prefix)
 
 Every resolved token gets written to LMDB so subsequent lookups are hits.
 LMDB values are msgpack-encoded: {"t": token_id} for vocab entries.
@@ -20,6 +20,12 @@ Boilerplate stores are scoped by document source metadata.
 import lmdb
 import msgpack
 import psycopg
+
+# System token IDs from hcp_core (pbm_anchor / boundary)
+VAR_REQUEST = "AA.AE.AF.AA.AC"   # var_request — prepended to var DB requests
+STREAM_START = "AA.AE.AF.AA.AA"  # stream_start
+STREAM_END = "AA.AE.AF.AA.AB"    # stream_end
+
 
 class CacheMissResolver:
     """Resolves LMDB cache misses from PostgreSQL vocab shards."""
@@ -53,7 +59,7 @@ class CacheMissResolver:
         Args:
             request: The lookup string from the engine.
                      "chunk"           → vocab lookup
-                     "<var>chunk"      → var DB
+                     "AA.AE.AF.AA.AC chunk" → var DB (var_request prefix)
             doc_id: Document being processed (for var source tracking).
             position: Position in document (for var source tracking).
             source_tags: Active source tags for boilerplate scoping.
@@ -63,8 +69,8 @@ class CacheMissResolver:
             For var:   {"t": var_id}
             None if unresolvable.
         """
-        if request.startswith("<var>"):
-            chunk = request[5:]
+        if request.startswith(VAR_REQUEST):
+            chunk = request[len(VAR_REQUEST):]
             return self._resolve_var(chunk, doc_id, position)
         else:
             return self._resolve_vocab(request)
