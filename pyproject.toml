@@ -10,6 +10,7 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "msgpack>=1.0",
+    "warp-lang>=1.11",
 ]
 
 [project.optional-dependencies]

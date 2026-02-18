@@ -19,25 +19,31 @@ source /opt/project/repo/.venv/bin/activate
 python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 ```
 
-Python 3.12, psycopg v3, pytest, lmdb, sqlalchemy.
+Python 3.12, psycopg v3, pytest, lmdb, sqlalchemy, warp-lang, fastapi, msgpack.
 
-### OpenMM (micromamba)
+### OpenMM (micromamba) — on hold
 
-For physics engine / molecular simulation work. Separate Python 3.11 environment.
+Separate Python 3.11 environment for molecular simulation. May be revisited later.
 
 ```bash
-# Interactive session:
 source /opt/project/openmm-env/activate.sh
-
-# One-shot command:
-CUDA_VISIBLE_DEVICES=1 /tmp/bin/micromamba run -n openmm -r /opt/project/openmm-env python script.py
 ```
 
-- OpenMM 8.2, CUDA 11.8, numpy, scipy
-- **Pinned to GPU 1** (GTX 750 Ti, 2GB, CUDA CC 5.0) via `CUDA_VISIBLE_DEVICES=1`
-- GPU 0 (GTX 1070, 8GB, CC 6.1) available — change to `CUDA_VISIBLE_DEVICES=0`
-- CUDA 11.8 is the last toolkit supporting CC 5.0 — do NOT upgrade
+- OpenMM 8.2, CUDA 11.8 (pinned for GTX 750 Ti CC 5.0 support)
 - micromamba binary: `/tmp/bin/micromamba` (v2.5.0)
+
+### GPU Layout
+
+| GPU | Card | VRAM | CC | Role |
+|-----|------|------|----|------|
+| cuda:0 | GTX 1070 | 8 GB | 6.1 | **Warp** (physics/compute) |
+| cuda:1 | GTX 750 Ti | 2 GB | 5.0 | Godot render, OpenMM fallback |
+
+**NVIDIA Warp** (v1.11.1) is in the HCP dev venv — bundles CUDA 12 runtime, needs driver 525+
+(current driver: 535). Both GPUs work with Warp but cuda:0 is preferred (cuda:1 lacks mempool support).
+
+Warp kernels must be defined in `.py` files on disk — inline `python -c` and stdin won't work
+(the JIT compiler needs `inspect.getsource()`).
 
 ## Active Code Tree
 
