@@ -1,16 +1,15 @@
 # Continuation Index Design
 
-**Status:** Design (pending review)
+**Status:** Design (updated 2026-02-18)
 **Date:** 2026-02-18
 **Author:** DB Specialist
 
 ## Summary
 
 The continuation index enables detection of **boilerplate** — literal
-repeated text blocks — during tokenization. Every LMDB lookup returns
-**two things**: the token_id for the chunk AND a list of possible next
-words from stored boilerplate sequences. The engine always has the
-single token in hand and decides whether to extend.
+repeated text blocks — during tokenization. The engine drives a simple
+**boolean loop**: submit a growing prefix, get true/false back, keep
+going or stop.
 
 **Scope: boilerplate only.** This is a reproduction system, not a
 meaning system. Idiom detection is a conceptual mesh concern and does
@@ -18,37 +17,52 @@ not belong here.
 
 ## Core Mechanism
 
-### LMDB Response Format
+### Boolean Forward Walk
 
-Every successful lookup returns both parts:
+The engine drives the walk. No arrays, no branching.
+
+1. Engine has chunk_0 resolved as a single token
+2. Engine peeks at chunk_1 (next space-to-space unit)
+3. Engine submits `"chunk_0 chunk_1"` → true/false against boilerplate
+   stores referenced by the document's source metadata
+4. **False** → no boilerplate match. Emit chunk_0 as individual token.
+5. **True** → concatenate next word: `"chunk_0 chunk_1 chunk_2"` → ask again
+6. Loop until false or **token_id returned**
+7. **Token_id** → Postgres detected the sequence is complete (next
+   position is stream_end), returned the boilerplate entity's token_id
+   directly. Engine emits the sequence token.
+
+At any false along the way, the engine falls back to individual tokens
+it already has in hand. No wasted work.
+
+### Request Format
+
+The initial request uses a space before the wildcard to avoid collision
+with compound words: `"chunk_0 +chunk_1"` — the space makes it
+unambiguous that this is a multi-token check, not a substring match.
+
+### LMDB Cache
+
+Forward walk results are cached as simple key → value:
 
 ```
-{
-    token_id: "AB.AB.CD.AH",           -- always present, confirmed match
-    continuations: ["end", "quick"]     -- may be empty
-}
+Key:   "chunk_0 chunk_1"    (the prefix being tested)
+Value: msgpack(true)         — partial match, keep going
+       msgpack(false)        — no match
+       msgpack("wA.XX.YY.ZZ") — complete match, token_id returned
 ```
 
-- **token_id** is never conditional — the chunk is resolved regardless.
-- **continuations** is the forward-looking index: surface forms of
-  possible next chunks that would extend into a stored boilerplate
-  sequence.
-- Empty continuations = simple token, no further checks needed.
+Three-valued: true / false / token_id. Postgres handles the terminal
+check internally — when the next position is stream_end, it returns
+the boilerplate entity's token_id directly. No separate compiled
+string lookup needed.
 
-### Engine Flow
+Vocab entries are separate:
 
-1. Look up chunk → get token_id + continuations
-2. If continuations empty → emit token_id, advance, done
-3. If continuations non-empty → peek next chunk
-4. Next chunk matches a continuation → consume it, check position 3
-   of the matching sequence(s), continue peeking
-5. Forward walk completes a full sequence → emit the sequence token
-6. Forward walk dead-ends (no match at position N) → fall back to
-   the single token_id already in hand from step 1
-
-No wasted work: the single token is always resolved. The forward walk
-is pure upside — if it finds something, great. If not, the answer was
-already there.
+```
+Key:   "chunk"              (single token lookup)
+Value: msgpack({"t": "AB.AB.CD.AH"})
+```
 
 ## What Gets Stored
 
@@ -69,13 +83,13 @@ handled by their respective systems.
 
 Boilerplate is scoped by **source tag**. A source (e.g., Gutenberg.org)
 is a Thing entity. Documents tagged with that source only check
-boilerplate associated with that source during continuation lookups.
+boilerplate associated with that source during forward walks.
 
 This keeps the search space tight:
 - Gutenberg documents check Gutenberg boilerplate
 - If the same block appears in multiple sources, it gets promoted to
   a shared boilerplate pool
-- The engine passes the active source tag(s) with the lookup request
+- The engine passes the active source tag(s) with the document metadata
 
 ## Storage: Thing Entities
 
@@ -96,63 +110,39 @@ subcategory: "gutenberg"            -- source tag
 
 The boilerplate's internal token list uses the same position storage
 tables (doc_word_positions, etc.) as any document — the entity IS a
-mini-document with its own position numbering.
+mini-document with its own position numbering. The last position holds
+the stream_end marker (`AA.AE.AF.AA.AB`).
 
-Source scoping = filtering on `category = 'boilerplate'` and
-`subcategory` matching the document's source tag.
-
-**Entry point index:** Position 1 of each boilerplate entity provides
-the entry point for continuation lookups.
+### Postgres Query for Boolean Check
 
 ```sql
--- Find all boilerplate starting with a given token, scoped to source
-SELECT wp.doc_id AS seq_id
-FROM doc_word_positions wp
-JOIN tokens t ON t.token_id = wp.doc_id
-WHERE wp.t_p3 = :chunk_p3 AND wp.t_p4 = :chunk_p4 AND wp.t_p5 = :chunk_p5
-  AND wp.positions LIKE 'AA%'   -- position 1 encoded as first 4 chars
-  AND t.category = 'boilerplate'
-  AND t.subcategory = :source_tag;
+-- Does this prefix match any boilerplate for the given source?
+-- prefix_tokens = ['chunk_0', 'chunk_1', 'chunk_2']
+-- Returns: true (partial), stream_end (complete), or false
+
+SELECT CASE
+    WHEN EXISTS (
+        -- Check if any boilerplate entity matches prefix at all positions
+        -- and has MORE positions after → partial match
+        ...
+    ) THEN true
+    WHEN EXISTS (
+        -- Check if prefix matches complete sequence (next pos = stream_end)
+        ...
+    ) THEN 'AA.AE.AF.AA.AB'  -- stream_end
+    ELSE false
+END;
 ```
 
-The reverse lookup index on `(t_p3, t_p4, t_p5)` already exists in
-migration 009.
+Exact query depends on position table encoding. The key insight: each
+step of the boolean walk is a single EXISTS check, not a scan.
 
-### Building the Continuation Index for LMDB
+## Boilerplate Detection
 
-When Postgres fills an LMDB cache miss, it also builds the
-continuation data by querying the entity shard for boilerplate
-starting with the matched token (scoped to active source):
-
-1. Find all boilerplate entities where position 1 = the lookup token
-2. For each, get the token at position 2 (the "next word")
-3. Pack into the LMDB entry alongside the token_id
-
-### Forward Walk Resolution
-
-When the engine walks forward through a matching sequence, it reads
-subsequent positions from the boilerplate entity's position data. If
-the full sequence has been pre-fetched into LMDB on the first
-continuation hit, the walk happens entirely in LMDB — no Postgres
-round-trip after the initial load.
-
-## LMDB Cache Structure
-
-The continuation data is part of the standard LMDB value for a chunk:
-
-```
-Key:   chunk surface form (TEXT)
-Value: msgpack {
-    "t": "AB.AB.CD.AH",              -- token_id
-    "c": [                            -- continuations (may be empty)
-        {"n": "gutenberg", "s": "wA.XX.YY.ZZ"},
-        {"n": "license",   "s": "wA.XX.YY.ZA"}
-    ]
-}
-```
-
-For walk-ahead, individual sequence positions can also be cached in
-LMDB if the engine pre-fetches the full boilerplate on first hit.
+Engine-side batch job across corpus identifies boilerplate:
+- Detects repeated text blocks across documents sharing a source tag
+- Writes results into entity shards as Thing entities
+- DB just stores what the engine finds
 
 ## Size Estimates
 
@@ -160,18 +150,14 @@ Boilerplate is a small, bounded set:
 
 - Per source: typically 5-20 distinct boilerplate blocks
 - Per block: 20-500 tokens (headers, footers, license text)
-- Continuation entries per LMDB lookup: usually 0, occasionally 1-3
-  for common words that start a boilerplate block
+- LMDB forward walk entries: one per prefix tested, boolean values
 - Total overhead: negligible
 
 ## Open Questions
 
-1. **Pre-fetching** — when a continuation hits, should the cache miss
-   pipeline pre-load the entire boilerplate into LMDB, or walk one
-   position at a time? Full pre-fetch avoids repeated round-trips.
-2. **Boilerplate detection** — how are boilerplate blocks identified
-   initially? Manual curation per source? Automated detection of
-   repeated text across documents sharing a source tag?
-3. **Update path** — when new boilerplate is added, LMDB entries for
-   its first token need continuation lists updated. Eviction handles
-   this naturally (stale entry evicted, fresh one loaded on next miss).
+1. **Pre-caching** — should all valid boilerplate prefixes be
+   pre-loaded into the LMDB forward db when a source tag becomes
+   active? Small enough to be practical.
+2. **Boilerplate detection** — engine batch job design TBD.
+3. **Update path** — when new boilerplate is added, stale LMDB forward
+   entries get evicted naturally. New prefixes get cached on first query.

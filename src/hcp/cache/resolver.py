@@ -2,23 +2,26 @@
 
 Handles three request types from the engine:
   1. "chunk"      → single token lookup (normal vocab resolution)
-  2. "chunk *"    → forward walk start (continuation index query)
+  2. "chunk_0 chunk_1" → boolean forward walk (boilerplate prefix check)
   3. "<var>chunk" → var DB mint-or-return for unresolved sequences
 
 Every resolved token gets written to LMDB so subsequent lookups are hits.
-LMDB values are msgpack-encoded: {"t": token_id, "c": [continuations]}.
+LMDB values are msgpack-encoded: {"t": token_id} for vocab entries.
 
-For forward walk:
-  - "chunk *"           → array of next words (or empty)
-  - "chunk nextword *"  → array of next words, or [stream_end] if complete
-  - "compiled string"   → sequence token_id (final resolution)
+Forward walk is a simple boolean loop driven by the engine:
+  - Engine submits "chunk_0 chunk_1" → true/false against boilerplate stores
+  - True → engine concatenates next word, asks again
+  - False or stream_end token → engine stops, either emits sequence or
+    falls back to individual tokens
+
+Boilerplate stores are scoped by document source metadata.
 """
 
 import lmdb
 import msgpack
 import psycopg
 
-# Stream end marker token — signals completion of a forward walk sequence
+# Stream end marker token — signals completion of a boilerplate sequence
 STREAM_END = "AA.AE.AF.AA.AB"
 
 
@@ -32,10 +35,9 @@ class CacheMissResolver:
         self.db_pass = db_pass
 
         # Open LMDB environment with named sub-databases
-        self.env = lmdb.open(lmdb_path, map_size=map_size, max_dbs=4)
-        self.vocab_db = self.env.open_db(b"vocab")       # chunk → {t, c}
-        self.fwd_db = self.env.open_db(b"forward")        # "prefix *" → [next words]
-        self.compiled_db = self.env.open_db(b"compiled")   # compiled string → token_id
+        self.env = lmdb.open(lmdb_path, map_size=map_size, max_dbs=3)
+        self.vocab_db = self.env.open_db(b"vocab")       # chunk → {t}
+        self.fwd_db = self.env.open_db(b"forward")        # prefix → bool/token_id
         self.meta_db = self.env.open_db(b"meta")           # eviction metadata
 
     def _pg_connect(self, dbname):
@@ -54,37 +56,63 @@ class CacheMissResolver:
 
         Args:
             request: The lookup string from the engine.
-                     "chunk"      → vocab lookup
-                     "chunk *"    → forward walk
-                     "<var>chunk" → var DB
+                     "chunk"           → vocab lookup
+                     "<var>chunk"      → var DB
             doc_id: Document being processed (for var source tracking).
             position: Position in document (for var source tracking).
-            source_tags: Active source tags for continuation scoping.
+            source_tags: Active source tags for boilerplate scoping.
 
         Returns:
-            For vocab:    {"t": token_id, "c": [continuations]}
-            For forward:  [next_word, ...] or [STREAM_END]
-            For var:      {"t": var_id, "c": []}
+            For vocab: {"t": token_id}
+            For var:   {"t": var_id}
             None if unresolvable.
         """
         if request.startswith("<var>"):
             chunk = request[5:]
             return self._resolve_var(chunk, doc_id, position)
-        elif request.endswith(" *"):
-            prefix = request[:-2]
-            return self._resolve_forward(prefix, source_tags)
         else:
-            return self._resolve_vocab(request, source_tags)
+            return self._resolve_vocab(request)
+
+    def check_forward(self, prefix, source_tags):
+        """Boolean forward walk check — is this prefix in any boilerplate store?
+
+        Args:
+            prefix: Space-separated token sequence, e.g. "the end"
+            source_tags: Source tags from document metadata for scoping.
+
+        Returns:
+            True if prefix matches a partial boilerplate sequence (keep going).
+            Token_id string if prefix matches a complete sequence (done).
+            False if no match (fall back to individual tokens).
+
+        Postgres handles the terminal check internally — if the next
+        position after the prefix is stream_end, it returns the
+        boilerplate entity's token_id directly.
+        """
+        if not source_tags:
+            return False
+
+        # Check LMDB cache first
+        cached = self._lmdb_get_forward(prefix)
+        if cached is not None:
+            return cached
+
+        # Query Postgres
+        result = self._query_boilerplate_prefix(prefix, source_tags)
+
+        # Cache the result
+        self._lmdb_put_forward(prefix, result)
+
+        return result
 
     # ------------------------------------------------------------------
     # Vocab resolution — normal token lookup
     # ------------------------------------------------------------------
 
-    def _resolve_vocab(self, chunk, source_tags=None):
+    def _resolve_vocab(self, chunk):
         """Resolve a chunk to a token_id via Postgres vocab shards.
 
         Checks hcp_core (single chars, punctuation) and hcp_english (words).
-        Builds continuation data from stored sequences if source_tags given.
         Writes result to LMDB.
         """
         token_id = None
@@ -100,12 +128,7 @@ class CacheMissResolver:
         if token_id is None:
             return None
 
-        # Build continuation data
-        continuations = []
-        if source_tags:
-            continuations = self._query_continuations(chunk, source_tags)
-
-        result = {"t": token_id, "c": continuations}
+        result = {"t": token_id}
 
         # Write to LMDB
         self._lmdb_put_vocab(chunk, result)
@@ -175,7 +198,7 @@ class CacheMissResolver:
         finally:
             conn.close()
 
-        result = {"t": var_id, "c": []}
+        result = {"t": var_id}
 
         # Write to LMDB
         self._lmdb_put_vocab(chunk, result)
@@ -183,77 +206,36 @@ class CacheMissResolver:
         return result
 
     # ------------------------------------------------------------------
-    # Forward walk — continuation index queries
+    # Forward walk — boolean boilerplate prefix check
     # ------------------------------------------------------------------
 
-    def _resolve_forward(self, prefix, source_tags=None):
-        """Query stored sequences for next-word continuations.
+    def _query_boilerplate_prefix(self, prefix, source_tags):
+        """Check if prefix matches any boilerplate sequence.
 
-        Args:
-            prefix: Space-separated token sequence so far.
-                    "the" → find sequences starting with "the"
-                    "the quick" → find sequences matching "the quick" at pos 1-2
-            source_tags: Active source tags for scoping.
+        Boilerplate sequences are Thing entities in hcp_nf_entities with
+        category='boilerplate', subcategory matching source_tags.
+        Their internal tokens are in position tables.
+
+        Postgres handles the terminal check: if the prefix matches a
+        complete sequence (next position = stream_end), returns the
+        boilerplate entity's token_id directly.
 
         Returns:
-            List of next words, or [STREAM_END] if prefix completes a sequence,
-            or [] if no continuations.
+            True if prefix matches a partial boilerplate sequence.
+            Token_id string if prefix completes a sequence.
+            False if no match.
         """
-        if not source_tags:
-            return []
-
-        parts = prefix.split()
-        match_position = len(parts)  # 1-indexed position to check next
-
-        conn = self._pg_connect("hcp_nf_entities")
-        try:
-            with conn.cursor() as cur:
-                # Find sequences where all prefix positions match
-                # and return the next position's token
-                #
-                # This uses the entity shard: boilerplate sequences are
-                # Thing entities with category='boilerplate'.
-                # Their internal tokens are stored in position tables.
-                #
-                # For now, query sequence_positions equivalent.
-                # TODO: adapt to actual entity position table structure
-                # when boilerplate entities are populated.
-                next_words = self._query_sequence_next(
-                    cur, parts, match_position, source_tags
-                )
-        finally:
-            conn.close()
-
-        # Cache in LMDB
-        fwd_key = prefix + " *"
-        self._lmdb_put_forward(fwd_key, next_words)
-
-        return next_words
-
-    def _query_sequence_next(self, cur, prefix_parts, next_pos, source_tags):
-        """Query entity shard for next word in matching sequences.
-
-        Returns list of next words, or [STREAM_END] if a sequence completes.
-        """
-        # This is a placeholder for the actual entity position table query.
-        # The real implementation will:
-        # 1. Find all boilerplate entities (category='boilerplate',
-        #    subcategory IN source_tags) whose position data matches
-        #    the prefix at positions 1..N
-        # 2. Return the tokens at position N+1
-        # 3. If position N+1 is stream_end marker, return [STREAM_END]
+        # TODO: Wire to actual entity position table queries when
+        # boilerplate entities are populated. The query will:
         #
-        # For now, return empty — no boilerplate entities exist yet.
-        return []
-
-    def _query_continuations(self, chunk, source_tags):
-        """Query continuation index for a vocab entry.
-
-        Returns list of next-word strings for sequences starting with chunk.
-        """
-        # Same placeholder — queries boilerplate entities where position 1
-        # matches the chunk token, returns position 2 values.
-        return []
+        # 1. Find boilerplate entities where subcategory IN (source_tags)
+        # 2. Check if the prefix tokens match sequential positions
+        # 3. If match and next position has more tokens → return True
+        # 4. If match and next position is stream_end → return entity token_id
+        # 5. No match → return False
+        #
+        # For now, return False — no boilerplate entities exist yet.
+        return False
 
     # ------------------------------------------------------------------
     # LMDB write operations
@@ -268,26 +250,21 @@ class CacheMissResolver:
                 db=self.vocab_db
             )
 
-    def _lmdb_put_forward(self, key, next_words):
-        """Write a forward walk entry to LMDB."""
+    def _lmdb_put_forward(self, prefix, result):
+        """Write a forward walk result to LMDB.
+
+        Result is True (partial match), STREAM_END (complete), or False.
+        """
         with self.env.begin(write=True) as txn:
             txn.put(
-                key.encode("utf-8"),
-                msgpack.packb(next_words),
+                prefix.encode("utf-8"),
+                msgpack.packb(result),
                 db=self.fwd_db
             )
 
-    def _lmdb_put_compiled(self, compiled_string, token_id):
-        """Write a compiled sequence entry to LMDB."""
-        with self.env.begin(write=True) as txn:
-            txn.put(
-                compiled_string.encode("utf-8"),
-                msgpack.packb(token_id),
-                db=self.compiled_db
-            )
 
     # ------------------------------------------------------------------
-    # LMDB read operations (called by engine before triggering miss)
+    # LMDB read operations
     # ------------------------------------------------------------------
 
     def lmdb_get_vocab(self, chunk):
@@ -298,19 +275,10 @@ class CacheMissResolver:
                 return None
             return msgpack.unpackb(val)
 
-    def lmdb_get_forward(self, prefix):
-        """Read a forward walk entry from LMDB. Returns list or None."""
-        key = prefix + " *"
+    def _lmdb_get_forward(self, prefix):
+        """Read a forward walk result from LMDB. Returns bool/STREAM_END or None."""
         with self.env.begin(db=self.fwd_db) as txn:
-            val = txn.get(key.encode("utf-8"))
-            if val is None:
-                return None
-            return msgpack.unpackb(val)
-
-    def lmdb_get_compiled(self, compiled_string):
-        """Read a compiled sequence entry from LMDB. Returns token_id or None."""
-        with self.env.begin(db=self.compiled_db) as txn:
-            val = txn.get(compiled_string.encode("utf-8"))
+            val = txn.get(prefix.encode("utf-8"))
             if val is None:
                 return None
             return msgpack.unpackb(val)
