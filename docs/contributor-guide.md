@@ -21,29 +21,34 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 
 Python 3.12, psycopg v3, pytest, lmdb, sqlalchemy, warp-lang, fastapi, msgpack.
 
-### OpenMM (micromamba) — on hold
+### O3DE (Open 3D Engine)
 
-Separate Python 3.11 environment for molecular simulation. May be revisited later.
+Game engine with **PhysX 5 built in**. Installed system-wide.
 
 ```bash
-source /opt/project/openmm-env/activate.sh
+# CLI (headless, no display needed):
+/opt/O3DE/25.10.2/scripts/o3de.sh <subcommand>
+
+# O3DE's bundled Python:
+/opt/O3DE/25.10.2/python/python.sh script.py
 ```
 
-- OpenMM 8.2, CUDA 11.8 (pinned for GTX 750 Ti CC 5.0 support)
-- micromamba binary: `/tmp/bin/micromamba` (v2.5.0)
+- O3DE 25.10.2 installed at `/opt/O3DE/25.10.2/`
+- PhysX 5 is native — no plugins or extensions needed
+- C++ primary language, Python scripting available
+- Requires display for Editor; CLI and builds work headless
 
 ### GPU Layout
 
 | GPU | Card | VRAM | CC | Role |
 |-----|------|------|----|------|
-| cuda:0 | GTX 1070 | 8 GB | 6.1 | **Warp** (physics/compute) |
-| cuda:1 | GTX 750 Ti | 2 GB | 5.0 | Godot render, OpenMM fallback |
+| cuda:0 | GTX 1070 | 8 GB | 6.1 | **Primary compute** (PhysX 5 / Warp) |
+| cuda:1 | GTX 750 Ti | 2 GB | 5.0 | Engine render (if needed) |
 
 **NVIDIA Warp** (v1.11.1) is in the HCP dev venv — bundles CUDA 12 runtime, needs driver 525+
-(current driver: 535). Both GPUs work with Warp but cuda:0 is preferred (cuda:1 lacks mempool support).
+(current driver: 535). Both GPUs work with Warp but cuda:0 is preferred (cuda:1 lacks mempool).
 
-Warp kernels must be defined in `.py` files on disk — inline `python -c` and stdin won't work
-(the JIT compiler needs `inspect.getsource()`).
+Warp kernels must be in `.py` files on disk (JIT needs `inspect.getsource()`).
 
 ## Active Code Tree
 
