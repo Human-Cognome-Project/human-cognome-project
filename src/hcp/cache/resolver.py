@@ -11,8 +11,8 @@ LMDB values are msgpack-encoded: {"t": token_id} for vocab entries.
 Forward walk is a simple boolean loop driven by the engine:
   - Engine submits "chunk_0 chunk_1" → true/false against boilerplate stores
   - True → engine concatenates next word, asks again
-  - False or stream_end token → engine stops, either emits sequence or
-    falls back to individual tokens
+  - False → engine falls back to individual tokens
+  - Token_id string → sequence complete, engine emits the sequence token
 
 Boilerplate stores are scoped by document source metadata.
 """
@@ -20,10 +20,6 @@ Boilerplate stores are scoped by document source metadata.
 import lmdb
 import msgpack
 import psycopg
-
-# Stream end marker token — signals completion of a boilerplate sequence
-STREAM_END = "AA.AE.AF.AA.AB"
-
 
 class CacheMissResolver:
     """Resolves LMDB cache misses from PostgreSQL vocab shards."""
@@ -85,9 +81,9 @@ class CacheMissResolver:
             Token_id string if prefix matches a complete sequence (done).
             False if no match (fall back to individual tokens).
 
-        Postgres handles the terminal check internally — if the next
-        position after the prefix is stream_end, it returns the
-        boilerplate entity's token_id directly.
+        Postgres handles the terminal check internally — if there are
+        no more positions after the prefix, it returns the boilerplate
+        entity's token_id directly.
         """
         if not source_tags:
             return False
@@ -216,9 +212,12 @@ class CacheMissResolver:
         category='boilerplate', subcategory matching source_tags.
         Their internal tokens are in position tables.
 
-        Postgres handles the terminal check: if the prefix matches a
-        complete sequence (next position = stream_end), returns the
-        boilerplate entity's token_id directly.
+        Postgres handles the terminal check: if the prefix matches and
+        there are no more positions, returns the boilerplate entity's
+        token_id directly.
+
+        Wiring route: document meta → source/type → boilerplate stores
+        for that source/type → add to query set.
 
         Returns:
             True if prefix matches a partial boilerplate sequence.
@@ -228,11 +227,12 @@ class CacheMissResolver:
         # TODO: Wire to actual entity position table queries when
         # boilerplate entities are populated. The query will:
         #
-        # 1. Find boilerplate entities where subcategory IN (source_tags)
-        # 2. Check if the prefix tokens match sequential positions
-        # 3. If match and next position has more tokens → return True
-        # 4. If match and next position is stream_end → return entity token_id
-        # 5. No match → return False
+        # 1. Check document meta for source/type
+        # 2. Check source/type for any boilerplate stores
+        # 3. Check if prefix tokens match sequential positions in those stores
+        # 4. If match and more positions remain → return True
+        # 5. If match and no more positions → return entity token_id
+        # 6. No match → return False
         #
         # For now, return False — no boilerplate entities exist yet.
         return False
@@ -253,7 +253,7 @@ class CacheMissResolver:
     def _lmdb_put_forward(self, prefix, result):
         """Write a forward walk result to LMDB.
 
-        Result is True (partial match), STREAM_END (complete), or False.
+        Result is True (partial match), token_id string (complete), or False.
         """
         with self.env.begin(write=True) as txn:
             txn.put(
@@ -276,7 +276,7 @@ class CacheMissResolver:
             return msgpack.unpackb(val)
 
     def _lmdb_get_forward(self, prefix):
-        """Read a forward walk result from LMDB. Returns bool/STREAM_END or None."""
+        """Read a forward walk result from LMDB. Returns bool/token_id or None."""
         with self.env.begin(db=self.fwd_db) as txn:
             val = txn.get(prefix.encode("utf-8"))
             if val is None:

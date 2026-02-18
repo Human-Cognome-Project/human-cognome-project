@@ -28,9 +28,9 @@ The engine drives the walk. No arrays, no branching.
 4. **False** → no boilerplate match. Emit chunk_0 as individual token.
 5. **True** → concatenate next word: `"chunk_0 chunk_1 chunk_2"` → ask again
 6. Loop until false or **token_id returned**
-7. **Token_id** → Postgres detected the sequence is complete (next
-   position is stream_end), returned the boilerplate entity's token_id
-   directly. Engine emits the sequence token.
+7. **Token_id** → Postgres detected the sequence is complete (no more
+   positions), returned the boilerplate entity's token_id directly.
+   Engine emits the sequence token.
 
 At any false along the way, the engine falls back to individual tokens
 it already has in hand. No wasted work.
@@ -53,9 +53,9 @@ Value: msgpack(true)         — partial match, keep going
 ```
 
 Three-valued: true / false / token_id. Postgres handles the terminal
-check internally — when the next position is stream_end, it returns
-the boilerplate entity's token_id directly. No separate compiled
-string lookup needed.
+check internally — when there are no more positions after the prefix,
+it returns the boilerplate entity's token_id directly. No stream_end
+marker needed; Postgres just checks "out of positions."
 
 Vocab entries are separate:
 
@@ -110,15 +110,16 @@ subcategory: "gutenberg"            -- source tag
 
 The boilerplate's internal token list uses the same position storage
 tables (doc_word_positions, etc.) as any document — the entity IS a
-mini-document with its own position numbering. The last position holds
-the stream_end marker (`AA.AE.AF.AA.AB`).
+mini-document with its own position numbering. No stream_end marker
+needed — Postgres detects completion by checking for remaining positions.
 
 ### Postgres Query for Boolean Check
 
 ```sql
 -- Does this prefix match any boilerplate for the given source?
 -- prefix_tokens = ['chunk_0', 'chunk_1', 'chunk_2']
--- Returns: true (partial), stream_end (complete), or false
+-- Returns: true (partial), token_id (complete), or false
+-- Wiring route: document meta → source/type → boilerplate stores → query set
 
 SELECT CASE
     WHEN EXISTS (
@@ -127,9 +128,9 @@ SELECT CASE
         ...
     ) THEN true
     WHEN EXISTS (
-        -- Check if prefix matches complete sequence (next pos = stream_end)
+        -- Check if prefix matches and NO more positions remain → complete
         ...
-    ) THEN 'AA.AE.AF.AA.AB'  -- stream_end
+    ) THEN entity_token_id  -- return the boilerplate entity's token_id
     ELSE false
 END;
 ```
