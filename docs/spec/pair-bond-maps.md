@@ -26,10 +26,28 @@ Each unique ordered pair of tokens is a **Forward Pair-Bond (FPB)**. The FBR is 
 
 ## Reconstruction
 
-A PBM contains enough information to reconstruct the original scoped expression:
-1. Any distinct FPB or chain of FPBs can seed reconstruction.
-2. FBR values guide ordering when multiple paths exist.
-3. For highly similar structures, even a partial FPB chain may be sufficient.
+A PBM contains enough information to reconstruct the original scoped expression. The first and last tokens of the scope are stored alongside the PBM as anchors.
+
+### Particle Physics Model
+
+Reconstruction is a soft body alignment operation:
+
+1. Each bond pair (TokenA → TokenB, count) spawns as a paired particle unit.
+2. Every pair seeks matches at both ends — the token at each end looks for another pair with a matching token.
+3. When matches meet, pairs merge at the shared token and separate at the junction.
+4. The separation event **is** the whitespace (spacebar character, 0x20). Whitespace is not stored or inserted by rule — it falls out of the merge/separate physics.
+5. Punctuation particles are "sticky" — they suppress the separation gap (no whitespace inserted adjacent to punctuation).
+6. First token anchors the start, last token anchors the end. The pairs chain between them and fit together only one way.
+
+### Decomposition (Reverse)
+
+Decomposition is the same operation in reverse:
+
+1. Every token in the input splits into two instances of itself — one as the right end of its left pair, one as the left end of its right pair.
+2. Adjacent tokens form directed pairs (TokenA → TokenB).
+3. Identical pairs are aggregated; the count becomes the FBR.
+4. Whitespace (0x20 only) is stripped — it would appear in nearly every pair and make compression useless. All other whitespace characters (newlines, tabs, CR) are structural tokens preserved as particles.
+5. First and last tokens are recorded as anchors.
 
 ## Compression
 
