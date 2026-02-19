@@ -1,24 +1,32 @@
 """Cache miss resolver — Postgres → LMDB backfill pipeline.
 
 Handles three request types from the engine:
-  1. "chunk"      → single token lookup (normal vocab resolution)
-  2. "chunk_0 chunk_1" → boolean forward walk (boilerplate prefix check)
+  1. "chunk"                → single token lookup (word, char, or label)
+  2. "chunk_0 chunk_1"      → boolean forward walk (boilerplate prefix check)
   3. "AA.AE.AF.AA.AC chunk" → var DB mint-or-return (var_request token prefix)
 
-Every resolved token gets written to LMDB so subsequent lookups are hits.
-LMDB values are msgpack-encoded: {"t": token_id} for vocab entries.
+Every resolved value gets written to LMDB so subsequent lookups are hits.
+All LMDB values are plain UTF-8 strings — zero-copy mmap reads in C++.
 
-Forward walk is a simple boolean loop driven by the engine:
-  - Engine submits "chunk_0 chunk_1" → true/false against boilerplate stores
-  - True → engine concatenates next word, asks again
-  - False → engine falls back to individual tokens
-  - Token_id string → sequence complete, engine emits the sequence token
+Sub-databases (shared contract with C++ HCPVocabulary):
+  w2t     word form   → token_id
+  c2t     char (byte) → token_id
+  l2t     label       → token_id
+  t2w     token_id    → word form   (reverse, for reconstruction)
+  t2c     token_id    → char byte   (reverse, for reconstruction)
+  forward prefix      → "0"/"1"/token_id  (boilerplate walk)
+  meta    (reserved for eviction tracking)
+
+Forward walk encoding:
+  Key not found → uncached (resolver needs to query Postgres)
+  "0"           → cached negative (no match)
+  "1"           → partial match (keep walking)
+  token_id      → complete match (emit this sequence token)
 
 Boilerplate stores are scoped by document source metadata.
 """
 
 import lmdb
-import msgpack
 import psycopg
 
 # System token IDs from hcp_core (pbm_anchor / boundary)
@@ -37,10 +45,15 @@ class CacheMissResolver:
         self.db_pass = db_pass
 
         # Open LMDB environment with named sub-databases
-        self.env = lmdb.open(lmdb_path, map_size=map_size, max_dbs=3)
-        self.vocab_db = self.env.open_db(b"vocab")       # chunk → {t}
-        self.fwd_db = self.env.open_db(b"forward")        # prefix → bool/token_id
-        self.meta_db = self.env.open_db(b"meta")           # eviction metadata
+        # 8 max_dbs: w2t, c2t, l2t, t2w, t2c, forward, meta (+1 spare)
+        self.env = lmdb.open(lmdb_path, map_size=map_size, max_dbs=8)
+        self.w2t_db = self.env.open_db(b"w2t")          # word → token_id
+        self.c2t_db = self.env.open_db(b"c2t")          # char → token_id
+        self.l2t_db = self.env.open_db(b"l2t")          # label → token_id
+        self.t2w_db = self.env.open_db(b"t2w")          # token_id → word
+        self.t2c_db = self.env.open_db(b"t2c")          # token_id → char
+        self.fwd_db = self.env.open_db(b"forward")       # prefix → 0/1/token_id
+        self.meta_db = self.env.open_db(b"meta")          # eviction metadata
 
     def _pg_connect(self, dbname):
         return psycopg.connect(
@@ -58,19 +71,17 @@ class CacheMissResolver:
 
         Args:
             request: The lookup string from the engine.
-                     "chunk"           → vocab lookup
+                     "chunk"                → vocab lookup
                      "AA.AE.AF.AA.AC chunk" → var DB (var_request prefix)
             doc_id: Document being processed (for var source tracking).
             position: Position in document (for var source tracking).
             source_tags: Active source tags for boilerplate scoping.
 
         Returns:
-            For vocab: {"t": token_id}
-            For var:   {"t": var_id}
-            None if unresolvable.
+            token_id string, or None if unresolvable.
         """
         if request.startswith(VAR_REQUEST):
-            chunk = request[len(VAR_REQUEST):]
+            chunk = request[len(VAR_REQUEST):].lstrip()
             return self._resolve_var(chunk, doc_id, position)
         else:
             return self._resolve_vocab(request)
@@ -83,16 +94,16 @@ class CacheMissResolver:
             source_tags: Source tags from document metadata for scoping.
 
         Returns:
-            True if prefix matches a partial boilerplate sequence (keep going).
+            "1" if prefix matches a partial boilerplate sequence (keep going).
             Token_id string if prefix matches a complete sequence (done).
-            False if no match (fall back to individual tokens).
+            "0" if no match (fall back to individual tokens).
 
         Postgres handles the terminal check internally — if there are
         no more positions after the prefix, it returns the boilerplate
         entity's token_id directly.
         """
         if not source_tags:
-            return False
+            return "0"
 
         # Check LMDB cache first
         cached = self._lmdb_get_forward(prefix)
@@ -114,28 +125,36 @@ class CacheMissResolver:
     def _resolve_vocab(self, chunk):
         """Resolve a chunk to a token_id via Postgres vocab shards.
 
-        Checks hcp_core (single chars, punctuation) and hcp_english (words).
-        Writes result to LMDB.
+        Determines token type (char, word, or label) and writes to
+        the appropriate LMDB sub-databases including reverse lookups.
         """
-        token_id = None
-
-        # Single character → core byte code
+        # Single character → core byte code (c2t + t2c)
         if len(chunk) == 1:
             token_id = self._lookup_core_char(chunk)
+            if token_id:
+                self._lmdb_put(self.c2t_db, chunk, token_id)
+                self._lmdb_put(self.t2c_db, token_id, chunk)
+                return token_id
 
-        # Word lookup in hcp_english
-        if token_id is None:
-            token_id = self._lookup_english_word(chunk)
+        # Word lookup in hcp_english (w2t + t2w)
+        token_id = self._lookup_english_word(chunk)
+        if token_id:
+            self._lmdb_put(self.w2t_db, chunk.lower(), token_id)
+            self._lmdb_put(self.t2w_db, token_id, chunk.lower())
+            return token_id
 
-        if token_id is None:
-            return None
+        return None
 
-        result = {"t": token_id}
+    def resolve_label(self, label):
+        """Resolve a label (structural token name) to a token_id.
 
-        # Write to LMDB
-        self._lmdb_put_vocab(chunk, result)
-
-        return result
+        Labels are system names like 'newline', 'tab', etc.
+        Writes to l2t sub-database.
+        """
+        token_id = self._lookup_label(label)
+        if token_id:
+            self._lmdb_put(self.l2t_db, label, token_id)
+        return token_id
 
     def _lookup_core_char(self, ch):
         """Look up a single character in hcp_core."""
@@ -171,6 +190,21 @@ class CacheMissResolver:
         finally:
             conn.close()
 
+    def _lookup_label(self, label):
+        """Look up a label in hcp_english or hcp_core."""
+        conn = self._pg_connect("hcp_english")
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT token_id FROM tokens "
+                    "WHERE name = %s AND layer = 'label' LIMIT 1",
+                    (label,)
+                )
+                row = cur.fetchone()
+                return row[0] if row else None
+        finally:
+            conn.close()
+
     # ------------------------------------------------------------------
     # Var DB resolution — mint or return existing
     # ------------------------------------------------------------------
@@ -180,6 +214,7 @@ class CacheMissResolver:
 
         Checks existing active var tokens first (handles LMDB eviction).
         Logs source location for librarian promotion workflow.
+        Writes to w2t (var tokens are usable as word-position tokens).
         """
         conn = self._pg_connect("hcp_var")
         try:
@@ -200,12 +235,11 @@ class CacheMissResolver:
         finally:
             conn.close()
 
-        result = {"t": var_id}
+        # Var tokens go in w2t (they occupy word positions in documents)
+        self._lmdb_put(self.w2t_db, chunk, var_id)
+        self._lmdb_put(self.t2w_db, var_id, chunk)
 
-        # Write to LMDB
-        self._lmdb_put_vocab(chunk, result)
-
-        return result
+        return var_id
 
     # ------------------------------------------------------------------
     # Forward walk — boolean boilerplate prefix check
@@ -226,9 +260,9 @@ class CacheMissResolver:
         for that source/type → add to query set.
 
         Returns:
-            True if prefix matches a partial boilerplate sequence.
+            "1" if prefix matches a partial boilerplate sequence.
             Token_id string if prefix completes a sequence.
-            False if no match.
+            "0" if no match.
         """
         # TODO: Wire to actual entity position table queries when
         # boilerplate entities are populated. The query will:
@@ -236,58 +270,64 @@ class CacheMissResolver:
         # 1. Check document meta for source/type
         # 2. Check source/type for any boilerplate stores
         # 3. Check if prefix tokens match sequential positions in those stores
-        # 4. If match and more positions remain → return True
+        # 4. If match and more positions remain → return "1"
         # 5. If match and no more positions → return entity token_id
-        # 6. No match → return False
+        # 6. No match → return "0"
         #
-        # For now, return False — no boilerplate entities exist yet.
-        return False
+        # For now, return "0" — no boilerplate entities exist yet.
+        return "0"
 
     # ------------------------------------------------------------------
-    # LMDB write operations
+    # LMDB operations — all values are plain UTF-8 strings
     # ------------------------------------------------------------------
 
-    def _lmdb_put_vocab(self, chunk, result):
-        """Write a vocab entry to LMDB."""
+    def _lmdb_put(self, db, key, value):
+        """Write a key → value pair to an LMDB sub-database.
+
+        Both key and value are UTF-8 encoded strings.
+        """
         with self.env.begin(write=True) as txn:
             txn.put(
-                chunk.encode("utf-8"),
-                msgpack.packb(result),
-                db=self.vocab_db
+                key.encode("utf-8"),
+                value.encode("utf-8"),
+                db=db
             )
+
+    def _lmdb_get(self, db, key):
+        """Read a value from an LMDB sub-database. Returns string or None."""
+        with self.env.begin(db=db) as txn:
+            val = txn.get(key.encode("utf-8"))
+            if val is None:
+                return None
+            return val.decode("utf-8")
 
     def _lmdb_put_forward(self, prefix, result):
         """Write a forward walk result to LMDB.
 
-        Result is True (partial match), token_id string (complete), or False.
+        Result is "0" (no match), "1" (partial match), or token_id (complete).
         """
-        with self.env.begin(write=True) as txn:
-            txn.put(
-                prefix.encode("utf-8"),
-                msgpack.packb(result),
-                db=self.fwd_db
-            )
-
-
-    # ------------------------------------------------------------------
-    # LMDB read operations
-    # ------------------------------------------------------------------
-
-    def lmdb_get_vocab(self, chunk):
-        """Read a vocab entry from LMDB. Returns dict or None."""
-        with self.env.begin(db=self.vocab_db) as txn:
-            val = txn.get(chunk.encode("utf-8"))
-            if val is None:
-                return None
-            return msgpack.unpackb(val)
+        self._lmdb_put(self.fwd_db, prefix, result)
 
     def _lmdb_get_forward(self, prefix):
-        """Read a forward walk result from LMDB. Returns bool/token_id or None."""
-        with self.env.begin(db=self.fwd_db) as txn:
-            val = txn.get(prefix.encode("utf-8"))
-            if val is None:
-                return None
-            return msgpack.unpackb(val)
+        """Read a forward walk result from LMDB.
+
+        Returns "0"/"1"/token_id string, or None if uncached.
+        """
+        return self._lmdb_get(self.fwd_db, prefix)
+
+    # Public read helpers
+
+    def lmdb_get_word(self, word):
+        """Read a word → token_id from LMDB. Returns string or None."""
+        return self._lmdb_get(self.w2t_db, word)
+
+    def lmdb_get_char(self, ch):
+        """Read a char → token_id from LMDB. Returns string or None."""
+        return self._lmdb_get(self.c2t_db, ch)
+
+    def lmdb_get_label(self, label):
+        """Read a label → token_id from LMDB. Returns string or None."""
+        return self._lmdb_get(self.l2t_db, label)
 
     # ------------------------------------------------------------------
     # Lifecycle
