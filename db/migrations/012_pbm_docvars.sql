@@ -4,7 +4,9 @@
 --
 -- Document-local vars: tokens specific to a single document that don't
 -- warrant a concept token in the main vocabulary. Examples: edition numbers,
--- web addresses, OCR artifacts, formatting anomalies.
+-- web addresses, OCR artifacts, formatting anomalies, authorial dialect
+-- (e.g. Twain's "warn't", "sivilize" — surface form preserved for
+-- reproduction, optional equivalence links to the standard token).
 --
 -- Var notation: DECIMAL pairs (e.g. 01.03, 42.07) — visually distinct from
 -- base-50 pair token IDs (AA.AB.AC). Two-pair format gives 00.00–99.99 = 10,000
@@ -34,7 +36,8 @@ CREATE TABLE pbm_docvars (
     doc_id      INTEGER NOT NULL REFERENCES pbm_documents(id),
     var_id      TEXT NOT NULL,               -- decimal pair, e.g. '01.03'
     surface     TEXT NOT NULL,               -- original text (reproduction key)
-    gloss       TEXT,                        -- reviewer note, e.g. 'OCR artifact', '3rd edition marker'
+    equivalence TEXT,                        -- base-50 token_id of standard form (authorial dialect, e.g. "warn't" → token for "wasn't")
+    gloss       TEXT,                        -- reviewer note, e.g. 'OCR artifact', 'Twain dialect'
 
     PRIMARY KEY (doc_id, var_id),
     CONSTRAINT pbm_docvars_surface_unique UNIQUE (doc_id, surface)

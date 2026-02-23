@@ -30,12 +30,17 @@ pbm_docvars (
     doc_id      INTEGER NOT NULL REFERENCES pbm_documents(id),
     var_id      TEXT NOT NULL,           -- decimal pair, e.g. '01.03'
     surface     TEXT NOT NULL,           -- original text
+    equivalence TEXT,                    -- base-50 token_id of standard form (authorial dialect)
     gloss       TEXT,                    -- reviewer note
 
     PRIMARY KEY (doc_id, var_id),
     UNIQUE (doc_id, surface)            -- dedup key
 )
 ```
+
+### Equivalence Field
+
+Optional link from a document-specific var to the standard token it represents. Used for authorial dialect — written phonetic spellings an author creates (e.g. Twain's `"warn't"` → token_id for "wasn't", `"sivilize"` → token_id for "civilize"). The surface form is preserved exactly for reproduction; the equivalence tells the engine what the word *means* for inference.
 
 ## Kernel Integration
 
@@ -91,4 +96,5 @@ Planned but not built yet: loading specific decimal vars from other PBM sets for
 | Assignment | Consecutive, gaps OK |
 | Engine padding | Leading `00` pairs to match token width |
 | Var DB interaction | None during PBM generation |
+| Equivalence | Optional base-50 token_id for authorial dialect |
 | Mint function | `mint_docvar(doc_id, surface) → var_id` |
