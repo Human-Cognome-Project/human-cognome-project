@@ -95,6 +95,23 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================================
+-- 3. pbm_var_bonds — Var pairings (B = decimal XX.YY)
+-- ============================================================================
+-- Decimal vars have no implicit prefix — store full var_id as-is.
+-- Same structure as other bond subtables: starter_id FK, B-side columns, count.
+
+CREATE TABLE pbm_var_bonds (
+    starter_id  INTEGER NOT NULL REFERENCES pbm_starters(id),
+    b_var_id    TEXT NOT NULL,           -- full decimal var_id, e.g. '01.03'
+    count       INTEGER NOT NULL,
+
+    PRIMARY KEY (starter_id, b_var_id)
+);
+
+-- Reverse lookup: find all starters bonded to a specific var
+CREATE INDEX idx_var_bonds_b ON pbm_var_bonds (b_var_id);
+
+-- ============================================================================
 -- Verify
 -- ============================================================================
 

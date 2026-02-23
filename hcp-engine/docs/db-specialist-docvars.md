@@ -62,12 +62,19 @@ Two outcomes per var:
 
 Decimal vars appear in the existing PBM bond tables. The A-side or B-side of a bond can be a decimal var_id. Since decimal notation is visually and structurally distinct from hex token IDs, the bond tables don't need any schema changes — the var_id is just a TEXT value like any other token.
 
-**Question for engine specialist**: Which bond subtable should decimal vars route to? Options:
-- New `pbm_var_bonds` subtable (cleanest separation)
-- Existing `pbm_word_bonds` (if you treat vars as word-like)
-- Store full decimal ID in the starter/bond without prefix stripping
+Decimal vars route to a dedicated **`pbm_var_bonds`** subtable:
 
-I'd recommend a dedicated `pbm_var_bonds` subtable — keeps the prefix tree clean and avoids confusion with the implicit namespace prefixes in other bond tables. Let me know and I'll add it.
+```sql
+pbm_var_bonds (
+    starter_id  INTEGER NOT NULL REFERENCES pbm_starters(id),
+    b_var_id    TEXT NOT NULL,       -- full decimal var_id, e.g. '01.03'
+    count       INTEGER NOT NULL,
+
+    PRIMARY KEY (starter_id, b_var_id)
+)
+```
+
+No prefix stripping — decimal vars have no implicit namespace prefix, so the full `XX.YY` is stored as-is. The UNION ALL query for reconstructing full bonds just passes `b_var_id` through directly.
 
 ## Future: Cross-Document Var Loading
 
