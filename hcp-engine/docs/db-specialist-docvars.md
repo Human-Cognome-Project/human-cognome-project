@@ -14,7 +14,7 @@ These are **full token entries** scoped to one document: they have an ID, a surf
 
 All var IDs use **decimal pairs**, not hex:
 - `01.03`, `42.07`, `00.00`
-- Visually distinct from hex token IDs (`AA.AB.AC`)
+- Visually distinct from base-50 pair token IDs (`AA.AB.AC`)
 - Two-pair format: `00.00` through `99.99` = 10,000 slots per document
 
 ### Zero-Padding for Engine Token Width
@@ -60,7 +60,7 @@ Two outcomes per var:
 
 ### Bond Storage for Decimal Vars
 
-Decimal vars appear in the existing PBM bond tables. The A-side or B-side of a bond can be a decimal var_id. Since decimal notation is visually and structurally distinct from hex token IDs, the bond tables don't need any schema changes — the var_id is just a TEXT value like any other token.
+Decimal vars appear in the existing PBM bond tables. The A-side or B-side of a bond can be a decimal var_id. Since decimal notation is visually and structurally distinct from base-50 pair token IDs, the bond tables don't need any schema changes — the var_id is just a TEXT value like any other token.
 
 Decimal vars route to a dedicated **`pbm_var_bonds`** subtable:
 

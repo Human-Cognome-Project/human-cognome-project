@@ -7,7 +7,7 @@
 -- web addresses, OCR artifacts, formatting anomalies.
 --
 -- Var notation: DECIMAL pairs (e.g. 01.03, 42.07) — visually distinct from
--- hex-pair token IDs (AA.AB.AC). Two-pair format gives 00.00–99.99 = 10,000
+-- base-50 pair token IDs (AA.AB.AC). Two-pair format gives 00.00–99.99 = 10,000
 -- slots per document. Engine zero-pads leading 00 pairs to match token width
 -- (e.g. 01.03 → 00.00.00.01.03 for 5-pair pipeline).
 --
