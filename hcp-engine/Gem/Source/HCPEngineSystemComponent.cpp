@@ -235,22 +235,49 @@ namespace HCPEngine
         AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars; PBD particle system active",
             m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
 
-        // ---- Self-test: process a Gutenberg text through the full pipeline ----
+        // ---- Self-test: process Gutenberg texts through the full pipeline ----
         {
-            const char* testFile = "/opt/project/repo/data/gutenberg/texts/01952_The Yellow Wallpaper.txt";
-            std::ifstream ifs(testFile);
-            if (ifs.is_open())
+            struct TestDoc {
+                const char* path;
+                const char* name;
+                const char* century;  // base-50 pair
+            };
+            TestDoc testDocs[] = {
+                { "/opt/project/repo/data/gutenberg/texts/01952_The Yellow Wallpaper.txt",
+                  "The Yellow Wallpaper", "AS" },
+                { "/opt/project/repo/data/gutenberg/texts/00011_Alices Adventures in Wonderland.txt",
+                  "Alice's Adventures in Wonderland", "AS" },
+                { "/opt/project/repo/data/gutenberg/texts/00076_Adventures of Huckleberry Finn.txt",
+                  "Adventures of Huckleberry Finn", "AS" },
+                { "/opt/project/repo/data/gutenberg/texts/00098_A Tale of Two Cities.txt",
+                  "A Tale of Two Cities", "AS" },
+            };
+
+            if (!m_writeKernel.IsConnected())
             {
+                m_writeKernel.Connect();
+            }
+
+            for (const auto& doc : testDocs)
+            {
+                std::ifstream ifs(doc.path);
+                if (!ifs.is_open())
+                {
+                    fprintf(stderr, "[HCPEngine TEST] Could not open '%s'\n", doc.path);
+                    fflush(stderr);
+                    continue;
+                }
+
                 std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
                 ifs.close();
                 AZStd::string text(stdText.c_str(), stdText.size());
 
-                fprintf(stderr, "[HCPEngine TEST] Loaded '%s' (%zu bytes)\n", testFile, text.size());
+                fprintf(stderr, "\n[HCPEngine TEST] === %s (%zu bytes) ===\n", doc.name, text.size());
                 fflush(stderr);
 
                 auto t0 = std::chrono::high_resolution_clock::now();
 
-                // Step 1: Tokenize (with gap-encoded positions — gaps = spaces)
+                // Tokenize
                 TokenStream stream = Tokenize(text, m_vocabulary);
                 auto t1 = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine TEST] Tokenized -> %zu tokens, %u slots (%.1f ms)\n",
@@ -258,23 +285,9 @@ namespace HCPEngine
                     std::chrono::duration<double, std::milli>(t1 - t0).count());
                 fflush(stderr);
 
-                // Step 2: Position-based disassembly (per-document storage)
+                // Position round-trip verification
                 PositionMap posMap = DisassemblePositions(stream);
-                auto t2 = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] Position disassembly -> %zu unique tokens, %u slots (%.3f ms)\n",
-                    posMap.uniqueTokens, posMap.totalTokens,
-                    std::chrono::duration<double, std::milli>(t2 - t1).count());
-                fflush(stderr);
-
-                // Step 3: Position-based reassembly (exact reconstruction)
                 TokenStream reassembled = ReassemblePositions(posMap);
-                auto t3 = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] Position reassembly -> %zu tokens, %u slots (%.3f ms)\n",
-                    reassembled.tokenIds.size(), reassembled.totalSlots,
-                    std::chrono::duration<double, std::milli>(t3 - t2).count());
-                fflush(stderr);
-
-                // Step 4: Verify exact round-trip (tokens AND positions)
                 bool match = (stream.tokenIds.size() == reassembled.tokenIds.size());
                 if (match)
                 {
@@ -284,119 +297,47 @@ namespace HCPEngine
                             stream.positions[i] != reassembled.positions[i])
                         {
                             match = false;
-                            AZLOG_INFO("HCPEngine TEST: Mismatch at index %zu: '%s'@%u vs '%s'@%u",
+                            fprintf(stderr, "[HCPEngine TEST] Mismatch at index %zu: '%s'@%u vs '%s'@%u\n",
                                 i,
                                 stream.tokenIds[i].c_str(), stream.positions[i],
                                 reassembled.tokenIds[i].c_str(), reassembled.positions[i]);
+                            fflush(stderr);
                             break;
                         }
                     }
                 }
-                else
-                {
-                    AZLOG_INFO("HCPEngine TEST: Length mismatch: original %zu vs reassembled %zu",
-                        stream.tokenIds.size(), reassembled.tokenIds.size());
-                }
-
                 fprintf(stderr, "[HCPEngine TEST] Round-trip: %s\n",
                     match ? "EXACT MATCH" : "MISMATCH");
                 fflush(stderr);
 
-                // Step 5: Derive PBM from token stream (for aggregate pipeline)
+                // Derive and store PBM
                 PBMData pbmData = DerivePBM(stream);
-                auto t4 = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] PBM derived -> %zu unique bonds, %zu total pairs (%.3f ms)\n",
-                    pbmData.bonds.size(), pbmData.totalPairs,
-                    std::chrono::duration<double, std::milli>(t4 - t3).count());
+                fprintf(stderr, "[HCPEngine TEST] PBM -> %zu unique bonds, %zu total pairs\n",
+                    pbmData.bonds.size(), pbmData.totalPairs);
                 fflush(stderr);
 
-                // Store PBM into hcp_fic_pbm
-                if (!m_writeKernel.IsConnected())
-                {
-                    m_writeKernel.Connect();
-                }
                 if (m_writeKernel.IsConnected())
                 {
                     AZStd::string pbmDocId = m_writeKernel.StorePBM(
-                        "The Yellow Wallpaper", "AS", pbmData);
+                        doc.name, doc.century, pbmData);
                     if (!pbmDocId.empty())
                     {
                         fprintf(stderr, "[HCPEngine TEST] PBM stored -> %s\n", pbmDocId.c_str());
                     }
                     else
                     {
-                        fprintf(stderr, "[HCPEngine TEST] PBM storage failed\n");
+                        fprintf(stderr, "[HCPEngine TEST] PBM storage FAILED\n");
                     }
                     fflush(stderr);
                 }
-                else
-                {
-                    fprintf(stderr, "[HCPEngine TEST] Write kernel not connected, skipping PBM store\n");
-                    fflush(stderr);
-                }
-
-                // Step 6: Base-50 position encode/decode round-trip
-                {
-                    size_t totalPositions = 0;
-                    size_t encodedBytes = 0;
-                    bool b50match = true;
-                    for (const auto& entry : posMap.entries)
-                    {
-                        AZStd::string encoded = EncodePositions(entry.positions);
-                        AZStd::vector<AZ::u32> decoded = DecodePositions(encoded);
-                        encodedBytes += encoded.size();
-                        totalPositions += entry.positions.size();
-                        if (decoded.size() != entry.positions.size())
-                        {
-                            b50match = false;
-                            break;
-                        }
-                        for (size_t j = 0; j < decoded.size(); ++j)
-                        {
-                            if (decoded[j] != entry.positions[j])
-                            {
-                                b50match = false;
-                                fprintf(stderr, "[HCPEngine TEST] B50 mismatch: token '%s' pos[%zu] = %u, decoded = %u\n",
-                                    entry.tokenId.c_str(), j, entry.positions[j], decoded[j]);
-                                fflush(stderr);
-                                break;
-                            }
-                        }
-                        if (!b50match) break;
-                    }
-                    fprintf(stderr, "[HCPEngine TEST] Base-50 encode/decode: %s (%zu positions -> %zu bytes)\n",
-                        b50match ? "EXACT MATCH" : "MISMATCH", totalPositions, encodedBytes);
-                    fflush(stderr);
-                }
-
-                // Storage stats
-                AZ::u32 spaceSlotsOmitted = stream.totalSlots -
-                    static_cast<AZ::u32>(stream.tokenIds.size());
-
-                // DB-format size estimate: base-50 positions + token segment overhead
-                size_t dbEstBytes = 0;
-                for (const auto& entry : posMap.entries)
-                {
-                    dbEstBytes += 6;  // ~6 bytes for token segments (p3.p4.p5 or similar)
-                    dbEstBytes += entry.positions.size() * 4;  // 4 chars per position
-                }
-
-                fprintf(stderr, "[HCPEngine TEST] Storage: DB est %zu bytes, %u space slots implicit, PBM %zu bonds\n",
-                    dbEstBytes, spaceSlotsOmitted, pbmData.bonds.size());
-                fflush(stderr);
 
                 auto tEnd = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] %s — total pipeline %.1f ms\n",
+                fprintf(stderr, "[HCPEngine TEST] %s — pipeline %.1f ms\n",
                     match ? "EXACT MATCH" : "MISMATCH",
                     std::chrono::duration<double, std::milli>(tEnd - t0).count());
                 fflush(stderr);
             }
-            else
-            {
-                AZLOG_INFO("HCPEngine TEST: Could not open test file '%s'", testFile);
-            }
         }
-
         // ---- Physics detection test ----
         {
             const char* testStr = "the cat sat on the mat";

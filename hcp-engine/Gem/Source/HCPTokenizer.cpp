@@ -163,7 +163,8 @@ namespace HCPEngine
     static bool ResolveCore(
         const AZStd::string& input,
         const HCPVocabulary& vocab,
-        AZStd::vector<AZStd::string>& ids)
+        AZStd::vector<AZStd::string>& ids,
+        AZStd::unordered_map<AZStd::string, AZStd::string>* varCache = nullptr)
     {
         if (input.empty()) return false;
 
@@ -204,8 +205,21 @@ namespace HCPEngine
 
         AZStd::string core(input.data() + leadEnd, trailStart - leadEnd);
 
-        // Step 2: core lowercase
+        // Check var cache — if this core was var'd before, reuse immediately
         AZStd::string coreLower = ToLower(core);
+        if (varCache)
+        {
+            auto cacheIt = varCache->find(coreLower);
+            if (cacheIt != varCache->end())
+            {
+                for (const auto& id : leadIds)  ids.push_back(id);
+                ids.push_back(cacheIt->second);
+                for (const auto& id : trailIds) ids.push_back(id);
+                return true;
+            }
+        }
+
+        // Step 2: core lowercase
         AZStd::string tid = vocab.LookupWord(coreLower);
 
         // Step 3: core exact case
@@ -231,7 +245,7 @@ namespace HCPEngine
         // Suffixes: core ends with stripped form → stem = core[0:N-sfxLen]
         // Prefixes: core starts with stripped form → stem = core[pfxLen:]
 
-        // Suffixes — bucket lookup by word's last char, LMDB-only stem check
+        // Suffixes — bucket lookup by word's last char, full resolver on stem
         {
             char lastChar = core.back();
             // Try lowercase key first (most affixes are lowercase)
@@ -252,9 +266,21 @@ namespace HCPEngine
 
                     AZStd::string stem(core.data(), stemLen);
                     AZStd::string stemLower = ToLower(stem);
-                    AZStd::string stemTid = vocab.LookupWordLocal(stemLower);
+
+                    // Check var cache for stem — a previously var'd word decomposes here
+                    AZStd::string stemTid;
+                    if (varCache)
+                    {
+                        auto cacheIt = varCache->find(stemLower);
+                        if (cacheIt != varCache->end())
+                            stemTid = cacheIt->second;
+                    }
+                    // Full LookupWord — triggers resolver/Postgres on LMDB miss.
+                    // Cost is nominal (once per unique stem, then cached in LMDB).
+                    if (stemTid.empty())
+                        stemTid = vocab.LookupWord(stemLower);
                     if (stemTid.empty() && stemLower != stem)
-                        stemTid = vocab.LookupWordLocal(stem);
+                        stemTid = vocab.LookupWord(stem);
 
                     if (!stemTid.empty())
                     {
@@ -268,7 +294,7 @@ namespace HCPEngine
             }
         }
 
-        // Prefixes — bucket lookup by word's first char, LMDB-only stem check
+        // Prefixes — bucket lookup by word's first char, full resolver on stem
         {
             char firstChar = core[0];
             const auto* bucket = vocab.GetPrefixesForChar(
@@ -288,9 +314,19 @@ namespace HCPEngine
                     AZStd::string stem(core.data() + pfx.stripped.size(),
                                        core.size() - pfx.stripped.size());
                     AZStd::string stemLower = ToLower(stem);
-                    AZStd::string stemTid = vocab.LookupWordLocal(stemLower);
+
+                    // Check var cache for stem
+                    AZStd::string stemTid;
+                    if (varCache)
+                    {
+                        auto cacheIt = varCache->find(stemLower);
+                        if (cacheIt != varCache->end())
+                            stemTid = cacheIt->second;
+                    }
+                    if (stemTid.empty())
+                        stemTid = vocab.LookupWord(stemLower);
                     if (stemTid.empty() && stemLower != stem)
-                        stemTid = vocab.LookupWordLocal(stem);
+                        stemTid = vocab.LookupWord(stem);
 
                     if (!stemTid.empty())
                     {
@@ -319,10 +355,10 @@ namespace HCPEngine
             if (dashTid.empty()) return false;
 
             AZStd::vector<AZStd::string> leftIds, rightIds;
-            bool leftOk  = left.empty()  || ResolveCore(left, vocab, leftIds);
-            bool rightOk = right.empty() || ResolveCore(right, vocab, rightIds);
+            bool leftOk  = left.empty()  || ResolveCore(left, vocab, leftIds, varCache);
+            bool rightOk = right.empty() || ResolveCore(right, vocab, rightIds, varCache);
 
-            // Var any unresolved parts
+            // Var any unresolved parts — and cache them
             if (!leftOk && !left.empty())
             {
                 leftIds.clear();
@@ -330,6 +366,8 @@ namespace HCPEngine
                 varReq += ' ';
                 varReq += left;
                 leftIds.push_back(varReq);
+                if (varCache)
+                    (*varCache)[ToLower(left)] = varReq;
             }
             if (!rightOk && !right.empty())
             {
@@ -338,6 +376,8 @@ namespace HCPEngine
                 varReq += ' ';
                 varReq += right;
                 rightIds.push_back(varReq);
+                if (varCache)
+                    (*varCache)[ToLower(right)] = varReq;
             }
 
             for (const auto& id : leadIds)   ids.push_back(id);
@@ -485,7 +525,8 @@ namespace HCPEngine
         const AZStd::string& chunk,
         [[maybe_unused]] const HCPVocabulary& vocab,
         TokenStream& stream,
-        AZ::u32& slotPos)
+        AZ::u32& slotPos,
+        AZStd::unordered_map<AZStd::string, AZStd::string>* varCache = nullptr)
     {
         if (s_varDebugCount < 50)
         {
@@ -500,6 +541,10 @@ namespace HCPEngine
 
         stream.tokenIds.push_back(request);
         stream.positions.push_back(slotPos++);
+
+        // Cache so subsequent identical chunks resolve instantly
+        if (varCache)
+            (*varCache)[ToLower(chunk)] = request;
     }
 
     // ---- Main tokenizer ----
@@ -519,6 +564,10 @@ namespace HCPEngine
         TokenStream stream;
         stream.tokenIds.reserve(normalized.size() / 4);
         stream.positions.reserve(normalized.size() / 4);
+
+        // Per-document var cache: lowercase form → VAR_REQUEST token string.
+        // Once a chunk vars, every subsequent identical chunk resolves instantly.
+        AZStd::unordered_map<AZStd::string, AZStd::string> varCache;
 
         AZ::u32 slotPos = 0;
         s_varDebugCount = 0;  // Reset per-tokenize debug counter
@@ -608,19 +657,30 @@ namespace HCPEngine
                         }
                     }
 
-                    // Var the dot-separated core
+                    // Var the dot-separated core (check cache first)
                     AZStd::string core(chunk.data() + le, ts - le);
-                    AZStd::string varReq = VAR_REQUEST;
-                    varReq += ' ';
-                    varReq += core;
+                    AZStd::string coreLower = ToLower(core);
+                    auto dotCacheIt = varCache.find(coreLower);
+                    AZStd::string varReq;
+                    if (dotCacheIt != varCache.end())
+                    {
+                        varReq = dotCacheIt->second;
+                    }
+                    else
+                    {
+                        varReq = VAR_REQUEST;
+                        varReq += ' ';
+                        varReq += core;
+                        varCache[coreLower] = varReq;
+                        if (s_varDebugCount < 50)
+                        {
+                            fprintf(stderr, "[Tokenizer VAR] dot-value: \"%s\"\n", core.c_str());
+                            fflush(stderr);
+                            ++s_varDebugCount;
+                        }
+                    }
                     stream.tokenIds.push_back(varReq);
                     stream.positions.push_back(slotPos++);
-                    if (s_varDebugCount < 50)
-                    {
-                        fprintf(stderr, "[Tokenizer VAR] dot-value: \"%s\"\n", core.c_str());
-                        fflush(stderr);
-                        ++s_varDebugCount;
-                    }
 
                     // Emit trailing punct
                     for (size_t j = ts; j < chunk.size(); ++j)
@@ -637,6 +697,17 @@ namespace HCPEngine
             }
 
             AZStd::string lower = ToLower(chunk);
+
+            // ==== VAR CACHE CHECK: previously var'd chunk resolves instantly ====
+            {
+                auto cacheIt = varCache.find(lower);
+                if (cacheIt != varCache.end())
+                {
+                    stream.tokenIds.push_back(cacheIt->second);
+                    stream.positions.push_back(slotPos++);
+                    continue;
+                }
+            }
 
             // ==== STEP 1: Lowercase space-to-space ====
             AZStd::string tid = vocab.LookupWord(lower);
@@ -708,19 +779,20 @@ namespace HCPEngine
                 {
                     AZStd::string core(chunk.data() + leadEnd, trailStart - leadEnd);
                     AZStd::vector<AZStd::string> coreIds;
-                    bool coreResolved = ResolveCore(core, vocab, coreIds);
+                    bool coreResolved = ResolveCore(core, vocab, coreIds, &varCache);
 
                     // If core didn't resolve via stack, try greedy walk on it
                     if (!coreResolved)
                         coreResolved = TryGreedyWalk(core, vocab, coreIds);
 
-                    // If core still unresolved, var just the core
+                    // If core still unresolved, var just the core and cache it
                     if (!coreResolved)
                     {
                         AZStd::string varReq = VAR_REQUEST;
                         varReq += ' ';
                         varReq += core;
                         coreIds.push_back(varReq);
+                        varCache[ToLower(core)] = varReq;
                         if (s_varDebugCount < 50)
                         {
                             fprintf(stderr, "[Tokenizer VAR] unresolved: \"%s\"\n", core.c_str());
@@ -780,7 +852,7 @@ namespace HCPEngine
                 continue;
 
             // ==== STEP 7: Var DB handoff ====
-            HandoffToVarDb(chunk, vocab, stream, slotPos);
+            HandoffToVarDb(chunk, vocab, stream, slotPos, &varCache);
 
             next_chunk:;
         }

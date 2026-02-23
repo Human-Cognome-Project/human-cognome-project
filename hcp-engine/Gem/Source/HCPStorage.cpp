@@ -10,6 +10,25 @@ namespace HCPEngine
     static constexpr const char* DEFAULT_CONNINFO =
         "dbname=hcp_fic_pbm user=hcp password=hcp_dev host=localhost port=5432";
 
+    // Var request token prefix — must match HCPVocabulary.h VAR_REQUEST
+    static constexpr const char* VAR_PREFIX = "AA.AE.AF.AA.AC";
+    static constexpr size_t VAR_PREFIX_LEN = 14;  // strlen("AA.AE.AF.AA.AC")
+
+    // Check if a token is a var request (prefix + space + surface form)
+    static bool IsVarToken(const AZStd::string& token)
+    {
+        return token.size() > VAR_PREFIX_LEN + 1 &&
+               token.starts_with(VAR_PREFIX) &&
+               token[VAR_PREFIX_LEN] == ' ';
+    }
+
+    // Extract the surface form from a var token (everything after "AA.AE.AF.AA.AC ")
+    static AZStd::string VarSurface(const AZStd::string& token)
+    {
+        return AZStd::string(token.data() + VAR_PREFIX_LEN + 1,
+                             token.size() - VAR_PREFIX_LEN - 1);
+    }
+
     // Base-50 alphabet for position encoding
     static const char B50[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx";
 
@@ -508,6 +527,57 @@ namespace HCPEngine
             docName.c_str(), docId.c_str(), docPk);
         fflush(stderr);
 
+        // ---- Mint document-local vars (decimal pair IDs) ----
+        // Scan all bonds for var tokens, mint a decimal ID for each unique surface form.
+        // Map: full var token string → short decimal var_id (e.g. "01.03")
+        AZStd::unordered_map<AZStd::string, AZStd::string> varToDecimal;
+        {
+            AZStd::unordered_map<AZStd::string, AZStd::string> surfaceSeen;  // surface → var_id
+            for (const auto& bond : pbmData.bonds)
+            {
+                for (const AZStd::string* tok : { &bond.tokenA, &bond.tokenB })
+                {
+                    if (!IsVarToken(*tok) || varToDecimal.count(*tok))
+                        continue;
+
+                    AZStd::string surface = VarSurface(*tok);
+                    auto it = surfaceSeen.find(surface);
+                    if (it != surfaceSeen.end())
+                    {
+                        varToDecimal[*tok] = it->second;
+                        continue;
+                    }
+
+                    // Call mint_docvar(doc_pk, surface) → returns decimal var_id
+                    AZStd::string docPkStr2 = AZStd::to_string(docPk);
+                    const char* params[] = { docPkStr2.c_str(), surface.c_str() };
+                    PGresult* res = PQexecParams(m_conn,
+                        "SELECT mint_docvar($1::integer, $2)",
+                        2, nullptr, params, nullptr, nullptr, 0);
+                    if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+                    {
+                        AZStd::string varId = PQgetvalue(res, 0, 0);
+                        varToDecimal[*tok] = varId;
+                        surfaceSeen[surface] = varId;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "[HCPStorage] mint_docvar failed for '%s': %s\n",
+                            surface.c_str(), PQerrorMessage(m_conn));
+                        fflush(stderr);
+                    }
+                    PQclear(res);
+                }
+            }
+        }
+
+        if (!varToDecimal.empty())
+        {
+            fprintf(stderr, "[HCPStorage] StorePBM: minted %zu document-local vars\n",
+                varToDecimal.size());
+            fflush(stderr);
+        }
+
         // Group bonds by A-side token
         AZStd::unordered_map<AZStd::string, AZStd::vector<const Bond*>> bondsByA;
         for (const auto& bond : pbmData.bonds)
@@ -515,22 +585,38 @@ namespace HCPEngine
             bondsByA[bond.tokenA].push_back(&bond);
         }
 
-        size_t wordBonds = 0, charBonds = 0, markerBonds = 0, skippedBonds = 0;
+        size_t wordBonds = 0, charBonds = 0, markerBonds = 0, varBonds = 0;
         AZStd::string docPkStr = AZStd::to_string(docPk);
 
         for (const auto& [tokenA, bonds] : bondsByA)
         {
-            // Parse A-side token ID
-            AZStd::string aParts[5];
-            SplitTokenId(tokenA, aParts);
-
-            // Insert starter row
+            // Insert starter row — var A-sides use zero-padded decimal decomposition
             int starterId = 0;
             {
+                AZStd::string aNs, aP2, aP3, aP4, aP5;
+                auto varIt = varToDecimal.find(tokenA);
+                if (varIt != varToDecimal.end())
+                {
+                    // Decimal var_id "XX.YY" → zero-padded 5-part: 00.00.00.XX.YY
+                    const AZStd::string& vid = varIt->second;
+                    size_t dot = vid.find('.');
+                    aNs = "00";
+                    aP2 = "00";
+                    aP3 = "00";
+                    aP4 = AZStd::string(vid.data(), dot);
+                    aP5 = AZStd::string(vid.data() + dot + 1, vid.size() - dot - 1);
+                }
+                else
+                {
+                    AZStd::string aParts[5];
+                    SplitTokenId(tokenA, aParts);
+                    aNs = aParts[0]; aP2 = aParts[1]; aP3 = aParts[2];
+                    aP4 = aParts[3]; aP5 = aParts[4];
+                }
+
                 const char* params[] = {
                     docPkStr.c_str(),
-                    aParts[0].c_str(), aParts[1].c_str(),
-                    aParts[2].c_str(), aParts[3].c_str(), aParts[4].c_str()
+                    aNs.c_str(), aP2.c_str(), aP3.c_str(), aP4.c_str(), aP5.c_str()
                 };
                 PGresult* res = PQexecParams(m_conn,
                     "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5) "
@@ -551,12 +637,43 @@ namespace HCPEngine
 
             AZStd::string starterIdStr = AZStd::to_string(starterId);
 
-            // Insert each B-side bond into the correct table
+            // Insert each B-side bond into the correct subtable
             for (const Bond* bond : bonds)
             {
+                AZStd::string countStr = AZStd::to_string(bond->count);
+
+                // Check B-side for var first
+                auto varIt = varToDecimal.find(bond->tokenB);
+                if (varIt != varToDecimal.end())
+                {
+                    // Var bond → pbm_var_bonds with short decimal var_id
+                    const char* params[] = {
+                        starterIdStr.c_str(),
+                        varIt->second.c_str(),
+                        countStr.c_str()
+                    };
+                    PGresult* res = PQexecParams(m_conn,
+                        "INSERT INTO pbm_var_bonds (starter_id, b_var_id, count) "
+                        "VALUES ($1::integer, $2, $3::integer) "
+                        "ON CONFLICT (starter_id, b_var_id) "
+                        "DO UPDATE SET count = pbm_var_bonds.count + EXCLUDED.count",
+                        3, nullptr, params, nullptr, nullptr, 0);
+                    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+                    {
+                        fprintf(stderr, "[HCPStorage] var bond insert failed: %s\n",
+                            PQerrorMessage(m_conn));
+                        fflush(stderr);
+                    }
+                    else
+                    {
+                        ++varBonds;
+                    }
+                    PQclear(res);
+                    continue;
+                }
+
                 AZStd::string bParts[5];
                 SplitTokenId(bond->tokenB, bParts);
-                AZStd::string countStr = AZStd::to_string(bond->count);
 
                 if (bParts[0] == "AB" && bParts[1] == "AB")
                 {
@@ -636,11 +753,7 @@ namespace HCPEngine
                     }
                     PQclear(res);
                 }
-                else
-                {
-                    // Unresolved var or unknown token type — skip for now
-                    ++skippedBonds;
-                }
+                // else: truly unknown token type — should not happen with var handling above
             }
         }
 
@@ -651,14 +764,9 @@ namespace HCPEngine
         if (ok)
         {
             fprintf(stderr, "[HCPStorage] StorePBM: '%s' -> %s — %zu starters, "
-                "%zu word bonds, %zu char bonds, %zu marker bonds",
+                "%zu word bonds, %zu char bonds, %zu marker bonds, %zu var bonds\n",
                 docName.c_str(), docId.c_str(), bondsByA.size(),
-                wordBonds, charBonds, markerBonds);
-            if (skippedBonds > 0)
-            {
-                fprintf(stderr, ", %zu skipped (unresolved vars)", skippedBonds);
-            }
-            fprintf(stderr, "\n");
+                wordBonds, charBonds, markerBonds, varBonds);
             fflush(stderr);
         }
         else

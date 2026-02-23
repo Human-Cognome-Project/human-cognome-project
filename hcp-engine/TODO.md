@@ -68,6 +68,20 @@ These follow the reference `.txt` implementation. See AGENTS.md for the pattern.
 
 ---
 
+## Good First Issues (contributor-friendly)
+
+These are smaller, well-defined tasks with clear scope. Good for getting familiar with the codebase.
+
+- [ ] **[READY]** Bullet char `•` — add as a label entry in hcp_english (`layer = 'label'`). Currently vars in every document. One DB insert + verify tokenizer resolves it.
+- [ ] **[READY]** Numbers need `<sic>` wrapper support — numeric tokens (years, counts) should be wrapped in a sic-style marker so they're explicitly flagged as literal values, not vocabulary items.
+- [ ] **[READY]** Web address discriminator — URLs (www.gutenberg.org etc.) currently take the dot-value fast path to var. Add a specific discriminator that detects web address patterns and routes them to a dedicated sub-language entry set (future: web address language shard).
+- [ ] **[READY]** Var compound back-check — when a new var is created during tokenization (e.g. "Tellson"), launch a lightweight check against existing vars in the document to see if any are compound forms (e.g. "Tellson's" = var(Tellson) + 's). Resolve the compound and update the var cache. Reduces var count for proper nouns that only appear in possessive/affixed form.
+- [ ] **[READY]** Persist bond tables as files — char→word and byte→char bond tables currently recompile from Postgres on first run, then cache in hcp_temp. Store compiled tables as binary files in the engine area so startup skips Postgres entirely. Patrick approved storing in engine area.
+- [ ] **[READY]** Tellson / Barsad / Stryver / Gaspard — missing from hcp_english as labels. Librarian missed these Dickens proper nouns. Add as `layer = 'label'` entries. Check other Gutenberg test texts for similar gaps.
+- [ ] **[READY]** Edge case tokens: `I_'m`, `-_my_self`, `trademark/copyright` — investigate why these surface forms appear. Likely underscore artifacts from Gutenberg formatting or slash not handled by dash split. Fix the tokenizer path or add appropriate handling.
+
+---
+
 ## Cleanup
 
 - [ ] **[READY]** Purge "7 force types" from repo docs — memory files done, research docs and specs still contain stale references. Files: `openmm-evaluation.md`, `english-force-patterns.md`, `force-pattern-db-requirements.md`, `force-pattern-db-review.md`, `concept-mesh-decomposition.md`, `particle-vs-md-operations.md`, `namespace-reference.md`, `006_force_patterns.sh`, `006a_force_infrastructure_tokens.sql`.
