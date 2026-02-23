@@ -59,12 +59,13 @@ AA                          Universal mode
 │       ├── AA.AC.AB.AC      LoD levels (8)
 │       └── AA.AC.AB.AD      Structural principles (3)
 ├── AA.AD                   Abbreviation Classes
-├── AA.AE                   PBM/Document Structural Tokens (91 tokens)
-│   ├── AA.AE.AA             Block-level markers (32)
+├── AA.AE                   PBM/Document Structural Tokens (93 tokens)
+│   ├── AA.AE.AA             Block-level markers (33)
 │   ├── AA.AE.AB             Inline formatting markers (22)
 │   ├── AA.AE.AC             Annotation markers (14)
 │   ├── AA.AE.AD             Alignment/layout markers (13)
-│   └── AA.AE.AE             Non-text content markers (10)
+│   ├── AA.AE.AE             Non-text content markers (10)
+│   └── AA.AE.AF             Stream boundary anchors (2) — engine particle types
 └── AA.AF                   Entity Classification Tokens
     ├── AA.AF.AA             Person sub-types (4)
     ├── AA.AF.AB             Place sub-types (6)

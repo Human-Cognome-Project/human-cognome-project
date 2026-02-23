@@ -3,6 +3,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include "HCPTokenizer.h"
 
 // Forward declarations — full PhysX headers only in .cpp
 namespace physx
@@ -13,7 +14,6 @@ namespace physx
     class PxPBDParticleSystem;
     class PxParticleMaterial;
     class PxCudaContextManager;
-    class PxDefaultCpuDispatcher;
 }
 
 namespace HCPEngine
@@ -28,7 +28,7 @@ namespace HCPEngine
         int count;
     };
 
-    //! Result of PBM disassembly
+    //! Result of PBM disassembly (used for aggregate inference, not per-doc storage)
     struct PBMData
     {
         AZStd::vector<Bond> bonds;
@@ -37,6 +37,35 @@ namespace HCPEngine
         size_t totalPairs = 0;
         size_t uniqueTokens = 0;
     };
+
+    //! Per-token position entry: a token ID and all positions where it occurs.
+    struct TokenPositions
+    {
+        AZStd::string tokenId;
+        AZStd::vector<AZ::u32> positions;
+    };
+
+    //! Position-based document representation.
+    //! Each unique token maps to the list of positions where it appears.
+    //! Disassembly = record positions. Reassembly = place tokens at positions.
+    //! PBM bond counts are derived at aggregate time, not stored per-document.
+    struct PositionMap
+    {
+        AZStd::vector<TokenPositions> entries;
+        AZ::u32 totalTokens = 0;     // total positions in the document
+        size_t uniqueTokens = 0;      // number of distinct token IDs
+    };
+
+    //! Position-based disassembly: token stream -> position map.
+    //! Positions include space gaps from the tokenizer. No physics needed.
+    PositionMap DisassemblePositions(const TokenStream& stream);
+
+    //! Position-based reassembly: position map -> token sequence with positions.
+    //! Gaps in positions = spaces. No physics needed.
+    TokenStream ReassemblePositions(const PositionMap& posMap);
+
+    //! Derive PBM bond data from a token stream (for aggregate pipeline).
+    PBMData DerivePBM(const TokenStream& stream);
 
     //! The particle pipeline: manages PhysX PBD particle system for
     //! disassembly (text -> bonds) and reassembly (bonds -> text).
@@ -62,19 +91,21 @@ namespace HCPEngine
 
         bool IsInitialized() const { return m_initialized; }
 
+        // Resource accessors — for detection scene and other physics operations
+        physx::PxPhysics* GetPhysics() const { return m_pxPhysics; }
+        physx::PxScene* GetScene() const { return m_pxScene; }
+        physx::PxCudaContextManager* GetCuda() const { return m_cudaContextManager; }
+
     private:
         bool m_initialized = false;
 
         physx::PxPhysics* m_pxPhysics = nullptr;
         physx::PxCudaContextManager* m_cudaContextManager = nullptr;
         physx::PxScene* m_pxScene = nullptr;
-        physx::PxPBDParticleSystem* m_particleSystem = nullptr;
         physx::PxParticleMaterial* m_particleMaterial = nullptr;
         physx::PxParticleMaterial* m_reassemblyMaterial = nullptr;
-        physx::PxDefaultCpuDispatcher* m_cpuDispatcher = nullptr;
 
-        // Callback data for disassembly bond counting
-        AZStd::vector<AZStd::string> m_particleTokenIds;
+        // Working data for disassembly bond counting
         AZStd::unordered_map<AZStd::string, int> m_bondCounts;
     };
 

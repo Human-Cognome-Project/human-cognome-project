@@ -1,0 +1,24 @@
+[HCPBondCompiler] Processing 1146562 word forms from Postgres...
+[HCPBondCompiler] Compiled char->word bonds from 1146562 words
+[HCPBondCompiler] char->word: 5409 unique pairs, 11631808 total bonds, max count 228612
+[HCPEngine] Top char->word bonds (by count):
+  i -> n : 228612
+  e -> r : 216892
+  e -> s : 193861
+  o -> n : 169061
+  t -> i : 156034
+  a -> n : 145386
+  t -> e : 141468
+  a -> t : 135895
+  r -> e : 125411
+  a -> l : 123599
+  n -> g : 117058
+  s -> t : 116827
+  e -> n : 116725
+  r -> a : 114006
+  r -> o : 111904
+  a -> r : 111563
+  l -> e : 110068
+  r -> i : 109014
+  i -> c : 108485
+  n -> e : 107706

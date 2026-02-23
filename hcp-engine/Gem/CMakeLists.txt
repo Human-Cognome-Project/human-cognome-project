@@ -19,6 +19,13 @@ endif()
 find_library(LIBPQ_LIBRARY NAMES pq PATHS /usr/lib/x86_64-linux-gnu)
 find_path(LIBPQ_INCLUDE_DIR NAMES libpq-fe.h PATHS /usr/include/postgresql)
 
+# Find liblmdb for vocabulary cache reads
+find_library(LIBLMDB_LIBRARY NAMES lmdb PATHS /usr/lib/x86_64-linux-gnu)
+find_path(LIBLMDB_INCLUDE_DIR NAMES lmdb.h PATHS /usr/include)
+
+# RapidJSON for socket server JSON parsing (already installed as O3DE 3rdParty package)
+set(RAPIDJSON_INCLUDE_DIR "$ENV{HOME}/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include")
+
 # We are on a supported platform, so add the ${gem_name} target
 # Note: We include the common files and the platform specific files which are set in hcpengine_files.cmake and
 # in ${pal_dir}/hcpengine_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -36,12 +43,15 @@ ly_add_target(
             Include
         PRIVATE
             ${LIBPQ_INCLUDE_DIR}
+            ${LIBLMDB_INCLUDE_DIR}
+            ${RAPIDJSON_INCLUDE_DIR}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzGameFramework
             Gem::Atom_AtomBridge.Static
             Gem::PhysX5.Static
             ${LIBPQ_LIBRARY}
+            ${LIBLMDB_LIBRARY}
 )
 
 ly_add_target(

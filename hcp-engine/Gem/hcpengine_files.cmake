@@ -12,4 +12,12 @@ set(FILES
     Source/HCPParticlePipeline.h
     Source/HCPStorage.cpp
     Source/HCPStorage.h
+    Source/HCPSocketServer.cpp
+    Source/HCPSocketServer.h
+    Source/HCPBondCompiler.cpp
+    Source/HCPBondCompiler.h
+    Source/HCPDetectionScene.cpp
+    Source/HCPDetectionScene.h
+    Source/HCPCacheMissResolver.cpp
+    Source/HCPCacheMissResolver.h
 )

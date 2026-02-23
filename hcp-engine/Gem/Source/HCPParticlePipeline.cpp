@@ -3,87 +3,130 @@
 
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/std/sort.h>
+#include <cmath>
 
 #include <PxPhysicsAPI.h>
 #include <PxParticleGpu.h>
 #include <gpu/PxGpu.h>
-#include <extensions/PxDefaultCpuDispatcher.h>
 #include <extensions/PxDefaultSimulationFilterShader.h>
+
+// O3DE PhysX system — for accessing the shared CPU dispatcher
+#include <System/PhysXSystem.h>
 
 namespace HCPEngine
 {
-    // ---- Disassembly Callback (local to this translation unit) ----
+    // ---- Position-Based Document Representation ----
 
-    class DisassemblyCallback : public physx::PxParticleSystemCallback
+    PositionMap DisassemblePositions(const TokenStream& stream)
     {
-    public:
-        DisassemblyCallback(
-            AZStd::vector<AZStd::string>& particleTokenIds,
-            AZStd::unordered_map<AZStd::string, int>& bondCounts)
-            : m_particleTokenIds(particleTokenIds)
-            , m_bondCounts(bondCounts)
-        {}
+        PositionMap result;
+        result.totalTokens = stream.totalSlots;
 
-        void onBegin(
-            const physx::PxGpuMirroredPointer<physx::PxGpuParticleSystem>& /*gpuParticleSystem*/,
-            CUstream /*stream*/) override
+        // Build map: token -> [positions] using the gap-encoded positions
+        AZStd::unordered_map<AZStd::string, AZStd::vector<AZ::u32>> posMap;
+        for (size_t i = 0; i < stream.tokenIds.size(); ++i)
         {
+            posMap[stream.tokenIds[i]].push_back(stream.positions[i]);
         }
 
-        void onAdvance(
-            const physx::PxGpuMirroredPointer<physx::PxGpuParticleSystem>& /*gpuParticleSystem*/,
-            CUstream /*stream*/) override
+        // Convert to entries
+        result.entries.reserve(posMap.size());
+        for (auto& [tokenId, positions] : posMap)
         {
+            TokenPositions tp;
+            tp.tokenId = tokenId;
+            tp.positions = AZStd::move(positions);
+            result.entries.push_back(AZStd::move(tp));
+        }
+        result.uniqueTokens = result.entries.size();
+
+        return result;
+    }
+
+    TokenStream ReassemblePositions(const PositionMap& posMap)
+    {
+        TokenStream stream;
+        stream.totalSlots = posMap.totalTokens;
+
+        // Count actual tokens (non-space slots)
+        size_t tokenCount = 0;
+        for (const auto& entry : posMap.entries)
+        {
+            tokenCount += entry.positions.size();
         }
 
-        void onPostSolve(
-            const physx::PxGpuMirroredPointer<physx::PxGpuParticleSystem>& gpuParticleSystem,
-            CUstream /*stream*/) override
+        stream.tokenIds.reserve(tokenCount);
+        stream.positions.reserve(tokenCount);
+
+        // Collect all (position, tokenId) pairs, then sort by position
+        struct PosToken
         {
-            auto* gpuPS = gpuParticleSystem.mHostPtr;
-            if (!gpuPS)
+            AZ::u32 pos;
+            const AZStd::string* tokenId;
+        };
+        AZStd::vector<PosToken> all;
+        all.reserve(tokenCount);
+        for (const auto& entry : posMap.entries)
+        {
+            for (AZ::u32 pos : entry.positions)
             {
-                return;
+                all.push_back({pos, &entry.tokenId});
             }
+        }
+        AZStd::sort(all.begin(), all.end(),
+            [](const PosToken& a, const PosToken& b) { return a.pos < b.pos; });
 
-            const physx::PxU32 numParticles = gpuPS->mCommonData.mNumParticles;
-
-            // Use the PBD spatial hash neighbor structure to count token pair bonds.
-            // Each particle represents a token positioned at (i, 0, 0).
-            // The spatial hash with particleContactOffset identifies adjacent particles.
-            m_bondCounts.clear();
-            for (physx::PxU32 i = 0; i < numParticles; ++i)
-            {
-                physx::PxNeighborhoodIterator iter = gpuPS->getIterator(i);
-                physx::PxU32 neighborIdx = iter.getNextIndex();
-
-                while (neighborIdx != 0xFFFFFFFF && neighborIdx < numParticles)
-                {
-                    physx::PxU32 unsortedI = gpuPS->mSortedToUnsortedMapping[i];
-                    physx::PxU32 unsortedN = gpuPS->mSortedToUnsortedMapping[neighborIdx];
-
-                    // Only count forward direction to avoid double counting
-                    if (unsortedI < unsortedN && unsortedN == unsortedI + 1)
-                    {
-                        if (unsortedI < m_particleTokenIds.size() && unsortedN < m_particleTokenIds.size())
-                        {
-                            AZStd::string key = m_particleTokenIds[unsortedI] + "|" + m_particleTokenIds[unsortedN];
-                            m_bondCounts[key]++;
-                        }
-                    }
-                    neighborIdx = iter.getNextIndex();
-                }
-            }
-
-            m_complete = true;
+        for (const auto& pt : all)
+        {
+            stream.tokenIds.push_back(*pt.tokenId);
+            stream.positions.push_back(pt.pos);
         }
 
-        bool m_complete = false;
+        return stream;
+    }
 
-    private:
-        AZStd::vector<AZStd::string>& m_particleTokenIds;
-        AZStd::unordered_map<AZStd::string, int>& m_bondCounts;
-    };
+    PBMData DerivePBM(const TokenStream& stream)
+    {
+        PBMData result;
+        if (stream.tokenIds.size() < 2)
+        {
+            return result;
+        }
+
+        // Count adjacent pairs (consecutive tokens in the stream)
+        AZStd::unordered_map<AZStd::string, int> bondCounts;
+        for (size_t i = 0; i + 1 < stream.tokenIds.size(); ++i)
+        {
+            AZStd::string key = stream.tokenIds[i] + "|" + stream.tokenIds[i + 1];
+            bondCounts[key]++;
+        }
+
+        // Build bond list
+        result.bonds.reserve(bondCounts.size());
+        for (const auto& [key, count] : bondCounts)
+        {
+            size_t sep = key.find('|');
+            if (sep != AZStd::string::npos)
+            {
+                Bond bond;
+                bond.tokenA = AZStd::string(key.data(), sep);
+                bond.tokenB = AZStd::string(key.data() + sep + 1, key.size() - sep - 1);
+                bond.count = count;
+                result.bonds.push_back(bond);
+            }
+        }
+
+        result.firstFpbA = stream.tokenIds[0];
+        result.firstFpbB = stream.tokenIds[1];
+        result.totalPairs = stream.tokenIds.size() - 1;
+        {
+            AZStd::unordered_map<AZStd::string, int> uniq;
+            for (const auto& b : result.bonds) { uniq[b.tokenA] = 1; uniq[b.tokenB] = 1; }
+            result.uniqueTokens = uniq.size();
+        }
+
+        return result;
+    }
 
     // ---- Particle Pipeline ----
 
@@ -107,14 +150,25 @@ namespace HCPEngine
 
         m_pxPhysics = pxPhysics;
 
+        // Register the PhysX foundation with our statically-linked PhysX code.
+        // Without this, PxGetFoundation() returns null from our module's copy of
+        // the global, causing crashes in PxCreateParticleClothPreProcessor etc.
+        PxSetFoundationInstance(*pxFoundation);
+
         // Create CUDA context manager for GPU physics
+        fprintf(stderr, "[HCPParticlePipeline] Creating CUDA context manager...\n");
+        fflush(stderr);
         physx::PxCudaContextManagerDesc cudaDesc;
         cudaDesc.interopMode = physx::PxCudaInteropMode::NO_INTEROP;
 
         m_cudaContextManager = PxCreateCudaContextManager(*pxFoundation, cudaDesc);
+        fprintf(stderr, "[HCPParticlePipeline] PxCreateCudaContextManager returned: %p\n",
+            static_cast<void*>(m_cudaContextManager));
+        fflush(stderr);
         if (!m_cudaContextManager || !m_cudaContextManager->contextIsValid())
         {
-            AZLOG_ERROR("HCPParticlePipeline: Failed to create CUDA context manager");
+            fprintf(stderr, "[HCPParticlePipeline] CUDA context invalid or null\n");
+            fflush(stderr);
             if (m_cudaContextManager)
             {
                 m_cudaContextManager->release();
@@ -123,18 +177,31 @@ namespace HCPEngine
             return false;
         }
 
-        AZLOG_INFO("HCPParticlePipeline: CUDA context created on %s (%zu MB)",
+        fprintf(stderr, "[HCPParticlePipeline] CUDA context created on %s (%zu MB)\n",
             m_cudaContextManager->getDeviceName(),
             m_cudaContextManager->getDeviceTotalMemBytes() / (1024 * 1024));
+        fflush(stderr);
 
-        // Create CPU dispatcher for scene simulation
-        m_cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+        // Get CPU dispatcher from O3DE's PhysX system
+        PhysX::PhysXSystem* physxSystem = PhysX::GetPhysXSystem();
+        physx::PxCpuDispatcher* cpuDispatcher = physxSystem ? physxSystem->GetPxCpuDispathcher() : nullptr;
+        if (!cpuDispatcher)
+        {
+            fprintf(stderr, "[HCPParticlePipeline] O3DE CPU dispatcher not available\n");
+            fflush(stderr);
+            Shutdown();
+            return false;
+        }
+        fprintf(stderr, "[HCPParticlePipeline] Got O3DE CPU dispatcher\n");
+        fflush(stderr);
 
         // Create a GPU-enabled PxScene specifically for PBD particle work.
         // This is separate from O3DE's game physics scene.
+        fprintf(stderr, "[HCPParticlePipeline] Creating GPU-enabled PxScene...\n");
+        fflush(stderr);
         physx::PxSceneDesc sceneDesc(pxPhysics->getTolerancesScale());
         sceneDesc.gravity = physx::PxVec3(0.0f, -1.0f, 0.0f);
-        sceneDesc.cpuDispatcher = m_cpuDispatcher;
+        sceneDesc.cpuDispatcher = cpuDispatcher;
         sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
         sceneDesc.cudaContextManager = m_cudaContextManager;
         sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
@@ -142,14 +209,19 @@ namespace HCPEngine
         sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
 
         m_pxScene = pxPhysics->createScene(sceneDesc);
+        fprintf(stderr, "[HCPParticlePipeline] createScene returned: %p\n",
+            static_cast<void*>(m_pxScene));
+        fflush(stderr);
         if (!m_pxScene)
         {
-            AZLOG_ERROR("HCPParticlePipeline: Failed to create GPU-enabled PxScene");
+            fprintf(stderr, "[HCPParticlePipeline] Failed to create GPU-enabled PxScene\n");
+            fflush(stderr);
             Shutdown();
             return false;
         }
 
-        AZLOG_INFO("HCPParticlePipeline: GPU-enabled PxScene created");
+        fprintf(stderr, "[HCPParticlePipeline] GPU-enabled PxScene created\n");
+        fflush(stderr);
 
         // Create PBD particle material
         m_particleMaterial = pxPhysics->createPBDMaterial(
@@ -192,40 +264,17 @@ namespace HCPEngine
             return false;
         }
 
-        // Create PBD particle system
-        m_particleSystem = pxPhysics->createPBDParticleSystem(*m_cudaContextManager, 96);
-        if (!m_particleSystem)
-        {
-            AZLOG_ERROR("HCPParticlePipeline: Failed to create PBD particle system");
-            Shutdown();
-            return false;
-        }
-
-        // Configure particle system parameters
-        m_particleSystem->setRestOffset(0.3f);
-        m_particleSystem->setContactOffset(0.4f);
-        m_particleSystem->setParticleContactOffset(1.5f);
-        m_particleSystem->setSolidRestOffset(0.3f);
-        m_particleSystem->setSolverIterationCounts(4, 1);
-
-        // Add particle system to the GPU scene
-        m_pxScene->addActor(*m_particleSystem);
+        // PBD particle systems are created per-operation (Disassemble/Reassemble)
+        // because GPU internal buffers are sized for the first buffer added and
+        // cannot resize for different particle counts.
 
         m_initialized = true;
-        AZLOG_INFO("HCPParticlePipeline: PBD particle system initialized and ready");
+        AZLOG_INFO("HCPParticlePipeline: PBD pipeline initialized and ready");
         return true;
     }
 
     void HCPParticlePipeline::Shutdown()
     {
-        if (m_particleSystem && m_pxScene)
-        {
-            m_particleSystem->setParticleSystemCallback(nullptr);
-            m_pxScene->removeActor(*m_particleSystem);
-            m_particleSystem->release();
-            m_particleSystem = nullptr;
-        }
-
         if (m_reassemblyMaterial)
         {
             m_reassemblyMaterial->release();
@@ -244,11 +293,7 @@ namespace HCPEngine
             m_pxScene = nullptr;
         }
 
-        if (m_cpuDispatcher)
-        {
-            m_cpuDispatcher->release();
-            m_cpuDispatcher = nullptr;
-        }
+        // CPU dispatcher is owned by O3DE PhysXSystem — don't release it
 
         if (m_cudaContextManager)
         {
@@ -269,13 +314,23 @@ namespace HCPEngine
         }
 
         const physx::PxU32 numParticles = static_cast<physx::PxU32>(tokenIds.size());
+        fprintf(stderr, "[HCPParticlePipeline] Disassemble: %u particles\n", numParticles);
+        fflush(stderr);
 
-        // Set up callback data for this disassembly run
-        m_particleTokenIds = tokenIds;
-        m_bondCounts.clear();
-
-        DisassemblyCallback callback(m_particleTokenIds, m_bondCounts);
-        m_particleSystem->setParticleSystemCallback(&callback);
+        // Create a fresh PBD particle system for this operation
+        physx::PxPBDParticleSystem* particleSystem =
+            m_pxPhysics->createPBDParticleSystem(*m_cudaContextManager, 96);
+        if (!particleSystem)
+        {
+            AZLOG_ERROR("HCPParticlePipeline: Failed to create PBD particle system for disassembly");
+            return result;
+        }
+        particleSystem->setRestOffset(0.3f);
+        particleSystem->setContactOffset(0.4f);
+        particleSystem->setParticleContactOffset(1.5f);
+        particleSystem->setSolidRestOffset(0.3f);
+        particleSystem->setSolverIterationCounts(4, 1);
+        m_pxScene->addActor(*particleSystem);
 
         // Create a particle buffer: each token = one particle positioned in a 1D sequence
         physx::PxParticleBuffer* particleBuffer = m_pxPhysics->createParticleBuffer(
@@ -283,12 +338,13 @@ namespace HCPEngine
         if (!particleBuffer)
         {
             AZLOG_ERROR("HCPParticlePipeline: Failed to create particle buffer for %u particles", numParticles);
-            m_particleSystem->setParticleSystemCallback(nullptr);
+            m_pxScene->removeActor(*particleSystem);
+            particleSystem->release();
             return result;
         }
 
         // Create a phase for our token particles
-        const physx::PxU32 phase = m_particleSystem->createPhase(
+        const physx::PxU32 phase = particleSystem->createPhase(
             m_particleMaterial,
             physx::PxParticlePhaseFlags(physx::PxParticlePhaseFlag::eParticlePhaseSelfCollide));
 
@@ -327,29 +383,97 @@ namespace HCPEngine
         particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
 
         // Add buffer to particle system
-        m_particleSystem->addParticleBuffer(particleBuffer);
+        particleSystem->addParticleBuffer(particleBuffer);
+        fprintf(stderr, "[HCPParticlePipeline] Particles uploaded, simulating...\n");
+        fflush(stderr);
 
-        // Simulate — the PBD spatial hash identifies all neighbor pairs,
-        // and the callback counts them as bonds
+        // Simulate — PBD spatial hash processes all particles on GPU in parallel.
+        // After simulation, read back positions to identify neighbor pairs.
         m_pxScene->simulate(1.0f / 60.0f);
         m_pxScene->fetchResults(true);
         m_pxScene->fetchResultsParticleSystem();
+        fprintf(stderr, "[HCPParticlePipeline] Simulation complete, reading back positions...\n");
+        fflush(stderr);
 
-        // Extract bonds from callback data
-        AZStd::unordered_map<AZStd::string, int> uniqueTokenSet;
-        for (const auto& [key, count] : m_bondCounts)
+        // ---- Read back particle positions from GPU ----
+        // After PBD simulation, particles have been processed by the spatial hash.
+        // We read back positions and identify neighbors by proximity
+        // (distance < particleContactOffset = 1.5).
         {
-            size_t sep = key.find('|');
-            if (sep != AZStd::string::npos)
-            {
-                Bond bond;
-                bond.tokenA = AZStd::string(key.data(), sep);
-                bond.tokenB = AZStd::string(key.data() + sep + 1, key.size() - sep - 1);
-                bond.count = count;
-                result.bonds.push_back(bond);
+            physx::PxScopedCudaLock lock(*m_cudaContextManager);
 
-                uniqueTokenSet[bond.tokenA] = 1;
-                uniqueTokenSet[bond.tokenB] = 1;
+            physx::PxVec4* devPos = particleBuffer->getPositionInvMasses();
+            physx::PxVec4* hostPos = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
+            m_cudaContextManager->copyDToH(hostPos, devPos, numParticles);
+
+            // Particles are positioned at (i, 0, 0) so original index = round(x).
+            // Build mapping from settled position to original sequence index,
+            // then identify adjacent pairs via position proximity.
+            struct ParticlePos
+            {
+                float x;
+                physx::PxU32 origIndex;
+            };
+            AZStd::vector<ParticlePos> positions(numParticles);
+            for (physx::PxU32 i = 0; i < numParticles; ++i)
+            {
+                positions[i].x = hostPos[i].x;
+                positions[i].origIndex = i;  // Particles are unsorted — index IS sequence position
+            }
+            m_cudaContextManager->freePinnedHostBuffer(hostPos);
+
+            // Sort by x position to find spatial neighbors
+            AZStd::sort(positions.begin(), positions.end(),
+                [](const ParticlePos& a, const ParticlePos& b) { return a.x < b.x; });
+
+            // Count neighbor pairs: consecutive particles in sorted order
+            // that are within particleContactOffset distance
+            const float contactOffset = 1.5f;
+            m_bondCounts.clear();
+            AZStd::unordered_map<AZStd::string, int> uniqueTokenSet;
+
+            for (physx::PxU32 i = 0; i + 1 < numParticles; ++i)
+            {
+                float dist = positions[i + 1].x - positions[i].x;
+                if (dist < contactOffset)
+                {
+                    physx::PxU32 origA = positions[i].origIndex;
+                    physx::PxU32 origB = positions[i + 1].origIndex;
+
+                    // Ensure forward direction (lower sequence index first)
+                    if (origA > origB)
+                    {
+                        physx::PxU32 tmp = origA;
+                        origA = origB;
+                        origB = tmp;
+                    }
+
+                    // Only count immediately adjacent pairs in the original sequence
+                    if (origB == origA + 1)
+                    {
+                        const AZStd::string& tokA = tokenIds[origA];
+                        const AZStd::string& tokB = tokenIds[origB];
+                        AZStd::string key = tokA + "|" + tokB;
+                        m_bondCounts[key]++;
+
+                        uniqueTokenSet[tokA] = 1;
+                        uniqueTokenSet[tokB] = 1;
+                    }
+                }
+            }
+
+            // Build bond list from counts
+            for (const auto& [key, count] : m_bondCounts)
+            {
+                size_t sep = key.find('|');
+                if (sep != AZStd::string::npos)
+                {
+                    Bond bond;
+                    bond.tokenA = AZStd::string(key.data(), sep);
+                    bond.tokenB = AZStd::string(key.data() + sep + 1, key.size() - sep - 1);
+                    bond.count = count;
+                    result.bonds.push_back(bond);
+                }
             }
         }
 
@@ -361,12 +485,21 @@ namespace HCPEngine
         }
 
         result.totalPairs = tokenIds.size() - 1;
-        result.uniqueTokens = uniqueTokenSet.size();
+        {
+            AZStd::unordered_map<AZStd::string, int> uniqueTokenSet;
+            for (const auto& b : result.bonds) { uniqueTokenSet[b.tokenA] = 1; uniqueTokenSet[b.tokenB] = 1; }
+            result.uniqueTokens = uniqueTokenSet.size();
+        }
 
-        // Clean up
-        m_particleSystem->removeParticleBuffer(particleBuffer);
+        fprintf(stderr, "[HCPParticlePipeline] Bonds extracted: %zu unique, %zu total pairs\n",
+            result.bonds.size(), result.totalPairs);
+        fflush(stderr);
+
+        // Clean up — destroy per-operation particle system
+        particleSystem->removeParticleBuffer(particleBuffer);
         particleBuffer->release();
-        m_particleSystem->setParticleSystemCallback(nullptr);
+        m_pxScene->removeActor(*particleSystem);
+        particleSystem->release();
 
         AZLOG_INFO("HCPParticlePipeline: Disassembled %zu tokens into %zu unique bonds (%zu total pairs)",
             tokenIds.size(), result.bonds.size(), result.totalPairs);
@@ -387,209 +520,167 @@ namespace HCPEngine
 
         // ---- Count total dumbbell instances and particles ----
         // Each bond (A, B, count) spawns count dumbbells.
-        // Each dumbbell = 2 particles + 1 spring.
-        physx::PxU32 totalSprings = 0;
+        // Each dumbbell = 2 particles (A-side + B-side).
+        physx::PxU32 totalDumbbells = 0;
         for (const auto& bond : pbmData.bonds)
         {
-            totalSprings += static_cast<physx::PxU32>(bond.count);
+            totalDumbbells += static_cast<physx::PxU32>(bond.count);
         }
-        const physx::PxU32 numParticles = totalSprings * 2;
+        const physx::PxU32 numParticles = totalDumbbells * 2;
 
         if (numParticles < 2)
         {
             return sequence;
         }
 
-        AZLOG_INFO("HCPParticlePipeline: Reassembling %zu bonds (%u dumbbells, %u particles) via PBD physics",
-            pbmData.bonds.size(), totalSprings, numParticles);
+        fprintf(stderr, "[HCPParticlePipeline] Reassemble: %zu bonds, %u dumbbells, %u particles\n",
+            pbmData.bonds.size(), totalDumbbells, numParticles);
+        fflush(stderr);
+
+        // ---- Create a fresh PBD particle system ----
+        // Plain PxParticleBuffer (no cloth/springs) — uses PBD material cohesion
+        // and proximity-based interactions for the attractive force between
+        // same-token particles.
+        physx::PxPBDParticleSystem* particleSystem =
+            m_pxPhysics->createPBDParticleSystem(*m_cudaContextManager, 96);
+        if (!particleSystem)
+        {
+            AZLOG_ERROR("HCPParticlePipeline: Failed to create PBD particle system for reassembly");
+            return sequence;
+        }
+        particleSystem->setRestOffset(0.3f);
+        particleSystem->setContactOffset(0.4f);
+        // particleContactOffset: particles within this distance interact.
+        // Dumbbell pair spacing = 0.5, so pair members are always in contact.
+        // Inter-dumbbell spacing > 1.5, so separate dumbbells start independent.
+        particleSystem->setParticleContactOffset(1.5f);
+        particleSystem->setSolidRestOffset(0.3f);
+        particleSystem->setSolverIterationCounts(4, 1);
+        m_pxScene->addActor(*particleSystem);
 
         // ---- Phase creation: one phase per unique token ----
-        // Same token = same phase group = cohesion attraction.
-        // The PBD solver uses phase groups to determine which particles
-        // attract each other via the material's cohesion parameter.
+        // Same-token particles share a phase → PBD cohesion pulls them together.
+        // This IS the attractive force — the engine's GPU solver handles the math.
         AZStd::unordered_map<AZStd::string, physx::PxU32> tokenPhases;
         for (const auto& bond : pbmData.bonds)
         {
             if (tokenPhases.find(bond.tokenA) == tokenPhases.end())
             {
-                tokenPhases[bond.tokenA] = m_particleSystem->createPhase(
+                tokenPhases[bond.tokenA] = particleSystem->createPhase(
                     m_reassemblyMaterial,
                     physx::PxParticlePhaseFlags(
                         physx::PxParticlePhaseFlag::eParticlePhaseSelfCollide));
             }
             if (tokenPhases.find(bond.tokenB) == tokenPhases.end())
             {
-                tokenPhases[bond.tokenB] = m_particleSystem->createPhase(
+                tokenPhases[bond.tokenB] = particleSystem->createPhase(
                     m_reassemblyMaterial,
                     physx::PxParticlePhaseFlags(
                         physx::PxParticlePhaseFlag::eParticlePhaseSelfCollide));
             }
         }
 
-        AZLOG_INFO("HCPParticlePipeline: Created %zu unique token phases for cohesion clustering",
-            tokenPhases.size());
+        fprintf(stderr, "[HCPParticlePipeline] Created %zu unique token phases\n", tokenPhases.size());
+        fflush(stderr);
 
-        // ---- Build particle data arrays ----
+        // ---- Create plain particle buffer ----
+        physx::PxParticleBuffer* particleBuffer = m_pxPhysics->createParticleBuffer(
+            numParticles, 1, m_cudaContextManager);
+        if (!particleBuffer)
+        {
+            AZLOG_ERROR("HCPParticlePipeline: Failed to create particle buffer for %u particles", numParticles);
+            m_pxScene->removeActor(*particleSystem);
+            particleSystem->release();
+            return sequence;
+        }
+
+        // ---- Build and upload particle data ----
         // Dumbbell d: particle[2d] = A-side, particle[2d+1] = B-side
-        // Spring d: connects particle 2d <-> 2d+1 (bond constraint)
+        // Pair members placed 0.5 apart (within contactOffset) = bonded.
+        // Dumbbells spaced 3.0 apart in 3D cube (> contactOffset) = independent.
         AZStd::vector<AZStd::string> particleTokenIds(numParticles);
-        AZStd::vector<physx::PxVec4> hostPositions(numParticles);
-        AZStd::vector<physx::PxVec4> hostVelocities(numParticles);
-        AZStd::vector<physx::PxU32>  hostPhases(numParticles);
-        AZStd::vector<physx::PxVec4> hostRestPositions(numParticles);
-        AZStd::vector<physx::PxParticleSpring> hostSprings(totalSprings);
 
-        physx::PxU32 dIdx = 0;
-        for (const auto& bond : pbmData.bonds)
-        {
-            for (int inst = 0; inst < bond.count; ++inst, ++dIdx)
-            {
-                const physx::PxU32 pA = dIdx * 2;
-                const physx::PxU32 pB = dIdx * 2 + 1;
-
-                particleTokenIds[pA] = bond.tokenA;
-                particleTokenIds[pB] = bond.tokenB;
-
-                // Spread dumbbells along x-axis with spacing
-                const float x = static_cast<float>(dIdx) * 2.5f;
-
-                // Stream_start anchor: invMass = 0 (immovable, pinned at origin)
-                // This anchors the chain and gives it a fixed starting point.
-                const float invMassA = (bond.tokenA == STREAM_START) ? 0.0f : 1.0f;
-                const float invMassB = 1.0f;
-
-                hostPositions[pA] = physx::PxVec4(x, 0.0f, 0.0f, invMassA);
-                hostPositions[pB] = physx::PxVec4(x + 1.0f, 0.0f, 0.0f, invMassB);
-
-                hostVelocities[pA] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                hostVelocities[pB] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-
-                // Phase: same token = same group = cohesion
-                hostPhases[pA] = tokenPhases[bond.tokenA];
-                hostPhases[pB] = tokenPhases[bond.tokenB];
-
-                // Rest positions for cloth solver
-                hostRestPositions[pA] = physx::PxVec4(x, 0.0f, 0.0f, 0.0f);
-                hostRestPositions[pB] = physx::PxVec4(x + 1.0f, 0.0f, 0.0f, 0.0f);
-
-                // Spring: connects A <-> B within dumbbell (bond constraint)
-                hostSprings[dIdx].ind0 = pA;
-                hostSprings[dIdx].ind1 = pB;
-                hostSprings[dIdx].length = 1.0f;
-                hostSprings[dIdx].stiffness = 10.0f;
-                hostSprings[dIdx].damping = 0.5f;
-                hostSprings[dIdx].pad = 0.0f;
-            }
-        }
-
-        // ---- Create PxParticleClothBuffer ----
-        physx::PxParticleClothBuffer* clothBuffer = m_pxPhysics->createParticleClothBuffer(
-            numParticles,      // maxParticles
-            1,                 // maxNumVolumes
-            1,                 // maxNumCloths
-            0,                 // maxNumTriangles (no aerodynamics)
-            totalSprings,      // maxNumSprings
-            m_cudaContextManager);
-
-        if (!clothBuffer)
-        {
-            AZLOG_ERROR("HCPParticlePipeline: Failed to create cloth buffer for %u particles", numParticles);
-            return sequence;
-        }
-
-        // ---- Preprocess springs for GPU partitioning ----
-        // The preprocessor partitions springs into groups that can be
-        // resolved in parallel without conflicts on the GPU.
-        physx::PxParticleCloth cloth;
-        cloth.startVertexIndex = 0;
-        cloth.numVertices = numParticles;
-        cloth.clothBlendScale = 1.0f;
-        cloth.restVolume = 0.0f;
-        cloth.pressure = 0.0f;
-        cloth.startTriangleIndex = 0;
-        cloth.numTriangles = 0;
-
-        physx::PxParticleClothDesc clothDesc;
-        clothDesc.cloths = &cloth;
-        clothDesc.nbCloths = 1;
-        clothDesc.springs = hostSprings.data();
-        clothDesc.nbSprings = totalSprings;
-        clothDesc.restPositions = hostRestPositions.data();
-        clothDesc.nbParticles = numParticles;
-        clothDesc.triangles = nullptr;
-        clothDesc.nbTriangles = 0;
-
-        physx::PxParticleClothPreProcessor* preprocessor =
-            PxCreateParticleClothPreProcessor(m_cudaContextManager);
-
-        if (!preprocessor)
-        {
-            AZLOG_ERROR("HCPParticlePipeline: Failed to create cloth preprocessor");
-            clothBuffer->release();
-            return sequence;
-        }
-
-        physx::PxPartitionedParticleCloth partitioned;
-        preprocessor->partitionSprings(clothDesc, partitioned);
-        clothBuffer->setCloths(partitioned);
-
-        // ---- Upload particle data to GPU ----
         {
             physx::PxScopedCudaLock lock(*m_cudaContextManager);
 
-            physx::PxVec4* devPos   = clothBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel   = clothBuffer->getVelocities();
-            physx::PxU32*  devPhase = clothBuffer->getPhases();
-            physx::PxVec4* devRest  = clothBuffer->getRestPositions();
+            physx::PxVec4* positions = particleBuffer->getPositionInvMasses();
+            physx::PxVec4* velocities = particleBuffer->getVelocities();
+            physx::PxU32*  phases = particleBuffer->getPhases();
 
-            physx::PxVec4* pinnedPos   = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
-            physx::PxVec4* pinnedVel   = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
-            physx::PxU32*  pinnedPhase = m_cudaContextManager->allocPinnedHostBuffer<physx::PxU32>(numParticles);
-            physx::PxVec4* pinnedRest  = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
+            physx::PxVec4* hostPos = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
+            physx::PxVec4* hostVel = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
+            physx::PxU32*  hostPhase = m_cudaContextManager->allocPinnedHostBuffer<physx::PxU32>(numParticles);
 
-            for (physx::PxU32 i = 0; i < numParticles; ++i)
+            // 3D cube layout for dumbbells
+            const physx::PxU32 cubeEdge = static_cast<physx::PxU32>(
+                std::ceil(std::cbrt(static_cast<double>(totalDumbbells)))) + 1;
+            const float spacing = 3.0f;
+
+            physx::PxU32 dIdx = 0;
+            for (const auto& bond : pbmData.bonds)
             {
-                pinnedPos[i]   = hostPositions[i];
-                pinnedVel[i]   = hostVelocities[i];
-                pinnedPhase[i] = hostPhases[i];
-                pinnedRest[i]  = hostRestPositions[i];
+                for (int inst = 0; inst < bond.count; ++inst, ++dIdx)
+                {
+                    const physx::PxU32 pA = dIdx * 2;
+                    const physx::PxU32 pB = dIdx * 2 + 1;
+
+                    particleTokenIds[pA] = bond.tokenA;
+                    particleTokenIds[pB] = bond.tokenB;
+
+                    // 3D grid position
+                    const physx::PxU32 ix = dIdx % cubeEdge;
+                    const physx::PxU32 iy = (dIdx / cubeEdge) % cubeEdge;
+                    const physx::PxU32 iz = dIdx / (cubeEdge * cubeEdge);
+                    const float x = static_cast<float>(ix) * spacing;
+                    const float y = static_cast<float>(iy) * spacing;
+                    const float z = static_cast<float>(iz) * spacing;
+
+                    // Stream_start anchor: invMass = 0 (pinned at origin)
+                    const float invMassA = (bond.tokenA == STREAM_START) ? 0.0f : 1.0f;
+
+                    hostPos[pA] = physx::PxVec4(x, y, z, invMassA);
+                    hostPos[pB] = physx::PxVec4(x + 0.5f, y, z, 1.0f);
+
+                    hostVel[pA] = physx::PxVec4(0.0f);
+                    hostVel[pB] = physx::PxVec4(0.0f);
+
+                    hostPhase[pA] = tokenPhases[bond.tokenA];
+                    hostPhase[pB] = tokenPhases[bond.tokenB];
+                }
             }
 
-            m_cudaContextManager->copyHToD(devPos,   pinnedPos,   numParticles);
-            m_cudaContextManager->copyHToD(devVel,   pinnedVel,   numParticles);
-            m_cudaContextManager->copyHToD(devPhase, pinnedPhase, numParticles);
-            m_cudaContextManager->copyHToD(devRest,  pinnedRest,  numParticles);
+            fprintf(stderr, "[HCPParticlePipeline] 3D cube layout: %u^3, spacing %.1f\n",
+                cubeEdge, spacing);
+            fflush(stderr);
 
-            m_cudaContextManager->freePinnedHostBuffer(pinnedPos);
-            m_cudaContextManager->freePinnedHostBuffer(pinnedVel);
-            m_cudaContextManager->freePinnedHostBuffer(pinnedPhase);
-            m_cudaContextManager->freePinnedHostBuffer(pinnedRest);
+            m_cudaContextManager->copyHToD(positions, hostPos, numParticles);
+            m_cudaContextManager->copyHToD(velocities, hostVel, numParticles);
+            m_cudaContextManager->copyHToD(phases, hostPhase, numParticles);
+
+            m_cudaContextManager->freePinnedHostBuffer(hostPos);
+            m_cudaContextManager->freePinnedHostBuffer(hostVel);
+            m_cudaContextManager->freePinnedHostBuffer(hostPhase);
         }
 
-        clothBuffer->setNbActiveParticles(numParticles);
-        clothBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        clothBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        clothBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
-        clothBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_RESTPOSITION);
-        clothBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_CLOTH);
+        particleBuffer->setNbActiveParticles(numParticles);
+        particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
+        particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
+        particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
 
-        // ---- Configure solver for reassembly ----
-        // High solver iterations: GPU resolves all spring + cohesion constraints in parallel.
-        // This is where the GPU parallelism matters — every constraint is processed simultaneously.
-        m_particleSystem->setSolverIterationCounts(64, 4);
+        // Add buffer to particle system
+        particleSystem->addParticleBuffer(particleBuffer);
 
         // Gentle +x gravity: provides directional ordering (sequence flow).
         // Combined with the pinned stream_start anchor at origin,
-        // the chain extends rightward from the anchor point.
+        // the chain extends rightward.
         const physx::PxVec3 origGravity = m_pxScene->getGravity();
         m_pxScene->setGravity(physx::PxVec3(0.05f, 0.0f, 0.0f));
 
-        // Add cloth buffer to particle system
-        m_particleSystem->addParticleBuffer(clothBuffer);
+        fprintf(stderr, "[HCPParticlePipeline] Particles uploaded, simulating %u particles...\n",
+            numParticles);
+        fflush(stderr);
 
-        // ---- Simulate: PBD solver resolves all constraints in parallel on GPU ----
-        // Each step: GPU processes ALL springs + ALL cohesion + ALL collision simultaneously.
-        // 64 solver iterations per step × 20 steps = 1280 total constraint resolution passes.
+        // ---- Simulate: PBD solver processes all interactions in parallel on GPU ----
         const int numSteps = 20;
         const float dt = 1.0f / 60.0f;
 
@@ -599,68 +690,72 @@ namespace HCPEngine
             m_pxScene->fetchResults(true);
             m_pxScene->fetchResultsParticleSystem();
         }
+        fprintf(stderr, "[HCPParticlePipeline] Simulation complete (%d steps)\n", numSteps);
+        fflush(stderr);
 
-        // ---- Read back final particle positions from GPU ----
-        // After simulation, particles have settled into equilibrium:
-        // - Same-token particles clustered via cohesion
-        // - Dumbbell pairs connected via springs
-        // - Chain ordered left-to-right via gravity + anchor
+        // ---- Read back particle positions from GPU ----
         struct DumbbellResult
         {
             float aX;
             physx::PxU32 index;
         };
-
-        AZStd::vector<DumbbellResult> dumbbells(totalSprings);
+        AZStd::vector<DumbbellResult> dumbbells(totalDumbbells);
 
         {
             physx::PxScopedCudaLock lock(*m_cudaContextManager);
 
-            physx::PxVec4* devPos = clothBuffer->getPositionInvMasses();
+            physx::PxVec4* devPos = particleBuffer->getPositionInvMasses();
             physx::PxVec4* pinnedPos = m_cudaContextManager->allocPinnedHostBuffer<physx::PxVec4>(numParticles);
-            m_cudaContextManager->copyDToH(pinnedPos, devPos, numParticles);
 
-            for (physx::PxU32 d = 0; d < totalSprings; ++d)
+            if (!pinnedPos)
             {
-                dumbbells[d].aX = pinnedPos[d * 2].x;
-                dumbbells[d].index = d;
+                fprintf(stderr, "[HCPParticlePipeline] ERROR: allocPinnedHostBuffer returned NULL\n");
+                fflush(stderr);
+                // Fall through to cleanup
             }
+            else
+            {
+                m_cudaContextManager->copyDToH(pinnedPos, devPos, numParticles);
 
-            m_cudaContextManager->freePinnedHostBuffer(pinnedPos);
+                for (physx::PxU32 d = 0; d < totalDumbbells; ++d)
+                {
+                    dumbbells[d].aX = pinnedPos[d * 2].x;
+                    dumbbells[d].index = d;
+                }
+
+                m_cudaContextManager->freePinnedHostBuffer(pinnedPos);
+            }
         }
 
         // ---- Sort dumbbells by A-side x position = sequence order ----
-        // The physics determined the ordering. We just read it.
         AZStd::sort(dumbbells.begin(), dumbbells.end(),
             [](const DumbbellResult& a, const DumbbellResult& b) { return a.aX < b.aX; });
 
         // ---- Extract token sequence ----
-        // Each sorted dumbbell contributes its A-side token.
-        // The last dumbbell also contributes its B-side (final token in sequence).
-        sequence.reserve(totalSprings + 1);
-        for (physx::PxU32 d = 0; d < totalSprings; ++d)
+        sequence.reserve(totalDumbbells + 1);
+        for (physx::PxU32 d = 0; d < totalDumbbells; ++d)
         {
             const physx::PxU32 origIdx = dumbbells[d].index;
             sequence.push_back(particleTokenIds[origIdx * 2]);
         }
         if (!dumbbells.empty())
         {
-            const physx::PxU32 lastIdx = dumbbells[totalSprings - 1].index;
+            const physx::PxU32 lastIdx = dumbbells[totalDumbbells - 1].index;
             sequence.push_back(particleTokenIds[lastIdx * 2 + 1]);
         }
 
-        // ---- Cleanup ----
-        m_particleSystem->removeParticleBuffer(clothBuffer);
-        clothBuffer->release();
-        preprocessor->release();
-        // partitioned cleaned up by PxPartitionedParticleCloth destructor
+        fprintf(stderr, "[HCPParticlePipeline] Sequence: %zu tokens\n", sequence.size());
+        fflush(stderr);
 
-        // Restore original solver and gravity settings for disassembly
-        m_particleSystem->setSolverIterationCounts(4, 1);
+        // ---- Cleanup ----
+        particleSystem->removeParticleBuffer(particleBuffer);
+        particleBuffer->release();
+        m_pxScene->removeActor(*particleSystem);
+        particleSystem->release();
         m_pxScene->setGravity(origGravity);
 
-        AZLOG_INFO("HCPParticlePipeline: Reassembled %zu bonds into %zu token sequence via PBD physics (%u particles, %d steps)",
-            pbmData.bonds.size(), sequence.size(), numParticles, numSteps);
+        AZLOG_INFO("HCPParticlePipeline: Reassembled %zu tokens from %zu bonds",
+            sequence.size(), pbmData.bonds.size());
 
         return sequence;
     }

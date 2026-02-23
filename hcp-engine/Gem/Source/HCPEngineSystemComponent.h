@@ -6,6 +6,10 @@
 #include <HCPEngine/HCPEngineBus.h>
 #include "HCPVocabulary.h"
 #include "HCPParticlePipeline.h"
+#include "HCPStorage.h"
+#include "HCPSocketServer.h"
+#include "HCPBondCompiler.h"
+#include "HCPCacheMissResolver.h"
 
 namespace HCPEngine
 {
@@ -25,6 +29,11 @@ namespace HCPEngine
 
         HCPEngineSystemComponent();
         ~HCPEngineSystemComponent();
+
+        // Accessors for socket server and other subsystems
+        const HCPVocabulary& GetVocabulary() const { return m_vocabulary; }
+        HCPWriteKernel& GetWriteKernel() { return m_writeKernel; }
+        bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -47,5 +56,14 @@ namespace HCPEngine
     private:
         HCPVocabulary m_vocabulary;
         HCPParticlePipeline m_particlePipeline;
+        HCPWriteKernel m_writeKernel;
+        HCPSocketServer m_socketServer;
+
+        // PBM bond tables — force constants for physics detection
+        HCPBondTable m_charWordBonds;
+        HCPBondTable m_byteCharBonds;
+
+        // Cache miss resolver — fills LMDB from Postgres on demand
+        CacheMissResolver m_resolver;
     };
 }
