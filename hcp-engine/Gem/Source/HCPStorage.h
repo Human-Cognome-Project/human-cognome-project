@@ -10,14 +10,8 @@ typedef pg_conn PGconn;
 namespace HCPEngine
 {
     //! Lean Postgres write kernel.
-    //! All database writes flow through this single class — positions, metadata,
-    //! provenance, everything. Designed for commonized write operations that can
-    //! be parallelized as kernel combinations.
-    //!
-    //! Position-based document storage:
-    //!   - Each unique token maps to a list of positions (base-50 encoded)
-    //!   - Whitespace is implicit (gaps in position numbering)
-    //!   - PBM bonds derived at aggregation time, not stored per-document
+    //! All database writes flow through this single class — PBM storage,
+    //! metadata, provenance, everything.
     class HCPWriteKernel
     {
     public:
@@ -32,28 +26,6 @@ namespace HCPEngine
 
         bool IsConnected() const { return m_conn != nullptr; }
 
-        // ---- Document position storage ----
-
-        //! Store a document's position map to the prefix tree schema.
-        //! @param docName Human-readable document name
-        //! @param centuryCode Century code (e.g., "AS")
-        //! @param posMap Position-based document data from DisassemblePositions()
-        //! @param stream Original token stream (for total_slots)
-        //! @return Document address string, or empty on failure
-        AZStd::string StorePositionMap(
-            const AZStd::string& docName,
-            const AZStd::string& centuryCode,
-            const PositionMap& posMap,
-            const TokenStream& stream);
-
-        //! Load a document's position map from the prefix tree schema.
-        //! @param docId Document address string
-        //! @param outStream Receives totalSlots and reconstructed token/position data
-        //! @return The loaded PositionMap (empty entries on failure)
-        PositionMap LoadPositionMap(
-            const AZStd::string& docId,
-            TokenStream& outStream);
-
         // ---- PBM storage (hcp_fic_pbm) ----
 
         //! Store a document's PBM bonds into hcp_fic_pbm.
@@ -67,49 +39,71 @@ namespace HCPEngine
             const AZStd::string& centuryCode,
             const PBMData& pbmData);
 
-        // ---- Metadata (future — all writes flow through this kernel) ----
+        //! Return the integer PK of the last document inserted by StorePBM.
+        //! Valid only after a successful StorePBM call.
+        int LastDocPk() const { return m_lastDocPk; }
 
-        //! Store a key-value metadata entry for a document.
-        bool StoreMetadata(
-            const AZStd::string& docId,
-            const AZStd::string& key,
-            const AZStd::string& value);
+        //! Store position data for a document alongside its PBM bonds.
+        //! Each unique token gets a base-50 encoded position list.
+        //! Gaps in position numbering encode spaces.
+        //! @param docPk Integer PK from StorePBM
+        //! @param tokenIds Ordered token IDs (from Tokenize)
+        //! @param positions Matching position numbers (1:1 with tokenIds)
+        //! @param totalSlots Total position counter (document length)
+        bool StorePositions(
+            int docPk,
+            const AZStd::vector<AZStd::string>& tokenIds,
+            const AZStd::vector<int>& positions,
+            int totalSlots);
+
+        // ---- PBM retrieval ----
+
+        //! Load a document's PBM bond data from the database.
+        //! Reconstructs PBMData from pbm_starters and bond subtables.
+        //! @param docId Document address string (e.g., "vA.AB.AS.AA.AA")
+        //! @return PBMData with bonds, or empty on failure
+        PBMData LoadPBM(const AZStd::string& docId);
+
+        //! Load a document's positional token sequence.
+        //! Reads position tables, decodes base-50, sorts by position,
+        //! returns ordered token IDs with spaces at gaps.
+        //! @param docId Document address string
+        //! @return Ordered token IDs (ready for TokenIdsToText), or empty on failure
+        AZStd::vector<AZStd::string> LoadPositions(const AZStd::string& docId);
+
+        // ---- Metadata ----
+
+        //! Merge a key-value pair into pbm_documents.metadata JSONB for a document.
+        bool StoreMetadata(int docPk, const AZStd::string& key, const AZStd::string& value);
+
+        //! Replace the full metadata JSONB blob for a document.
+        bool StoreDocumentMetadata(int docPk, const AZStd::string& metadataJson);
+
+        //! Insert a row into document_provenance.
+        bool StoreProvenance(
+            int docPk,
+            const AZStd::string& sourceType,
+            const AZStd::string& sourcePath,
+            const AZStd::string& sourceFormat,
+            const AZStd::string& catalog,
+            const AZStd::string& catalogId);
+
+        // ---- Document listing ----
+
+        struct DocumentInfo
+        {
+            AZStd::string docId;
+            AZStd::string name;
+            int starters = 0;
+            int bonds = 0;
+        };
+
+        //! List all stored documents with basic stats.
+        AZStd::vector<DocumentInfo> ListDocuments();
 
     private:
         PGconn* m_conn = nullptr;
-
-        //! Get next document sequence number for the given namespace path.
-        int NextDocSequence(
-            const AZStd::string& ns,
-            const AZStd::string& p2,
-            const AZStd::string& p3);
-
-        //! Insert a document row and return (pk, doc_id).
-        bool InsertDocument(
-            const AZStd::string& ns,
-            const AZStd::string& p2,
-            const AZStd::string& p3,
-            const AZStd::string& p4,
-            const AZStd::string& p5,
-            const AZStd::string& docName,
-            AZ::u32 totalSlots,
-            size_t uniqueTokens,
-            int& outPk,
-            AZStd::string& outDocId);
-
-        //! Route a token's positions to the correct subtable.
-        bool InsertTokenPositions(
-            const AZStd::string& docId,
-            const AZStd::string& tokenId,
-            const AZStd::vector<AZ::u32>& positions);
+        int m_lastDocPk = 0;
     };
-
-    // ---- Base-50 position encoding utilities ----
-
-    //! Encode a position list to base-50 text (4 chars per position).
-    AZStd::string EncodePositions(const AZStd::vector<AZ::u32>& positions);
-
-    //! Decode base-50 text back to position list.
-    AZStd::vector<AZ::u32> DecodePositions(const AZStd::string& encoded);
 
 } // namespace HCPEngine

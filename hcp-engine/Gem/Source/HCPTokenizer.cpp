@@ -239,16 +239,9 @@ namespace HCPEngine
         }
 
         // Step 4: Morpheme decomposition (affix scan)
-        // Try all registered suffixes then prefixes, longest first (greedy).
-        // Subsumes possessive split ('s, s') and handles -ing, -ed, un-, re-, etc.
-        //
-        // Suffixes: core ends with stripped form → stem = core[0:N-sfxLen]
-        // Prefixes: core starts with stripped form → stem = core[pfxLen:]
-
         // Suffixes — bucket lookup by word's last char, full resolver on stem
         {
             char lastChar = core.back();
-            // Try lowercase key first (most affixes are lowercase)
             const auto* bucket = vocab.GetSuffixesForChar(
                 static_cast<char>(std::tolower(static_cast<unsigned char>(lastChar))));
             if (!bucket)
@@ -267,7 +260,6 @@ namespace HCPEngine
                     AZStd::string stem(core.data(), stemLen);
                     AZStd::string stemLower = ToLower(stem);
 
-                    // Check var cache for stem — a previously var'd word decomposes here
                     AZStd::string stemTid;
                     if (varCache)
                     {
@@ -275,8 +267,6 @@ namespace HCPEngine
                         if (cacheIt != varCache->end())
                             stemTid = cacheIt->second;
                     }
-                    // Full LookupWord — triggers resolver/Postgres on LMDB miss.
-                    // Cost is nominal (once per unique stem, then cached in LMDB).
                     if (stemTid.empty())
                         stemTid = vocab.LookupWord(stemLower);
                     if (stemTid.empty() && stemLower != stem)
@@ -315,7 +305,6 @@ namespace HCPEngine
                                        core.size() - pfx.stripped.size());
                     AZStd::string stemLower = ToLower(stem);
 
-                    // Check var cache for stem
                     AZStd::string stemTid;
                     if (varCache)
                     {
@@ -341,8 +330,6 @@ namespace HCPEngine
         }
 
         // Step 5: dash/hyphen split on core — recursive on each part
-        // Accept partial: resolved parts emit as tokens, unresolved parts
-        // become individual var requests.
         DashSplit ds = FindDash(core);
         if (ds.type != DashType::None)
         {
@@ -358,7 +345,6 @@ namespace HCPEngine
             bool leftOk  = left.empty()  || ResolveCore(left, vocab, leftIds, varCache);
             bool rightOk = right.empty() || ResolveCore(right, vocab, rightIds, varCache);
 
-            // Var any unresolved parts — and cache them
             if (!leftOk && !left.empty())
             {
                 leftIds.clear();
@@ -393,75 +379,7 @@ namespace HCPEngine
 
     // ---- Greedy word walk (missing space detection) ----
     // Try splitting an alphabetic sequence into known words.
-
-    static bool TryGreedyWalk(
-        const AZStd::string& chunk,
-        const HCPVocabulary& vocab,
-        TokenStream& stream,
-        AZ::u32& slotPos)
-    {
-        // Only attempt on purely alphabetic chunks
-        for (size_t i = 0; i < chunk.size(); ++i)
-        {
-            if (!IsAlpha(chunk[i])) return false;
-        }
-
-        if (chunk.size() < 2) return false;
-
-        AZStd::string lower = ToLower(chunk);
-
-        AZStd::vector<AZStd::string> foundIds;
-        size_t pos = 0;
-
-        while (pos < lower.size())
-        {
-            bool matched = false;
-
-            for (size_t len = lower.size() - pos; len > 0; --len)
-            {
-                AZStd::string candidate(lower.data() + pos, len);
-                AZStd::string tid = vocab.LookupWord(candidate);
-
-                if (!tid.empty())
-                {
-                    size_t remaining = lower.size() - pos - len;
-                    if (remaining == 0)
-                    {
-                        foundIds.push_back(tid);
-                        pos += len;
-                        matched = true;
-                        break;
-                    }
-
-                    AZStd::string remainder(lower.data() + pos + len, remaining);
-                    AZStd::string remTid = vocab.LookupWord(remainder);
-                    if (!remTid.empty())
-                    {
-                        foundIds.push_back(tid);
-                        foundIds.push_back(remTid);
-                        pos = lower.size();
-                        matched = true;
-                        break;
-                    }
-
-                    foundIds.push_back(tid);
-                    pos += len;
-                    matched = true;
-                    break;
-                }
-            }
-
-            if (!matched)
-                return false;
-        }
-
-        for (const auto& tid : foundIds)
-        {
-            stream.tokenIds.push_back(tid);
-            stream.positions.push_back(slotPos++);
-        }
-        return true;
-    }
+    // Stream version removed — use vector overload below, caller emits with positions.
 
     // Vector-output overload: returns IDs without emitting to stream.
     // Used when greedy walk is tried on a core after edge punct stripping.
@@ -521,11 +439,9 @@ namespace HCPEngine
 
     static size_t s_varDebugCount = 0;
 
-    static void HandoffToVarDb(
+    static AZStd::string HandoffToVarDb(
         const AZStd::string& chunk,
         [[maybe_unused]] const HCPVocabulary& vocab,
-        TokenStream& stream,
-        AZ::u32& slotPos,
         AZStd::unordered_map<AZStd::string, AZStd::string>* varCache = nullptr)
     {
         if (s_varDebugCount < 50)
@@ -539,12 +455,11 @@ namespace HCPEngine
         request += ' ';
         request += chunk;
 
-        stream.tokenIds.push_back(request);
-        stream.positions.push_back(slotPos++);
-
         // Cache so subsequent identical chunks resolve instantly
         if (varCache)
             (*varCache)[ToLower(chunk)] = request;
+
+        return request;
     }
 
     // ---- Main tokenizer ----
@@ -556,6 +471,9 @@ namespace HCPEngine
     //   4. Dash/hyphen split, check each part (recursive)
     //   5. Greedy word walk (missing spaces)
     //   6. Var DB handoff (unresolved)
+    //
+    // Spaces are squeezed out — they separate chunks but produce no tokens.
+    // Adjacent tokens in the output stream form bond pairs for PBM derivation.
 
     TokenStream Tokenize(const AZStd::string& text, const HCPVocabulary& vocab)
     {
@@ -565,21 +483,50 @@ namespace HCPEngine
         stream.tokenIds.reserve(normalized.size() / 4);
         stream.positions.reserve(normalized.size() / 4);
 
+        // Position counter: gaps in numbering encode spaces.
+        // Within a chunk, each token gets consecutive positions.
+        // Between space-separated chunks, skip a position (gap = space).
+        int pos = 0;
+        bool needSpaceGap = false;  // true when a space was consumed before the next chunk
+
         // Per-document var cache: lowercase form → VAR_REQUEST token string.
         // Once a chunk vars, every subsequent identical chunk resolves instantly.
         AZStd::unordered_map<AZStd::string, AZStd::string> varCache;
 
-        AZ::u32 slotPos = 0;
         s_varDebugCount = 0;  // Reset per-tokenize debug counter
+
+        // Helper: record a token with its position
+        auto emitToken = [&](AZStd::string&& tid) {
+            if (needSpaceGap && !stream.tokenIds.empty())
+            {
+                pos++;  // skip one position for the space
+                needSpaceGap = false;
+            }
+            stream.tokenIds.push_back(AZStd::move(tid));
+            stream.positions.push_back(pos);
+            pos++;
+        };
+        auto emitTokenRef = [&](const AZStd::string& tid) {
+            if (needSpaceGap && !stream.tokenIds.empty())
+            {
+                pos++;  // skip one position for the space
+                needSpaceGap = false;
+            }
+            stream.tokenIds.push_back(tid);
+            stream.positions.push_back(pos);
+            pos++;
+        };
 
         size_t i = 0;
         while (i < normalized.size())
         {
             char c = normalized[i];
 
-            if (c == ' ')
+            // Spaces are squeezed out — they don't become tokens.
+            // Position gap recorded when next token is emitted.
+            if (c == ' ' || c == '\t')
             {
-                slotPos++;
+                needSpaceGap = true;
                 ++i;
                 continue;
             }
@@ -589,26 +536,15 @@ namespace HCPEngine
                 AZStd::string nid = vocab.LookupLabel("newline");
                 if (!nid.empty())
                 {
-                    stream.tokenIds.push_back(nid);
-                    stream.positions.push_back(slotPos++);
+                    emitToken(AZStd::move(nid));
                 }
-                else
-                {
-                    slotPos++;
-                }
+                needSpaceGap = false;  // newline resets — it IS the separator
                 ++i;
                 continue;
             }
 
             if (c == '\r')
             {
-                ++i;
-                continue;
-            }
-
-            if (c == '\t')
-            {
-                slotPos++;
                 ++i;
                 continue;
             }
@@ -621,8 +557,6 @@ namespace HCPEngine
             AZStd::string chunk(normalized.data() + chunkStart, i - chunkStart);
 
             // ==== FAST PATH: Dot-separated values → var as unit ====
-            // Initialisms (U.S.), section numbers (1.E.8), URLs (www.gutenberg.org)
-            // all contain internal periods. Skip the resolution stack entirely.
             {
                 bool hasDotValue = false;
                 for (size_t j = 1; j + 1 < chunk.size(); ++j)
@@ -638,7 +572,6 @@ namespace HCPEngine
 
                 if (hasDotValue)
                 {
-                    // Strip edge punct, var the core, emit punct chars
                     size_t le = 0;
                     while (le < chunk.size() && IsPunctuation(chunk[le]) && chunk[le] != '.')
                         ++le;
@@ -646,18 +579,13 @@ namespace HCPEngine
                     while (ts > le && IsPunctuation(chunk[ts - 1]) && chunk[ts - 1] != '.')
                         --ts;
 
-                    // Emit leading punct
                     for (size_t j = 0; j < le; ++j)
                     {
                         AZStd::string cid = vocab.LookupChar(chunk[j]);
                         if (!cid.empty())
-                        {
-                            stream.tokenIds.push_back(cid);
-                            stream.positions.push_back(slotPos++);
-                        }
+                            emitTokenRef(cid);
                     }
 
-                    // Var the dot-separated core (check cache first)
                     AZStd::string core(chunk.data() + le, ts - le);
                     AZStd::string coreLower = ToLower(core);
                     auto dotCacheIt = varCache.find(coreLower);
@@ -679,18 +607,13 @@ namespace HCPEngine
                             ++s_varDebugCount;
                         }
                     }
-                    stream.tokenIds.push_back(varReq);
-                    stream.positions.push_back(slotPos++);
+                    emitTokenRef(varReq);
 
-                    // Emit trailing punct
                     for (size_t j = ts; j < chunk.size(); ++j)
                     {
                         AZStd::string cid = vocab.LookupChar(chunk[j]);
                         if (!cid.empty())
-                        {
-                            stream.tokenIds.push_back(cid);
-                            stream.positions.push_back(slotPos++);
-                        }
+                            emitTokenRef(cid);
                     }
                     continue;
                 }
@@ -698,13 +621,12 @@ namespace HCPEngine
 
             AZStd::string lower = ToLower(chunk);
 
-            // ==== VAR CACHE CHECK: previously var'd chunk resolves instantly ====
+            // ==== VAR CACHE CHECK ====
             {
                 auto cacheIt = varCache.find(lower);
                 if (cacheIt != varCache.end())
                 {
-                    stream.tokenIds.push_back(cacheIt->second);
-                    stream.positions.push_back(slotPos++);
+                    emitTokenRef(cacheIt->second);
                     continue;
                 }
             }
@@ -738,8 +660,7 @@ namespace HCPEngine
 
                         if (cr.IsComplete())
                         {
-                            stream.tokenIds.push_back(cr.sequenceId);
-                            stream.positions.push_back(slotPos++);
+                            emitTokenRef(cr.sequenceId);
                             i = nextEnd;
                             goto next_chunk;
                         }
@@ -756,14 +677,12 @@ namespace HCPEngine
                     }
                 }
 
-                stream.tokenIds.push_back(tid);
-                stream.positions.push_back(slotPos++);
+                emitTokenRef(tid);
                 continue;
             }
 
             // ==== STEPS 2-5: Edge punct strip + core resolution ====
             {
-                // Compute edge punct bounds (ASCII only)
                 size_t leadEnd = 0;
                 while (leadEnd < chunk.size() && IsPunctuation(chunk[leadEnd]))
                     ++leadEnd;
@@ -781,11 +700,9 @@ namespace HCPEngine
                     AZStd::vector<AZStd::string> coreIds;
                     bool coreResolved = ResolveCore(core, vocab, coreIds, &varCache);
 
-                    // If core didn't resolve via stack, try greedy walk on it
                     if (!coreResolved)
                         coreResolved = TryGreedyWalk(core, vocab, coreIds);
 
-                    // If core still unresolved, var just the core and cache it
                     if (!coreResolved)
                     {
                         AZStd::string varReq = VAR_REQUEST;
@@ -801,46 +718,32 @@ namespace HCPEngine
                         }
                     }
 
-                    // Emit leading punct chars
                     for (size_t j = 0; j < leadEnd; ++j)
                     {
                         AZStd::string cid = vocab.LookupChar(chunk[j]);
                         if (!cid.empty())
-                        {
-                            stream.tokenIds.push_back(cid);
-                            stream.positions.push_back(slotPos++);
-                        }
+                            emitTokenRef(cid);
                     }
 
-                    // Emit core tokens
                     for (const auto& id : coreIds)
-                    {
-                        stream.tokenIds.push_back(id);
-                        stream.positions.push_back(slotPos++);
-                    }
+                        emitTokenRef(id);
 
-                    // Emit trailing punct chars
                     for (size_t j = trailStart; j < chunk.size(); ++j)
                     {
                         AZStd::string cid = vocab.LookupChar(chunk[j]);
                         if (!cid.empty())
-                        {
-                            stream.tokenIds.push_back(cid);
-                            stream.positions.push_back(slotPos++);
-                        }
+                            emitTokenRef(cid);
                     }
                     continue;
                 }
                 else if (hasEdgePunct)
                 {
-                    // All ASCII punctuation, no word core — emit each char
                     bool allResolved = true;
                     for (size_t j = 0; j < chunk.size(); ++j)
                     {
                         AZStd::string cid = vocab.LookupChar(chunk[j]);
                         if (cid.empty()) { allResolved = false; break; }
-                        stream.tokenIds.push_back(cid);
-                        stream.positions.push_back(slotPos++);
+                        emitTokenRef(cid);
                     }
                     if (allResolved)
                         continue;
@@ -848,16 +751,21 @@ namespace HCPEngine
             }
 
             // ==== STEP 6: Greedy word walk (no edge punct case) ====
-            if (TryGreedyWalk(chunk, vocab, stream, slotPos))
-                continue;
+            {
+                AZStd::vector<AZStd::string> walkIds;
+                if (TryGreedyWalk(chunk, vocab, walkIds))
+                {
+                    for (const auto& wid : walkIds)
+                        emitTokenRef(wid);
+                    continue;
+                }
+            }
 
             // ==== STEP 7: Var DB handoff ====
-            HandoffToVarDb(chunk, vocab, stream, slotPos, &varCache);
+            emitToken(HandoffToVarDb(chunk, vocab, &varCache));
 
             next_chunk:;
         }
-
-        stream.totalSlots = slotPos;
 
         // Count actual var request tokens in stream (definitive count)
         size_t totalVars = 0;
@@ -867,13 +775,69 @@ namespace HCPEngine
                 ++totalVars;
         }
 
-        fprintf(stderr, "[HCPTokenizer] %zu chars -> %zu tokens, %u slots, %zu var requests\n",
-            normalized.size(), stream.tokenIds.size(), stream.totalSlots, totalVars);
+        stream.totalSlots = pos;
+
+        fprintf(stderr, "[HCPTokenizer] %zu chars -> %zu tokens, %zu var requests, %d slots\n",
+            normalized.size(), stream.tokenIds.size(), totalVars, stream.totalSlots);
         fflush(stderr);
 
-        AZLOG_INFO("HCPTokenizer: %zu chars -> %zu tokens, %u slots, %zu vars",
-            normalized.size(), stream.tokenIds.size(), stream.totalSlots, totalVars);
+        AZLOG_INFO("HCPTokenizer: %zu chars -> %zu tokens, %zu vars, %d slots",
+            normalized.size(), stream.tokenIds.size(), totalVars, stream.totalSlots);
         return stream;
+    }
+
+    AZStd::string TokenIdsToText(
+        const AZStd::vector<AZStd::string>& tokenIds,
+        const HCPVocabulary& vocab)
+    {
+        AZStd::string result;
+        for (size_t i = 0; i < tokenIds.size(); ++i)
+        {
+            const auto& tid = tokenIds[i];
+
+            if (tid == STREAM_START || tid == STREAM_END) continue;
+
+            AZStd::string text;
+            char c = vocab.TokenToChar(tid);
+            if (c != '\0')
+            {
+                text = AZStd::string(1, c);
+            }
+            else
+            {
+                text = vocab.TokenToWord(tid);
+            }
+
+            if (text.empty()) continue;
+
+            bool needsSpace = !result.empty();
+
+            // Closing/trailing punctuation sticks to preceding token
+            if (needsSpace && c != '\0')
+            {
+                if (c == '.' || c == ',' || c == ';' || c == ':' ||
+                    c == '!' || c == '?' || c == ')' || c == ']' ||
+                    c == '}' || c == '\'' || c == '"' || c == '-' || c == '*')
+                {
+                    needsSpace = false;
+                }
+            }
+
+            // Opening punctuation sticks to what follows
+            if (needsSpace && !result.empty())
+            {
+                char lastChar = result.back();
+                if (lastChar == '(' || lastChar == '[' || lastChar == '{' ||
+                    lastChar == '"' || lastChar == '\'' || lastChar == '\n')
+                {
+                    needsSpace = false;
+                }
+            }
+
+            if (needsSpace) result += ' ';
+            result += text;
+        }
+        return result;
     }
 
 } // namespace HCPEngine

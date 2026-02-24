@@ -1,6 +1,6 @@
 # HCP Engine — TODO
 
-Last updated: 2026-02-19
+Last updated: 2026-02-23
 
 ## Legend
 
@@ -22,7 +22,7 @@ Last updated: 2026-02-19
 - [ ] **[READY]** Add `.Builders` CMake target — separate GEM_MODULE linking AssetBuilderSDK + libpq. Does NOT link PhysX5, LMDB, or CUDA.
 - [ ] **[READY]** Create `hcpengine_builder_files.cmake` — source list for builder target.
 - [ ] **[BLOCKED]** Scan folder configuration — point Asset Processor at `data/gutenberg/texts/`. Blocked on working builder.
-- [ ] **[BLOCKED]** End-to-end verification — tokenization output matches self-test (Yellow Wallpaper: 9,122 tokens, 18,840 slots). Blocked on full pipeline.
+- [ ] **[BLOCKED]** End-to-end verification — tokenization output matches self-test (Yellow Wallpaper: 10,482 tokens, 20,200 slots). Blocked on full pipeline.
 
 ### DB Tasks
 
@@ -35,10 +35,21 @@ Last updated: 2026-02-19
 
 ## Phase 2: Document Reconstruction
 
-- [ ] **[BLOCKED]** Position map reader (shared module) — blocked on product format from Phase 1.
-- [ ] **[BLOCKED]** PBM derivation function — positions in, bond counts out. O(n) scan. Blocked on position map reader.
-- [ ] **[BLOCKED]** Reconstruction proof — text in, position map, text back. Lossless round-trip. Blocked on PBM derivation.
-- [ ] **[BLOCKED]** Document inspector tool — view position maps, derive PBM, inspect structure. Blocked on reader + derivation.
+- [x] **[DONE]** PBM derivation function — DerivePBM: positions in, bond counts out. O(n) scan, ~16ms for 10K tokens.
+- [x] **[DONE]** Reconstruction proof — EXACT MATCH lossless round-trip on 4 Gutenberg texts (52KB–807KB).
+- [x] **[DONE]** PBM storage — StorePBM writes to hcp_fic_pbm (starters, word bonds, char bonds, var bonds).
+- [x] **[DONE]** Document-local vars — decimal pair IDs, pbm_docvars, mint_docvar(), pbm_var_bonds.
+- [ ] **[READY]** Position map reader as shared module — currently embedded in self-test path. Extract for reuse.
+- [ ] **[READY]** Document inspector tool — view position maps, derive PBM, inspect structure.
+
+---
+
+## Next Up: Metadata & Sub-Languages
+
+- [ ] **[READY]** JSON metadata processing — alternate interpretation streams (Patrick to define scope)
+- [ ] **[READY]** First specialty sub-language — related to JSON kernel ops
+- [ ] **[READY]** Kernel operation tagging — stack-based assembly
+- [ ] **[READY]** Non-space-delineated language support — greedy approach, not space-based
 
 ---
 

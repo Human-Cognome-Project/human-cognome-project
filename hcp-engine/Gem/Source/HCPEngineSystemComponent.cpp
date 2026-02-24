@@ -6,7 +6,6 @@
 #include "HCPTokenizer.h"
 #include "HCPStorage.h"
 #include "HCPBondCompiler.h"
-#include "HCPDetectionScene.h"
 
 #include <AzCore/std/sort.h>
 #include <fstream>
@@ -17,6 +16,10 @@
 
 // PhysX access — we link against Gem::PhysX5.Static which exposes internal headers
 #include <System/PhysXSystem.h>
+
+// CVars — namespace scope (AZ_CVAR creates inline globals)
+AZ_CVAR(bool, hcp_listen_all, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Listen on all interfaces (0.0.0.0) instead of localhost only");
 
 namespace HCPEngine
 {
@@ -235,136 +238,9 @@ namespace HCPEngine
         AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars; PBD particle system active",
             m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
 
-        // ---- Self-test: process Gutenberg texts through the full pipeline ----
-        {
-            struct TestDoc {
-                const char* path;
-                const char* name;
-                const char* century;  // base-50 pair
-            };
-            TestDoc testDocs[] = {
-                { "/opt/project/repo/data/gutenberg/texts/01952_The Yellow Wallpaper.txt",
-                  "The Yellow Wallpaper", "AS" },
-                { "/opt/project/repo/data/gutenberg/texts/00011_Alices Adventures in Wonderland.txt",
-                  "Alice's Adventures in Wonderland", "AS" },
-                { "/opt/project/repo/data/gutenberg/texts/00076_Adventures of Huckleberry Finn.txt",
-                  "Adventures of Huckleberry Finn", "AS" },
-                { "/opt/project/repo/data/gutenberg/texts/00098_A Tale of Two Cities.txt",
-                  "A Tale of Two Cities", "AS" },
-            };
-
-            if (!m_writeKernel.IsConnected())
-            {
-                m_writeKernel.Connect();
-            }
-
-            for (const auto& doc : testDocs)
-            {
-                std::ifstream ifs(doc.path);
-                if (!ifs.is_open())
-                {
-                    fprintf(stderr, "[HCPEngine TEST] Could not open '%s'\n", doc.path);
-                    fflush(stderr);
-                    continue;
-                }
-
-                std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-                ifs.close();
-                AZStd::string text(stdText.c_str(), stdText.size());
-
-                fprintf(stderr, "\n[HCPEngine TEST] === %s (%zu bytes) ===\n", doc.name, text.size());
-                fflush(stderr);
-
-                auto t0 = std::chrono::high_resolution_clock::now();
-
-                // Tokenize
-                TokenStream stream = Tokenize(text, m_vocabulary);
-                auto t1 = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] Tokenized -> %zu tokens, %u slots (%.1f ms)\n",
-                    stream.tokenIds.size(), stream.totalSlots,
-                    std::chrono::duration<double, std::milli>(t1 - t0).count());
-                fflush(stderr);
-
-                // Position round-trip verification
-                PositionMap posMap = DisassemblePositions(stream);
-                TokenStream reassembled = ReassemblePositions(posMap);
-                bool match = (stream.tokenIds.size() == reassembled.tokenIds.size());
-                if (match)
-                {
-                    for (size_t i = 0; i < stream.tokenIds.size(); ++i)
-                    {
-                        if (stream.tokenIds[i] != reassembled.tokenIds[i] ||
-                            stream.positions[i] != reassembled.positions[i])
-                        {
-                            match = false;
-                            fprintf(stderr, "[HCPEngine TEST] Mismatch at index %zu: '%s'@%u vs '%s'@%u\n",
-                                i,
-                                stream.tokenIds[i].c_str(), stream.positions[i],
-                                reassembled.tokenIds[i].c_str(), reassembled.positions[i]);
-                            fflush(stderr);
-                            break;
-                        }
-                    }
-                }
-                fprintf(stderr, "[HCPEngine TEST] Round-trip: %s\n",
-                    match ? "EXACT MATCH" : "MISMATCH");
-                fflush(stderr);
-
-                // Derive and store PBM
-                PBMData pbmData = DerivePBM(stream);
-                fprintf(stderr, "[HCPEngine TEST] PBM -> %zu unique bonds, %zu total pairs\n",
-                    pbmData.bonds.size(), pbmData.totalPairs);
-                fflush(stderr);
-
-                if (m_writeKernel.IsConnected())
-                {
-                    AZStd::string pbmDocId = m_writeKernel.StorePBM(
-                        doc.name, doc.century, pbmData);
-                    if (!pbmDocId.empty())
-                    {
-                        fprintf(stderr, "[HCPEngine TEST] PBM stored -> %s\n", pbmDocId.c_str());
-                    }
-                    else
-                    {
-                        fprintf(stderr, "[HCPEngine TEST] PBM storage FAILED\n");
-                    }
-                    fflush(stderr);
-                }
-
-                auto tEnd = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine TEST] %s — pipeline %.1f ms\n",
-                    match ? "EXACT MATCH" : "MISMATCH",
-                    std::chrono::duration<double, std::milli>(tEnd - t0).count());
-                fflush(stderr);
-            }
-        }
-        // ---- Physics detection test ----
-        {
-            const char* testStr = "the cat sat on the mat";
-            size_t testLen = strlen(testStr);
-            fprintf(stderr, "\n[HCPEngine TEST] Physics detection: \"%s\" (%zu bytes)\n", testStr, testLen);
-            fflush(stderr);
-
-            DetectionResult detResult = RunDetection(
-                m_particlePipeline.GetPhysics(),
-                m_particlePipeline.GetScene(),
-                m_particlePipeline.GetCuda(),
-                reinterpret_cast<const uint8_t*>(testStr), testLen,
-                m_byteCharBonds, m_charWordBonds);
-
-            fprintf(stderr, "[HCPEngine TEST] Detection: %zu clusters, %d steps, %.1f ms\n",
-                detResult.clusters.size(), detResult.simulationSteps, detResult.simulationTimeMs);
-            for (size_t i = 0; i < detResult.clusters.size(); ++i)
-            {
-                const auto& c = detResult.clusters[i];
-                fprintf(stderr, "  Cluster %zu: [%u-%u] \"%s\"\n",
-                    i, c.startByte, c.endByte, c.text.c_str());
-            }
-            fflush(stderr);
-        }
-
         // Start socket server — API for ingestion and retrieval
-        m_socketServer.Start(this, HCPSocketServer::DEFAULT_PORT);
+        bool listenAll = static_cast<bool>(hcp_listen_all);
+        m_socketServer.Start(this, HCPSocketServer::DEFAULT_PORT, listenAll);
     }
 
     void HCPEngineSystemComponent::Deactivate()
@@ -395,7 +271,7 @@ namespace HCPEngine
 
         AZLOG_INFO("HCPEngine: Processing '%s' (%zu chars)", docName.c_str(), text.size());
 
-        // Step 1: Tokenize with gap-encoded positions
+        // Step 1: Tokenize
         TokenStream stream = Tokenize(text, m_vocabulary);
         if (stream.tokenIds.empty())
         {
@@ -403,10 +279,10 @@ namespace HCPEngine
             return {};
         }
 
-        // Step 2: Position-based disassembly
-        PositionMap posMap = DisassemblePositions(stream);
+        // Step 2: Derive PBM bonds
+        PBMData pbmData = DerivePBM(stream);
 
-        // Step 3: Store to Postgres via write kernel
+        // Step 3: Store PBM via write kernel
         if (!m_writeKernel.IsConnected())
         {
             m_writeKernel.Connect();
@@ -417,15 +293,22 @@ namespace HCPEngine
             return {};
         }
 
-        AZStd::string docId = m_writeKernel.StorePositionMap(docName, centuryCode, posMap, stream);
+        AZStd::string docId = m_writeKernel.StorePBM(docName, centuryCode, pbmData);
         if (docId.empty())
         {
-            AZLOG_ERROR("HCPEngine: Failed to store position map");
+            AZLOG_ERROR("HCPEngine: Failed to store PBM");
             return {};
         }
 
-        AZLOG_INFO("HCPEngine: Stored %s — %zu tokens, %zu unique, %u slots",
-            docId.c_str(), stream.tokenIds.size(), posMap.uniqueTokens, stream.totalSlots);
+        // Step 4: Store positions alongside bonds
+        m_writeKernel.StorePositions(
+            m_writeKernel.LastDocPk(),
+            stream.tokenIds,
+            stream.positions,
+            stream.totalSlots);
+
+        AZLOG_INFO("HCPEngine: Stored %s — %zu tokens, %zu bonds, %d slots",
+            docId.c_str(), stream.tokenIds.size(), pbmData.bonds.size(), stream.totalSlots);
 
         return docId;
     }
@@ -440,7 +323,6 @@ namespace HCPEngine
 
         AZLOG_INFO("HCPEngine: Reassembling from %s", docId.c_str());
 
-        // Load position map from database
         if (!m_writeKernel.IsConnected())
         {
             m_writeKernel.Connect();
@@ -451,69 +333,263 @@ namespace HCPEngine
             return {};
         }
 
-        TokenStream loadedStream;
-        PositionMap posMap = m_writeKernel.LoadPositionMap(docId, loadedStream);
-        if (posMap.entries.empty())
+        // Load positions — direct reconstruction from positional tree
+        AZStd::vector<AZStd::string> tokenIds = m_writeKernel.LoadPositions(docId);
+        if (tokenIds.empty())
         {
-            AZLOG_ERROR("HCPEngine: Failed to load position map for %s", docId.c_str());
+            AZLOG_ERROR("HCPEngine: Failed to load positions for %s", docId.c_str());
             return {};
         }
 
-        // Reassemble: position map → token stream (with gap-encoded positions)
-        TokenStream stream = ReassemblePositions(posMap);
+        // Convert token IDs to text with stickiness rules
+        AZStd::string text = TokenIdsToText(tokenIds, m_vocabulary);
 
-        // Convert token stream to text — gaps in positions = spaces
-        AZStd::string text;
-        text.reserve(stream.totalSlots);
+        AZLOG_INFO("HCPEngine: Reassembled %zu tokens → %zu chars",
+            tokenIds.size(), text.size());
+        return text;
+    }
 
-        AZ::u32 cursor = 0;
-        for (size_t i = 0; i < stream.tokenIds.size(); ++i)
+    // ---- Console commands ----
+
+    void HCPEngineSystemComponent::SourceIngest(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.size() < 2)
         {
-            AZ::u32 pos = stream.positions[i];
-            const AZStd::string& tid = stream.tokenIds[i];
-
-            // Fill gaps with spaces
-            while (cursor < pos)
-            {
-                text += ' ';
-                ++cursor;
-            }
-
-            // Word token (AB.AB.*)
-            if (tid.starts_with("AB.AB."))
-            {
-                AZStd::string word = m_vocabulary.TokenToWord(tid);
-                if (!word.empty())
-                {
-                    text += word;
-                    ++cursor;
-                    continue;
-                }
-            }
-
-            // Character/punctuation token (AA.*)
-            char c = m_vocabulary.TokenToChar(tid);
-            if (c != '\0')
-            {
-                text += c;
-                ++cursor;
-                continue;
-            }
-
-            // Label token — check for newline
-            AZStd::string nlLabel = m_vocabulary.LookupLabel("newline");
-            if (!nlLabel.empty() && tid == nlLabel)
-            {
-                text += '\n';
-                ++cursor;
-                continue;
-            }
-
-            // Unknown token — skip position
-            ++cursor;
+            fprintf(stderr, "[source_ingest] Usage: HCPEngineSystemComponent.SourceIngest <filepath> [century]\n");
+            fflush(stderr);
+            return;
         }
 
-        AZLOG_INFO("HCPEngine: Reassembled %zu tokens into %zu chars", stream.tokenIds.size(), text.size());
-        return text;
+        AZStd::string filePath(arguments[1].data(), arguments[1].size());
+        AZStd::string centuryCode = "AS";
+        if (arguments.size() >= 3)
+        {
+            centuryCode = AZStd::string(arguments[2].data(), arguments[2].size());
+        }
+
+        // Read file
+        std::ifstream ifs(filePath.c_str());
+        if (!ifs.is_open())
+        {
+            fprintf(stderr, "[source_ingest] ERROR: Could not open '%s'\n", filePath.c_str());
+            fflush(stderr);
+            return;
+        }
+        std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        ifs.close();
+        AZStd::string text(stdText.c_str(), stdText.size());
+
+        // Derive document name from filename
+        AZStd::string docName = filePath;
+        size_t lastSlash = docName.rfind('/');
+        if (lastSlash != AZStd::string::npos) docName = docName.substr(lastSlash + 1);
+        size_t lastDot = docName.rfind('.');
+        if (lastDot != AZStd::string::npos) docName = docName.substr(0, lastDot);
+
+        fprintf(stderr, "[source_ingest] %s (%zu bytes)\n", docName.c_str(), text.size());
+        fflush(stderr);
+
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        TokenStream stream = Tokenize(text, m_vocabulary);
+        if (stream.tokenIds.empty())
+        {
+            fprintf(stderr, "[source_ingest] ERROR: Tokenization produced no tokens\n");
+            fflush(stderr);
+            return;
+        }
+
+        PBMData pbmData = DerivePBM(stream);
+
+        // Store PBM
+        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        AZStd::string docId;
+        if (m_writeKernel.IsConnected())
+        {
+            docId = m_writeKernel.StorePBM(docName, centuryCode, pbmData);
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+
+        fprintf(stderr, "[source_ingest] Encoded: %zu tokens\n",
+            stream.tokenIds.size());
+        fprintf(stderr, "[source_ingest] Bonds: %zu unique, %zu total pairs\n",
+            pbmData.bonds.size(), pbmData.totalPairs);
+        fprintf(stderr, "[source_ingest] Time: %.1f ms\n", ms);
+        if (!docId.empty())
+            fprintf(stderr, "[source_ingest] Stored -> %s\n", docId.c_str());
+        else
+            fprintf(stderr, "[source_ingest] WARNING: Not stored (DB unavailable)\n");
+        fflush(stderr);
+    }
+
+    void HCPEngineSystemComponent::SourceDecode(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.size() < 2)
+        {
+            fprintf(stderr, "[source_decode] Usage: HCPEngineSystemComponent.SourceDecode <doc_id>\n");
+            fflush(stderr);
+            return;
+        }
+
+        AZStd::string docId(arguments[1].data(), arguments[1].size());
+
+        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        if (!m_writeKernel.IsConnected())
+        {
+            fprintf(stderr, "[source_decode] ERROR: Database not available\n");
+            fflush(stderr);
+            return;
+        }
+
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        AZStd::vector<AZStd::string> tokenIds = m_writeKernel.LoadPositions(docId);
+        if (tokenIds.empty())
+        {
+            fprintf(stderr, "[source_decode] ERROR: Document not found or no positions: %s\n", docId.c_str());
+            fflush(stderr);
+            return;
+        }
+
+        AZStd::string text = TokenIdsToText(tokenIds, m_vocabulary);
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+
+        fprintf(stderr, "[source_decode] %s -> %zu tokens -> %zu chars (%.1f ms)\n",
+            docId.c_str(), tokenIds.size(), text.size(), ms);
+        fflush(stderr);
+
+        // Output decoded text to stdout
+        fwrite(text.c_str(), 1, text.size(), stdout);
+        fflush(stdout);
+    }
+
+    void HCPEngineSystemComponent::SourceList(const AZ::ConsoleCommandContainer& /*arguments*/)
+    {
+        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        if (!m_writeKernel.IsConnected())
+        {
+            fprintf(stderr, "[source_list] ERROR: Database not available\n");
+            fflush(stderr);
+            return;
+        }
+
+        auto docs = m_writeKernel.ListDocuments();
+        fprintf(stderr, "[source_list] %zu documents stored\n", docs.size());
+        for (const auto& doc : docs)
+        {
+            fprintf(stderr, "  %s  %s  starters=%d  bonds=%d\n",
+                doc.docId.c_str(), doc.name.c_str(), doc.starters, doc.bonds);
+        }
+        fflush(stderr);
+    }
+
+    void HCPEngineSystemComponent::SourceHealth(const AZ::ConsoleCommandContainer& /*arguments*/)
+    {
+        fprintf(stderr, "[source_health] Engine ready: %s\n", IsReady() ? "yes" : "no");
+        fprintf(stderr, "[source_health] Vocabulary: %zu words, %zu labels, %zu chars\n",
+            m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
+        fprintf(stderr, "[source_health] Affixes: %zu loaded\n", m_vocabulary.AffixCount());
+        fprintf(stderr, "[source_health] Bond tables: char->word %zu pairs, byte->char %zu pairs\n",
+            m_charWordBonds.PairCount(), m_byteCharBonds.PairCount());
+        fprintf(stderr, "[source_health] Socket server: %s (port %d)\n",
+            m_socketServer.IsRunning() ? "running" : "stopped", HCPSocketServer::DEFAULT_PORT);
+        fprintf(stderr, "[source_health] DB: %s\n",
+            m_writeKernel.IsConnected() ? "connected" : "disconnected");
+        fflush(stderr);
+    }
+
+    void HCPEngineSystemComponent::SourceStats(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.size() < 2)
+        {
+            fprintf(stderr, "[source_stats] Usage: HCPEngineSystemComponent.SourceStats <doc_id>\n");
+            fflush(stderr);
+            return;
+        }
+
+        AZStd::string docId(arguments[1].data(), arguments[1].size());
+
+        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        if (!m_writeKernel.IsConnected())
+        {
+            fprintf(stderr, "[source_stats] ERROR: Database not available\n");
+            fflush(stderr);
+            return;
+        }
+
+        PBMData pbmData = m_writeKernel.LoadPBM(docId);
+        if (pbmData.bonds.empty())
+        {
+            fprintf(stderr, "[source_stats] ERROR: Document not found: %s\n", docId.c_str());
+            fflush(stderr);
+            return;
+        }
+
+        fprintf(stderr, "[source_stats] %s\n", docId.c_str());
+        fprintf(stderr, "  Bonds:        %zu unique\n", pbmData.bonds.size());
+        fprintf(stderr, "  Pairs:        %zu total\n", pbmData.totalPairs);
+        fprintf(stderr, "  Unique tokens: %zu\n", pbmData.uniqueTokens);
+        fprintf(stderr, "  Starter:      %s | %s\n",
+            pbmData.firstFpbA.c_str(), pbmData.firstFpbB.c_str());
+        fflush(stderr);
+    }
+
+    void HCPEngineSystemComponent::SourceVars(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.size() < 2)
+        {
+            fprintf(stderr, "[source_vars] Usage: HCPEngineSystemComponent.SourceVars <doc_id>\n");
+            fflush(stderr);
+            return;
+        }
+
+        AZStd::string docId(arguments[1].data(), arguments[1].size());
+
+        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        if (!m_writeKernel.IsConnected())
+        {
+            fprintf(stderr, "[source_vars] ERROR: Database not available\n");
+            fflush(stderr);
+            return;
+        }
+
+        PBMData pbmData = m_writeKernel.LoadPBM(docId);
+        if (pbmData.bonds.empty())
+        {
+            fprintf(stderr, "[source_vars] ERROR: Document not found: %s\n", docId.c_str());
+            fflush(stderr);
+            return;
+        }
+
+        // Scan bonds for VAR_REQUEST tokens (AA.AE.AF.AA.AC prefix)
+        AZStd::unordered_map<AZStd::string, int> varCounts;
+        for (const auto& bond : pbmData.bonds)
+        {
+            if (bond.tokenA.starts_with(VAR_REQUEST))
+            {
+                varCounts[bond.tokenA] += bond.count;
+            }
+            if (bond.tokenB.starts_with(VAR_REQUEST))
+            {
+                varCounts[bond.tokenB] += bond.count;
+            }
+        }
+
+        for (const auto& [tokenId, count] : varCounts)
+        {
+            AZStd::string form = tokenId;
+            size_t spacePos = form.find(' ');
+            if (spacePos != AZStd::string::npos)
+            {
+                form = form.substr(spacePos + 1);
+            }
+            fprintf(stderr, "  var: %s  (bond refs: %d)\n", form.c_str(), count);
+        }
+        fprintf(stderr, "[source_vars] %s: %zu unresolved vars\n", docId.c_str(), varCounts.size());
+        fflush(stderr);
     }
 }

@@ -101,7 +101,7 @@ ninja
 ### Testing
 
 - Build must succeed with `ninja` (zero warnings preferred, zero errors required)
-- Tokenizer changes: verify output against known-good results (Yellow Wallpaper: 9,122 tokens, 18,840 slots)
+- Tokenizer changes: verify output against known-good results (Yellow Wallpaper: 10,482 tokens, 20,200 slots)
 - New modules: include a self-test path callable from the system component or a standalone harness
 
 ### Code Style
@@ -122,7 +122,7 @@ This is the primary contribution path. The `.txt` builder is the reference imple
 
 ### What's Universal (you reuse this)
 
-- Tokenizer pipeline (4-step space-to-space)
+- Tokenizer pipeline (7-step resolution cascade)
 - Vocabulary access (Postgres query interface)
 - Position encoding (base-50)
 - Product format (position map + metadata)
@@ -153,7 +153,7 @@ These are non-negotiable. Violating them wastes everyone's time.
 1. **Engine IS the tokenizer** — all processing in C++/PhysX. Do not write Python that simulates engine work.
 2. **Disassembly AND reassembly are physics operations** — do not write sequential algorithms and call them physics.
 3. **PostgreSQL is source of truth** — do not invent DB formats or modify LMDB structure. DB specialist owns that.
-4. **PBM is derived, not stored** — position maps are the product. Do not store pre-computed PBM bond tables.
+4. **PBM is derived then stored** — position maps are the product. PBM bonds are derived on the fly and stored to hcp_fic_pbm via StorePBM.
 5. **Bonds are directional** — "the->cat" and "cat->the" are different bonds. Document order is preserved in bond direction.
 6. **Nothing is ever stripped except space (0x20)** — newlines, tabs, CR, all punctuation, all structural markers are preserved as tokens. This is exact reproduction.
 7. **Punctuation lives in hcp_core (AA namespace)** — not in language shards.
@@ -166,7 +166,7 @@ These modules are designed for reuse across all tools (builder, inspector, teste
 | Module | Interface | Implementations |
 |--------|-----------|-----------------|
 | **Vocabulary** | LookupChunk, CheckContinuation, LookupChar | HCPVocabulary (LMDB, runtime), HCPDocumentBuilderVocab (Postgres, build-time) |
-| **Tokenizer** | ProcessText → token stream | HCPTokenizer (shared between runtime and builder) |
+| **Tokenizer** | ProcessText → token stream (7-step cascade) | HCPTokenizer (shared between runtime and builder) |
 | **Position Map** | Read/Write position maps | Shared format, one reader, one writer |
 | **PBM Derivation** | Positions in → bond counts out | Single function, on-the-fly |
 | **Connection Config** | Postgres connection string, pool settings | Shared across all tools |

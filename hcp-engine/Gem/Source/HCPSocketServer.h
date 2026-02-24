@@ -39,7 +39,8 @@ namespace HCPEngine
         ~HCPSocketServer();
 
         //! Start listening on the given port. Non-blocking — spawns a thread.
-        bool Start(HCPEngineSystemComponent* engine, int port = DEFAULT_PORT);
+        //! @param listenAll If true, bind to 0.0.0.0 (all interfaces) instead of localhost only.
+        bool Start(HCPEngineSystemComponent* engine, int port = DEFAULT_PORT, bool listenAll = false);
 
         //! Stop the server and join the listener thread.
         void Stop();
@@ -56,6 +57,7 @@ namespace HCPEngine
         std::atomic<bool> m_running{false};
         std::atomic<bool> m_stopRequested{false};
         int m_listenFd = -1;
+        bool m_listenAll = false;
     };
 
 } // namespace HCPEngine

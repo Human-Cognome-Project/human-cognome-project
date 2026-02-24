@@ -336,52 +336,88 @@ namespace HCPEngine
         PGconn* conn = m_resolver->GetConnection("hcp_var");
         if (!conn) return false;
 
-        // Mint or return existing (atomic Postgres function)
+        // Application-side mint: check existing, then mint if needed
         const char* paramValues[1] = { chunk.c_str() };
         int paramLengths[1] = { static_cast<int>(chunk.size()) };
         int paramFormats[1] = { 0 };
 
+        // Step 1: Check for existing active var with this surface form
         PGresult* res = PQexecParams(conn,
-            "SELECT mint_var_token($1)",
+            "SELECT var_id FROM var_tokens WHERE form = $1 AND status = 'active' LIMIT 1",
             1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
+        bool minted = false;
         if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
         {
             result.value = PQgetvalue(res, 0, 0);
             PQclear(res);
-
-            // Var tokens go in w2t (they occupy word positions)
-            result.writes.push_back({ "w2t", chunk, result.value });
-            result.writes.push_back({ "t2w", result.value, chunk });
-
-            // Log source location for librarian promotion workflow
-            if (ctx.docId && ctx.position >= 0)
-            {
-                const char* srcParams[3];
-                srcParams[0] = result.value.c_str();
-                srcParams[1] = ctx.docId;
-                char posStr[16];
-                snprintf(posStr, sizeof(posStr), "%d", ctx.position);
-                srcParams[2] = posStr;
-                int srcLens[3] = {
-                    static_cast<int>(result.value.size()),
-                    static_cast<int>(strlen(ctx.docId)),
-                    static_cast<int>(strlen(posStr))
-                };
-                int srcFmts[3] = { 0, 0, 0 };
-
-                PGresult* srcRes = PQexecParams(conn,
-                    "INSERT INTO var_sources (var_id, doc_id, position) "
-                    "VALUES ($1, $2, $3)",
-                    3, nullptr, srcParams, srcLens, srcFmts, 0);
-                PQclear(srcRes);
-            }
-
-            return true;
         }
-        PQclear(res);
+        else
+        {
+            PQclear(res);
 
-        return false;
+            // Step 2: Get next var ID from max existing
+            res = PQexec(conn,
+                "SELECT COALESCE(MAX(CAST(SUBSTR(var_id, 5) AS INTEGER)), 0) FROM var_tokens");
+            int nextId = 1;
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            {
+                nextId = atoi(PQgetvalue(res, 0, 0)) + 1;
+            }
+            PQclear(res);
+
+            // Step 3: Format var_id and insert
+            char varIdBuf[32];
+            snprintf(varIdBuf, sizeof(varIdBuf), "var.%d", nextId);
+            result.value = varIdBuf;
+
+            const char* insParams[2] = { varIdBuf, chunk.c_str() };
+            int insLens[2] = { static_cast<int>(strlen(varIdBuf)), static_cast<int>(chunk.size()) };
+            int insFmts[2] = { 0, 0 };
+
+            res = PQexecParams(conn,
+                "INSERT INTO var_tokens (var_id, form) VALUES ($1, $2)",
+                2, nullptr, insParams, insLens, insFmts, 0);
+            if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            {
+                fprintf(stderr, "[VarHandler] var token INSERT failed: %s\n",
+                    PQerrorMessage(conn));
+                fflush(stderr);
+                PQclear(res);
+                return false;
+            }
+            PQclear(res);
+            minted = true;
+        }
+
+        // Var tokens go in w2t (they occupy word positions)
+        result.writes.push_back({ "w2t", chunk, result.value });
+        result.writes.push_back({ "t2w", result.value, chunk });
+
+        // Log source location for librarian promotion workflow (new mints only)
+        if (minted && ctx.docId && ctx.position >= 0)
+        {
+            const char* srcParams[3];
+            srcParams[0] = result.value.c_str();
+            srcParams[1] = ctx.docId;
+            char posStr[16];
+            snprintf(posStr, sizeof(posStr), "%d", ctx.position);
+            srcParams[2] = posStr;
+            int srcLens[3] = {
+                static_cast<int>(result.value.size()),
+                static_cast<int>(strlen(ctx.docId)),
+                static_cast<int>(strlen(posStr))
+            };
+            int srcFmts[3] = { 0, 0, 0 };
+
+            PGresult* srcRes = PQexecParams(conn,
+                "INSERT INTO var_sources (var_id, doc_id, position) "
+                "VALUES ($1, $2, $3)",
+                3, nullptr, srcParams, srcLens, srcFmts, 0);
+            PQclear(srcRes);
+        }
+
+        return true;
     }
 
 } // namespace HCPEngine

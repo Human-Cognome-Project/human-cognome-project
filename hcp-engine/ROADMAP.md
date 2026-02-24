@@ -71,22 +71,31 @@ The HCPEngine Gem (`Gem/Source/`) contains:
 
 | Module | File | Status |
 |--------|------|--------|
-| **Vocabulary** | HCPVocabulary.h/.cpp | Working — pure LMDB reader, 7 sub-DBs |
-| **Tokenizer** | HCPTokenizer.h/.cpp | Working — 4-step space-to-space pipeline |
+| **Vocabulary** | HCPVocabulary.h/.cpp | Working — LMDB reader, 7 sub-DBs, affix loader (3696 entries, bucket-indexed) |
+| **Tokenizer** | HCPTokenizer.h/.cpp | Working — 7-step resolution cascade with affix decomposition, dash splitting, var cache |
 | **Particle Pipeline** | HCPParticlePipeline.h/.cpp | Working — PBD disassembly/reassembly/PBM derivation |
-| **Storage** | HCPStorage.h/.cpp | Working — Postgres write kernel, position-based storage |
-| **System Component** | HCPEngineSystemComponent.h/.cpp | Working — orchestrates all modules |
+| **Bond Compiler** | HCPBondCompiler.h/.cpp | Working — compiles char→word (5,409 pairs) and byte→char (1,976 pairs) from Postgres |
+| **Detection Scene** | HCPDetectionScene.h/.cpp | Working — physics-based token detection with PBD particles + PBM forces |
+| **Storage** | HCPStorage.h/.cpp | Working — Postgres write kernel, position storage + PBM storage (StorePBM) |
+| **Cache Miss Resolver** | HCPCacheMissResolver.h/.cpp | Working — LMDB miss → Postgres fill |
+| **System Component** | HCPEngineSystemComponent.h/.cpp | Working — orchestrates all modules, self-test on Activate() |
 | **Socket Server** | HCPSocketServer.h/.cpp | Working — TCP on port 9720 (health, ingest, retrieve, tokenize) |
 
-### Test Results
+### Test Results (all EXACT MATCH lossless round-trip)
 
-- **A Pail of Air** (50KB): 8,901 tokens, 2,471 unique, 18,738 slots, 215ms
-- Build: `cd build/linux && ninja`
+| Text | Size | Tokens | Tokenize | Vars |
+|------|------|--------|----------|------|
+| Yellow Wallpaper | 52KB | 10,482 | 878ms | 49 |
+| Alice in Wonderland | 174KB | 37,890 | 3.9s | 56 |
+| Huckleberry Finn | 622KB | 141,135 | 15s | 159 |
+| Tale of Two Cities | 807KB | 172,051 | 15.7s | 64 |
+
+Build: `cd build/linux && ninja`
 
 ### Known Issues
 
 - **Marker table PK collision**: Control tokens share `(t_p3, t_p4)` — needs t_p5 column. DB specialist task.
-- **Self-test hardcoded**: Activate() runs Yellow Wallpaper on every start. Will be replaced by Asset Builder pipeline.
+- **Self-test hardcoded**: Activate() runs self-test on every start. Will be replaced by Asset Builder pipeline.
 
 ---
 
@@ -108,14 +117,18 @@ Key deliverables:
 
 This is the **reference implementation** for `.txt`. The architecture is modular so contributors can add builders for PDF, EPUB, HTML, Wikipedia dumps, etc. by following the same pattern. See TODO.md for format builder tasks.
 
-### Phase 2: Document Reconstruction
+### Phase 2: Document Reconstruction — COMPLETE
 
-Prove lossless round-trip: text in, position map out, text back from positions. This validates the entire encoding pipeline.
+Lossless round-trip proven on 4 Gutenberg texts up to 807KB. Tokenize → position map → reconstruct → EXACT MATCH.
 
-Key deliverables:
-- [ ] Position map reader (shared module — used by inspector, runtime, aggregation)
-- [ ] PBM derivation function (positions in, bond counts out)
-- [ ] Reconstruction from PBM (prove lossless reproduction)
+Completed:
+- [x] PBM derivation function (DerivePBM — positions in, bond counts out, O(n) scan, ~16ms for 10K tokens)
+- [x] Reconstruction from positions (lossless reproduction verified on 4 texts)
+- [x] PBM storage (StorePBM — writes to hcp_fic_pbm: starters, word bonds, char bonds, var bonds)
+- [x] Document-local var handling (decimal pair IDs, pbm_docvars, pbm_var_bonds)
+
+Remaining:
+- [ ] Position map reader as shared module (currently embedded in self-test path)
 - [ ] Document inspector tool (view position maps, derive PBM, inspect structure)
 
 ### Phase 3: Boilerplate / Comparison Tool
@@ -163,10 +176,34 @@ This is where linguistics meets physics. The linguist specialist defines the tra
 1. **Engine IS the tokenizer** — all processing in C++/PhysX, not Python
 2. **Disassembly AND reassembly are physics operations** — not sequential algorithms
 3. **PostgreSQL is the source of truth** — LMDB is runtime cache only
-4. **PBM is derived, not stored** — position maps are the product, PBM is a view
+4. **PBM is derived then stored** — position maps are the product, PBM bonds derived on the fly and stored to hcp_fic_pbm
 5. **Build for refinement, not replacement** — every piece testable independently, extensible by contributors
-6. **Modular tools** — role-agnostic modules reused across all workstation tools
+6. **Single-purpose kernel modules** — each operation is one source of truth, stackable in any order the use case demands. The DI or user may need different combinations for different tasks.
 7. **Bonds are directional** — "the->cat" and "cat->the" are different bonds with different counts
+8. **Tokens are the internal working format** — text enters, becomes tokens, and stays tokens. Detokenization to text is an output flow, not part of the core processing loop.
+
+### Kernel Modules (stackable operations)
+
+Each module is a single-purpose operation. They can be stacked in different orders and combinations depending on the use case.
+
+| Module | Input | Output | File |
+|--------|-------|--------|------|
+| **Tokenize** | text | TokenStream | HCPTokenizer.cpp |
+| **Detokenize** | TokenStream + vocab | text | HCPDetokenizer.cpp |
+| **DisassemblePositions** | TokenStream | PositionMap | HCPParticlePipeline.cpp |
+| **ReassemblePositions** | PositionMap | TokenStream | HCPParticlePipeline.cpp |
+| **DerivePBM** | TokenStream | PBMData (bonds) | HCPParticlePipeline.cpp |
+| **StorePBM** | PBMData | DB writes | HCPStorage.cpp |
+| **StorePositionMap** | PositionMap | DB writes | HCPStorage.cpp |
+| **LoadPositionMap** | doc_id | PositionMap | HCPStorage.cpp |
+| **ProcessJsonMetadata** | JSON + doc_pk | DB metadata | HCPJsonInterpreter.cpp |
+| **StoreProvenance** | provenance fields | DB writes | HCPStorage.cpp |
+
+Example stacks:
+- **Ingest**: Tokenize → DisassemblePositions → StorePositionMap → DerivePBM → StorePBM
+- **Retrieve as text**: LoadPositionMap → ReassemblePositions → Detokenize
+- **Internal analysis**: LoadPositionMap → ReassemblePositions (stay in tokens)
+- **Round-trip test**: Tokenize → DisassemblePositions → ReassemblePositions → Detokenize → compare
 
 ## Related Documentation
 

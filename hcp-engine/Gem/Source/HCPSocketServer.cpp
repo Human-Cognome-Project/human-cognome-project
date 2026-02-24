@@ -1,7 +1,10 @@
 #include "HCPSocketServer.h"
 #include "HCPEngineSystemComponent.h"
+#include "HCPVocabulary.h"
 #include "HCPTokenizer.h"
+#include "HCPParticlePipeline.h"
 #include "HCPStorage.h"
+#include "HCPJsonInterpreter.h"
 
 #include <AzCore/Console/ILogger.h>
 
@@ -15,6 +18,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <chrono>
+#include <fstream>
 
 namespace HCPEngine
 {
@@ -75,11 +79,12 @@ namespace HCPEngine
         Stop();
     }
 
-    bool HCPSocketServer::Start(HCPEngineSystemComponent* engine, int port)
+    bool HCPSocketServer::Start(HCPEngineSystemComponent* engine, int port, bool listenAll)
     {
         if (m_running.load()) return true;
 
         m_engine = engine;
+        m_listenAll = listenAll;
         m_stopRequested.store(false);
         m_thread = std::thread(&HCPSocketServer::ListenerThread, this, port);
         return true;
@@ -115,7 +120,7 @@ namespace HCPEngine
 
         struct sockaddr_in addr{};
         addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);  // localhost only
+        addr.sin_addr.s_addr = m_listenAll ? htonl(INADDR_ANY) : htonl(INADDR_LOOPBACK);
         addr.sin_port = htons(static_cast<uint16_t>(port));
 
         if (::bind(m_listenFd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0)
@@ -135,7 +140,8 @@ namespace HCPEngine
         }
 
         m_running.store(true);
-        fprintf(stderr, "[HCPSocketServer] Listening on 127.0.0.1:%d\n", port);
+        fprintf(stderr, "[HCPSocketServer] Listening on %s:%d\n",
+            m_listenAll ? "0.0.0.0" : "127.0.0.1", port);
         fflush(stderr);
 
         while (!m_stopRequested.load())
@@ -216,25 +222,69 @@ namespace HCPEngine
         }
 
         // ---- ingest ----
+        // Two modes:
+        //   1. File path:  {"action":"ingest", "file":"/path/to/text.txt", ...}
+        //   2. Inline text: {"action":"ingest", "text":"...", "name":"...", ...}
+        // Optional: "metadata" (JSON string), "catalog" (e.g. "gutenberg"), "century"
         if (strcmp(action, "ingest") == 0)
         {
-            if (!doc.HasMember("text") || !doc["text"].IsString())
+            AZStd::string text;
+            AZStd::string name;
+
+            if (doc.HasMember("file") && doc["file"].IsString())
             {
-                return R"({"status":"error","message":"Missing 'text' field"})";
+                // File path mode — read from disk, derive name from filename
+                AZStd::string filePath(doc["file"].GetString(), doc["file"].GetStringLength());
+                std::ifstream ifs(filePath.c_str());
+                if (!ifs.is_open())
+                {
+                    rapidjson::StringBuffer sb;
+                    rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+                    w.StartObject();
+                    w.Key("status"); w.String("error");
+                    w.Key("message"); w.String("Could not open file");
+                    w.Key("file"); w.String(filePath.c_str());
+                    w.EndObject();
+                    return AZStd::string(sb.GetString(), sb.GetSize());
+                }
+                std::string stdText((std::istreambuf_iterator<char>(ifs)),
+                                     std::istreambuf_iterator<char>());
+                ifs.close();
+                text = AZStd::string(stdText.c_str(), stdText.size());
+
+                // Derive name from filename (strip path and extension)
+                name = filePath;
+                size_t lastSlash = name.rfind('/');
+                if (lastSlash != AZStd::string::npos) name = name.substr(lastSlash + 1);
+                size_t lastDot = name.rfind('.');
+                if (lastDot != AZStd::string::npos) name = name.substr(0, lastDot);
+
+                // Override name if explicitly provided
+                if (doc.HasMember("name") && doc["name"].IsString())
+                {
+                    name = AZStd::string(doc["name"].GetString(), doc["name"].GetStringLength());
+                }
             }
-            if (!doc.HasMember("name") || !doc["name"].IsString())
+            else if (doc.HasMember("text") && doc["text"].IsString())
             {
-                return R"({"status":"error","message":"Missing 'name' field"})";
+                // Inline text mode — text and name required
+                if (!doc.HasMember("name") || !doc["name"].IsString())
+                {
+                    return R"({"status":"error","message":"Inline ingest requires 'name' field"})";
+                }
+                text = AZStd::string(doc["text"].GetString(), doc["text"].GetStringLength());
+                name = AZStd::string(doc["name"].GetString(), doc["name"].GetStringLength());
+            }
+            else
+            {
+                return R"({"status":"error","message":"Ingest requires 'file' or 'text' field"})";
             }
 
-            const char* century = "AS";  // default
+            const char* century = "AS";
             if (doc.HasMember("century") && doc["century"].IsString())
             {
                 century = doc["century"].GetString();
             }
-
-            AZStd::string text(doc["text"].GetString(), doc["text"].GetStringLength());
-            AZStd::string name(doc["name"].GetString(), doc["name"].GetStringLength());
             AZStd::string centuryCode(century);
 
             auto t0 = std::chrono::high_resolution_clock::now();
@@ -246,13 +296,10 @@ namespace HCPEngine
                 return R"({"status":"error","message":"Tokenization produced no tokens"})";
             }
 
-            // Position-based disassembly
-            PositionMap posMap = DisassemblePositions(stream);
-
-            // Derive PBM (for stats)
+            // Derive PBM bonds
             PBMData pbmData = DerivePBM(stream);
 
-            // Store via write kernel
+            // Store PBM via write kernel
             HCPWriteKernel& wk = m_engine->GetWriteKernel();
             if (!wk.IsConnected())
             {
@@ -262,21 +309,48 @@ namespace HCPEngine
             AZStd::string docId;
             if (wk.IsConnected())
             {
-                docId = wk.StorePositionMap(name, centuryCode, posMap, stream);
+                docId = wk.StorePBM(name, centuryCode, pbmData);
+
+                // Store positions alongside bonds for exact reconstruction
+                if (!docId.empty())
+                {
+                    wk.StorePositions(
+                        wk.LastDocPk(),
+                        stream.tokenIds,
+                        stream.positions,
+                        stream.totalSlots);
+                }
+            }
+
+            // Process metadata if provided
+            int metaKnown = 0, metaUnreviewed = 0;
+            bool metaProvenance = false;
+            if (!docId.empty() && wk.IsConnected() &&
+                doc.HasMember("metadata") && doc["metadata"].IsString())
+            {
+                AZStd::string metaJson(doc["metadata"].GetString(),
+                                        doc["metadata"].GetStringLength());
+                AZStd::string catalog = "unknown";
+                if (doc.HasMember("catalog") && doc["catalog"].IsString())
+                {
+                    catalog = AZStd::string(doc["catalog"].GetString(),
+                                             doc["catalog"].GetStringLength());
+                }
+
+                JsonInterpretResult jResult = ProcessJsonMetadata(
+                    metaJson, wk.LastDocPk(), catalog, wk, m_engine->GetVocabulary());
+
+                metaKnown = jResult.knownFields;
+                metaUnreviewed = jResult.unreviewedFields;
+                metaProvenance = jResult.provenanceStored;
             }
 
             auto t1 = std::chrono::high_resolution_clock::now();
             double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
 
-            // Estimate DB storage size
-            size_t dbBytes = 0;
-            for (const auto& entry : posMap.entries)
-            {
-                dbBytes += 6 + entry.positions.size() * 4;
-            }
-
-            fprintf(stderr, "[HCPSocketServer] Ingested '%s': %zu tokens, %u slots, %.1f ms%s\n",
-                name.c_str(), stream.tokenIds.size(), stream.totalSlots, ms,
+            fprintf(stderr, "[HCPSocketServer] Ingested '%s': %zu tokens, %zu bonds, %.1f ms%s\n",
+                name.c_str(), stream.tokenIds.size(),
+                pbmData.bonds.size(), ms,
                 docId.empty() ? " (DB unavailable)" : "");
             fflush(stderr);
 
@@ -285,11 +359,17 @@ namespace HCPEngine
             w.StartObject();
             w.Key("status"); w.String("ok");
             w.Key("doc_id"); w.String(docId.c_str());
+            w.Key("name"); w.String(name.c_str());
             w.Key("tokens"); w.Uint64(stream.tokenIds.size());
-            w.Key("slots"); w.Uint(stream.totalSlots);
-            w.Key("unique"); w.Uint64(posMap.uniqueTokens);
+            w.Key("unique"); w.Uint64(pbmData.uniqueTokens);
             w.Key("bonds"); w.Uint64(pbmData.bonds.size());
-            w.Key("db_bytes"); w.Uint64(dbBytes);
+            w.Key("total_pairs"); w.Uint64(pbmData.totalPairs);
+            if (metaKnown > 0 || metaUnreviewed > 0)
+            {
+                w.Key("meta_known"); w.Int(metaKnown);
+                w.Key("meta_unreviewed"); w.Int(metaUnreviewed);
+                w.Key("meta_provenance"); w.Bool(metaProvenance);
+            }
             w.Key("ms"); w.Double(ms);
             w.EndObject();
             return AZStd::string(sb.GetString(), sb.GetSize());
@@ -307,7 +387,7 @@ namespace HCPEngine
 
             auto t0 = std::chrono::high_resolution_clock::now();
 
-            // Load from DB
+            // Load positions from DB — direct reconstruction
             HCPWriteKernel& wk = m_engine->GetWriteKernel();
             if (!wk.IsConnected())
             {
@@ -318,56 +398,23 @@ namespace HCPEngine
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            TokenStream loadedStream;
-            PositionMap posMap = wk.LoadPositionMap(docId, loadedStream);
-            if (posMap.entries.empty())
+            AZStd::vector<AZStd::string> tokenIds = wk.LoadPositions(docId);
+            if (tokenIds.empty())
             {
-                return R"({"status":"error","message":"Document not found"})";
+                return R"({"status":"error","message":"Document not found or has no positions"})";
             }
 
-            // Reassemble positions → token stream
-            TokenStream stream = ReassemblePositions(posMap);
+            auto tLoad = std::chrono::high_resolution_clock::now();
 
-            // Convert to text (gaps = spaces)
-            AZStd::string text;
-            text.reserve(stream.totalSlots);
-            AZ::u32 cursor = 0;
-            for (size_t i = 0; i < stream.tokenIds.size(); ++i)
-            {
-                AZ::u32 pos = stream.positions[i];
-                const AZStd::string& tid = stream.tokenIds[i];
-
-                while (cursor < pos)
-                {
-                    text += ' ';
-                    ++cursor;
-                }
-
-                if (tid.starts_with("AB.AB."))
-                {
-                    AZStd::string word = m_engine->GetVocabulary().TokenToWord(tid);
-                    if (!word.empty()) { text += word; ++cursor; continue; }
-                }
-
-                char c = m_engine->GetVocabulary().TokenToChar(tid);
-                if (c != '\0') { text += c; ++cursor; continue; }
-
-                AZStd::string nlLabel = m_engine->GetVocabulary().LookupLabel("newline");
-                if (!nlLabel.empty() && tid == nlLabel)
-                {
-                    text += '\n';
-                    ++cursor;
-                    continue;
-                }
-
-                ++cursor;
-            }
+            // Convert token IDs to text with stickiness rules
+            AZStd::string text = TokenIdsToText(tokenIds, m_engine->GetVocabulary());
 
             auto t1 = std::chrono::high_resolution_clock::now();
-            double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+            double loadMs = std::chrono::duration<double, std::milli>(tLoad - t0).count();
+            double totalMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
 
             fprintf(stderr, "[HCPSocketServer] Retrieved '%s': %zu tokens -> %zu chars, %.1f ms\n",
-                docId.c_str(), stream.tokenIds.size(), text.size(), ms);
+                docId.c_str(), tokenIds.size(), text.size(), totalMs);
             fflush(stderr);
 
             rapidjson::StringBuffer sb;
@@ -375,9 +422,45 @@ namespace HCPEngine
             w.StartObject();
             w.Key("status"); w.String("ok");
             w.Key("text"); w.String(text.c_str(), static_cast<rapidjson::SizeType>(text.size()));
-            w.Key("tokens"); w.Uint64(stream.tokenIds.size());
-            w.Key("slots"); w.Uint(stream.totalSlots);
-            w.Key("ms"); w.Double(ms);
+            w.Key("tokens"); w.Uint64(tokenIds.size());
+            w.Key("load_ms"); w.Double(loadMs);
+            w.Key("ms"); w.Double(totalMs);
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- list ----
+        if (strcmp(action, "list") == 0)
+        {
+            HCPWriteKernel& wk = m_engine->GetWriteKernel();
+            if (!wk.IsConnected())
+            {
+                wk.Connect();
+            }
+            if (!wk.IsConnected())
+            {
+                return R"({"status":"error","message":"Database not available"})";
+            }
+
+            auto docs = wk.ListDocuments();
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("count"); w.Uint64(docs.size());
+            w.Key("documents");
+            w.StartArray();
+            for (const auto& d : docs)
+            {
+                w.StartObject();
+                w.Key("doc_id"); w.String(d.docId.c_str());
+                w.Key("name"); w.String(d.name.c_str());
+                w.Key("starters"); w.Int(d.starters);
+                w.Key("bonds"); w.Int(d.bonds);
+                w.EndObject();
+            }
+            w.EndArray();
             w.EndObject();
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
@@ -394,27 +477,18 @@ namespace HCPEngine
 
             auto t0 = std::chrono::high_resolution_clock::now();
             TokenStream stream = Tokenize(text, m_engine->GetVocabulary());
-            PositionMap posMap = DisassemblePositions(stream);
             PBMData pbmData = DerivePBM(stream);
             auto t1 = std::chrono::high_resolution_clock::now();
-
-            size_t dbBytes = 0;
-            for (const auto& entry : posMap.entries)
-            {
-                dbBytes += 6 + entry.positions.size() * 4;
-            }
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
             w.StartObject();
             w.Key("status"); w.String("ok");
             w.Key("tokens"); w.Uint64(stream.tokenIds.size());
-            w.Key("slots"); w.Uint(stream.totalSlots);
-            w.Key("unique"); w.Uint64(posMap.uniqueTokens);
+            w.Key("unique"); w.Uint64(pbmData.uniqueTokens);
             w.Key("bonds"); w.Uint64(pbmData.bonds.size());
-            w.Key("db_bytes"); w.Uint64(dbBytes);
+            w.Key("total_pairs"); w.Uint64(pbmData.totalPairs);
             w.Key("original_bytes"); w.Uint64(text.size());
-            w.Key("ratio"); w.Double(text.size() > 0 ? static_cast<double>(dbBytes) / text.size() : 0.0);
             w.Key("ms"); w.Double(std::chrono::duration<double, std::milli>(t1 - t0).count());
             w.EndObject();
             return AZStd::string(sb.GetString(), sb.GetSize());

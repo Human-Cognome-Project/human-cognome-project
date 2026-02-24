@@ -2,6 +2,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <HCPEngine/HCPEngineBus.h>
 #include "HCPVocabulary.h"
@@ -33,6 +34,7 @@ namespace HCPEngine
         // Accessors for socket server and other subsystems
         const HCPVocabulary& GetVocabulary() const { return m_vocabulary; }
         HCPWriteKernel& GetWriteKernel() { return m_writeKernel; }
+        HCPParticlePipeline& GetParticlePipeline() { return m_particlePipeline; }
         bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
@@ -53,6 +55,18 @@ namespace HCPEngine
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // Console commands — source workstation CLI
+        // These are the O3DE-native interface to kernel ops.
+        // Same operations are available via socket API for remote clients.
+        void SourceIngest(const AZ::ConsoleCommandContainer& arguments);
+        void SourceDecode(const AZ::ConsoleCommandContainer& arguments);
+        void SourceList(const AZ::ConsoleCommandContainer& arguments);
+        void SourceHealth(const AZ::ConsoleCommandContainer& arguments);
+        void SourceStats(const AZ::ConsoleCommandContainer& arguments);
+        void SourceVars(const AZ::ConsoleCommandContainer& arguments);
+        ////////////////////////////////////////////////////////////////////////
+
     private:
         HCPVocabulary m_vocabulary;
         HCPParticlePipeline m_particlePipeline;
@@ -65,5 +79,13 @@ namespace HCPEngine
 
         // Cache miss resolver — fills LMDB from Postgres on demand
         CacheMissResolver m_resolver;
+
+        // Console command registrations
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceIngest, AZ::ConsoleFunctorFlags::Null, "Encode a source file into the HCP pipeline");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceDecode, AZ::ConsoleFunctorFlags::Null, "Decode a stored document back to text");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceList, AZ::ConsoleFunctorFlags::Null, "List stored documents");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceHealth, AZ::ConsoleFunctorFlags::Null, "Show engine status and vocabulary counts");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceStats, AZ::ConsoleFunctorFlags::Null, "Show encoding stats for a stored document");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceVars, AZ::ConsoleFunctorFlags::Null, "List unresolved vars in a document");
     };
 }

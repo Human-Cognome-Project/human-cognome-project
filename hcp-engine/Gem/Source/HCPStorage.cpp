@@ -2,6 +2,7 @@
 
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <libpq-fe.h>
 #include <cstring>
 
@@ -29,8 +30,32 @@ namespace HCPEngine
                              token.size() - VAR_PREFIX_LEN - 1);
     }
 
-    // Base-50 alphabet for position encoding
+    // Base-50 pair encoding (value 0-2499 → 2 chars)
     static const char B50[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx";
+
+    static AZStd::string EncodePairStr(int value)
+    {
+        if (value < 0) value = 0;
+        if (value >= 2500) value = 2499;
+        char buf[3];
+        buf[0] = B50[value / 50];
+        buf[1] = B50[value % 50];
+        buf[2] = '\0';
+        return AZStd::string(buf);
+    }
+
+    // Base-50 position encoding: position → 4 chars (two pairs)
+    // pair1 = position / 2500, pair2 = position % 2500
+    // Max position: 2499 * 2500 + 2499 = 6,249,999
+    static void EncodePosition(int position, char out[4])
+    {
+        int pair1 = position / 2500;
+        int pair2 = position % 2500;
+        out[0] = B50[pair1 / 50];
+        out[1] = B50[pair1 % 50];
+        out[2] = B50[pair2 / 50];
+        out[3] = B50[pair2 % 50];
+    }
 
     static int DecodeB50Char(char c)
     {
@@ -39,58 +64,11 @@ namespace HCPEngine
         return 0;
     }
 
-    // Base-50 pair encoding (value 0-2499 → 2 chars)
-    static void EncodePair(int value, char out[2])
+    static int DecodePosition(const char* p)
     {
-        if (value < 0) value = 0;
-        if (value >= 2500) value = 2499;
-        out[0] = B50[value / 50];
-        out[1] = B50[value % 50];
-    }
-
-    static AZStd::string EncodePairStr(int value)
-    {
-        char buf[3];
-        EncodePair(value, buf);
-        buf[2] = '\0';
-        return AZStd::string(buf);
-    }
-
-    // ---- Position encoding: 4 chars per position (2 composable base-50 pairs) ----
-    // Position = hi_pair * 2500 + lo_pair
-    // Max: 2499 * 2500 + 2499 = 6,249,999
-
-    AZStd::string EncodePositions(const AZStd::vector<AZ::u32>& positions)
-    {
-        AZStd::string result;
-        result.reserve(positions.size() * 4);
-        for (AZ::u32 pos : positions)
-        {
-            AZ::u32 hi = pos / 2500;
-            AZ::u32 lo = pos % 2500;
-            result += B50[hi / 50];
-            result += B50[hi % 50];
-            result += B50[lo / 50];
-            result += B50[lo % 50];
-        }
-        return result;
-    }
-
-    AZStd::vector<AZ::u32> DecodePositions(const AZStd::string& encoded)
-    {
-        AZStd::vector<AZ::u32> result;
-        result.reserve(encoded.size() / 4);
-        for (size_t i = 0; i + 3 < encoded.size(); i += 4)
-        {
-            int hh = DecodeB50Char(encoded[i]);
-            int hl = DecodeB50Char(encoded[i + 1]);
-            int lh = DecodeB50Char(encoded[i + 2]);
-            int ll = DecodeB50Char(encoded[i + 3]);
-            AZ::u32 hi = static_cast<AZ::u32>(hh * 50 + hl);
-            AZ::u32 lo = static_cast<AZ::u32>(lh * 50 + ll);
-            result.push_back(hi * 2500 + lo);
-        }
-        return result;
+        int pair1 = DecodeB50Char(p[0]) * 50 + DecodeB50Char(p[1]);
+        int pair2 = DecodeB50Char(p[2]) * 50 + DecodeB50Char(p[3]);
+        return pair1 * 2500 + pair2;
     }
 
     // Split "AB.AB.CD.AH.xN" → parts[0]="AB", parts[1]="AB", parts[2]="CD", parts[3]="AH", parts[4]="xN"
@@ -149,309 +127,6 @@ namespace HCPEngine
             PQfinish(m_conn);
             m_conn = nullptr;
         }
-    }
-
-    int HCPWriteKernel::NextDocSequence(
-        const AZStd::string& ns,
-        const AZStd::string& p2,
-        const AZStd::string& p3)
-    {
-        // Ensure counter row exists
-        {
-            const char* params[] = { ns.c_str(), p2.c_str(), p3.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "INSERT INTO doc_counters (ns, p2, p3, next_value) "
-                "VALUES ($1, $2, $3, 1) ON CONFLICT (ns, p2, p3) DO NOTHING",
-                3, nullptr, params, nullptr, nullptr, 0);
-            PQclear(res);
-        }
-
-        // Atomic increment and return
-        const char* params[] = { ns.c_str(), p2.c_str(), p3.c_str() };
-        PGresult* res = PQexecParams(m_conn,
-            "UPDATE doc_counters SET next_value = next_value + 1 "
-            "WHERE ns = $1 AND p2 = $2 AND p3 = $3 RETURNING next_value - 1",
-            3, nullptr, params, nullptr, nullptr, 0);
-
-        int seq = 0;
-        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
-        {
-            seq = atoi(PQgetvalue(res, 0, 0));
-        }
-        PQclear(res);
-        return seq;
-    }
-
-    bool HCPWriteKernel::InsertDocument(
-        const AZStd::string& ns,
-        const AZStd::string& p2,
-        const AZStd::string& p3,
-        const AZStd::string& p4,
-        const AZStd::string& p5,
-        const AZStd::string& docName,
-        AZ::u32 totalSlots,
-        size_t uniqueTokens,
-        int& outPk,
-        AZStd::string& outDocId)
-    {
-        AZStd::string slotsStr = AZStd::to_string(totalSlots);
-        AZStd::string uniqueStr = AZStd::to_string(uniqueTokens);
-
-        const char* params[] = {
-            ns.c_str(), p2.c_str(), p3.c_str(), p4.c_str(), p5.c_str(),
-            docName.c_str(),
-            slotsStr.c_str(), uniqueStr.c_str(), "{}"
-        };
-        PGresult* res = PQexecParams(m_conn,
-            "INSERT INTO documents (ns, p2, p3, p4, p5, name, "
-            "total_slots, unique_tokens, metadata) "
-            "VALUES ($1, $2, $3, $4, $5, $6, $7::integer, $8::integer, $9::jsonb) "
-            "RETURNING doc_id",
-            9, nullptr, params, nullptr, nullptr, 0);
-
-        bool ok = (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0);
-        if (ok)
-        {
-            outPk = 0; // No integer PK in new schema — doc_id is the key
-            outDocId = PQgetvalue(res, 0, 0);
-        }
-        else
-        {
-            AZLOG_ERROR("HCPWriteKernel: InsertDocument failed: %s", PQerrorMessage(m_conn));
-        }
-        PQclear(res);
-        return ok;
-    }
-
-    bool HCPWriteKernel::InsertTokenPositions(
-        const AZStd::string& docId,
-        const AZStd::string& tokenId,
-        const AZStd::vector<AZ::u32>& positions)
-    {
-        AZStd::string parts[5];
-        SplitTokenId(tokenId, parts);
-
-        AZStd::string posEncoded = EncodePositions(positions);
-
-        if (parts[0] == "AB" && parts[1] == "AB")
-        {
-            // Word token → doc_word_positions (store p3, p4, p5)
-            const char* params[] = {
-                docId.c_str(),
-                parts[2].c_str(), parts[3].c_str(),
-                parts[4].empty() ? nullptr : parts[4].c_str(),
-                posEncoded.c_str()
-            };
-            PGresult* res = PQexecParams(m_conn,
-                "INSERT INTO doc_word_positions (doc_id, t_p3, t_p4, t_p5, positions) "
-                "VALUES ($1, $2, $3, $4, $5)",
-                5, nullptr, params, nullptr, nullptr, 0);
-            bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
-            if (!ok) AZLOG_ERROR("HCPWriteKernel: word insert failed: %s", PQerrorMessage(m_conn));
-            PQclear(res);
-            return ok;
-        }
-        else if (parts[0] == "AA" && parts[1] == "AE")
-        {
-            // Marker token → doc_marker_positions (store p3, p4)
-            const char* params[] = {
-                docId.c_str(),
-                parts[2].c_str(), parts[3].c_str(),
-                posEncoded.c_str()
-            };
-            PGresult* res = PQexecParams(m_conn,
-                "INSERT INTO doc_marker_positions (doc_id, t_p3, t_p4, positions) "
-                "VALUES ($1, $2, $3, $4)",
-                4, nullptr, params, nullptr, nullptr, 0);
-            bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
-            if (!ok) AZLOG_ERROR("HCPWriteKernel: marker insert failed: %s", PQerrorMessage(m_conn));
-            PQclear(res);
-            return ok;
-        }
-        else
-        {
-            // Character/punctuation token → doc_char_positions (store p2, p3, p4, p5)
-            const char* params[] = {
-                docId.c_str(),
-                parts[1].c_str(), parts[2].c_str(), parts[3].c_str(),
-                parts[4].empty() ? nullptr : parts[4].c_str(),
-                posEncoded.c_str()
-            };
-            PGresult* res = PQexecParams(m_conn,
-                "INSERT INTO doc_char_positions (doc_id, t_p2, t_p3, t_p4, t_p5, positions) "
-                "VALUES ($1, $2, $3, $4, $5, $6)",
-                6, nullptr, params, nullptr, nullptr, 0);
-            bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
-            if (!ok) AZLOG_ERROR("HCPWriteKernel: char insert failed: %s", PQerrorMessage(m_conn));
-            PQclear(res);
-            return ok;
-        }
-    }
-
-    AZStd::string HCPWriteKernel::StorePositionMap(
-        const AZStd::string& docName,
-        const AZStd::string& centuryCode,
-        const PositionMap& posMap,
-        const TokenStream& stream)
-    {
-        if (!m_conn)
-        {
-            AZLOG_ERROR("HCPWriteKernel: Not connected");
-            return {};
-        }
-
-        PQexec(m_conn, "BEGIN");
-
-        // Allocate document address
-        AZStd::string ns = "vA";    // fiction namespace
-        AZStd::string p2 = "AB";    // English
-        AZStd::string p3 = centuryCode;
-
-        int seq = NextDocSequence(ns, p2, p3);
-        AZStd::string p4 = EncodePairStr(seq / 2500);
-        AZStd::string p5 = EncodePairStr(seq % 2500);
-
-        // Insert document
-        int docPk = 0;
-        AZStd::string docId;
-        if (!InsertDocument(ns, p2, p3, p4, p5, docName,
-            stream.totalSlots, posMap.uniqueTokens, docPk, docId))
-        {
-            AZLOG_ERROR("HCPWriteKernel: Failed to insert document");
-            PQexec(m_conn, "ROLLBACK");
-            return {};
-        }
-
-        // Insert all token positions
-        for (const auto& entry : posMap.entries)
-        {
-            if (!InsertTokenPositions(docId, entry.tokenId, entry.positions))
-            {
-                PQexec(m_conn, "ROLLBACK");
-                return {};
-            }
-        }
-
-        PQexec(m_conn, "COMMIT");
-
-        AZLOG_INFO("HCPWriteKernel: Stored %s — %zu unique tokens, %u total slots",
-            docId.c_str(), posMap.uniqueTokens, stream.totalSlots);
-        return docId;
-    }
-
-    PositionMap HCPWriteKernel::LoadPositionMap(
-        const AZStd::string& docId,
-        TokenStream& outStream)
-    {
-        PositionMap result;
-
-        if (!m_conn)
-        {
-            AZLOG_ERROR("HCPWriteKernel: Not connected");
-            return result;
-        }
-
-        // Get document metadata
-        {
-            const char* params[] = { docId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "SELECT total_slots, unique_tokens FROM documents WHERE doc_id = $1",
-                1, nullptr, params, nullptr, nullptr, 0);
-            if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
-            {
-                AZLOG_ERROR("HCPWriteKernel: Document %s not found", docId.c_str());
-                PQclear(res);
-                return result;
-            }
-            outStream.totalSlots = static_cast<AZ::u32>(atoi(PQgetvalue(res, 0, 0)));
-            result.totalTokens = outStream.totalSlots;
-            PQclear(res);
-        }
-
-        // Load word positions — reconstruct token_id as AB.AB.t_p3.t_p4[.t_p5]
-        {
-            const char* params[] = { docId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "SELECT 'AB.AB.' || t_p3 || '.' || t_p4 || COALESCE('.' || t_p5, ''), positions "
-                "FROM doc_word_positions WHERE doc_id = $1",
-                1, nullptr, params, nullptr, nullptr, 0);
-            if (PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                for (int i = 0; i < PQntuples(res); ++i)
-                {
-                    TokenPositions tp;
-                    tp.tokenId = PQgetvalue(res, i, 0);
-                    tp.positions = DecodePositions(AZStd::string(PQgetvalue(res, i, 1)));
-                    result.entries.push_back(AZStd::move(tp));
-                }
-            }
-            PQclear(res);
-        }
-
-        // Load char positions — reconstruct token_id as AA.t_p2.t_p3.t_p4[.t_p5]
-        {
-            const char* params[] = { docId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "SELECT 'AA.' || t_p2 || '.' || t_p3 || '.' || t_p4 || COALESCE('.' || t_p5, ''), positions "
-                "FROM doc_char_positions WHERE doc_id = $1",
-                1, nullptr, params, nullptr, nullptr, 0);
-            if (PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                for (int i = 0; i < PQntuples(res); ++i)
-                {
-                    TokenPositions tp;
-                    tp.tokenId = PQgetvalue(res, i, 0);
-                    tp.positions = DecodePositions(AZStd::string(PQgetvalue(res, i, 1)));
-                    result.entries.push_back(AZStd::move(tp));
-                }
-            }
-            PQclear(res);
-        }
-
-        // Load marker positions — reconstruct token_id as AA.AE.t_p3.t_p4
-        {
-            const char* params[] = { docId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "SELECT 'AA.AE.' || t_p3 || '.' || t_p4, positions "
-                "FROM doc_marker_positions WHERE doc_id = $1",
-                1, nullptr, params, nullptr, nullptr, 0);
-            if (PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                for (int i = 0; i < PQntuples(res); ++i)
-                {
-                    TokenPositions tp;
-                    tp.tokenId = PQgetvalue(res, i, 0);
-                    tp.positions = DecodePositions(AZStd::string(PQgetvalue(res, i, 1)));
-                    result.entries.push_back(AZStd::move(tp));
-                }
-            }
-            PQclear(res);
-        }
-
-        // Load var positions
-        {
-            const char* params[] = { docId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "SELECT var_id, positions FROM doc_var_positions WHERE doc_id = $1",
-                1, nullptr, params, nullptr, nullptr, 0);
-            if (PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                for (int i = 0; i < PQntuples(res); ++i)
-                {
-                    TokenPositions tp;
-                    tp.tokenId = PQgetvalue(res, i, 0);
-                    tp.positions = DecodePositions(AZStd::string(PQgetvalue(res, i, 1)));
-                    result.entries.push_back(AZStd::move(tp));
-                }
-            }
-            PQclear(res);
-        }
-
-        result.uniqueTokens = result.entries.size();
-
-        AZLOG_INFO("HCPWriteKernel: Loaded %s — %zu unique tokens, %u total slots",
-            docId.c_str(), result.uniqueTokens, outStream.totalSlots);
-        return result;
     }
 
     AZStd::string HCPWriteKernel::StorePBM(
@@ -523,6 +198,8 @@ namespace HCPEngine
             PQclear(res);
         }
 
+        m_lastDocPk = docPk;
+
         fprintf(stderr, "[HCPStorage] StorePBM: doc '%s' -> %s (pk=%d)\n",
             docName.c_str(), docId.c_str(), docPk);
         fflush(stderr);
@@ -530,8 +207,28 @@ namespace HCPEngine
         // ---- Mint document-local vars (decimal pair IDs) ----
         // Scan all bonds for var tokens, mint a decimal ID for each unique surface form.
         // Map: full var token string → short decimal var_id (e.g. "01.03")
+        // Application-side minting: no stored procedure dependency.
         AZStd::unordered_map<AZStd::string, AZStd::string> varToDecimal;
         {
+            // Seed decimal counter from any existing docvars for this document
+            int nextDecimal = 0;
+            {
+                AZStd::string pkStr = AZStd::to_string(docPk);
+                const char* params[] = { pkStr.c_str() };
+                PGresult* res = PQexecParams(m_conn,
+                    "SELECT COALESCE(MAX("
+                    "  CAST(SPLIT_PART(var_id, '.', 1) AS INTEGER) * 100 + "
+                    "  CAST(SPLIT_PART(var_id, '.', 2) AS INTEGER)"
+                    "), -1) FROM pbm_docvars WHERE doc_id = $1",
+                    1, nullptr, params, nullptr, nullptr, 0);
+                if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+                {
+                    nextDecimal = atoi(PQgetvalue(res, 0, 0)) + 1;
+                }
+                PQclear(res);
+            }
+
+            AZStd::string docPkStr2 = AZStd::to_string(docPk);
             AZStd::unordered_map<AZStd::string, AZStd::string> surfaceSeen;  // surface → var_id
             for (const auto& bond : pbmData.bonds)
             {
@@ -548,23 +245,44 @@ namespace HCPEngine
                         continue;
                     }
 
-                    // Call mint_docvar(doc_pk, surface) → returns decimal var_id
-                    AZStd::string docPkStr2 = AZStd::to_string(docPk);
-                    const char* params[] = { docPkStr2.c_str(), surface.c_str() };
+                    // Check if this surface already has a docvar for this document
+                    const char* checkParams[] = { docPkStr2.c_str(), surface.c_str() };
                     PGresult* res = PQexecParams(m_conn,
-                        "SELECT mint_docvar($1::integer, $2)",
-                        2, nullptr, params, nullptr, nullptr, 0);
+                        "SELECT var_id FROM pbm_docvars WHERE doc_id = $1 AND surface = $2",
+                        2, nullptr, checkParams, nullptr, nullptr, 0);
                     if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
                     {
                         AZStd::string varId = PQgetvalue(res, 0, 0);
                         varToDecimal[*tok] = varId;
                         surfaceSeen[surface] = varId;
+                        PQclear(res);
+                        continue;
+                    }
+                    PQclear(res);
+
+                    // Mint new decimal var_id
+                    char varIdBuf[8];
+                    snprintf(varIdBuf, sizeof(varIdBuf), "%02d.%02d",
+                        nextDecimal / 100, nextDecimal % 100);
+                    AZStd::string varId(varIdBuf);
+                    ++nextDecimal;
+
+                    // Insert into pbm_docvars
+                    const char* insParams[] = { docPkStr2.c_str(), varIdBuf, surface.c_str() };
+                    res = PQexecParams(m_conn,
+                        "INSERT INTO pbm_docvars (doc_id, var_id, surface) "
+                        "VALUES ($1::integer, $2, $3)",
+                        3, nullptr, insParams, nullptr, nullptr, 0);
+                    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+                    {
+                        fprintf(stderr, "[HCPStorage] docvar INSERT failed for '%s': %s\n",
+                            surface.c_str(), PQerrorMessage(m_conn));
+                        fflush(stderr);
                     }
                     else
                     {
-                        fprintf(stderr, "[HCPStorage] mint_docvar failed for '%s': %s\n",
-                            surface.c_str(), PQerrorMessage(m_conn));
-                        fflush(stderr);
+                        varToDecimal[*tok] = varId;
+                        surfaceSeen[surface] = varId;
                     }
                     PQclear(res);
                 }
@@ -780,8 +498,140 @@ namespace HCPEngine
         return docId;
     }
 
+    bool HCPWriteKernel::StorePositions(
+        int docPk,
+        const AZStd::vector<AZStd::string>& tokenIds,
+        const AZStd::vector<int>& positions,
+        int totalSlots)
+    {
+        if (!m_conn || tokenIds.size() != positions.size())
+        {
+            AZLOG_ERROR("HCPWriteKernel::StorePositions: not connected or size mismatch");
+            return false;
+        }
+
+        PQexec(m_conn, "BEGIN");
+
+        // Group positions by token ID
+        AZStd::unordered_map<AZStd::string, AZStd::vector<int>> tokenPositions;
+        for (size_t i = 0; i < tokenIds.size(); ++i)
+        {
+            tokenPositions[tokenIds[i]].push_back(positions[i]);
+        }
+
+        // Update total_slots and unique_tokens on pbm_documents
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            AZStd::string slotsStr = AZStd::to_string(totalSlots);
+            AZStd::string uniqStr = AZStd::to_string(static_cast<int>(tokenPositions.size()));
+            const char* params[] = { slotsStr.c_str(), uniqStr.c_str(), pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "UPDATE pbm_documents SET total_slots = $1::integer, unique_tokens = $2::integer "
+                "WHERE id = $3::integer",
+                3, nullptr, params, nullptr, nullptr, 0);
+            PQclear(res);
+        }
+
+        // Build surface→decimal var_id lookup from pbm_docvars
+        AZStd::unordered_map<AZStd::string, AZStd::string> surfaceToVarId;
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT var_id, surface FROM pbm_docvars WHERE doc_id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    surfaceToVarId[PQgetvalue(res, i, 1)] = PQgetvalue(res, i, 0);
+                }
+            }
+            PQclear(res);
+        }
+
+        AZStd::string docPkStr = AZStd::to_string(docPk);
+        size_t updated = 0;
+
+        for (const auto& [tokenId, posList] : tokenPositions)
+        {
+            // Encode positions as base-50 packed string (4 chars per position)
+            AZStd::string packed;
+            packed.resize(posList.size() * 4);
+            for (size_t j = 0; j < posList.size(); ++j)
+            {
+                EncodePosition(posList[j], packed.data() + j * 4);
+            }
+
+            // Determine the token_a_id used in pbm_starters
+            // Var tokens: "AA.AE.AF.AA.AC surface" → lookup decimal → "00.00.00.XX.YY"
+            // Regular tokens: use as-is
+            AZStd::string starterTokenId;
+            if (tokenId.starts_with(VAR_PREFIX) && tokenId.size() > VAR_PREFIX_LEN + 1)
+            {
+                AZStd::string surface = VarSurface(tokenId);
+                auto it = surfaceToVarId.find(surface);
+                if (it != surfaceToVarId.end())
+                {
+                    // Decimal var_id "XX.YY" → "00.00.00.XX.YY"
+                    const AZStd::string& vid = it->second;
+                    size_t dot = vid.find('.');
+                    starterTokenId = "00.00.00." +
+                        AZStd::string(vid.data(), dot) + "." +
+                        AZStd::string(vid.data() + dot + 1, vid.size() - dot - 1);
+                }
+                else
+                {
+                    fprintf(stderr, "[HCPStorage] StorePositions: no docvar for surface '%s'\n",
+                        surface.c_str());
+                    fflush(stderr);
+                    continue;
+                }
+            }
+            else
+            {
+                starterTokenId = tokenId;
+            }
+
+            // UPDATE the starter row with packed positions
+            const char* params[] = { packed.c_str(), docPkStr.c_str(), starterTokenId.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "UPDATE pbm_starters SET positions = $1 "
+                "WHERE doc_id = $2::integer AND token_a_id = $3",
+                3, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_COMMAND_OK)
+            {
+                int rows = atoi(PQcmdTuples(res));
+                if (rows > 0) ++updated;
+                else
+                {
+                    fprintf(stderr, "[HCPStorage] StorePositions: no starter for token '%s'\n",
+                        starterTokenId.c_str());
+                    fflush(stderr);
+                }
+            }
+            else
+            {
+                fprintf(stderr, "[HCPStorage] StorePositions UPDATE failed: %s\n",
+                    PQerrorMessage(m_conn));
+                fflush(stderr);
+            }
+            PQclear(res);
+        }
+
+        PGresult* commitRes = PQexec(m_conn, "COMMIT");
+        bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
+        PQclear(commitRes);
+
+        fprintf(stderr, "[HCPStorage] StorePositions: pk=%d — %zu/%zu starters updated\n",
+            docPk, updated, tokenPositions.size());
+        fflush(stderr);
+
+        return ok;
+    }
+
     bool HCPWriteKernel::StoreMetadata(
-        const AZStd::string& docId,
+        int docPk,
         const AZStd::string& key,
         const AZStd::string& value)
     {
@@ -791,14 +641,414 @@ namespace HCPEngine
             return false;
         }
 
-        const char* params[] = { docId.c_str(), key.c_str(), value.c_str() };
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str(), key.c_str(), value.c_str() };
         PGresult* res = PQexecParams(m_conn,
-            "UPDATE documents SET metadata = metadata || jsonb_build_object($2, $3) "
-            "WHERE doc_id = $1",
+            "UPDATE pbm_documents SET metadata = metadata || jsonb_build_object($2, $3::jsonb) "
+            "WHERE id = $1::integer",
             3, nullptr, params, nullptr, nullptr, 0);
         bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
+        if (!ok)
+        {
+            fprintf(stderr, "[HCPStorage] StoreMetadata failed: %s\n", PQerrorMessage(m_conn));
+            fflush(stderr);
+        }
         PQclear(res);
         return ok;
+    }
+
+    bool HCPWriteKernel::StoreDocumentMetadata(
+        int docPk,
+        const AZStd::string& metadataJson)
+    {
+        if (!m_conn)
+        {
+            AZLOG_ERROR("HCPWriteKernel: Not connected");
+            return false;
+        }
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str(), metadataJson.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "UPDATE pbm_documents SET metadata = metadata || $2::jsonb "
+            "WHERE id = $1::integer",
+            2, nullptr, params, nullptr, nullptr, 0);
+        bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
+        if (!ok)
+        {
+            fprintf(stderr, "[HCPStorage] StoreDocumentMetadata failed: %s\n", PQerrorMessage(m_conn));
+            fflush(stderr);
+        }
+        PQclear(res);
+        return ok;
+    }
+
+    bool HCPWriteKernel::StoreProvenance(
+        int docPk,
+        const AZStd::string& sourceType,
+        const AZStd::string& sourcePath,
+        const AZStd::string& sourceFormat,
+        const AZStd::string& catalog,
+        const AZStd::string& catalogId)
+    {
+        if (!m_conn)
+        {
+            AZLOG_ERROR("HCPWriteKernel: Not connected");
+            return false;
+        }
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = {
+            pkStr.c_str(), sourceType.c_str(), sourcePath.c_str(),
+            sourceFormat.c_str(), catalog.c_str(), catalogId.c_str()
+        };
+        PGresult* res = PQexecParams(m_conn,
+            "INSERT INTO document_provenance "
+            "(doc_id, source_type, source_path, source_format, source_catalog, catalog_id) "
+            "VALUES ($1::integer, $2, $3, $4, $5, $6) "
+            "ON CONFLICT (doc_id) DO UPDATE SET "
+            "source_type = EXCLUDED.source_type, "
+            "source_path = EXCLUDED.source_path, "
+            "source_format = EXCLUDED.source_format, "
+            "source_catalog = EXCLUDED.source_catalog, "
+            "catalog_id = EXCLUDED.catalog_id",
+            6, nullptr, params, nullptr, nullptr, 0);
+        bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
+        if (!ok)
+        {
+            fprintf(stderr, "[HCPStorage] StoreProvenance failed: %s\n", PQerrorMessage(m_conn));
+            fflush(stderr);
+        }
+        PQclear(res);
+        return ok;
+    }
+
+    AZStd::vector<HCPWriteKernel::DocumentInfo> HCPWriteKernel::ListDocuments()
+    {
+        AZStd::vector<DocumentInfo> result;
+        if (!m_conn)
+        {
+            AZLOG_ERROR("HCPWriteKernel: Not connected");
+            return result;
+        }
+
+        PGresult* res = PQexec(m_conn,
+            "SELECT d.doc_id, d.name, "
+            "  (SELECT COUNT(*) FROM pbm_starters s WHERE s.doc_id = d.id) AS starters, "
+            "  (SELECT COALESCE(SUM(wb.count),0) + COALESCE(SUM(cb.count),0) + "
+            "          COALESCE(SUM(mb.count),0) + COALESCE(SUM(vb.count),0) "
+            "   FROM pbm_starters s2 "
+            "   LEFT JOIN pbm_word_bonds wb ON wb.starter_id = s2.id "
+            "   LEFT JOIN pbm_char_bonds cb ON cb.starter_id = s2.id "
+            "   LEFT JOIN pbm_marker_bonds mb ON mb.starter_id = s2.id "
+            "   LEFT JOIN pbm_var_bonds vb ON vb.starter_id = s2.id "
+            "   WHERE s2.doc_id = d.id) AS total_bonds "
+            "FROM pbm_documents d ORDER BY d.doc_id");
+        if (PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            for (int i = 0; i < PQntuples(res); ++i)
+            {
+                DocumentInfo info;
+                info.docId = PQgetvalue(res, i, 0);
+                info.name = PQgetvalue(res, i, 1);
+                info.starters = atoi(PQgetvalue(res, i, 2));
+                info.bonds = atoi(PQgetvalue(res, i, 3));
+                result.push_back(AZStd::move(info));
+            }
+        }
+        PQclear(res);
+        return result;
+    }
+
+    PBMData HCPWriteKernel::LoadPBM(const AZStd::string& docId)
+    {
+        PBMData result;
+        if (!m_conn)
+        {
+            AZLOG_ERROR("HCPWriteKernel: Not connected");
+            return result;
+        }
+
+        // Get document PK and first FPB
+        int docPk = 0;
+        {
+            const char* params[] = { docId.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT id, first_fpb_a, first_fpb_b FROM pbm_documents WHERE doc_id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+            {
+                AZLOG_ERROR("HCPWriteKernel: Document %s not found", docId.c_str());
+                PQclear(res);
+                return result;
+            }
+            docPk = atoi(PQgetvalue(res, 0, 0));
+            result.firstFpbA = PQgetvalue(res, 0, 1);
+            result.firstFpbB = PQgetvalue(res, 0, 2);
+            PQclear(res);
+        }
+
+        // Build var_id → surface form lookup for this document
+        AZStd::unordered_map<AZStd::string, AZStd::string> varSurfaces;
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT var_id, surface FROM pbm_docvars WHERE doc_id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    varSurfaces[PQgetvalue(res, i, 0)] = PQgetvalue(res, i, 1);
+                }
+            }
+            PQclear(res);
+        }
+
+        // Load all starters and their bonds via a single query per bond type
+        // First get starters: id, token_a_id
+        struct StarterInfo { int id; AZStd::string tokenA; };
+        AZStd::vector<StarterInfo> starters;
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT id, token_a_id FROM pbm_starters WHERE doc_id = $1 ORDER BY id",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    StarterInfo si;
+                    si.id = atoi(PQgetvalue(res, i, 0));
+                    si.tokenA = PQgetvalue(res, i, 1);
+                    starters.push_back(AZStd::move(si));
+                }
+            }
+            PQclear(res);
+        }
+
+        if (starters.empty())
+        {
+            AZLOG_ERROR("HCPWriteKernel: No starters for doc %s", docId.c_str());
+            return result;
+        }
+
+        // Resolve var-encoded A-sides: starters with a_ns="00" are var tokens
+        // Their token_a_id is "00.00.00.XX.YY" — look up XX.YY in docvars
+        for (auto& si : starters)
+        {
+            if (si.tokenA.starts_with("00.00.00."))
+            {
+                // Extract decimal var_id: "00.00.00.XX.YY" → "XX.YY"
+                AZStd::string varId = si.tokenA.substr(9);  // skip "00.00.00."
+                auto it = varSurfaces.find(varId);
+                if (it != varSurfaces.end())
+                {
+                    si.tokenA = AZStd::string(VAR_PREFIX) + " " + it->second;
+                }
+            }
+        }
+
+        // Build starter ID → tokenA lookup
+        AZStd::unordered_map<int, AZStd::string> starterTokenA;
+        for (const auto& si : starters)
+        {
+            starterTokenA[si.id] = si.tokenA;
+        }
+
+        // Helper: load bonds from a subtable, reconstruct B-side token ID
+        auto loadBonds = [&](const char* query, auto reconstructB) {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn, query,
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    int starterId = atoi(PQgetvalue(res, i, 0));
+                    auto aIt = starterTokenA.find(starterId);
+                    if (aIt == starterTokenA.end()) continue;
+
+                    Bond bond;
+                    bond.tokenA = aIt->second;
+                    bond.tokenB = reconstructB(res, i);
+                    bond.count = atoi(PQgetvalue(res, i, PQnfields(res) - 1));
+                    result.bonds.push_back(AZStd::move(bond));
+                    result.totalPairs += bond.count;
+                }
+            }
+            PQclear(res);
+        };
+
+        // Word bonds: starter_id, b_p3, b_p4, b_p5, count
+        loadBonds(
+            "SELECT wb.starter_id, wb.b_p3, wb.b_p4, wb.b_p5, wb.count "
+            "FROM pbm_word_bonds wb "
+            "JOIN pbm_starters s ON s.id = wb.starter_id "
+            "WHERE s.doc_id = $1",
+            [](PGresult* res, int i) -> AZStd::string {
+                return AZStd::string("AB.AB.") + PQgetvalue(res, i, 1) + "." +
+                       PQgetvalue(res, i, 2) + "." + PQgetvalue(res, i, 3);
+            });
+
+        // Char bonds: starter_id, b_p2, b_p3, b_p4, b_p5, count
+        loadBonds(
+            "SELECT cb.starter_id, cb.b_p2, cb.b_p3, cb.b_p4, cb.b_p5, cb.count "
+            "FROM pbm_char_bonds cb "
+            "JOIN pbm_starters s ON s.id = cb.starter_id "
+            "WHERE s.doc_id = $1",
+            [](PGresult* res, int i) -> AZStd::string {
+                return AZStd::string("AA.") + PQgetvalue(res, i, 1) + "." +
+                       PQgetvalue(res, i, 2) + "." + PQgetvalue(res, i, 3) + "." +
+                       PQgetvalue(res, i, 4);
+            });
+
+        // Marker bonds: starter_id, b_p3, b_p4, count
+        loadBonds(
+            "SELECT mb.starter_id, mb.b_p3, mb.b_p4, mb.count "
+            "FROM pbm_marker_bonds mb "
+            "JOIN pbm_starters s ON s.id = mb.starter_id "
+            "WHERE s.doc_id = $1",
+            [](PGresult* res, int i) -> AZStd::string {
+                return AZStd::string("AA.AE.") + PQgetvalue(res, i, 1) + "." +
+                       PQgetvalue(res, i, 2);
+            });
+
+        // Var bonds: starter_id, b_var_id, count
+        loadBonds(
+            "SELECT vb.starter_id, vb.b_var_id, vb.count "
+            "FROM pbm_var_bonds vb "
+            "JOIN pbm_starters s ON s.id = vb.starter_id "
+            "WHERE s.doc_id = $1",
+            [&varSurfaces](PGresult* res, int i) -> AZStd::string {
+                AZStd::string varId = PQgetvalue(res, i, 1);
+                auto it = varSurfaces.find(varId);
+                if (it != varSurfaces.end())
+                {
+                    return AZStd::string(VAR_PREFIX) + " " + it->second;
+                }
+                return AZStd::string("var.") + varId;
+            });
+
+        // Count unique tokens
+        AZStd::unordered_set<AZStd::string> uniqueTokens;
+        for (const auto& bond : result.bonds)
+        {
+            uniqueTokens.insert(bond.tokenA);
+            uniqueTokens.insert(bond.tokenB);
+        }
+        result.uniqueTokens = uniqueTokens.size();
+
+        AZLOG_INFO("HCPWriteKernel: Loaded PBM %s — %zu bonds, %zu total pairs, %zu unique tokens",
+            docId.c_str(), result.bonds.size(), result.totalPairs, result.uniqueTokens);
+        return result;
+    }
+
+    AZStd::vector<AZStd::string> HCPWriteKernel::LoadPositions(const AZStd::string& docId)
+    {
+        AZStd::vector<AZStd::string> result;
+        if (!m_conn)
+        {
+            AZLOG_ERROR("HCPWriteKernel: Not connected");
+            return result;
+        }
+
+        // Get document PK and total_slots
+        int docPk = 0;
+        int totalSlots = 0;
+        {
+            const char* params[] = { docId.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT id, COALESCE(total_slots, 0) FROM pbm_documents WHERE doc_id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+            {
+                AZLOG_ERROR("HCPWriteKernel::LoadPositions: Document %s not found", docId.c_str());
+                PQclear(res);
+                return result;
+            }
+            docPk = atoi(PQgetvalue(res, 0, 0));
+            totalSlots = atoi(PQgetvalue(res, 0, 1));
+            PQclear(res);
+        }
+
+        // Build var_id → surface lookup for resolving var-encoded starters
+        AZStd::unordered_map<AZStd::string, AZStd::string> varSurfaces;
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT var_id, surface FROM pbm_docvars WHERE doc_id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    varSurfaces[PQgetvalue(res, i, 0)] = PQgetvalue(res, i, 1);
+                }
+            }
+            PQclear(res);
+        }
+
+        // Single query: all starters with positions for this document
+        struct PosToken { int pos; AZStd::string tokenId; };
+        AZStd::vector<PosToken> entries;
+        {
+            AZStd::string pkStr = AZStd::to_string(docPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT token_a_id, positions FROM pbm_starters "
+                "WHERE doc_id = $1 AND positions IS NOT NULL",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    AZStd::string tokenAId = PQgetvalue(res, i, 0);
+
+                    // Resolve var-encoded starters: "00.00.00.XX.YY" → VAR_PREFIX + " " + surface
+                    if (tokenAId.starts_with("00.00.00."))
+                    {
+                        AZStd::string varId = tokenAId.substr(9);
+                        auto it = varSurfaces.find(varId);
+                        if (it != varSurfaces.end())
+                        {
+                            tokenAId = AZStd::string(VAR_PREFIX) + " " + it->second;
+                        }
+                    }
+
+                    const char* packed = PQgetvalue(res, i, 1);
+                    int packedLen = static_cast<int>(strlen(packed));
+
+                    for (int off = 0; off + 3 < packedLen; off += 4)
+                    {
+                        int pos = DecodePosition(packed + off);
+                        entries.push_back({pos, tokenAId});
+                    }
+                }
+            }
+            PQclear(res);
+        }
+
+        // Sort by position
+        AZStd::sort(entries.begin(), entries.end(),
+            [](const PosToken& a, const PosToken& b) { return a.pos < b.pos; });
+
+        // Build result — token IDs in position order
+        result.reserve(entries.size());
+        for (auto& e : entries)
+        {
+            result.push_back(AZStd::move(e.tokenId));
+        }
+
+        fprintf(stderr, "[HCPStorage] LoadPositions: %s — %zu tokens, %d total_slots\n",
+            docId.c_str(), result.size(), totalSlots);
+        fflush(stderr);
+
+        return result;
     }
 
 } // namespace HCPEngine

@@ -20,4 +20,6 @@ set(FILES
     Source/HCPDetectionScene.h
     Source/HCPCacheMissResolver.cpp
     Source/HCPCacheMissResolver.h
+    Source/HCPJsonInterpreter.cpp
+    Source/HCPJsonInterpreter.h
 )

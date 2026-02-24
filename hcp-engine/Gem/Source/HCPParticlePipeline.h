@@ -28,7 +28,10 @@ namespace HCPEngine
         int count;
     };
 
-    //! Result of PBM disassembly (used for aggregate inference, not per-doc storage)
+    //! Pair Bond Map — the stored form of a document.
+    //! Each bond is (A, B, count) representing adjacent token pair occurrences.
+    //! The set of bonds IS the document. Physics reassembly recovers the
+    //! unique ordering from the bond constraints.
     struct PBMData
     {
         AZStd::vector<Bond> bonds;
@@ -38,33 +41,8 @@ namespace HCPEngine
         size_t uniqueTokens = 0;
     };
 
-    //! Per-token position entry: a token ID and all positions where it occurs.
-    struct TokenPositions
-    {
-        AZStd::string tokenId;
-        AZStd::vector<AZ::u32> positions;
-    };
-
-    //! Position-based document representation.
-    //! Each unique token maps to the list of positions where it appears.
-    //! Disassembly = record positions. Reassembly = place tokens at positions.
-    //! PBM bond counts are derived at aggregate time, not stored per-document.
-    struct PositionMap
-    {
-        AZStd::vector<TokenPositions> entries;
-        AZ::u32 totalTokens = 0;     // total positions in the document
-        size_t uniqueTokens = 0;      // number of distinct token IDs
-    };
-
-    //! Position-based disassembly: token stream -> position map.
-    //! Positions include space gaps from the tokenizer. No physics needed.
-    PositionMap DisassemblePositions(const TokenStream& stream);
-
-    //! Position-based reassembly: position map -> token sequence with positions.
-    //! Gaps in positions = spaces. No physics needed.
-    TokenStream ReassemblePositions(const PositionMap& posMap);
-
-    //! Derive PBM bond data from a token stream (for aggregate pipeline).
+    //! Derive PBM bond data from a token stream.
+    //! Counts adjacent pairs — consecutive tokens in the stream form bonds.
     PBMData DerivePBM(const TokenStream& stream);
 
     //! The particle pipeline: manages PhysX PBD particle system for
@@ -84,7 +62,11 @@ namespace HCPEngine
         //! Run disassembly: token sequence -> pair bond map via PBD particle physics.
         PBMData Disassemble(const AZStd::vector<AZStd::string>& tokenIds);
 
-        //! Run reassembly: bond map -> token sequence via PBD particle physics.
+        //! Run reassembly: bond map -> ordered token sequence via PBD particle physics.
+        //! Dumbbells dissolve when both ends find their mates.
+        //! Whitespace is re-inserted at dissolution points unless
+        //! stickiness rules suppress it (punctuation sticks to adjacent tokens).
+        //! @return Ordered string sequence including whitespace
         AZStd::vector<AZStd::string> Reassemble(
             const PBMData& pbmData,
             const HCPVocabulary& vocab);
