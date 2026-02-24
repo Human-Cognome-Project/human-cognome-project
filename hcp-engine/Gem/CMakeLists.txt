@@ -82,12 +82,71 @@ PROPERTY COMPILE_DEFINITIONS
         O3DE_GEM_NAME=${gem_name}
         O3DE_GEM_VERSION=${gem_version})
 
-# if enabled, ${gem_name} is used by all kinds of applications
-ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
-ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+# Runtime aliases (headless, clients, servers)
 ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
+
+################################################################################
+# Editor module — Qt panels for the O3DE Editor
+################################################################################
+
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    # Editor private object library (Qt widgets, editor system component)
+    ly_add_target(
+        NAME ${gem_name}.Editor.Private.Object STATIC
+        NAMESPACE Gem
+        AUTOMOC
+        FILES_CMAKE
+            hcpengine_editor_private_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+                Source
+                ${LIBPQ_INCLUDE_DIR}
+                ${LIBLMDB_INCLUDE_DIR}
+                ${RAPIDJSON_INCLUDE_DIR}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzToolsFramework
+                Gem::${gem_name}.Private.Object
+    )
+
+    # Editor module (.so) — loaded by the O3DE Editor
+    ly_add_target(
+        NAME ${gem_name}.Editor GEM_MODULE
+        NAMESPACE Gem
+        AUTOMOC
+        FILES_CMAKE
+            hcpengine_editor_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+                Source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::${gem_name}.Editor.Private.Object
+                ${LIBPQ_LIBRARY}
+                ${LIBLMDB_LIBRARY}
+    )
+
+    ly_add_source_properties(
+        SOURCES
+            Source/Tools/HCPEngineEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+else()
+    # Non-host-tools builds: fall back to runtime module
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+endif()
 
 # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
 # for the primary gem variants used in most o3de applications
