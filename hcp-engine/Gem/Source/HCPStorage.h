@@ -101,6 +101,63 @@ namespace HCPEngine
         //! List all stored documents with basic stats.
         AZStd::vector<DocumentInfo> ListDocuments();
 
+        // ---- Document detail (asset manager) ----
+
+        struct DocumentDetail
+        {
+            int pk = 0;
+            AZStd::string docId;
+            AZStd::string name;
+            int totalSlots = 0;
+            int uniqueTokens = 0;
+            int starters = 0;
+            int bonds = 0;
+            AZStd::string metadataJson;  // raw JSONB from pbm_documents
+        };
+
+        struct ProvenanceInfo
+        {
+            AZStd::string sourceType;
+            AZStd::string sourcePath;
+            AZStd::string sourceFormat;
+            AZStd::string catalog;
+            AZStd::string catalogId;
+            bool found = false;
+        };
+
+        struct DocVar
+        {
+            AZStd::string varId;
+            AZStd::string surface;
+        };
+
+        struct BondEntry
+        {
+            AZStd::string tokenB;
+            int count = 0;
+        };
+
+        //! Resolve a doc_id string to its integer PK. Returns 0 on failure.
+        int GetDocPk(const AZStd::string& docId);
+
+        //! Get full document detail including metadata JSONB.
+        DocumentDetail GetDocumentDetail(const AZStd::string& docId);
+
+        //! Get provenance info for a document by PK.
+        ProvenanceInfo GetProvenance(int docPk);
+
+        //! Get document-local vars for a document by PK.
+        AZStd::vector<DocVar> GetDocVars(int docPk);
+
+        //! Update metadata: merge setJson keys, remove listed keys.
+        //! setJson is a JSON object string, removeKeys is a list of keys to delete.
+        bool UpdateMetadata(int docPk, const AZStd::string& setJson,
+                            const AZStd::vector<AZStd::string>& removeKeys);
+
+        //! Get bonds for a specific token in a document.
+        //! If tokenId is empty, returns top starters with their total bond counts.
+        AZStd::vector<BondEntry> GetBondsForToken(int docPk, const AZStd::string& tokenId);
+
     private:
         PGconn* m_conn = nullptr;
         int m_lastDocPk = 0;

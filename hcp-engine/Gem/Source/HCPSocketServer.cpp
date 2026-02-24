@@ -494,6 +494,213 @@ namespace HCPEngine
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 
+        // ---- info (full document detail) ----
+        if (strcmp(action, "info") == 0)
+        {
+            if (!doc.HasMember("doc_id") || !doc["doc_id"].IsString())
+            {
+                return R"({"status":"error","message":"Missing 'doc_id' field"})";
+            }
+
+            AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
+
+            HCPWriteKernel& wk = m_engine->GetWriteKernel();
+            if (!wk.IsConnected()) wk.Connect();
+            if (!wk.IsConnected())
+            {
+                return R"({"status":"error","message":"Database not available"})";
+            }
+
+            auto detail = wk.GetDocumentDetail(docId);
+            if (detail.pk == 0)
+            {
+                return R"({"status":"error","message":"Document not found"})";
+            }
+
+            auto prov = wk.GetProvenance(detail.pk);
+            auto vars = wk.GetDocVars(detail.pk);
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("doc_id"); w.String(detail.docId.c_str());
+            w.Key("name"); w.String(detail.name.c_str());
+            w.Key("total_slots"); w.Int(detail.totalSlots);
+            w.Key("unique"); w.Int(detail.uniqueTokens);
+            w.Key("starters"); w.Int(detail.starters);
+            w.Key("bonds"); w.Int(detail.bonds);
+
+            // Metadata — emit as raw JSON object
+            w.Key("metadata");
+            w.RawValue(detail.metadataJson.c_str(),
+                       static_cast<rapidjson::SizeType>(detail.metadataJson.size()),
+                       rapidjson::kObjectType);
+
+            // Provenance
+            if (prov.found)
+            {
+                w.Key("provenance");
+                w.StartObject();
+                w.Key("source_type"); w.String(prov.sourceType.c_str());
+                w.Key("source_path"); w.String(prov.sourcePath.c_str());
+                w.Key("source_format"); w.String(prov.sourceFormat.c_str());
+                w.Key("catalog"); w.String(prov.catalog.c_str());
+                w.Key("catalog_id"); w.String(prov.catalogId.c_str());
+                w.EndObject();
+            }
+
+            // Vars
+            if (!vars.empty())
+            {
+                w.Key("vars");
+                w.StartArray();
+                for (const auto& v : vars)
+                {
+                    w.StartObject();
+                    w.Key("var_id"); w.String(v.varId.c_str());
+                    w.Key("surface"); w.String(v.surface.c_str());
+                    w.EndObject();
+                }
+                w.EndArray();
+            }
+
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- update_meta ----
+        if (strcmp(action, "update_meta") == 0)
+        {
+            if (!doc.HasMember("doc_id") || !doc["doc_id"].IsString())
+            {
+                return R"({"status":"error","message":"Missing 'doc_id' field"})";
+            }
+
+            AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
+
+            HCPWriteKernel& wk = m_engine->GetWriteKernel();
+            if (!wk.IsConnected()) wk.Connect();
+            if (!wk.IsConnected())
+            {
+                return R"({"status":"error","message":"Database not available"})";
+            }
+
+            int docPk = wk.GetDocPk(docId);
+            if (docPk == 0)
+            {
+                return R"({"status":"error","message":"Document not found"})";
+            }
+
+            // Build setJson from "set" object
+            AZStd::string setJson = "{}";
+            int fieldsSet = 0;
+            if (doc.HasMember("set") && doc["set"].IsObject())
+            {
+                rapidjson::StringBuffer setSb;
+                rapidjson::Writer<rapidjson::StringBuffer> setW(setSb);
+                doc["set"].Accept(setW);
+                setJson = AZStd::string(setSb.GetString(), setSb.GetSize());
+                fieldsSet = static_cast<int>(doc["set"].MemberCount());
+            }
+
+            // Build removeKeys from "remove" array
+            AZStd::vector<AZStd::string> removeKeys;
+            if (doc.HasMember("remove") && doc["remove"].IsArray())
+            {
+                for (auto& v : doc["remove"].GetArray())
+                {
+                    if (v.IsString())
+                    {
+                        removeKeys.push_back(AZStd::string(v.GetString(), v.GetStringLength()));
+                    }
+                }
+            }
+
+            bool ok = wk.UpdateMetadata(docPk, setJson, removeKeys);
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String(ok ? "ok" : "error");
+            w.Key("doc_id"); w.String(docId.c_str());
+            w.Key("fields_set"); w.Int(fieldsSet);
+            w.Key("fields_removed"); w.Int(static_cast<int>(removeKeys.size()));
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- bonds (drill-down) ----
+        if (strcmp(action, "bonds") == 0)
+        {
+            if (!doc.HasMember("doc_id") || !doc["doc_id"].IsString())
+            {
+                return R"({"status":"error","message":"Missing 'doc_id' field"})";
+            }
+
+            AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
+
+            HCPWriteKernel& wk = m_engine->GetWriteKernel();
+            if (!wk.IsConnected()) wk.Connect();
+            if (!wk.IsConnected())
+            {
+                return R"({"status":"error","message":"Database not available"})";
+            }
+
+            int docPk = wk.GetDocPk(docId);
+            if (docPk == 0)
+            {
+                return R"({"status":"error","message":"Document not found"})";
+            }
+
+            AZStd::string tokenId;
+            if (doc.HasMember("token") && doc["token"].IsString())
+            {
+                tokenId = AZStd::string(doc["token"].GetString(), doc["token"].GetStringLength());
+            }
+
+            auto bonds = wk.GetBondsForToken(docPk, tokenId);
+
+            // Resolve surface forms via vocabulary lookup
+            const auto& vocab = m_engine->GetVocabulary();
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("doc_id"); w.String(docId.c_str());
+
+            if (!tokenId.empty())
+            {
+                w.Key("token"); w.String(tokenId.c_str());
+                AZStd::string surface = vocab.TokenToWord(tokenId);
+                if (!surface.empty())
+                {
+                    w.Key("surface"); w.String(surface.c_str());
+                }
+            }
+
+            w.Key("bonds");
+            w.StartArray();
+            for (const auto& be : bonds)
+            {
+                w.StartObject();
+                w.Key("token"); w.String(be.tokenB.c_str());
+                // Try to resolve surface form
+                AZStd::string bSurface = vocab.TokenToWord(be.tokenB);
+                if (!bSurface.empty())
+                {
+                    w.Key("surface"); w.String(bSurface.c_str());
+                }
+                w.Key("count"); w.Int(be.count);
+                w.EndObject();
+            }
+            w.EndArray();
+
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
         return R"({"status":"error","message":"Unknown action"})";
     }
 

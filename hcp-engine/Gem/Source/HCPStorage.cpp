@@ -1051,4 +1051,298 @@ namespace HCPEngine
         return result;
     }
 
+    // ---- Asset Manager: Document Detail ----
+
+    int HCPWriteKernel::GetDocPk(const AZStd::string& docId)
+    {
+        if (!m_conn) return 0;
+
+        const char* params[] = { docId.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT id FROM pbm_documents WHERE doc_id = $1",
+            1, nullptr, params, nullptr, nullptr, 0);
+        int pk = 0;
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+        {
+            pk = atoi(PQgetvalue(res, 0, 0));
+        }
+        PQclear(res);
+        return pk;
+    }
+
+    HCPWriteKernel::DocumentDetail HCPWriteKernel::GetDocumentDetail(const AZStd::string& docId)
+    {
+        DocumentDetail detail;
+        if (!m_conn) return detail;
+
+        const char* params[] = { docId.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT d.id, d.doc_id, d.name, "
+            "  COALESCE(d.total_slots, 0), COALESCE(d.unique_tokens, 0), "
+            "  COALESCE(d.metadata::text, '{}'), "
+            "  (SELECT COUNT(*) FROM pbm_starters s WHERE s.doc_id = d.id), "
+            "  (SELECT COALESCE(SUM(sub.cnt), 0) FROM ("
+            "    SELECT SUM(wb.count) AS cnt FROM pbm_starters s2 "
+            "      JOIN pbm_word_bonds wb ON wb.starter_id = s2.id WHERE s2.doc_id = d.id "
+            "    UNION ALL "
+            "    SELECT SUM(cb.count) FROM pbm_starters s3 "
+            "      JOIN pbm_char_bonds cb ON cb.starter_id = s3.id WHERE s3.doc_id = d.id "
+            "    UNION ALL "
+            "    SELECT SUM(mb.count) FROM pbm_starters s4 "
+            "      JOIN pbm_marker_bonds mb ON mb.starter_id = s4.id WHERE s4.doc_id = d.id "
+            "    UNION ALL "
+            "    SELECT SUM(vb.count) FROM pbm_starters s5 "
+            "      JOIN pbm_var_bonds vb ON vb.starter_id = s5.id WHERE s5.doc_id = d.id "
+            "  ) sub) "
+            "FROM pbm_documents d WHERE d.doc_id = $1",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+        {
+            detail.pk = atoi(PQgetvalue(res, 0, 0));
+            detail.docId = PQgetvalue(res, 0, 1);
+            detail.name = PQgetvalue(res, 0, 2);
+            detail.totalSlots = atoi(PQgetvalue(res, 0, 3));
+            detail.uniqueTokens = atoi(PQgetvalue(res, 0, 4));
+            detail.metadataJson = PQgetvalue(res, 0, 5);
+            detail.starters = atoi(PQgetvalue(res, 0, 6));
+            detail.bonds = atoi(PQgetvalue(res, 0, 7));
+        }
+        PQclear(res);
+        return detail;
+    }
+
+    HCPWriteKernel::ProvenanceInfo HCPWriteKernel::GetProvenance(int docPk)
+    {
+        ProvenanceInfo prov;
+        if (!m_conn) return prov;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT source_type, source_path, source_format, source_catalog, catalog_id "
+            "FROM document_provenance WHERE doc_id = $1",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+        {
+            prov.sourceType = PQgetvalue(res, 0, 0);
+            prov.sourcePath = PQgetvalue(res, 0, 1);
+            prov.sourceFormat = PQgetvalue(res, 0, 2);
+            prov.catalog = PQgetvalue(res, 0, 3);
+            prov.catalogId = PQgetvalue(res, 0, 4);
+            prov.found = true;
+        }
+        PQclear(res);
+        return prov;
+    }
+
+    AZStd::vector<HCPWriteKernel::DocVar> HCPWriteKernel::GetDocVars(int docPk)
+    {
+        AZStd::vector<DocVar> vars;
+        if (!m_conn) return vars;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT var_id, surface FROM pbm_docvars WHERE doc_id = $1 ORDER BY var_id",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            for (int i = 0; i < PQntuples(res); ++i)
+            {
+                DocVar v;
+                v.varId = PQgetvalue(res, i, 0);
+                v.surface = PQgetvalue(res, i, 1);
+                vars.push_back(AZStd::move(v));
+            }
+        }
+        PQclear(res);
+        return vars;
+    }
+
+    bool HCPWriteKernel::UpdateMetadata(
+        int docPk,
+        const AZStd::string& setJson,
+        const AZStd::vector<AZStd::string>& removeKeys)
+    {
+        if (!m_conn) return false;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        bool ok = true;
+
+        // Merge new keys
+        if (!setJson.empty() && setJson != "{}")
+        {
+            const char* params[] = { pkStr.c_str(), setJson.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "UPDATE pbm_documents SET metadata = COALESCE(metadata, '{}'::jsonb) || $2::jsonb "
+                "WHERE id = $1::integer",
+                2, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            {
+                fprintf(stderr, "[HCPStorage] UpdateMetadata merge failed: %s\n",
+                    PQerrorMessage(m_conn));
+                fflush(stderr);
+                ok = false;
+            }
+            PQclear(res);
+        }
+
+        // Remove keys one at a time
+        for (const auto& key : removeKeys)
+        {
+            const char* params[] = { pkStr.c_str(), key.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "UPDATE pbm_documents SET metadata = metadata - $2 "
+                "WHERE id = $1::integer",
+                2, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            {
+                fprintf(stderr, "[HCPStorage] UpdateMetadata remove '%s' failed: %s\n",
+                    key.c_str(), PQerrorMessage(m_conn));
+                fflush(stderr);
+                ok = false;
+            }
+            PQclear(res);
+        }
+
+        return ok;
+    }
+
+    AZStd::vector<HCPWriteKernel::BondEntry> HCPWriteKernel::GetBondsForToken(
+        int docPk, const AZStd::string& tokenId)
+    {
+        AZStd::vector<BondEntry> bonds;
+        if (!m_conn) return bonds;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+
+        if (tokenId.empty())
+        {
+            // Overview mode: top starters by total bond count
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT s.token_a_id, "
+                "  COALESCE((SELECT SUM(wb.count) FROM pbm_word_bonds wb WHERE wb.starter_id = s.id), 0) + "
+                "  COALESCE((SELECT SUM(cb.count) FROM pbm_char_bonds cb WHERE cb.starter_id = s.id), 0) + "
+                "  COALESCE((SELECT SUM(mb.count) FROM pbm_marker_bonds mb WHERE mb.starter_id = s.id), 0) + "
+                "  COALESCE((SELECT SUM(vb.count) FROM pbm_var_bonds vb WHERE vb.starter_id = s.id), 0) AS total "
+                "FROM pbm_starters s WHERE s.doc_id = $1 "
+                "ORDER BY total DESC LIMIT 50",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                for (int i = 0; i < PQntuples(res); ++i)
+                {
+                    BondEntry be;
+                    be.tokenB = PQgetvalue(res, i, 0);  // reusing tokenB for the starter token
+                    be.count = atoi(PQgetvalue(res, i, 1));
+                    bonds.push_back(AZStd::move(be));
+                }
+            }
+            PQclear(res);
+        }
+        else
+        {
+            // Drill-down: bonds for a specific A-side token
+            const char* params[] = { pkStr.c_str(), tokenId.c_str() };
+            PGresult* res = PQexecParams(m_conn,
+                "SELECT s.id FROM pbm_starters s "
+                "WHERE s.doc_id = $1 AND s.token_a_id = $2",
+                2, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+            {
+                PQclear(res);
+                return bonds;
+            }
+            int starterId = atoi(PQgetvalue(res, 0, 0));
+            PQclear(res);
+
+            AZStd::string sidStr = AZStd::to_string(starterId);
+
+            // Word bonds
+            {
+                const char* p[] = { sidStr.c_str() };
+                res = PQexecParams(m_conn,
+                    "SELECT 'AB.AB.' || b_p3 || '.' || b_p4 || '.' || b_p5, count "
+                    "FROM pbm_word_bonds WHERE starter_id = $1 ORDER BY count DESC",
+                    1, nullptr, p, nullptr, nullptr, 0);
+                if (PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    for (int i = 0; i < PQntuples(res); ++i)
+                    {
+                        BondEntry be;
+                        be.tokenB = PQgetvalue(res, i, 0);
+                        be.count = atoi(PQgetvalue(res, i, 1));
+                        bonds.push_back(AZStd::move(be));
+                    }
+                }
+                PQclear(res);
+            }
+
+            // Char bonds
+            {
+                const char* p[] = { sidStr.c_str() };
+                res = PQexecParams(m_conn,
+                    "SELECT 'AA.' || b_p2 || '.' || b_p3 || '.' || b_p4 || '.' || b_p5, count "
+                    "FROM pbm_char_bonds WHERE starter_id = $1 ORDER BY count DESC",
+                    1, nullptr, p, nullptr, nullptr, 0);
+                if (PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    for (int i = 0; i < PQntuples(res); ++i)
+                    {
+                        BondEntry be;
+                        be.tokenB = PQgetvalue(res, i, 0);
+                        be.count = atoi(PQgetvalue(res, i, 1));
+                        bonds.push_back(AZStd::move(be));
+                    }
+                }
+                PQclear(res);
+            }
+
+            // Marker bonds
+            {
+                const char* p[] = { sidStr.c_str() };
+                res = PQexecParams(m_conn,
+                    "SELECT 'AA.AE.' || b_p3 || '.' || b_p4, count "
+                    "FROM pbm_marker_bonds WHERE starter_id = $1 ORDER BY count DESC",
+                    1, nullptr, p, nullptr, nullptr, 0);
+                if (PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    for (int i = 0; i < PQntuples(res); ++i)
+                    {
+                        BondEntry be;
+                        be.tokenB = PQgetvalue(res, i, 0);
+                        be.count = atoi(PQgetvalue(res, i, 1));
+                        bonds.push_back(AZStd::move(be));
+                    }
+                }
+                PQclear(res);
+            }
+
+            // Var bonds
+            {
+                const char* p[] = { sidStr.c_str(), pkStr.c_str() };
+                res = PQexecParams(m_conn,
+                    "SELECT COALESCE(dv.surface, vb.b_var_id), vb.count "
+                    "FROM pbm_var_bonds vb "
+                    "LEFT JOIN pbm_docvars dv ON dv.doc_id = $2::integer AND dv.var_id = vb.b_var_id "
+                    "WHERE vb.starter_id = $1::integer ORDER BY vb.count DESC",
+                    2, nullptr, p, nullptr, nullptr, 0);
+                if (PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    for (int i = 0; i < PQntuples(res); ++i)
+                    {
+                        BondEntry be;
+                        be.tokenB = PQgetvalue(res, i, 0);
+                        be.count = atoi(PQgetvalue(res, i, 1));
+                        bonds.push_back(AZStd::move(be));
+                    }
+                }
+                PQclear(res);
+            }
+        }
+
+        return bonds;
+    }
+
 } // namespace HCPEngine

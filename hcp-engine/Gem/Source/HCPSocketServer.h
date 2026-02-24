@@ -20,13 +20,25 @@ namespace HCPEngine
     //!     → {"status": "ok", "words": N, "labels": N, "chars": N}
     //!
     //!   {"action": "ingest", "name": "Doc Name", "century": "AS", "text": "full text..."}
-    //!     → {"status": "ok", "doc_id": "vA.AB.AS.AA.AA", "tokens": N, "slots": N, "unique": N}
+    //!     → {"status": "ok", "doc_id": "...", "tokens": N, "unique": N, "bonds": N}
     //!
-    //!   {"action": "retrieve", "doc_id": "vA.AB.AS.AA.AA"}
-    //!     → {"status": "ok", "text": "reassembled text...", "tokens": N, "slots": N}
+    //!   {"action": "retrieve", "doc_id": "..."}
+    //!     → {"status": "ok", "text": "reassembled text...", "tokens": N}
     //!
-    //!   {"action": "stats", "doc_id": "vA.AB.AS.AA.AA"}
-    //!     → {"status": "ok", "tokens": N, "slots": N, "unique": N, "db_bytes": N}
+    //!   {"action": "list"}
+    //!     → {"status": "ok", "count": N, "documents": [{doc_id, name, starters, bonds}]}
+    //!
+    //!   {"action": "tokenize", "text": "..."}
+    //!     → {"status": "ok", "tokens": N, "unique": N, "bonds": N}
+    //!
+    //!   {"action": "info", "doc_id": "..."}
+    //!     → {"status": "ok", doc detail + metadata + provenance + vars}
+    //!
+    //!   {"action": "update_meta", "doc_id": "...", "set": {...}, "remove": [...]}
+    //!     → {"status": "ok", "fields_set": N, "fields_removed": N}
+    //!
+    //!   {"action": "bonds", "doc_id": "...", "token": "..."}
+    //!     → {"status": "ok", "bonds": [{token, surface, count}]}
     //!
     //!   On error: {"status": "error", "message": "description"}
     //!
