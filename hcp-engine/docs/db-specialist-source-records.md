@@ -54,14 +54,47 @@ During PBM encoding, unrecognized strings classify as:
 
 All start as pbm_docvars, promoted on review.
 
+## Migration 015: Docvar Staging (also applied)
+
+Added to **hcp_fic_pbm** alongside existing PBM tables.
+
+### New table: `docvar_groups`
+
+Alias groupings per document. All docvars in the same group are aliases for the same entity/concept.
+
+| Column | Purpose |
+|--------|---------|
+| `id` | Serial PK |
+| `doc_id` | References pbm_documents |
+| `suggested_ns/p2/p3/p4/p5` | Decomposed suggested entity match (NULL if new) |
+| `suggested_id` | Generated entity token_id |
+| `entity_type` | 'person', 'place', 'thing', 'lingo', 'sic', 'uri_metadata' |
+| `status` | 'pending' → 'confirmed' → 'promoted' (or 'rejected') |
+| `suggested_by` | 'engine', 'reviewer', 'backprop' |
+
+### Changes to `pbm_docvars`
+
+| New Column | Purpose |
+|------------|---------|
+| `var_category` | Engine-assigned: 'proper', 'lingo', 'sic', 'uri_metadata' |
+| `group_id` | FK to docvar_groups (NULL = ungrouped) |
+
+### Engine workflow
+
+1. Create docvars during encoding (existing)
+2. Set `var_category` on each var
+3. Group aliases → create `docvar_groups` entry, set `group_id` on member vars
+4. Optionally set `suggested_ns/p2/...` if entity match found
+5. Back-propagation: when a stem resolves later, update earlier var's `equivalence` and `group_id`
+
+### Reviewer workflow
+
+1. Query `docvar_groups WHERE status = 'pending'` for review queue
+2. Confirm/reject groupings and matches
+3. On confirmation → status = 'promoted', bond data patched, entity records created
+
 ## Questions for Engine Specialist
 
-1. **LMDB entity lookup format**: What key format works for multi-word entity matching? The current w2t sub-db uses surface strings as keys. Would entity lookup work the same way (surface string → entity token_id), or does the rigid body detector need a different structure?
+1. **Column naming conflict**: You noticed two columns with the same data but different names somewhere in the schema. Can you point me to which tables/columns so I can fix it?
 
-2. **Bridge word handling**: Does the engine need the bridge word list at runtime (loaded into LMDB), or is it compiled into the rigid body detection logic?
-
-3. **Var category detection**: The engine needs to classify unrecognized blocks into the four categories above. Is the detection order (sic → URI → proper → lingo) something you'd handle in the tokenizer, or does it need DB-side support (pattern tables, etc.)?
-
-4. **Column naming conflict**: You noticed two columns with the same data but different names somewhere in the schema. Can you point me to which tables/columns so I can fix it?
-
-5. **Scope loading**: When processing a specific Work, the engine will need that Work's Dramatis Personae, Locae, Rerum, and glossary loaded into LMDB. What's the preferred trigger — is it part of the cache miss pipeline, or a bulk preload when a document is opened for processing?
+2. **Anything else needed?** The general approach is: build it, see it in the GUI, refine. Let me know what's missing once you start wiring.
