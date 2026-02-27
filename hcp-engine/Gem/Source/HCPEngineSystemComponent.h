@@ -11,6 +11,8 @@
 #include "HCPSocketServer.h"
 #include "HCPBondCompiler.h"
 #include "HCPCacheMissResolver.h"
+#include "HCPResolutionChamber.h"  // TierAssembly
+#include "HCPVocabBed.h"          // BedManager
 
 namespace HCPEngine
 {
@@ -40,6 +42,8 @@ namespace HCPEngine
         CacheMissResolver& GetResolver() { return m_resolver; }
         HCPParticlePipeline& GetParticlePipeline() { return m_particlePipeline; }
         const HCPBondTable& GetCharWordBonds() const { return m_charWordBonds; }
+        BedManager& GetBedManager() { return m_bedManager; }
+        const TierAssembly& GetTierAssembly() const { return m_tierAssembly; }
         bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
@@ -89,6 +93,10 @@ namespace HCPEngine
 
         // Cache miss resolver — fills LMDB from Postgres on demand
         CacheMissResolver m_resolver;
+
+        // Persistent vocab beds — Phase 2 (char→word) resolution
+        TierAssembly m_tierAssembly;
+        BedManager m_bedManager;
 
         // Console command registrations
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceIngest, AZ::ConsoleFunctorFlags::Null, "Encode a source file into the HCP pipeline");

@@ -97,8 +97,11 @@ namespace HCPEngine
         //! Used by affix stem checks where misses are expected and frequent.
         AZStd::string LookupWordLocal(const AZStd::string& wordForm) const;
 
-        //! Look up a single character → token_id.
+        //! Look up a single character → token_id (delegates to LookupCodepoint).
         AZStd::string LookupChar(char c) const;
+
+        //! Look up a Unicode codepoint → token_id (4-byte LMDB key).
+        AZStd::string LookupCodepoint(AZ::u32 cp) const;
 
         //! Look up a label → token_id.
         AZStd::string LookupLabel(const AZStd::string& label) const;
@@ -108,8 +111,12 @@ namespace HCPEngine
         //! Reverse lookup: token_id → word form.
         AZStd::string TokenToWord(const AZStd::string& tokenId) const;
 
-        //! Reverse lookup: token_id → character.
+        //! Reverse lookup: token_id → character (ASCII fast path).
         char TokenToChar(const AZStd::string& tokenId) const;
+
+        //! Reverse lookup: token_id → Unicode codepoint.
+        //! Returns 0 on miss.
+        AZ::u32 TokenToCodepoint(const AZStd::string& tokenId) const;
 
         // ---- Iteration (used by bond compiler) ----
 

@@ -28,4 +28,9 @@ set(FILES
     Source/HCPWordSuperpositionTrial.h
     Source/HCPResolutionChamber.cpp
     Source/HCPResolutionChamber.h
+    Source/HCPVocabBed.cpp
+    Source/HCPVocabBed.h
+    Source/HCPDatabaseBackend.h
+    Source/HCPPostgresBackend.cpp
+    Source/HCPSqliteBackend.cpp
 )

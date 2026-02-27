@@ -36,10 +36,36 @@ namespace HCPEngine
         return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
 
+    static bool IsWhitespaceCodepoint(AZ::u32 cp)
+    {
+        return cp == 0x20 || cp == 0x09 || cp == 0x0A || cp == 0x0D;
+    }
+
     static bool IsPunctChar(char c)
     {
         unsigned char uc = static_cast<unsigned char>(c);
         return uc < 128 && !std::isalnum(uc) && !IsWhitespaceChar(c);
+    }
+
+    static bool IsPunctCodepoint(AZ::u32 cp)
+    {
+        // ASCII punctuation range — non-alnum, non-whitespace, < 128
+        if (cp >= 128) return false;
+        return IsPunctChar(static_cast<char>(cp));
+    }
+
+    // Check if a codepoint is allowed inside a run (word character).
+    // Only ASCII letters, digits, hyphen-minus, and apostrophe (both ASCII and typographic).
+    // Everything else (em-dashes, smart quotes, trademark symbols, etc.) is a run boundary.
+    static bool IsWordCodepoint(AZ::u32 cp)
+    {
+        if (cp >= 'a' && cp <= 'z') return true;
+        if (cp >= 'A' && cp <= 'Z') return true;
+        if (cp >= '0' && cp <= '9') return true;
+        if (cp == '-')   return true;   // U+002D hyphen-minus
+        if (cp == '\'')  return true;   // U+0027 ASCII apostrophe
+        if (cp == 0x2019) return true;  // U+2019 right single quote (typographic apostrophe)
+        return false;
     }
 
     // ---- Vocab index: (length, firstChar) → vector of (word, tokenId) ----
@@ -171,6 +197,12 @@ namespace HCPEngine
 
     // ---- Extract runs from Phase 1 collapse results ----
 
+    // Helper: check if a codepoint triggers capitalize-next (sentence-ending punct or newline)
+    static bool IsCapitalizeNextCodepoint(AZ::u32 cp)
+    {
+        return cp == '.' || cp == '?' || cp == '!' || cp == '\n' || cp == '\r';
+    }
+
     AZStd::vector<CharRun> ExtractRunsFromCollapses(const SuperpositionTrialResult& trialResult)
     {
         AZStd::vector<CharRun> runs;
@@ -178,73 +210,81 @@ namespace HCPEngine
         if (trialResult.collapses.empty())
             return runs;
 
-        // Walk collapse results, accumulating settled alphanumeric chars into runs.
-        // Boundaries: unsettled bytes, whitespace, end of stream.
-        AZStd::string currentCore;
-        AZStd::vector<AZ::u32> currentUpperPositions;
+        // Walk collapse results, accumulating settled codepoints into runs.
+        // Boundaries: unsettled codepoints, whitespace, end of stream.
+        // Codepoints are stored as-is; lowercasing and UTF-8 encoding happen at flush.
+        AZStd::vector<AZ::u32> currentCodepoints;
         AZ::u32 currentStart = 0;
         bool inRun = false;
 
+        // Track the last non-whitespace codepoint before the current run
+        // for capitalization suppression. Initialize to '\n' so stream position 0
+        // is treated as sentence-initial.
+        AZ::u32 lastPrecedingCodepoint = '\n';
+
         auto FlushRun = [&]()
         {
-            if (!inRun || currentCore.empty())
+            if (!inRun || currentCodepoints.empty())
             {
                 inRun = false;
-                currentCore.clear();
-                currentUpperPositions.clear();
+                currentCodepoints.clear();
                 return;
             }
 
-            // Strip edge punctuation (same as ExtractRuns)
+            // Strip edge punctuation (ASCII punct only)
             AZ::u32 stripLeft = 0;
-            while (stripLeft < currentCore.size() && IsPunctChar(currentCore[stripLeft]))
+            while (stripLeft < currentCodepoints.size() && IsPunctCodepoint(currentCodepoints[stripLeft]))
                 ++stripLeft;
-            AZ::u32 stripRight = static_cast<AZ::u32>(currentCore.size());
-            while (stripRight > stripLeft && IsPunctChar(currentCore[stripRight - 1]))
+            AZ::u32 stripRight = static_cast<AZ::u32>(currentCodepoints.size());
+            while (stripRight > stripLeft && IsPunctCodepoint(currentCodepoints[stripRight - 1]))
                 --stripRight;
 
             if (stripRight <= stripLeft)
             {
                 inRun = false;
-                currentCore.clear();
-                currentUpperPositions.clear();
+                currentCodepoints.clear();
                 return;
             }
 
-            // Build stripped, lowercased core
+            // Build stripped, lowercased core as UTF-8 string
             AZStd::string core;
-            core.reserve(stripRight - stripLeft);
             AZStd::vector<AZ::u32> adjustedUpper;
+            AZ::u32 charIdx = 0;
 
             for (AZ::u32 j = stripLeft; j < stripRight; ++j)
             {
-                unsigned char uc = static_cast<unsigned char>(currentCore[j]);
-                if (std::isupper(uc))
+                AZ::u32 cp = currentCodepoints[j];
+
+                // Track uppercase before lowercasing (ASCII range only)
+                if (cp >= 'A' && cp <= 'Z')
                 {
-                    adjustedUpper.push_back(j - stripLeft);
+                    adjustedUpper.push_back(charIdx);
+                    cp = cp + 32;  // ASCII lowercase
                 }
-                core += static_cast<char>(std::tolower(uc));
+
+                AppendCodepointAsUtf8(core, cp);
+                ++charIdx;
             }
 
-            // Skip non-ASCII
-            bool allAscii = true;
-            for (size_t j = 0; j < core.size(); ++j)
-            {
-                unsigned char uc = static_cast<unsigned char>(core[j]);
-                if (uc >= 128) { allAscii = false; break; }
-            }
-
-            if (allAscii && !core.empty())
+            if (!core.empty())
             {
                 CharRun run;
                 run.text = core;
                 run.startPos = currentStart + stripLeft;
-                run.length = static_cast<AZ::u32>(core.size());
+                run.length = charIdx;  // Character count (codepoints), not byte count
+
+                // Derive allCaps: all characters were uppercase and more than 1 char
+                bool derivedAllCaps = (adjustedUpper.size() == charIdx && charIdx > 1);
 
                 // Populate normalization metadata
                 if (adjustedUpper.size() == 1 && adjustedUpper[0] == 0)
                 {
                     run.firstCap = true;
+                }
+                else if (derivedAllCaps)
+                {
+                    run.allCaps = true;
+                    run.capMask = AZStd::move(adjustedUpper);
                 }
                 else if (!adjustedUpper.empty())
                 {
@@ -252,46 +292,125 @@ namespace HCPEngine
                     run.capMask = AZStd::move(adjustedUpper);
                 }
 
+                // Capitalization suppression: if preceded by sentence-ending punct
+                // or at stream start, caps are positional (not intrinsic Labels).
+                // Clear firstCap and allCaps — they're derivable from position.
+                bool suppressCap = IsCapitalizeNextCodepoint(lastPrecedingCodepoint);
+                if (suppressCap)
+                {
+                    run.firstCap = false;
+                    run.allCaps = false;
+                    // capMask cleared too — all caps were positional
+                    if (!run.capMask.empty())
+                    {
+                        // Only suppress if it was purely first-cap or all-caps pattern.
+                        // Mixed case like "McDonald's" after a period is unusual but
+                        // the firstCap was already false; keep capMask for unusual patterns.
+                        if (derivedAllCaps || (adjustedUpper.size() == 1 && adjustedUpper[0] == 0))
+                        {
+                            run.capMask.clear();
+                        }
+                    }
+                }
+
                 runs.push_back(run);
             }
 
             inRun = false;
-            currentCore.clear();
-            currentUpperPositions.clear();
+            currentCodepoints.clear();
         };
 
         for (const auto& collapse : trialResult.collapses)
         {
-            // Unsettled byte → run boundary
+            // Unsettled codepoint → run boundary
             if (!collapse.settled)
             {
                 FlushRun();
                 continue;
             }
 
-            char c = collapse.resolvedChar;
+            AZ::u32 cp = collapse.resolvedCodepoint;
 
             // Settled whitespace → run boundary
-            if (IsWhitespaceChar(c))
+            if (IsWhitespaceCodepoint(cp))
             {
                 FlushRun();
+                // Whitespace doesn't change the "preceding punct" signal
                 continue;
             }
 
-            // Settled character → accumulate into run
+            // Non-word codepoint → run boundary (em-dashes, smart quotes, etc.)
+            // Only ASCII letters, digits, hyphen, and apostrophe continue runs.
+            if (!IsWordCodepoint(cp))
+            {
+                FlushRun();
+                // Update preceding codepoint — punctuation affects cap suppression
+                lastPrecedingCodepoint = cp;
+                continue;
+            }
+
+            // Normalize typographic apostrophe to ASCII for vocab matching
+            if (cp == 0x2019)
+                cp = '\'';
+
+            // Word character — continue or start run
             if (!inRun)
             {
                 inRun = true;
                 currentStart = collapse.streamPos;
-                currentCore.clear();
-                currentUpperPositions.clear();
+                currentCodepoints.clear();
             }
 
-            currentCore += c;
+            currentCodepoints.push_back(cp);
+
+            // Update preceding codepoint tracker for cap suppression
+            lastPrecedingCodepoint = cp;
         }
 
         // Flush final run
         FlushRun();
+
+        // Post-pass: update lastPrecedingCodepoint between runs.
+        // The above loop tracks it within the collapse walk. But for cap suppression
+        // we actually need the codepoint *immediately before* the run's first char
+        // in the collapse stream. Let's do a second pass with proper tracking.
+
+        // Re-walk collapses to set lastPrecedingCodepoint correctly per run.
+        // The simpler approach: rebuild runs with a proper preceding-codepoint tracker.
+        // Since runs are already built, patch cap flags using a second collapse walk.
+
+        if (!runs.empty())
+        {
+            // Build a map: run startPos → run index
+            AZStd::unordered_map<AZ::u32, AZ::u32> startPosToRun;
+            for (AZ::u32 i = 0; i < static_cast<AZ::u32>(runs.size()); ++i)
+                startPosToRun[runs[i].startPos] = i;
+
+            AZ::u32 prevNonWsCodepoint = '\n';  // Stream start = sentence-initial
+            for (const auto& collapse : trialResult.collapses)
+            {
+                if (!collapse.settled) continue;
+                AZ::u32 cp = collapse.resolvedCodepoint;
+
+                if (IsWhitespaceCodepoint(cp)) continue;
+
+                // Check if this stream position starts a run
+                auto runIt = startPosToRun.find(collapse.streamPos);
+                if (runIt != startPosToRun.end())
+                {
+                    CharRun& run = runs[runIt->second];
+                    bool suppress = IsCapitalizeNextCodepoint(prevNonWsCodepoint);
+                    if (suppress)
+                    {
+                        run.firstCap = false;
+                        run.allCaps = false;
+                        run.capMask.clear();
+                    }
+                }
+
+                prevNonWsCodepoint = cp;
+            }
+        }
 
         return runs;
     }

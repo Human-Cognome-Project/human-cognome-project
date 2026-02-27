@@ -192,10 +192,10 @@ namespace HCPEngine
 
         result.tokenId = LmdbGet(m_w2t, lower.c_str(), lower.size());
 
-        // Single character fallback
+        // Single character fallback (converts to 4-byte codepoint key)
         if (result.tokenId.empty() && chunk.size() == 1)
         {
-            result.tokenId = LmdbGet(m_c2t, chunk.c_str(), 1);
+            result.tokenId = LookupChar(chunk[0]);
         }
 
         return result;
@@ -268,8 +268,14 @@ namespace HCPEngine
 
     AZStd::string HCPVocabulary::LookupChar(char c) const
     {
+        AZ::u32 cp = static_cast<AZ::u32>(static_cast<unsigned char>(c));
+        return LookupCodepoint(cp);
+    }
+
+    AZStd::string HCPVocabulary::LookupCodepoint(AZ::u32 cp) const
+    {
         if (!m_loaded) return {};
-        return LmdbGet(m_c2t, &c, 1);
+        return LmdbGet(m_c2t, reinterpret_cast<const char*>(&cp), sizeof(cp));
     }
 
     AZStd::string HCPVocabulary::LookupLabel(const AZStd::string& label) const
@@ -286,10 +292,26 @@ namespace HCPEngine
 
     char HCPVocabulary::TokenToChar(const AZStd::string& tokenId) const
     {
-        if (!m_loaded) return '\0';
+        AZ::u32 cp = TokenToCodepoint(tokenId);
+        return (cp > 0 && cp < 128) ? static_cast<char>(cp) : '\0';
+    }
+
+    AZ::u32 HCPVocabulary::TokenToCodepoint(const AZStd::string& tokenId) const
+    {
+        if (!m_loaded) return 0;
         AZStd::string result = LmdbGet(m_t2c, tokenId.c_str(), tokenId.size());
-        if (!result.empty()) return result[0];
-        return '\0';
+        if (result.size() == 4)
+        {
+            AZ::u32 cp;
+            memcpy(&cp, result.data(), 4);
+            return cp;
+        }
+        if (result.size() == 1)
+        {
+            // Legacy 1-byte entry — treat as raw byte value
+            return static_cast<AZ::u32>(static_cast<unsigned char>(result[0]));
+        }
+        return 0;
     }
 
     // ---- Affix loading (bulk from Postgres) ----

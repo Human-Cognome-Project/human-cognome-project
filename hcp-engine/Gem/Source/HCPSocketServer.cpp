@@ -6,6 +6,7 @@
 #include "HCPStorage.h"
 #include "HCPJsonInterpreter.h"
 #include "HCPResolutionChamber.h"
+#include "HCPVocabBed.h"
 #include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPBondCompiler.h"
@@ -757,10 +758,10 @@ namespace HCPEngine
                 pipeline.GetCuda(),
                 text, m_engine->GetVocabulary(), maxChars);
 
-            fprintf(stderr, "[phys_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms\n",
-                phase1.settledCount, phase1.totalBytes,
-                phase1.totalBytes > 0 ? 100.0f * phase1.settledCount / phase1.totalBytes : 0.0f,
-                phase1.simulationTimeMs);
+            fprintf(stderr, "[phys_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms [%u bytes → %u codepoints]\n",
+                phase1.settledCount, phase1.totalCodepoints,
+                phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
+                phase1.simulationTimeMs, phase1.totalBytes, phase1.totalCodepoints);
             fflush(stderr);
 
             // Extract character runs from Phase 1 output
@@ -774,32 +775,14 @@ namespace HCPEngine
                 runs.size(), maxChars);
             fflush(stderr);
 
-            // Build tier assembly
-            TierAssembly tiers;
-            tiers.Build(charWordBonds, m_engine->GetVocabulary());
-
-            // Create char-word scene if needed
-            if (!pipeline.GetCharWordScene())
+            // Use persistent BedManager (initialized at Activate)
+            BedManager& bedManager = m_engine->GetBedManager();
+            if (!bedManager.IsInitialized())
             {
-                if (!pipeline.CreateCharWordScene())
-                {
-                    return R"({"status":"error","message":"Failed to create char->word scene"})";
-                }
+                return R"({"status":"error","message":"BedManager not initialized"})";
             }
 
-            // Initialize and resolve
-            ChamberManager manager;
-            if (!manager.Initialize(
-                    pipeline.GetPhysics(),
-                    pipeline.GetCharWordScene(),
-                    pipeline.GetCuda(),
-                    tiers))
-            {
-                return R"({"status":"error","message":"ChamberManager init failed"})";
-            }
-
-            ResolutionManifest manifest = manager.Resolve(runs);
-            manager.Shutdown();
+            ResolutionManifest manifest = bedManager.Resolve(runs);
 
             // Build JSON response
             rapidjson::StringBuffer sb;
@@ -807,14 +790,15 @@ namespace HCPEngine
             w.StartObject();
             w.Key("status"); w.String("ok");
             w.Key("phase1_settled"); w.Uint(phase1.settledCount);
-            w.Key("phase1_total"); w.Uint(phase1.totalBytes);
+            w.Key("phase1_total"); w.Uint(phase1.totalCodepoints);
+            w.Key("phase1_total_bytes"); w.Uint(phase1.totalBytes);
             w.Key("phase1_time_ms"); w.Double(static_cast<double>(phase1.simulationTimeMs));
             w.Key("total_runs"); w.Uint(manifest.totalRuns);
             w.Key("resolved"); w.Uint(manifest.resolvedRuns);
             w.Key("unresolved"); w.Uint(manifest.unresolvedRuns);
             w.Key("time_ms"); w.Double(static_cast<double>(manifest.totalTimeMs));
-            w.Key("buckets"); w.Uint64(tiers.BucketCount());
-            w.Key("vocab_words"); w.Uint64(tiers.TotalWords());
+            w.Key("buckets"); w.Uint64(m_engine->GetTierAssembly().BucketCount());
+            w.Key("vocab_words"); w.Uint64(m_engine->GetTierAssembly().TotalWords());
 
             w.Key("results");
             w.StartArray();

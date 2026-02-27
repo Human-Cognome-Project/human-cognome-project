@@ -28,12 +28,15 @@ namespace HCPEngine
 
         // Normalization metadata — capitalization is positional, lowercase is canonical
         bool firstCap = false;                   // First char was uppercase (Label pattern)
+        bool allCaps = false;                    // All chars were uppercase (e.g. "NASA")
         AZStd::vector<AZ::u32> capMask;         // Run-relative positions that were uppercase
         // Rules:
-        //   Normal lowercase  → firstCap=false, capMask empty
-        //   Label ("The")     → firstCap=true,  capMask empty
-        //   Unusual ("eBook") → firstCap=false, capMask={1}
-        //   All caps ("NASA") → firstCap=false, capMask={0,1,2,3}
+        //   Normal lowercase  → firstCap=false, allCaps=false, capMask empty
+        //   Label ("The")     → firstCap=true,  allCaps=false, capMask empty
+        //   All caps ("NASA") → firstCap=false, allCaps=true,  capMask={0,1,2,3}
+        //   Unusual ("eBook") → firstCap=false, allCaps=false, capMask={1}
+        // Sentence-initial caps (after . ? ! \n or at stream pos 0) are suppressed:
+        //   firstCap and allCaps are cleared (positional, not intrinsic)
     };
 
     //! Result for a single vocabulary word candidate tested against a run.

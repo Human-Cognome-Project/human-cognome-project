@@ -14,8 +14,121 @@
 
 namespace HCPEngine
 {
+    // ---- UTF-8 ↔ Codepoint conversion ----
+
+    AZStd::vector<AZ::u32> DecodeUtf8ToCodepoints(const AZStd::string& input)
+    {
+        AZStd::vector<AZ::u32> codepoints;
+        codepoints.reserve(input.size());
+
+        const size_t len = input.size();
+        size_t i = 0;
+        while (i < len)
+        {
+            AZ::u32 cp;
+            unsigned char b0 = static_cast<unsigned char>(input[i]);
+
+            if (b0 < 0x80)
+            {
+                // 1-byte: 0xxxxxxx
+                cp = b0;
+                i += 1;
+            }
+            else if ((b0 & 0xE0) == 0xC0)
+            {
+                // 2-byte: 110xxxxx 10xxxxxx
+                if (i + 1 < len &&
+                    (static_cast<unsigned char>(input[i + 1]) & 0xC0) == 0x80)
+                {
+                    cp = (static_cast<AZ::u32>(b0 & 0x1F) << 6)
+                       | (static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 1])) & 0x3F);
+                    i += 2;
+                }
+                else
+                {
+                    cp = 0xFFFD;
+                    i += 1;
+                }
+            }
+            else if ((b0 & 0xF0) == 0xE0)
+            {
+                // 3-byte: 1110xxxx 10xxxxxx 10xxxxxx
+                if (i + 2 < len &&
+                    (static_cast<unsigned char>(input[i + 1]) & 0xC0) == 0x80 &&
+                    (static_cast<unsigned char>(input[i + 2]) & 0xC0) == 0x80)
+                {
+                    cp = (static_cast<AZ::u32>(b0 & 0x0F) << 12)
+                       | ((static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 1])) & 0x3F) << 6)
+                       | (static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 2])) & 0x3F);
+                    i += 3;
+                }
+                else
+                {
+                    cp = 0xFFFD;
+                    i += 1;
+                }
+            }
+            else if ((b0 & 0xF8) == 0xF0)
+            {
+                // 4-byte: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                if (i + 3 < len &&
+                    (static_cast<unsigned char>(input[i + 1]) & 0xC0) == 0x80 &&
+                    (static_cast<unsigned char>(input[i + 2]) & 0xC0) == 0x80 &&
+                    (static_cast<unsigned char>(input[i + 3]) & 0xC0) == 0x80)
+                {
+                    cp = (static_cast<AZ::u32>(b0 & 0x07) << 18)
+                       | ((static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 1])) & 0x3F) << 12)
+                       | ((static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 2])) & 0x3F) << 6)
+                       | (static_cast<AZ::u32>(static_cast<unsigned char>(input[i + 3])) & 0x3F);
+                    i += 4;
+                }
+                else
+                {
+                    cp = 0xFFFD;
+                    i += 1;
+                }
+            }
+            else
+            {
+                // Invalid leading byte (continuation byte or 0xFE/0xFF)
+                cp = 0xFFFD;
+                i += 1;
+            }
+
+            codepoints.push_back(cp);
+        }
+
+        return codepoints;
+    }
+
+    void AppendCodepointAsUtf8(AZStd::string& out, AZ::u32 cp)
+    {
+        if (cp < 0x80)
+        {
+            out += static_cast<char>(cp);
+        }
+        else if (cp < 0x800)
+        {
+            out += static_cast<char>(0xC0 | (cp >> 6));
+            out += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+        else if (cp < 0x10000)
+        {
+            out += static_cast<char>(0xE0 | (cp >> 12));
+            out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+            out += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+        else if (cp <= 0x10FFFF)
+        {
+            out += static_cast<char>(0xF0 | (cp >> 18));
+            out += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+            out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+            out += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+    }
+
     // ---- Layout parameters ----
-    static constexpr float Z_SCALE = 10.0f;        // Byte value → Z position scaling
+    static constexpr float Z_SCALE = 10.0f;        // Codepoint value → Z position scaling
     static constexpr float Y_OFFSET = 1.5f;        // Initial Y height (dynamic particles fall from here)
     static constexpr float SETTLE_Y = 0.5f;         // |Y| below this = settled on codepoint particle
     static constexpr int MAX_STEPS = 60;            // Simulation steps
@@ -29,18 +142,18 @@ namespace HCPEngine
     static constexpr float PARTICLE_REST_OFFSET = 0.1f;
 
     // Chunk size for batched processing.
-    // PhysX PBD buffers have a ~65K particle limit. Each byte needs 2 particles
-    // (static codepoint + dynamic input), so 16K bytes = 32K particles per chunk.
+    // PhysX PBD buffers have a ~65K particle limit. Each codepoint needs 2 particles
+    // (static codepoint + dynamic input), so 16K codepoints = 32K particles per chunk.
     static constexpr AZ::u32 CHUNK_SIZE = 16384;
 
-    // ---- Process a single chunk of bytes through PBD ----
+    // ---- Process a single chunk of codepoints through PBD ----
     // Returns true on success and populates collapses for indices [chunkStart, chunkStart+chunkLen).
 
     static bool ProcessChunk(
         physx::PxPhysics* physics,
         physx::PxScene* scene,
         physx::PxCudaContextManager* cuda,
-        const AZStd::string& text,
+        const AZStd::vector<AZ::u32>& codepoints,
         AZ::u32 chunkStart,
         AZ::u32 chunkLen,
         AZStd::vector<CollapseResult>& collapses,
@@ -101,9 +214,9 @@ namespace HCPEngine
 
             for (physx::PxU32 i = 0; i < N; ++i)
             {
-                AZ::u8 byteVal = static_cast<AZ::u8>(text[chunkStart + i]);
+                AZ::u32 cp = codepoints[chunkStart + i];
                 float x = static_cast<float>(i);
-                float z = static_cast<float>(byteVal) * Z_SCALE;
+                float z = static_cast<float>(cp) * Z_SCALE;
 
                 // Codepoint particle: static
                 hostPos[i] = physx::PxVec4(x, 0.0f, z, 0.0f);
@@ -153,12 +266,12 @@ namespace HCPEngine
 
         for (physx::PxU32 i = 0; i < N; ++i)
         {
-            AZ::u8 byteVal = static_cast<AZ::u8>(text[chunkStart + i]);
+            AZ::u32 cp = codepoints[chunkStart + i];
 
             CollapseResult& cr = collapses[chunkStart + i];
-            cr.streamPos = chunkStart + i;   // Global stream position
-            cr.byteValue = byteVal;
-            cr.resolvedChar = static_cast<char>(byteVal);
+            cr.streamPos = chunkStart + i;   // Global codepoint position
+            cr.codepoint = cp;
+            cr.resolvedCodepoint = cp;
             cr.finalY = hostPos[N + i].y;
             cr.settled = (fabsf(hostPos[N + i].y) < SETTLE_Y);
 
@@ -183,7 +296,7 @@ namespace HCPEngine
         return true;
     }
 
-    // ---- Main trial function (chunked all-particle architecture) ----
+    // ---- Main trial function (chunked codepoint architecture) ----
 
     SuperpositionTrialResult RunSuperpositionTrial(
         physx::PxPhysics* physics,
@@ -200,20 +313,23 @@ namespace HCPEngine
 
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        // Truncate input
-        AZStd::string text = inputText;
-        if (text.size() > maxChars)
-            text = text.substr(0, maxChars);
+        // Decode UTF-8 → codepoints
+        AZStd::vector<AZ::u32> codepoints = DecodeUtf8ToCodepoints(inputText);
+        result.totalBytes = static_cast<AZ::u32>(inputText.size());
 
-        const AZ::u32 N = static_cast<AZ::u32>(text.size());
-        result.totalBytes = N;
+        // Truncate at codepoint level
+        if (codepoints.size() > maxChars)
+            codepoints.resize(maxChars);
+
+        const AZ::u32 N = static_cast<AZ::u32>(codepoints.size());
+        result.totalCodepoints = N;
         result.collapses.resize(N);
 
         // Calculate chunks
         AZ::u32 numChunks = (N + CHUNK_SIZE - 1) / CHUNK_SIZE;
 
-        fprintf(stderr, "[SuperpositionTrial] Input: %u bytes, %u chunks of up to %u bytes\n",
-            N, numChunks, CHUNK_SIZE);
+        fprintf(stderr, "[SuperpositionTrial] Input: %u bytes → %u codepoints, %u chunks of up to %u\n",
+            result.totalBytes, N, numChunks, CHUNK_SIZE);
         fflush(stderr);
 
         // ---- Process each chunk ----
@@ -228,21 +344,21 @@ namespace HCPEngine
 
             bool ok = ProcessChunk(
                 physics, scene, cuda,
-                text, chunkStart, chunkLen,
+                codepoints, chunkStart, chunkLen,
                 result.collapses,
                 chunkSettled, chunkUnsettled);
 
             if (!ok)
             {
-                fprintf(stderr, "[SuperpositionTrial] ERROR: Chunk %u/%u failed (bytes %u..%u)\n",
+                fprintf(stderr, "[SuperpositionTrial] ERROR: Chunk %u/%u failed (codepoints %u..%u)\n",
                     chunk + 1, numChunks, chunkStart, chunkStart + chunkLen - 1);
                 fflush(stderr);
-                // Mark remaining bytes as unsettled
+                // Mark remaining codepoints as unsettled
                 for (AZ::u32 i = chunkStart; i < chunkStart + chunkLen; ++i)
                 {
                     result.collapses[i].streamPos = i;
-                    result.collapses[i].byteValue = static_cast<AZ::u8>(text[i]);
-                    result.collapses[i].resolvedChar = text[i];
+                    result.collapses[i].codepoint = codepoints[i];
+                    result.collapses[i].resolvedCodepoint = codepoints[i];
                     result.collapses[i].finalY = Y_OFFSET;
                     result.collapses[i].settled = false;
                     ++result.unsettledCount;
@@ -253,7 +369,7 @@ namespace HCPEngine
             result.settledCount += chunkSettled;
             result.unsettledCount += chunkUnsettled;
 
-            fprintf(stderr, "[SuperpositionTrial] Chunk %u/%u: %u/%u settled (bytes %u..%u)\n",
+            fprintf(stderr, "[SuperpositionTrial] Chunk %u/%u: %u/%u settled (codepoints %u..%u)\n",
                 chunk + 1, numChunks, chunkSettled, chunkLen,
                 chunkStart, chunkStart + chunkLen - 1);
             fflush(stderr);
@@ -266,28 +382,30 @@ namespace HCPEngine
             std::chrono::duration<double, std::milli>(endTime - startTime).count());
 
         // ---- Report ----
-        fprintf(stderr, "\n[SuperpositionTrial] ====== BYTE→CHAR RESULTS (chunked, %u chunks) ======\n",
+        fprintf(stderr, "\n[SuperpositionTrial] ====== CODEPOINT SETTLEMENT (chunked, %u chunks) ======\n",
             numChunks);
-        fprintf(stderr, "[SuperpositionTrial] Input: %u bytes\n", result.totalBytes);
+        fprintf(stderr, "[SuperpositionTrial] Input: %u bytes → %u codepoints\n",
+            result.totalBytes, result.totalCodepoints);
         fprintf(stderr, "[SuperpositionTrial] Settled: %u / %u (%.1f%%)\n",
-            result.settledCount, result.totalBytes,
-            result.totalBytes > 0 ? 100.0f * result.settledCount / result.totalBytes : 0.0f);
+            result.settledCount, result.totalCodepoints,
+            result.totalCodepoints > 0 ? 100.0f * result.settledCount / result.totalCodepoints : 0.0f);
         fprintf(stderr, "[SuperpositionTrial] Unsettled: %u\n", result.unsettledCount);
         fprintf(stderr, "[SuperpositionTrial] Steps per chunk: %d | Total time: %.1f ms\n",
             result.simulationSteps, result.simulationTimeMs);
 
-        // Show unsettled bytes (if any, capped at 50)
+        // Show unsettled codepoints (if any, capped at 50)
         if (result.unsettledCount > 0)
         {
-            fprintf(stderr, "\n[SuperpositionTrial] Unsettled bytes (first 50):\n");
+            fprintf(stderr, "\n[SuperpositionTrial] Unsettled codepoints (first 50):\n");
             AZ::u32 shown = 0;
             for (const auto& cr : result.collapses)
             {
                 if (!cr.settled)
                 {
-                    char display = (cr.resolvedChar >= 32 && cr.resolvedChar < 127) ? cr.resolvedChar : '?';
-                    fprintf(stderr, "  [%5u] byte=0x%02X '%c'  Y=%.4f\n",
-                        cr.streamPos, cr.byteValue, display, cr.finalY);
+                    char display = (cr.codepoint >= 32 && cr.codepoint < 127)
+                        ? static_cast<char>(cr.codepoint) : '?';
+                    fprintf(stderr, "  [%5u] U+%04X '%c'  Y=%.4f\n",
+                        cr.streamPos, cr.codepoint, display, cr.finalY);
                     if (++shown >= 50) break;
                 }
             }
@@ -296,6 +414,9 @@ namespace HCPEngine
         }
 
         // ---- Validation: compare against computational tokenizer ----
+        AZStd::string text = inputText;
+        if (text.size() > maxChars)
+            text = text.substr(0, maxChars);
         TokenStream compStream = Tokenize(text, vocab);
         fprintf(stderr, "\n[SuperpositionTrial] Computational tokenizer: %zu tokens from same input\n",
             compStream.tokenIds.size());

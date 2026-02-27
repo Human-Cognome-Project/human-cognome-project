@@ -26,6 +26,10 @@ find_path(LIBLMDB_INCLUDE_DIR NAMES lmdb.h PATHS /usr/include)
 # RapidJSON for socket server JSON parsing (already installed as O3DE 3rdParty package)
 set(RAPIDJSON_INCLUDE_DIR "$ENV{HOME}/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include")
 
+# Find SQLite3 for database abstraction layer
+find_library(LIBSQLITE3_LIBRARY NAMES sqlite3 PATHS /usr/lib/x86_64-linux-gnu)
+find_path(LIBSQLITE3_INCLUDE_DIR NAMES sqlite3.h PATHS /usr/include)
+
 # We are on a supported platform, so add the ${gem_name} target
 # Note: We include the common files and the platform specific files which are set in hcpengine_files.cmake and
 # in ${pal_dir}/hcpengine_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -44,6 +48,7 @@ ly_add_target(
         PRIVATE
             ${LIBPQ_INCLUDE_DIR}
             ${LIBLMDB_INCLUDE_DIR}
+            ${LIBSQLITE3_INCLUDE_DIR}
             ${RAPIDJSON_INCLUDE_DIR}
     BUILD_DEPENDENCIES
         PRIVATE
@@ -52,6 +57,7 @@ ly_add_target(
             Gem::PhysX5.Static
             ${LIBPQ_LIBRARY}
             ${LIBLMDB_LIBRARY}
+            ${LIBSQLITE3_LIBRARY}
 )
 
 ly_add_target(
@@ -153,6 +159,45 @@ endif()
 # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
 # for the primary gem variants used in most o3de applications
 o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Builders Tools Clients Servers Unified)
+
+################################################################################
+# Standalone Workstation — HCP Source Workstation binary
+################################################################################
+
+option(HCP_BUILD_WORKSTATION "Build the HCP Source Workstation standalone binary" ON)
+
+if(HCP_BUILD_WORKSTATION AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME ${gem_name}.Workstation EXECUTABLE
+        NAMESPACE Gem
+        AUTOMOC
+        OUTPUT_NAME HCPWorkstation
+        FILES_CMAKE
+            hcpengine_workstation_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+                Source
+                ${LIBPQ_INCLUDE_DIR}
+                ${LIBLMDB_INCLUDE_DIR}
+                ${LIBSQLITE3_INCLUDE_DIR}
+                ${RAPIDJSON_INCLUDE_DIR}
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::${gem_name}.Private.Object
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzGameFramework
+                AZ::AzToolsFramework
+                Gem::PhysX5.Static
+                ${LIBPQ_LIBRARY}
+                ${LIBLMDB_LIBRARY}
+                ${LIBSQLITE3_LIBRARY}
+        COMPILE_DEFINITIONS
+            PRIVATE
+                HCP_STANDALONE_WORKSTATION=1
+    )
+endif()
 
 ################################################################################
 # Gem dependencies

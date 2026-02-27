@@ -123,8 +123,9 @@ namespace HCPEngine
         CacheMissResolver* m_resolver;
     };
 
-    /// Resolves single byte -> deterministic token_id (no Postgres query).
-    /// ASCII byte value -> AA.AA.AA.AA.{encode_pair(byte)}
+    /// Resolves a 4-byte Unicode codepoint -> deterministic token_id (no Postgres query).
+    /// Codepoint -> AA.AA.AA.{p4}.{p5} where p4=cp/2500, p5=cp%2500 (base-50 pairs).
+    /// For ASCII (cp < 256): p4="AA", so token_id matches legacy AA.AA.AA.AA.{p5}.
     /// Writes to c2t (primary) and t2c (reverse).
     class CharHandler : public ICacheMissHandler
     {

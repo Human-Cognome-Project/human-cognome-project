@@ -9,6 +9,7 @@
 #include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPResolutionChamber.h"
+#include "HCPVocabBed.h"
 
 #include <AzCore/std/sort.h>
 #include <fstream>
@@ -255,6 +256,32 @@ namespace HCPEngine
         AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars; PBD particle system active",
             m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
 
+        // Build TierAssembly and initialize persistent vocab beds (Phase 2)
+        if (m_charWordBonds.PairCount() > 0)
+        {
+            auto bedStart = std::chrono::high_resolution_clock::now();
+            m_tierAssembly.Build(m_charWordBonds, m_vocabulary);
+
+            if (!m_particlePipeline.GetCharWordScene())
+            {
+                m_particlePipeline.CreateCharWordScene();
+            }
+
+            if (m_particlePipeline.GetCharWordScene())
+            {
+                m_bedManager.Initialize(
+                    pxPhysics,
+                    m_particlePipeline.GetCharWordScene(),
+                    m_particlePipeline.GetCuda(),
+                    m_tierAssembly);
+
+                auto bedEnd = std::chrono::high_resolution_clock::now();
+                fprintf(stderr, "[HCPEngine] Persistent vocab beds initialized in %.1f ms\n",
+                    std::chrono::duration<double, std::milli>(bedEnd - bedStart).count());
+                fflush(stderr);
+            }
+        }
+
         // Start socket server — API for ingestion and retrieval
         bool listenAll = static_cast<bool>(hcp_listen_all);
         m_socketServer.Start(this, HCPSocketServer::DEFAULT_PORT, listenAll);
@@ -268,6 +295,7 @@ namespace HCPEngine
         s_instance = nullptr;
         AZLOG_INFO("HCPEngine: Deactivating — shutting down socket server and PBD pipeline");
         m_socketServer.Stop();
+        m_bedManager.Shutdown();
         m_resolver.Shutdown();
         m_writeKernel.Disconnect();
         m_particlePipeline.Shutdown();
@@ -673,9 +701,10 @@ namespace HCPEngine
             m_vocabulary,
             maxChars);
 
-        fprintf(stderr, "\n[source_phys_tokenize] Trial complete: %u/%u settled (%.1f%%)\n",
-            result.settledCount, result.totalBytes,
-            result.totalBytes > 0 ? 100.0f * result.settledCount / result.totalBytes : 0.0f);
+        fprintf(stderr, "\n[source_phys_tokenize] Trial complete: %u/%u settled (%.1f%%) [%u bytes → %u codepoints]\n",
+            result.settledCount, result.totalCodepoints,
+            result.totalCodepoints > 0 ? 100.0f * result.settledCount / result.totalCodepoints : 0.0f,
+            result.totalBytes, result.totalCodepoints);
         fflush(stderr);
     }
 
@@ -804,10 +833,10 @@ namespace HCPEngine
             m_particlePipeline.GetCuda(),
             text, m_vocabulary, maxChars);
 
-        fprintf(stderr, "[source_phys_word_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms\n",
-            phase1.settledCount, phase1.totalBytes,
-            phase1.totalBytes > 0 ? 100.0f * phase1.settledCount / phase1.totalBytes : 0.0f,
-            phase1.simulationTimeMs);
+        fprintf(stderr, "[source_phys_word_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms [%u bytes → %u codepoints]\n",
+            phase1.settledCount, phase1.totalCodepoints,
+            phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
+            phase1.simulationTimeMs, phase1.totalBytes, phase1.totalCodepoints);
         fflush(stderr);
 
         AZStd::vector<CharRun> runs = ExtractRunsFromCollapses(phase1);
@@ -821,39 +850,19 @@ namespace HCPEngine
             return;
         }
 
-        // Step 2: Build tiered vocabulary from PBM bond data + vocabulary
-        TierAssembly tiers;
-        tiers.Build(m_charWordBonds, m_vocabulary);
-
-        fprintf(stderr, "[source_phys_word_resolve] TierAssembly: %zu buckets, %zu total words\n",
-            tiers.BucketCount(), tiers.TotalWords());
-        fflush(stderr);
-
-        // Step 3: Create dedicated char→word scene (separate from Phase 1 scene)
-        if (!m_particlePipeline.GetCharWordScene())
+        // Step 2: Use persistent BedManager (initialized at Activate)
+        if (!m_bedManager.IsInitialized())
         {
-            if (!m_particlePipeline.CreateCharWordScene())
-            {
-                fprintf(stderr, "[source_phys_word_resolve] ERROR: Failed to create char->word scene\n");
-                fflush(stderr);
-                return;
-            }
-        }
-
-        // Step 4: Initialize ChamberManager and resolve
-        ChamberManager manager;
-        if (!manager.Initialize(
-                m_particlePipeline.GetPhysics(),
-                m_particlePipeline.GetCharWordScene(),
-                m_particlePipeline.GetCuda(),
-                tiers))
-        {
-            fprintf(stderr, "[source_phys_word_resolve] ERROR: Failed to initialize ChamberManager\n");
+            fprintf(stderr, "[source_phys_word_resolve] ERROR: BedManager not initialized\n");
             fflush(stderr);
             return;
         }
 
-        ResolutionManifest manifest = manager.Resolve(runs);
+        fprintf(stderr, "[source_phys_word_resolve] TierAssembly: %zu buckets, %zu total words\n",
+            m_tierAssembly.BucketCount(), m_tierAssembly.TotalWords());
+        fflush(stderr);
+
+        ResolutionManifest manifest = m_bedManager.Resolve(runs);
 
         // Step 5: Report results
         fprintf(stderr, "\n[source_phys_word_resolve] === Resolution Manifest ===\n");
@@ -928,7 +937,5 @@ namespace HCPEngine
             compResolvedCount > 0 ? 100.0f * matchCount / compResolvedCount : 0.0f,
             mismatchCount);
         fflush(stderr);
-
-        manager.Shutdown();
     }
 }

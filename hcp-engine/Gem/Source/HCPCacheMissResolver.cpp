@@ -271,18 +271,24 @@ namespace HCPEngine
         const char* key, size_t keyLen,
         const ResolveContext& /*ctx*/, ResolveResult& result)
     {
-        if (keyLen != 1) return false;
+        if (keyLen != 4) return false;
 
-        uint8_t byteVal = static_cast<uint8_t>(key[0]);
-        if (byteVal > 127) return false;
+        uint32_t cp;
+        memcpy(&cp, key, 4);
 
-        // Deterministic token_id — no Postgres query needed
-        AZStd::string tokenId = "AA.AA.AA.AA.";
-        tokenId += EncodePairB50(static_cast<int>(byteVal));
+        // Deterministic token_id using 2-pair codepoint encoding:
+        //   p4 = EncodePairB50(cp / 2500)  — high pair
+        //   p5 = EncodePairB50(cp % 2500)  — low pair
+        // For ASCII (cp < 256): p4 = "AA", p5 = same as old byte encoding
+        // Capacity: 2500 × 2500 = 6,250,000 — covers all Unicode codepoints
+        AZStd::string tokenId = "AA.AA.AA.";
+        tokenId += EncodePairB50(static_cast<int>(cp / 2500));
+        tokenId += ".";
+        tokenId += EncodePairB50(static_cast<int>(cp % 2500));
 
         result.value = tokenId;
-        result.writes.push_back({ "c2t", AZStd::string(key, 1), tokenId });
-        result.writes.push_back({ "t2c", tokenId, AZStd::string(key, 1) });
+        result.writes.push_back({ "c2t", AZStd::string(key, 4), tokenId });
+        result.writes.push_back({ "t2c", tokenId, AZStd::string(key, 4) });
         return true;
     }
 
