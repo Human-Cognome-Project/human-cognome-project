@@ -131,6 +131,16 @@ namespace HCPEngine
             AZStd::string surface;
         };
 
+        struct DocVarExtended
+        {
+            AZStd::string varId;
+            AZStd::string surface;
+            AZStd::string category;    // uri_metadata, sic, proper, lingo
+            int groupId = 0;           // 0 = ungrouped
+            AZStd::string suggestedId; // entity ID from docvar_groups
+            AZStd::string groupStatus; // pending, confirmed, rejected
+        };
+
         struct BondEntry
         {
             AZStd::string tokenB;
@@ -149,6 +159,9 @@ namespace HCPEngine
         //! Get document-local vars for a document by PK.
         AZStd::vector<DocVar> GetDocVars(int docPk);
 
+        //! Get extended docvar info including category, group, and suggested entity.
+        AZStd::vector<DocVarExtended> GetDocVarsExtended(int docPk);
+
         //! Update metadata: merge setJson keys, remove listed keys.
         //! setJson is a JSON object string, removeKeys is a list of keys to delete.
         bool UpdateMetadata(int docPk, const AZStd::string& setJson,
@@ -158,9 +171,37 @@ namespace HCPEngine
         //! If tokenId is empty, returns top starters with their total bond counts.
         AZStd::vector<BondEntry> GetBondsForToken(int docPk, const AZStd::string& tokenId);
 
+        //! Get ALL starters for a document (no LIMIT). For bond search.
+        AZStd::vector<BondEntry> GetAllStarters(int docPk);
+
+        //! Get raw PGconn* for cross-DB queries. Not for general use.
+        PGconn* GetConnection() const { return m_conn; }
+
     private:
         PGconn* m_conn = nullptr;
         int m_lastDocPk = 0;
     };
+
+    // ---- Entity cross-reference (free functions, take explicit PGconn*) ----
+
+    struct EntityInfo
+    {
+        AZStd::string entityId;
+        AZStd::string name;
+        AZStd::string category;
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> properties;
+    };
+
+    //! Find fiction entities whose name tokens appear in a document's starters.
+    //! @param ficEntConn Connection to hcp_fic_entities
+    //! @param pbmConn Connection to hcp_fic_pbm
+    //! @param docPk Document PK in hcp_fic_pbm
+    AZStd::vector<EntityInfo> GetFictionEntitiesForDocument(
+        PGconn* ficEntConn, PGconn* pbmConn, int docPk);
+
+    //! Find a non-fiction author entity by name substring.
+    //! @param nfEntConn Connection to hcp_nf_entities
+    //! @param authorName Author name to match (case-insensitive substring)
+    EntityInfo GetNfAuthorEntity(PGconn* nfEntConn, const AZStd::string& authorName);
 
 } // namespace HCPEngine

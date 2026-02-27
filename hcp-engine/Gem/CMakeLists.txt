@@ -82,8 +82,8 @@ PROPERTY COMPILE_DEFINITIONS
         O3DE_GEM_NAME=${gem_name}
         O3DE_GEM_VERSION=${gem_version})
 
-# Runtime aliases (headless, clients, servers)
-ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+# Runtime aliases — in editor builds, Clients points to the Editor module so only
+# one system component loads (the editor one, which inherits all runtime functionality).
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
 
@@ -140,10 +140,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             O3DE_GEM_NAME=${gem_name}
             O3DE_GEM_VERSION=${gem_version})
 
+    ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 else()
-    # Non-host-tools builds: fall back to runtime module
+    # Non-host-tools builds: fall back to runtime module everywhere
+    ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
 endif()

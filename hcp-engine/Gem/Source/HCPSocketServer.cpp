@@ -5,6 +5,10 @@
 #include "HCPParticlePipeline.h"
 #include "HCPStorage.h"
 #include "HCPJsonInterpreter.h"
+#include "HCPResolutionChamber.h"
+#include "HCPSuperpositionTrial.h"
+#include "HCPWordSuperpositionTrial.h"
+#include "HCPBondCompiler.h"
 
 #include <AzCore/Console/ILogger.h>
 
@@ -698,6 +702,145 @@ namespace HCPEngine
             w.EndArray();
 
             w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- phys_resolve (Phase 2: char→word resolution chambers) ----
+        if (strcmp(action, "phys_resolve") == 0)
+        {
+            AZStd::string text;
+            AZ::u32 maxChars = 200;
+
+            if (doc.HasMember("file") && doc["file"].IsString())
+            {
+                AZStd::string filePath(doc["file"].GetString(), doc["file"].GetStringLength());
+                std::ifstream ifs(filePath.c_str());
+                if (!ifs.is_open())
+                {
+                    return R"({"status":"error","message":"Could not open file"})";
+                }
+                std::string stdText((std::istreambuf_iterator<char>(ifs)),
+                                     std::istreambuf_iterator<char>());
+                ifs.close();
+                text = AZStd::string(stdText.c_str(), stdText.size());
+            }
+            else if (doc.HasMember("text") && doc["text"].IsString())
+            {
+                text = AZStd::string(doc["text"].GetString(), doc["text"].GetStringLength());
+            }
+            else
+            {
+                return R"({"status":"error","message":"phys_resolve requires 'file' or 'text'"})";
+            }
+
+            if (doc.HasMember("max_chars") && doc["max_chars"].IsUint())
+            {
+                maxChars = doc["max_chars"].GetUint();
+            }
+
+            HCPParticlePipeline& pipeline = m_engine->GetParticlePipeline();
+            if (!pipeline.IsInitialized())
+            {
+                return R"({"status":"error","message":"Particle pipeline not initialized"})";
+            }
+
+            const HCPBondTable& charWordBonds = m_engine->GetCharWordBonds();
+            if (charWordBonds.PairCount() == 0)
+            {
+                return R"({"status":"error","message":"No char->word bond table loaded"})";
+            }
+
+            // Phase 1: byte→char settlement
+            SuperpositionTrialResult phase1 = RunSuperpositionTrial(
+                pipeline.GetPhysics(),
+                pipeline.GetScene(),
+                pipeline.GetCuda(),
+                text, m_engine->GetVocabulary(), maxChars);
+
+            fprintf(stderr, "[phys_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms\n",
+                phase1.settledCount, phase1.totalBytes,
+                phase1.totalBytes > 0 ? 100.0f * phase1.settledCount / phase1.totalBytes : 0.0f,
+                phase1.simulationTimeMs);
+            fflush(stderr);
+
+            // Extract character runs from Phase 1 output
+            AZStd::vector<CharRun> runs = ExtractRunsFromCollapses(phase1);
+            if (runs.empty())
+            {
+                return R"({"status":"error","message":"No runs extracted from Phase 1 output"})";
+            }
+
+            fprintf(stderr, "[phys_resolve] Extracted %zu runs from Phase 1 output (max %u bytes)\n",
+                runs.size(), maxChars);
+            fflush(stderr);
+
+            // Build tier assembly
+            TierAssembly tiers;
+            tiers.Build(charWordBonds, m_engine->GetVocabulary());
+
+            // Create char-word scene if needed
+            if (!pipeline.GetCharWordScene())
+            {
+                if (!pipeline.CreateCharWordScene())
+                {
+                    return R"({"status":"error","message":"Failed to create char->word scene"})";
+                }
+            }
+
+            // Initialize and resolve
+            ChamberManager manager;
+            if (!manager.Initialize(
+                    pipeline.GetPhysics(),
+                    pipeline.GetCharWordScene(),
+                    pipeline.GetCuda(),
+                    tiers))
+            {
+                return R"({"status":"error","message":"ChamberManager init failed"})";
+            }
+
+            ResolutionManifest manifest = manager.Resolve(runs);
+            manager.Shutdown();
+
+            // Build JSON response
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("phase1_settled"); w.Uint(phase1.settledCount);
+            w.Key("phase1_total"); w.Uint(phase1.totalBytes);
+            w.Key("phase1_time_ms"); w.Double(static_cast<double>(phase1.simulationTimeMs));
+            w.Key("total_runs"); w.Uint(manifest.totalRuns);
+            w.Key("resolved"); w.Uint(manifest.resolvedRuns);
+            w.Key("unresolved"); w.Uint(manifest.unresolvedRuns);
+            w.Key("time_ms"); w.Double(static_cast<double>(manifest.totalTimeMs));
+            w.Key("buckets"); w.Uint64(tiers.BucketCount());
+            w.Key("vocab_words"); w.Uint64(tiers.TotalWords());
+
+            w.Key("results");
+            w.StartArray();
+            for (const auto& r : manifest.results)
+            {
+                w.StartObject();
+                w.Key("run"); w.String(r.runText.c_str());
+                w.Key("resolved"); w.Bool(r.resolved);
+                if (r.resolved)
+                {
+                    w.Key("word"); w.String(r.matchedWord.c_str());
+                    w.Key("token_id"); w.String(r.matchedTokenId.c_str());
+                    w.Key("tier"); w.Uint(r.tierResolved);
+                }
+                w.EndObject();
+            }
+            w.EndArray();
+
+            w.EndObject();
+
+            fprintf(stderr, "[phys_resolve] Complete: %u/%u resolved (%.1f%%) in %.1f ms\n",
+                manifest.resolvedRuns, manifest.totalRuns,
+                manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f,
+                manifest.totalTimeMs);
+            fflush(stderr);
+
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 

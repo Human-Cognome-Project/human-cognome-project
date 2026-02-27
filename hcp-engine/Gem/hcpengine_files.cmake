@@ -22,4 +22,10 @@ set(FILES
     Source/HCPCacheMissResolver.h
     Source/HCPJsonInterpreter.cpp
     Source/HCPJsonInterpreter.h
+    Source/HCPSuperpositionTrial.cpp
+    Source/HCPSuperpositionTrial.h
+    Source/HCPWordSuperpositionTrial.cpp
+    Source/HCPWordSuperpositionTrial.h
+    Source/HCPResolutionChamber.cpp
+    Source/HCPResolutionChamber.h
 )

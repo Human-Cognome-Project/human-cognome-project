@@ -130,7 +130,7 @@ namespace HCPEngine
         fprintf(stderr, "[HCPParticlePipeline] Creating GPU-enabled PxScene...\n");
         fflush(stderr);
         physx::PxSceneDesc sceneDesc(pxPhysics->getTolerancesScale());
-        sceneDesc.gravity = physx::PxVec3(0.0f, -1.0f, 0.0f);
+        sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
         sceneDesc.cpuDispatcher = cpuDispatcher;
         sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
         sceneDesc.cudaContextManager = m_cudaContextManager;
@@ -203,6 +203,51 @@ namespace HCPEngine
         return true;
     }
 
+    bool HCPParticlePipeline::CreateCharWordScene()
+    {
+        if (!m_initialized || !m_pxPhysics || !m_cudaContextManager)
+        {
+            fprintf(stderr, "[HCPParticlePipeline] CreateCharWordScene: pipeline not initialized\n");
+            fflush(stderr);
+            return false;
+        }
+
+        if (m_charWordScene)
+        {
+            return true;  // Already created
+        }
+
+        PhysX::PhysXSystem* physxSystem = PhysX::GetPhysXSystem();
+        physx::PxCpuDispatcher* cpuDispatcher = physxSystem ? physxSystem->GetPxCpuDispathcher() : nullptr;
+        if (!cpuDispatcher)
+        {
+            fprintf(stderr, "[HCPParticlePipeline] CreateCharWordScene: no CPU dispatcher\n");
+            fflush(stderr);
+            return false;
+        }
+
+        physx::PxSceneDesc sceneDesc(m_pxPhysics->getTolerancesScale());
+        sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+        sceneDesc.cpuDispatcher = cpuDispatcher;
+        sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+        sceneDesc.cudaContextManager = m_cudaContextManager;
+        sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+        sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
+        sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
+
+        m_charWordScene = m_pxPhysics->createScene(sceneDesc);
+        if (!m_charWordScene)
+        {
+            fprintf(stderr, "[HCPParticlePipeline] CreateCharWordScene: createScene failed\n");
+            fflush(stderr);
+            return false;
+        }
+
+        fprintf(stderr, "[HCPParticlePipeline] Char->word PxScene created (dedicated Phase 2)\n");
+        fflush(stderr);
+        return true;
+    }
+
     void HCPParticlePipeline::Shutdown()
     {
         if (m_reassemblyMaterial)
@@ -215,6 +260,12 @@ namespace HCPEngine
         {
             m_particleMaterial->release();
             m_particleMaterial = nullptr;
+        }
+
+        if (m_charWordScene)
+        {
+            m_charWordScene->release();
+            m_charWordScene = nullptr;
         }
 
         if (m_pxScene)

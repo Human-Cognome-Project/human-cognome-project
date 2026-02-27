@@ -16,7 +16,7 @@ namespace HCPEngine
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<HCPEngineEditorSystemComponent, HCPEngineSystemComponent>()
+            serializeContext->Class<HCPEngineEditorSystemComponent, HCPEngineSystemComponent, AZ::Component>()
                 ->Version(0);
         }
     }

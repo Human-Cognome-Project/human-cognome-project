@@ -1,6 +1,6 @@
 # HCP Engine — TODO
 
-Last updated: 2026-02-23
+Last updated: 2026-02-25
 
 ## Legend
 
@@ -39,8 +39,12 @@ Last updated: 2026-02-23
 - [x] **[DONE]** Reconstruction proof — EXACT MATCH lossless round-trip on 4 Gutenberg texts (52KB–807KB).
 - [x] **[DONE]** PBM storage — StorePBM writes to hcp_fic_pbm (starters, word bonds, char bonds, var bonds).
 - [x] **[DONE]** Document-local vars — decimal pair IDs, pbm_docvars, mint_docvar(), pbm_var_bonds.
+- [x] **[DONE]** Docvar classification — ClassifyVar() at ingest (uri_metadata, sic, proper, lingo). Backfill applied to existing data.
+- [x] **[DONE]** Editor panel — HCP Asset Manager dock widget: Info, Metadata, Entities, Vars, Bonds, Text tabs.
+- [x] **[DONE]** Entity cross-reference — fiction entities via starter token matching, NF author via metadata/Gutenberg lookup.
+- [x] **[DONE]** Vars tab with classification display — category styling (bold/italic/grey), group and suggested entity columns.
+- [x] **[DONE]** Cross-link navigation — Entity↔Var drill-down with breadcrumb, filtered views.
 - [ ] **[READY]** Position map reader as shared module — currently embedded in self-test path. Extract for reuse.
-- [ ] **[READY]** Document inspector tool — view position maps, derive PBM, inspect structure.
 
 ---
 
@@ -56,6 +60,18 @@ Last updated: 2026-02-23
 ## Phase 3: Comparison Tool
 
 - [ ] **[BLOCKED]** Boilerplate/plagiarism detector — two documents as parallel particle streams, magnetic forces, convergence clustering. First real PhysX use case. Blocked on Phase 2.
+
+---
+
+## Editor Panel Enhancements
+
+- [ ] **[READY]** Var positions in panel — display position data for each docvar occurrence in the Vars tab. Lead-in to click-to-highlight: selecting a var in the Vars tab highlights all its occurrences in the Text tab. Position data already stored via `StorePositions()`; needs mapping from var tokens to their positions in the document stream.
+- [ ] **[READY]** Proper candidate detection in tokenizer — flag out-of-place capitalization (non-sentence-start uppercase) as label/proper candidates during tokenization. Contiguous label tokens form a group, compared against Dramatis Personae and entity lists. 100% match → use entity token. No match → strip bridge words (of/the/von/de) and try compound resolution. Unresolved groups become pending docvar_groups for panel review.
+- [ ] **[READY]** Var category color legend — small key in the Vars tab header showing what bold/italic/grey mean.
+- [ ] **[READY]** Var count summary in Info tab — add var counts by category (e.g., "Vars: 12 proper, 30 sic, 5 uri, 2 lingo") to the document info display.
+- [ ] **[READY]** Group highlight in Vars tab — clicking a var with a group_id highlights all sibling vars in the same group.
+- [ ] **[READY]** Bond→Entity indicator — if a bond's token matches a known entity name token, show an entity icon/indicator in the Bonds tab.
+- [ ] **[READY]** Alias grouping review workflow — confirm/reject/promote groups in the Vars tab panel. Update docvar_groups.status, optionally promote to entity.
 
 ---
 
@@ -85,7 +101,7 @@ These are smaller, well-defined tasks with clear scope. Good for getting familia
 
 - [ ] **[READY]** Bullet char `•` — add as a label entry in hcp_english (`layer = 'label'`). Currently vars in every document. One DB insert + verify tokenizer resolves it.
 - [ ] **[READY]** Numbers need `<sic>` wrapper support — numeric tokens (years, counts) should be wrapped in a sic-style marker so they're explicitly flagged as literal values, not vocabulary items.
-- [ ] **[READY]** Web address discriminator — URLs (www.gutenberg.org etc.) currently take the dot-value fast path to var. Add a specific discriminator that detects web address patterns and routes them to a dedicated sub-language entry set (future: web address language shard).
+- [ ] **[READY]** Web address discriminator — URLs (www.gutenberg.org etc.) currently take the dot-value fast path to var. Add a specific discriminator that detects web address patterns and routes them to a dedicated sub-language entry set (future: web address language shard). Note: var classification now tags these as `uri_metadata` at storage time, but the tokenizer-level routing is still needed.
 - [ ] **[READY]** Var compound back-check — when a new var is created during tokenization (e.g. "Tellson"), launch a lightweight check against existing vars in the document to see if any are compound forms (e.g. "Tellson's" = var(Tellson) + 's). Resolve the compound and update the var cache. Reduces var count for proper nouns that only appear in possessive/affixed form.
 - [ ] **[READY]** Persist bond tables as files — char→word and byte→char bond tables currently recompile from Postgres on first run, then cache in hcp_temp. Store compiled tables as binary files in the engine area so startup skips Postgres entirely. Patrick approved storing in engine area.
 - [ ] **[READY]** Tellson / Barsad / Stryver / Gaspard — missing from hcp_english as labels. Librarian missed these Dickens proper nouns. Add as `layer = 'label'` entries. Check other Gutenberg test texts for similar gaps.

@@ -17,6 +17,11 @@ namespace HCPEngine
     static constexpr const char* STREAM_END    = "AA.AE.AF.AA.AB";
     static constexpr const char* VAR_REQUEST   = "AA.AE.AF.AA.AC";
 
+    // Case shift tokens — encode capitalization explicitly in the token stream
+    static constexpr const char* CAPITALIZE_NEXT = "AA.AE.AB.AX";   // next word is capitalized
+    static constexpr const char* ALL_CAPS_START  = "AA.AE.AB.AM";   // start all-caps region
+    static constexpr const char* ALL_CAPS_END    = "AA.AE.AB.AN";   // end all-caps region
+
     //! Affix entry — suffix or prefix morpheme for decomposition.
     //! Stripped form has positional hyphen removed (e.g., "-ing" → "ing").
     //! Token ID is pre-resolved from Postgres at load time.

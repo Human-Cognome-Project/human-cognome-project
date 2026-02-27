@@ -31,10 +31,15 @@ namespace HCPEngine
         HCPEngineSystemComponent();
         ~HCPEngineSystemComponent();
 
+        // Singleton accessor — set during Activate, cleared during Deactivate
+        static HCPEngineSystemComponent* Get() { return s_instance; }
+
         // Accessors for socket server and other subsystems
         const HCPVocabulary& GetVocabulary() const { return m_vocabulary; }
         HCPWriteKernel& GetWriteKernel() { return m_writeKernel; }
+        CacheMissResolver& GetResolver() { return m_resolver; }
         HCPParticlePipeline& GetParticlePipeline() { return m_particlePipeline; }
+        const HCPBondTable& GetCharWordBonds() const { return m_charWordBonds; }
         bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
@@ -65,9 +70,14 @@ namespace HCPEngine
         void SourceHealth(const AZ::ConsoleCommandContainer& arguments);
         void SourceStats(const AZ::ConsoleCommandContainer& arguments);
         void SourceVars(const AZ::ConsoleCommandContainer& arguments);
+        void SourcePhysTokenize(const AZ::ConsoleCommandContainer& arguments);
+        void SourcePhysWordTrial(const AZ::ConsoleCommandContainer& arguments);
+        void SourcePhysWordResolve(const AZ::ConsoleCommandContainer& arguments);
         ////////////////////////////////////////////////////////////////////////
 
     private:
+        static inline HCPEngineSystemComponent* s_instance = nullptr;
+
         HCPVocabulary m_vocabulary;
         HCPParticlePipeline m_particlePipeline;
         HCPWriteKernel m_writeKernel;
@@ -87,5 +97,8 @@ namespace HCPEngine
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceHealth, AZ::ConsoleFunctorFlags::Null, "Show engine status and vocabulary counts");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceStats, AZ::ConsoleFunctorFlags::Null, "Show encoding stats for a stored document");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceVars, AZ::ConsoleFunctorFlags::Null, "List unresolved vars in a document");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysTokenize, AZ::ConsoleFunctorFlags::Null, "Run physics-based byte->char superposition trial");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordTrial, AZ::ConsoleFunctorFlags::Null, "Run physics-based char->word superposition trial");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordResolve, AZ::ConsoleFunctorFlags::Null, "Run phase-gated char->word resolution chambers");
     };
 }

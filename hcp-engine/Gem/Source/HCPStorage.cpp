@@ -30,6 +30,37 @@ namespace HCPEngine
                              token.size() - VAR_PREFIX_LEN - 1);
     }
 
+    // Classify a docvar surface form into a category.
+    // Detection order: uri_metadata → sic → proper → lingo (first match wins).
+    static const char* ClassifyVar(const AZStd::string& surface)
+    {
+        if (surface.empty()) return "lingo";
+
+        // uri_metadata: starts with http://, https://, www., or contains ://
+        if (surface.starts_with("http://") || surface.starts_with("https://") ||
+            surface.starts_with("www.") || surface.find("://") != AZStd::string::npos)
+        {
+            return "uri_metadata";
+        }
+
+        // sic: contains digits or non-alpha/non-space/non-hyphen/non-apostrophe chars
+        for (char c : surface)
+        {
+            if (c >= '0' && c <= '9')
+                return "sic";
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+                  c == ' ' || c == '-' || c == '\''))
+                return "sic";
+        }
+
+        // proper: first character is uppercase
+        if (surface[0] >= 'A' && surface[0] <= 'Z')
+            return "proper";
+
+        // lingo: everything else
+        return "lingo";
+    }
+
     // Base-50 pair encoding (value 0-2499 → 2 chars)
     static const char B50[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx";
 
@@ -267,12 +298,13 @@ namespace HCPEngine
                     AZStd::string varId(varIdBuf);
                     ++nextDecimal;
 
-                    // Insert into pbm_docvars
-                    const char* insParams[] = { docPkStr2.c_str(), varIdBuf, surface.c_str() };
+                    // Insert into pbm_docvars with classification
+                    const char* category = ClassifyVar(surface);
+                    const char* insParams[] = { docPkStr2.c_str(), varIdBuf, surface.c_str(), category };
                     res = PQexecParams(m_conn,
-                        "INSERT INTO pbm_docvars (doc_id, var_id, surface) "
-                        "VALUES ($1::integer, $2, $3)",
-                        3, nullptr, insParams, nullptr, nullptr, 0);
+                        "INSERT INTO pbm_docvars (doc_id, var_id, surface, var_category) "
+                        "VALUES ($1::integer, $2, $3, $4)",
+                        4, nullptr, insParams, nullptr, nullptr, 0);
                     if (PQresultStatus(res) != PGRES_COMMAND_OK)
                     {
                         fprintf(stderr, "[HCPStorage] docvar INSERT failed for '%s': %s\n",
@@ -602,12 +634,37 @@ namespace HCPEngine
             if (PQresultStatus(res) == PGRES_COMMAND_OK)
             {
                 int rows = atoi(PQcmdTuples(res));
-                if (rows > 0) ++updated;
+                if (rows > 0)
+                {
+                    ++updated;
+                }
                 else
                 {
-                    fprintf(stderr, "[HCPStorage] StorePositions: no starter for token '%s'\n",
-                        starterTokenId.c_str());
-                    fflush(stderr);
+                    // No existing starter row — token is position-only (punctuation,
+                    // structural marker, or unbonded token). INSERT a new starter.
+                    PQclear(res);
+                    AZStd::string aParts[5];
+                    SplitTokenId(starterTokenId, aParts);
+                    const char* insParams[] = {
+                        docPkStr.c_str(),
+                        aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                        aParts[3].c_str(), aParts[4].c_str(),
+                        packed.c_str()
+                    };
+                    res = PQexecParams(m_conn,
+                        "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
+                        "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
+                        7, nullptr, insParams, nullptr, nullptr, 0);
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK)
+                    {
+                        ++updated;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "[HCPStorage] StorePositions INSERT failed for '%s': %s\n",
+                            starterTokenId.c_str(), PQerrorMessage(m_conn));
+                        fflush(stderr);
+                    }
                 }
             }
             else
@@ -1159,6 +1216,39 @@ namespace HCPEngine
         return vars;
     }
 
+    AZStd::vector<HCPWriteKernel::DocVarExtended> HCPWriteKernel::GetDocVarsExtended(int docPk)
+    {
+        AZStd::vector<DocVarExtended> vars;
+        if (!m_conn) return vars;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT v.var_id, v.surface, COALESCE(v.var_category, ''), "
+            "       COALESCE(v.group_id, 0), COALESCE(g.suggested_id, ''), "
+            "       COALESCE(g.status, '') "
+            "FROM pbm_docvars v "
+            "LEFT JOIN docvar_groups g ON g.id = v.group_id "
+            "WHERE v.doc_id = $1 ORDER BY v.var_id",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            for (int i = 0; i < PQntuples(res); ++i)
+            {
+                DocVarExtended v;
+                v.varId = PQgetvalue(res, i, 0);
+                v.surface = PQgetvalue(res, i, 1);
+                v.category = PQgetvalue(res, i, 2);
+                v.groupId = atoi(PQgetvalue(res, i, 3));
+                v.suggestedId = PQgetvalue(res, i, 4);
+                v.groupStatus = PQgetvalue(res, i, 5);
+                vars.push_back(AZStd::move(v));
+            }
+        }
+        PQclear(res);
+        return vars;
+    }
+
     bool HCPWriteKernel::UpdateMetadata(
         int docPk,
         const AZStd::string& setJson,
@@ -1343,6 +1433,175 @@ namespace HCPEngine
         }
 
         return bonds;
+    }
+
+    AZStd::vector<HCPWriteKernel::BondEntry> HCPWriteKernel::GetAllStarters(int docPk)
+    {
+        AZStd::vector<BondEntry> starters;
+        if (!m_conn) return starters;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str() };
+        PGresult* res = PQexecParams(m_conn,
+            "SELECT s.token_a_id, "
+            "  COALESCE((SELECT SUM(wb.count) FROM pbm_word_bonds wb WHERE wb.starter_id = s.id), 0) + "
+            "  COALESCE((SELECT SUM(cb.count) FROM pbm_char_bonds cb WHERE cb.starter_id = s.id), 0) + "
+            "  COALESCE((SELECT SUM(mb.count) FROM pbm_marker_bonds mb WHERE mb.starter_id = s.id), 0) + "
+            "  COALESCE((SELECT SUM(vb.count) FROM pbm_var_bonds vb WHERE vb.starter_id = s.id), 0) AS total "
+            "FROM pbm_starters s WHERE s.doc_id = $1 "
+            "ORDER BY total DESC",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            for (int i = 0; i < PQntuples(res); ++i)
+            {
+                BondEntry be;
+                be.tokenB = PQgetvalue(res, i, 0);
+                be.count = atoi(PQgetvalue(res, i, 1));
+                starters.push_back(AZStd::move(be));
+            }
+        }
+        PQclear(res);
+        return starters;
+    }
+
+    // ---- Entity cross-reference free functions ----
+
+    AZStd::vector<EntityInfo> GetFictionEntitiesForDocument(
+        PGconn* ficEntConn, PGconn* pbmConn, int docPk)
+    {
+        AZStd::vector<EntityInfo> entities;
+        if (!ficEntConn || !pbmConn) return entities;
+
+        // Step 1: Get all starter token_a_id values from the document
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* pbmParams[] = { pkStr.c_str() };
+        PGresult* starterRes = PQexecParams(pbmConn,
+            "SELECT DISTINCT token_a_id FROM pbm_starters WHERE doc_id = $1",
+            1, nullptr, pbmParams, nullptr, nullptr, 0);
+        if (PQresultStatus(starterRes) != PGRES_TUPLES_OK || PQntuples(starterRes) == 0)
+        {
+            PQclear(starterRes);
+            return entities;
+        }
+
+        // Build IN-clause token list
+        AZStd::string inClause = "(";
+        for (int i = 0; i < PQntuples(starterRes); ++i)
+        {
+            if (i > 0) inClause += ",";
+            inClause += "'";
+            // Escape single quotes in token IDs (shouldn't happen but be safe)
+            const char* tok = PQgetvalue(starterRes, i, 0);
+            for (const char* p = tok; *p; ++p)
+            {
+                if (*p == '\'') inClause += "''";
+                else inClause += *p;
+            }
+            inClause += "'";
+        }
+        inClause += ")";
+        PQclear(starterRes);
+
+        // Step 2: Cross-reference against entity_names in fiction entities DB
+        AZStd::string query =
+            "SELECT DISTINCT en.entity_id, t.name, t.category "
+            "FROM entity_names en "
+            "JOIN tokens t ON t.token_id = en.entity_id "
+            "WHERE en.token_id IN " + inClause;
+
+        PGresult* entRes = PQexec(ficEntConn, query.c_str());
+        if (PQresultStatus(entRes) != PGRES_TUPLES_OK)
+        {
+            fprintf(stderr, "[HCPStorage] Entity cross-ref query failed: %s\n",
+                PQerrorMessage(ficEntConn));
+            fflush(stderr);
+            PQclear(entRes);
+            return entities;
+        }
+
+        // Step 3: For each matched entity, fetch properties
+        for (int i = 0; i < PQntuples(entRes); ++i)
+        {
+            EntityInfo info;
+            info.entityId = PQgetvalue(entRes, i, 0);
+            info.name = PQgetvalue(entRes, i, 1);
+            info.category = PQgetvalue(entRes, i, 2);
+
+            const char* propParams[] = { info.entityId.c_str() };
+            PGresult* propRes = PQexecParams(ficEntConn,
+                "SELECT key, value FROM entity_properties WHERE entity_id = $1",
+                1, nullptr, propParams, nullptr, nullptr, 0);
+            if (PQresultStatus(propRes) == PGRES_TUPLES_OK)
+            {
+                for (int j = 0; j < PQntuples(propRes); ++j)
+                {
+                    info.properties.push_back({
+                        AZStd::string(PQgetvalue(propRes, j, 0)),
+                        AZStd::string(PQgetvalue(propRes, j, 1))
+                    });
+                }
+            }
+            PQclear(propRes);
+
+            entities.push_back(AZStd::move(info));
+        }
+        PQclear(entRes);
+
+        return entities;
+    }
+
+    EntityInfo GetNfAuthorEntity(PGconn* nfEntConn, const AZStd::string& authorName)
+    {
+        EntityInfo info;
+        if (!nfEntConn || authorName.empty()) return info;
+
+        // Build lowercase search term from the last word of the author name (surname)
+        AZStd::string searchName(authorName);
+        // Lowercase the whole name and replace spaces with underscores for token name match
+        for (auto& c : searchName)
+        {
+            unsigned char uc = static_cast<unsigned char>(c);
+            if (std::isupper(uc)) c = static_cast<char>(std::tolower(uc));
+            if (c == ' ') c = '_';
+        }
+
+        // Search by name substring match
+        AZStd::string pattern = "%" + searchName + "%";
+        const char* params[] = { pattern.c_str() };
+        PGresult* res = PQexecParams(nfEntConn,
+            "SELECT token_id, name, category FROM tokens "
+            "WHERE name LIKE $1 AND (category = 'person' OR subcategory = 'individual') LIMIT 1",
+            1, nullptr, params, nullptr, nullptr, 0);
+        if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+        {
+            PQclear(res);
+            return info;
+        }
+
+        info.entityId = PQgetvalue(res, 0, 0);
+        info.name = PQgetvalue(res, 0, 1);
+        info.category = PQgetvalue(res, 0, 2);
+        PQclear(res);
+
+        // Fetch properties
+        const char* propParams[] = { info.entityId.c_str() };
+        PGresult* propRes = PQexecParams(nfEntConn,
+            "SELECT key, value FROM entity_properties WHERE entity_id = $1",
+            1, nullptr, propParams, nullptr, nullptr, 0);
+        if (PQresultStatus(propRes) == PGRES_TUPLES_OK)
+        {
+            for (int j = 0; j < PQntuples(propRes); ++j)
+            {
+                info.properties.push_back({
+                    AZStd::string(PQgetvalue(propRes, j, 0)),
+                    AZStd::string(PQgetvalue(propRes, j, 1))
+                });
+            }
+        }
+        PQclear(propRes);
+
+        return info;
     }
 
 } // namespace HCPEngine

@@ -73,9 +73,15 @@ namespace HCPEngine
 
         bool IsInitialized() const { return m_initialized; }
 
+        //! Create a dedicated GPU-enabled PxScene for char→word resolution.
+        //! Separate from the main scene (byte→char / disassembly).
+        //! One simulate() on this scene processes all resolution chambers.
+        bool CreateCharWordScene();
+
         // Resource accessors — for detection scene and other physics operations
         physx::PxPhysics* GetPhysics() const { return m_pxPhysics; }
         physx::PxScene* GetScene() const { return m_pxScene; }
+        physx::PxScene* GetCharWordScene() const { return m_charWordScene; }
         physx::PxCudaContextManager* GetCuda() const { return m_cudaContextManager; }
 
     private:
@@ -84,6 +90,7 @@ namespace HCPEngine
         physx::PxPhysics* m_pxPhysics = nullptr;
         physx::PxCudaContextManager* m_cudaContextManager = nullptr;
         physx::PxScene* m_pxScene = nullptr;
+        physx::PxScene* m_charWordScene = nullptr;  // Dedicated Phase 2 scene
         physx::PxParticleMaterial* m_particleMaterial = nullptr;
         physx::PxParticleMaterial* m_reassemblyMaterial = nullptr;
 

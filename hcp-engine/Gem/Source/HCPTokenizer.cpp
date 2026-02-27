@@ -219,12 +219,12 @@ namespace HCPEngine
             }
         }
 
-        // Step 2: core lowercase
-        AZStd::string tid = vocab.LookupWord(coreLower);
+        // Step 2: core exact case (labels carry their case as surface form)
+        AZStd::string tid = vocab.LookupWord(core);
 
-        // Step 3: core exact case
+        // Step 3: core lowercase fallback
         if (tid.empty() && coreLower != core)
-            tid = vocab.LookupWord(core);
+            tid = vocab.LookupWord(coreLower);
 
         // Single char fallback
         if (tid.empty() && core.size() == 1)
@@ -268,9 +268,9 @@ namespace HCPEngine
                             stemTid = cacheIt->second;
                     }
                     if (stemTid.empty())
-                        stemTid = vocab.LookupWord(stemLower);
-                    if (stemTid.empty() && stemLower != stem)
                         stemTid = vocab.LookupWord(stem);
+                    if (stemTid.empty() && stemLower != stem)
+                        stemTid = vocab.LookupWord(stemLower);
 
                     if (!stemTid.empty())
                     {
@@ -313,9 +313,9 @@ namespace HCPEngine
                             stemTid = cacheIt->second;
                     }
                     if (stemTid.empty())
-                        stemTid = vocab.LookupWord(stemLower);
-                    if (stemTid.empty() && stemLower != stem)
                         stemTid = vocab.LookupWord(stem);
+                    if (stemTid.empty() && stemLower != stem)
+                        stemTid = vocab.LookupWord(stemLower);
 
                     if (!stemTid.empty())
                     {
@@ -524,27 +524,68 @@ namespace HCPEngine
 
             // Spaces are squeezed out — they don't become tokens.
             // Position gap recorded when next token is emitted.
-            if (c == ' ' || c == '\t')
+            if (c == ' ')
             {
                 needSpaceGap = true;
                 ++i;
                 continue;
             }
 
-            if (c == '\n')
+            // Carriage return — transport artifact, skip
+            if (c == '\r')
             {
-                AZStd::string nid = vocab.LookupLabel("newline");
-                if (!nid.empty())
-                {
-                    emitToken(AZStd::move(nid));
-                }
-                needSpaceGap = false;  // newline resets — it IS the separator
                 ++i;
                 continue;
             }
 
-            if (c == '\r')
+            // Newlines: single \n is a hard-wrap artifact → treat as space.
+            // \n<optional whitespace>\n (or more) is a paragraph break → emit one \n token.
+            if (c == '\n')
             {
+                size_t nlCount = 0;
+                while (i < normalized.size())
+                {
+                    if (normalized[i] == '\n')
+                    {
+                        ++nlCount;
+                        ++i;
+                    }
+                    else if (normalized[i] == ' ' || normalized[i] == '\t' || normalized[i] == '\r')
+                    {
+                        ++i;  // skip whitespace/CR between newlines
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (nlCount >= 2)
+                {
+                    // Paragraph break — emit one \n byte token
+                    AZStd::string cid = vocab.LookupChar('\n');
+                    if (!cid.empty())
+                    {
+                        emitToken(AZStd::move(cid));
+                    }
+                    needSpaceGap = false;
+                }
+                else
+                {
+                    // Single \n — hard-wrap artifact, treat as space
+                    needSpaceGap = true;
+                }
+                continue;
+            }
+
+            // Tab, form-feed — byte-coded tokens
+            if (c == '\t' || c == '\f')
+            {
+                AZStd::string cid = vocab.LookupChar(c);
+                if (!cid.empty())
+                {
+                    emitToken(AZStd::move(cid));
+                }
+                needSpaceGap = false;  // control char resets — it IS the separator
                 ++i;
                 continue;
             }
@@ -631,8 +672,12 @@ namespace HCPEngine
                 }
             }
 
-            // ==== STEP 1: Lowercase space-to-space ====
-            AZStd::string tid = vocab.LookupWord(lower);
+            // ==== STEP 1: Exact case, then lowercase space-to-space ====
+            // Exact case first — labels (November, Monday, etc.) carry their case
+            // as the surface form and have no lowercase version.
+            AZStd::string tid = vocab.LookupWord(chunk);
+            if (tid.empty() && lower != chunk)
+                tid = vocab.LookupWord(lower);
             if (tid.empty() && chunk.size() == 1)
                 tid = vocab.LookupChar(chunk[0]);
 
@@ -791,29 +836,94 @@ namespace HCPEngine
         const HCPVocabulary& vocab)
     {
         AZStd::string result;
+        bool capitalizeNext = true;  // Start of document — capitalize first word
+
         for (size_t i = 0; i < tokenIds.size(); ++i)
         {
             const auto& tid = tokenIds[i];
 
             if (tid == STREAM_START || tid == STREAM_END) continue;
 
+            // Var tokens: VAR_REQUEST + " " + surface form — extract the surface directly
+            if (tid.starts_with(VAR_REQUEST) && tid.size() > strlen(VAR_REQUEST) + 1
+                && tid[strlen(VAR_REQUEST)] == ' ')
+            {
+                AZStd::string surface(tid.data() + strlen(VAR_REQUEST) + 1,
+                                      tid.size() - strlen(VAR_REQUEST) - 1);
+                bool needsSpace = !result.empty();
+                if (needsSpace)
+                {
+                    char lastChar = result.back();
+                    if (lastChar == '(' || lastChar == '[' || lastChar == '{' ||
+                        lastChar == '"' || lastChar == '\'' ||
+                        lastChar == '\n' || lastChar == '\t' || lastChar == '\f')
+                        needsSpace = false;
+                    if (result.size() >= 3)
+                    {
+                        auto s = result.size();
+                        unsigned char b0 = result[s-3], b1 = result[s-2], b2 = result[s-1];
+                        if (b0 == 0xE2 && b1 == 0x80 && (b2 == 0x94 || b2 == 0x93))
+                            needsSpace = false;
+                    }
+                }
+                if (needsSpace) result += ' ';
+                if (capitalizeNext && !surface.empty())
+                {
+                    surface[0] = static_cast<char>(toupper(static_cast<unsigned char>(surface[0])));
+                    capitalizeNext = false;
+                }
+                result += surface;
+                continue;
+            }
+
             AZStd::string text;
             char c = vocab.TokenToChar(tid);
+            bool isDash = false;
+            bool isControl = false;
             if (c != '\0')
             {
-                text = AZStd::string(1, c);
+                // Newline token represents a paragraph break — render as \n\n for visual separation
+                if (c == '\n')
+                    text = "\n\n";
+                else
+                    text = AZStd::string(1, c);
+                isControl = (c == '\n' || c == '\t' || c == '\f');
             }
             else
             {
                 text = vocab.TokenToWord(tid);
+
+                // Em/en-dash are stored as words but render as Unicode punctuation
+                if (text == "emdash")
+                {
+                    text = "\xe2\x80\x94";  // U+2014 —
+                    isDash = true;
+                }
+                else if (text == "endash")
+                {
+                    text = "\xe2\x80\x93";  // U+2013 –
+                    isDash = true;
+                }
             }
 
             if (text.empty()) continue;
 
             bool needsSpace = !result.empty();
 
+            // Control characters — no space before them, they ARE the formatting
+            if (needsSpace && isControl)
+            {
+                needsSpace = false;
+            }
+
+            // Em/en-dashes attach directly (no spaces)
+            if (needsSpace && isDash)
+            {
+                needsSpace = false;
+            }
+
             // Closing/trailing punctuation sticks to preceding token
-            if (needsSpace && c != '\0')
+            if (needsSpace && c != '\0' && !isControl)
             {
                 if (c == '.' || c == ',' || c == ';' || c == ':' ||
                     c == '!' || c == '?' || c == ')' || c == ']' ||
@@ -823,18 +933,50 @@ namespace HCPEngine
                 }
             }
 
-            // Opening punctuation sticks to what follows
+            // Opening punctuation / control chars stick to what follows
             if (needsSpace && !result.empty())
             {
                 char lastChar = result.back();
                 if (lastChar == '(' || lastChar == '[' || lastChar == '{' ||
-                    lastChar == '"' || lastChar == '\'' || lastChar == '\n')
+                    lastChar == '"' || lastChar == '\'' ||
+                    lastChar == '\n' || lastChar == '\t' || lastChar == '\f')
                 {
                     needsSpace = false;
+                }
+                // After em/en-dash (3-byte UTF-8), no space before next word
+                if (result.size() >= 3)
+                {
+                    auto s = result.size();
+                    unsigned char b0 = result[s-3], b1 = result[s-2], b2 = result[s-1];
+                    if (b0 == 0xE2 && b1 == 0x80 && (b2 == 0x94 || b2 == 0x93))
+                    {
+                        needsSpace = false;
+                    }
                 }
             }
 
             if (needsSpace) result += ' ';
+
+            // Positional capitalization — capitalize first word after sentence/paragraph boundary
+            if (capitalizeNext && !text.empty() && c == '\0')
+            {
+                // Only capitalize word tokens (not punctuation)
+                text[0] = static_cast<char>(toupper(static_cast<unsigned char>(text[0])));
+                capitalizeNext = false;
+            }
+
+            // Sentence-ending punctuation triggers capitalize on next word
+            if (c == '.' || c == '!' || c == '?')
+            {
+                capitalizeNext = true;
+            }
+
+            // Newline token = paragraph break → next word is a sentence start
+            if (c == '\n')
+            {
+                capitalizeNext = true;
+            }
+
             result += text;
         }
         return result;

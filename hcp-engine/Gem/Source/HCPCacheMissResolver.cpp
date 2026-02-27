@@ -215,38 +215,13 @@ namespace HCPEngine
             }
         }
 
-        // Try lowercase first (standard words)
-        const char* paramValues[1] = { lower.c_str() };
-        int paramLengths[1] = { static_cast<int>(lower.size()) };
+        // Try exact case first — labels and mixed-case forms (eBook, November)
+        // carry their case as the surface form.
+        const char* paramValues[1] = { word.c_str() };
+        int paramLengths[1] = { static_cast<int>(word.size()) };
         int paramFormats[1] = { 0 }; // text
 
         PGresult* res = PQexecParams(conn,
-            "SELECT token_id FROM tokens WHERE name = $1 LIMIT 1",
-            1, nullptr, paramValues, paramLengths, paramFormats, 0);
-
-        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
-        {
-            result.value = PQgetvalue(res, 0, 0);
-            PQclear(res);
-
-            // Write lowercase to w2t + reverse lookup
-            result.writes.push_back({ "w2t", lower, result.value });
-            result.writes.push_back({ "t2w", result.value, lower });
-
-            // Also cache exact-case variant (avoids Postgres on every "The" vs "the")
-            if (word != lower)
-            {
-                result.writes.push_back({ "w2t", word, result.value });
-            }
-            return true;
-        }
-        PQclear(res);
-
-        // Try exact case match (contractions like I'm, I've stored with capital I)
-        paramValues[0] = word.c_str();
-        paramLengths[0] = static_cast<int>(word.size());
-
-        res = PQexecParams(conn,
             "SELECT token_id FROM tokens WHERE name = $1 LIMIT 1",
             1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
@@ -260,6 +235,32 @@ namespace HCPEngine
             return true;
         }
         PQclear(res);
+
+        // Lowercase fallback (standard words — "the", "and", etc.)
+        if (word != lower)
+        {
+            paramValues[0] = lower.c_str();
+            paramLengths[0] = static_cast<int>(lower.size());
+
+            res = PQexecParams(conn,
+                "SELECT token_id FROM tokens WHERE name = $1 LIMIT 1",
+                1, nullptr, paramValues, paramLengths, paramFormats, 0);
+
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            {
+                result.value = PQgetvalue(res, 0, 0);
+                PQclear(res);
+
+                // Cache lowercase form + reverse lookup
+                result.writes.push_back({ "w2t", lower, result.value });
+                result.writes.push_back({ "t2w", result.value, lower });
+
+                // Also cache the original case variant to avoid repeated misses
+                result.writes.push_back({ "w2t", word, result.value });
+                return true;
+            }
+            PQclear(res);
+        }
 
         return false;
     }
@@ -291,16 +292,36 @@ namespace HCPEngine
         const char* key, size_t keyLen,
         const ResolveContext& /*ctx*/, ResolveResult& result)
     {
-        PGconn* conn = m_resolver->GetConnection("hcp_english");
-        if (!conn) return false;
-
         AZStd::string label(key, keyLen);
         const char* paramValues[1] = { label.c_str() };
         int paramLengths[1] = { static_cast<int>(label.size()) };
         int paramFormats[1] = { 0 };
 
-        PGresult* res = PQexecParams(conn,
-            "SELECT token_id FROM tokens WHERE name = $1 AND layer = 'label' LIMIT 1",
+        // Try hcp_english first (language-specific labels)
+        PGconn* conn = m_resolver->GetConnection("hcp_english");
+        if (conn)
+        {
+            PGresult* res = PQexecParams(conn,
+                "SELECT token_id FROM tokens WHERE name = $1 AND layer = 'label' LIMIT 1",
+                1, nullptr, paramValues, paramLengths, paramFormats, 0);
+
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            {
+                result.value = PQgetvalue(res, 0, 0);
+                PQclear(res);
+
+                result.writes.push_back({ "l2t", label, result.value });
+                return true;
+            }
+            PQclear(res);
+        }
+
+        // Fallback to hcp_core (structural markers: pbm_marker category)
+        PGconn* coreConn = m_resolver->GetConnection("hcp_core");
+        if (!coreConn) return false;
+
+        PGresult* res = PQexecParams(coreConn,
+            "SELECT token_id FROM tokens WHERE name = $1 AND category = 'pbm_marker' LIMIT 1",
             1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
         if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)

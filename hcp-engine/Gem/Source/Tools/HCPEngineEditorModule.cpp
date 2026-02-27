@@ -1,19 +1,16 @@
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Module/Module.h>
-
+#include "../HCPEngineModule.h"
 #include "HCPEngineEditorSystemComponent.h"
-#include <HCPEngine/HCPEngineTypeIds.h>
 
 namespace HCPEngine
 {
-    class HCPEngineEditorModule : public AZ::Module
+    class HCPEngineEditorModule : public HCPEngineModule
     {
     public:
-        AZ_RTTI(HCPEngineEditorModule, HCPEngineEditorModuleTypeId, AZ::Module);
+        AZ_RTTI(HCPEngineEditorModule, HCPEngineEditorModuleTypeId, HCPEngineModule);
         AZ_CLASS_ALLOCATOR(HCPEngineEditorModule, AZ::SystemAllocator);
 
         HCPEngineEditorModule()
-            : AZ::Module()
+            : HCPEngineModule()
         {
             m_descriptors.insert(m_descriptors.end(), {
                 HCPEngineEditorSystemComponent::CreateDescriptor(),
