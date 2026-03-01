@@ -530,17 +530,55 @@ namespace HCPEngine
         return docId;
     }
 
+    // Encode sparse modifiers: only non-zero entries as [pos_b50(4) + mod_b50(4)] pairs
+    static AZStd::string EncodeSparseModifiers(
+        const AZStd::vector<int>& posList,
+        const AZStd::vector<AZ::u32>& allModifiers,
+        const AZStd::vector<int>& allPositions,
+        const AZStd::vector<AZStd::string>& allTokenIds,
+        const AZStd::string& tokenId)
+    {
+        if (allModifiers.empty()) return {};
+
+        AZStd::string encoded;
+        // For each position in this token's position list, find its modifier
+        for (int pos : posList)
+        {
+            // Find the index in the global arrays where this token+position occurs
+            for (size_t i = 0; i < allTokenIds.size(); ++i)
+            {
+                if (allTokenIds[i] == tokenId && allPositions[i] == pos)
+                {
+                    if (i < allModifiers.size() && allModifiers[i] != 0)
+                    {
+                        char posBuf[4];
+                        EncodePosition(pos, posBuf);
+                        char modBuf[4];
+                        EncodePosition(static_cast<int>(allModifiers[i]), modBuf);
+                        encoded.append(posBuf, 4);
+                        encoded.append(modBuf, 4);
+                    }
+                    break;
+                }
+            }
+        }
+        return encoded;
+    }
+
     bool HCPWriteKernel::StorePositions(
         int docPk,
         const AZStd::vector<AZStd::string>& tokenIds,
         const AZStd::vector<int>& positions,
-        int totalSlots)
+        int totalSlots,
+        const AZStd::vector<AZ::u32>& modifiers)
     {
         if (!m_conn || tokenIds.size() != positions.size())
         {
             AZLOG_ERROR("HCPWriteKernel::StorePositions: not connected or size mismatch");
             return false;
         }
+
+        bool hasModifiers = !modifiers.empty() && modifiers.size() == tokenIds.size();
 
         PQexec(m_conn, "BEGIN");
 
@@ -625,12 +663,34 @@ namespace HCPEngine
                 starterTokenId = tokenId;
             }
 
-            // UPDATE the starter row with packed positions
-            const char* params[] = { packed.c_str(), docPkStr.c_str(), starterTokenId.c_str() };
-            PGresult* res = PQexecParams(m_conn,
-                "UPDATE pbm_starters SET positions = $1 "
-                "WHERE doc_id = $2::integer AND token_a_id = $3",
-                3, nullptr, params, nullptr, nullptr, 0);
+            // Encode sparse modifiers for this token (only if we have modifier data)
+            AZStd::string modEncoded;
+            if (hasModifiers)
+            {
+                modEncoded = EncodeSparseModifiers(
+                    posList, modifiers, positions, tokenIds, tokenId);
+            }
+
+            // UPDATE the starter row with packed positions (+ modifiers if non-empty)
+            PGresult* res;
+            if (!modEncoded.empty())
+            {
+                const char* params[] = { packed.c_str(), modEncoded.c_str(),
+                                          docPkStr.c_str(), starterTokenId.c_str() };
+                res = PQexecParams(m_conn,
+                    "UPDATE pbm_starters SET positions = $1, modifiers = $2 "
+                    "WHERE doc_id = $3::integer AND token_a_id = $4",
+                    4, nullptr, params, nullptr, nullptr, 0);
+            }
+            else
+            {
+                const char* params[] = { packed.c_str(), docPkStr.c_str(), starterTokenId.c_str() };
+                res = PQexecParams(m_conn,
+                    "UPDATE pbm_starters SET positions = $1 "
+                    "WHERE doc_id = $2::integer AND token_a_id = $3",
+                    3, nullptr, params, nullptr, nullptr, 0);
+            }
+
             if (PQresultStatus(res) == PGRES_COMMAND_OK)
             {
                 int rows = atoi(PQcmdTuples(res));
@@ -645,16 +705,33 @@ namespace HCPEngine
                     PQclear(res);
                     AZStd::string aParts[5];
                     SplitTokenId(starterTokenId, aParts);
-                    const char* insParams[] = {
-                        docPkStr.c_str(),
-                        aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                        aParts[3].c_str(), aParts[4].c_str(),
-                        packed.c_str()
-                    };
-                    res = PQexecParams(m_conn,
-                        "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
-                        "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
-                        7, nullptr, insParams, nullptr, nullptr, 0);
+
+                    if (!modEncoded.empty())
+                    {
+                        const char* insParams[] = {
+                            docPkStr.c_str(),
+                            aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                            aParts[3].c_str(), aParts[4].c_str(),
+                            packed.c_str(), modEncoded.c_str()
+                        };
+                        res = PQexecParams(m_conn,
+                            "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions, modifiers) "
+                            "VALUES ($1::integer, $2, $3, $4, $5, $6, $7, $8)",
+                            8, nullptr, insParams, nullptr, nullptr, 0);
+                    }
+                    else
+                    {
+                        const char* insParams[] = {
+                            docPkStr.c_str(),
+                            aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                            aParts[3].c_str(), aParts[4].c_str(),
+                            packed.c_str()
+                        };
+                        res = PQexecParams(m_conn,
+                            "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
+                            "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
+                            7, nullptr, insParams, nullptr, nullptr, 0);
+                    }
                     if (PQresultStatus(res) == PGRES_COMMAND_OK)
                     {
                         ++updated;
@@ -1050,14 +1127,14 @@ namespace HCPEngine
             PQclear(res);
         }
 
-        // Single query: all starters with positions for this document
-        struct PosToken { int pos; AZStd::string tokenId; };
+        // Single query: all starters with positions (and modifiers) for this document
+        struct PosToken { int pos; AZStd::string tokenId; AZ::u32 modifier; };
         AZStd::vector<PosToken> entries;
         {
             AZStd::string pkStr = AZStd::to_string(docPk);
             const char* params[] = { pkStr.c_str() };
             PGresult* res = PQexecParams(m_conn,
-                "SELECT token_a_id, positions FROM pbm_starters "
+                "SELECT token_a_id, positions, modifiers FROM pbm_starters "
                 "WHERE doc_id = $1 AND positions IS NOT NULL",
                 1, nullptr, params, nullptr, nullptr, 0);
             if (PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -1077,13 +1154,30 @@ namespace HCPEngine
                         }
                     }
 
+                    // Decode modifiers (sparse: [pos_b50(4) + mod_b50(4)] pairs)
+                    AZStd::unordered_map<int, AZ::u32> posModMap;
+                    if (!PQgetisnull(res, i, 2))
+                    {
+                        const char* modPacked = PQgetvalue(res, i, 2);
+                        int modLen = static_cast<int>(strlen(modPacked));
+                        for (int off = 0; off + 7 < modLen; off += 8)
+                        {
+                            int modPos = DecodePosition(modPacked + off);
+                            int modVal = DecodePosition(modPacked + off + 4);
+                            posModMap[modPos] = static_cast<AZ::u32>(modVal);
+                        }
+                    }
+
                     const char* packed = PQgetvalue(res, i, 1);
                     int packedLen = static_cast<int>(strlen(packed));
 
                     for (int off = 0; off + 3 < packedLen; off += 4)
                     {
                         int pos = DecodePosition(packed + off);
-                        entries.push_back({pos, tokenAId});
+                        AZ::u32 mod = 0;
+                        auto mit = posModMap.find(pos);
+                        if (mit != posModMap.end()) mod = mit->second;
+                        entries.push_back({pos, tokenAId, mod});
                     }
                 }
             }

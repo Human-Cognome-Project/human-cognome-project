@@ -3,13 +3,13 @@
 #include "HCPVocabulary.h"
 #include "HCPTokenizer.h"
 #include "HCPParticlePipeline.h"
-#include "HCPStorage.h"
 #include "HCPJsonInterpreter.h"
 #include "HCPResolutionChamber.h"
 #include "HCPVocabBed.h"
 #include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPBondCompiler.h"
+#include "HCPEnvelopeManager.h"
 
 #include <AzCore/Console/ILogger.h>
 
@@ -24,6 +24,8 @@
 #include <cstring>
 #include <chrono>
 #include <fstream>
+#include <sys/resource.h>
+#include <sys/stat.h>
 
 namespace HCPEngine
 {
@@ -109,6 +111,14 @@ namespace HCPEngine
             m_thread.join();
         }
         m_running.store(false);
+    }
+
+    void HCPSocketServer::WaitForShutdown()
+    {
+        if (m_thread.joinable())
+        {
+            m_thread.join();
+        }
     }
 
     void HCPSocketServer::ListenerThread(int port)
@@ -304,23 +314,24 @@ namespace HCPEngine
             // Derive PBM bonds
             PBMData pbmData = DerivePBM(stream);
 
-            // Store PBM via write kernel
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected())
+            // Store PBM via kernels
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected())
             {
-                wk.Connect();
+                db.Connect();
             }
 
             AZStd::string docId;
-            if (wk.IsConnected())
+            if (db.IsConnected())
             {
-                docId = wk.StorePBM(name, centuryCode, pbmData);
+                HCPPbmWriter& pbmWriter = m_engine->GetPbmWriter();
+                docId = pbmWriter.StorePBM(name, centuryCode, pbmData);
 
                 // Store positions alongside bonds for exact reconstruction
                 if (!docId.empty())
                 {
-                    wk.StorePositions(
-                        wk.LastDocPk(),
+                    pbmWriter.StorePositions(
+                        pbmWriter.LastDocPk(),
                         stream.tokenIds,
                         stream.positions,
                         stream.totalSlots);
@@ -330,7 +341,7 @@ namespace HCPEngine
             // Process metadata if provided
             int metaKnown = 0, metaUnreviewed = 0;
             bool metaProvenance = false;
-            if (!docId.empty() && wk.IsConnected() &&
+            if (!docId.empty() && db.IsConnected() &&
                 doc.HasMember("metadata") && doc["metadata"].IsString())
             {
                 AZStd::string metaJson(doc["metadata"].GetString(),
@@ -342,8 +353,10 @@ namespace HCPEngine
                                              doc["catalog"].GetStringLength());
                 }
 
+                HCPDocumentQuery& docQuery = m_engine->GetDocumentQuery();
                 JsonInterpretResult jResult = ProcessJsonMetadata(
-                    metaJson, wk.LastDocPk(), catalog, wk, m_engine->GetVocabulary());
+                    metaJson, m_engine->GetPbmWriter().LastDocPk(), catalog,
+                    docQuery, m_engine->GetVocabulary());
 
                 metaKnown = jResult.knownFields;
                 metaUnreviewed = jResult.unreviewedFields;
@@ -393,17 +406,17 @@ namespace HCPEngine
             auto t0 = std::chrono::high_resolution_clock::now();
 
             // Load positions from DB — direct reconstruction
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected())
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected())
             {
-                wk.Connect();
+                db.Connect();
             }
-            if (!wk.IsConnected())
+            if (!db.IsConnected())
             {
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            AZStd::vector<AZStd::string> tokenIds = wk.LoadPositions(docId);
+            AZStd::vector<AZStd::string> tokenIds = m_engine->GetPbmReader().LoadPositions(docId);
             if (tokenIds.empty())
             {
                 return R"({"status":"error","message":"Document not found or has no positions"})";
@@ -437,17 +450,17 @@ namespace HCPEngine
         // ---- list ----
         if (strcmp(action, "list") == 0)
         {
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected())
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected())
             {
-                wk.Connect();
+                db.Connect();
             }
-            if (!wk.IsConnected())
+            if (!db.IsConnected())
             {
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            auto docs = wk.ListDocuments();
+            auto docs = m_engine->GetDocumentQuery().ListDocuments();
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -509,21 +522,22 @@ namespace HCPEngine
 
             AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
 
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected()) wk.Connect();
-            if (!wk.IsConnected())
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected()) db.Connect();
+            if (!db.IsConnected())
             {
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            auto detail = wk.GetDocumentDetail(docId);
+            HCPDocumentQuery& docQuery = m_engine->GetDocumentQuery();
+            auto detail = docQuery.GetDocumentDetail(docId);
             if (detail.pk == 0)
             {
                 return R"({"status":"error","message":"Document not found"})";
             }
 
-            auto prov = wk.GetProvenance(detail.pk);
-            auto vars = wk.GetDocVars(detail.pk);
+            auto prov = docQuery.GetProvenance(detail.pk);
+            auto vars = m_engine->GetDocVarQuery().GetDocVars(detail.pk);
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -584,14 +598,15 @@ namespace HCPEngine
 
             AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
 
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected()) wk.Connect();
-            if (!wk.IsConnected())
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected()) db.Connect();
+            if (!db.IsConnected())
             {
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            int docPk = wk.GetDocPk(docId);
+            HCPDocumentQuery& docQuery = m_engine->GetDocumentQuery();
+            int docPk = docQuery.GetDocPk(docId);
             if (docPk == 0)
             {
                 return R"({"status":"error","message":"Document not found"})";
@@ -622,7 +637,7 @@ namespace HCPEngine
                 }
             }
 
-            bool ok = wk.UpdateMetadata(docPk, setJson, removeKeys);
+            bool ok = docQuery.UpdateMetadata(docPk, setJson, removeKeys);
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -645,14 +660,14 @@ namespace HCPEngine
 
             AZStd::string docId(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
 
-            HCPWriteKernel& wk = m_engine->GetWriteKernel();
-            if (!wk.IsConnected()) wk.Connect();
-            if (!wk.IsConnected())
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected()) db.Connect();
+            if (!db.IsConnected())
             {
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            int docPk = wk.GetDocPk(docId);
+            int docPk = m_engine->GetDocumentQuery().GetDocPk(docId);
             if (docPk == 0)
             {
                 return R"({"status":"error","message":"Document not found"})";
@@ -664,7 +679,7 @@ namespace HCPEngine
                 tokenId = AZStd::string(doc["token"].GetString(), doc["token"].GetStringLength());
             }
 
-            auto bonds = wk.GetBondsForToken(docPk, tokenId);
+            auto bonds = m_engine->GetBondQuery().GetBondsForToken(docPk, tokenId);
 
             // Resolve surface forms via vocabulary lookup
             const auto& vocab = m_engine->GetVocabulary();
@@ -710,7 +725,7 @@ namespace HCPEngine
         if (strcmp(action, "phys_resolve") == 0)
         {
             AZStd::string text;
-            AZ::u32 maxChars = 200;
+            AZ::u32 maxChars = 0;  // 0 = process entire text
 
             if (doc.HasMember("file") && doc["file"].IsString())
             {
@@ -784,6 +799,60 @@ namespace HCPEngine
 
             ResolutionManifest manifest = bedManager.Resolve(runs);
 
+            // ---- Optional benchmark TSV output ----
+            bool writeBenchmark = doc.HasMember("benchmark") &&
+                doc["benchmark"].IsBool() && doc["benchmark"].GetBool();
+            if (writeBenchmark)
+            {
+                struct rusage usage;
+                getrusage(RUSAGE_SELF, &usage);
+                long rssKb = usage.ru_maxrss;
+
+                long vramUsedMb = 0;
+                FILE* nvsmi = popen("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null", "r");
+                if (nvsmi)
+                {
+                    char buf[64];
+                    if (fgets(buf, sizeof(buf), nvsmi))
+                        vramUsedMb = atol(buf);
+                    pclose(nvsmi);
+                }
+
+                mkdir("benchmarks", 0755);
+
+                auto now = std::chrono::system_clock::now();
+                auto epochMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now.time_since_epoch()).count();
+
+                char tsvPath[256];
+                snprintf(tsvPath, sizeof(tsvPath), "benchmarks/resolve_%lld.tsv", (long long)epochMs);
+
+                FILE* tsv = fopen(tsvPath, "w");
+                if (tsv)
+                {
+                    fprintf(tsv, "timestamp\tbytes\tphase1_codepoints\tphase1_settled\t"
+                        "phase1_pct\tphase1_ms\ttotal_runs\tresolved\tunresolved\t"
+                        "resolved_pct\tresolve_ms\trss_kb\tvram_mb\n");
+                    fprintf(tsv, "%lld\t%zu\t%u\t%u\t%.1f\t%.1f\t%u\t%u\t%u\t%.1f\t%.1f\t%ld\t%ld\n",
+                        (long long)epochMs,
+                        text.size(),
+                        phase1.totalCodepoints,
+                        phase1.settledCount,
+                        phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
+                        static_cast<double>(phase1.simulationTimeMs),
+                        manifest.totalRuns,
+                        manifest.resolvedRuns,
+                        manifest.unresolvedRuns,
+                        manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f,
+                        static_cast<double>(manifest.totalTimeMs),
+                        rssKb,
+                        vramUsedMb);
+                    fclose(tsv);
+                    fprintf(stderr, "[phys_resolve] Benchmark written: %s\n", tsvPath);
+                    fflush(stderr);
+                }
+            }
+
             // Build JSON response
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -797,8 +866,14 @@ namespace HCPEngine
             w.Key("resolved"); w.Uint(manifest.resolvedRuns);
             w.Key("unresolved"); w.Uint(manifest.unresolvedRuns);
             w.Key("time_ms"); w.Double(static_cast<double>(manifest.totalTimeMs));
-            w.Key("buckets"); w.Uint64(m_engine->GetTierAssembly().BucketCount());
-            w.Key("vocab_words"); w.Uint64(m_engine->GetTierAssembly().TotalWords());
+            w.Key("bed_initialized"); w.Bool(m_engine->GetBedManager().IsInitialized());
+
+            // System resource snapshot
+            {
+                struct rusage usage;
+                getrusage(RUSAGE_SELF, &usage);
+                w.Key("rss_kb"); w.Int64(usage.ru_maxrss);
+            }
 
             w.Key("results");
             w.StartArray();
@@ -812,7 +887,13 @@ namespace HCPEngine
                     w.Key("word"); w.String(r.matchedWord.c_str());
                     w.Key("token_id"); w.String(r.matchedTokenId.c_str());
                     w.Key("tier"); w.Uint(r.tierResolved);
+                    if (r.morphBits != 0)
+                        { w.Key("morph_bits"); w.Uint(r.morphBits); }
                 }
+                if (r.firstCap)
+                    { w.Key("first_cap"); w.Bool(true); }
+                if (r.allCaps)
+                    { w.Key("all_caps"); w.Bool(true); }
                 w.EndObject();
             }
             w.EndArray();
@@ -825,6 +906,52 @@ namespace HCPEngine
                 manifest.totalTimeMs);
             fflush(stderr);
 
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- activate_envelope ----
+        if (strcmp(action, "activate_envelope") == 0)
+        {
+            if (!doc.HasMember("name") || !doc["name"].IsString())
+            {
+                return R"({"status":"error","message":"Missing 'name' field"})";
+            }
+
+            AZStd::string name(doc["name"].GetString(), doc["name"].GetStringLength());
+
+            HCPEnvelopeManager& envMgr = m_engine->GetEnvelopeManager();
+            EnvelopeActivation result = envMgr.ActivateEnvelope(name);
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("envelope"); w.String(name.c_str());
+            w.Key("entries_loaded"); w.Int(result.entriesLoaded);
+            w.Key("evicted_entries"); w.Int(result.evictedEntries);
+            w.Key("load_time_ms"); w.Double(result.loadTimeMs);
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- deactivate_envelope ----
+        if (strcmp(action, "deactivate_envelope") == 0)
+        {
+            if (!doc.HasMember("name") || !doc["name"].IsString())
+            {
+                return R"({"status":"error","message":"Missing 'name' field"})";
+            }
+
+            AZStd::string name(doc["name"].GetString(), doc["name"].GetStringLength());
+            m_engine->GetEnvelopeManager().DeactivateEnvelope(name);
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("envelope"); w.String(name.c_str());
+            w.Key("deactivated"); w.Bool(true);
+            w.EndObject();
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 

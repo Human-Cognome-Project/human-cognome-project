@@ -4,7 +4,6 @@
 
 #include "HCPEngineSystemComponent.h"
 #include "HCPTokenizer.h"
-#include "HCPStorage.h"
 #include "HCPBondCompiler.h"
 #include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
@@ -15,6 +14,8 @@
 #include <fstream>
 #include <chrono>
 #include <cstdio>
+#include <sys/resource.h>
+#include <sys/stat.h>
 
 #include <HCPEngine/HCPEngineTypeIds.h>
 
@@ -256,28 +257,37 @@ namespace HCPEngine
         AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars; PBD particle system active",
             m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
 
-        // Build TierAssembly and initialize persistent vocab beds (Phase 2)
-        if (m_charWordBonds.PairCount() > 0)
+        // Initialize persistent vocab beds from pre-compiled LMDB (Phase 2)
+        // Vocab data is pre-ordered at compile time — no Postgres, no TierAssembly
         {
             auto bedStart = std::chrono::high_resolution_clock::now();
-            m_tierAssembly.Build(m_charWordBonds, m_vocabulary);
 
             if (!m_particlePipeline.GetCharWordScene())
             {
                 m_particlePipeline.CreateCharWordScene();
             }
 
-            if (m_particlePipeline.GetCharWordScene())
+            if (m_particlePipeline.GetCuda() && m_vocabulary.GetLmdbEnv())
             {
                 m_bedManager.Initialize(
                     pxPhysics,
-                    m_particlePipeline.GetCharWordScene(),
                     m_particlePipeline.GetCuda(),
-                    m_tierAssembly);
+                    m_vocabulary.GetLmdbEnv(),
+                    &m_vocabulary);
 
                 auto bedEnd = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Persistent vocab beds initialized in %.1f ms\n",
                     std::chrono::duration<double, std::milli>(bedEnd - bedStart).count());
+                fflush(stderr);
+            }
+        }
+
+        // Initialize envelope manager for LMDB cache lifecycle
+        {
+            const char* coreConnStr = "host=localhost dbname=hcp_core user=hcp password=hcp_dev";
+            if (m_envelopeManager.Initialize(m_vocabulary.GetLmdbEnv(), coreConnStr))
+            {
+                fprintf(stderr, "[HCPEngine] Envelope manager initialized\n");
                 fflush(stderr);
             }
         }
@@ -288,6 +298,15 @@ namespace HCPEngine
 
         s_instance = this;
         { FILE* df = fopen("/tmp/hcp_editor_diag.txt","a"); if(df){fprintf(df,"Activate() COMPLETE — engine ready, s_instance set\n");fclose(df);} }
+
+        // Daemon mode: block this thread on the socket server.
+        // The socket server accept loop runs until m_stopRequested is set (via signal/Stop()).
+        // This prevents the O3DE headless launcher from exiting after Activate() returns.
+        fprintf(stderr, "[HCPEngine] Entering daemon mode — blocking on socket server\n");
+        fflush(stderr);
+        m_socketServer.WaitForShutdown();
+        fprintf(stderr, "[HCPEngine] Socket server exited, daemon shutting down\n");
+        fflush(stderr);
     }
 
     void HCPEngineSystemComponent::Deactivate()
@@ -295,9 +314,10 @@ namespace HCPEngine
         s_instance = nullptr;
         AZLOG_INFO("HCPEngine: Deactivating — shutting down socket server and PBD pipeline");
         m_socketServer.Stop();
+        m_envelopeManager.Shutdown();
         m_bedManager.Shutdown();
         m_resolver.Shutdown();
-        m_writeKernel.Disconnect();
+        m_dbConn.Disconnect();
         m_particlePipeline.Shutdown();
         HCPEngineRequestBus::Handler::BusDisconnect();
     }
@@ -331,18 +351,18 @@ namespace HCPEngine
         // Step 2: Derive PBM bonds
         PBMData pbmData = DerivePBM(stream);
 
-        // Step 3: Store PBM via write kernel
-        if (!m_writeKernel.IsConnected())
+        // Step 3: Store PBM via kernels
+        if (!m_dbConn.IsConnected())
         {
-            m_writeKernel.Connect();
+            m_dbConn.Connect();
         }
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected())
         {
-            AZLOG_ERROR("HCPEngine: Write kernel not connected — cannot store");
+            AZLOG_ERROR("HCPEngine: DB not connected — cannot store");
             return {};
         }
 
-        AZStd::string docId = m_writeKernel.StorePBM(docName, centuryCode, pbmData);
+        AZStd::string docId = m_pbmWriter.StorePBM(docName, centuryCode, pbmData);
         if (docId.empty())
         {
             AZLOG_ERROR("HCPEngine: Failed to store PBM");
@@ -350,8 +370,8 @@ namespace HCPEngine
         }
 
         // Step 4: Store positions alongside bonds
-        m_writeKernel.StorePositions(
-            m_writeKernel.LastDocPk(),
+        m_pbmWriter.StorePositions(
+            m_pbmWriter.LastDocPk(),
             stream.tokenIds,
             stream.positions,
             stream.totalSlots);
@@ -372,18 +392,18 @@ namespace HCPEngine
 
         AZLOG_INFO("HCPEngine: Reassembling from %s", docId.c_str());
 
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected())
         {
-            m_writeKernel.Connect();
+            m_dbConn.Connect();
         }
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected())
         {
-            AZLOG_ERROR("HCPEngine: Write kernel not connected — cannot load");
+            AZLOG_ERROR("HCPEngine: DB not connected — cannot load");
             return {};
         }
 
         // Load positions — direct reconstruction from positional tree
-        AZStd::vector<AZStd::string> tokenIds = m_writeKernel.LoadPositions(docId);
+        AZStd::vector<AZStd::string> tokenIds = m_pbmReader.LoadPositions(docId);
         if (tokenIds.empty())
         {
             AZLOG_ERROR("HCPEngine: Failed to load positions for %s", docId.c_str());
@@ -451,11 +471,11 @@ namespace HCPEngine
         PBMData pbmData = DerivePBM(stream);
 
         // Store PBM
-        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
+        if (!m_dbConn.IsConnected()) m_dbConn.Connect();
         AZStd::string docId;
-        if (m_writeKernel.IsConnected())
+        if (m_dbConn.IsConnected())
         {
-            docId = m_writeKernel.StorePBM(docName, centuryCode, pbmData);
+            docId = m_pbmWriter.StorePBM(docName, centuryCode, pbmData);
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -484,8 +504,8 @@ namespace HCPEngine
 
         AZStd::string docId(arguments[1].data(), arguments[1].size());
 
-        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected()) m_dbConn.Connect();
+        if (!m_dbConn.IsConnected())
         {
             fprintf(stderr, "[source_decode] ERROR: Database not available\n");
             fflush(stderr);
@@ -494,7 +514,7 @@ namespace HCPEngine
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        AZStd::vector<AZStd::string> tokenIds = m_writeKernel.LoadPositions(docId);
+        AZStd::vector<AZStd::string> tokenIds = m_pbmReader.LoadPositions(docId);
         if (tokenIds.empty())
         {
             fprintf(stderr, "[source_decode] ERROR: Document not found or no positions: %s\n", docId.c_str());
@@ -518,15 +538,15 @@ namespace HCPEngine
 
     void HCPEngineSystemComponent::SourceList(const AZ::ConsoleCommandContainer& /*arguments*/)
     {
-        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected()) m_dbConn.Connect();
+        if (!m_dbConn.IsConnected())
         {
             fprintf(stderr, "[source_list] ERROR: Database not available\n");
             fflush(stderr);
             return;
         }
 
-        auto docs = m_writeKernel.ListDocuments();
+        auto docs = m_docQuery.ListDocuments();
         fprintf(stderr, "[source_list] %zu documents stored\n", docs.size());
         for (const auto& doc : docs)
         {
@@ -547,7 +567,7 @@ namespace HCPEngine
         fprintf(stderr, "[source_health] Socket server: %s (port %d)\n",
             m_socketServer.IsRunning() ? "running" : "stopped", HCPSocketServer::DEFAULT_PORT);
         fprintf(stderr, "[source_health] DB: %s\n",
-            m_writeKernel.IsConnected() ? "connected" : "disconnected");
+            m_dbConn.IsConnected() ? "connected" : "disconnected");
         fflush(stderr);
     }
 
@@ -562,15 +582,15 @@ namespace HCPEngine
 
         AZStd::string docId(arguments[1].data(), arguments[1].size());
 
-        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected()) m_dbConn.Connect();
+        if (!m_dbConn.IsConnected())
         {
             fprintf(stderr, "[source_stats] ERROR: Database not available\n");
             fflush(stderr);
             return;
         }
 
-        PBMData pbmData = m_writeKernel.LoadPBM(docId);
+        PBMData pbmData = m_pbmReader.LoadPBM(docId);
         if (pbmData.bonds.empty())
         {
             fprintf(stderr, "[source_stats] ERROR: Document not found: %s\n", docId.c_str());
@@ -598,15 +618,15 @@ namespace HCPEngine
 
         AZStd::string docId(arguments[1].data(), arguments[1].size());
 
-        if (!m_writeKernel.IsConnected()) m_writeKernel.Connect();
-        if (!m_writeKernel.IsConnected())
+        if (!m_dbConn.IsConnected()) m_dbConn.Connect();
+        if (!m_dbConn.IsConnected())
         {
             fprintf(stderr, "[source_vars] ERROR: Database not available\n");
             fflush(stderr);
             return;
         }
 
-        PBMData pbmData = m_writeKernel.LoadPBM(docId);
+        PBMData pbmData = m_pbmReader.LoadPBM(docId);
         if (pbmData.bonds.empty())
         {
             fprintf(stderr, "[source_vars] ERROR: Document not found: %s\n", docId.c_str());
@@ -858,11 +878,68 @@ namespace HCPEngine
             return;
         }
 
-        fprintf(stderr, "[source_phys_word_resolve] TierAssembly: %zu buckets, %zu total words\n",
-            m_tierAssembly.BucketCount(), m_tierAssembly.TotalWords());
+        fprintf(stderr, "[source_phys_word_resolve] BedManager ready (LMDB vocab beds)\n");
         fflush(stderr);
 
         ResolutionManifest manifest = m_bedManager.Resolve(runs);
+
+        // ---- Benchmark TSV output ----
+        {
+            // Get system resource usage
+            struct rusage usage;
+            getrusage(RUSAGE_SELF, &usage);
+            long rssKb = usage.ru_maxrss;  // Peak RSS in KB (Linux)
+
+            // Read GPU memory from /proc if available (nvidia-smi parsing is too slow)
+            long vramUsedMb = 0;
+            FILE* nvsmi = popen("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null", "r");
+            if (nvsmi)
+            {
+                char buf[64];
+                if (fgets(buf, sizeof(buf), nvsmi))
+                    vramUsedMb = atol(buf);
+                pclose(nvsmi);
+            }
+
+            // Ensure benchmarks/ directory exists
+            mkdir("benchmarks", 0755);
+
+            // Timestamp for filename
+            auto now = std::chrono::system_clock::now();
+            auto epochMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                now.time_since_epoch()).count();
+
+            char tsvPath[256];
+            snprintf(tsvPath, sizeof(tsvPath), "benchmarks/resolve_%lld.tsv", (long long)epochMs);
+
+            FILE* tsv = fopen(tsvPath, "w");
+            if (tsv)
+            {
+                // Header
+                fprintf(tsv, "timestamp\tfile\tbytes\tphase1_codepoints\tphase1_settled\t"
+                    "phase1_pct\tphase1_ms\ttotal_runs\tresolved\tunresolved\t"
+                    "resolved_pct\tresolve_ms\trss_kb\tvram_mb\n");
+                // Data row
+                fprintf(tsv, "%lld\t%s\t%zu\t%u\t%u\t%.1f\t%.1f\t%u\t%u\t%u\t%.1f\t%.1f\t%ld\t%ld\n",
+                    (long long)epochMs,
+                    filePath.c_str(),
+                    text.size(),
+                    phase1.totalCodepoints,
+                    phase1.settledCount,
+                    phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
+                    phase1.simulationTimeMs,
+                    manifest.totalRuns,
+                    manifest.resolvedRuns,
+                    manifest.unresolvedRuns,
+                    manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f,
+                    manifest.totalTimeMs,
+                    rssKb,
+                    vramUsedMb);
+                fclose(tsv);
+                fprintf(stderr, "[source_phys_word_resolve] Benchmark written: %s\n", tsvPath);
+                fflush(stderr);
+            }
+        }
 
         // Step 5: Report results
         fprintf(stderr, "\n[source_phys_word_resolve] === Resolution Manifest ===\n");
@@ -936,6 +1013,27 @@ namespace HCPEngine
             manifest.resolvedRuns, matchCount, compResolvedCount,
             compResolvedCount > 0 ? 100.0f * matchCount / compResolvedCount : 0.0f,
             mismatchCount);
+        fflush(stderr);
+    }
+
+    void HCPEngineSystemComponent::SourceActivateEnvelope(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.size() < 1)
+        {
+            fprintf(stderr, "[source_activate_envelope] Usage: SourceActivateEnvelope <envelope_name>\n");
+            fflush(stderr);
+            return;
+        }
+
+        AZStd::string name(arguments[0].data(), arguments[0].size());
+
+        fprintf(stderr, "[source_activate_envelope] Activating envelope '%s'...\n", name.c_str());
+        fflush(stderr);
+
+        EnvelopeActivation result = m_envelopeManager.ActivateEnvelope(name);
+
+        fprintf(stderr, "[source_activate_envelope] Result: %d entries loaded, %d evicted, %.1f ms\n",
+            result.entriesLoaded, result.evictedEntries, result.loadTimeMs);
         fflush(stderr);
     }
 }

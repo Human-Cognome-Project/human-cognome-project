@@ -1,47 +1,53 @@
 #include "HCPVocabBed.h"
-#include "HCPBondCompiler.h"
 #include "HCPVocabulary.h"
 
 #include <AzCore/std/sort.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <lmdb.h>
 #include <chrono>
 #include <cstdio>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 
 #include <PxPhysicsAPI.h>
 #include <PxParticleGpu.h>
 #include <gpu/PxGpu.h>
+#include <System/PhysXSystem.h>
 
 namespace HCPEngine
 {
     // ========================================================================
-    // VocabBed — persistent PBD system for one word length
+    // Workspace — one reusable GPU particle system
+    //
+    // Created once at startup. Vocab overwritten per cycle via CUDA memcpy.
+    // Buffer: [vocab region (static)] [stream region (dynamic)]
     // ========================================================================
 
-    VocabBed::~VocabBed()
+    Workspace::~Workspace()
     {
         Shutdown();
     }
 
-    VocabBed::VocabBed(VocabBed&& other) noexcept
+    Workspace::Workspace(Workspace&& other) noexcept
         : m_physics(other.m_physics)
         , m_scene(other.m_scene)
         , m_cuda(other.m_cuda)
         , m_particleSystem(other.m_particleSystem)
         , m_particleBuffer(other.m_particleBuffer)
         , m_material(other.m_material)
-        , m_wordLength(other.m_wordLength)
-        , m_totalVocabParticles(other.m_totalVocabParticles)
-        , m_maxDynamicParticles(other.m_maxDynamicParticles)
-        , m_activeDynamicCount(other.m_activeDynamicCount)
-        , m_maxParticles(other.m_maxParticles)
-        , m_groups(AZStd::move(other.m_groups))
-        , m_charToGroupIndex(AZStd::move(other.m_charToGroupIndex))
+        , m_ownsScene(other.m_ownsScene)
+        , m_bufferCapacity(other.m_bufferCapacity)
+        , m_vocabParticleCount(other.m_vocabParticleCount)
+        , m_maxStreamSlots(other.m_maxStreamSlots)
+        , m_currentWordLength(other.m_currentWordLength)
+        , m_activeInScene(other.m_activeInScene)
+        , m_pendingSteps(other.m_pendingSteps)
+        , m_simDt(other.m_simDt)
         , m_streamSlots(AZStd::move(other.m_streamSlots))
-        , m_maxTierCount(other.m_maxTierCount)
         , m_tierPhases(AZStd::move(other.m_tierPhases))
         , m_inertPhase(other.m_inertPhase)
-        , m_groupVocabs(AZStd::move(other.m_groupVocabs))
+        , m_maxTierCount(other.m_maxTierCount)
     {
         other.m_physics = nullptr;
         other.m_scene = nullptr;
@@ -49,14 +55,19 @@ namespace HCPEngine
         other.m_particleSystem = nullptr;
         other.m_particleBuffer = nullptr;
         other.m_material = nullptr;
-        other.m_wordLength = 0;
-        other.m_totalVocabParticles = 0;
-        other.m_maxDynamicParticles = 0;
-        other.m_activeDynamicCount = 0;
-        other.m_maxParticles = 0;
+        other.m_ownsScene = false;
+        other.m_bufferCapacity = 0;
+        other.m_vocabParticleCount = 0;
+        other.m_maxStreamSlots = 0;
+        other.m_currentWordLength = 0;
+        other.m_activeInScene = false;
+        other.m_pendingSteps = 0;
+        other.m_simDt = 0.0f;
+        other.m_inertPhase = 0;
+        other.m_maxTierCount = 0;
     }
 
-    VocabBed& VocabBed::operator=(VocabBed&& other) noexcept
+    Workspace& Workspace::operator=(Workspace&& other) noexcept
     {
         if (this != &other)
         {
@@ -67,18 +78,18 @@ namespace HCPEngine
             m_particleSystem = other.m_particleSystem;
             m_particleBuffer = other.m_particleBuffer;
             m_material = other.m_material;
-            m_wordLength = other.m_wordLength;
-            m_totalVocabParticles = other.m_totalVocabParticles;
-            m_maxDynamicParticles = other.m_maxDynamicParticles;
-            m_activeDynamicCount = other.m_activeDynamicCount;
-            m_maxParticles = other.m_maxParticles;
-            m_groups = AZStd::move(other.m_groups);
-            m_charToGroupIndex = AZStd::move(other.m_charToGroupIndex);
+            m_ownsScene = other.m_ownsScene;
+            m_bufferCapacity = other.m_bufferCapacity;
+            m_vocabParticleCount = other.m_vocabParticleCount;
+            m_maxStreamSlots = other.m_maxStreamSlots;
+            m_currentWordLength = other.m_currentWordLength;
+            m_activeInScene = other.m_activeInScene;
+            m_pendingSteps = other.m_pendingSteps;
+            m_simDt = other.m_simDt;
             m_streamSlots = AZStd::move(other.m_streamSlots);
-            m_maxTierCount = other.m_maxTierCount;
             m_tierPhases = AZStd::move(other.m_tierPhases);
             m_inertPhase = other.m_inertPhase;
-            m_groupVocabs = AZStd::move(other.m_groupVocabs);
+            m_maxTierCount = other.m_maxTierCount;
 
             other.m_physics = nullptr;
             other.m_scene = nullptr;
@@ -86,116 +97,54 @@ namespace HCPEngine
             other.m_particleSystem = nullptr;
             other.m_particleBuffer = nullptr;
             other.m_material = nullptr;
-            other.m_wordLength = 0;
-            other.m_totalVocabParticles = 0;
-            other.m_maxDynamicParticles = 0;
-            other.m_activeDynamicCount = 0;
-            other.m_maxParticles = 0;
+            other.m_ownsScene = false;
+            other.m_bufferCapacity = 0;
+            other.m_vocabParticleCount = 0;
+            other.m_maxStreamSlots = 0;
+            other.m_currentWordLength = 0;
+            other.m_activeInScene = false;
+            other.m_pendingSteps = 0;
+            other.m_simDt = 0.0f;
+            other.m_inertPhase = 0;
+            other.m_maxTierCount = 0;
         }
         return *this;
     }
 
-    bool VocabBed::Initialize(
+    bool Workspace::Create(
         physx::PxPhysics* physics,
-        physx::PxScene* scene,
         physx::PxCudaContextManager* cuda,
-        AZ::u32 wordLength,
-        const TierAssembly& tierAssembly,
-        AZ::u32 slotsPerGroup,
-        AZ::u32 phaseGroupBase)
+        AZ::u32 bufferCapacity,
+        AZ::u32 maxTiers)
     {
-        if (!physics || !scene || !cuda || wordLength < 2) return false;
+        if (!physics || !cuda || bufferCapacity == 0) return false;
 
         m_physics = physics;
-        m_scene = scene;
         m_cuda = cuda;
-        m_wordLength = wordLength;
+        m_bufferCapacity = bufferCapacity;
+        m_maxTierCount = maxTiers;
 
-        // Gather all (length, firstChar) buckets for this word length
-        m_groups.clear();
-        m_groupVocabs.clear();
-        m_charToGroupIndex.clear();
-        m_maxTierCount = 0;
-
-        // Scan all 26 lowercase letters for buckets at this word length
-        for (char c = 'a'; c <= 'z'; ++c)
+        // Create dedicated PxScene for this workspace (pipelined: GPU simulates
+        // one scene while CPU reads/loads others)
         {
-            const ChamberVocab* bucket = tierAssembly.GetBucket(wordLength, c);
-            if (!bucket || bucket->entries.empty()) continue;
+            PhysX::PhysXSystem* physxSystem = PhysX::GetPhysXSystem();
+            physx::PxCpuDispatcher* cpuDispatcher = physxSystem
+                ? physxSystem->GetPxCpuDispathcher() : nullptr;
+            if (!cpuDispatcher) return false;
 
-            BedSlotGroup group;
-            group.firstChar = c;
-            group.vocabEntryCount = static_cast<AZ::u32>(bucket->entries.size());
-            group.slotsPerGroup = slotsPerGroup;
-            group.vocabParticlesPerSlot = group.vocabEntryCount * wordLength;
-            group.xOffset = 0.0f;  // Computed below
-            group.vocabBufferStart = 0;
-            group.dynamicBufferStart = 0;
-            group.nextFreeSlot = 0;
+            physx::PxSceneDesc sceneDesc(physics->getTolerancesScale());
+            sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+            sceneDesc.cpuDispatcher = cpuDispatcher;
+            sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+            sceneDesc.cudaContextManager = cuda;
+            sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+            sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
+            sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
 
-            AZ::u32 idx = static_cast<AZ::u32>(m_groups.size());
-            m_charToGroupIndex[c] = idx;
-            m_groups.push_back(group);
-            m_groupVocabs.push_back({ bucket });
-
-            if (bucket->tierCount > m_maxTierCount)
-                m_maxTierCount = bucket->tierCount;
+            m_scene = physics->createScene(sceneDesc);
+            if (!m_scene) return false;
+            m_ownsScene = true;
         }
-
-        if (m_groups.empty()) return false;
-
-        // Auto-size slotsPerGroup to maximize buffer utilization.
-        // Each additional slot costs: sum over groups of ((vocabEntryCount + 1) * wordLength)
-        // because each slot replicates all vocab entries plus one stream particle per char position.
-        AZ::u32 particlesPerSlotUnit = 0;
-        for (const auto& grp : m_groups)
-        {
-            particlesPerSlotUnit += (grp.vocabEntryCount + 1) * wordLength;
-        }
-
-        if (particlesPerSlotUnit > 0)
-        {
-            slotsPerGroup = VB_MAX_PARTICLES_PER_BUFFER / particlesPerSlotUnit;
-            if (slotsPerGroup < 1) slotsPerGroup = 1;
-            // Cap at 256 to avoid degenerate allocation for tiny beds
-            if (slotsPerGroup > 256) slotsPerGroup = 256;
-        }
-
-        // Compute particle counts and X offsets
-        // Layout per group: [slot0_vocab | slot1_vocab | ... | slot0_stream | slot1_stream | ...]
-        // Each slot contains: vocabEntryCount * wordLength vocab particles + wordLength stream particles
-        // X-gap separates groups
-
-        m_totalVocabParticles = 0;
-        m_maxDynamicParticles = 0;
-        float currentX = 0.0f;
-
-        for (AZ::u32 g = 0; g < static_cast<AZ::u32>(m_groups.size()); ++g)
-        {
-            BedSlotGroup& grp = m_groups[g];
-            grp.slotsPerGroup = slotsPerGroup;
-
-            // Each run slot within a group occupies wordLength X positions.
-            // Vocab is replicated per slot (same as current ResolutionChamber).
-            // Slots are X-separated by wordLength + gap.
-            grp.xOffset = currentX;
-            grp.vocabBufferStart = m_totalVocabParticles;
-
-            AZ::u32 vocabPerSlot = grp.vocabEntryCount * wordLength;
-            AZ::u32 totalGroupVocab = vocabPerSlot * grp.slotsPerGroup;
-            AZ::u32 totalGroupDynamic = wordLength * grp.slotsPerGroup;
-
-            m_totalVocabParticles += totalGroupVocab;
-            m_maxDynamicParticles += totalGroupDynamic;
-
-            // Advance X: each slot = wordLength + gap, for slotsPerGroup slots
-            currentX += static_cast<float>(grp.slotsPerGroup) *
-                        (static_cast<float>(wordLength) + RC_RUN_X_GAP);
-        }
-
-        m_maxParticles = m_totalVocabParticles + m_maxDynamicParticles;
-
-        if (m_maxParticles == 0) return false;
 
         // Create PBD particle system
         m_particleSystem = physics->createPBDParticleSystem(*cuda, 96);
@@ -206,17 +155,17 @@ namespace HCPEngine
         m_particleSystem->setParticleContactOffset(RC_CONTACT_OFFSET);
         m_particleSystem->setSolidRestOffset(RC_REST_OFFSET);
         m_particleSystem->setSolverIterationCounts(4, 1);
-        scene->addActor(*m_particleSystem);
+        m_activeInScene = false;
 
         // Create PBD material
         m_material = physics->createPBDMaterial(
             0.2f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
         if (!m_material) { Shutdown(); return false; }
 
-        // Create phase groups: inert + one per tier (offset by phaseGroupBase)
+        // Phase groups: one per tier + inert (group 0)
         m_inertPhase = 0;
         m_tierPhases.clear();
-        for (AZ::u32 t = 0; t < m_maxTierCount; ++t)
+        for (AZ::u32 t = 0; t < maxTiers; ++t)
         {
             physx::PxU32 phase = m_particleSystem->createPhase(
                 m_material,
@@ -226,11 +175,10 @@ namespace HCPEngine
         }
 
         // Create particle buffer
-        m_particleBuffer = physics->createParticleBuffer(
-            m_maxParticles, 1, cuda);
+        m_particleBuffer = physics->createParticleBuffer(bufferCapacity, 1, cuda);
         if (!m_particleBuffer) { Shutdown(); return false; }
 
-        // Write static vocab particles (once, at startup)
+        // Park all particles initially
         {
             physx::PxScopedCudaLock lock(*cuda);
 
@@ -238,204 +186,189 @@ namespace HCPEngine
             physx::PxVec4* devVel = m_particleBuffer->getVelocities();
             physx::PxU32* devPhase = m_particleBuffer->getPhases();
 
-            physx::PxVec4* hostPos = cuda->allocPinnedHostBuffer<physx::PxVec4>(m_maxParticles);
-            physx::PxVec4* hostVel = cuda->allocPinnedHostBuffer<physx::PxVec4>(m_maxParticles);
-            physx::PxU32* hostPhase = cuda->allocPinnedHostBuffer<physx::PxU32>(m_maxParticles);
+            physx::PxVec4* hostPos = cuda->allocPinnedHostBuffer<physx::PxVec4>(bufferCapacity);
+            physx::PxVec4* hostVel = cuda->allocPinnedHostBuffer<physx::PxVec4>(bufferCapacity);
+            physx::PxU32* hostPhase = cuda->allocPinnedHostBuffer<physx::PxU32>(bufferCapacity);
 
-            // Zero-init everything
-            for (AZ::u32 i = 0; i < m_maxParticles; ++i)
+            for (AZ::u32 i = 0; i < bufferCapacity; ++i)
             {
-                hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);  // Park unused far below
+                hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);
                 hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
                 hostPhase[i] = m_inertPhase;
             }
 
-            // Write vocab particles per group, per slot
-            AZ::u32 vocabIdx = 0;
-            for (AZ::u32 g = 0; g < static_cast<AZ::u32>(m_groups.size()); ++g)
-            {
-                BedSlotGroup& grp = m_groups[g];
-                grp.vocabBufferStart = vocabIdx;
-                const ChamberVocab* vocab = m_groupVocabs[g].vocab;
-
-                for (AZ::u32 s = 0; s < grp.slotsPerGroup; ++s)
-                {
-                    float slotXBase = grp.xOffset +
-                        static_cast<float>(s) * (static_cast<float>(wordLength) + RC_RUN_X_GAP);
-
-                    for (AZ::u32 e = 0; e < static_cast<AZ::u32>(vocab->entries.size()); ++e)
-                    {
-                        const TieredVocabEntry& entry = vocab->entries[e];
-                        AZ::u32 phaseVal = (entry.tierIndex < m_tierPhases.size())
-                            ? m_tierPhases[entry.tierIndex]
-                            : m_inertPhase;
-
-                        for (AZ::u32 c = 0; c < wordLength; ++c)
-                        {
-                            char ch = (c < entry.word.size()) ? entry.word[c] : '\0';
-                            float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
-
-                            hostPos[vocabIdx] = physx::PxVec4(
-                                slotXBase + static_cast<float>(c), 0.0f, z, 0.0f);  // invMass=0 (static)
-                            hostVel[vocabIdx] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                            hostPhase[vocabIdx] = phaseVal;
-                            ++vocabIdx;
-                        }
-                    }
-                }
-            }
-
-            // Dynamic region starts after all vocab
-            AZ::u32 dynamicBase = m_totalVocabParticles;
-            for (AZ::u32 g = 0; g < static_cast<AZ::u32>(m_groups.size()); ++g)
-            {
-                m_groups[g].dynamicBufferStart = dynamicBase;
-                dynamicBase += m_groups[g].slotsPerGroup * wordLength;
-            }
-
-            // Upload to GPU
-            cuda->copyHToD(devPos, hostPos, m_maxParticles);
-            cuda->copyHToD(devVel, hostVel, m_maxParticles);
-            cuda->copyHToD(devPhase, hostPhase, m_maxParticles);
+            cuda->copyHToD(devPos, hostPos, bufferCapacity);
+            cuda->copyHToD(devVel, hostVel, bufferCapacity);
+            cuda->copyHToD(devPhase, hostPhase, bufferCapacity);
 
             cuda->freePinnedHostBuffer(hostPos);
             cuda->freePinnedHostBuffer(hostVel);
             cuda->freePinnedHostBuffer(hostPhase);
         }
 
-        // Only vocab particles are active initially — no dynamics
-        m_particleBuffer->setNbActiveParticles(m_totalVocabParticles);
+        m_particleBuffer->setNbActiveParticles(0);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
         m_particleSystem->addParticleBuffer(m_particleBuffer);
 
-        m_activeDynamicCount = 0;
-
-        fprintf(stderr, "[VocabBed] len=%u: %zu groups, %u vocab particles, %u max dynamic, "
-            "%u total capacity, %u slots/group, %u max tiers\n",
-            wordLength, m_groups.size(), m_totalVocabParticles, m_maxDynamicParticles,
-            m_maxParticles, slotsPerGroup, m_maxTierCount);
-        fflush(stderr);
+        m_vocabParticleCount = 0;
+        m_maxStreamSlots = 0;
+        m_currentWordLength = 0;
 
         return true;
     }
 
-    AZ::u32 VocabBed::LoadDynamicRuns(
-        const AZStd::vector<CharRun>& runs,
-        const AZStd::vector<AZ::u32>& runIndices)
+    AZ::u32 Workspace::LoadVocabPack(const VocabPack& pack, AZ::u32 wordLength)
     {
-        if (!m_particleBuffer || !m_cuda || runIndices.empty()) return 0;
+        if (!m_particleBuffer || !m_cuda) return 0;
+        if (pack.totalVocabParticles == 0 || pack.totalVocabParticles > m_bufferCapacity) return 0;
 
-        m_streamSlots.clear();
-        m_activeDynamicCount = 0;
-        AZ::u32 overflowCount = 0;
+        m_vocabParticleCount = pack.totalVocabParticles;
+        m_currentWordLength = wordLength;
 
-        // Reset slot counters
-        for (auto& grp : m_groups)
-            grp.nextFreeSlot = 0;
+        // Compute stream capacity from remaining buffer
+        AZ::u32 remainingCapacity = m_bufferCapacity - m_vocabParticleCount;
+        m_maxStreamSlots = remainingCapacity / wordLength;
+        if (m_maxStreamSlots < 1) m_maxStreamSlots = 1;
 
-        // Allocate pinned host buffer for dynamic region only
-        physx::PxVec4* hostPos = nullptr;
-        physx::PxVec4* hostVel = nullptr;
-        physx::PxU32* hostPhase = nullptr;
-
+        // Write vocab into buffer
         {
             physx::PxScopedCudaLock lock(*m_cuda);
-            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_maxDynamicParticles);
-            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_maxDynamicParticles);
-            hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(m_maxDynamicParticles);
-        }
 
-        // Init dynamic region to parked state
-        for (AZ::u32 i = 0; i < m_maxDynamicParticles; ++i)
-        {
-            hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);
-            hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-            hostPhase[i] = m_inertPhase;
-        }
-
-        AZ::u32 streamPhase = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
-
-        for (AZ::u32 ri = 0; ri < static_cast<AZ::u32>(runIndices.size()); ++ri)
-        {
-            AZ::u32 runIdx = runIndices[ri];
-            const CharRun& run = runs[runIdx];
-
-            // Route to the correct first-char group
-            char firstChar = run.text.empty() ? '\0' : run.text[0];
-            auto it = m_charToGroupIndex.find(firstChar);
-            if (it == m_charToGroupIndex.end())
-            {
-                ++overflowCount;  // No vocab group for this first char
-                continue;
-            }
-
-            BedSlotGroup& grp = m_groups[it->second];
-
-            if (grp.nextFreeSlot >= grp.slotsPerGroup)
-            {
-                ++overflowCount;  // Group full
-                continue;
-            }
-
-            AZ::u32 slotIdx = grp.nextFreeSlot++;
-            float slotXBase = grp.xOffset +
-                static_cast<float>(slotIdx) * (static_cast<float>(m_wordLength) + RC_RUN_X_GAP);
-
-            // Buffer offset within dynamic region
-            AZ::u32 dynRegionOffset = (grp.dynamicBufferStart - m_totalVocabParticles) +
-                                       slotIdx * m_wordLength;
-
-            StreamRunSlot ss;
-            ss.runIndex = runIdx;
-            ss.bufferStart = m_totalVocabParticles + dynRegionOffset;  // Absolute buffer index
-            ss.charCount = m_wordLength;
-            ss.runText = run.text;
-            ss.resolved = false;
-
-            for (AZ::u32 c = 0; c < m_wordLength; ++c)
-            {
-                char ch = (c < run.text.size()) ? run.text[c] : '\0';
-                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
-
-                hostPos[dynRegionOffset + c] = physx::PxVec4(
-                    slotXBase + static_cast<float>(c), RC_Y_OFFSET, z, 1.0f);  // invMass=1
-                hostVel[dynRegionOffset + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                hostPhase[dynRegionOffset + c] = streamPhase;
-            }
-
-            m_streamSlots.push_back(ss);
-            m_activeDynamicCount += m_wordLength;
-        }
-
-        // Upload dynamic region to GPU
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
             physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
             physx::PxVec4* devVel = m_particleBuffer->getVelocities();
             physx::PxU32* devPhase = m_particleBuffer->getPhases();
 
-            // Copy only the dynamic region (after vocab)
-            m_cuda->copyHToD(
-                devPos + m_totalVocabParticles,
-                hostPos,
-                m_maxDynamicParticles);
-            m_cuda->copyHToD(
-                devVel + m_totalVocabParticles,
-                hostVel,
-                m_maxDynamicParticles);
-            m_cuda->copyHToD(
-                devPhase + m_totalVocabParticles,
-                hostPhase,
-                m_maxDynamicParticles);
+            physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
+            physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
+            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(m_vocabParticleCount);
+
+            // Copy from pre-built pack arrays
+            for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
+            {
+                AZ::u32 base = i * 4;
+                hostPos[i] = physx::PxVec4(
+                    pack.positions[base + 0],
+                    pack.positions[base + 1],
+                    pack.positions[base + 2],
+                    pack.positions[base + 3]);
+                hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
+                // Remap logical tier index to actual phase group ID
+                AZ::u32 logicalTier = pack.phases[i];
+                hostPhase[i] = (logicalTier < m_tierPhases.size())
+                    ? m_tierPhases[logicalTier]
+                    : m_inertPhase;
+            }
+
+            m_cuda->copyHToD(devPos, hostPos, m_vocabParticleCount);
+            m_cuda->copyHToD(devVel, hostVel, m_vocabParticleCount);
+            m_cuda->copyHToD(devPhase, hostPhase, m_vocabParticleCount);
 
             m_cuda->freePinnedHostBuffer(hostPos);
             m_cuda->freePinnedHostBuffer(hostVel);
             m_cuda->freePinnedHostBuffer(hostPhase);
         }
 
-        m_particleBuffer->setNbActiveParticles(m_totalVocabParticles + m_maxDynamicParticles);
+        // Only vocab active, no stream yet
+        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
+
+        m_streamSlots.clear();
+
+        return m_maxStreamSlots;
+    }
+
+    AZ::u32 Workspace::LoadStreamRuns(
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZ::u32>& indices,
+        AZ::u32 wordLength)
+    {
+        if (!m_particleBuffer || !m_cuda || indices.empty()) return 0;
+
+        m_streamSlots.clear();
+        AZ::u32 overflowCount = 0;
+        AZ::u32 streamPhase = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
+        AZ::u32 maxDynParticles = m_maxStreamSlots * wordLength;
+
+        physx::PxVec4* hostPos = nullptr;
+        physx::PxVec4* hostVel = nullptr;
+        physx::PxU32* hostPhase = nullptr;
+
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(maxDynParticles);
+            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(maxDynParticles);
+            hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(maxDynParticles);
+        }
+
+        // Init dynamic region to parked state
+        for (AZ::u32 i = 0; i < maxDynParticles; ++i)
+        {
+            hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);
+            hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
+            hostPhase[i] = m_inertPhase;
+        }
+
+        AZ::u32 slotIdx = 0;
+        for (AZ::u32 ri = 0; ri < static_cast<AZ::u32>(indices.size()); ++ri)
+        {
+            if (slotIdx >= m_maxStreamSlots)
+            {
+                overflowCount = static_cast<AZ::u32>(indices.size()) - ri;
+                break;
+            }
+
+            AZ::u32 runIdx = indices[ri];
+            const CharRun& run = runs[runIdx];
+            AZ::u32 charCount = wordLength;
+
+            AZ::u32 dynOffset = slotIdx * wordLength;
+
+            StreamRunSlot ss;
+            ss.runIndex = runIdx;
+            ss.bufferStart = m_vocabParticleCount + dynOffset;
+            ss.charCount = charCount;
+            ss.runText = run.text;
+            ss.resolved = false;
+
+            for (AZ::u32 c = 0; c < charCount; ++c)
+            {
+                char ch = (c < run.text.size()) ? run.text[c] : '\0';
+                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
+
+                hostPos[dynOffset + c] = physx::PxVec4(
+                    static_cast<float>(c), RC_Y_OFFSET, z, 1.0f);
+                hostVel[dynOffset + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
+                hostPhase[dynOffset + c] = streamPhase;
+            }
+
+            m_streamSlots.push_back(ss);
+            ++slotIdx;
+        }
+
+        // Upload dynamic region
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
+            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
+            physx::PxU32* devPhase = m_particleBuffer->getPhases();
+
+            m_cuda->copyHToD(devPos + m_vocabParticleCount, hostPos, maxDynParticles);
+            m_cuda->copyHToD(devVel + m_vocabParticleCount, hostVel, maxDynParticles);
+            m_cuda->copyHToD(devPhase + m_vocabParticleCount, hostPhase, maxDynParticles);
+
+            m_cuda->freePinnedHostBuffer(hostPos);
+            m_cuda->freePinnedHostBuffer(hostVel);
+            m_cuda->freePinnedHostBuffer(hostPhase);
+        }
+
+        // Only activate the particles we actually loaded, not the full stream capacity.
+        // slotIdx = number of runs loaded; each run = wordLength particles.
+        AZ::u32 actualDynParticles = slotIdx * wordLength;
+        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount + actualDynParticles);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
@@ -443,23 +376,27 @@ namespace HCPEngine
         return overflowCount;
     }
 
-    void VocabBed::CheckSettlement(AZ::u32 tierIndex)
+    void Workspace::CheckSettlement(AZ::u32 tierIndex, const VocabPack& pack)
     {
         if (!m_particleBuffer || !m_cuda || m_streamSlots.empty()) return;
 
-        AZ::u32 readbackCount = m_totalVocabParticles + m_maxDynamicParticles;
+        // Only read back actually-active particles (vocab + loaded stream runs)
+        AZ::u32 readbackCount = m_vocabParticleCount +
+            static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
+        if (readbackCount > m_bufferCapacity) readbackCount = m_bufferCapacity;
 
-        physx::PxVec4* hostPos = nullptr;
         physx::PxVec4* hostVel = nullptr;
         {
             physx::PxScopedCudaLock lock(*m_cuda);
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
             physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
             hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
-            m_cuda->copyDToH(hostPos, devPos, readbackCount);
             m_cuda->copyDToH(hostVel, devVel, readbackCount);
         }
+
+        // Get tier lookup (O(1) hash)
+        const AZStd::unordered_map<AZStd::string, AZ::u32>* lookup = nullptr;
+        if (tierIndex < pack.tierLookup.size())
+            lookup = &pack.tierLookup[tierIndex];
 
         for (auto& slot : m_streamSlots)
         {
@@ -469,118 +406,91 @@ namespace HCPEngine
             for (AZ::u32 c = 0; c < slot.charCount; ++c)
             {
                 AZ::u32 idx = slot.bufferStart + c;
-                float y = hostPos[idx].y;
-                float vy = hostVel[idx].y;
-                if (fabsf(y) < RC_SETTLE_THRESHOLD && fabsf(vy) < RC_VELOCITY_THRESHOLD)
+                if (idx >= readbackCount) break;
+                float vMag = fabsf(hostVel[idx].x) + fabsf(hostVel[idx].y) + fabsf(hostVel[idx].z);
+                if (vMag < WS_VELOCITY_SETTLE_THRESHOLD)
                     ++settledCount;
             }
 
-            if (settledCount == slot.charCount)
+            if (settledCount == slot.charCount && lookup)
             {
-                slot.resolved = true;
-                slot.tierResolved = tierIndex;
-
-                // Find matching vocab word — route to appropriate group
-                char firstChar = slot.runText.empty() ? '\0' : slot.runText[0];
-                auto it = m_charToGroupIndex.find(firstChar);
-                if (it != m_charToGroupIndex.end())
+                auto it = lookup->find(slot.runText);
+                if (it != lookup->end())
                 {
-                    const ChamberVocab* vocab = m_groupVocabs[it->second].vocab;
-                    for (const auto& entry : vocab->entries)
-                    {
-                        if (entry.word == slot.runText)
-                        {
-                            slot.matchedWord = entry.word;
-                            slot.matchedTokenId = entry.tokenId;
-                            break;
-                        }
-                    }
+                    AZ::u32 entryIdx = it->second;
+                    slot.resolved = true;
+                    slot.tierResolved = tierIndex;
+                    slot.matchedWord = pack.entries[entryIdx].word;
+                    slot.matchedTokenId = pack.entries[entryIdx].tokenId;
                 }
             }
         }
 
         {
             physx::PxScopedCudaLock lock(*m_cuda);
-            m_cuda->freePinnedHostBuffer(hostPos);
             m_cuda->freePinnedHostBuffer(hostVel);
         }
     }
 
-    void VocabBed::FlipToTier(AZ::u32 nextTier)
+    void Workspace::FlipToTier(AZ::u32 nextTier)
     {
         if (!m_particleBuffer || !m_cuda) return;
         if (nextTier >= m_tierPhases.size()) return;
 
         AZ::u32 newPhase = m_tierPhases[nextTier];
+        AZ::u32 dynCount = m_maxStreamSlots * m_currentWordLength;
 
         {
             physx::PxScopedCudaLock lock(*m_cuda);
 
+            physx::PxU32* devPhase = m_particleBuffer->getPhases();
             physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
             physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
 
-            // Only read/write the dynamic region
-            AZ::u32 dynCount = m_maxDynamicParticles;
+            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(dynCount);
             physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(dynCount);
             physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(dynCount);
-            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(dynCount);
 
-            m_cuda->copyDToH(hostPos, devPos + m_totalVocabParticles, dynCount);
-            m_cuda->copyDToH(hostVel, devVel + m_totalVocabParticles, dynCount);
-            m_cuda->copyDToH(hostPhase, devPhase + m_totalVocabParticles, dynCount);
+            m_cuda->copyDToH(hostPhase, devPhase + m_vocabParticleCount, dynCount);
+            m_cuda->copyDToH(hostPos, devPos + m_vocabParticleCount, dynCount);
+            m_cuda->copyDToH(hostVel, devVel + m_vocabParticleCount, dynCount);
 
             for (const auto& slot : m_streamSlots)
             {
-                AZ::u32 dynOffset = slot.bufferStart - m_totalVocabParticles;
+                AZ::u32 dynBase = slot.bufferStart - m_vocabParticleCount;
 
                 if (slot.resolved)
                 {
                     for (AZ::u32 c = 0; c < slot.charCount; ++c)
-                    {
-                        hostPhase[dynOffset + c] = m_inertPhase;
-                    }
+                        hostPhase[dynBase + c] = m_inertPhase;
                 }
                 else
                 {
                     for (AZ::u32 c = 0; c < slot.charCount; ++c)
                     {
-                        hostPos[dynOffset + c].y = RC_Y_OFFSET;
-                        hostPos[dynOffset + c].w = 1.0f;
-                        hostVel[dynOffset + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                        hostPhase[dynOffset + c] = newPhase;
+                        hostPhase[dynBase + c] = newPhase;
+                        hostPos[dynBase + c].y = RC_Y_OFFSET;
+                        hostPos[dynBase + c].w = 1.0f;
+                        hostVel[dynBase + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
                     }
                 }
             }
 
-            m_cuda->copyHToD(devPos + m_totalVocabParticles, hostPos, dynCount);
-            m_cuda->copyHToD(devVel + m_totalVocabParticles, hostVel, dynCount);
-            m_cuda->copyHToD(devPhase + m_totalVocabParticles, hostPhase, dynCount);
+            m_cuda->copyHToD(devPhase + m_vocabParticleCount, hostPhase, dynCount);
+            m_cuda->copyHToD(devPos + m_vocabParticleCount, hostPos, dynCount);
+            m_cuda->copyHToD(devVel + m_vocabParticleCount, hostVel, dynCount);
 
+            m_cuda->freePinnedHostBuffer(hostPhase);
             m_cuda->freePinnedHostBuffer(hostPos);
             m_cuda->freePinnedHostBuffer(hostVel);
-            m_cuda->freePinnedHostBuffer(hostPhase);
         }
 
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
     }
 
-    void VocabBed::ResetDynamics()
-    {
-        if (!m_particleBuffer) return;
-
-        // Deactivate dynamic particles by setting count to vocab-only
-        m_particleBuffer->setNbActiveParticles(m_totalVocabParticles);
-        m_streamSlots.clear();
-        m_activeDynamicCount = 0;
-
-        for (auto& grp : m_groups)
-            grp.nextFreeSlot = 0;
-    }
-
-    void VocabBed::CollectResults(AZStd::vector<ResolutionResult>& out)
+    void Workspace::CollectResults(AZStd::vector<ResolutionResult>& out)
     {
         for (const auto& slot : m_streamSlots)
         {
@@ -594,7 +504,7 @@ namespace HCPEngine
         }
     }
 
-    bool VocabBed::HasUnresolved() const
+    bool Workspace::HasUnresolved() const
     {
         for (const auto& slot : m_streamSlots)
         {
@@ -603,7 +513,90 @@ namespace HCPEngine
         return false;
     }
 
-    void VocabBed::Shutdown()
+    void Workspace::CollectSplit(
+        AZStd::vector<ResolutionResult>& resolved,
+        AZStd::vector<AZ::u32>& unresolvedRunIndices)
+    {
+        for (const auto& slot : m_streamSlots)
+        {
+            if (slot.resolved)
+            {
+                ResolutionResult r;
+                r.runText = slot.runText;
+                r.matchedWord = slot.matchedWord;
+                r.matchedTokenId = slot.matchedTokenId;
+                r.tierResolved = slot.tierResolved;
+                r.resolved = true;
+                resolved.push_back(r);
+            }
+            else
+            {
+                unresolvedRunIndices.push_back(slot.runIndex);
+            }
+        }
+    }
+
+    void Workspace::ResetDynamics()
+    {
+        if (!m_particleBuffer) return;
+        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
+        m_streamSlots.clear();
+    }
+
+    void Workspace::ActivateInScene()
+    {
+        if (m_activeInScene || !m_particleSystem || !m_scene) return;
+        m_scene->addActor(*m_particleSystem);
+        m_activeInScene = true;
+    }
+
+    void Workspace::DeactivateFromScene()
+    {
+        if (!m_activeInScene || !m_particleSystem || !m_scene) return;
+        m_scene->removeActor(*m_particleSystem);
+        m_activeInScene = false;
+    }
+
+    void Workspace::BeginSimulate(int steps, float dt)
+    {
+        if (!m_scene) return;
+        m_pendingSteps = steps;
+        m_simDt = dt;
+
+        // Kick off the first step — simulate() dispatches to GPU and returns
+        if (m_pendingSteps > 0)
+        {
+            m_scene->simulate(m_simDt);
+            --m_pendingSteps;
+        }
+    }
+
+    bool Workspace::IsSimDone() const
+    {
+        if (!m_scene) return true;
+        if (m_pendingSteps > 0) return false;
+        return m_scene->checkResults(false);
+    }
+
+    void Workspace::FetchSimResults()
+    {
+        if (!m_scene) return;
+
+        // Complete the in-flight step
+        m_scene->fetchResults(true);
+
+        // Run remaining steps synchronously (each step must complete before next)
+        while (m_pendingSteps > 0)
+        {
+            m_scene->simulate(m_simDt);
+            m_scene->fetchResults(true);
+            --m_pendingSteps;
+        }
+
+        m_scene->fetchResultsParticleSystem();
+    }
+
+    void Workspace::Shutdown()
     {
         if (m_particleBuffer && m_particleSystem)
         {
@@ -620,486 +613,1431 @@ namespace HCPEngine
 
         if (m_particleSystem && m_scene)
         {
-            m_scene->removeActor(*m_particleSystem);
+            if (m_activeInScene)
+                m_scene->removeActor(*m_particleSystem);
             m_particleSystem->release();
             m_particleSystem = nullptr;
+            m_activeInScene = false;
+        }
+
+        if (m_ownsScene && m_scene)
+        {
+            m_scene->release();
+            m_scene = nullptr;
+            m_ownsScene = false;
         }
 
         m_streamSlots.clear();
-        m_groups.clear();
-        m_groupVocabs.clear();
-        m_charToGroupIndex.clear();
         m_tierPhases.clear();
-        m_totalVocabParticles = 0;
-        m_maxDynamicParticles = 0;
-        m_activeDynamicCount = 0;
-        m_maxParticles = 0;
+        m_vocabParticleCount = 0;
+        m_maxStreamSlots = 0;
+        m_currentWordLength = 0;
+        m_bufferCapacity = 0;
+        m_maxTierCount = 0;
+        m_pendingSteps = 0;
+        m_simDt = 0.0f;
     }
 
     // ========================================================================
-    // BedManager — orchestrates all persistent vocab beds
+    // BedManager — LMDB-backed workspace pool + phased vocab resolution
+    //
+    // Reads pre-compiled vocab beds from LMDB (data/vocab.lmdb/).
+    // Entries are frequency-ordered at compile time: Labels first, then freq-ranked,
+    // then unranked. No Postgres at runtime, no sorting, no tier assignment.
+    //
+    // Each phase loads a small slice (RC_VOCAB_PER_PHASE entries) as static
+    // particles, leaving maximum buffer space for stream runs. Phases cycle
+    // until all runs resolve or vocab is exhausted. Early exit on full resolution.
     // ========================================================================
+
+    VocabPack BedManager::BuildVocabSlice(AZ::u32 wordLength, AZ::u32 startEntry, AZ::u32 count) const
+    {
+        VocabPack pack;
+        pack.wordLength = wordLength;
+        pack.maxTierCount = 1;
+
+        auto it = m_vocabByLength.find(wordLength);
+        if (it == m_vocabByLength.end()) return pack;
+
+        const auto& allEntries = it->second;
+        if (startEntry >= static_cast<AZ::u32>(allEntries.size())) return pack;
+
+        AZ::u32 endEntry = startEntry + count;
+        if (endEntry > static_cast<AZ::u32>(allEntries.size()))
+            endEntry = static_cast<AZ::u32>(allEntries.size());
+
+        AZ::u32 sliceCount = endEntry - startEntry;
+        pack.vocabEntryCount = sliceCount;
+        pack.totalVocabParticles = sliceCount * wordLength;
+
+        pack.positions.resize(pack.totalVocabParticles * 4, 0.0f);
+        pack.phases.resize(pack.totalVocabParticles, 0);
+        pack.entries.reserve(sliceCount);
+        pack.tierLookup.resize(1);
+
+        AZ::u32 particleIdx = 0;
+        for (AZ::u32 i = startEntry; i < endEntry; ++i)
+        {
+            const auto& entry = allEntries[i];
+            AZ::u32 entryIdx = i - startEntry;
+            pack.entries.push_back(entry);
+            pack.tierLookup[0][entry.word] = entryIdx;
+
+            for (AZ::u32 c = 0; c < wordLength; ++c)
+            {
+                char ch = (c < entry.word.size()) ? entry.word[c] : '\0';
+                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
+
+                AZ::u32 base = particleIdx * 4;
+                pack.positions[base + 0] = static_cast<float>(c);
+                pack.positions[base + 1] = 0.0f;
+                pack.positions[base + 2] = z;
+                pack.positions[base + 3] = 0.0f;
+                pack.phases[particleIdx] = 0;
+                ++particleIdx;
+            }
+        }
+
+        return pack;
+    }
+
+    AZStd::vector<Workspace*> BedManager::GetWorkspacesForLength(AZ::u32 wordLength)
+    {
+        AZStd::vector<Workspace*> result;
+        if (wordLength <= WS_PRIMARY_MAX_LENGTH)
+        {
+            for (auto& ws : m_primaryWorkspaces)
+                result.push_back(&ws);
+        }
+        else
+        {
+            for (auto& ws : m_extendedWorkspaces)
+                result.push_back(&ws);
+        }
+        return result;
+    }
+
+    // ---- LMDB vocab bed format ----
+    // Sub-db "vbed_XX" (XX=02..16): single key "data" → packed entry buffer
+    // Sub-db "vbed_XX_meta": single key "meta" → VBedMeta struct (16 bytes)
+    // Entry format: word[wordLength] + tokenId[14], fixed-width per sub-db
+    // Order: Labels first, then freq-ranked non-labels, then unranked
+
+    static constexpr int VBED_MIN_LEN = 2;
+    static constexpr int VBED_MAX_LEN = 16;
+    static constexpr int VBED_TOKEN_ID_WIDTH = 14;
+
+    struct VBedMeta
+    {
+        uint32_t total_entries;
+        uint32_t label_count;     // Tier 0 boundary (Labels only)
+        uint32_t tier1_end;       // End of freq-ranked non-labels
+        uint32_t tier2_end;       // End of all entries (= total_entries)
+    };
+
+    // ========================================================================
+    // Inflectional suffix stripping — host-side, before PBD
+    //
+    // Priority-ordered rules (longest suffix first). Each rule strips the
+    // suffix and checks if the base form exists in LMDB via LookupWordLocal.
+    // Returns the base token_id + morph bits if found, empty otherwise.
+    // ========================================================================
+
+    struct InflectionStripResult
+    {
+        AZStd::string baseWord;
+        AZStd::string tokenId;
+        AZ::u16 morphBits = 0;
+        bool stripped = false;
+    };
+
+    static bool IsConsonant(char c)
+    {
+        c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+        return c >= 'a' && c <= 'z' &&
+            c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u';
+    }
+
+    static InflectionStripResult TryInflectionStrip(
+        const AZStd::string& word, const HCPVocabulary* vocab)
+    {
+        InflectionStripResult result;
+        if (!vocab || word.size() < 4) return result;  // Too short to strip meaningfully
+
+        auto tryBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
+        {
+            if (base.size() < 2) return false;
+            AZStd::string tokenId = vocab->LookupWordLocal(base);
+            if (!tokenId.empty())
+            {
+                result.baseWord = base;
+                result.tokenId = tokenId;
+                result.morphBits = bits;
+                result.stripped = true;
+                return true;
+            }
+            return false;
+        };
+
+        const size_t len = word.size();
+
+        // ---- -ies → -y (e.g. "parties" → "party") ----
+        if (len >= 4 && word.substr(len - 3) == "ies")
+        {
+            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
+                return result;
+        }
+
+        // ---- -ves → -f / -fe (e.g. "wolves" → "wolf", "knives" → "knife") ----
+        if (len >= 4 && word.substr(len - 3) == "ves")
+        {
+            if (tryBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
+                return result;
+            if (tryBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
+                return result;
+        }
+
+        // ---- -ied → -y (e.g. "carried" → "carry") ----
+        if (len >= 4 && word.substr(len - 3) == "ied")
+        {
+            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
+                return result;
+        }
+
+        // ---- Doubled consonant + -ing (e.g. "running" → "run") ----
+        if (len >= 6 && word.substr(len - 3) == "ing")
+        {
+            AZStd::string stem = word.substr(0, len - 3);
+            if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
+            {
+                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
+                    return result;
+            }
+        }
+
+        // ---- Doubled consonant + -ed (e.g. "stopped" → "stop") ----
+        if (len >= 5 && word.substr(len - 2) == "ed")
+        {
+            AZStd::string stem = word.substr(0, len - 2);
+            if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
+            {
+                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
+                    return result;
+            }
+        }
+
+        // ---- -ing (try base, try base+e) ----
+        if (len >= 5 && word.substr(len - 3) == "ing")
+        {
+            AZStd::string base = word.substr(0, len - 3);
+            if (tryBase(base, MorphBit::PROG))
+                return result;
+            if (tryBase(base + "e", MorphBit::PROG))
+                return result;
+        }
+
+        // ---- -ed (try base, try base+e) ----
+        if (len >= 4 && word.substr(len - 2) == "ed")
+        {
+            AZStd::string base = word.substr(0, len - 2);
+            if (tryBase(base, MorphBit::PAST))
+                return result;
+            if (tryBase(base + "e", MorphBit::PAST))
+                return result;
+        }
+
+        // ---- -er (comparative: e.g. "bigger" → "big", "taller" → "tall") ----
+        if (len >= 4 && word.substr(len - 2) == "er")
+        {
+            AZStd::string base = word.substr(0, len - 2);
+            // Doubled consonant
+            if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
+            {
+                if (tryBase(base.substr(0, base.size() - 1), 0))  // No morph bit for comparative (reserved)
+                    return result;
+            }
+            if (tryBase(base, 0))
+                return result;
+            if (tryBase(base + "e", 0))
+                return result;
+        }
+
+        // ---- -est (superlative) ----
+        if (len >= 5 && word.substr(len - 3) == "est")
+        {
+            AZStd::string base = word.substr(0, len - 3);
+            if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
+            {
+                if (tryBase(base.substr(0, base.size() - 1), 0))
+                    return result;
+            }
+            if (tryBase(base, 0))
+                return result;
+            if (tryBase(base + "e", 0))
+                return result;
+        }
+
+        // ---- -es (e.g. "boxes" → "box", "watches" → "watch") ----
+        if (len >= 4 && word.substr(len - 2) == "es")
+        {
+            if (tryBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
+                return result;
+            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
+                return result;
+        }
+
+        // ---- -s (plural / 3rd person) ----
+        if (len >= 4 && word.back() == 's' && word[len-2] != 's')
+        {
+            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
+                return result;
+        }
+
+        // ---- -ly (adverb) ----
+        if (len >= 5 && word.substr(len - 2) == "ly")
+        {
+            if (tryBase(word.substr(0, len - 2), 0))
+                return result;
+        }
+
+        // ---- -ness ----
+        if (len >= 6 && word.substr(len - 4) == "ness")
+        {
+            if (tryBase(word.substr(0, len - 4), 0))
+                return result;
+        }
+
+        return result;  // No strip found
+    }
 
     bool BedManager::Initialize(
         physx::PxPhysics* physics,
-        physx::PxScene* scene,
         physx::PxCudaContextManager* cuda,
-        const TierAssembly& tiers)
+        MDB_env* lmdbEnv,
+        HCPVocabulary* vocabulary)
     {
-        if (!physics || !scene || !cuda) return false;
+        if (!physics || !cuda || !lmdbEnv) return false;
 
         m_physics = physics;
-        m_scene = scene;
         m_cuda = cuda;
-        m_tiers = &tiers;
+        m_vocabulary = vocabulary;
 
-        // Determine which word lengths have vocab
-        AZStd::unordered_map<AZ::u32, bool> lengthsWithVocab;
-        for (char c = 'a'; c <= 'z'; ++c)
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        // Open vbed sub-databases and read vocab entries.
+        // Write txn to persist DBI handles, then read data in same txn.
+        MDB_txn* txn;
+        int rc = mdb_txn_begin(lmdbEnv, nullptr, 0, &txn);
+        if (rc != 0)
         {
-            for (AZ::u32 len = 2; len <= 30; ++len)
-            {
-                const ChamberVocab* bucket = tiers.GetBucket(len, c);
-                if (bucket && !bucket->entries.empty())
-                {
-                    lengthsWithVocab[len] = true;
-                }
-            }
+            fprintf(stderr, "[BedManager] mdb_txn_begin: %s\n", mdb_strerror(rc));
+            return false;
         }
 
-        // Sort word lengths for deterministic ordering
-        AZStd::vector<AZ::u32> lengths;
-        lengths.reserve(lengthsWithVocab.size());
-        for (const auto& [len, _] : lengthsWithVocab)
-            lengths.push_back(len);
-        AZStd::sort(lengths.begin(), lengths.end());
+        AZ::u32 totalEntries = 0;
+        AZ::u32 totalLabels = 0;
 
-        fprintf(stderr, "[BedManager] Initializing %zu beds for word lengths: ", lengths.size());
-        for (AZ::u32 len : lengths)
-            fprintf(stderr, "%u ", len);
-        fprintf(stderr, "\n");
-        fflush(stderr);
-
-        m_beds.clear();
-        m_beds.reserve(lengths.size());
-        m_lengthToBedIndex.clear();
-
-        AZ::u32 phaseGroupBase = 0;
-        AZ::u32 bedCount = 0;
-
-        for (AZ::u32 len : lengths)
+        for (int wlen = VBED_MIN_LEN; wlen <= VBED_MAX_LEN; ++wlen)
         {
-            m_beds.emplace_back();
-            VocabBed& bed = m_beds.back();
+            char dataName[16], metaName[24];
+            snprintf(dataName, sizeof(dataName), "vbed_%02d", wlen);
+            snprintf(metaName, sizeof(metaName), "vbed_%02d_meta", wlen);
 
-            if (!bed.Initialize(physics, scene, cuda, len, tiers,
-                                VB_DEFAULT_SLOTS_PER_GROUP, phaseGroupBase))
+            MDB_dbi dataDbi, metaDbi;
+            rc = mdb_dbi_open(txn, dataName, MDB_CREATE, &dataDbi);
+            if (rc != 0)
             {
-                fprintf(stderr, "[BedManager] WARNING: Failed to init bed for len=%u, skipping\n", len);
-                fflush(stderr);
-                m_beds.pop_back();
+                fprintf(stderr, "[BedManager] Skip %s: %s\n", dataName, mdb_strerror(rc));
+                continue;
+            }
+            rc = mdb_dbi_open(txn, metaName, MDB_CREATE, &metaDbi);
+            if (rc != 0) continue;
+
+            // Read metadata
+            MDB_val key, val;
+            key.mv_data = const_cast<char*>("meta");
+            key.mv_size = 4;
+            rc = mdb_get(txn, metaDbi, &key, &val);
+            if (rc != 0 || val.mv_size < sizeof(VBedMeta))
+            {
+                if (rc != MDB_NOTFOUND)
+                    fprintf(stderr, "[BedManager] %s meta read: %s\n", metaName, mdb_strerror(rc));
                 continue;
             }
 
-            m_lengthToBedIndex[len] = static_cast<AZ::u32>(m_beds.size() - 1);
-            phaseGroupBase += VB_PHASE_GROUP_STRIDE;
-            ++bedCount;
+            VBedMeta meta;
+            memcpy(&meta, val.mv_data, sizeof(VBedMeta));
+
+            if (meta.total_entries == 0) continue;
+
+            // Read entry buffer (zero-copy pointer into mmap'd region)
+            key.mv_data = const_cast<char*>("data");
+            key.mv_size = 4;
+            rc = mdb_get(txn, dataDbi, &key, &val);
+            if (rc != 0)
+            {
+                if (rc != MDB_NOTFOUND)
+                    fprintf(stderr, "[BedManager] %s data read: %s\n", dataName, mdb_strerror(rc));
+                continue;
+            }
+
+            AZ::u32 entrySize = static_cast<AZ::u32>(wlen) + VBED_TOKEN_ID_WIDTH;
+            AZ::u32 expectedBytes = meta.total_entries * entrySize;
+            if (val.mv_size < expectedBytes)
+            {
+                fprintf(stderr, "[BedManager] %s: buffer too small (%zu < %u)\n",
+                    dataName, val.mv_size, expectedBytes);
+                continue;
+            }
+
+            const uint8_t* buf = static_cast<const uint8_t*>(val.mv_data);
+
+            // Parse fixed-width entries directly into frequency-ordered list
+            AZStd::vector<VocabPack::Entry> entries;
+            entries.reserve(meta.total_entries);
+
+            for (AZ::u32 i = 0; i < meta.total_entries; ++i)
+            {
+                AZ::u32 offset = i * entrySize;
+
+                // Word: wlen bytes, null-padded
+                const char* wordPtr = reinterpret_cast<const char*>(buf + offset);
+                AZ::u32 actualWordLen = static_cast<AZ::u32>(wlen);
+                while (actualWordLen > 0 && wordPtr[actualWordLen - 1] == '\0')
+                    --actualWordLen;
+
+                // Token ID: 14 bytes, null-padded
+                const char* tidPtr = reinterpret_cast<const char*>(buf + offset + wlen);
+                AZ::u32 tidLen = VBED_TOKEN_ID_WIDTH;
+                while (tidLen > 0 && tidPtr[tidLen - 1] == '\0')
+                    --tidLen;
+
+                VocabPack::Entry entry;
+                entry.word = AZStd::string(wordPtr, actualWordLen);
+                entry.tokenId = AZStd::string(tidPtr, tidLen);
+                entry.tierIndex = 0;  // Phase-based: position in list IS the priority
+                entries.push_back(AZStd::move(entry));
+            }
+
+            totalEntries += meta.total_entries;
+            totalLabels += meta.label_count;
+            m_activeWordLengths.push_back(static_cast<AZ::u32>(wlen));
+            m_labelCountByLength[static_cast<AZ::u32>(wlen)] = meta.label_count;
+            m_vocabByLength[static_cast<AZ::u32>(wlen)] = AZStd::move(entries);
+
+            fprintf(stderr, "[BedManager] vbed_%02d: %u entries (labels=%u, ranked=%u, unranked=%u)\n",
+                wlen, meta.total_entries, meta.label_count,
+                meta.tier1_end - meta.label_count,
+                meta.total_entries - meta.tier1_end);
         }
+
+        mdb_txn_commit(txn);
+
+        // Sort lengths descending (resolve longest words first)
+        AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
+            [](AZ::u32 a, AZ::u32 b) { return a > b; });
+
+        // Create workspace pools — each workspace gets its own PxScene
+        // for pipelined GPU/CPU overlap (simulate A while reading B, loading C)
+        AZ::u32 maxPhaseGroups = 2;  // 1 active phase + inert
+        m_primaryWorkspaces.resize(WS_PRIMARY_COUNT);
+        m_extendedWorkspaces.resize(WS_EXTENDED_COUNT);
+
+        AZ::u32 createdCount = 0;
+        for (auto& ws : m_primaryWorkspaces)
+        {
+            if (ws.Create(physics, cuda, WS_BUFFER_CAPACITY, maxPhaseGroups))
+                ++createdCount;
+        }
+        for (auto& ws : m_extendedWorkspaces)
+        {
+            if (ws.Create(physics, cuda, WS_BUFFER_CAPACITY, maxPhaseGroups))
+                ++createdCount;
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        float ms = static_cast<float>(std::chrono::duration<double, std::milli>(t1 - t0).count());
 
         m_initialized = true;
 
-        fprintf(stderr, "[BedManager] Initialized: %u beds, %zu word lengths\n",
-            bedCount, m_lengthToBedIndex.size());
+        fprintf(stderr, "[BedManager] LMDB initialized: %zu lengths, %u entries (%u labels), "
+            "%u entries/phase, %u workspaces, %.1f ms\n",
+            m_vocabByLength.size(), totalEntries, totalLabels,
+            RC_VOCAB_PER_PHASE, createdCount, ms);
+        fprintf(stderr, "[BedManager] Word lengths (descending):");
+        for (AZ::u32 len : m_activeWordLengths)
+            fprintf(stderr, " %u", len);
+        fprintf(stderr, "\n");
         fflush(stderr);
 
         return true;
     }
 
-    // Resolve a batch of runs across ALL beds simultaneously.
-    // Groups by length, loads into all relevant beds at once,
-    // runs one shared tier cascade (one simulate() steps all beds),
-    // collects results, resets all beds. Returns overflow runs that
-    // didn't fit in any slot.
-    void BedManager::ResolvePass(
+    // ---- ResolvePhase: load one small vocab slice, simulate, collect ----
+    //
+    // Small vocab (RC_VOCAB_PER_PHASE entries) → maximum stream slots.
+    // All runs that fit get checked in one simulate cycle.
+
+    // Helper: load a workspace with vocab + stream runs, activate, return overflow indices.
+    // Returns true if the workspace has pending runs to simulate.
+    static bool LoadWorkspaceBatch(
+        Workspace* ws,
+        AZ::u32 wordLength,
         const AZStd::vector<CharRun>& runs,
-        const AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>>& runsByLength,
-        AZStd::vector<ResolutionResult>& results,
-        AZStd::vector<AZ::u32>& overflowRuns)
+        const AZStd::vector<AZ::u32>& remaining,
+        AZ::u32& offset,
+        const VocabPack& phasePack,
+        AZStd::vector<AZ::u32>& overflow)
     {
-        // Load dynamics into ALL beds simultaneously
-        AZStd::vector<AZ::u32> activeBedIndices;
-        AZ::u32 maxTierCount = 0;
+        if (offset >= static_cast<AZ::u32>(remaining.size())) return false;
 
-        for (const auto& [len, indices] : runsByLength)
+        AZ::u32 streamSlots = ws->LoadVocabPack(phasePack, wordLength);
+        if (streamSlots == 0) return false;
+
+        AZ::u32 endIdx = offset + streamSlots;
+        if (endIdx > static_cast<AZ::u32>(remaining.size()))
+            endIdx = static_cast<AZ::u32>(remaining.size());
+
+        AZStd::vector<AZ::u32> wsIndices(remaining.begin() + offset, remaining.begin() + endIdx);
+        AZ::u32 overflowCount = ws->LoadStreamRuns(runs, wsIndices, wordLength);
+
+        offset = endIdx;
+
+        if (overflowCount > 0)
         {
-            auto bedIt = m_lengthToBedIndex.find(len);
-            if (bedIt == m_lengthToBedIndex.end()) continue;
-            VocabBed& bed = m_beds[bedIt->second];
-
-            AZ::u32 overflow = bed.LoadDynamicRuns(runs, indices);
-
-            if (bed.HasPendingRuns())
-            {
-                activeBedIndices.push_back(bedIt->second);
-                if (bed.GetMaxTierCount() > maxTierCount)
-                    maxTierCount = bed.GetMaxTierCount();
-            }
-
-            // Track overflow: the last 'overflow' indices couldn't be loaded
-            if (overflow > 0)
-            {
-                AZ::u32 loaded = static_cast<AZ::u32>(indices.size()) - overflow;
-                for (AZ::u32 j = loaded; j < static_cast<AZ::u32>(indices.size()); ++j)
-                    overflowRuns.push_back(indices[j]);
-            }
+            AZ::u32 loaded = static_cast<AZ::u32>(wsIndices.size()) - overflowCount;
+            for (AZ::u32 j = loaded; j < static_cast<AZ::u32>(wsIndices.size()); ++j)
+                overflow.push_back(wsIndices[j]);
         }
 
-        if (activeBedIndices.empty()) return;
-
-        fprintf(stderr, "[BedManager] ResolvePass: %zu active beds, max %u tiers\n",
-            activeBedIndices.size(), maxTierCount);
-        fflush(stderr);
-
-        // One shared tier cascade — one simulate() steps ALL beds simultaneously
-        for (AZ::u32 tier = 0; tier < maxTierCount; ++tier)
+        if (ws->HasPendingRuns())
         {
-            for (int step = 0; step < RC_SETTLE_STEPS; ++step)
-            {
-                m_scene->simulate(RC_DT);
-                m_scene->fetchResults(true);
-                m_scene->fetchResultsParticleSystem();
-            }
+            ws->ActivateInScene();
+            return true;
+        }
+        return false;
+    }
 
-            // Check settlement on all active beds
-            for (AZ::u32 bi : activeBedIndices)
-                m_beds[bi].CheckSettlement(tier);
+    // Helper: finish simulation, check settlement, collect results, reset workspace.
+    static void DrainWorkspace(
+        Workspace* ws,
+        const VocabPack& phasePack,
+        AZ::u32 phaseIndex,
+        AZStd::vector<ResolutionResult>& results,
+        AZStd::vector<AZ::u32>& unresolvedIndices)
+    {
+        ws->FetchSimResults();
+        ws->CheckSettlement(0, phasePack);
 
-            // Check if any bed still has unresolved
-            bool anyUnresolved = false;
-            for (AZ::u32 bi : activeBedIndices)
+        AZStd::vector<ResolutionResult> wsResolved;
+        AZStd::vector<AZ::u32> wsUnresolved;
+        ws->CollectSplit(wsResolved, wsUnresolved);
+
+        for (auto& r : wsResolved)
+        {
+            r.tierResolved = phaseIndex;
+            results.push_back(AZStd::move(r));
+        }
+        for (AZ::u32 idx : wsUnresolved)
+            unresolvedIndices.push_back(idx);
+
+        ws->ResetDynamics();
+        ws->DeactivateFromScene();
+    }
+
+    void BedManager::ResolvePhase(
+        AZ::u32 wordLength,
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZ::u32>& runIndices,
+        const VocabPack& phasePack,
+        AZ::u32 phaseIndex,
+        AZStd::vector<ResolutionResult>& results,
+        AZStd::vector<AZ::u32>& unresolvedIndices)
+    {
+        if (runIndices.empty() || phasePack.vocabEntryCount == 0) return;
+
+        AZStd::vector<Workspace*> workspaces = GetWorkspacesForLength(wordLength);
+        if (workspaces.empty()) return;
+
+        AZStd::vector<AZ::u32> remaining = runIndices;
+
+        while (!remaining.empty())
+        {
+            AZStd::vector<AZ::u32> nextRemaining;
+            AZ::u32 offset = 0;
+
+            // Pipeline: load each workspace, kick off simulate, overlap with next load.
+            // Each workspace owns its own PxScene — simulate() dispatches to GPU
+            // and returns immediately, so we can load the next workspace on CPU
+            // while the previous one's GPU work is in flight.
+
+            AZStd::vector<Workspace*> simulating;
+
+            for (auto* ws : workspaces)
             {
-                if (m_beds[bi].HasUnresolved())
+                if (offset >= static_cast<AZ::u32>(remaining.size())) break;
+
+                if (LoadWorkspaceBatch(ws, wordLength, runs, remaining, offset,
+                                       phasePack, nextRemaining))
                 {
-                    anyUnresolved = true;
-                    break;
+                    // Kick off simulation — GPU works while we load the next workspace
+                    ws->BeginSimulate(RC_SETTLE_STEPS, RC_DT);
+                    simulating.push_back(ws);
                 }
             }
 
-            if (!anyUnresolved) break;
+            // Anything that didn't fit into workspaces this round
+            for (AZ::u32 j = offset; j < static_cast<AZ::u32>(remaining.size()); ++j)
+                nextRemaining.push_back(remaining[j]);
 
-            // Flip unresolved beds to next tier
-            AZ::u32 nextTier = tier + 1;
-            if (nextTier < maxTierCount)
-            {
-                for (AZ::u32 bi : activeBedIndices)
-                {
-                    if (m_beds[bi].HasUnresolved())
-                        m_beds[bi].FlipToTier(nextTier);
-                }
-            }
-        }
+            if (simulating.empty()) break;
 
-        // Collect results from all active beds, then reset
-        for (AZ::u32 bi : activeBedIndices)
-        {
-            m_beds[bi].CollectResults(results);
-            m_beds[bi].ResetDynamics();
+            // Drain all simulating workspaces — fetch results as each finishes.
+            // With per-workspace scenes, each fetchResults blocks only on its own scene.
+            for (auto* ws : simulating)
+                DrainWorkspace(ws, phasePack, phaseIndex, results, unresolvedIndices);
+
+            remaining = AZStd::move(nextRemaining);
         }
     }
 
-    ResolutionManifest BedManager::Resolve(const AZStd::vector<CharRun>& runs)
+    // ---- ResolveLengthCycle: slice through freq-ordered vocab for one word length ----
+    //
+    // Phase 0 = entries [0..N), phase 1 = [N..2N), etc. N = RC_VOCAB_PER_PHASE.
+    // Each phase: build tiny VocabPack on the fly, load all remaining runs,
+    // simulate, collect resolved, pass unresolved to next phase.
+    // Early exit when all runs resolved.
+
+    // Build a VocabPack from a pre-filtered entry vector (not the full per-length list).
+    // Used by ResolveLengthCycle after first-letter filtering.
+    VocabPack BedManager::BuildVocabSliceFromEntries(
+        AZ::u32 wordLength,
+        const AZStd::vector<VocabPack::Entry>& entries,
+        AZ::u32 startEntry,
+        AZ::u32 count) const
+    {
+        VocabPack pack;
+        pack.wordLength = wordLength;
+        pack.maxTierCount = 1;
+
+        if (startEntry >= static_cast<AZ::u32>(entries.size())) return pack;
+
+        AZ::u32 endEntry = startEntry + count;
+        if (endEntry > static_cast<AZ::u32>(entries.size()))
+            endEntry = static_cast<AZ::u32>(entries.size());
+
+        AZ::u32 sliceCount = endEntry - startEntry;
+        pack.vocabEntryCount = sliceCount;
+        pack.totalVocabParticles = sliceCount * wordLength;
+
+        pack.positions.resize(pack.totalVocabParticles * 4, 0.0f);
+        pack.phases.resize(pack.totalVocabParticles, 0);
+        pack.entries.reserve(sliceCount);
+        pack.tierLookup.resize(1);
+
+        AZ::u32 particleIdx = 0;
+        for (AZ::u32 i = startEntry; i < endEntry; ++i)
+        {
+            const auto& entry = entries[i];
+            AZ::u32 entryIdx = i - startEntry;
+            pack.entries.push_back(entry);
+            pack.tierLookup[0][entry.word] = entryIdx;
+
+            for (AZ::u32 c = 0; c < wordLength; ++c)
+            {
+                char ch = (c < entry.word.size()) ? entry.word[c] : '\0';
+                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
+
+                AZ::u32 base = particleIdx * 4;
+                pack.positions[base + 0] = static_cast<float>(c);
+                pack.positions[base + 1] = 0.0f;
+                pack.positions[base + 2] = z;
+                pack.positions[base + 3] = 0.0f;
+                pack.phases[particleIdx] = 0;
+                ++particleIdx;
+            }
+        }
+
+        return pack;
+    }
+
+    // Helper: filter vocab entries by first-letter set
+    static AZStd::vector<VocabPack::Entry> FilterByFirstChar(
+        const AZStd::vector<VocabPack::Entry>& entries,
+        const AZStd::unordered_set<char>& neededChars)
+    {
+        AZStd::vector<VocabPack::Entry> filtered;
+        filtered.reserve(entries.size() / 8);
+        for (const auto& entry : entries)
+        {
+            if (!entry.word.empty() && neededChars.count(entry.word[0]))
+                filtered.push_back(entry);
+        }
+        return filtered;
+    }
+
+    // Helper: run phase cascade over a filtered vocab list
+    void BedManager::RunPhaseCascade(
+        AZ::u32 wordLength,
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<VocabPack::Entry>& filteredVocab,
+        AZStd::vector<AZ::u32>& currentIndices,
+        AZStd::vector<ResolutionResult>& results,
+        AZ::u32& phaseIndex)
+    {
+        AZ::u32 totalFiltered = static_cast<AZ::u32>(filteredVocab.size());
+
+        for (AZ::u32 start = 0; start < totalFiltered && !currentIndices.empty(); start += RC_VOCAB_PER_PHASE)
+        {
+            VocabPack phasePack = BuildVocabSliceFromEntries(wordLength, filteredVocab, start, RC_VOCAB_PER_PHASE);
+            if (phasePack.vocabEntryCount == 0) continue;
+
+            AZStd::vector<AZ::u32> phaseUnresolved;
+            ResolvePhase(wordLength, runs, currentIndices, phasePack, phaseIndex,
+                         results, phaseUnresolved);
+
+            currentIndices = AZStd::move(phaseUnresolved);
+            ++phaseIndex;
+        }
+    }
+
+    void BedManager::ResolveLengthCycle(
+        AZ::u32 wordLength,
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZ::u32>& runIndices,
+        AZStd::vector<ResolutionResult>& results,
+        AZStd::vector<AZ::u32>& unresolvedIndices)
+    {
+        if (runIndices.empty()) return;
+
+        auto it = m_vocabByLength.find(wordLength);
+        if (it == m_vocabByLength.end())
+        {
+            for (AZ::u32 idx : runIndices)
+                unresolvedIndices.push_back(idx);
+            return;
+        }
+
+        const auto& allEntries = it->second;
+        AZ::u32 labelCount = 0;
+        {
+            auto lIt = m_labelCountByLength.find(wordLength);
+            if (lIt != m_labelCountByLength.end())
+                labelCount = lIt->second;
+        }
+
+        // ---- Split runs: capitalized (eligible for Label match) vs plain ----
+        AZStd::vector<AZ::u32> capRuns;
+        AZStd::vector<AZ::u32> plainRuns;
+        for (AZ::u32 idx : runIndices)
+        {
+            const CharRun& run = runs[idx];
+            if (run.firstCap || run.allCaps)
+                capRuns.push_back(idx);
+            else
+                plainRuns.push_back(idx);
+        }
+
+        AZ::u32 phaseIndex = 0;
+
+        // ---- Pass 1: Label vocab (entries 0..labelCount) — capitalized runs ONLY ----
+        if (!capRuns.empty() && labelCount > 0)
+        {
+            AZStd::vector<VocabPack::Entry> labelEntries(allEntries.begin(),
+                allEntries.begin() + labelCount);
+
+            AZStd::unordered_set<char> capChars;
+            for (AZ::u32 idx : capRuns)
+            {
+                if (!runs[idx].text.empty())
+                    capChars.insert(runs[idx].text[0]);
+            }
+            auto filteredLabels = FilterByFirstChar(labelEntries, capChars);
+
+            if (!filteredLabels.empty())
+            {
+                fprintf(stderr, "[BedManager] Length %u Label pass: %zu cap runs, %u labels → %zu filtered\n",
+                    wordLength, capRuns.size(), labelCount, filteredLabels.size());
+                fflush(stderr);
+
+                RunPhaseCascade(wordLength, runs, filteredLabels, capRuns, results, phaseIndex);
+            }
+
+            // Unresolved cap runs fall through to common pass
+        }
+
+        // ---- Pass 2: Common vocab (entries labelCount..end) — ALL remaining runs ----
+        // Merge unresolved cap runs back with plain runs
+        AZStd::vector<AZ::u32> commonRuns;
+        commonRuns.reserve(capRuns.size() + plainRuns.size());
+        for (AZ::u32 idx : capRuns)
+            commonRuns.push_back(idx);
+        for (AZ::u32 idx : plainRuns)
+            commonRuns.push_back(idx);
+
+        if (!commonRuns.empty())
+        {
+            AZStd::vector<VocabPack::Entry> commonEntries(
+                allEntries.begin() + labelCount, allEntries.end());
+
+            AZStd::unordered_set<char> commonChars;
+            for (AZ::u32 idx : commonRuns)
+            {
+                if (!runs[idx].text.empty())
+                    commonChars.insert(runs[idx].text[0]);
+            }
+            auto filteredCommon = FilterByFirstChar(commonEntries, commonChars);
+
+            fprintf(stderr, "[BedManager] Length %u common pass: %zu runs, %zu vocab → %zu filtered\n",
+                wordLength, commonRuns.size(), commonEntries.size(), filteredCommon.size());
+            fflush(stderr);
+
+            if (!filteredCommon.empty())
+                RunPhaseCascade(wordLength, runs, filteredCommon, commonRuns, results, phaseIndex);
+        }
+
+        for (AZ::u32 idx : commonRuns)
+            unresolvedIndices.push_back(idx);
+    }
+
+    ResolutionManifest BedManager::Resolve(const AZStd::vector<CharRun>& inputRuns)
     {
         ResolutionManifest manifest;
-        manifest.totalRuns = static_cast<AZ::u32>(runs.size());
+        manifest.totalRuns = static_cast<AZ::u32>(inputRuns.size());
 
-        if (!m_tiers || runs.empty() || !m_initialized)
+        if (inputRuns.empty() || !m_initialized)
         {
             manifest.unresolvedRuns = manifest.totalRuns;
             return manifest;
         }
 
+        // Mutable copy — synthetic base runs get appended during interstitial stripping.
+        // Original runs at [0..inputRuns.size()), synthetics at [inputRuns.size()..N).
+        AZStd::vector<CharRun> runs = inputRuns;
+        const AZ::u32 originalRunCount = static_cast<AZ::u32>(inputRuns.size());
+
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        // Group runs by word length
-        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> runsByLength;
-        AZStd::vector<AZ::u32> noVocabRuns;
+        // ---- Transform layer: pre-resolve tagged runs ----
+        AZ::u32 preResolved = 0;
 
-        for (AZ::u32 i = 0; i < static_cast<AZ::u32>(runs.size()); ++i)
+        for (AZ::u32 i = 0; i < originalRunCount; ++i)
         {
             const CharRun& run = runs[i];
-            if (run.text.empty()) continue;
-
-            AZ::u32 len = run.length;
-            auto bedIt = m_lengthToBedIndex.find(len);
-
-            if (bedIt != m_lengthToBedIndex.end())
+            if (run.tag == RunTag::SingleChar)
             {
-                char firstChar = run.text[0];
-                const ChamberVocab* bucket = m_tiers->GetBucket(len, firstChar);
-                if (bucket && !bucket->entries.empty())
-                {
-                    runsByLength[len].push_back(i);
-                }
-                else
-                {
-                    noVocabRuns.push_back(i);
-                }
+                ResolutionResult r;
+                r.runText = run.text;
+                r.resolved = true;
+                r.matchedWord = run.text;
+                r.matchedTokenId = run.preAssignedTokenId;
+                r.tierResolved = 0;
+                r.firstCap = run.firstCap;
+                r.allCaps = run.allCaps;
+                manifest.results.push_back(r);
+                ++preResolved;
+            }
+            else if (run.tag == RunTag::Numeric)
+            {
+                ResolutionResult r;
+                r.runText = run.text;
+                r.resolved = true;
+                r.matchedWord = run.text;
+                r.matchedTokenId = "NUM";
+                r.tierResolved = 0;
+                manifest.results.push_back(r);
+                ++preResolved;
+            }
+        }
+
+        if (preResolved > 0)
+        {
+            fprintf(stderr, "[BedManager] Transform pre-resolved: %u runs (SingleChar/Numeric)\n", preResolved);
+            fflush(stderr);
+        }
+
+        // ---- Classify Word runs + duplicate stacking ----
+        AZStd::unordered_map<AZStd::string, AZ::u32> uniqueRunMap;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> runStacks;
+
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> runsByLength;
+        AZStd::vector<AZ::u32> apostropheRuns;
+        AZStd::vector<AZ::u32> hyphenRuns;
+        AZStd::vector<AZ::u32> noVocabRuns;
+
+        // Build a set of active word lengths for O(1) lookup
+        AZStd::unordered_map<AZ::u32, bool> activeLenSet;
+        for (const auto& [len, _] : m_vocabByLength)
+            activeLenSet[len] = true;
+
+        // Per-length text sets — O(1) "already queued" checks for interstitial stripping
+        AZStd::unordered_map<AZ::u32, AZStd::unordered_set<AZStd::string>> queuedTextByLength;
+
+        for (AZ::u32 i = 0; i < originalRunCount; ++i)
+        {
+            const CharRun& run = runs[i];
+            if (run.text.empty() || run.tag != RunTag::Word) continue;
+
+            auto [it, inserted] = uniqueRunMap.emplace(run.text, i);
+            if (!inserted)
+            {
+                runStacks[it->second].push_back(i);
+                continue;
+            }
+
+            bool hasApostrophe = run.text.find('\'') != AZStd::string::npos;
+            bool hasHyphen = run.text.find('-') != AZStd::string::npos;
+
+            if (hasApostrophe)
+            {
+                apostropheRuns.push_back(i);
+            }
+            else if (hasHyphen)
+            {
+                hyphenRuns.push_back(i);
             }
             else
             {
-                noVocabRuns.push_back(i);
+                AZ::u32 len = run.length;
+                if (activeLenSet.count(len))
+                {
+                    runsByLength[len].push_back(i);
+                    queuedTextByLength[len].insert(run.text);
+                }
+                else
+                    noVocabRuns.push_back(i);
             }
         }
 
-        fprintf(stderr, "[BedManager] %zu runs with vocab across %zu lengths, %zu without vocab\n",
-            runs.size() - noVocabRuns.size(), runsByLength.size(), noVocabRuns.size());
+        AZ::u32 uniqueWordRuns = static_cast<AZ::u32>(uniqueRunMap.size());
+        AZ::u32 totalDuplicates = 0;
+        for (const auto& [_, stack] : runStacks)
+            totalDuplicates += static_cast<AZ::u32>(stack.size());
+
+        fprintf(stderr, "[BedManager] Classification: %zu lengths with runs, %zu apostrophe, "
+            "%zu hyphen, %zu no-vocab | %u unique words (%u duplicates stacked)\n",
+            runsByLength.size(), apostropheRuns.size(), hyphenRuns.size(),
+            noVocabRuns.size(), uniqueWordRuns, totalDuplicates);
         fflush(stderr);
 
-        // Resolve all beds simultaneously — overflow loops until all processed
-        AZStd::vector<AZ::u32> overflowRuns;
-        ResolvePass(runs, runsByLength, manifest.results, overflowRuns);
-
-        // Handle overflow (runs that didn't fit in slots) with additional passes
-        while (!overflowRuns.empty())
+        // ---- Apostrophe runs: vocabulary LMDB lookup ----
+        AZStd::vector<AZ::u32> unresolvedApostrophe;
+        for (AZ::u32 idx : apostropheRuns)
         {
-            fprintf(stderr, "[BedManager] Overflow pass: %zu runs\n", overflowRuns.size());
-            fflush(stderr);
-
-            AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> overflowByLength;
-            for (AZ::u32 idx : overflowRuns)
+            const CharRun& arun = runs[idx];
+            AZStd::string tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(arun.text) : "";
+            if (!tokenId.empty())
             {
-                AZ::u32 len = runs[idx].length;
-                overflowByLength[len].push_back(idx);
+                ResolutionResult r;
+                r.runText = arun.text;
+                r.resolved = true;
+                r.matchedWord = arun.text;
+                r.matchedTokenId = tokenId;
+                r.tierResolved = 0;
+                r.firstCap = arun.firstCap;
+                r.allCaps = arun.allCaps;
+                manifest.results.push_back(r);
             }
-
-            AZStd::vector<AZ::u32> nextOverflow;
-            ResolvePass(runs, overflowByLength, manifest.results, nextOverflow);
-            overflowRuns = AZStd::move(nextOverflow);
+            else
+            {
+                unresolvedApostrophe.push_back(idx);
+            }
         }
 
-        // Add no-vocab runs as unresolved
+        // ---- Hyphen runs: vocabulary LMDB lookup ----
+        AZStd::vector<AZ::u32> unresolvedHyphen;
+        for (AZ::u32 idx : hyphenRuns)
+        {
+            const CharRun& hrun = runs[idx];
+            AZStd::string tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(hrun.text) : "";
+            if (!tokenId.empty())
+            {
+                ResolutionResult r;
+                r.runText = hrun.text;
+                r.resolved = true;
+                r.matchedWord = hrun.text;
+                r.matchedTokenId = tokenId;
+                r.tierResolved = 0;
+                r.firstCap = hrun.firstCap;
+                r.allCaps = hrun.allCaps;
+                manifest.results.push_back(r);
+            }
+            else
+            {
+                unresolvedHyphen.push_back(idx);
+            }
+        }
+
+        if (!apostropheRuns.empty() || !hyphenRuns.empty())
+        {
+            fprintf(stderr, "[BedManager] Punctuation vocab-lookup: apo %zu/%zu resolved, hyp %zu/%zu resolved\n",
+                apostropheRuns.size() - unresolvedApostrophe.size(), apostropheRuns.size(),
+                hyphenRuns.size() - unresolvedHyphen.size(), hyphenRuns.size());
+            fflush(stderr);
+        }
+
+        // ---- Descending length resolve loop with interstitial inflection stripping ----
+        //
+        // Long-first order: "running" (7) processes before "run" (3).
+        // After each length cycle, unresolved runs get stripped:
+        //   - Strip suffix → base word + morph bits (delta)
+        //   - O(1) check: is base already queued at shorter length?
+        //     YES → piggyback (just record dependent, PBD resolves it naturally)
+        //     NO  → inject synthetic CharRun into shorter-length queue
+        //   - If base can't strip → var
+        //
+        // No LMDB lookups in the interstitial step — PBD IS the resolution
+        // mechanism. We only record deltas and let the natural descending
+        // flow resolve bases at their shorter length.
+        //
+        // Post-loop: scan manifest for resolved bases, propagate to dependents.
+        // Unresolved bases → dependents become vars.
+
+        struct InflectedDependent
+        {
+            AZ::u32 runIndex;       // Original inflected run index
+            AZ::u16 morphBits;      // Inflection applied (delta)
+        };
+        AZStd::unordered_map<AZStd::string, AZStd::vector<InflectedDependent>> inflectedDependents;
+        AZStd::vector<AZ::u32> allUnresolvedOriginal;
+        AZ::u32 inflectionCount = 0;
+        AZ::u32 syntheticInjections = 0;
+
+        for (AZ::u32 len : m_activeWordLengths)
+        {
+            // Fetch indices for this length — may include synthetics injected by earlier (longer) cycles
+            auto it = runsByLength.find(len);
+            if (it == runsByLength.end() || it->second.empty()) continue;
+
+            AZStd::vector<AZ::u32> indices = it->second;
+
+            AZStd::vector<AZ::u32> unresolvedFromCycle;
+            ResolveLengthCycle(len, runs, indices,
+                               manifest.results, unresolvedFromCycle);
+
+            // ---- Interstitial: strip unresolved, feed bases to shorter queues ----
+            for (AZ::u32 idx : unresolvedFromCycle)
+            {
+                const CharRun& run = runs[idx];
+
+                // Skip punctuation runs (handled by morpheme decomposition)
+                if (run.text.find('\'') != AZStd::string::npos ||
+                    run.text.find('-') != AZStd::string::npos)
+                {
+                    allUnresolvedOriginal.push_back(idx);
+                    continue;
+                }
+
+                InflectionStripResult strip = TryInflectionStrip(run.text, m_vocabulary);
+                if (!strip.stripped)
+                {
+                    allUnresolvedOriginal.push_back(idx);
+                    continue;
+                }
+
+                AZ::u32 baseLen = static_cast<AZ::u32>(strip.baseWord.size());
+
+                // Record the delta: inflected form depends on base
+                inflectedDependents[strip.baseWord].push_back({idx, strip.morphBits});
+                ++inflectionCount;
+
+                // O(1) check: is base already queued at its shorter length?
+                bool alreadyQueued = false;
+                if (queuedTextByLength.count(baseLen))
+                    alreadyQueued = queuedTextByLength[baseLen].count(strip.baseWord) > 0;
+
+                if (!alreadyQueued && activeLenSet.count(baseLen))
+                {
+                    // Inject synthetic CharRun for the base into shorter-length PBD queue.
+                    // No LMDB lookup — PBD at the base's length IS the existence check.
+                    CharRun synth;
+                    synth.text = strip.baseWord;
+                    synth.startPos = 0;
+                    synth.length = baseLen;
+                    synth.tag = RunTag::Word;
+                    synth.firstCap = false;
+                    synth.allCaps = false;
+
+                    AZ::u32 synthIdx = static_cast<AZ::u32>(runs.size());
+                    runs.push_back(synth);
+                    runsByLength[baseLen].push_back(synthIdx);
+                    queuedTextByLength[baseLen].insert(strip.baseWord);
+                    ++syntheticInjections;
+                }
+                // If already queued: base will resolve via PBD at its natural length.
+                // Dependents picked up in post-loop scan.
+            }
+
+            fprintf(stderr, "[BedManager] Length %u: %zu runs, %zu unresolved\n",
+                len, indices.size(), unresolvedFromCycle.size());
+            fflush(stderr);
+        }
+
+        // ---- Resolve inflected dependents whose bases resolved (via PBD or synthetics) ----
+        // Scan all manifest results for base words that have pending dependents.
+        // Synthetic runs resolve via PBD → appear in manifest → dependents piggyback.
+        {
+            AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedBases;
+            for (const auto& r : manifest.results)
+            {
+                if (r.resolved && inflectedDependents.count(r.matchedWord))
+                    resolvedBases[r.matchedWord] = &r;
+            }
+
+            AZ::u32 depResolved = 0;
+            for (auto& [baseWord, deps] : inflectedDependents)
+            {
+                auto bit = resolvedBases.find(baseWord);
+                if (bit != resolvedBases.end())
+                {
+                    for (auto& dep : deps)
+                    {
+                        const CharRun& depRun = runs[dep.runIndex];
+                        ResolutionResult r;
+                        r.runText = depRun.text;
+                        r.resolved = true;
+                        r.matchedWord = bit->second->matchedWord;
+                        r.matchedTokenId = bit->second->matchedTokenId;
+                        r.morphBits = dep.morphBits;
+                        r.tierResolved = bit->second->tierResolved;
+                        r.firstCap = depRun.firstCap;
+                        r.allCaps = depRun.allCaps;
+                        manifest.results.push_back(r);
+                        ++depResolved;
+                    }
+                }
+                else
+                {
+                    // Base never resolved → inflected forms are vars
+                    for (auto& dep : deps)
+                    {
+                        allUnresolvedOriginal.push_back(dep.runIndex);
+                    }
+                }
+            }
+
+            if (depResolved > 0)
+            {
+                fprintf(stderr, "[BedManager] Inflected dependents resolved via base PBD: %u\n", depResolved);
+                fflush(stderr);
+            }
+        }
+
+        if (inflectionCount > 0)
+        {
+            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u synthetic bases injected into PBD queues)\n",
+                inflectionCount, syntheticInjections);
+            fflush(stderr);
+        }
+
+        // ---- Morpheme decomposition for unresolved runs ----
+        struct MorphemeSuffix { const char* suffix; AZ::u32 len; AZ::u16 morphBits; };
+        static const MorphemeSuffix suffixes[] = {
+            {"n't", 3, MorphBit::NEG},
+            {"'re", 3, MorphBit::BE},
+            {"'ve", 3, MorphBit::HAVE},
+            {"'ll", 3, MorphBit::WILL},
+            {"'s",  2, MorphBit::POSS},
+            {"'m",  2, MorphBit::AM},
+            {"'d",  2, MorphBit::COND},
+        };
+
+        // Combine all unresolved: regular + punctuation that didn't match host lookup.
+        // Filter out synthetic runs (index >= originalRunCount) — they're internal
+        // base injections, not original input runs.
+        AZStd::vector<AZ::u32> allUnresolved;
+        for (AZ::u32 idx : allUnresolvedOriginal)
+        {
+            if (idx < originalRunCount)
+                allUnresolved.push_back(idx);
+        }
+        for (AZ::u32 idx : unresolvedApostrophe)
+            allUnresolved.push_back(idx);
+        for (AZ::u32 idx : unresolvedHyphen)
+            allUnresolved.push_back(idx);
+
+        AZStd::vector<CharRun> decompRuns;
+        struct DecompMapping
+        {
+            AZ::u32 originalRunIndex;
+            AZ::u32 decompRunIndex;
+            enum Type { ApostropheBase, HyphenCompound, HyphenSegment } type;
+            AZ::u32 segmentCount;
+            AZ::u32 firstSegmentRun;
+            AZ::u16 morphBits = 0;  // Morph bits from contraction stripping
+        };
+        AZStd::vector<DecompMapping> decompMappings;
+
+        for (AZ::u32 idx : allUnresolved)
+        {
+            const AZStd::string& text = runs[idx].text;
+
+            if (text.find('\'') != AZStd::string::npos)
+            {
+                for (const auto& ms : suffixes)
+                {
+                    if (text.size() > ms.len && text.substr(text.size() - ms.len) == ms.suffix)
+                    {
+                        AZStd::string base = text.substr(0, text.size() - ms.len);
+                        if (base.size() >= 2)
+                        {
+                            DecompMapping dm;
+                            dm.originalRunIndex = idx;
+                            dm.decompRunIndex = static_cast<AZ::u32>(decompRuns.size());
+                            dm.type = DecompMapping::ApostropheBase;
+                            dm.segmentCount = 0;
+                            dm.firstSegmentRun = 0;
+                            dm.morphBits = ms.morphBits;
+                            decompMappings.push_back(dm);
+
+                            CharRun cr;
+                            cr.text = base;
+                            cr.startPos = 0;
+                            cr.length = static_cast<AZ::u32>(base.size());
+                            cr.tag = RunTag::Word;
+                            decompRuns.push_back(cr);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (text.find('-') != AZStd::string::npos)
+            {
+                AZStd::string compound;
+                compound.reserve(text.size());
+                for (char ch : text)
+                {
+                    if (ch != '-') compound += ch;
+                }
+                if (compound.size() >= 2)
+                {
+                    DecompMapping dm;
+                    dm.originalRunIndex = idx;
+                    dm.decompRunIndex = static_cast<AZ::u32>(decompRuns.size());
+                    dm.type = DecompMapping::HyphenCompound;
+                    dm.segmentCount = 0;
+                    dm.firstSegmentRun = 0;
+                    decompMappings.push_back(dm);
+
+                    CharRun cr;
+                    cr.text = compound;
+                    cr.startPos = 0;
+                    cr.length = static_cast<AZ::u32>(compound.size());
+                    cr.tag = RunTag::Word;
+                    decompRuns.push_back(cr);
+                }
+
+                DecompMapping segDm;
+                segDm.originalRunIndex = idx;
+                segDm.decompRunIndex = 0;
+                segDm.type = DecompMapping::HyphenSegment;
+                segDm.firstSegmentRun = static_cast<AZ::u32>(decompRuns.size());
+                segDm.segmentCount = 0;
+
+                AZ::u32 segStart = 0;
+                for (AZ::u32 j = 0; j <= static_cast<AZ::u32>(text.size()); ++j)
+                {
+                    if (j == static_cast<AZ::u32>(text.size()) || text[j] == '-')
+                    {
+                        if (j > segStart)
+                        {
+                            AZStd::string seg = text.substr(segStart, j - segStart);
+                            if (seg.size() >= 2)
+                            {
+                                CharRun cr;
+                                cr.text = seg;
+                                cr.startPos = 0;
+                                cr.length = static_cast<AZ::u32>(seg.size());
+                                cr.tag = RunTag::Word;
+                                decompRuns.push_back(cr);
+                                ++segDm.segmentCount;
+                            }
+                        }
+                        segStart = j + 1;
+                    }
+                }
+                if (segDm.segmentCount > 0)
+                    decompMappings.push_back(segDm);
+            }
+        }
+
+        // ---- Resolve decomposed runs through tier-cascaded length cycles ----
+        if (!decompRuns.empty())
+        {
+            AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> decompByLen;
+            for (AZ::u32 i = 0; i < static_cast<AZ::u32>(decompRuns.size()); ++i)
+            {
+                AZ::u32 len = decompRuns[i].length;
+                if (decompRuns[i].text.empty()) continue;
+                if (activeLenSet.count(len))
+                    decompByLen[len].push_back(i);
+            }
+
+            AZStd::vector<ResolutionResult> decompResults;
+            for (const auto& [len, indices] : decompByLen)
+            {
+                AZStd::vector<AZ::u32> decompUnresolved;
+                ResolveLengthCycle(len, decompRuns, indices,
+                                   decompResults, decompUnresolved);
+            }
+
+            // Map decomp results back to originals
+            AZStd::vector<bool> decompResolved(decompRuns.size(), false);
+            AZStd::vector<ResolutionResult> decompResultsByIndex(decompRuns.size());
+            for (const auto& dr : decompResults)
+            {
+                for (AZ::u32 i = 0; i < static_cast<AZ::u32>(decompRuns.size()); ++i)
+                {
+                    if (!decompResolved[i] && decompRuns[i].text == dr.runText)
+                    {
+                        decompResolved[i] = dr.resolved;
+                        decompResultsByIndex[i] = dr;
+                        break;
+                    }
+                }
+            }
+
+            AZStd::unordered_map<AZ::u32, bool> originalResolvedViaDecomp;
+            AZ::u32 decompMapped = 0;
+
+            for (const auto& dm : decompMappings)
+            {
+                if (originalResolvedViaDecomp.count(dm.originalRunIndex)) continue;
+
+                if (dm.type == DecompMapping::ApostropheBase ||
+                    dm.type == DecompMapping::HyphenCompound)
+                {
+                    if (decompResolved[dm.decompRunIndex])
+                    {
+                        const auto& dr = decompResultsByIndex[dm.decompRunIndex];
+                        const CharRun& origRun = runs[dm.originalRunIndex];
+                        ResolutionResult r;
+                        r.runText = origRun.text;
+                        r.resolved = true;
+                        r.matchedWord = dr.matchedWord;
+                        r.matchedTokenId = dr.matchedTokenId;
+                        r.tierResolved = dr.tierResolved;
+                        r.morphBits = dr.morphBits | dm.morphBits;  // Base morph + contraction morph
+                        r.firstCap = origRun.firstCap;
+                        r.allCaps = origRun.allCaps;
+                        manifest.results.push_back(r);
+                        originalResolvedViaDecomp[dm.originalRunIndex] = true;
+                        ++decompMapped;
+                    }
+                }
+                else if (dm.type == DecompMapping::HyphenSegment)
+                {
+                    bool allResolved = true;
+                    for (AZ::u32 s = 0; s < dm.segmentCount; ++s)
+                    {
+                        AZ::u32 segIdx = dm.firstSegmentRun + s;
+                        if (segIdx >= decompResolved.size() || !decompResolved[segIdx])
+                        { allResolved = false; break; }
+                    }
+                    if (allResolved && dm.segmentCount > 0)
+                    {
+                        AZ::u32 firstSeg = dm.firstSegmentRun;
+                        const CharRun& origRun = runs[dm.originalRunIndex];
+                        ResolutionResult r;
+                        r.runText = origRun.text;
+                        r.resolved = true;
+                        r.matchedWord = decompResultsByIndex[firstSeg].matchedWord;
+                        r.matchedTokenId = decompResultsByIndex[firstSeg].matchedTokenId;
+                        r.tierResolved = decompResultsByIndex[firstSeg].tierResolved;
+                        r.firstCap = origRun.firstCap;
+                        r.allCaps = origRun.allCaps;
+                        manifest.results.push_back(r);
+                        originalResolvedViaDecomp[dm.originalRunIndex] = true;
+                        ++decompMapped;
+                    }
+                }
+            }
+
+            for (AZ::u32 idx : allUnresolved)
+            {
+                if (!originalResolvedViaDecomp.count(idx))
+                {
+                    ResolutionResult r;
+                    r.runText = runs[idx].text;
+                    r.resolved = false;
+                    r.firstCap = runs[idx].firstCap;
+                    r.allCaps = runs[idx].allCaps;
+                    manifest.results.push_back(r);
+                }
+            }
+
+            if (decompMapped > 0)
+            {
+                fprintf(stderr, "[BedManager] Decomposed bases resolved: %u / %zu mappings\n",
+                    decompMapped, decompMappings.size());
+                fflush(stderr);
+            }
+        }
+        else
+        {
+            for (AZ::u32 idx : allUnresolved)
+            {
+                ResolutionResult r;
+                r.runText = runs[idx].text;
+                r.resolved = false;
+                r.firstCap = runs[idx].firstCap;
+                r.allCaps = runs[idx].allCaps;
+                manifest.results.push_back(r);
+            }
+        }
+
+        // ---- No-vocab runs as unresolved ----
         for (AZ::u32 idx : noVocabRuns)
         {
             ResolutionResult r;
             r.runText = runs[idx].text;
             r.resolved = false;
+            r.firstCap = runs[idx].firstCap;
+            r.allCaps = runs[idx].allCaps;
             manifest.results.push_back(r);
         }
 
-        // ---- Hyphen three-step cascade ----
-        // Step 1 already done — full hyphenated forms were tried above.
-        AZStd::vector<AZ::u32> hyphenUnresolved;
-        for (AZ::u32 i = 0; i < static_cast<AZ::u32>(manifest.results.size()); ++i)
-        {
-            if (!manifest.results[i].resolved &&
-                manifest.results[i].runText.find('-') != AZStd::string::npos)
-            {
-                hyphenUnresolved.push_back(i);
-            }
-        }
-
-        if (!hyphenUnresolved.empty())
-        {
-            // Step 2: Strip hyphens → try as compound word
-            AZStd::vector<CharRun> compoundRuns;
-            AZStd::vector<AZ::u32> compoundToManifest;
-
-            for (AZ::u32 mi : hyphenUnresolved)
-            {
-                const AZStd::string& text = manifest.results[mi].runText;
-                AZStd::string compound;
-                compound.reserve(text.size());
-                for (char c : text)
-                {
-                    if (c != '-') compound += c;
-                }
-
-                if (compound.size() >= 2)
-                {
-                    CharRun cr;
-                    cr.text = compound;
-                    cr.startPos = 0;
-                    cr.length = static_cast<AZ::u32>(compound.size());
-                    compoundRuns.push_back(cr);
-                    compoundToManifest.push_back(mi);
-                }
-            }
-
-            if (!compoundRuns.empty())
-            {
-                AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> compoundsByLength;
-                for (AZ::u32 i = 0; i < static_cast<AZ::u32>(compoundRuns.size()); ++i)
-                {
-                    AZ::u32 len = compoundRuns[i].length;
-                    auto bedIt = m_lengthToBedIndex.find(len);
-                    if (bedIt != m_lengthToBedIndex.end())
-                    {
-                        char fc = compoundRuns[i].text[0];
-                        const ChamberVocab* bucket = m_tiers->GetBucket(len, fc);
-                        if (bucket && !bucket->entries.empty())
-                            compoundsByLength[len].push_back(i);
-                    }
-                }
-
-                AZStd::vector<ResolutionResult> compoundResults;
-                AZStd::vector<AZ::u32> compoundOverflow;
-                ResolvePass(compoundRuns, compoundsByLength, compoundResults, compoundOverflow);
-
-                // Map results back — compound runs come out in order per bed,
-                // so we match by runText
-                for (const auto& cr : compoundResults)
-                {
-                    if (!cr.resolved) continue;
-                    // Find the manifest entry this compound maps to
-                    for (AZ::u32 i = 0; i < static_cast<AZ::u32>(compoundRuns.size()); ++i)
-                    {
-                        if (compoundRuns[i].text == cr.runText)
-                        {
-                            AZ::u32 mi = compoundToManifest[i];
-                            if (!manifest.results[mi].resolved)
-                            {
-                                manifest.results[mi].resolved = true;
-                                manifest.results[mi].matchedWord = cr.matchedWord;
-                                manifest.results[mi].matchedTokenId = cr.matchedTokenId;
-                                manifest.results[mi].tierResolved = cr.tierResolved;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Step 3: Split at hyphens → resolve each segment independently
-            AZStd::vector<AZ::u32> stillUnresolved;
-            for (AZ::u32 mi : hyphenUnresolved)
-            {
-                if (!manifest.results[mi].resolved)
-                    stillUnresolved.push_back(mi);
-            }
-
-            if (!stillUnresolved.empty())
-            {
-                struct SegmentMapping
-                {
-                    AZ::u32 manifestIndex;
-                    AZ::u32 segmentCount;
-                    AZ::u32 firstSegmentRun;
-                };
-
-                AZStd::vector<CharRun> segmentRuns;
-                AZStd::vector<SegmentMapping> mappings;
-
-                for (AZ::u32 mi : stillUnresolved)
-                {
-                    const AZStd::string& text = manifest.results[mi].runText;
-
-                    SegmentMapping mapping;
-                    mapping.manifestIndex = mi;
-                    mapping.firstSegmentRun = static_cast<AZ::u32>(segmentRuns.size());
-                    mapping.segmentCount = 0;
-
-                    AZ::u32 segStart = 0;
-                    for (AZ::u32 j = 0; j <= static_cast<AZ::u32>(text.size()); ++j)
-                    {
-                        if (j == static_cast<AZ::u32>(text.size()) || text[j] == '-')
-                        {
-                            if (j > segStart)
-                            {
-                                AZStd::string seg = text.substr(segStart, j - segStart);
-                                if (seg.size() >= 2)
-                                {
-                                    CharRun cr;
-                                    cr.text = seg;
-                                    cr.startPos = 0;
-                                    cr.length = static_cast<AZ::u32>(seg.size());
-                                    segmentRuns.push_back(cr);
-                                    ++mapping.segmentCount;
-                                }
-                            }
-                            segStart = j + 1;
-                        }
-                    }
-
-                    mappings.push_back(mapping);
-                }
-
-                if (!segmentRuns.empty())
-                {
-                    AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> segsByLength;
-                    for (AZ::u32 i = 0; i < static_cast<AZ::u32>(segmentRuns.size()); ++i)
-                    {
-                        AZ::u32 len = segmentRuns[i].length;
-                        auto bedIt = m_lengthToBedIndex.find(len);
-                        if (bedIt != m_lengthToBedIndex.end())
-                        {
-                            char fc = segmentRuns[i].text[0];
-                            const ChamberVocab* bucket = m_tiers->GetBucket(len, fc);
-                            if (bucket && !bucket->entries.empty())
-                                segsByLength[len].push_back(i);
-                        }
-                    }
-
-                    AZStd::vector<ResolutionResult> segResults;
-                    AZStd::vector<AZ::u32> segOverflow;
-                    ResolvePass(segmentRuns, segsByLength, segResults, segOverflow);
-
-                    // Build a lookup from segment run index to its result
-                    AZStd::unordered_map<AZ::u32, const ResolutionResult*> segResultMap;
-                    // segResults come out in bed order, not segment order.
-                    // Match by runText against segmentRuns.
-                    // Build resolved set indexed by segment run index.
-                    AZStd::vector<bool> segResolved(segmentRuns.size(), false);
-                    AZStd::vector<ResolutionResult> segResultsByIndex(segmentRuns.size());
-
-                    for (const auto& sr : segResults)
-                    {
-                        // Find which segment run this matches
-                        for (AZ::u32 i = 0; i < static_cast<AZ::u32>(segmentRuns.size()); ++i)
-                        {
-                            if (!segResolved[i] && segmentRuns[i].text == sr.runText)
-                            {
-                                segResolved[i] = sr.resolved;
-                                segResultsByIndex[i] = sr;
-                                break;
-                            }
-                        }
-                    }
-
-                    for (const auto& mapping : mappings)
-                    {
-                        if (mapping.segmentCount == 0) continue;
-
-                        bool allResolved = true;
-                        for (AZ::u32 s = 0; s < mapping.segmentCount; ++s)
-                        {
-                            AZ::u32 segIdx = mapping.firstSegmentRun + s;
-                            if (segIdx >= segResolved.size() || !segResolved[segIdx])
-                            {
-                                allResolved = false;
-                                break;
-                            }
-                        }
-
-                        if (allResolved)
-                        {
-                            AZ::u32 mi = mapping.manifestIndex;
-                            manifest.results[mi].resolved = true;
-                            AZ::u32 firstSeg = mapping.firstSegmentRun;
-                            manifest.results[mi].matchedWord = segResultsByIndex[firstSeg].matchedWord;
-                            manifest.results[mi].matchedTokenId = segResultsByIndex[firstSeg].matchedTokenId;
-                            manifest.results[mi].tierResolved = segResultsByIndex[firstSeg].tierResolved;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Count resolved/unresolved
+        // ---- Propagate results to stacked duplicates ----
+        AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedLookup;
         for (const auto& r : manifest.results)
         {
             if (r.resolved)
-                manifest.resolvedRuns++;
-            else
-                manifest.unresolvedRuns++;
+                resolvedLookup[r.runText] = &r;
+        }
+
+        for (const auto& [firstIdx, dupes] : runStacks)
+        {
+            const AZStd::string& text = runs[firstIdx].text;
+            auto it = resolvedLookup.find(text);
+            for (AZ::u32 di = 0; di < static_cast<AZ::u32>(dupes.size()); ++di)
+            {
+                const CharRun& dupeRun = runs[dupes[di]];
+                ResolutionResult r;
+                r.runText = text;
+                r.firstCap = dupeRun.firstCap;
+                r.allCaps = dupeRun.allCaps;
+                if (it != resolvedLookup.end())
+                {
+                    r.resolved = it->second->resolved;
+                    r.matchedWord = it->second->matchedWord;
+                    r.matchedTokenId = it->second->matchedTokenId;
+                    r.tierResolved = it->second->tierResolved;
+                    r.morphBits = it->second->morphBits;
+                }
+                else
+                {
+                    r.resolved = false;
+                }
+                manifest.results.push_back(r);
+            }
+        }
+
+        // ---- Count ----
+        for (const auto& r : manifest.results)
+        {
+            if (r.resolved) manifest.resolvedRuns++;
+            else manifest.unresolvedRuns++;
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -1117,12 +2055,16 @@ namespace HCPEngine
 
     void BedManager::Shutdown()
     {
-        for (auto& bed : m_beds)
-            bed.Shutdown();
-        m_beds.clear();
-        m_lengthToBedIndex.clear();
+        for (auto& ws : m_primaryWorkspaces)
+            ws.Shutdown();
+        for (auto& ws : m_extendedWorkspaces)
+            ws.Shutdown();
+        m_primaryWorkspaces.clear();
+        m_extendedWorkspaces.clear();
+        m_vocabByLength.clear();
+        m_activeWordLengths.clear();
         m_initialized = false;
-        m_tiers = nullptr;
+        m_vocabulary = nullptr;
     }
 
 } // namespace HCPEngine

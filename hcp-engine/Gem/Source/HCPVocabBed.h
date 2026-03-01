@@ -4,9 +4,9 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
-#include "HCPResolutionChamber.h"  // TierAssembly, ChamberVocab, ResolutionManifest, etc.
+#include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
 
-// Forward declarations — full PhysX headers only in .cpp
+// Forward declarations — full headers only in .cpp
 namespace physx
 {
     class PxPhysics;
@@ -17,114 +17,187 @@ namespace physx
     class PxPBDMaterial;
 }
 
+struct MDB_env;  // LMDB environment (defined in lmdb.h)
+
 namespace HCPEngine
 {
-    // ---- Constants (persistent vocab beds) ----
+    // ---- Constants ----
 
-    static constexpr AZ::u32 VB_MAX_PARTICLES_PER_BUFFER = 60000;  // 5K below empirical OOM ceiling
-    static constexpr AZ::u32 VB_PHASE_GROUP_STRIDE = 8;            // Phase group IDs per bed (inert + up to 7 tiers)
-    static constexpr AZ::u32 VB_DEFAULT_SLOTS_PER_GROUP = 4;       // Run slots per first-char group (tunable)
+    //! Buffer capacity per workspace. Each workspace is a single PxPBDParticleSystem.
+    //! Sized to fit larger vocab slices (RC_VOCAB_PER_PHASE × maxWordLength) + stream runs.
+    static constexpr AZ::u32 WS_BUFFER_CAPACITY = 131072;
 
-    // ---- Per first-char group within a bed ----
+    //! Max word length handled by primary workspaces (X-width=10).
+    static constexpr AZ::u32 WS_PRIMARY_MAX_LENGTH = 10;
 
-    struct BedSlotGroup
+    //! Number of primary workspaces (handle lengths 2-10, bulk of English).
+    static constexpr AZ::u32 WS_PRIMARY_COUNT = 2;
+
+    //! Number of extended workspaces (handle lengths 11-20+, sparse).
+    static constexpr AZ::u32 WS_EXTENDED_COUNT = 2;
+
+    //! Settlement threshold: particle is settled when velocity magnitude < this.
+    static constexpr float WS_VELOCITY_SETTLE_THRESHOLD = 0.5f;
+
+    // ---- VocabPack: CPU-side pre-built vocab data for one word length ----
+    //
+    // Combines ALL firstChar groups (a-z) into one pack per word length.
+    // Host arrays are pre-computed at init time and memcpy'd into workspace
+    // buffers at resolve time. Immutable after construction.
+
+    struct VocabPack
     {
-        char firstChar;
-        AZ::u32 vocabEntryCount;       // Number of vocab entries for this (length, firstChar)
-        AZ::u32 slotsPerGroup;         // How many concurrent stream runs this group can hold
-        AZ::u32 vocabParticlesPerSlot; // vocabEntryCount * wordLength
-        float xOffset;                 // X-axis start position for this group's region
-        AZ::u32 vocabBufferStart;      // First particle index of this group's vocab in the buffer
-        AZ::u32 dynamicBufferStart;    // First particle index of this group's dynamic region
-        AZ::u32 nextFreeSlot;          // Next available slot (reset per batch)
+        AZ::u32 wordLength = 0;
+        AZ::u32 totalVocabParticles = 0;   // Total static particles in this pack
+        AZ::u32 vocabEntryCount = 0;        // Number of vocab words
+        AZ::u32 maxTierCount = 0;           // Highest tier index + 1
+
+        // Host-side pre-built particle arrays (positions, velocities, phases)
+        // Positions: X=charIndex, Y=0, Z=ascii*Z_SCALE, W=0 (invMass=0, static)
+        // Velocities: zero
+        // Phases: logical tier index (remapped to actual phase group IDs at load time)
+        AZStd::vector<float> positions;     // Flat: [x,y,z,w] * totalVocabParticles
+        AZStd::vector<AZ::u32> phases;      // Logical tier index per particle
+
+        struct Entry
+        {
+            AZStd::string word;
+            AZStd::string tokenId;
+            AZ::u32 tierIndex;
+        };
+        AZStd::vector<Entry> entries;
+
+        // O(1) settlement lookup per tier: tierLookup[tier][word] -> entry index
+        AZStd::vector<AZStd::unordered_map<AZStd::string, AZ::u32>> tierLookup;
     };
 
-    // ---- VocabBed: one persistent PBD system per word length ----
+    // ---- Workspace: one reusable GPU particle system with its own PxScene ----
+    //
+    // Created once at startup. Vocab data overwritten per cycle via CUDA memcpy.
+    // Buffer layout: [vocab region (static, invMass=0)] [stream region (dynamic, invMass=1)]
+    // Each workspace owns its own PxScene for pipelined GPU/CPU overlap:
+    //   Scene A simulating (GPU) while Scene B is being read back (CPU)
+    //   while Scene C is being loaded (CPU + LMDB prefetch).
 
-    class VocabBed
+    class Workspace
     {
     public:
-        VocabBed() = default;
-        ~VocabBed();
+        Workspace() = default;
+        ~Workspace();
 
         // Non-copyable (owns GPU resources)
-        VocabBed(const VocabBed&) = delete;
-        VocabBed& operator=(const VocabBed&) = delete;
-        VocabBed(VocabBed&& other) noexcept;
-        VocabBed& operator=(VocabBed&& other) noexcept;
+        Workspace(const Workspace&) = delete;
+        Workspace& operator=(const Workspace&) = delete;
+        Workspace(Workspace&& other) noexcept;
+        Workspace& operator=(Workspace&& other) noexcept;
 
-        bool Initialize(
-            physx::PxPhysics* physics,
-            physx::PxScene* scene,
-            physx::PxCudaContextManager* cuda,
-            AZ::u32 wordLength,
-            const TierAssembly& tierAssembly,
-            AZ::u32 slotsPerGroup,
-            AZ::u32 phaseGroupBase);
+        //! Create GPU resources: own PxScene + PxPBDParticleSystem + PxParticleBuffer.
+        //! Each workspace creates its own scene on the shared CUDA context.
+        //! maxTiers: number of tier phase groups to create (typically 3).
+        bool Create(physx::PxPhysics* physics,
+                    physx::PxCudaContextManager* cuda,
+                    AZ::u32 bufferCapacity, AZ::u32 maxTiers);
 
-        // Load stream runs into dynamic slots. Returns number of overflow runs (couldn't fit).
-        AZ::u32 LoadDynamicRuns(
-            const AZStd::vector<CharRun>& runs,
-            const AZStd::vector<AZ::u32>& runIndices);
+        //! Overwrite vocab region with a VocabPack. Remaps logical tier→phase group IDs.
+        //! Returns max stream slots available after vocab region.
+        AZ::u32 LoadVocabPack(const VocabPack& pack, AZ::u32 wordLength);
 
-        void CheckSettlement(AZ::u32 tierIndex);
+        //! Load stream runs into dynamic region. Returns overflow count.
+        AZ::u32 LoadStreamRuns(const AZStd::vector<CharRun>& runs,
+                               const AZStd::vector<AZ::u32>& indices,
+                               AZ::u32 wordLength);
 
+        //! Check settlement against VocabPack's tier lookup.
+        void CheckSettlement(AZ::u32 tierIndex, const VocabPack& pack);
+
+        //! Phase-only flip for unresolved stream particles to next tier.
         void FlipToTier(AZ::u32 nextTier);
 
-        void ResetDynamics();
-
+        //! Collect results from stream slots into output vector.
         void CollectResults(AZStd::vector<ResolutionResult>& out);
 
+        //! True if any stream slot is unresolved.
         bool HasUnresolved() const;
 
-        AZ::u32 GetMaxTierCount() const { return m_maxTierCount; }
-        AZ::u32 GetWordLength() const { return m_wordLength; }
+        //! Clear dynamic region, ready for next cycle.
+        void ResetDynamics();
+
+        //! Add/remove particle system from own scene.
+        void ActivateInScene();
+        void DeactivateFromScene();
+        bool IsActiveInScene() const { return m_activeInScene; }
+
         bool HasPendingRuns() const { return !m_streamSlots.empty(); }
 
+        //! Kick off N simulation steps. Non-blocking — simulate() dispatches to GPU.
+        //! Call FetchSimResults() to block until done, or IsSimDone() to poll.
+        void BeginSimulate(int steps, float dt);
+
+        //! Poll: has the most recent simulate() finished on this scene?
+        bool IsSimDone() const;
+
+        //! Block until simulation complete, then fetch particle system results.
+        void FetchSimResults();
+
+        //! Collect results, separating resolved and unresolved run indices.
+        void CollectSplit(AZStd::vector<ResolutionResult>& resolved,
+                          AZStd::vector<AZ::u32>& unresolvedRunIndices);
+
+        //! Release all GPU resources including owned PxScene.
         void Shutdown();
 
     private:
         physx::PxPhysics* m_physics = nullptr;
-        physx::PxScene* m_scene = nullptr;
+        physx::PxScene* m_scene = nullptr;            // OWNED — one scene per workspace
         physx::PxCudaContextManager* m_cuda = nullptr;
         physx::PxPBDParticleSystem* m_particleSystem = nullptr;
         physx::PxParticleBuffer* m_particleBuffer = nullptr;
         physx::PxPBDMaterial* m_material = nullptr;
+        bool m_ownsScene = false;                      // True when we created the scene
 
-        AZ::u32 m_wordLength = 0;
-        AZ::u32 m_totalVocabParticles = 0;   // Static vocab region size
-        AZ::u32 m_maxDynamicParticles = 0;    // Dynamic region capacity
-        AZ::u32 m_activeDynamicCount = 0;     // Currently loaded dynamic particles
-        AZ::u32 m_maxParticles = 0;           // Total buffer capacity
+        AZ::u32 m_bufferCapacity = 0;       // Total buffer size
+        AZ::u32 m_vocabParticleCount = 0;   // Current vocab region size (changes per cycle)
+        AZ::u32 m_maxStreamSlots = 0;       // Stream capacity for current cycle
+        AZ::u32 m_currentWordLength = 0;    // Word length of current loaded pack
+        bool m_activeInScene = false;
 
-        AZStd::vector<BedSlotGroup> m_groups;
-        AZStd::unordered_map<char, AZ::u32> m_charToGroupIndex;
+        int m_pendingSteps = 0;              // Steps remaining in current BeginSimulate
+        float m_simDt = 0.0f;               // dt for current simulation
 
         AZStd::vector<StreamRunSlot> m_streamSlots;
-        AZ::u32 m_maxTierCount = 0;
 
-        // Phase group IDs per tier
+        // Phase group IDs per tier (persistent across cycles)
         AZStd::vector<AZ::u32> m_tierPhases;
         AZ::u32 m_inertPhase = 0;
-
-        // Vocab entries per group (pointers into TierAssembly — valid for bed lifetime)
-        struct GroupVocabRef
-        {
-            const ChamberVocab* vocab;  // Points into TierAssembly bucket
-        };
-        AZStd::vector<GroupVocabRef> m_groupVocabs;
+        AZ::u32 m_maxTierCount = 0;
     };
 
-    // ---- BedManager: owns all VocabBeds, replaces ChamberManager ----
+    class HCPVocabulary;  // For punctuation lookups (declared in HCPVocabulary.h)
+
+    // ---- BedManager: orchestrates Workspace pool + phased vocab resolution ----
+    //
+    // Data source: pre-compiled LMDB (data/vocab.lmdb/) with per-length sub-databases.
+    // Entries are frequency-ordered at compile time — Labels first, then freq-ranked,
+    // then unranked. No Postgres at runtime, no sorting, no tier assignment.
+    //
+    // Internally: 2-4 reusable Workspaces, frequency-ordered vocab per length,
+    // small phases (RC_VOCAB_PER_PHASE entries each), descending-length loop.
+    // Each phase: tiny vocab + maximum stream slots → clean settlement.
+    // Cycle through phases until all runs resolved or vocab exhausted.
 
     class BedManager
     {
     public:
+        //! Initialize from pre-compiled LMDB vocab beds.
+        //! Opens vbed_02..vbed_16 sub-databases, reads frequency-ordered entries,
+        //! creates GPU workspaces (each with its own PxScene). No Postgres dependency.
+        //! @param lmdbEnv Shared LMDB environment (from HCPVocabulary::GetLmdbEnv())
+        //! @param vocabulary For punctuation word lookups at resolve time
         bool Initialize(
             physx::PxPhysics* physics,
-            physx::PxScene* scene,
             physx::PxCudaContextManager* cuda,
-            const TierAssembly& tiers);
+            MDB_env* lmdbEnv,
+            HCPVocabulary* vocabulary);
 
         ResolutionManifest Resolve(const AZStd::vector<CharRun>& runs);
 
@@ -133,23 +206,67 @@ namespace HCPEngine
         bool IsInitialized() const { return m_initialized; }
 
     private:
-        // Resolve a batch of runs across ALL beds simultaneously.
-        // Loads dynamics into all relevant beds, runs one shared tier cascade,
-        // collects results, resets. Overflow runs returned for re-processing.
-        void ResolvePass(
+        //! Build a VocabPack from a slice of the frequency-ordered entry list.
+        //! [startEntry, startEntry+count) across all firstChar groups combined.
+        VocabPack BuildVocabSlice(AZ::u32 wordLength, AZ::u32 startEntry, AZ::u32 count) const;
+
+        //! Build a VocabPack from a pre-filtered entry vector (after first-letter filtering).
+        VocabPack BuildVocabSliceFromEntries(AZ::u32 wordLength,
+            const AZStd::vector<VocabPack::Entry>& entries,
+            AZ::u32 startEntry, AZ::u32 count) const;
+
+        //! Get workspace pool for a given word length (primary or extended).
+        AZStd::vector<Workspace*> GetWorkspacesForLength(AZ::u32 wordLength);
+
+        //! Resolve a single phase's runs through workspace pool.
+        void ResolvePhase(
+            AZ::u32 wordLength,
             const AZStd::vector<CharRun>& runs,
-            const AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>>& runsByLength,
+            const AZStd::vector<AZ::u32>& runIndices,
+            const VocabPack& phasePack,
+            AZ::u32 phaseIndex,
             AZStd::vector<ResolutionResult>& results,
-            AZStd::vector<AZ::u32>& overflowRuns);
+            AZStd::vector<AZ::u32>& unresolvedIndices);
+
+        //! Run phase cascade over a pre-filtered vocab list. Used by ResolveLengthCycle
+        //! for both Label and common passes.
+        void RunPhaseCascade(
+            AZ::u32 wordLength,
+            const AZStd::vector<CharRun>& runs,
+            const AZStd::vector<VocabPack::Entry>& filteredVocab,
+            AZStd::vector<AZ::u32>& currentIndices,
+            AZStd::vector<ResolutionResult>& results,
+            AZ::u32& phaseIndex);
+
+        //! Resolve runs of a single word length through Label + common phase cascade.
+        //! Labels checked only against capitalized runs (firstCap/allCaps).
+        //! Common vocab checked against all remaining unresolved runs.
+        void ResolveLengthCycle(
+            AZ::u32 wordLength,
+            const AZStd::vector<CharRun>& runs,
+            const AZStd::vector<AZ::u32>& runIndices,
+            AZStd::vector<ResolutionResult>& results,
+            AZStd::vector<AZ::u32>& unresolvedIndices);
 
         bool m_initialized = false;
         physx::PxPhysics* m_physics = nullptr;
-        physx::PxScene* m_scene = nullptr;
         physx::PxCudaContextManager* m_cuda = nullptr;
-        const TierAssembly* m_tiers = nullptr;
+        HCPVocabulary* m_vocabulary = nullptr;  // For punctuation lookups
 
-        AZStd::vector<VocabBed> m_beds;
-        AZStd::unordered_map<AZ::u32, AZ::u32> m_lengthToBedIndex;  // wordLength -> index into m_beds
+        // Workspace pools (created once at startup)
+        AZStd::vector<Workspace> m_primaryWorkspaces;    // For lengths 2-10
+        AZStd::vector<Workspace> m_extendedWorkspaces;   // For lengths 11-20+
+
+        // Frequency-ordered entry lists per word length
+        // Read from LMDB at init: Labels first, then freq-ranked, then unranked.
+        AZStd::unordered_map<AZ::u32, AZStd::vector<VocabPack::Entry>> m_vocabByLength;
+
+        // Label count per word length — entries [0..labelCount) are Labels.
+        // Used by ResolveLengthCycle to skip Labels for non-capitalized runs.
+        AZStd::unordered_map<AZ::u32, AZ::u32> m_labelCountByLength;
+
+        // Active word lengths (sorted descending)
+        AZStd::vector<AZ::u32> m_activeWordLengths;
     };
 
 } // namespace HCPEngine

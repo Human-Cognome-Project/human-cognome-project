@@ -7,12 +7,18 @@
 #include <HCPEngine/HCPEngineBus.h>
 #include "HCPVocabulary.h"
 #include "HCPParticlePipeline.h"
-#include "HCPStorage.h"
+#include "HCPStorage.h"           // Entity cross-ref free functions
+#include "HCPDbConnection.h"
+#include "HCPPbmWriter.h"
+#include "HCPPbmReader.h"
+#include "HCPDocumentQuery.h"
+#include "HCPDocVarQuery.h"
+#include "HCPBondQuery.h"
 #include "HCPSocketServer.h"
 #include "HCPBondCompiler.h"
 #include "HCPCacheMissResolver.h"
-#include "HCPResolutionChamber.h"  // TierAssembly
 #include "HCPVocabBed.h"          // BedManager
+#include "HCPEnvelopeManager.h"   // Envelope cache lifecycle
 
 namespace HCPEngine
 {
@@ -38,12 +44,17 @@ namespace HCPEngine
 
         // Accessors for socket server and other subsystems
         const HCPVocabulary& GetVocabulary() const { return m_vocabulary; }
-        HCPWriteKernel& GetWriteKernel() { return m_writeKernel; }
+        HCPDbConnection& GetDbConnection() { return m_dbConn; }
+        HCPPbmWriter& GetPbmWriter() { return m_pbmWriter; }
+        HCPPbmReader& GetPbmReader() { return m_pbmReader; }
+        HCPDocumentQuery& GetDocumentQuery() { return m_docQuery; }
+        HCPDocVarQuery& GetDocVarQuery() { return m_docVarQuery; }
+        HCPBondQuery& GetBondQuery() { return m_bondQuery; }
         CacheMissResolver& GetResolver() { return m_resolver; }
         HCPParticlePipeline& GetParticlePipeline() { return m_particlePipeline; }
         const HCPBondTable& GetCharWordBonds() const { return m_charWordBonds; }
         BedManager& GetBedManager() { return m_bedManager; }
-        const TierAssembly& GetTierAssembly() const { return m_tierAssembly; }
+        HCPEnvelopeManager& GetEnvelopeManager() { return m_envelopeManager; }
         bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
@@ -64,6 +75,7 @@ namespace HCPEngine
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
+
         ////////////////////////////////////////////////////////////////////////
         // Console commands — source workstation CLI
         // These are the O3DE-native interface to kernel ops.
@@ -77,6 +89,7 @@ namespace HCPEngine
         void SourcePhysTokenize(const AZ::ConsoleCommandContainer& arguments);
         void SourcePhysWordTrial(const AZ::ConsoleCommandContainer& arguments);
         void SourcePhysWordResolve(const AZ::ConsoleCommandContainer& arguments);
+        void SourceActivateEnvelope(const AZ::ConsoleCommandContainer& arguments);
         ////////////////////////////////////////////////////////////////////////
 
     private:
@@ -84,7 +97,12 @@ namespace HCPEngine
 
         HCPVocabulary m_vocabulary;
         HCPParticlePipeline m_particlePipeline;
-        HCPWriteKernel m_writeKernel;
+        HCPDbConnection m_dbConn;
+        HCPPbmWriter m_pbmWriter{m_dbConn};
+        HCPPbmReader m_pbmReader{m_dbConn};
+        HCPDocumentQuery m_docQuery{m_dbConn};
+        HCPDocVarQuery m_docVarQuery{m_dbConn};
+        HCPBondQuery m_bondQuery{m_dbConn};
         HCPSocketServer m_socketServer;
 
         // PBM bond tables — force constants for physics detection
@@ -94,9 +112,11 @@ namespace HCPEngine
         // Cache miss resolver — fills LMDB from Postgres on demand
         CacheMissResolver m_resolver;
 
-        // Persistent vocab beds — Phase 2 (char→word) resolution
-        TierAssembly m_tierAssembly;
+        // Persistent vocab beds — Phase 2 (char→word) resolution (LMDB-backed)
         BedManager m_bedManager;
+
+        // Envelope cache lifecycle — LMDB hot cache management
+        HCPEnvelopeManager m_envelopeManager;
 
         // Console command registrations
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceIngest, AZ::ConsoleFunctorFlags::Null, "Encode a source file into the HCP pipeline");
@@ -108,5 +128,6 @@ namespace HCPEngine
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysTokenize, AZ::ConsoleFunctorFlags::Null, "Run physics-based byte->char superposition trial");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordTrial, AZ::ConsoleFunctorFlags::Null, "Run physics-based char->word superposition trial");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordResolve, AZ::ConsoleFunctorFlags::Null, "Run phase-gated char->word resolution chambers");
+        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceActivateEnvelope, AZ::ConsoleFunctorFlags::Null, "Activate a named activity envelope for LMDB cache loading");
     };
 }

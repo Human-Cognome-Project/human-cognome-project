@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HCPParticlePipeline.h"
+#include <AzCore/base.h>
 #include <AzCore/std/string/string.h>
 
 // Forward declare libpq types
@@ -50,11 +51,13 @@ namespace HCPEngine
         //! @param tokenIds Ordered token IDs (from Tokenize)
         //! @param positions Matching position numbers (1:1 with tokenIds)
         //! @param totalSlots Total position counter (document length)
+        //! @param modifiers Per-token modifiers (packed: morphBits<<2 | capFlags). Empty = bare.
         bool StorePositions(
             int docPk,
             const AZStd::vector<AZStd::string>& tokenIds,
             const AZStd::vector<int>& positions,
-            int totalSlots);
+            int totalSlots,
+            const AZStd::vector<AZ::u32>& modifiers = {});
 
         // ---- PBM retrieval ----
 

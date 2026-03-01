@@ -30,6 +30,21 @@ set(FILES
     Source/HCPResolutionChamber.h
     Source/HCPVocabBed.cpp
     Source/HCPVocabBed.h
+    Source/HCPEnvelopeManager.cpp
+    Source/HCPEnvelopeManager.h
+    Source/HCPDbConnection.cpp
+    Source/HCPDbConnection.h
+    Source/HCPDbUtils.h
+    Source/HCPPbmWriter.cpp
+    Source/HCPPbmWriter.h
+    Source/HCPPbmReader.cpp
+    Source/HCPPbmReader.h
+    Source/HCPDocumentQuery.cpp
+    Source/HCPDocumentQuery.h
+    Source/HCPDocVarQuery.cpp
+    Source/HCPDocVarQuery.h
+    Source/HCPBondQuery.cpp
+    Source/HCPBondQuery.h
     Source/HCPDatabaseBackend.h
     Source/HCPPostgresBackend.cpp
     Source/HCPSqliteBackend.cpp

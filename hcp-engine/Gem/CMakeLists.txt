@@ -176,26 +176,11 @@ if(HCP_BUILD_WORKSTATION AND PAL_TRAIT_BUILD_HOST_TOOLS)
             hcpengine_workstation_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include
                 Source
-                ${LIBPQ_INCLUDE_DIR}
-                ${LIBLMDB_INCLUDE_DIR}
-                ${LIBSQLITE3_INCLUDE_DIR}
-                ${RAPIDJSON_INCLUDE_DIR}
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::${gem_name}.Private.Object
-                AZ::AzCore
-                AZ::AzFramework
-                AZ::AzGameFramework
                 AZ::AzToolsFramework
-                Gem::PhysX5.Static
-                ${LIBPQ_LIBRARY}
-                ${LIBLMDB_LIBRARY}
-                ${LIBSQLITE3_LIBRARY}
-        COMPILE_DEFINITIONS
-            PRIVATE
-                HCP_STANDALONE_WORKSTATION=1
+                3rdParty::Qt::Network
     )
 endif()
 

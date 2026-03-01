@@ -4,7 +4,7 @@
 
 namespace HCPEngine
 {
-    class HCPWriteKernel;
+    class HCPDocumentQuery;
     class HCPVocabulary;
 
     //! JSON metadata interpretation layer.
@@ -28,14 +28,14 @@ namespace HCPEngine
     //! @param jsonText  Raw JSON text for ONE metadata entry (a single object, not an array)
     //! @param docPk     Integer PK of the target pbm_documents row
     //! @param catalog   Source catalog name (e.g., "gutenberg") — used for provenance
-    //! @param writeKernel  Connected write kernel for DB operations
+    //! @param docQuery  Document query kernel for metadata/provenance DB operations
     //! @param vocab     Loaded vocabulary (for tokenizing text values)
     //! @return Summary of what was processed
     JsonInterpretResult ProcessJsonMetadata(
         const AZStd::string& jsonText,
         int docPk,
         const AZStd::string& catalog,
-        HCPWriteKernel& writeKernel,
+        HCPDocumentQuery& docQuery,
         const HCPVocabulary& vocab);
 
 } // namespace HCPEngine

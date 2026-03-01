@@ -1,7 +1,7 @@
 #include "HCPEngineWidget.h"
 #include "HCPEngineEditorSystemComponent.h"
 #include "../HCPEngineSystemComponent.h"
-#include "../HCPStorage.h"
+#include "../HCPStorage.h"           // Entity cross-ref free functions
 #include "../HCPVocabulary.h"
 #include "../HCPTokenizer.h"
 #include "../HCPCacheMissResolver.h"
@@ -311,16 +311,16 @@ namespace HCPEngine
             return;
         }
 
-        auto& wk = engine->GetWriteKernel();
-        if (!wk.IsConnected()) wk.Connect();
-        if (!wk.IsConnected())
+        auto& db = engine->GetDbConnection();
+        if (!db.IsConnected()) db.Connect();
+        if (!db.IsConnected())
         {
             FILE* df = fopen("/tmp/hcp_editor_diag.txt","a");
-            if(df){fprintf(df,"Widget: WriteKernel failed to connect\n");fclose(df);}
+            if(df){fprintf(df,"Widget: DB failed to connect\n");fclose(df);}
             return;
         }
 
-        auto docs = wk.ListDocuments();
+        auto docs = engine->GetDocumentQuery().ListDocuments();
         {
             FILE* df = fopen("/tmp/hcp_editor_diag.txt","a");
             if(df){fprintf(df,"Widget: ListDocuments returned %zu docs\n", docs.size());fclose(df);}
@@ -359,10 +359,10 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
+        auto& docQuery = engine->GetDocumentQuery();
         AZStd::string azDocId(docId.toUtf8().constData());
 
-        auto detail = wk.GetDocumentDetail(azDocId);
+        auto detail = docQuery.GetDocumentDetail(azDocId);
         if (detail.pk == 0) return;
 
         m_selectedDocPk = detail.pk;
@@ -408,14 +408,14 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
+        auto& docQuery = engine->GetDocumentQuery();
         AZStd::string azDocId(docId.toUtf8().constData());
-        int docPk = wk.GetDocPk(azDocId);
+        int docPk = docQuery.GetDocPk(azDocId);
         if (docPk == 0) return;
 
         // Fiction characters — cross-reference starters with fiction entity names
         PGconn* ficConn = engine->GetResolver().GetConnection("hcp_fic_entities");
-        PGconn* pbmConn = wk.GetConnection();
+        PGconn* pbmConn = engine->GetDbConnection().Get();
         if (ficConn && pbmConn)
         {
             auto ficEntities = GetFictionEntitiesForDocument(ficConn, pbmConn, docPk);
@@ -458,7 +458,7 @@ namespace HCPEngine
         if (nfConn)
         {
             // Try to get author name from document metadata first
-            auto detail = wk.GetDocumentDetail(azDocId);
+            auto detail = docQuery.GetDocumentDetail(azDocId);
             AZStd::string authorSearch;
 
             if (!detail.metadataJson.empty() && detail.metadataJson != "{}")
@@ -571,14 +571,13 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
         AZStd::string azDocId(docId.toUtf8().constData());
         AZStd::string azTokenId(tokenId.toUtf8().constData());
 
-        int docPk = wk.GetDocPk(azDocId);
+        int docPk = engine->GetDocumentQuery().GetDocPk(azDocId);
         if (docPk == 0) return;
 
-        auto bonds = wk.GetBondsForToken(docPk, azTokenId);
+        auto bonds = engine->GetBondQuery().GetBondsForToken(docPk, azTokenId);
 
         m_bondTree->clear();
 
@@ -633,13 +632,12 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
         AZStd::string azDocId(m_selectedDocId.toUtf8().constData());
-        int docPk = wk.GetDocPk(azDocId);
+        int docPk = engine->GetDocumentQuery().GetDocPk(azDocId);
         if (docPk == 0) return;
 
         // Fetch ALL starters (no LIMIT 50)
-        auto allStarters = wk.GetAllStarters(docPk);
+        auto allStarters = engine->GetBondQuery().GetAllStarters(docPk);
 
         // Resolve each to surface form and filter by substring match
         m_bondTree->clear();
@@ -688,12 +686,11 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
         AZStd::string azDocId(docId.toUtf8().constData());
-        int docPk = wk.GetDocPk(azDocId);
+        int docPk = engine->GetDocumentQuery().GetDocPk(azDocId);
         if (docPk == 0) return;
 
-        auto vars = wk.GetDocVarsExtended(docPk);
+        auto vars = engine->GetDocVarQuery().GetDocVarsExtended(docPk);
 
         for (const auto& v : vars)
         {
@@ -804,10 +801,9 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
         AZStd::string azDocId(m_selectedDocId.toUtf8().constData());
 
-        auto tokenIds = wk.LoadPositions(azDocId);
+        auto tokenIds = engine->GetPbmReader().LoadPositions(azDocId);
         if (tokenIds.empty())
         {
             m_textView->setPlainText("(no positions stored)");
@@ -830,7 +826,7 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
+        auto& docQuery = engine->GetDocumentQuery();
 
         // Build JSON object for the set operation
         AZStd::string setJson = "{\"" +
@@ -838,7 +834,7 @@ namespace HCPEngine
             AZStd::string(value.toUtf8().constData()) + "\"}";
 
         AZStd::vector<AZStd::string> removeKeys;
-        wk.UpdateMetadata(m_selectedDocPk, setJson, removeKeys);
+        docQuery.UpdateMetadata(m_selectedDocPk, setJson, removeKeys);
 
         // Refresh the info panel
         m_metaKeyInput->clear();
@@ -853,15 +849,15 @@ namespace HCPEngine
         auto* engine = GetEngine();
         if (!engine) return;
 
-        auto& wk = engine->GetWriteKernel();
+        auto& docQuery = engine->GetDocumentQuery();
         AZStd::string azDocId(m_selectedDocId.toUtf8().constData());
 
         // Get document name for title matching
-        auto detail = wk.GetDocumentDetail(azDocId);
+        auto detail = docQuery.GetDocumentDetail(azDocId);
         QString docName = QString::fromUtf8(detail.name.c_str(), static_cast<int>(detail.name.size()));
 
         // Try provenance catalog_id first
-        auto prov = wk.GetProvenance(m_selectedDocPk);
+        auto prov = docQuery.GetProvenance(m_selectedDocPk);
         QString catalogId;
         if (prov.found && !prov.catalogId.empty())
         {
@@ -938,7 +934,7 @@ namespace HCPEngine
         QByteArray metaBytes = metaDoc.toJson(QJsonDocument::Compact);
         AZStd::string metaJson(metaBytes.constData(), metaBytes.size());
 
-        wk.StoreDocumentMetadata(m_selectedDocPk, metaJson);
+        docQuery.StoreDocumentMetadata(m_selectedDocPk, metaJson);
 
         // Refresh the display
         ShowDocumentInfo(m_selectedDocId);

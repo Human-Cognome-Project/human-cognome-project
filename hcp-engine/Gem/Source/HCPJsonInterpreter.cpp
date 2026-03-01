@@ -1,5 +1,5 @@
 #include "HCPJsonInterpreter.h"
-#include "HCPStorage.h"
+#include "HCPDocumentQuery.h"
 #include "HCPVocabulary.h"
 #include "HCPTokenizer.h"
 
@@ -62,7 +62,7 @@ namespace HCPEngine
         const AZStd::string& jsonText,
         int docPk,
         const AZStd::string& catalog,
-        HCPWriteKernel& writeKernel,
+        HCPDocumentQuery& docQuery,
         const HCPVocabulary& vocab)
     {
         JsonInterpretResult result;
@@ -168,7 +168,7 @@ namespace HCPEngine
         if (metaDoc.MemberCount() > 0)
         {
             AZStd::string metaJson = ValueToJsonString(metaDoc);
-            if (writeKernel.StoreDocumentMetadata(docPk, metaJson))
+            if (docQuery.StoreDocumentMetadata(docPk, metaJson))
             {
                 fprintf(stderr, "[HCPJsonInterp] Metadata stored: %d known, %d unreviewed\n",
                     result.knownFields, result.unreviewedFields);
@@ -181,7 +181,7 @@ namespace HCPEngine
         {
             AZStd::string sourceFormat = "txt";
             AZStd::string sourceType = "file";
-            if (writeKernel.StoreProvenance(
+            if (docQuery.StoreProvenance(
                     docPk, sourceType, sourceUrl, sourceFormat, catalog, catalogId))
             {
                 result.provenanceStored = true;

@@ -57,6 +57,10 @@ namespace HCPEngine
         //! Stop the server and join the listener thread.
         void Stop();
 
+        //! Block until the server thread exits. For daemon mode — call from
+        //! a separate thread to prevent O3DE from exiting.
+        void WaitForShutdown();
+
         bool IsRunning() const { return m_running.load(); }
 
     private:
