@@ -347,11 +347,16 @@ namespace HCPEngine
 
         PQexec(pg, "BEGIN");
 
-        // Group positions by token ID
+        // Group positions by token ID + build position→modifier lookup
         AZStd::unordered_map<AZStd::string, AZStd::vector<int>> tokenPositions;
+        AZStd::unordered_map<int, AZ::u32> positionModifiers;  // position → modifier (non-zero only)
         for (size_t i = 0; i < tokenIds.size(); ++i)
         {
             tokenPositions[tokenIds[i]].push_back(positions[i]);
+            if (hasModifiers && modifiers[i] != 0)
+            {
+                positionModifiers[positions[i]] = modifiers[i];
+            }
         }
 
         // Update total_slots and unique_tokens
@@ -425,32 +430,51 @@ namespace HCPEngine
                 starterTokenId = tokenId;
             }
 
-            // Encode sparse modifiers
+            // Encode sparse modifiers via O(1) lookup per position
             AZStd::string modEncoded;
-            if (hasModifiers)
+            if (hasModifiers && !positionModifiers.empty())
             {
-                modEncoded = EncodeSparseModifiers(
-                    posList, modifiers, positions, tokenIds, tokenId);
+                for (int pos : posList)
+                {
+                    auto it = positionModifiers.find(pos);
+                    if (it != positionModifiers.end())
+                    {
+                        char posBuf[4];
+                        EncodePosition(pos, posBuf);
+                        char modBuf[4];
+                        EncodePosition(static_cast<int>(it->second), modBuf);
+                        modEncoded.append(posBuf, 4);
+                        modEncoded.append(modBuf, 4);
+                    }
+                }
             }
 
-            // UPDATE starter row with positions (+ modifiers)
+            // Split token into component parts for matching (avoids generated-column format mismatch)
+            AZStd::string aParts[5];
+            SplitTokenId(starterTokenId, aParts);
+
+            // UPDATE starter row with positions (+ modifiers), matching on component parts
             PGresult* res;
             if (!modEncoded.empty())
             {
                 const char* params[] = { packed.c_str(), modEncoded.c_str(),
-                                          docPkStr.c_str(), starterTokenId.c_str() };
+                                          docPkStr.c_str(),
+                                          aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                                          aParts[3].c_str(), aParts[4].c_str() };
                 res = PQexecParams(pg,
                     "UPDATE pbm_starters SET positions = $1, modifiers = $2 "
-                    "WHERE doc_id = $3::integer AND token_a_id = $4",
-                    4, nullptr, params, nullptr, nullptr, 0);
+                    "WHERE doc_id = $3::integer AND a_ns = $4 AND a_p2 = $5 AND a_p3 = $6 AND a_p4 = $7 AND a_p5 = $8",
+                    8, nullptr, params, nullptr, nullptr, 0);
             }
             else
             {
-                const char* params[] = { packed.c_str(), docPkStr.c_str(), starterTokenId.c_str() };
+                const char* params[] = { packed.c_str(), docPkStr.c_str(),
+                                          aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                                          aParts[3].c_str(), aParts[4].c_str() };
                 res = PQexecParams(pg,
                     "UPDATE pbm_starters SET positions = $1 "
-                    "WHERE doc_id = $2::integer AND token_a_id = $3",
-                    3, nullptr, params, nullptr, nullptr, 0);
+                    "WHERE doc_id = $2::integer AND a_ns = $3 AND a_p2 = $4 AND a_p3 = $5 AND a_p4 = $6 AND a_p5 = $7",
+                    7, nullptr, params, nullptr, nullptr, 0);
             }
 
             if (PQresultStatus(res) == PGRES_COMMAND_OK)
@@ -464,8 +488,6 @@ namespace HCPEngine
                 {
                     // No existing starter — INSERT a new position-only row
                     PQclear(res);
-                    AZStd::string aParts[5];
-                    SplitTokenId(starterTokenId, aParts);
 
                     if (!modEncoded.empty())
                     {
@@ -493,8 +515,23 @@ namespace HCPEngine
                             "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
                             7, nullptr, insParams, nullptr, nullptr, 0);
                     }
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++updated;
+                    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+                    {
+                        fprintf(stderr, "[HCPPbmWriter] StorePositions: INSERT failed for '%s': %s\n",
+                            starterTokenId.c_str(), PQerrorMessage(pg));
+                        fflush(stderr);
+                    }
+                    else
+                    {
+                        ++updated;
+                    }
                 }
+            }
+            else
+            {
+                fprintf(stderr, "[HCPPbmWriter] StorePositions: UPDATE failed for '%s': %s\n",
+                    starterTokenId.c_str(), PQerrorMessage(pg));
+                fflush(stderr);
             }
             PQclear(res);
         }

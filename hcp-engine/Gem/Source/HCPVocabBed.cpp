@@ -333,6 +333,8 @@ namespace HCPEngine
             ss.charCount = charCount;
             ss.runText = run.text;
             ss.resolved = false;
+            ss.firstCap = run.firstCap;
+            ss.allCaps = run.allCaps;
 
             for (AZ::u32 c = 0; c < charCount; ++c)
             {
@@ -500,6 +502,9 @@ namespace HCPEngine
             r.matchedTokenId = slot.matchedTokenId;
             r.tierResolved = slot.tierResolved;
             r.resolved = slot.resolved;
+            r.runIndex = slot.runIndex;
+            r.firstCap = slot.firstCap;
+            r.allCaps = slot.allCaps;
             out.push_back(r);
         }
     }
@@ -527,6 +532,9 @@ namespace HCPEngine
                 r.matchedTokenId = slot.matchedTokenId;
                 r.tierResolved = slot.tierResolved;
                 r.resolved = true;
+                r.runIndex = slot.runIndex;
+                r.firstCap = slot.firstCap;
+                r.allCaps = slot.allCaps;
                 resolved.push_back(r);
             }
             else
@@ -738,15 +746,15 @@ namespace HCPEngine
     // ========================================================================
     // Inflectional suffix stripping — host-side, before PBD
     //
-    // Priority-ordered rules (longest suffix first). Each rule strips the
-    // suffix and checks if the base form exists in LMDB via LookupWordLocal.
-    // Returns the base token_id + morph bits if found, empty otherwise.
+    // Priority-ordered rules (longest suffix first). Each rule produces a
+    // candidate base word + morph bits. No vocabulary lookup — the base gets
+    // injected into the PBD queue at its length, and PBD against the vocab
+    // bed IS the existence check. First matching rule wins.
     // ========================================================================
 
     struct InflectionStripResult
     {
         AZStd::string baseWord;
-        AZStd::string tokenId;
         AZ::u16 morphBits = 0;
         bool stripped = false;
     };
@@ -759,24 +767,18 @@ namespace HCPEngine
     }
 
     static InflectionStripResult TryInflectionStrip(
-        const AZStd::string& word, const HCPVocabulary* vocab)
+        const AZStd::string& word)
     {
         InflectionStripResult result;
-        if (!vocab || word.size() < 4) return result;  // Too short to strip meaningfully
+        if (word.size() < 4) return result;  // Too short to strip meaningfully
 
-        auto tryBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
+        auto acceptBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
         {
             if (base.size() < 2) return false;
-            AZStd::string tokenId = vocab->LookupWordLocal(base);
-            if (!tokenId.empty())
-            {
-                result.baseWord = base;
-                result.tokenId = tokenId;
-                result.morphBits = bits;
-                result.stripped = true;
-                return true;
-            }
-            return false;
+            result.baseWord = base;
+            result.morphBits = bits;
+            result.stripped = true;
+            return true;
         };
 
         const size_t len = word.size();
@@ -784,23 +786,23 @@ namespace HCPEngine
         // ---- -ies → -y (e.g. "parties" → "party") ----
         if (len >= 4 && word.substr(len - 3) == "ies")
         {
-            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
+            if (acceptBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
                 return result;
         }
 
         // ---- -ves → -f / -fe (e.g. "wolves" → "wolf", "knives" → "knife") ----
         if (len >= 4 && word.substr(len - 3) == "ves")
         {
-            if (tryBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
+            if (acceptBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
                 return result;
-            if (tryBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
+            if (acceptBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
                 return result;
         }
 
         // ---- -ied → -y (e.g. "carried" → "carry") ----
         if (len >= 4 && word.substr(len - 3) == "ied")
         {
-            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
+            if (acceptBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
                 return result;
         }
 
@@ -810,7 +812,7 @@ namespace HCPEngine
             AZStd::string stem = word.substr(0, len - 3);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
             {
-                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
+                if (acceptBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
                     return result;
             }
         }
@@ -821,7 +823,7 @@ namespace HCPEngine
             AZStd::string stem = word.substr(0, len - 2);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
             {
-                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
+                if (acceptBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
                     return result;
             }
         }
@@ -830,9 +832,9 @@ namespace HCPEngine
         if (len >= 5 && word.substr(len - 3) == "ing")
         {
             AZStd::string base = word.substr(0, len - 3);
-            if (tryBase(base, MorphBit::PROG))
+            if (acceptBase(base, MorphBit::PROG))
                 return result;
-            if (tryBase(base + "e", MorphBit::PROG))
+            if (acceptBase(base + "e", MorphBit::PROG))
                 return result;
         }
 
@@ -840,9 +842,9 @@ namespace HCPEngine
         if (len >= 4 && word.substr(len - 2) == "ed")
         {
             AZStd::string base = word.substr(0, len - 2);
-            if (tryBase(base, MorphBit::PAST))
+            if (acceptBase(base, MorphBit::PAST))
                 return result;
-            if (tryBase(base + "e", MorphBit::PAST))
+            if (acceptBase(base + "e", MorphBit::PAST))
                 return result;
         }
 
@@ -853,12 +855,12 @@ namespace HCPEngine
             // Doubled consonant
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
             {
-                if (tryBase(base.substr(0, base.size() - 1), 0))  // No morph bit for comparative (reserved)
+                if (acceptBase(base.substr(0, base.size() - 1), 0))
                     return result;
             }
-            if (tryBase(base, 0))
+            if (acceptBase(base, 0))
                 return result;
-            if (tryBase(base + "e", 0))
+            if (acceptBase(base + "e", 0))
                 return result;
         }
 
@@ -868,42 +870,49 @@ namespace HCPEngine
             AZStd::string base = word.substr(0, len - 3);
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
             {
-                if (tryBase(base.substr(0, base.size() - 1), 0))
+                if (acceptBase(base.substr(0, base.size() - 1), 0))
                     return result;
             }
-            if (tryBase(base, 0))
+            if (acceptBase(base, 0))
                 return result;
-            if (tryBase(base + "e", 0))
+            if (acceptBase(base + "e", 0))
                 return result;
         }
 
         // ---- -es (e.g. "boxes" → "box", "watches" → "watch") ----
         if (len >= 4 && word.substr(len - 2) == "es")
         {
-            if (tryBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
+            if (acceptBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
                 return result;
-            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
+            if (acceptBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
                 return result;
         }
 
         // ---- -s (plural / 3rd person) ----
         if (len >= 4 && word.back() == 's' && word[len-2] != 's')
         {
-            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
+            if (acceptBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
+                return result;
+        }
+
+        // ---- -ily → -y (adverb from y-stem: e.g. "daily" → "day", "happily" → "happy") ----
+        if (len >= 5 && word.substr(len - 3) == "ily")
+        {
+            if (acceptBase(word.substr(0, len - 3) + "y", 0))
                 return result;
         }
 
         // ---- -ly (adverb) ----
         if (len >= 5 && word.substr(len - 2) == "ly")
         {
-            if (tryBase(word.substr(0, len - 2), 0))
+            if (acceptBase(word.substr(0, len - 2), 0))
                 return result;
         }
 
         // ---- -ness ----
         if (len >= 6 && word.substr(len - 4) == "ness")
         {
-            if (tryBase(word.substr(0, len - 4), 0))
+            if (acceptBase(word.substr(0, len - 4), 0))
                 return result;
         }
 
@@ -1432,6 +1441,7 @@ namespace HCPEngine
                 r.matchedWord = run.text;
                 r.matchedTokenId = run.preAssignedTokenId;
                 r.tierResolved = 0;
+                r.runIndex = i;
                 r.firstCap = run.firstCap;
                 r.allCaps = run.allCaps;
                 manifest.results.push_back(r);
@@ -1445,6 +1455,7 @@ namespace HCPEngine
                 r.matchedWord = run.text;
                 r.matchedTokenId = "NUM";
                 r.tierResolved = 0;
+                r.runIndex = i;
                 manifest.results.push_back(r);
                 ++preResolved;
             }
@@ -1534,6 +1545,7 @@ namespace HCPEngine
                 r.matchedWord = arun.text;
                 r.matchedTokenId = tokenId;
                 r.tierResolved = 0;
+                r.runIndex = idx;
                 r.firstCap = arun.firstCap;
                 r.allCaps = arun.allCaps;
                 manifest.results.push_back(r);
@@ -1558,6 +1570,7 @@ namespace HCPEngine
                 r.matchedWord = hrun.text;
                 r.matchedTokenId = tokenId;
                 r.tierResolved = 0;
+                r.runIndex = idx;
                 r.firstCap = hrun.firstCap;
                 r.allCaps = hrun.allCaps;
                 manifest.results.push_back(r);
@@ -1628,7 +1641,7 @@ namespace HCPEngine
                     continue;
                 }
 
-                InflectionStripResult strip = TryInflectionStrip(run.text, m_vocabulary);
+                InflectionStripResult strip = TryInflectionStrip(run.text);
                 if (!strip.stripped)
                 {
                     allUnresolvedOriginal.push_back(idx);
@@ -1676,6 +1689,8 @@ namespace HCPEngine
         // ---- Resolve inflected dependents whose bases resolved (via PBD or synthetics) ----
         // Scan all manifest results for base words that have pending dependents.
         // Synthetic runs resolve via PBD → appear in manifest → dependents piggyback.
+        // Failed bases collected for silent-e fallback (e.g. "resolv" → "resolve").
+        AZStd::unordered_map<AZStd::string, AZStd::vector<InflectedDependent>*> silentECandidates;
         {
             AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedBases;
             for (const auto& r : manifest.results)
@@ -1700,6 +1715,7 @@ namespace HCPEngine
                         r.matchedTokenId = bit->second->matchedTokenId;
                         r.morphBits = dep.morphBits;
                         r.tierResolved = bit->second->tierResolved;
+                        r.runIndex = dep.runIndex;
                         r.firstCap = depRun.firstCap;
                         r.allCaps = depRun.allCaps;
                         manifest.results.push_back(r);
@@ -1708,11 +1724,8 @@ namespace HCPEngine
                 }
                 else
                 {
-                    // Base never resolved → inflected forms are vars
-                    for (auto& dep : deps)
-                    {
-                        allUnresolvedOriginal.push_back(dep.runIndex);
-                    }
+                    // Base never resolved — collect for silent-e fallback
+                    silentECandidates[baseWord] = &deps;
                 }
             }
 
@@ -1720,6 +1733,128 @@ namespace HCPEngine
             {
                 fprintf(stderr, "[BedManager] Inflected dependents resolved via base PBD: %u\n", depResolved);
                 fflush(stderr);
+            }
+        }
+
+        // ---- Silent-e fallback: failed bases from -ed/-es/-s get "e" appended ----
+        // e.g. "resolv" failed → try "resolve", "issu" failed → try "issue"
+        // Only fires for bases that actually failed PBD. One cleanup cycle per length.
+        {
+            // Collect base+e candidates grouped by length
+            AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> silentEByLength;
+            AZStd::unordered_map<AZStd::string, AZStd::string> silentEOrigBase;  // base+e → original base
+            AZ::u32 silentECount = 0;
+
+            fprintf(stderr, "[BedManager] Silent-e candidates: %zu failed bases\n", silentECandidates.size());
+            fflush(stderr);
+            for (auto& [baseWord, depsPtr] : silentECandidates)
+            {
+                AZStd::string candidate = baseWord + "e";
+                AZ::u32 candidateLen = static_cast<AZ::u32>(candidate.size());
+                fprintf(stderr, "[BedManager]   '%s' -> try '%s' (len %u)\n",
+                    baseWord.c_str(), candidate.c_str(), candidateLen);
+                fflush(stderr);
+
+                // Only inject if the length has a bed
+                if (!activeLenSet.count(candidateLen))
+                {
+                    // No bed for this length — dependents are vars
+                    for (auto& dep : *depsPtr)
+                        allUnresolvedOriginal.push_back(dep.runIndex);
+                    continue;
+                }
+
+                // Inject synthetic run for base+e
+                CharRun synth;
+                synth.text = candidate;
+                synth.startPos = 0;
+                synth.length = candidateLen;
+                synth.tag = RunTag::Word;
+                synth.firstCap = false;
+                synth.allCaps = false;
+
+                AZ::u32 synthIdx = static_cast<AZ::u32>(runs.size());
+                runs.push_back(synth);
+                silentEByLength[candidateLen].push_back(synthIdx);
+                silentEOrigBase[candidate] = baseWord;
+                ++silentECount;
+            }
+
+            if (silentECount > 0)
+            {
+                // Run cleanup PBD cycles for each length that has candidates
+                AZ::u32 silentEResolved = 0;
+                for (auto& [len, indices] : silentEByLength)
+                {
+                    AZStd::vector<AZ::u32> unresolvedFromCleanup;
+                    ResolveLengthCycle(len, runs, indices,
+                                       manifest.results, unresolvedFromCleanup);
+                }
+
+                // Scan results: find resolved base+e words
+                // (collect first, then propagate — avoid modifying manifest during iteration)
+                AZStd::unordered_map<AZStd::string, const ResolutionResult*> silentEResolutions;
+                for (size_t ri = 0; ri < manifest.results.size(); ++ri)
+                {
+                    const auto& r = manifest.results[ri];
+                    if (!r.resolved) continue;
+                    if (silentEOrigBase.count(r.matchedWord))
+                        silentEResolutions[r.matchedWord] = &manifest.results[ri];
+                }
+
+                // Propagate to original dependents
+                AZStd::vector<AZStd::string> handledBases;
+                for (auto& [candidate, baseResult] : silentEResolutions)
+                {
+                    auto origIt = silentEOrigBase.find(candidate);
+                    if (origIt == silentEOrigBase.end()) continue;
+
+                    auto candIt = silentECandidates.find(origIt->second);
+                    if (candIt == silentECandidates.end()) continue;
+
+                    for (auto& dep : *(candIt->second))
+                    {
+                        const CharRun& depRun = runs[dep.runIndex];
+                        ResolutionResult dr;
+                        dr.runText = depRun.text;
+                        dr.resolved = true;
+                        dr.matchedWord = baseResult->matchedWord;
+                        dr.matchedTokenId = baseResult->matchedTokenId;
+                        dr.morphBits = dep.morphBits;
+                        dr.tierResolved = baseResult->tierResolved;
+                        dr.runIndex = dep.runIndex;
+                        dr.firstCap = depRun.firstCap;
+                        dr.allCaps = depRun.allCaps;
+                        manifest.results.push_back(dr);
+                        ++silentEResolved;
+                    }
+                    handledBases.push_back(origIt->second);
+                }
+                for (const auto& b : handledBases)
+                    silentECandidates.erase(b);
+
+                // Remaining failed silent-e candidates → vars
+                for (auto& [baseWord, depsPtr] : silentECandidates)
+                {
+                    for (auto& dep : *depsPtr)
+                        allUnresolvedOriginal.push_back(dep.runIndex);
+                }
+
+                if (silentEResolved > 0)
+                {
+                    fprintf(stderr, "[BedManager] Silent-e fallback: %u dependents resolved (%u candidates tried)\n",
+                        silentEResolved, silentECount);
+                    fflush(stderr);
+                }
+            }
+            else
+            {
+                // No silent-e candidates — push all remaining failed deps to unresolved
+                for (auto& [baseWord, depsPtr] : silentECandidates)
+                {
+                    for (auto& dep : *depsPtr)
+                        allUnresolvedOriginal.push_back(dep.runIndex);
+                }
             }
         }
 
@@ -1919,6 +2054,7 @@ namespace HCPEngine
                         r.matchedTokenId = dr.matchedTokenId;
                         r.tierResolved = dr.tierResolved;
                         r.morphBits = dr.morphBits | dm.morphBits;  // Base morph + contraction morph
+                        r.runIndex = dm.originalRunIndex;
                         r.firstCap = origRun.firstCap;
                         r.allCaps = origRun.allCaps;
                         manifest.results.push_back(r);
@@ -1945,6 +2081,7 @@ namespace HCPEngine
                         r.matchedWord = decompResultsByIndex[firstSeg].matchedWord;
                         r.matchedTokenId = decompResultsByIndex[firstSeg].matchedTokenId;
                         r.tierResolved = decompResultsByIndex[firstSeg].tierResolved;
+                        r.runIndex = dm.originalRunIndex;
                         r.firstCap = origRun.firstCap;
                         r.allCaps = origRun.allCaps;
                         manifest.results.push_back(r);
@@ -1961,6 +2098,7 @@ namespace HCPEngine
                     ResolutionResult r;
                     r.runText = runs[idx].text;
                     r.resolved = false;
+                    r.runIndex = idx;
                     r.firstCap = runs[idx].firstCap;
                     r.allCaps = runs[idx].allCaps;
                     manifest.results.push_back(r);
@@ -1981,6 +2119,7 @@ namespace HCPEngine
                 ResolutionResult r;
                 r.runText = runs[idx].text;
                 r.resolved = false;
+                r.runIndex = idx;
                 r.firstCap = runs[idx].firstCap;
                 r.allCaps = runs[idx].allCaps;
                 manifest.results.push_back(r);
@@ -1993,6 +2132,7 @@ namespace HCPEngine
             ResolutionResult r;
             r.runText = runs[idx].text;
             r.resolved = false;
+            r.runIndex = idx;
             r.firstCap = runs[idx].firstCap;
             r.allCaps = runs[idx].allCaps;
             manifest.results.push_back(r);
@@ -2015,6 +2155,7 @@ namespace HCPEngine
                 const CharRun& dupeRun = runs[dupes[di]];
                 ResolutionResult r;
                 r.runText = text;
+                r.runIndex = dupes[di];
                 r.firstCap = dupeRun.firstCap;
                 r.allCaps = dupeRun.allCaps;
                 if (it != resolvedLookup.end())
@@ -2032,6 +2173,12 @@ namespace HCPEngine
                 manifest.results.push_back(r);
             }
         }
+
+        // ---- Sort by runIndex: restore document order (the train manifest) ----
+        AZStd::sort(manifest.results.begin(), manifest.results.end(),
+            [](const ResolutionResult& a, const ResolutionResult& b) {
+                return a.runIndex < b.runIndex;
+            });
 
         // ---- Count ----
         for (const auto& r : manifest.results)
@@ -2065,6 +2212,107 @@ namespace HCPEngine
         m_activeWordLengths.clear();
         m_initialized = false;
         m_vocabulary = nullptr;
+    }
+
+    // ========================================================================
+    // ScanManifestToPBM — the scanner
+    //
+    // The manifest (sorted by runIndex) is the train manifest. Each token
+    // passes the scanner exactly once. As it passes:
+    //   1. Record position + modifier (morph bits + cap flags)
+    //   2. Pair with previous token → tally bond (A, B, count)
+    // By the time the last token flows past, bonds + positions are complete.
+    // Zero extra passes.
+    // ========================================================================
+
+    ManifestScanResult ScanManifestToPBM(const ResolutionManifest& manifest)
+    {
+        ManifestScanResult out;
+        if (manifest.results.empty()) return out;
+
+        // Var token prefix (unresolved tokens become vars)
+        static constexpr const char* SCAN_VAR_PREFIX = "AA.AE.AF.AA.AC";
+
+        // Bond accumulator: "tokenA|tokenB" → count
+        AZStd::unordered_map<AZStd::string, int> bondCounts;
+        AZStd::unordered_set<AZStd::string> uniqueTokenSet;
+
+        AZStd::string prevTokenId;
+        int position = 0;
+
+        for (const auto& r : manifest.results)
+        {
+            // Determine token ID: resolved tokens use matchedTokenId,
+            // unresolved become vars (VAR_PREFIX + surface text)
+            AZStd::string tokenId;
+            if (r.resolved)
+            {
+                tokenId = r.matchedTokenId;
+            }
+            else
+            {
+                tokenId = AZStd::string(SCAN_VAR_PREFIX) + " " + r.runText;
+            }
+
+            uniqueTokenSet.insert(tokenId);
+
+            // Pack positional modifier: morphBits in upper 14 bits, cap flags in lower 2
+            // Layout: [morphBits(14) | allCaps(1) | firstCap(1)]
+            AZ::u32 modifier = 0;
+            if (r.morphBits != 0 || r.firstCap || r.allCaps)
+            {
+                modifier = (static_cast<AZ::u32>(r.morphBits) << 2)
+                         | (r.allCaps ? 2u : 0u)
+                         | (r.firstCap ? 1u : 0u);
+            }
+
+            out.tokenIds.push_back(tokenId);
+            out.positions.push_back(position);
+            out.modifiers.push_back(modifier);
+            out.entityIds.push_back(r.entityId);
+            if (!r.entityId.empty()) ++out.entityAnnotations;
+
+            // Bond: pair with previous token (scanner tallies as they pass)
+            if (!prevTokenId.empty())
+            {
+                AZStd::string key = prevTokenId + "|" + tokenId;
+                bondCounts[key]++;
+                out.totalPairs++;
+            }
+            else
+            {
+                // First token = first FPB A-side
+                out.firstFpbA = tokenId;
+            }
+
+            // Second token = first FPB B-side
+            if (position == 1)
+                out.firstFpbB = tokenId;
+
+            prevTokenId = tokenId;
+            ++position;
+        }
+
+        out.totalSlots = position;
+        out.uniqueTokens = uniqueTokenSet.size();
+
+        // Convert bond map to Bond vector
+        out.bonds.reserve(bondCounts.size());
+        for (auto& [key, count] : bondCounts)
+        {
+            size_t sep = key.find('|');
+            Bond bond;
+            bond.tokenA = AZStd::string(key.data(), sep);
+            bond.tokenB = AZStd::string(key.data() + sep + 1, key.size() - sep - 1);
+            bond.count = count;
+            out.bonds.push_back(AZStd::move(bond));
+        }
+
+        fprintf(stderr, "[ScanManifest] %zu tokens, %zu unique, %zu bond types, %zu total pairs\n",
+            out.tokenIds.size(), out.uniqueTokens, out.bonds.size(), out.totalPairs);
+        fflush(stderr);
+
+        return out;
     }
 
 } // namespace HCPEngine

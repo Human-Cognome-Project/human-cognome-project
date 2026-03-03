@@ -5,6 +5,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
+#include "HCPParticlePipeline.h"   // Bond, PBMData
 
 // Forward declarations — full headers only in .cpp
 namespace physx
@@ -173,6 +174,36 @@ namespace HCPEngine
     };
 
     class HCPVocabulary;  // For punctuation lookups (declared in HCPVocabulary.h)
+
+    // ---- Manifest scanner output ----
+    //
+    // The sorted manifest is the train manifest — each position carries its
+    // payload (token_id + morph bits + cap flags). The scanner tallies bonds
+    // between adjacent tokens as they pass, producing PBM bond data + positional
+    // arrays in a single pass. No second traversal.
+
+    struct ManifestScanResult
+    {
+        AZStd::vector<Bond> bonds;              // Aggregated adjacent-pair bonds
+        AZStd::string firstFpbA;                // First forward pair bond A-side
+        AZStd::string firstFpbB;                // First forward pair bond B-side
+        size_t totalPairs = 0;
+        size_t uniqueTokens = 0;
+
+        // Positional data (parallel arrays, document order)
+        AZStd::vector<AZStd::string> tokenIds;  // Token ID per position slot
+        AZStd::vector<int> positions;            // Position number per slot
+        AZStd::vector<AZ::u32> modifiers;        // Packed modifier per slot (morphBits<<2 | capFlags)
+        AZStd::vector<AZStd::string> entityIds;  // Entity ID per slot (empty = not part of entity)
+        int totalSlots = 0;                       // Total position slots in document
+        size_t entityAnnotations = 0;             // Count of tokens with entity annotations
+    };
+
+    //! Scan a document-ordered manifest to produce PBM bond data + positions.
+    //! Manifest MUST be sorted by runIndex before calling.
+    //! Single pass: tallies bonds between adjacent tokens as they flow past.
+    //! Unresolved runs become vars (VAR_PREFIX + surface text).
+    ManifestScanResult ScanManifestToPBM(const ResolutionManifest& manifest);
 
     // ---- BedManager: orchestrates Workspace pool + phased vocab resolution ----
     //
