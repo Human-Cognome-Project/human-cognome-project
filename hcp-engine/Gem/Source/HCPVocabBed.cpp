@@ -919,6 +919,62 @@ namespace HCPEngine
         return result;  // No strip found
     }
 
+    // ========================================================================
+    // Variant surface form normalization — host-side, Stage 2/4
+    //
+    // Runs AFTER TryInflectionStrip (only on runs still unresolved).
+    // Rules implemented:
+    //   V-1: -in'  (g-drop dialect)    → stem+"ing"  → VARIANT|VARIANT_DIALECT
+    //   V-3: -eth  (archaic 3rd person) → base/base+e → VARIANT|VARIANT_ARCHAIC|THIRD
+    //
+    // Returns primary normalized form + optional alt form (base+e for -eth).
+    // PBD is the existence guard — no pre-check needed.
+    // ========================================================================
+
+    struct VariantNormalResult
+    {
+        bool normalized = false;
+        AZStd::string normalizedForm;   // Primary candidate (inject for direct PBD)
+        AZStd::string altForm;          // Alt candidate (base+e for -eth), empty if none
+        AZ::u16 variantBits = 0;        // VARIANT + subtype bits (no inflection bits)
+    };
+
+    static VariantNormalResult TryVariantNormalize(const AZStd::string& word)
+    {
+        VariantNormalResult result;
+        const size_t len = word.size();
+
+        // V-1: -in' g-drop (dialect)
+        // Pattern: word ends with "in'" (min 4 chars: at least 1 stem char + "in'")
+        // Transform: remove trailing ', append g  →  "darlin'" → "darling"
+        if (len >= 4 && word[len-1] == '\'' && word[len-2] == 'n' && word[len-3] == 'i')
+        {
+            result.normalized = true;
+            result.normalizedForm = word.substr(0, len - 1) + "g";  // strip ', add g
+            result.variantBits = MorphBit::VARIANT | MorphBit::VARIANT_DIALECT;
+            return result;
+        }
+
+        // V-3: -eth archaic 3rd person (min length 5: avoids "Seth", "Beth" as names)
+        // Pattern: word ends with "eth"
+        // Transform: strip -eth → base; also try base+e (silent-e fallback)
+        // Examples: walketh→walk, maketh→mak/make, goeth→go
+        if (len >= 5 && word[len-3] == 'e' && word[len-2] == 't' && word[len-1] == 'h')
+        {
+            AZStd::string base = word.substr(0, len - 3);
+            if (base.size() >= 2)
+            {
+                result.normalized = true;
+                result.normalizedForm = base;
+                result.altForm = base + "e";   // silent-e fallback
+                result.variantBits = MorphBit::VARIANT | MorphBit::VARIANT_ARCHAIC | MorphBit::THIRD;
+                return result;
+            }
+        }
+
+        return result;
+    }
+
     bool BedManager::Initialize(
         physx::PxPhysics* physics,
         physx::PxCudaContextManager* cuda,
@@ -2064,6 +2120,129 @@ namespace HCPEngine
             fflush(stderr);
         }
 
+        // ---- Stage 2: TryVariantNormalize on still-unresolved runs ----
+        //
+        // Handles dialect g-drop (-in') and archaic -eth forms.
+        // Runs AFTER TryInflectionStrip + silent-e fallback — only fires on what
+        // those stages left unresolved.
+        //
+        // Three candidate paths per matching run (priority order):
+        //   (a) Normalized form directly  — e.g., "darling" for "darlin'"
+        //   (b) Alt form (base+e)         — e.g., "make" for "maketh"
+        //   (c) Inflection-stripped base  — e.g., "run" for "runnin'" (via "running")
+        // Whichever resolves in PBD cleanup wins; first listed takes priority.
+        AZStd::unordered_set<AZ::u32> variantResolvedSet;  // run indices resolved here
+        {
+            struct VariantDep { AZ::u32 runIndex; AZ::u16 morphBits; };
+            AZStd::unordered_map<AZStd::string, AZStd::vector<VariantDep>> vNorm;   // normalizedForm → deps
+            AZStd::unordered_map<AZStd::string, AZStd::vector<VariantDep>> vAlt;    // altForm → deps
+            AZStd::unordered_map<AZStd::string, AZStd::vector<VariantDep>> vStrip;  // strippedBase → deps
+
+            auto enqueueVariant = [&](AZ::u32 idx)
+            {
+                VariantNormalResult vr = TryVariantNormalize(runs[idx].text);
+                if (!vr.normalized) return;
+                vNorm[vr.normalizedForm].push_back({idx, vr.variantBits});
+                if (!vr.altForm.empty())
+                    vAlt[vr.altForm].push_back({idx, vr.variantBits});
+                // For dialect V-1: also inject inflection-stripped base of normalized form
+                // e.g., "runnin'" → "running" → TryInflectionStrip → "run" + PROG
+                if (vr.variantBits & MorphBit::VARIANT_DIALECT)
+                {
+                    InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm);
+                    if (strip.stripped)
+                        vStrip[strip.baseWord].push_back({idx, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
+                }
+            };
+
+            // 2a: non-apostrophe runs from allUnresolvedOriginal (e.g., -eth forms)
+            for (AZ::u32 idx : allUnresolvedOriginal)
+            {
+                if (idx >= originalRunCount) continue;
+                if (runs[idx].text.find('\'') == AZStd::string::npos)
+                    enqueueVariant(idx);
+            }
+            // 2b: apostrophe runs that failed LMDB lookup (e.g., -in' g-drop)
+            for (AZ::u32 idx : unresolvedApostrophe)
+                enqueueVariant(idx);
+
+            if (!vNorm.empty() || !vAlt.empty() || !vStrip.empty())
+            {
+                AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> vByLen;
+                AZStd::unordered_set<AZStd::string> vQueued;
+
+                auto injectSynth = [&](const AZStd::string& word)
+                {
+                    if (vQueued.count(word)) return;
+                    AZ::u32 wlen = static_cast<AZ::u32>(word.size());
+                    if (!activeLenSet.count(wlen)) return;
+                    CharRun s;
+                    s.text = word; s.startPos = 0; s.length = wlen;
+                    s.tag = RunTag::Word; s.firstCap = false; s.allCaps = false;
+                    vByLen[wlen].push_back(static_cast<AZ::u32>(runs.size()));
+                    runs.push_back(s);
+                    vQueued.insert(word);
+                };
+                for (const auto& [w, _] : vNorm)  injectSynth(w);
+                for (const auto& [w, _] : vAlt)   injectSynth(w);
+                for (const auto& [w, _] : vStrip) injectSynth(w);
+
+                AZStd::vector<ResolutionResult> vResults;
+                for (const auto& [wlen, idxs] : vByLen)
+                {
+                    AZStd::vector<AZ::u32> unused;
+                    ResolveLengthCycle(wlen, runs, idxs, vResults, unused);
+                }
+
+                // Build resolved lookup by value — safe against manifest.results realloc
+                AZStd::unordered_map<AZStd::string, ResolutionResult> vResolved;
+                for (const auto& vr : vResults)
+                    if (vr.resolved && !vResolved.count(vr.matchedWord))
+                        vResolved[vr.matchedWord] = vr;
+                // Also check manifest for stripped bases already resolved in main loop
+                for (const auto& mr : manifest.results)
+                    if (mr.resolved && vStrip.count(mr.matchedWord) && !vResolved.count(mr.matchedWord))
+                        vResolved[mr.matchedWord] = mr;
+
+                AZ::u32 varCount = 0;
+                auto propagateV = [&](const AZStd::unordered_map<AZStd::string, AZStd::vector<VariantDep>>& deps)
+                {
+                    for (const auto& [word, depList] : deps)
+                    {
+                        auto it = vResolved.find(word);
+                        if (it == vResolved.end()) continue;
+                        for (const auto& dep : depList)
+                        {
+                            if (variantResolvedSet.count(dep.runIndex)) continue;
+                            const CharRun& depRun = runs[dep.runIndex];
+                            ResolutionResult r;
+                            r.runText = depRun.text;
+                            r.resolved = true;
+                            r.matchedWord = it->second.matchedWord;
+                            r.matchedTokenId = it->second.matchedTokenId;
+                            r.tierResolved = it->second.tierResolved;
+                            r.morphBits = dep.morphBits;
+                            r.runIndex = dep.runIndex;
+                            r.firstCap = depRun.firstCap;
+                            r.allCaps = depRun.allCaps;
+                            manifest.results.push_back(r);
+                            variantResolvedSet.insert(dep.runIndex);
+                            ++varCount;
+                        }
+                    }
+                };
+                propagateV(vNorm);
+                propagateV(vAlt);
+                propagateV(vStrip);
+
+                if (varCount > 0)
+                {
+                    fprintf(stderr, "[BedManager] Variant normalization (Stage 2): %u runs resolved\n", varCount);
+                    fflush(stderr);
+                }
+            }
+        }
+
         // ---- Morpheme decomposition for unresolved runs ----
         struct MorphemeSuffix { const char* suffix; AZ::u32 len; AZ::u16 morphBits; };
         static const MorphemeSuffix suffixes[] = {
@@ -2209,11 +2388,116 @@ namespace HCPEngine
             }
 
             AZStd::vector<ResolutionResult> decompResults;
+            AZStd::vector<AZ::u32> allDecompUnresolved;
             for (const auto& [len, indices] : decompByLen)
             {
                 AZStd::vector<AZ::u32> decompUnresolved;
                 ResolveLengthCycle(len, decompRuns, indices,
                                    decompResults, decompUnresolved);
+                for (AZ::u32 i : decompUnresolved)
+                    allDecompUnresolved.push_back(i);
+            }
+
+            // ---- Stage 4: TryVariantNormalize on unresolved decomp bases ----
+            // Handles e.g. "darlin's" → contraction strips 's → base "darlin'" unresolved
+            // → Stage 4 applies V-1 → "darling".  Same logic as Stage 2, applied to
+            // the decompRuns sub-array.  Results pushed into decompResults so the
+            // existing decompResolved mapping loop picks them up.
+            if (!allDecompUnresolved.empty())
+            {
+                struct DecompVDep { AZ::u32 decompRunIdx; AZ::u16 morphBits; };
+                AZStd::unordered_map<AZStd::string, AZStd::vector<DecompVDep>> dvNorm;
+                AZStd::unordered_map<AZStd::string, AZStd::vector<DecompVDep>> dvAlt;
+                AZStd::unordered_map<AZStd::string, AZStd::vector<DecompVDep>> dvStrip;
+
+                for (AZ::u32 di : allDecompUnresolved)
+                {
+                    VariantNormalResult vr = TryVariantNormalize(decompRuns[di].text);
+                    if (!vr.normalized) continue;
+                    dvNorm[vr.normalizedForm].push_back({di, vr.variantBits});
+                    if (!vr.altForm.empty())
+                        dvAlt[vr.altForm].push_back({di, vr.variantBits});
+                    if (vr.variantBits & MorphBit::VARIANT_DIALECT)
+                    {
+                        InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm);
+                        if (strip.stripped)
+                            dvStrip[strip.baseWord].push_back({di, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
+                    }
+                }
+
+                if (!dvNorm.empty() || !dvAlt.empty() || !dvStrip.empty())
+                {
+                    AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> dvByLen;
+                    AZStd::unordered_set<AZStd::string> dvQueued;
+
+                    auto injectDv = [&](const AZStd::string& word)
+                    {
+                        if (dvQueued.count(word)) return;
+                        AZ::u32 wlen = static_cast<AZ::u32>(word.size());
+                        if (!activeLenSet.count(wlen)) return;
+                        CharRun s;
+                        s.text = word; s.startPos = 0; s.length = wlen;
+                        s.tag = RunTag::Word; s.firstCap = false; s.allCaps = false;
+                        dvByLen[wlen].push_back(static_cast<AZ::u32>(runs.size()));
+                        runs.push_back(s);
+                        dvQueued.insert(word);
+                    };
+                    for (const auto& [w, _] : dvNorm)  injectDv(w);
+                    for (const auto& [w, _] : dvAlt)   injectDv(w);
+                    for (const auto& [w, _] : dvStrip) injectDv(w);
+
+                    AZStd::vector<ResolutionResult> dvResults;
+                    for (const auto& [wlen, idxs] : dvByLen)
+                    {
+                        AZStd::vector<AZ::u32> unused;
+                        ResolveLengthCycle(wlen, runs, idxs, dvResults, unused);
+                    }
+
+                    AZStd::unordered_map<AZStd::string, ResolutionResult> dvResolved;
+                    for (const auto& dr : dvResults)
+                        if (dr.resolved && !dvResolved.count(dr.matchedWord))
+                            dvResolved[dr.matchedWord] = dr;
+                    for (const auto& dr : decompResults)
+                        if (dr.resolved && dvStrip.count(dr.matchedWord) && !dvResolved.count(dr.matchedWord))
+                            dvResolved[dr.matchedWord] = dr;
+
+                    AZ::u32 dvCount = 0;
+                    auto propagateDv = [&](const AZStd::unordered_map<AZStd::string, AZStd::vector<DecompVDep>>& deps)
+                    {
+                        for (const auto& [word, depList] : deps)
+                        {
+                            auto it = dvResolved.find(word);
+                            if (it == dvResolved.end()) continue;
+                            for (const auto& dep : depList)
+                            {
+                                // Skip if already resolved for this decompRun
+                                bool done = false;
+                                for (const auto& ex : decompResults)
+                                    if (ex.runIndex == dep.decompRunIdx && ex.resolved)
+                                    { done = true; break; }
+                                if (done) continue;
+
+                                ResolutionResult r = it->second;
+                                r.runText = decompRuns[dep.decompRunIdx].text;
+                                r.morphBits = dep.morphBits;
+                                r.runIndex = dep.decompRunIdx;
+                                r.firstCap = false;
+                                r.allCaps = false;
+                                decompResults.push_back(r);
+                                ++dvCount;
+                            }
+                        }
+                    };
+                    propagateDv(dvNorm);
+                    propagateDv(dvAlt);
+                    propagateDv(dvStrip);
+
+                    if (dvCount > 0)
+                    {
+                        fprintf(stderr, "[BedManager] Variant normalization (Stage 4): %u decomp runs resolved\n", dvCount);
+                        fflush(stderr);
+                    }
+                }
             }
 
             // Map decomp results back to originals
@@ -2292,7 +2576,7 @@ namespace HCPEngine
 
             for (AZ::u32 idx : allUnresolved)
             {
-                if (!originalResolvedViaDecomp.count(idx))
+                if (!originalResolvedViaDecomp.count(idx) && !variantResolvedSet.count(idx))
                 {
                     ResolutionResult r;
                     r.runText = runs[idx].text;
@@ -2315,13 +2599,16 @@ namespace HCPEngine
         {
             for (AZ::u32 idx : allUnresolved)
             {
-                ResolutionResult r;
-                r.runText = runs[idx].text;
-                r.resolved = false;
-                r.runIndex = idx;
-                r.firstCap = runs[idx].firstCap;
-                r.allCaps = runs[idx].allCaps;
-                manifest.results.push_back(r);
+                if (!variantResolvedSet.count(idx))
+                {
+                    ResolutionResult r;
+                    r.runText = runs[idx].text;
+                    r.resolved = false;
+                    r.runIndex = idx;
+                    r.firstCap = runs[idx].firstCap;
+                    r.allCaps = runs[idx].allCaps;
+                    manifest.results.push_back(r);
+                }
             }
         }
 

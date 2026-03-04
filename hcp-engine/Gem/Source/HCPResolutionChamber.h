@@ -24,7 +24,11 @@ namespace HCPEngine
         static constexpr AZ::u16 HAVE     = 1 << 9;   // 've
         static constexpr AZ::u16 BE       = 1 << 10;  // 're
         static constexpr AZ::u16 AM       = 1 << 11;  // 'm
-        // Bits 12-15 reserved
+        // Variant surface form flags (bits 12-15)
+        static constexpr AZ::u16 VARIANT         = 1 << 12;  // Any variant surface form
+        static constexpr AZ::u16 VARIANT_ARCHAIC = 1 << 13;  // Archaic/obsolete form
+        static constexpr AZ::u16 VARIANT_DIALECT = 1 << 14;  // Dialectal form
+        static constexpr AZ::u16 VARIANT_CASUAL  = 1 << 15;  // Casual/informal form
     }
 
     // ---- Constants (empirical, tunable) ----
