@@ -266,12 +266,18 @@ def build_strip_set(cur, vocab_set):
 # ---------------------------------------------------------------------------
 
 def fetch_entries(cur, word_length):
-    """Fetch all entries for a word length, pre-ordered by tier scheme."""
+    """Fetch all entries for a word length, pre-ordered by tier scheme.
+
+    Excludes variant forms (canonical_id IS NOT NULL) — variants are lean-LMDB
+    and must be loaded via envelope activation into env_* sub-dbs, not baked
+    into vbed_* at compile time. See migration 023 and activity envelope design.
+    """
     cur.execute("""
         SELECT name, token_id, subcategory, freq_rank
         FROM tokens
         WHERE ns LIKE 'AB%%'
           AND length(name) = %s
+          AND canonical_id IS NULL
         ORDER BY
             CASE
                 WHEN subcategory = 'label' THEN 0
