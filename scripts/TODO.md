@@ -1,6 +1,6 @@
 # Scripts — TODO
 
-Last updated: 2026-03-03
+Last updated: 2026-03-06
 
 ---
 
@@ -12,6 +12,7 @@ Last updated: 2026-03-03
 | `compile_entity_lmdb.py` | Build entity starter maps as LMDB sub-dbs | Working |
 | `merge_frequency_ranks.py` | Merge Wikipedia + OpenSubtitles frequency data into Postgres | Working |
 | `run_benchmark.py` | Benchmark runner (Sherlock/Dracula/Scarlet) | Working |
+| `ingest_texts.py` | Text ingestion via socket API | Working |
 
 ## Improvements
 

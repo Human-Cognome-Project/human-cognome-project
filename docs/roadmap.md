@@ -64,13 +64,17 @@ Extend the same structural primitives beyond text to other forms of expression.
 - Build covalent bonding tables for non-text formats
 - Cross-modal conceptual mapping via shared NSM primitives
 
-## Current Focus (2026-03-04)
+## Current Focus (2026-03-06)
 
-- **V-1/V-3 variant normalization** -- Engine-side TryVariantNormalize: g-drop dialect forms (`-in'`→`-ing`) and archaic 3rd-person (`-eth`). Design in `docs/variant-rules-proposal.md`.
-- **Envelope-based variant loading** -- Wire variant DB entries (env_archaic / env_dialect / env_casual) with VARIANT morph bits.
-- **Entity data cleanup** -- Building normalized entity DB alongside messy librarian data.
+- **Envelope-based variant loading** -- Wire variant DB entries (env_archaic / env_dialect / env_casual) with VARIANT morph bits (bits 12-15). Variant forms in DB; loading path not yet wired.
 - **Label propagation** -- Restore firstCap on all instances if word appears as Label anywhere.
-- **Source Workstation** -- Standalone Qt binary for document browsing, metadata editing, entity normalization.
+- **Entity LMDB recompile** -- Entity DB cleaned (2026-03-05); `compile_entity_lmdb.py` needs review for variant/morph category support before next compile.
+- **Source Workstation** -- Packaging: installer for multiple configs, viewer first.
+
+## Recently Completed (2026-03-04 – 2026-03-05)
+
+- **V-1/V-3 variant normalization** (2026-03-04, `d59c2fa`) -- `TryVariantNormalize` in resolve loop. V-1 g-drop (`-in'`→`-ing`) and V-3 archaic (`-eth`). 12/12 dialect g-drops resolved in Sign of Four.
+- **Entity data cleanup** (2026-03-05) -- `hcp_fic_entities` and `hcp_nf_entities` normalized in-place. 723 sequences verified via dry-run.
 
 ## Performance Reality
 
