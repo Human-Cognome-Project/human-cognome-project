@@ -173,21 +173,20 @@ human-cognome-project/
 └── MANIFESTO.md           # Vision & principles
 ```
 
-## Current Priorities (Feb 2026)
+## Current Priorities (Mar 2026)
 
-**Phase 1 Complete ✅**: English + Names shards with 1.4M tokens
+**Phase 2 Active 🚧**: O3DE + PhysX 5 PBD pipeline processing full texts at >97% resolution rate.
 
-**Phase 2 In Progress 🚧**:
-1. **PBM construction from real text** — highest priority
-2. **Physics engine selection** — evaluate Godot, Rapier, OpenMM, Taichi
-3. **NSM primitive mappings** — decompose dictionary to semantic floor
-4. **LMDB compiled layer** — fast inference lookups
+**In Progress:**
+1. **Envelope-based variant loading** — wire variant DB entries into resolve loop (env_archaic / env_dialect / env_casual, morph bits 12-15)
+2. **Entity LMDB recompile** — entity DB cleaned 2026-03-05; compiler needs variant/morph category support
+3. **Label propagation** — restore firstCap on all suppressed instances of Label tokens
 
 **Help Needed:**
-- PBM construction algorithm implementation
-- Physics engine integration prototypes
-- NSM literature survey and primitive mappings
-- Test coverage for existing codebase
+- NSM primitive mappings — decompose dictionary to semantic floor (~65 core forces)
+- Known initialisms handling (U.S., U.K., etc.)
+- Cross-platform build (Windows)
+- Test coverage for Python tooling
 
 ## Communication Channels
 

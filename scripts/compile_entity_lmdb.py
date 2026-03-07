@@ -36,7 +36,7 @@ import os
 import struct
 import argparse
 import lmdb
-import psycopg2
+import psycopg
 from collections import defaultdict
 
 DB_FIC = {
@@ -122,7 +122,7 @@ def fetch_entity_names(db_params):
     Returns list of tuples:
         (starter_token_id, entity_id, name_group, name_type, [token_ids])
     """
-    conn = psycopg2.connect(**db_params)
+    conn = psycopg.connect(**db_params)
     cur = conn.cursor()
 
     cur.execute("""

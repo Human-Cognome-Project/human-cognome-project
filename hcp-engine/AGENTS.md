@@ -29,7 +29,7 @@ The project has specialist roles. Each owns specific areas:
 |------|------|----------------|
 | **Engine** | Tokenizer, particle pipeline, Asset Builders, runtime components | DB schema, LMDB format, linguistics |
 | **DB** | PostgreSQL schema, migrations, LMDB export, vocabulary data | Engine C++ code, physics |
-| **PBM** | Pair Bond Map encoding/reconstruction, OpenMM integration | DB schema, tokenizer internals |
+| **PBM** | Pair Bond Map encoding/reconstruction, position storage pipeline | DB schema, tokenizer internals |
 | **Linguistics** | Force definitions, sub-categorization patterns, conceptual mesh | Engine code, DB schema |
 | **Infrastructure** | CI/CD, repo structure, deployment, contributor tooling | Domain-specific code |
 

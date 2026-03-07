@@ -21,7 +21,7 @@ Usage:
 import sys
 import math
 import argparse
-import psycopg2
+import psycopg
 
 WIKI_FILE = "/tmp/wiki_freq.txt"
 OPENSUB_FILE = "/tmp/opensub_full.txt"
@@ -104,7 +104,7 @@ def merge_ranks(wiki, opensub):
 
 def update_database(merged, dry_run=False):
     """Update freq_rank in hcp_english.tokens."""
-    conn = psycopg2.connect(**DB_PARAMS)
+    conn = psycopg.connect(**DB_PARAMS)
     cur = conn.cursor()
 
     # Ensure column exists
@@ -151,9 +151,8 @@ def update_database(merged, dry_run=False):
                 freq_rank INTEGER NOT NULL
             );
         """)
-        from psycopg2.extras import execute_values
-        execute_values(cur, "INSERT INTO freq_update (name, freq_rank) VALUES %s",
-                       [(name, rank) for rank, name in batch])
+        cur.executemany("INSERT INTO freq_update (name, freq_rank) VALUES (%s, %s)",
+                        [(name, rank) for rank, name in batch])
         cur.execute("""
             UPDATE tokens t
             SET freq_rank = f.freq_rank

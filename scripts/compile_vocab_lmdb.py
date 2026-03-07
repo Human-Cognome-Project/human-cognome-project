@@ -40,7 +40,7 @@ import os
 import struct
 import argparse
 import lmdb
-import psycopg2
+import psycopg
 
 DB_PARAMS = {
     "dbname": "hcp_english",
@@ -307,7 +307,7 @@ def pack_meta(total_entries, label_count, tier1_end, tier2_end):
 
 
 def compile_lmdb(dry_run=False, no_strip=False):
-    conn = psycopg2.connect(**DB_PARAMS)
+    conn = psycopg.connect(**DB_PARAMS)
     cur = conn.cursor()
 
     # Build morph stripping data
