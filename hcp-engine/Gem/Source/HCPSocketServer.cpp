@@ -198,8 +198,57 @@ namespace HCPEngine
         m_running.store(false);
     }
 
+    // Process a single JSON metadata entry (object) into the DB.
+    // Returns true on success. Used by DispatchJsonFile for both single-object
+    // and array (batch) files.
+    static bool ProcessOneJsonEntry(
+        const rapidjson::Value& entry,
+        const AZStd::string& catalog,
+        const AZStd::string& centuryCode,
+        HCPDocumentQuery& docQuery,
+        HCPPbmWriter& pbmWriter,
+        const HCPVocabulary& vocab,
+        int& outDocPk,
+        bool& outStubCreated,
+        JsonInterpretResult& outResult)
+    {
+        if (!entry.IsObject()) return false;
+
+        AZStd::string catalogId;
+        AZStd::string titleFromJson;
+        if (entry.HasMember("id") && entry["id"].IsInt())
+        {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "%d", entry["id"].GetInt());
+            catalogId = buf;
+        }
+        if (entry.HasMember("title") && entry["title"].IsString())
+            titleFromJson = AZStd::string(entry["title"].GetString(), entry["title"].GetStringLength());
+
+        if (catalogId.empty()) return false;
+
+        outDocPk = docQuery.GetDocPkByCatalogId(catalog, catalogId);
+        outStubCreated = false;
+        if (outDocPk == 0)
+        {
+            if (titleFromJson.empty()) return false;
+            outDocPk = pbmWriter.CreateDocumentStub(titleFromJson, centuryCode);
+            outStubCreated = true;
+            if (outDocPk == 0) return false;
+        }
+
+        // Re-serialize this entry to pass to ProcessJsonMetadata
+        rapidjson::StringBuffer entrySb;
+        rapidjson::Writer<rapidjson::StringBuffer> entryW(entrySb);
+        entry.Accept(entryW);
+        AZStd::string entryJson(entrySb.GetString(), entrySb.GetSize());
+
+        outResult = ProcessJsonMetadata(entryJson, outDocPk, catalog, docQuery, vocab);
+        return true;
+    }
+
     // Shared handler for JSON metadata file ingestion (used by both ingest and phys_ingest).
-    // Parses the JSON, resolves or creates the document stub, stores metadata+provenance.
+    // Handles both single-object and array (batch) JSON files.
     static AZStd::string DispatchJsonFile(
         const AZStd::string& jsonText,
         const AZStd::string& catalog,
@@ -208,23 +257,8 @@ namespace HCPEngine
     {
         rapidjson::Document jdoc;
         jdoc.Parse(jsonText.c_str(), jsonText.size());
-        if (jdoc.HasParseError() || !jdoc.IsObject())
+        if (jdoc.HasParseError() || (!jdoc.IsObject() && !jdoc.IsArray()))
             return R"({"status":"error","message":"JSON file parse error"})";
-
-        // Extract catalog_id (Gutenberg "id" field) and title for stub creation
-        AZStd::string catalogId;
-        AZStd::string titleFromJson;
-        if (jdoc.HasMember("id") && jdoc["id"].IsInt())
-        {
-            char buf[32];
-            snprintf(buf, sizeof(buf), "%d", jdoc["id"].GetInt());
-            catalogId = buf;
-        }
-        if (jdoc.HasMember("title") && jdoc["title"].IsString())
-            titleFromJson = AZStd::string(jdoc["title"].GetString(), jdoc["title"].GetStringLength());
-
-        if (catalogId.empty())
-            return R"({"status":"error","message":"JSON metadata missing 'id' field"})";
 
         HCPDbConnection& db = engine->GetDbConnection();
         if (!db.IsConnected()) db.Connect();
@@ -233,21 +267,56 @@ namespace HCPEngine
 
         HCPDocumentQuery& docQuery = engine->GetDocumentQuery();
         HCPPbmWriter& pbmWriter = engine->GetPbmWriter();
+        const HCPVocabulary& vocab = engine->GetVocabulary();
 
-        int docPk = docQuery.GetDocPkByCatalogId(catalog, catalogId);
-        bool stubCreated = false;
-        if (docPk == 0)
+        if (jdoc.IsArray())
         {
-            if (titleFromJson.empty())
-                return R"({"status":"error","message":"JSON missing 'title' for stub creation"})";
-            docPk = pbmWriter.CreateDocumentStub(titleFromJson, centuryCode);
-            stubCreated = true;
-            if (docPk == 0)
-                return R"({"status":"error","message":"Failed to create document stub"})";
+            // Batch file — process each entry, return summary
+            int processed = 0, stubsCreated = 0, attached = 0, failed = 0;
+            for (rapidjson::SizeType i = 0; i < jdoc.Size(); ++i)
+            {
+                int docPk = 0; bool stubCreated = false; JsonInterpretResult result;
+                if (ProcessOneJsonEntry(jdoc[i], catalog, centuryCode,
+                                        docQuery, pbmWriter, vocab,
+                                        docPk, stubCreated, result))
+                {
+                    ++processed;
+                    stubCreated ? ++stubsCreated : ++attached;
+                }
+                else
+                {
+                    ++failed;
+                }
+            }
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String("ok");
+            w.Key("mode"); w.String("batch");
+            w.Key("processed"); w.Int(processed);
+            w.Key("stubs_created"); w.Int(stubsCreated);
+            w.Key("attached"); w.Int(attached);
+            w.Key("failed"); w.Int(failed);
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
         }
 
-        JsonInterpretResult jResult = ProcessJsonMetadata(
-            jsonText, docPk, catalog, docQuery, engine->GetVocabulary());
+        // Single object
+        int docPk = 0; bool stubCreated = false; JsonInterpretResult jResult;
+        if (!ProcessOneJsonEntry(jdoc, catalog, centuryCode,
+                                  docQuery, pbmWriter, vocab,
+                                  docPk, stubCreated, jResult))
+        {
+            return R"({"status":"error","message":"JSON missing required 'id' or 'title' field"})";
+        }
+
+        // Extract catalog_id for response
+        AZStd::string catalogId;
+        if (jdoc.HasMember("id") && jdoc["id"].IsInt())
+        {
+            char buf[32]; snprintf(buf, sizeof(buf), "%d", jdoc["id"].GetInt());
+            catalogId = buf;
+        }
 
         rapidjson::StringBuffer sb;
         rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -1039,7 +1108,10 @@ namespace HCPEngine
                     AZStd::string catalog = "gutenberg";
                     if (doc.HasMember("catalog") && doc["catalog"].IsString())
                         catalog = AZStd::string(doc["catalog"].GetString(), doc["catalog"].GetStringLength());
-                    return DispatchJsonFile(text, catalog, centuryCode, m_engine);
+                    AZStd::string cent = centuryCode;
+                    if (doc.HasMember("century") && doc["century"].IsString())
+                        cent = AZStd::string(doc["century"].GetString(), doc["century"].GetStringLength());
+                    return DispatchJsonFile(text, catalog, cent, m_engine);
                 }
             }
             else if (doc.HasMember("text") && doc["text"].IsString())
