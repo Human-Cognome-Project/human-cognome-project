@@ -226,6 +226,12 @@ namespace HCPEngine
         // Used to detect single-char + trailing period (initials/markers).
         AZ::u32 boundaryCodepoint = 0;
 
+        // Paragraph break detection: two or more \n codepoints (with optional
+        // non-newline whitespace between) → emit a single RunTag::Newline CharRun.
+        // Reset on any word codepoint.
+        int  consecutiveNewlines  = 0;
+        bool paragraphBreakEmitted = false;
+
         auto FlushRun = [&]()
         {
             if (!inRun || currentCodepoints.empty())
@@ -397,6 +403,8 @@ namespace HCPEngine
             {
                 boundaryCodepoint = 0;
                 FlushRun();
+                consecutiveNewlines  = 0;
+                paragraphBreakEmitted = false;
                 continue;
             }
 
@@ -407,6 +415,23 @@ namespace HCPEngine
             {
                 boundaryCodepoint = 0;
                 FlushRun();
+
+                // Track consecutive newlines for paragraph-break detection.
+                // Two or more \n (with optional whitespace between) → emit one Newline run.
+                if (cp == '\n' || cp == '\r')
+                {
+                    ++consecutiveNewlines;
+                    if (consecutiveNewlines >= 2 && !paragraphBreakEmitted)
+                    {
+                        CharRun nr;
+                        nr.text     = "\n";
+                        nr.startPos = collapse.streamPos;
+                        nr.length   = 1;
+                        nr.tag      = RunTag::Newline;
+                        runs.push_back(nr);
+                        paragraphBreakEmitted = true;
+                    }
+                }
                 // Whitespace doesn't change the "preceding punct" signal
                 continue;
             }
@@ -417,6 +442,8 @@ namespace HCPEngine
             {
                 boundaryCodepoint = cp;  // Tells FlushRun what ended the run (e.g. '.' for initials)
                 FlushRun();
+                consecutiveNewlines  = 0;
+                paragraphBreakEmitted = false;
                 // Update preceding codepoint — punctuation affects cap suppression
                 lastPrecedingCodepoint = cp;
                 continue;
@@ -435,6 +462,10 @@ namespace HCPEngine
             }
 
             currentCodepoints.push_back(cp);
+
+            // Reset paragraph-break tracking on word characters
+            consecutiveNewlines  = 0;
+            paragraphBreakEmitted = false;
 
             // Update preceding codepoint tracker for cap suppression
             lastPrecedingCodepoint = cp;

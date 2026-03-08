@@ -25,6 +25,7 @@ namespace HCPEngine
         Word = 0,       // Normal word — resolve via PBD
         SingleChar,     // Single-char word (I, a) — pre-assigned at transform, skip PBD
         Numeric,        // All digits (possibly with hyphens) — tag, skip PBD
+        Newline,        // Paragraph break (\n\n) — pre-resolved to newline char token
     };
 
     //! A character run extracted from the input stream.

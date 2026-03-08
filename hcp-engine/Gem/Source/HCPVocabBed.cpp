@@ -759,6 +759,7 @@ namespace HCPEngine
     struct InflectionStripResult
     {
         AZStd::string baseWord;
+        AZStd::string tokenId;   // Token ID from vocab lookup (same source as PBD)
         AZ::u16 morphBits = 0;
         bool stripped = false;
     };
@@ -771,15 +772,21 @@ namespace HCPEngine
     }
 
     static InflectionStripResult TryInflectionStrip(
-        const AZStd::string& word)
+        const AZStd::string& word, const HCPVocabulary* vocab)
     {
         InflectionStripResult result;
-        if (word.size() < 4) return result;  // Too short to strip meaningfully
+        if (!vocab || word.size() < 4) return result;
 
-        auto acceptBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
+        // tryBase: validates the candidate base against the vocab LMDB.
+        // Only fires if the base actually exists — prevents wrong rules from matching
+        // (e.g., the doubled-consonant -ed rule must not beat plain -ed for "possessed").
+        auto tryBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
         {
             if (base.size() < 2) return false;
+            AZStd::string tid = vocab->LookupWordLocal(base);
+            if (tid.empty()) return false;
             result.baseWord = base;
+            result.tokenId  = tid;
             result.morphBits = bits;
             result.stripped = true;
             return true;
@@ -790,23 +797,23 @@ namespace HCPEngine
         // ---- -ies → -y (e.g. "parties" → "party") ----
         if (len >= 4 && word.substr(len - 3) == "ies")
         {
-            if (acceptBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
+            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
                 return result;
         }
 
         // ---- -ves → -f / -fe (e.g. "wolves" → "wolf", "knives" → "knife") ----
         if (len >= 4 && word.substr(len - 3) == "ves")
         {
-            if (acceptBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
+            if (tryBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
                 return result;
-            if (acceptBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
+            if (tryBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
                 return result;
         }
 
         // ---- -ied → -y (e.g. "carried" → "carry") ----
         if (len >= 4 && word.substr(len - 3) == "ied")
         {
-            if (acceptBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
+            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
                 return result;
         }
 
@@ -816,7 +823,7 @@ namespace HCPEngine
             AZStd::string stem = word.substr(0, len - 3);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
             {
-                if (acceptBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
+                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
                     return result;
             }
         }
@@ -827,7 +834,7 @@ namespace HCPEngine
             AZStd::string stem = word.substr(0, len - 2);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
             {
-                if (acceptBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
+                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
                     return result;
             }
         }
@@ -836,9 +843,9 @@ namespace HCPEngine
         if (len >= 5 && word.substr(len - 3) == "ing")
         {
             AZStd::string base = word.substr(0, len - 3);
-            if (acceptBase(base, MorphBit::PROG))
+            if (tryBase(base, MorphBit::PROG))
                 return result;
-            if (acceptBase(base + "e", MorphBit::PROG))
+            if (tryBase(base + "e", MorphBit::PROG))
                 return result;
         }
 
@@ -846,9 +853,9 @@ namespace HCPEngine
         if (len >= 4 && word.substr(len - 2) == "ed")
         {
             AZStd::string base = word.substr(0, len - 2);
-            if (acceptBase(base, MorphBit::PAST))
+            if (tryBase(base, MorphBit::PAST))
                 return result;
-            if (acceptBase(base + "e", MorphBit::PAST))
+            if (tryBase(base + "e", MorphBit::PAST))
                 return result;
         }
 
@@ -859,12 +866,12 @@ namespace HCPEngine
             // Doubled consonant
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
             {
-                if (acceptBase(base.substr(0, base.size() - 1), 0))
+                if (tryBase(base.substr(0, base.size() - 1), 0))
                     return result;
             }
-            if (acceptBase(base, 0))
+            if (tryBase(base, 0))
                 return result;
-            if (acceptBase(base + "e", 0))
+            if (tryBase(base + "e", 0))
                 return result;
         }
 
@@ -874,49 +881,49 @@ namespace HCPEngine
             AZStd::string base = word.substr(0, len - 3);
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
             {
-                if (acceptBase(base.substr(0, base.size() - 1), 0))
+                if (tryBase(base.substr(0, base.size() - 1), 0))
                     return result;
             }
-            if (acceptBase(base, 0))
+            if (tryBase(base, 0))
                 return result;
-            if (acceptBase(base + "e", 0))
+            if (tryBase(base + "e", 0))
                 return result;
         }
 
         // ---- -es (e.g. "boxes" → "box", "watches" → "watch") ----
         if (len >= 4 && word.substr(len - 2) == "es")
         {
-            if (acceptBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
+            if (tryBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
                 return result;
-            if (acceptBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
+            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
                 return result;
         }
 
         // ---- -s (plural / 3rd person) ----
         if (len >= 4 && word.back() == 's' && word[len-2] != 's')
         {
-            if (acceptBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
+            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
                 return result;
         }
 
         // ---- -ily → -y (adverb from y-stem: e.g. "daily" → "day", "happily" → "happy") ----
         if (len >= 5 && word.substr(len - 3) == "ily")
         {
-            if (acceptBase(word.substr(0, len - 3) + "y", 0))
+            if (tryBase(word.substr(0, len - 3) + "y", 0))
                 return result;
         }
 
         // ---- -ly (adverb) ----
         if (len >= 5 && word.substr(len - 2) == "ly")
         {
-            if (acceptBase(word.substr(0, len - 2), 0))
+            if (tryBase(word.substr(0, len - 2), 0))
                 return result;
         }
 
         // ---- -ness ----
         if (len >= 6 && word.substr(len - 4) == "ness")
         {
-            if (acceptBase(word.substr(0, len - 4), 0))
+            if (tryBase(word.substr(0, len - 4), 0))
                 return result;
         }
 
@@ -1718,6 +1725,23 @@ namespace HCPEngine
                 manifest.results.push_back(r);
                 ++preResolved;
             }
+            else if (run.tag == RunTag::Newline)
+            {
+                // Paragraph break — resolve to newline char token
+                AZStd::string tokenId = m_vocabulary ? m_vocabulary->LookupChar('\n') : "";
+                if (!tokenId.empty())
+                {
+                    ResolutionResult r;
+                    r.runText = "\n";
+                    r.resolved = true;
+                    r.matchedWord = "\n";
+                    r.matchedTokenId = tokenId;
+                    r.tierResolved = 0;
+                    r.runIndex = i;
+                    manifest.results.push_back(r);
+                    ++preResolved;
+                }
+            }
         }
 
         if (preResolved > 0)
@@ -1900,7 +1924,7 @@ namespace HCPEngine
                     continue;
                 }
 
-                InflectionStripResult strip = TryInflectionStrip(run.text);
+                InflectionStripResult strip = TryInflectionStrip(run.text, m_vocabulary);
                 if (!strip.stripped)
                 {
                     allUnresolvedOriginal.push_back(idx);
@@ -2119,7 +2143,7 @@ namespace HCPEngine
 
         if (inflectionCount > 0)
         {
-            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u synthetic bases injected into PBD queues)\n",
+            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs resolved via vocab lookup (%u synthetic bases still injected)\n",
                 inflectionCount, syntheticInjections);
             fflush(stderr);
         }
@@ -2153,7 +2177,7 @@ namespace HCPEngine
                 // e.g., "runnin'" → "running" → TryInflectionStrip → "run" + PROG
                 if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                 {
-                    InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm);
+                    InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm, m_vocabulary);
                     if (strip.stripped)
                         vStrip[strip.baseWord].push_back({idx, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                 }
@@ -2423,7 +2447,7 @@ namespace HCPEngine
                         dvAlt[vr.altForm].push_back({di, vr.variantBits});
                     if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                     {
-                        InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm);
+                        InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm, m_vocabulary);
                         if (strip.stripped)
                             dvStrip[strip.baseWord].push_back({di, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                     }
