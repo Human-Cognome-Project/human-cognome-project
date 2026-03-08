@@ -1,55 +1,70 @@
-# Human Cognome Project (HCP)
+**Welcome to the Human Cognome Project (HCP) 🧠**
+Hi there! We are so glad you found us. The Human Cognome Project is an ambitious, open-source effort to build a "brain" for AI—one that understands the world through the same physical and relational laws that humans do.
 
-Mapping thought geometry across all sentience.
+By using the Open 3D Engine (O3DE) and PhysX 5, we aren't just teaching an AI to talk; we are teaching it how things "connect" in a physical world. Whether you are a veteran C++ developer or just starting your journey into data processing, there is a place for you here.
 
-The HCP treats cognition as a physical system — decomposing all forms of expression into universal token structures, bonding them with pair-bond maps, and simulating their dynamics in a physics-inspired engine. The goal is a shared, open map of how minds work, applicable to any entity that thinks.
+**🛠 Getting Started (The Onboarding Map)**
+Don't worry if this looks like a lot at first! This guide will walk you through setting up your own local "cognome" environment step-by-step.
 
-**Status: Alpha.** Core pipeline is functional and processing full texts. This is real, working software.
+**Step 1: Gather Your Tools**
+The HCP engine is powerful, which means it needs a few specialized tools to run. Think of these as the "engine parts" you need to install on your computer:
 
-## What Exists
+O3DE SDK: Our 3D simulation framework (the body of the engine).
 
-**Engine** — O3DE + PhysX 5 PBD superposition pipeline (~21K LOC C++). GPU-accelerated resolution via 5 persistent VocabBed scenes (3 primary + 2 extended), triple-pipelined via `RunPipelinedCascade`. Headless daemon on port 9720 with JSON socket API.
+PhysX 5 SDK: This handles the "physics" of how ideas interact.
 
-**Vocabulary** — 809K entries pre-compiled to LMDB (37% reduction from 1.28M via morphological stripping). 4,815 variant forms (archaic, dialect, casual, literary) with morph-bit encoding. Frequency-ranked from Wikipedia 2023 + OpenSubtitles.
+PostgreSQL: Our memory bank where long-term data is stored.
 
-**Variant normalization** — V-1 g-drop (`-in'` → `-ing`) and V-3 archaic (`-eth` → base form) implemented engine-side via `TryVariantNormalize`. Dialect speech resolves cleanly.
+Python 3.10+: The "glue" we use for scripts and data processing.
 
-**Databases** — 6 PostgreSQL shards (core, english, var, fic_pbm, fic_entities, nf_entities), 24 migrations applied. Entity annotation: 723 sequences across fiction and non-fiction corpora.
+**Step 2: Grab the Code**
+Download the project files to your computer using Git:
 
-**Workstation** — Standalone Qt binary (14 MB). Offline (embedded DB kernels + LMDB vocab) and connected modes (via daemon). Browse documents, view bonds, edit metadata.
+git clone --recursive https://github.com/Human-Cognome-Project/human-cognome-project.git
+cd human-cognome-project
 
-## Benchmarks (2026-03-04, GTX 1070, pipelined)
+**Step 3: Set Up Your Memory (Database)**
+The engine needs a place to store its thoughts. We use two types of databases:
 
-Resolution rates >97% on test corpus.
+**PostgreSQL (The Shard Vault):**
+Run these two simple scripts to prepare your database.
+./scripts/setup_db.sh
+./scripts/run_migrations.sh
 
-| Text | Size | Tokens | Vars | Wall Time |
-|------|------|--------|------|-----------|
-| Dracula | 890 KB | 199,368 | 110 | 28.6s |
-| A Study in Scarlet | 269 KB | 56,061 | 54 | 12.2s |
-| The Yellow Wallpaper | 47 KB | 10,856 | 37 | — |
-| The Sign of Four | — | — | 52 | — |
+**LMDB (The Vocabulary):**
+Our AI needs to learn words! This script compiles 1.4 million tokens into a fast-access format.
+python3 scripts/compile_vocab_lmdb.py --input data/raw_vocab.txt --output data/vocab.lmdb/
 
-Pre-pipeline baseline (same hardware): Dracula 166.5s, A Study in Scarlet 133.0s. ~5.8× speedup via triple-pipelined scene resolution. V-1 variant normalization: 12/12 dialect g-drops resolved in Sign of Four.
+Pro-tip: Run our new "verify_lmdb.py" script afterward to make sure everything was saved correctly!
 
-See [docs/status.md](docs/status.md) for full technical detail and pipeline breakdown.
+**Step 4: Build the Engine**
+This is the magic moment where the code becomes a running program.
 
-## Orientation
+**If you are on a Desktop (Windows/Linux):**
+cmake -B build/pc -S .
+cmake --build build/pc --target HCPWorkstation
 
-- **[Covenant](covenant.md)** — Perpetual openness guarantee. Everything here stays free, forever.
-- **[Charter](charter.md)** — How we treat each other.
-- **[Foundations](docs/foundations/)** — Articles on LLM mechanics and first-principles reasoning (why HCP exists).
-- **[Technical Spec](docs/spec/)** — Data conventions, token addressing, pair-bond maps, architecture.
-- **[Status](docs/status.md)** — What actually exists right now.
-- **[Roadmap](docs/roadmap.md)** — Where we're headed.
+**If you are on a Mobile Server or ARM64 (Experimental):**
+We support "Headless" mode for low-power devices!
+cmake -B build/arm -S . -DLY_HEADLESS=ON -DLY_CPU_ONLY=ON
+cmake --build build/arm --target HCPWorkstation
 
-## Getting Involved
+**🤝 Your First Contribution**
+We know joining a big project can be intimidating, but we promise we don't bite! Here is how to dive in:
 
-This is an alpha — interfaces will change, coverage is expanding. Contributions welcome from humans, AI agents, and all forms of intelligence. Contributor issues are tagged; installer and workstation packaging are next on the roadmap.
+Find a "Good First Issue": We have tasks like the HTML Text Extractor or Dead Code Cleanup that are perfect for getting your feet wet.
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to participate (start here)
-- **[AGENTS.md](AGENTS.md)** — Special invitation to AI agents reading this
-- **[MANIFESTO.md](MANIFESTO.md)** — Why structural reasoning matters
+Ask for Help: If you get stuck, reach out to VagariesOfFate on GitHub or Discord. We’ve all been the "new person" before.
 
-## License
+Documentation Matters: Notice a typo in this README? That’s a valid contribution! Feel free to fix it.
 
-[AGPL-3.0](LICENSE), governed by the [Founder's Covenant](covenant.md).
+**📁 Where Everything Lives**
+/hcp-engine: The "brain" (C++ code).
+
+/scripts: The "helpers" (Python tools for the database).
+
+/data: The "knowledge" (Raw and compiled datasets).
+
+/docs: The "blueprints" (Technical explanations of how it all works).
+
+Thank you for being part of the future of decentralized cognition. Let's build something amazing together!
