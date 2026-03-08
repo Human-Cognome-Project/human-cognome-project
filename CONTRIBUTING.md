@@ -127,10 +127,21 @@ We need knowledge from:
 
 ### Step 4: Follow Guidelines
 
+**Language Policy:**
+
+HCP has two distinct code domains — know which one your contribution targets before you start:
+
+- **Engine runtime (C++)**: All runtime code is implemented as O3DE Gems in C++. This includes vocabulary resolution, physics simulation, LMDB cache management, entity annotation, and anything that runs during text processing. If your functionality needs to execute inside the engine, it must be C++.
+- **Tooling (Python)**: Front-end CLI tools, developer diagnostics, build scripts, database migration scripts, and data compilation pipelines may be Python-based. The `scripts/` directory is exclusively build-time and developer tooling — nothing there is an engine component.
+- **When in doubt**: If a feature might eventually be needed at runtime (e.g., LMDB cache verification as part of purge/management cycles), a Python version is still useful for offline/CI diagnostics, but plan for a C++ implementation as well.
+
+Check whether your proposed functionality belongs in the engine (C++) or in tooling (Python) before opening a PR. Contributions to the wrong layer will need to be reimplemented.
+
 **Technical Standards:**
-- Python 3.12+ for all code
-- Type hints where practical
-- Tests for new functionality (`pytest`)
+- Python 3.12+ for tooling scripts
+- C++17 for engine Gem code (O3DE conventions)
+- Type hints where practical (Python)
+- Tests for new functionality (`pytest` for Python tooling)
 - No proprietary dependencies (AGPL-3.0 only)
 - Database changes must include migration scripts
 
