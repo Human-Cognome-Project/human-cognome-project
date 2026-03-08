@@ -85,6 +85,187 @@ namespace HCPEngine
             docName.c_str(), docId.c_str(), docPk);
         fflush(stderr);
 
+        BondWriteSummary summary = WritePBMBonds(pg, docPk, pbmData);
+
+        PGresult* commitRes = PQexec(pg, "COMMIT");
+        bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
+        PQclear(commitRes);
+
+        if (ok)
+        {
+            fprintf(stderr, "[HCPPbmWriter] StorePBM: '%s' -> %s — %zu starters, "
+                "%zu word, %zu char, %zu marker, %zu var bonds\n",
+                docName.c_str(), docId.c_str(), summary.starters,
+                summary.wordBonds, summary.charBonds, summary.markerBonds, summary.varBonds);
+            fflush(stderr);
+        }
+        else
+        {
+            fprintf(stderr, "[HCPPbmWriter] StorePBM: COMMIT failed: %s\n",
+                PQerrorMessage(pg));
+            fflush(stderr);
+            return {};
+        }
+
+        return docId;
+    }
+
+    int HCPPbmWriter::CreateDocumentStub(
+        const AZStd::string& docName,
+        const AZStd::string& centuryCode)
+    {
+        PGconn* pg = m_conn.Get();
+        if (!pg)
+        {
+            AZLOG_ERROR("HCPPbmWriter: Not connected");
+            return 0;
+        }
+
+        AZStd::string ns = "vA";
+        AZStd::string p2 = "AB";
+        AZStd::string p3 = centuryCode;
+
+        PQexec(pg, "BEGIN");
+
+        int seq = 0;
+        {
+            const char* params[] = { ns.c_str(), p2.c_str(), p3.c_str() };
+            PGresult* res = PQexecParams(pg,
+                "SELECT COUNT(*) FROM pbm_documents WHERE ns = $1 AND p2 = $2 AND p3 = $3",
+                3, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+                seq = atoi(PQgetvalue(res, 0, 0));
+            PQclear(res);
+        }
+
+        AZStd::string p4 = EncodePairStr(seq / 2500);
+        AZStd::string p5 = EncodePairStr(seq % 2500);
+
+        int docPk = 0;
+        {
+            const char* params[] = {
+                ns.c_str(), p2.c_str(), p3.c_str(), p4.c_str(), p5.c_str(),
+                docName.c_str()
+            };
+            PGresult* res = PQexecParams(pg,
+                "INSERT INTO pbm_documents (ns, p2, p3, p4, p5, name) "
+                "VALUES ($1, $2, $3, $4, $5, $6) "
+                "RETURNING id",
+                6, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+            {
+                fprintf(stderr, "[HCPPbmWriter] CreateDocumentStub: insert failed: %s\n",
+                    PQerrorMessage(pg));
+                fflush(stderr);
+                PQclear(res);
+                PQexec(pg, "ROLLBACK");
+                return 0;
+            }
+            docPk = atoi(PQgetvalue(res, 0, 0));
+            PQclear(res);
+        }
+
+        PGresult* commitRes = PQexec(pg, "COMMIT");
+        bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
+        PQclear(commitRes);
+
+        if (!ok)
+        {
+            fprintf(stderr, "[HCPPbmWriter] CreateDocumentStub: COMMIT failed\n");
+            fflush(stderr);
+            return 0;
+        }
+
+        m_lastDocPk = docPk;
+        fprintf(stderr, "[HCPPbmWriter] CreateDocumentStub: '%s' pk=%d\n",
+            docName.c_str(), docPk);
+        fflush(stderr);
+        return docPk;
+    }
+
+    AZStd::string HCPPbmWriter::FillPBMData(int existingDocPk, const PBMData& pbmData)
+    {
+        PGconn* pg = m_conn.Get();
+        if (!pg)
+        {
+            AZLOG_ERROR("HCPPbmWriter: Not connected");
+            return {};
+        }
+
+        if (pbmData.bonds.empty())
+        {
+            AZLOG_ERROR("HCPPbmWriter: FillPBMData: empty PBM data");
+            return {};
+        }
+
+        PQexec(pg, "BEGIN");
+
+        // Fetch doc_id string for this stub
+        AZStd::string docId;
+        {
+            AZStd::string pkStr = AZStd::to_string(existingDocPk);
+            const char* params[] = { pkStr.c_str() };
+            PGresult* res = PQexecParams(pg,
+                "SELECT doc_id FROM pbm_documents WHERE id = $1",
+                1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+                docId = PQgetvalue(res, 0, 0);
+            PQclear(res);
+        }
+
+        if (docId.empty())
+        {
+            fprintf(stderr, "[HCPPbmWriter] FillPBMData: pk=%d not found\n", existingDocPk);
+            fflush(stderr);
+            PQexec(pg, "ROLLBACK");
+            return {};
+        }
+
+        // Stamp crystallization seeds on the stub row
+        {
+            AZStd::string pkStr = AZStd::to_string(existingDocPk);
+            const char* params[] = {
+                pbmData.firstFpbA.c_str(), pbmData.firstFpbB.c_str(), pkStr.c_str()
+            };
+            PGresult* res = PQexecParams(pg,
+                "UPDATE pbm_documents SET first_fpb_a = $1, first_fpb_b = $2 "
+                "WHERE id = $3::integer",
+                3, nullptr, params, nullptr, nullptr, 0);
+            PQclear(res);
+        }
+
+        m_lastDocPk = existingDocPk;
+
+        BondWriteSummary summary = WritePBMBonds(pg, existingDocPk, pbmData);
+
+        PGresult* commitRes = PQexec(pg, "COMMIT");
+        bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
+        PQclear(commitRes);
+
+        if (ok)
+        {
+            fprintf(stderr, "[HCPPbmWriter] FillPBMData: %s (pk=%d) — %zu starters, "
+                "%zu word, %zu char, %zu marker, %zu var bonds\n",
+                docId.c_str(), existingDocPk, summary.starters,
+                summary.wordBonds, summary.charBonds, summary.markerBonds, summary.varBonds);
+            fflush(stderr);
+        }
+        else
+        {
+            fprintf(stderr, "[HCPPbmWriter] FillPBMData: COMMIT failed: %s\n",
+                PQerrorMessage(pg));
+            fflush(stderr);
+            return {};
+        }
+
+        return docId;
+    }
+
+    HCPPbmWriter::BondWriteSummary HCPPbmWriter::WritePBMBonds(
+        PGconn* pg, int docPk, const PBMData& pbmData)
+    {
+        BondWriteSummary summary;
+
         // Mint document-local vars (decimal pair IDs)
         AZStd::unordered_map<AZStd::string, AZStd::string> varToDecimal;
         {
@@ -99,9 +280,7 @@ namespace HCPEngine
                     "), -1) FROM pbm_docvars WHERE doc_id = $1",
                     1, nullptr, params, nullptr, nullptr, 0);
                 if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
-                {
                     nextDecimal = atoi(PQgetvalue(res, 0, 0)) + 1;
-                }
                 PQclear(res);
             }
 
@@ -168,7 +347,7 @@ namespace HCPEngine
 
         if (!varToDecimal.empty())
         {
-            fprintf(stderr, "[HCPPbmWriter] StorePBM: minted %zu document-local vars\n",
+            fprintf(stderr, "[HCPPbmWriter] WritePBMBonds: minted %zu document-local vars\n",
                 varToDecimal.size());
             fflush(stderr);
         }
@@ -176,11 +355,8 @@ namespace HCPEngine
         // Group bonds by A-side token
         AZStd::unordered_map<AZStd::string, AZStd::vector<const Bond*>> bondsByA;
         for (const auto& bond : pbmData.bonds)
-        {
             bondsByA[bond.tokenA].push_back(&bond);
-        }
 
-        size_t wordBonds = 0, charBonds = 0, markerBonds = 0, varBonds = 0;
         AZStd::string docPkStr = AZStd::to_string(docPk);
 
         for (const auto& [tokenA, bonds] : bondsByA)
@@ -227,6 +403,7 @@ namespace HCPEngine
                 PQclear(res);
             }
 
+            ++summary.starters;
             AZStd::string starterIdStr = AZStd::to_string(starterId);
 
             // Insert B-side bonds into correct subtable
@@ -247,7 +424,7 @@ namespace HCPEngine
                         "ON CONFLICT (starter_id, b_var_id) "
                         "DO UPDATE SET count = pbm_var_bonds.count + EXCLUDED.count",
                         3, nullptr, params, nullptr, nullptr, 0);
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++varBonds;
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++summary.varBonds;
                     PQclear(res);
                     continue;
                 }
@@ -268,7 +445,7 @@ namespace HCPEngine
                         "ON CONFLICT (starter_id, b_p3, b_p4, b_p5) "
                         "DO UPDATE SET count = pbm_word_bonds.count + EXCLUDED.count",
                         5, nullptr, params, nullptr, nullptr, 0);
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++wordBonds;
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++summary.wordBonds;
                     PQclear(res);
                 }
                 else if (bParts[0] == "AA" && bParts[1] != "AE")
@@ -284,7 +461,7 @@ namespace HCPEngine
                         "ON CONFLICT (starter_id, b_p2, b_p3, b_p4, b_p5) "
                         "DO UPDATE SET count = pbm_char_bonds.count + EXCLUDED.count",
                         6, nullptr, params, nullptr, nullptr, 0);
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++charBonds;
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++summary.charBonds;
                     PQclear(res);
                 }
                 else if (bParts[0] == "AA" && bParts[1] == "AE" && bParts[4].empty())
@@ -300,33 +477,13 @@ namespace HCPEngine
                         "ON CONFLICT (starter_id, b_p3, b_p4) "
                         "DO UPDATE SET count = pbm_marker_bonds.count + EXCLUDED.count",
                         4, nullptr, params, nullptr, nullptr, 0);
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++markerBonds;
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK) ++summary.markerBonds;
                     PQclear(res);
                 }
             }
         }
 
-        PGresult* commitRes = PQexec(pg, "COMMIT");
-        bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
-        PQclear(commitRes);
-
-        if (ok)
-        {
-            fprintf(stderr, "[HCPPbmWriter] StorePBM: '%s' -> %s — %zu starters, "
-                "%zu word, %zu char, %zu marker, %zu var bonds\n",
-                docName.c_str(), docId.c_str(), bondsByA.size(),
-                wordBonds, charBonds, markerBonds, varBonds);
-            fflush(stderr);
-        }
-        else
-        {
-            fprintf(stderr, "[HCPPbmWriter] StorePBM: COMMIT failed: %s\n",
-                PQerrorMessage(pg));
-            fflush(stderr);
-            return {};
-        }
-
-        return docId;
+        return summary;
     }
 
     bool HCPPbmWriter::StorePositions(

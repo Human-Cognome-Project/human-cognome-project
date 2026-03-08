@@ -25,7 +25,19 @@ namespace HCPEngine
             const AZStd::string& centuryCode,
             const PBMData& pbmData);
 
-        //! Integer PK of the last document inserted by StorePBM.
+        //! Create a stub document row (name + namespace only, no bonds).
+        //! Used when JSON metadata arrives before the text is ingested.
+        //! @return Integer PK of the new stub row, or 0 on failure.
+        int CreateDocumentStub(
+            const AZStd::string& docName,
+            const AZStd::string& centuryCode);
+
+        //! Write PBM bonds into an existing document row (stub-fill path).
+        //! Used when text is ingested after JSON metadata created a stub.
+        //! @return doc_id string of the filled document, or empty on failure.
+        AZStd::string FillPBMData(int existingDocPk, const PBMData& pbmData);
+
+        //! Integer PK of the last document touched by StorePBM / CreateDocumentStub.
         int LastDocPk() const { return m_lastDocPk; }
 
         //! Store position data alongside PBM bonds.
@@ -39,6 +51,19 @@ namespace HCPEngine
             const AZStd::vector<AZ::u32>& modifiers = {});
 
     private:
+        struct BondWriteSummary
+        {
+            size_t starters = 0;
+            size_t wordBonds = 0;
+            size_t charBonds = 0;
+            size_t markerBonds = 0;
+            size_t varBonds = 0;
+        };
+
+        //! Shared bond-writing logic used by StorePBM and FillPBMData.
+        //! Runs inside the caller's BEGIN transaction — does not commit.
+        BondWriteSummary WritePBMBonds(PGconn* pg, int docPk, const PBMData& pbmData);
+
         HCPDbConnection& m_conn;
         int m_lastDocPk = 0;
     };

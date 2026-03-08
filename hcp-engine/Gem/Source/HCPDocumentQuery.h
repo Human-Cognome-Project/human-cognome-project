@@ -51,6 +51,10 @@ namespace HCPEngine
         //! Resolve a doc_id string to its integer PK. Returns 0 on failure.
         int GetDocPk(const AZStd::string& docId);
 
+        //! Resolve a (catalog, catalog_id) pair to an existing document PK via
+        //! document_provenance. Returns 0 if no match found.
+        int GetDocPkByCatalogId(const AZStd::string& catalog, const AZStd::string& catalogId);
+
         //! List all stored documents with basic stats.
         AZStd::vector<DocumentInfo> ListDocuments();
 

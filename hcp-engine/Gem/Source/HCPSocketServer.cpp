@@ -198,6 +198,72 @@ namespace HCPEngine
         m_running.store(false);
     }
 
+    // Shared handler for JSON metadata file ingestion (used by both ingest and phys_ingest).
+    // Parses the JSON, resolves or creates the document stub, stores metadata+provenance.
+    static AZStd::string DispatchJsonFile(
+        const AZStd::string& jsonText,
+        const AZStd::string& catalog,
+        const AZStd::string& centuryCode,
+        HCPEngineSystemComponent* engine)
+    {
+        rapidjson::Document jdoc;
+        jdoc.Parse(jsonText.c_str(), jsonText.size());
+        if (jdoc.HasParseError() || !jdoc.IsObject())
+            return R"({"status":"error","message":"JSON file parse error"})";
+
+        // Extract catalog_id (Gutenberg "id" field) and title for stub creation
+        AZStd::string catalogId;
+        AZStd::string titleFromJson;
+        if (jdoc.HasMember("id") && jdoc["id"].IsInt())
+        {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "%d", jdoc["id"].GetInt());
+            catalogId = buf;
+        }
+        if (jdoc.HasMember("title") && jdoc["title"].IsString())
+            titleFromJson = AZStd::string(jdoc["title"].GetString(), jdoc["title"].GetStringLength());
+
+        if (catalogId.empty())
+            return R"({"status":"error","message":"JSON metadata missing 'id' field"})";
+
+        HCPDbConnection& db = engine->GetDbConnection();
+        if (!db.IsConnected()) db.Connect();
+        if (!db.IsConnected())
+            return R"({"status":"error","message":"No database connection"})";
+
+        HCPDocumentQuery& docQuery = engine->GetDocumentQuery();
+        HCPPbmWriter& pbmWriter = engine->GetPbmWriter();
+
+        int docPk = docQuery.GetDocPkByCatalogId(catalog, catalogId);
+        bool stubCreated = false;
+        if (docPk == 0)
+        {
+            if (titleFromJson.empty())
+                return R"({"status":"error","message":"JSON missing 'title' for stub creation"})";
+            docPk = pbmWriter.CreateDocumentStub(titleFromJson, centuryCode);
+            stubCreated = true;
+            if (docPk == 0)
+                return R"({"status":"error","message":"Failed to create document stub"})";
+        }
+
+        JsonInterpretResult jResult = ProcessJsonMetadata(
+            jsonText, docPk, catalog, docQuery, engine->GetVocabulary());
+
+        rapidjson::StringBuffer sb;
+        rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+        w.StartObject();
+        w.Key("status"); w.String("ok");
+        w.Key("mode"); w.String(stubCreated ? "stub_created" : "attached");
+        w.Key("doc_pk"); w.Int(docPk);
+        w.Key("catalog"); w.String(catalog.c_str());
+        w.Key("catalog_id"); w.String(catalogId.c_str());
+        w.Key("meta_known"); w.Int(jResult.knownFields);
+        w.Key("meta_unreviewed"); w.Int(jResult.unreviewedFields);
+        w.Key("provenance"); w.Bool(jResult.provenanceStored);
+        w.EndObject();
+        return AZStd::string(sb.GetString(), sb.GetSize());
+    }
+
     void HCPSocketServer::HandleClient(int clientFd)
     {
         while (!m_stopRequested.load())
@@ -290,6 +356,19 @@ namespace HCPEngine
                 if (doc.HasMember("name") && doc["name"].IsString())
                 {
                     name = AZStd::string(doc["name"].GetString(), doc["name"].GetStringLength());
+                }
+
+                // JSON file — route to metadata interpreter, not text pipeline
+                size_t extDot = filePath.rfind('.');
+                if (extDot != AZStd::string::npos && filePath.substr(extDot) == ".json")
+                {
+                    AZStd::string catalog = "gutenberg";
+                    if (doc.HasMember("catalog") && doc["catalog"].IsString())
+                        catalog = AZStd::string(doc["catalog"].GetString(), doc["catalog"].GetStringLength());
+                    const char* cent = "AS";
+                    if (doc.HasMember("century") && doc["century"].IsString())
+                        cent = doc["century"].GetString();
+                    return DispatchJsonFile(text, catalog, AZStd::string(cent), m_engine);
                 }
             }
             else if (doc.HasMember("text") && doc["text"].IsString())
@@ -953,6 +1032,15 @@ namespace HCPEngine
                 if (lastSlash == AZStd::string::npos) lastSlash = 0; else ++lastSlash;
                 if (lastDot == AZStd::string::npos || lastDot <= lastSlash) lastDot = filePath.size();
                 docName = filePath.substr(lastSlash, lastDot - lastSlash);
+
+                // JSON file — route to metadata interpreter, not physics pipeline
+                if (lastDot < filePath.size() && filePath.substr(lastDot) == ".json")
+                {
+                    AZStd::string catalog = "gutenberg";
+                    if (doc.HasMember("catalog") && doc["catalog"].IsString())
+                        catalog = AZStd::string(doc["catalog"].GetString(), doc["catalog"].GetStringLength());
+                    return DispatchJsonFile(text, catalog, centuryCode, m_engine);
+                }
             }
             else if (doc.HasMember("text") && doc["text"].IsString())
             {
@@ -970,6 +1058,14 @@ namespace HCPEngine
 
             if (docName.empty())
                 docName = "untitled";
+
+            // Optional stub lookup: if caller provides catalog+catalog_id, check for pre-staged stub
+            AZStd::string ingestCatalog;
+            AZStd::string ingestCatalogId;
+            if (doc.HasMember("catalog") && doc["catalog"].IsString())
+                ingestCatalog = AZStd::string(doc["catalog"].GetString(), doc["catalog"].GetStringLength());
+            if (doc.HasMember("catalog_id") && doc["catalog_id"].IsString())
+                ingestCatalogId = AZStd::string(doc["catalog_id"].GetString(), doc["catalog_id"].GetStringLength());
 
             // Check prerequisites
             HCPParticlePipeline& pipeline = m_engine->GetParticlePipeline();
@@ -1037,16 +1133,45 @@ namespace HCPEngine
             pbmData.totalPairs = scan.totalPairs;
             pbmData.uniqueTokens = scan.uniqueTokens;
 
-            // Store PBM (bonds + starters + vars)
-            AZStd::string docId = pbmWriter.StorePBM(docName, centuryCode, pbmData);
+            // Store PBM — use existing stub if one was pre-staged by a JSON metadata file
+            AZStd::string docId;
+            bool usedStub = false;
+            if (!ingestCatalog.empty() && !ingestCatalogId.empty())
+            {
+                int stubPk = m_engine->GetDocumentQuery().GetDocPkByCatalogId(
+                    ingestCatalog, ingestCatalogId);
+                if (stubPk != 0)
+                {
+                    docId = pbmWriter.FillPBMData(stubPk, pbmData);
+                    usedStub = true;
+                }
+            }
+            if (docId.empty() && !usedStub)
+                docId = pbmWriter.StorePBM(docName, centuryCode, pbmData);
             if (docId.empty())
-                return R"({"status":"error","message":"StorePBM failed"})";
+                return R"({"status":"error","message":"StorePBM/FillPBMData failed"})";
 
             // Store positions (with positional modifiers)
             int docPk = pbmWriter.LastDocPk();
             bool posOk = pbmWriter.StorePositions(
                 docPk, scan.tokenIds, scan.positions,
                 scan.totalSlots, scan.modifiers);
+
+            // Attach metadata if provided inline
+            int metaKnown = 0, metaUnreviewed = 0;
+            bool metaProvenance = false;
+            if (doc.HasMember("metadata") && doc["metadata"].IsString())
+            {
+                AZStd::string metaJson(doc["metadata"].GetString(),
+                                       doc["metadata"].GetStringLength());
+                AZStd::string catalog = ingestCatalog.empty() ? "unknown" : ingestCatalog;
+                HCPDocumentQuery& docQuery = m_engine->GetDocumentQuery();
+                JsonInterpretResult jResult = ProcessJsonMetadata(
+                    metaJson, docPk, catalog, docQuery, m_engine->GetVocabulary());
+                metaKnown = jResult.knownFields;
+                metaUnreviewed = jResult.unreviewedFields;
+                metaProvenance = jResult.provenanceStored;
+            }
 
             // Build response
             rapidjson::StringBuffer sb;
@@ -1056,6 +1181,7 @@ namespace HCPEngine
             w.Key("doc_id"); w.String(docId.c_str());
             w.Key("doc_pk"); w.Int(docPk);
             w.Key("doc_name"); w.String(docName.c_str());
+            if (usedStub) { w.Key("stub_filled"); w.Bool(true); }
             w.Key("phase1_settled"); w.Uint(phase1.settledCount);
             w.Key("phase1_total"); w.Uint(phase1.totalCodepoints);
             w.Key("phase1_time_ms"); w.Double(static_cast<double>(phase1.simulationTimeMs));
@@ -1069,6 +1195,12 @@ namespace HCPEngine
             w.Key("total_slots"); w.Int(scan.totalSlots);
             w.Key("positions_stored"); w.Bool(posOk);
             w.Key("entity_annotations"); w.Uint64(scan.entityAnnotations);
+            if (metaKnown > 0 || metaUnreviewed > 0)
+            {
+                w.Key("meta_known"); w.Int(metaKnown);
+                w.Key("meta_unreviewed"); w.Int(metaUnreviewed);
+                w.Key("meta_provenance"); w.Bool(metaProvenance);
+            }
             w.EndObject();
 
             fprintf(stderr, "[phys_ingest] Complete: %s → %zu bond types, %zu total pairs, %d positions\n",

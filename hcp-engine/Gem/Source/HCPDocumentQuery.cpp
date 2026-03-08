@@ -24,6 +24,26 @@ namespace HCPEngine
         return pk;
     }
 
+    int HCPDocumentQuery::GetDocPkByCatalogId(
+        const AZStd::string& catalog,
+        const AZStd::string& catalogId)
+    {
+        PGconn* pg = m_conn.Get();
+        if (!pg) return 0;
+
+        const char* params[] = { catalog.c_str(), catalogId.c_str() };
+        PGresult* res = PQexecParams(pg,
+            "SELECT d.id FROM pbm_documents d "
+            "JOIN document_provenance p ON p.doc_id = d.id "
+            "WHERE p.source_catalog = $1 AND p.catalog_id = $2",
+            2, nullptr, params, nullptr, nullptr, 0);
+        int pk = 0;
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            pk = atoi(PQgetvalue(res, 0, 0));
+        PQclear(res);
+        return pk;
+    }
+
     AZStd::vector<HCPDocumentQuery::DocumentInfo> HCPDocumentQuery::ListDocuments()
     {
         AZStd::vector<DocumentInfo> result;
