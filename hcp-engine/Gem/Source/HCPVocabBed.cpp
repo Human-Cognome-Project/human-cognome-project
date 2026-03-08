@@ -582,7 +582,11 @@ namespace HCPEngine
     bool Workspace::IsSimDone() const
     {
         if (!m_scene) return true;
-        if (m_pendingSteps > 0) return false;
+        // Check if the in-flight GPU step (step 0) is done.
+        // Remaining steps (m_pendingSteps) are run synchronously inside FetchSimResults.
+        // The old `m_pendingSteps > 0` guard caused a deadlock: BeginSimulate dispatches
+        // step 0 and leaves pendingSteps=59, so IsSimDone always returned false and
+        // FetchSimResults was never called.
         return m_scene->checkResults(false);
     }
 
