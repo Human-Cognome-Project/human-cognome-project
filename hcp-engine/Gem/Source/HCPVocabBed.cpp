@@ -221,6 +221,9 @@ namespace HCPEngine
 
     AZ::u32 Workspace::LoadVocabPack(const VocabPack& pack, AZ::u32 wordLength)
     {
+        fprintf(stderr, "[WS] LoadVocabPack: len=%u vocabParticles=%u bufCap=%u\n",
+            wordLength, pack.totalVocabParticles, m_bufferCapacity);
+        fflush(stderr);
         if (!m_particleBuffer || !m_cuda) return 0;
         if (pack.totalVocabParticles == 0 || pack.totalVocabParticles > m_bufferCapacity) return 0;
 
@@ -231,6 +234,10 @@ namespace HCPEngine
         AZ::u32 remainingCapacity = m_bufferCapacity - m_vocabParticleCount;
         m_maxStreamSlots = remainingCapacity / wordLength;
         if (m_maxStreamSlots < 1) m_maxStreamSlots = 1;
+
+        fprintf(stderr, "[WS] LoadVocabPack: maxStreamSlots=%u (remainingCap=%u)\n",
+            m_maxStreamSlots, remainingCapacity);
+        fflush(stderr);
 
         // Write vocab into buffer
         {
@@ -269,6 +276,7 @@ namespace HCPEngine
             m_cuda->freePinnedHostBuffer(hostVel);
             m_cuda->freePinnedHostBuffer(hostPhase);
         }
+        fprintf(stderr, "[WS] LoadVocabPack: CUDA copy done\n"); fflush(stderr);
 
         // Only vocab active, no stream yet
         m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
@@ -278,6 +286,8 @@ namespace HCPEngine
 
         m_streamSlots.clear();
 
+        fprintf(stderr, "[WS] LoadVocabPack: done, maxStreamSlots=%u\n", m_maxStreamSlots);
+        fflush(stderr);
         return m_maxStreamSlots;
     }
 
@@ -286,12 +296,18 @@ namespace HCPEngine
         const AZStd::vector<AZ::u32>& indices,
         AZ::u32 wordLength)
     {
+        fprintf(stderr, "[WS] LoadStreamRuns: %zu indices, wordLen=%u, vocabCount=%u\n",
+            indices.size(), wordLength, m_vocabParticleCount);
+        fflush(stderr);
         if (!m_particleBuffer || !m_cuda || indices.empty()) return 0;
 
         m_streamSlots.clear();
         AZ::u32 overflowCount = 0;
         AZ::u32 streamPhase = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
         AZ::u32 maxDynParticles = m_maxStreamSlots * wordLength;
+        fprintf(stderr, "[WS] LoadStreamRuns: maxDynParticles=%u (slots=%u x len=%u)\n",
+            maxDynParticles, m_maxStreamSlots, wordLength);
+        fflush(stderr);
 
         physx::PxVec4* hostPos = nullptr;
         physx::PxVec4* hostVel = nullptr;
@@ -366,6 +382,9 @@ namespace HCPEngine
             m_cuda->freePinnedHostBuffer(hostVel);
             m_cuda->freePinnedHostBuffer(hostPhase);
         }
+        fprintf(stderr, "[WS] LoadStreamRuns: CUDA copy done (offset=%u+%u)\n",
+            m_vocabParticleCount, maxDynParticles);
+        fflush(stderr);
 
         // Only activate the particles we actually loaded, not the full stream capacity.
         // slotIdx = number of runs loaded; each run = wordLength particles.
@@ -375,6 +394,9 @@ namespace HCPEngine
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
         m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
 
+        fprintf(stderr, "[WS] LoadStreamRuns: done, activeParticles=%u (vocab=%u+dyn=%u), overflow=%u\n",
+            m_vocabParticleCount + actualDynParticles, m_vocabParticleCount, actualDynParticles, overflowCount);
+        fflush(stderr);
         return overflowCount;
     }
 
@@ -553,20 +575,29 @@ namespace HCPEngine
 
     void Workspace::ActivateInScene()
     {
+        fprintf(stderr, "[WS] ActivateInScene: activeInScene=%d\n", (int)m_activeInScene);
+        fflush(stderr);
         if (m_activeInScene || !m_particleSystem || !m_scene) return;
         m_scene->addActor(*m_particleSystem);
         m_activeInScene = true;
+        fprintf(stderr, "[WS] ActivateInScene: addActor done\n"); fflush(stderr);
     }
 
     void Workspace::DeactivateFromScene()
     {
+        fprintf(stderr, "[WS] DeactivateFromScene: activeInScene=%d\n", (int)m_activeInScene);
+        fflush(stderr);
         if (!m_activeInScene || !m_particleSystem || !m_scene) return;
         m_scene->removeActor(*m_particleSystem);
         m_activeInScene = false;
+        fprintf(stderr, "[WS] DeactivateFromScene: removeActor done\n"); fflush(stderr);
     }
 
     void Workspace::BeginSimulate(int steps, float dt)
     {
+        fprintf(stderr, "[WS] BeginSimulate: steps=%d dt=%.4f activeParticles=%u\n",
+            steps, dt, m_vocabParticleCount);
+        fflush(stderr);
         if (!m_scene) return;
         m_pendingSteps = steps;
         m_simDt = dt;
@@ -574,7 +605,9 @@ namespace HCPEngine
         // Kick off the first step — simulate() dispatches to GPU and returns
         if (m_pendingSteps > 0)
         {
+            fprintf(stderr, "[WS] BeginSimulate: calling simulate()\n"); fflush(stderr);
             m_scene->simulate(m_simDt);
+            fprintf(stderr, "[WS] BeginSimulate: simulate() returned\n"); fflush(stderr);
             --m_pendingSteps;
         }
     }
@@ -592,10 +625,15 @@ namespace HCPEngine
 
     void Workspace::FetchSimResults()
     {
+        fprintf(stderr, "[WS] FetchSimResults: start, pendingSteps=%d\n", m_pendingSteps);
+        fflush(stderr);
         if (!m_scene) return;
 
         // Complete the in-flight step
+        fprintf(stderr, "[WS] FetchSimResults: fetchResults(step0)\n"); fflush(stderr);
         m_scene->fetchResults(true);
+        fprintf(stderr, "[WS] FetchSimResults: step0 done, %d steps remain\n", m_pendingSteps);
+        fflush(stderr);
 
         // Run remaining steps synchronously (each step must complete before next)
         while (m_pendingSteps > 0)
@@ -605,7 +643,10 @@ namespace HCPEngine
             --m_pendingSteps;
         }
 
+        fprintf(stderr, "[WS] FetchSimResults: all steps done, calling fetchResultsParticleSystem\n");
+        fflush(stderr);
         m_scene->fetchResultsParticleSystem();
+        fprintf(stderr, "[WS] FetchSimResults: done\n"); fflush(stderr);
     }
 
     void Workspace::Shutdown()
@@ -662,56 +703,6 @@ namespace HCPEngine
     // until all runs resolve or vocab is exhausted. Early exit on full resolution.
     // ========================================================================
 
-    VocabPack BedManager::BuildVocabSlice(AZ::u32 wordLength, AZ::u32 startEntry, AZ::u32 count) const
-    {
-        VocabPack pack;
-        pack.wordLength = wordLength;
-        pack.maxTierCount = 1;
-
-        auto it = m_vocabByLength.find(wordLength);
-        if (it == m_vocabByLength.end()) return pack;
-
-        const auto& allEntries = it->second;
-        if (startEntry >= static_cast<AZ::u32>(allEntries.size())) return pack;
-
-        AZ::u32 endEntry = startEntry + count;
-        if (endEntry > static_cast<AZ::u32>(allEntries.size()))
-            endEntry = static_cast<AZ::u32>(allEntries.size());
-
-        AZ::u32 sliceCount = endEntry - startEntry;
-        pack.vocabEntryCount = sliceCount;
-        pack.totalVocabParticles = sliceCount * wordLength;
-
-        pack.positions.resize(pack.totalVocabParticles * 4, 0.0f);
-        pack.phases.resize(pack.totalVocabParticles, 0);
-        pack.entries.reserve(sliceCount);
-        pack.tierLookup.resize(1);
-
-        AZ::u32 particleIdx = 0;
-        for (AZ::u32 i = startEntry; i < endEntry; ++i)
-        {
-            const auto& entry = allEntries[i];
-            AZ::u32 entryIdx = i - startEntry;
-            pack.entries.push_back(entry);
-            pack.tierLookup[0][entry.word] = entryIdx;
-
-            for (AZ::u32 c = 0; c < wordLength; ++c)
-            {
-                char ch = (c < entry.word.size()) ? entry.word[c] : '\0';
-                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
-
-                AZ::u32 base = particleIdx * 4;
-                pack.positions[base + 0] = static_cast<float>(c);
-                pack.positions[base + 1] = 0.0f;
-                pack.positions[base + 2] = z;
-                pack.positions[base + 3] = 0.0f;
-                pack.phases[particleIdx] = 0;
-                ++particleIdx;
-            }
-        }
-
-        return pack;
-    }
 
     AZStd::vector<Workspace*> BedManager::GetWorkspacesForLength(AZ::u32 wordLength)
     {
@@ -905,9 +896,16 @@ namespace HCPEngine
 
         // Level 2: compound strips — checked after ALL level-1 candidates so a
         // compound fallback never beats a later direct candidate in priority order.
+        // IMPORTANT: copy baseWord and morphBits by value before calling CollectSingleStrip.
+        // CollectSingleStrip may push_back into `results`, which can reallocate the vector
+        // and invalidate any reference into it — including results[i].baseWord itself.
         const size_t level1Count = results.size();
         for (size_t i = 0; i < level1Count; ++i)
-            CollectSingleStrip(results[i].baseWord, results[i].morphBits, results, seen);
+        {
+            AZStd::string baseCopy = results[i].baseWord;
+            AZ::u16 bitsCopy = results[i].morphBits;
+            CollectSingleStrip(baseCopy, bitsCopy, results, seen);
+        }
 
         return results;
     }
@@ -979,6 +977,7 @@ namespace HCPEngine
         m_physics = physics;
         m_cuda = cuda;
         m_vocabulary = vocabulary;
+        m_lmdbEnv = lmdbEnv;
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -1028,60 +1027,15 @@ namespace HCPEngine
 
             if (meta.total_entries == 0) continue;
 
-            // Read entry buffer (zero-copy pointer into mmap'd region)
-            key.mv_data = const_cast<char*>("data");
-            key.mv_size = 4;
-            rc = mdb_get(txn, dataDbi, &key, &val);
-            if (rc != 0)
-            {
-                if (rc != MDB_NOTFOUND)
-                    fprintf(stderr, "[BedManager] %s data read: %s\n", dataName, mdb_strerror(rc));
-                continue;
-            }
-
-            AZ::u32 entrySize = static_cast<AZ::u32>(wlen) + VBED_TOKEN_ID_WIDTH;
-            AZ::u32 expectedBytes = meta.total_entries * entrySize;
-            if (val.mv_size < expectedBytes)
-            {
-                fprintf(stderr, "[BedManager] %s: buffer too small (%zu < %u)\n",
-                    dataName, val.mv_size, expectedBytes);
-                continue;
-            }
-
-            const uint8_t* buf = static_cast<const uint8_t*>(val.mv_data);
-
-            // Parse fixed-width entries directly into frequency-ordered list
-            AZStd::vector<VocabPack::Entry> entries;
-            entries.reserve(meta.total_entries);
-
-            for (AZ::u32 i = 0; i < meta.total_entries; ++i)
-            {
-                AZ::u32 offset = i * entrySize;
-
-                // Word: wlen bytes, null-padded
-                const char* wordPtr = reinterpret_cast<const char*>(buf + offset);
-                AZ::u32 actualWordLen = static_cast<AZ::u32>(wlen);
-                while (actualWordLen > 0 && wordPtr[actualWordLen - 1] == '\0')
-                    --actualWordLen;
-
-                // Token ID: 14 bytes, null-padded
-                const char* tidPtr = reinterpret_cast<const char*>(buf + offset + wlen);
-                AZ::u32 tidLen = VBED_TOKEN_ID_WIDTH;
-                while (tidLen > 0 && tidPtr[tidLen - 1] == '\0')
-                    --tidLen;
-
-                VocabPack::Entry entry;
-                entry.word = AZStd::string(wordPtr, actualWordLen);
-                entry.tokenId = AZStd::string(tidPtr, tidLen);
-                entry.tierIndex = 0;  // Phase-based: position in list IS the priority
-                entries.push_back(AZStd::move(entry));
-            }
+            // Store DBI handle and counts — data is read on-demand per phase
+            AZ::u32 len32 = static_cast<AZ::u32>(wlen);
+            m_dataDbiByLength[len32] = dataDbi;
+            m_totalEntriesByLength[len32] = meta.total_entries;
 
             totalEntries += meta.total_entries;
             totalLabels += meta.label_count;
-            m_activeWordLengths.push_back(static_cast<AZ::u32>(wlen));
-            m_labelCountByLength[static_cast<AZ::u32>(wlen)] = meta.label_count;
-            m_vocabByLength[static_cast<AZ::u32>(wlen)] = AZStd::move(entries);
+            m_activeWordLengths.push_back(len32);
+            m_labelCountByLength[len32] = meta.label_count;
 
             fprintf(stderr, "[BedManager] vbed_%02d: %u entries (labels=%u, ranked=%u, unranked=%u)\n",
                 wlen, meta.total_entries, meta.label_count,
@@ -1120,8 +1074,9 @@ namespace HCPEngine
 
         fprintf(stderr, "[BedManager] LMDB initialized: %zu lengths, %u entries (%u labels), "
             "%u entries/phase, %u workspaces, %.1f ms\n",
-            m_vocabByLength.size(), totalEntries, totalLabels,
+            m_activeWordLengths.size(), totalEntries, totalLabels,
             RC_VOCAB_PER_PHASE, createdCount, ms);
+        fflush(stderr);
         fprintf(stderr, "[BedManager] Word lengths (descending):");
         for (AZ::u32 len : m_activeWordLengths)
             fprintf(stderr, " %u", len);
@@ -1266,11 +1221,9 @@ namespace HCPEngine
     // simulate, collect resolved, pass unresolved to next phase.
     // Early exit when all runs resolved.
 
-    // Build a VocabPack from a pre-filtered entry vector (not the full per-length list).
-    // Used by ResolveLengthCycle after first-letter filtering.
     VocabPack BedManager::BuildVocabSliceFromEntries(
         AZ::u32 wordLength,
-        const AZStd::vector<VocabPack::Entry>& entries,
+        const std::vector<VocabPack::Entry>& entries,
         AZ::u32 startEntry,
         AZ::u32 count) const
     {
@@ -1319,44 +1272,80 @@ namespace HCPEngine
         return pack;
     }
 
-    // Helper: filter vocab entries by first-letter set
-    static AZStd::vector<VocabPack::Entry> FilterByFirstChar(
-        const AZStd::vector<VocabPack::Entry>& entries,
-        const AZStd::unordered_set<char>& neededChars)
-    {
-        AZStd::vector<VocabPack::Entry> filtered;
-        filtered.reserve(entries.size() / 8);
-        for (const auto& entry : entries)
-        {
-            if (!entry.word.empty() && neededChars.count(entry.word[0]))
-                filtered.push_back(entry);
-        }
-        return filtered;
-    }
 
-    // Helper: run phase cascade over a filtered vocab list
-    void BedManager::RunPhaseCascade(
+    // ---- ReadFilteredVocabSlice: on-demand LMDB read for one word length ----
+    //
+    // Opens a read txn, gets the mmap'd data buffer for the given word length,
+    // and returns only entries [startEntry, endEntry) whose first char is in
+    // neededChars. The returned vector is on system heap (no AZ pool pressure).
+    // No in-memory vocab cache — called per-phase from ResolveLengthCycle.
+    std::vector<VocabPack::Entry> BedManager::ReadFilteredVocabSlice(
         AZ::u32 wordLength,
-        const AZStd::vector<CharRun>& runs,
-        const AZStd::vector<VocabPack::Entry>& filteredVocab,
-        AZStd::vector<AZ::u32>& currentIndices,
-        AZStd::vector<ResolutionResult>& results,
-        AZ::u32& phaseIndex)
+        const AZStd::unordered_set<char>& neededChars,
+        AZ::u32 startEntry,
+        AZ::u32 endEntry) const
     {
-        AZ::u32 totalFiltered = static_cast<AZ::u32>(filteredVocab.size());
+        std::vector<VocabPack::Entry> filtered;
 
-        for (AZ::u32 start = 0; start < totalFiltered && !currentIndices.empty(); start += RC_VOCAB_PER_PHASE)
+        auto dbiIt = m_dataDbiByLength.find(wordLength);
+        if (dbiIt == m_dataDbiByLength.end() || !m_lmdbEnv)
+            return filtered;
+
+        MDB_txn* txn = nullptr;
+        int rc = mdb_txn_begin(m_lmdbEnv, nullptr, MDB_RDONLY, &txn);
+        if (rc != 0) return filtered;
+
+        MDB_val key, val;
+        key.mv_data = const_cast<char*>("data");
+        key.mv_size = 4;
+        rc = mdb_get(txn, dbiIt->second, &key, &val);
+        if (rc != 0)
         {
-            VocabPack phasePack = BuildVocabSliceFromEntries(wordLength, filteredVocab, start, RC_VOCAB_PER_PHASE);
-            if (phasePack.vocabEntryCount == 0) continue;
-
-            AZStd::vector<AZ::u32> phaseUnresolved;
-            ResolvePhase(wordLength, runs, currentIndices, phasePack, phaseIndex,
-                         results, phaseUnresolved);
-
-            currentIndices = AZStd::move(phaseUnresolved);
-            ++phaseIndex;
+            mdb_txn_abort(txn);
+            return filtered;
         }
+
+        AZ::u32 entrySize = wordLength + VBED_TOKEN_ID_WIDTH;
+        AZ::u32 maxEntries = static_cast<AZ::u32>(val.mv_size / entrySize);
+        if (endEntry > maxEntries) endEntry = maxEntries;
+        if (startEntry >= endEntry)
+        {
+            mdb_txn_abort(txn);
+            return filtered;
+        }
+
+        filtered.reserve((endEntry - startEntry) / 8 + 1);
+        const uint8_t* buf = static_cast<const uint8_t*>(val.mv_data);
+
+        for (AZ::u32 i = startEntry; i < endEntry; ++i)
+        {
+            AZ::u32 offset = i * entrySize;
+            const char* wordPtr = reinterpret_cast<const char*>(buf + offset);
+
+            // First-char filter — check before copying anything
+            if (neededChars.empty() || !neededChars.count(wordPtr[0]))
+                continue;
+
+            // Strip null padding from word
+            AZ::u32 actualWordLen = wordLength;
+            while (actualWordLen > 0 && wordPtr[actualWordLen - 1] == '\0')
+                --actualWordLen;
+
+            // Strip null padding from token ID
+            const char* tidPtr = reinterpret_cast<const char*>(buf + offset + wordLength);
+            AZ::u32 tidLen = VBED_TOKEN_ID_WIDTH;
+            while (tidLen > 0 && tidPtr[tidLen - 1] == '\0')
+                --tidLen;
+
+            VocabPack::Entry entry;
+            entry.word    = AZStd::string(wordPtr, actualWordLen);
+            entry.tokenId = AZStd::string(tidPtr, tidLen);
+            entry.tierIndex = 0;
+            filtered.push_back(AZStd::move(entry));
+        }
+
+        mdb_txn_abort(txn);
+        return filtered;
     }
 
     // ---- RunPipelinedCascade: work-queue state machine that overlaps GPU phases ----
@@ -1385,7 +1374,7 @@ namespace HCPEngine
     void BedManager::RunPipelinedCascade(
         AZ::u32 wordLength,
         const AZStd::vector<CharRun>& runs,
-        const AZStd::vector<VocabPack::Entry>& filteredVocab,
+        const std::vector<VocabPack::Entry>& filteredVocab,
         AZStd::vector<AZ::u32>& currentIndices,
         AZStd::vector<ResolutionResult>& results,
         AZ::u32& phaseIndex)
@@ -1567,15 +1556,15 @@ namespace HCPEngine
     {
         if (runIndices.empty()) return;
 
-        auto it = m_vocabByLength.find(wordLength);
-        if (it == m_vocabByLength.end())
+        auto totalIt = m_totalEntriesByLength.find(wordLength);
+        if (totalIt == m_totalEntriesByLength.end())
         {
             for (AZ::u32 idx : runIndices)
                 unresolvedIndices.push_back(idx);
             return;
         }
 
-        const auto& allEntries = it->second;
+        AZ::u32 totalEntries = totalIt->second;
         AZ::u32 labelCount = 0;
         {
             auto lIt = m_labelCountByLength.find(wordLength);
@@ -1600,53 +1589,37 @@ namespace HCPEngine
         // ---- Pass 1: Label vocab (entries 0..labelCount) — capitalized runs ONLY ----
         if (!capRuns.empty() && labelCount > 0)
         {
-            AZStd::vector<VocabPack::Entry> labelEntries(allEntries.begin(),
-                allEntries.begin() + labelCount);
-
             AZStd::unordered_set<char> capChars;
             for (AZ::u32 idx : capRuns)
-            {
                 if (!runs[idx].text.empty())
                     capChars.insert(runs[idx].text[0]);
-            }
-            auto filteredLabels = FilterByFirstChar(labelEntries, capChars);
 
+            auto filteredLabels = ReadFilteredVocabSlice(wordLength, capChars, 0, labelCount);
             if (!filteredLabels.empty())
             {
                 fprintf(stderr, "[BedManager] Length %u Label pass: %zu cap runs, %u labels → %zu filtered\n",
                     wordLength, capRuns.size(), labelCount, filteredLabels.size());
                 fflush(stderr);
-
                 RunPipelinedCascade(wordLength, runs, filteredLabels, capRuns, results, phaseIndex);
             }
-
-            // Unresolved cap runs fall through to common pass
         }
 
         // ---- Pass 2: Common vocab (entries labelCount..end) — ALL remaining runs ----
-        // Merge unresolved cap runs back with plain runs
         AZStd::vector<AZ::u32> commonRuns;
         commonRuns.reserve(capRuns.size() + plainRuns.size());
-        for (AZ::u32 idx : capRuns)
-            commonRuns.push_back(idx);
-        for (AZ::u32 idx : plainRuns)
-            commonRuns.push_back(idx);
+        for (AZ::u32 idx : capRuns)   commonRuns.push_back(idx);
+        for (AZ::u32 idx : plainRuns) commonRuns.push_back(idx);
 
         if (!commonRuns.empty())
         {
-            AZStd::vector<VocabPack::Entry> commonEntries(
-                allEntries.begin() + labelCount, allEntries.end());
-
             AZStd::unordered_set<char> commonChars;
             for (AZ::u32 idx : commonRuns)
-            {
                 if (!runs[idx].text.empty())
                     commonChars.insert(runs[idx].text[0]);
-            }
-            auto filteredCommon = FilterByFirstChar(commonEntries, commonChars);
 
-            fprintf(stderr, "[BedManager] Length %u common pass: %zu runs, %zu vocab → %zu filtered\n",
-                wordLength, commonRuns.size(), commonEntries.size(), filteredCommon.size());
+            auto filteredCommon = ReadFilteredVocabSlice(wordLength, commonChars, labelCount, totalEntries);
+            fprintf(stderr, "[BedManager] Length %u common pass: %zu runs, %u vocab → %zu filtered\n",
+                wordLength, commonRuns.size(), totalEntries - labelCount, filteredCommon.size());
             fflush(stderr);
 
             if (!filteredCommon.empty())
@@ -1683,11 +1656,21 @@ namespace HCPEngine
             const CharRun& run = runs[i];
             if (run.tag == RunTag::SingleChar)
             {
-                // preAssignedTokenId is set only for the "I" pronoun exception;
-                // all other single-char words fall through to LookupWordLocal.
+                // Lookup: try run.text as-is first; if that fails and firstCap is set
+                // (intrinsic cap like "I"), retry with first char uppercased.
                 AZStd::string tokenId = run.preAssignedTokenId;
                 if (tokenId.empty() && m_vocabulary)
+                {
                     tokenId = m_vocabulary->LookupWordLocal(run.text);
+                    if (tokenId.empty() && !run.text.empty())
+                    {
+                        // "I" is stored uppercase in LMDB — always try capitalised form
+                        // for any single-char that fails the lowercase lookup.
+                        AZStd::string cap = run.text;
+                        cap[0] = static_cast<char>(toupper(static_cast<unsigned char>(cap[0])));
+                        tokenId = m_vocabulary->LookupWordLocal(cap);
+                    }
+                }
                 ResolutionResult r;
                 r.runText = run.text;
                 r.resolved = !tokenId.empty();
@@ -1747,9 +1730,9 @@ namespace HCPEngine
         AZStd::vector<AZ::u32> noVocabRuns;
 
         // Build a set of active word lengths for O(1) lookup
-        AZStd::unordered_map<AZ::u32, bool> activeLenSet;
-        for (const auto& [len, _] : m_vocabByLength)
-            activeLenSet[len] = true;
+        AZStd::unordered_set<AZ::u32> activeLenSet;
+        for (AZ::u32 len : m_activeWordLengths)
+            activeLenSet.insert(len);
 
         // Per-length text sets — O(1) "already queued" checks for interstitial stripping
         AZStd::unordered_map<AZ::u32, AZStd::unordered_set<AZStd::string>> queuedTextByLength;
@@ -2590,7 +2573,8 @@ namespace HCPEngine
             ws.Shutdown();
         m_primaryWorkspaces.clear();
         m_extendedWorkspaces.clear();
-        m_vocabByLength.clear();
+        m_dataDbiByLength.clear();
+        m_totalEntriesByLength.clear();
         m_activeWordLengths.clear();
         m_initialized = false;
         m_vocabulary = nullptr;

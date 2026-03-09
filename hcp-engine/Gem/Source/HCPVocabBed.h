@@ -4,6 +4,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include <vector>          // std::vector for bulk vocab data (off AZ pool)
+#include <unordered_map>   // std::unordered_map for m_vocabByLength (off AZ pool)
 #include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
 #include "HCPParticlePipeline.h"   // Bond, PBMData
 
@@ -58,8 +60,10 @@ namespace HCPEngine
         // Positions: X=charIndex, Y=0, Z=ascii*Z_SCALE, W=0 (invMass=0, static)
         // Velocities: zero
         // Phases: logical tier index (remapped to actual phase group IDs at load time)
-        AZStd::vector<float> positions;     // Flat: [x,y,z,w] * totalVocabParticles
-        AZStd::vector<AZ::u32> phases;      // Logical tier index per particle
+        // Note: std::vector (not AZStd) to keep bulk particle data on system heap,
+        // avoiding exhaustion of the AZ allocator pool on large vocab phases.
+        std::vector<float> positions;       // Flat: [x,y,z,w] * totalVocabParticles
+        std::vector<AZ::u32> phases;        // Logical tier index per particle
 
         struct Entry
         {
@@ -238,13 +242,18 @@ namespace HCPEngine
         bool IsInitialized() const { return m_initialized; }
 
     private:
-        //! Build a VocabPack from a slice of the frequency-ordered entry list.
-        //! [startEntry, startEntry+count) across all firstChar groups combined.
-        VocabPack BuildVocabSlice(AZ::u32 wordLength, AZ::u32 startEntry, AZ::u32 count) const;
+        //! Read filtered vocab entries directly from LMDB for one word length.
+        //! Scans entries [startEntry, endEntry) and returns only those whose first char
+        //! is in neededChars. Zero-copy LMDB read; caller owns the returned vector.
+        std::vector<VocabPack::Entry> ReadFilteredVocabSlice(
+            AZ::u32 wordLength,
+            const AZStd::unordered_set<char>& neededChars,
+            AZ::u32 startEntry,
+            AZ::u32 endEntry) const;
 
-        //! Build a VocabPack from a pre-filtered entry vector (after first-letter filtering).
+        //! Build a VocabPack from a pre-filtered entry vector slice.
         VocabPack BuildVocabSliceFromEntries(AZ::u32 wordLength,
-            const AZStd::vector<VocabPack::Entry>& entries,
+            const std::vector<VocabPack::Entry>& entries,
             AZ::u32 startEntry, AZ::u32 count) const;
 
         //! Get workspace pool for a given word length (primary or extended).
@@ -260,26 +269,13 @@ namespace HCPEngine
             AZStd::vector<ResolutionResult>& results,
             AZStd::vector<AZ::u32>& unresolvedIndices);
 
-        //! Run phase cascade over a pre-filtered vocab list. Used by ResolveLengthCycle
-        //! for both Label and common passes.
-        void RunPhaseCascade(
-            AZ::u32 wordLength,
-            const AZStd::vector<CharRun>& runs,
-            const AZStd::vector<VocabPack::Entry>& filteredVocab,
-            AZStd::vector<AZ::u32>& currentIndices,
-            AZStd::vector<ResolutionResult>& results,
-            AZ::u32& phaseIndex);
-
-        //! Pipelined phase cascade — drop-in replacement for RunPhaseCascade.
-        //! Overlaps GPU simulation of phase N with CPU preparation of phase N+1:
-        //!   - VocabPack for N+1 built during GPU sim of N (hidden behind GPU time)
-        //!   - Workspaces that finish phase N immediately start phase N+1 without
-        //!     waiting for other workspaces to complete the same phase
+        //! Pipelined phase cascade — overlaps GPU simulation of phase N with CPU
+        //! preparation of phase N+1. filteredVocab is a pre-filtered slice from LMDB.
         //! Requires WS_PRIMARY_COUNT >= 3 for full triple-pipeline benefit.
         void RunPipelinedCascade(
             AZ::u32 wordLength,
             const AZStd::vector<CharRun>& runs,
-            const AZStd::vector<VocabPack::Entry>& filteredVocab,
+            const std::vector<VocabPack::Entry>& filteredVocab,
             AZStd::vector<AZ::u32>& currentIndices,
             AZStd::vector<ResolutionResult>& results,
             AZ::u32& phaseIndex);
@@ -303,9 +299,12 @@ namespace HCPEngine
         AZStd::vector<Workspace> m_primaryWorkspaces;    // For lengths 2-10
         AZStd::vector<Workspace> m_extendedWorkspaces;   // For lengths 11-20+
 
-        // Frequency-ordered entry lists per word length
-        // Read from LMDB at init: Labels first, then freq-ranked, then unranked.
-        AZStd::unordered_map<AZ::u32, AZStd::vector<VocabPack::Entry>> m_vocabByLength;
+        // LMDB handles — opened once at init, used for on-demand per-phase reads.
+        // No in-memory vocab cache. Each ResolveLengthCycle reads the filtered slice
+        // it needs directly from the mmap'd LMDB region.
+        MDB_env* m_lmdbEnv = nullptr;
+        std::unordered_map<AZ::u32, MDB_dbi> m_dataDbiByLength;     // data sub-db per length
+        std::unordered_map<AZ::u32, AZ::u32> m_totalEntriesByLength; // entry count per length
 
         // Label count per word length — entries [0..labelCount) are Labels.
         // Used by ResolveLengthCycle to skip Labels for non-capitalized runs.
