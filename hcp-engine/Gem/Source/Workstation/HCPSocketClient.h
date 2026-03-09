@@ -44,7 +44,6 @@ namespace HCPEngine
                     const QString& metadata, ResponseCallback cb);
         void IngestFile(const QString& path, const QString& name,
                         const QString& metadata, ResponseCallback cb);
-        void Tokenize(const QString& text, ResponseCallback cb);
         void PhysResolve(const QString& text, int maxChars, ResponseCallback cb);
 
     signals:

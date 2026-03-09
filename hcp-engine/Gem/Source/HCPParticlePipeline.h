@@ -3,7 +3,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
-#include "HCPTokenizer.h"
 
 // Forward declarations — full PhysX headers only in .cpp
 namespace physx
@@ -40,10 +39,6 @@ namespace HCPEngine
         size_t totalPairs = 0;
         size_t uniqueTokens = 0;
     };
-
-    //! Derive PBM bond data from a token stream.
-    //! Counts adjacent pairs — consecutive tokens in the stream form bonds.
-    PBMData DerivePBM(const TokenStream& stream);
 
     //! The particle pipeline: manages PhysX PBD particle system for
     //! disassembly (text -> bonds) and reassembly (bonds -> text).

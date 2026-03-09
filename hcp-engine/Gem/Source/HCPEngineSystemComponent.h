@@ -62,10 +62,6 @@ namespace HCPEngine
     protected:
         ////////////////////////////////////////////////////////////////////////
         // HCPEngineRequestBus interface implementation
-        AZStd::string ProcessText(
-            const AZStd::string& text,
-            const AZStd::string& docName,
-            const AZStd::string& centuryCode) override;
         AZStd::string ReassembleFromPBM(const AZStd::string& docId) override;
         bool IsReady() const override;
         ////////////////////////////////////////////////////////////////////////
@@ -82,7 +78,6 @@ namespace HCPEngine
         // Console commands — source workstation CLI
         // These are the O3DE-native interface to kernel ops.
         // Same operations are available via socket API for remote clients.
-        void SourceIngest(const AZ::ConsoleCommandContainer& arguments);
         void SourceDecode(const AZ::ConsoleCommandContainer& arguments);
         void SourceList(const AZ::ConsoleCommandContainer& arguments);
         void SourceHealth(const AZ::ConsoleCommandContainer& arguments);
@@ -124,7 +119,6 @@ namespace HCPEngine
         EntityAnnotator m_entityAnnotator;
 
         // Console command registrations
-        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceIngest, AZ::ConsoleFunctorFlags::Null, "Encode a source file into the HCP pipeline");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceDecode, AZ::ConsoleFunctorFlags::Null, "Decode a stored document back to text");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceList, AZ::ConsoleFunctorFlags::Null, "List stored documents");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceHealth, AZ::ConsoleFunctorFlags::Null, "Show engine status and vocabulary counts");

@@ -1683,11 +1683,16 @@ namespace HCPEngine
             const CharRun& run = runs[i];
             if (run.tag == RunTag::SingleChar)
             {
+                // preAssignedTokenId is set only for the "I" pronoun exception;
+                // all other single-char words fall through to LookupWordLocal.
+                AZStd::string tokenId = run.preAssignedTokenId;
+                if (tokenId.empty() && m_vocabulary)
+                    tokenId = m_vocabulary->LookupWordLocal(run.text);
                 ResolutionResult r;
                 r.runText = run.text;
-                r.resolved = true;
+                r.resolved = !tokenId.empty();
                 r.matchedWord = run.text;
-                r.matchedTokenId = run.preAssignedTokenId;
+                r.matchedTokenId = tokenId;
                 r.tierResolved = 0;
                 r.runIndex = i;
                 r.firstCap = run.firstCap;
@@ -1697,11 +1702,11 @@ namespace HCPEngine
             }
             else if (run.tag == RunTag::Numeric)
             {
+                // Numbers are unresolved — ScanManifestToPBM assigns a per-number var token.
                 ResolutionResult r;
                 r.runText = run.text;
-                r.resolved = true;
+                r.resolved = false;
                 r.matchedWord = run.text;
-                r.matchedTokenId = "NUM";
                 r.tierResolved = 0;
                 r.runIndex = i;
                 manifest.results.push_back(r);
@@ -1728,7 +1733,7 @@ namespace HCPEngine
 
         if (preResolved > 0)
         {
-            fprintf(stderr, "[BedManager] Transform pre-resolved: %u runs (SingleChar/Numeric)\n", preResolved);
+            fprintf(stderr, "[BedManager] Transform pre-handled: %u runs (SingleChar/Numeric)\n", preResolved);
             fflush(stderr);
         }
 

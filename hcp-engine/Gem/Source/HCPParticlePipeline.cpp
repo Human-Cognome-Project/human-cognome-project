@@ -15,49 +15,6 @@
 
 namespace HCPEngine
 {
-    PBMData DerivePBM(const TokenStream& stream)
-    {
-        PBMData result;
-        if (stream.tokenIds.size() < 2)
-        {
-            return result;
-        }
-
-        // Count adjacent pairs (consecutive tokens in the stream)
-        AZStd::unordered_map<AZStd::string, int> bondCounts;
-        for (size_t i = 0; i + 1 < stream.tokenIds.size(); ++i)
-        {
-            AZStd::string key = stream.tokenIds[i] + "|" + stream.tokenIds[i + 1];
-            bondCounts[key]++;
-        }
-
-        // Build bond list
-        result.bonds.reserve(bondCounts.size());
-        for (const auto& [key, count] : bondCounts)
-        {
-            size_t sep = key.find('|');
-            if (sep != AZStd::string::npos)
-            {
-                Bond bond;
-                bond.tokenA = AZStd::string(key.data(), sep);
-                bond.tokenB = AZStd::string(key.data() + sep + 1, key.size() - sep - 1);
-                bond.count = count;
-                result.bonds.push_back(bond);
-            }
-        }
-
-        result.firstFpbA = stream.tokenIds[0];
-        result.firstFpbB = stream.tokenIds[1];
-        result.totalPairs = stream.tokenIds.size() - 1;
-        {
-            AZStd::unordered_map<AZStd::string, int> uniq;
-            for (const auto& b : result.bonds) { uniq[b.tokenA] = 1; uniq[b.tokenB] = 1; }
-            result.uniqueTokens = uniq.size();
-        }
-
-        return result;
-    }
-
     // ---- Particle Pipeline ----
 
     HCPParticlePipeline::~HCPParticlePipeline()

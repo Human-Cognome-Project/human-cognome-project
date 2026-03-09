@@ -16,16 +16,6 @@ namespace HCPEngine
         AZ_RTTI(HCPEngineRequests, HCPEngineRequestsTypeId);
         virtual ~HCPEngineRequests() = default;
 
-        //! Process a text through the full PBM pipeline: tokenize -> disassemble -> store
-        //! @param text The raw text to process
-        //! @param docName Human-readable document name
-        //! @param centuryCode Century code for PBM addressing (e.g., "AS" for 19th century)
-        //! @return The PBM document address (e.g., "vA.AB.AS.AA.AA"), or empty on failure
-        virtual AZStd::string ProcessText(
-            const AZStd::string& text,
-            const AZStd::string& docName,
-            const AZStd::string& centuryCode) = 0;
-
         //! Load a PBM and reassemble it back into text
         //! @param docId The PBM document address
         //! @return The reconstructed text, or empty on failure

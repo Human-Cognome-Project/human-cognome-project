@@ -284,7 +284,7 @@ namespace HCPEngine
                                   const QString& metadata, ResponseCallback cb)
     {
         QJsonObject req;
-        req["action"] = "ingest";
+        req["action"] = "phys_ingest";
         req["text"] = text;
         req["name"] = name;
         if (!metadata.isEmpty())
@@ -296,19 +296,11 @@ namespace HCPEngine
                                       const QString& metadata, ResponseCallback cb)
     {
         QJsonObject req;
-        req["action"] = "ingest";
+        req["action"] = "phys_ingest";
         req["file"] = path;
         req["name"] = name;
         if (!metadata.isEmpty())
             req["metadata"] = metadata;
-        SendRequest(req, std::move(cb));
-    }
-
-    void HCPSocketClient::Tokenize(const QString& text, ResponseCallback cb)
-    {
-        QJsonObject req;
-        req["action"] = "tokenize";
-        req["text"] = text;
         SendRequest(req, std::move(cb));
     }
 
