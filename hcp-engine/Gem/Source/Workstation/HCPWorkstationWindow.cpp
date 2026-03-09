@@ -99,12 +99,13 @@ namespace HCPEngine
     // ---- Constructor / destructor ----
 
     HCPWorkstationWindow::HCPWorkstationWindow(
-        HCPWorkstationEngine* engine, HCPSocketClient* client, QWidget* parent)
+        HCPWorkstationEngine* engine, HCPSocketClient* client, QWidget* parent, bool viewerMode)
         : QMainWindow(parent)
         , m_engine(engine)
         , m_client(client)
+        , m_viewerMode(viewerMode)
     {
-        setWindowTitle("HCP Source Workstation");
+        setWindowTitle(m_viewerMode ? "HCP Viewer" : "HCP Source Workstation");
         setMinimumSize(1200, 800);
         setAcceptDrops(true);
 
@@ -181,14 +182,17 @@ namespace HCPEngine
     {
         auto* fileMenu = menuBar()->addMenu("&File");
 
-        auto* openFileAction = fileMenu->addAction("&Open File...");
-        openFileAction->setShortcut(QKeySequence::Open);
-        connect(openFileAction, &QAction::triggered, this, &HCPWorkstationWindow::OnOpenFile);
+        if (!m_viewerMode)
+        {
+            auto* openFileAction = fileMenu->addAction("&Open File...");
+            openFileAction->setShortcut(QKeySequence::Open);
+            connect(openFileAction, &QAction::triggered, this, &HCPWorkstationWindow::OnOpenFile);
 
-        auto* openFolderAction = fileMenu->addAction("Open &Folder...");
-        connect(openFolderAction, &QAction::triggered, this, &HCPWorkstationWindow::OnOpenFolder);
+            auto* openFolderAction = fileMenu->addAction("Open &Folder...");
+            connect(openFolderAction, &QAction::triggered, this, &HCPWorkstationWindow::OnOpenFolder);
 
-        fileMenu->addSeparator();
+            fileMenu->addSeparator();
+        }
 
         auto* refreshAction = fileMenu->addAction("&Refresh Document List");
         refreshAction->setShortcut(QKeySequence::Refresh);
@@ -397,23 +401,26 @@ namespace HCPEngine
         m_metaTable->setAlternatingRowColors(true);
         layout->addWidget(m_metaTable, 1);
 
-        auto* editRow = new QHBoxLayout();
-        m_metaKeyInput = new QLineEdit(parent);
-        m_metaKeyInput->setPlaceholderText("Key");
-        m_metaValueInput = new QLineEdit(parent);
-        m_metaValueInput->setPlaceholderText("Value");
-        m_metaSaveBtn = new QPushButton("Set", parent);
-        connect(m_metaSaveBtn, &QPushButton::clicked,
-            this, &HCPWorkstationWindow::OnSaveMetadata);
-        editRow->addWidget(m_metaKeyInput);
-        editRow->addWidget(m_metaValueInput);
-        editRow->addWidget(m_metaSaveBtn);
-        layout->addLayout(editRow);
+        if (!m_viewerMode)
+        {
+            auto* editRow = new QHBoxLayout();
+            m_metaKeyInput = new QLineEdit(parent);
+            m_metaKeyInput->setPlaceholderText("Key");
+            m_metaValueInput = new QLineEdit(parent);
+            m_metaValueInput->setPlaceholderText("Value");
+            m_metaSaveBtn = new QPushButton("Set", parent);
+            connect(m_metaSaveBtn, &QPushButton::clicked,
+                this, &HCPWorkstationWindow::OnSaveMetadata);
+            editRow->addWidget(m_metaKeyInput);
+            editRow->addWidget(m_metaValueInput);
+            editRow->addWidget(m_metaSaveBtn);
+            layout->addLayout(editRow);
 
-        m_metaImportBtn = new QPushButton("Import Catalog Metadata", parent);
-        connect(m_metaImportBtn, &QPushButton::clicked,
-            this, &HCPWorkstationWindow::OnImportMetadata);
-        layout->addWidget(m_metaImportBtn);
+            m_metaImportBtn = new QPushButton("Import Catalog Metadata", parent);
+            connect(m_metaImportBtn, &QPushButton::clicked,
+                this, &HCPWorkstationWindow::OnImportMetadata);
+            layout->addWidget(m_metaImportBtn);
+        }
     }
 
     void HCPWorkstationWindow::BuildEntitiesTab(QWidget* parent)
@@ -1205,12 +1212,14 @@ namespace HCPEngine
 
     void HCPWorkstationWindow::dragEnterEvent(QDragEnterEvent* event)
     {
-        if (event->mimeData()->hasUrls())
+        if (!m_viewerMode && event->mimeData()->hasUrls())
             event->acceptProposedAction();
     }
 
     void HCPWorkstationWindow::dropEvent(QDropEvent* event)
     {
+        if (m_viewerMode) return;
+
         for (const QUrl& url : event->mimeData()->urls())
         {
             QString path = url.toLocalFile();
@@ -1376,5 +1385,3 @@ namespace HCPEngine
     }
 
 } // namespace HCPEngine
-
-#include <Workstation/moc_HCPWorkstationWindow.cpp>

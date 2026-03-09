@@ -35,6 +35,9 @@ namespace
         // Entity DBs (optional)
         QString ficEntConnection;
         QString nfEntConnection;
+
+        // Viewer mode — hides all write controls, read-only presentation
+        bool viewerMode = false;
     };
 
     WorkstationConfig ParseCommandLine(QApplication& app)
@@ -54,6 +57,10 @@ namespace
         QCommandLineOption portOption("port",
             "Engine daemon port (default: 9720)", "port", "9720");
         parser.addOption(portOption);
+
+        QCommandLineOption viewerOption("viewer",
+            "Viewer mode — read-only, hides write controls and ingest features");
+        parser.addOption(viewerOption);
 
         QCommandLineOption spawnOption("spawn-daemon",
             "Spawn the engine daemon on startup and kill on exit");
@@ -82,6 +89,7 @@ namespace
 
         parser.process(app);
 
+        config.viewerMode = parser.isSet(viewerOption);
         config.host = parser.value(hostOption);
         config.port = static_cast<quint16>(parser.value(portOption).toUInt());
         config.spawnDaemon = parser.isSet(spawnOption);
@@ -171,7 +179,7 @@ int main(int argc, char* argv[])
     }
 
     // ---- Create and show main window ----
-    HCPEngine::HCPWorkstationWindow window(&engine, &client);
+    HCPEngine::HCPWorkstationWindow window(&engine, &client, nullptr, config.viewerMode);
     window.show();
 
     // Begin async daemon connection (non-blocking)

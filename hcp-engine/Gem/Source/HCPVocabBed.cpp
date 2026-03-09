@@ -759,7 +759,6 @@ namespace HCPEngine
     struct InflectionStripResult
     {
         AZStd::string baseWord;
-        AZStd::string tokenId;   // Token ID from vocab lookup (same source as PBD)
         AZ::u16 morphBits = 0;
         bool stripped = false;
     };
@@ -771,61 +770,49 @@ namespace HCPEngine
             c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u';
     }
 
-    static InflectionStripResult TryInflectionStrip(
-        const AZStd::string& word, const HCPVocabulary* vocab)
+    // ---- CollectSingleStrip ------------------------------------------------
+    // Applies all inflection rules to `word` (no recursion).
+    // Appends one InflectionStripResult per matched candidate to `results`.
+    // `inheritedBits` are OR'd into every candidate's morphBits (for compounds).
+    // `seen` deduplicates base words across the full two-level collection.
+    // -----------------------------------------------------------------------
+    static void CollectSingleStrip(
+        const AZStd::string& word,
+        AZ::u16 inheritedBits,
+        AZStd::vector<InflectionStripResult>& results,
+        AZStd::unordered_set<AZStd::string>& seen)
     {
-        InflectionStripResult result;
-        if (!vocab || word.size() < 4) return result;
+        const size_t len = word.size();
+        if (len < 3) return;
 
-        // tryBase: validates the candidate base against the vocab LMDB.
-        // Only fires if the base actually exists — prevents wrong rules from matching
-        // (e.g., the doubled-consonant -ed rule must not beat plain -ed for "possessed").
-        auto tryBase = [&](const AZStd::string& base, AZ::u16 bits) -> bool
+        auto appendBase = [&](const AZStd::string& base, AZ::u16 bits)
         {
-            if (base.size() < 2) return false;
-            AZStd::string tid = vocab->LookupWordLocal(base);
-            if (tid.empty()) return false;
-            result.baseWord = base;
-            result.tokenId  = tid;
-            result.morphBits = bits;
-            result.stripped = true;
-            return true;
+            if (base.size() < 2 || seen.count(base)) return;
+            seen.insert(base);
+            results.push_back({base, static_cast<AZ::u16>(inheritedBits | bits), true});
         };
 
-        const size_t len = word.size();
-
-        // ---- -ies → -y (e.g. "parties" → "party") ----
+        // ---- -ies → -y ----
         if (len >= 4 && word.substr(len - 3) == "ies")
-        {
-            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD))
-                return result;
-        }
+            appendBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD);
 
-        // ---- -ves → -f / -fe (e.g. "wolves" → "wolf", "knives" → "knife") ----
+        // ---- -ves → -f / -fe ----
         if (len >= 4 && word.substr(len - 3) == "ves")
         {
-            if (tryBase(word.substr(0, len - 3) + "f", MorphBit::PLURAL))
-                return result;
-            if (tryBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL))
-                return result;
+            appendBase(word.substr(0, len - 3) + "f",  MorphBit::PLURAL);
+            appendBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL);
         }
 
-        // ---- -ied → -y (e.g. "carried" → "carry") ----
+        // ---- -ied → -y ----
         if (len >= 4 && word.substr(len - 3) == "ied")
-        {
-            if (tryBase(word.substr(0, len - 3) + "y", MorphBit::PAST))
-                return result;
-        }
+            appendBase(word.substr(0, len - 3) + "y", MorphBit::PAST);
 
         // ---- Doubled consonant + -ing (e.g. "running" → "run") ----
         if (len >= 6 && word.substr(len - 3) == "ing")
         {
             AZStd::string stem = word.substr(0, len - 3);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
-            {
-                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PROG))
-                    return result;
-            }
+                appendBase(stem.substr(0, stem.size() - 1), MorphBit::PROG);
         }
 
         // ---- Doubled consonant + -ed (e.g. "stopped" → "stop") ----
@@ -833,101 +820,96 @@ namespace HCPEngine
         {
             AZStd::string stem = word.substr(0, len - 2);
             if (stem.size() >= 3 && stem[stem.size()-1] == stem[stem.size()-2] && IsConsonant(stem.back()))
-            {
-                if (tryBase(stem.substr(0, stem.size() - 1), MorphBit::PAST))
-                    return result;
-            }
+                appendBase(stem.substr(0, stem.size() - 1), MorphBit::PAST);
         }
 
-        // ---- -ing (try base, try base+e) ----
+        // ---- -ing (plain + silent-e) ----
         if (len >= 5 && word.substr(len - 3) == "ing")
         {
             AZStd::string base = word.substr(0, len - 3);
-            if (tryBase(base, MorphBit::PROG))
-                return result;
-            if (tryBase(base + "e", MorphBit::PROG))
-                return result;
+            appendBase(base,        MorphBit::PROG);
+            appendBase(base + "e",  MorphBit::PROG);
         }
 
-        // ---- -ed (try base, try base+e) ----
+        // ---- -ed (plain + silent-e) ----
         if (len >= 4 && word.substr(len - 2) == "ed")
         {
             AZStd::string base = word.substr(0, len - 2);
-            if (tryBase(base, MorphBit::PAST))
-                return result;
-            if (tryBase(base + "e", MorphBit::PAST))
-                return result;
+            appendBase(base,        MorphBit::PAST);
+            appendBase(base + "e",  MorphBit::PAST);
         }
 
-        // ---- -er (comparative: e.g. "bigger" → "big", "taller" → "tall") ----
+        // ---- -er (doubled-consonant + plain + silent-e) ----
         if (len >= 4 && word.substr(len - 2) == "er")
         {
             AZStd::string base = word.substr(0, len - 2);
-            // Doubled consonant
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
-            {
-                if (tryBase(base.substr(0, base.size() - 1), 0))
-                    return result;
-            }
-            if (tryBase(base, 0))
-                return result;
-            if (tryBase(base + "e", 0))
-                return result;
+                appendBase(base.substr(0, base.size() - 1), 0);
+            appendBase(base,       0);
+            appendBase(base + "e", 0);
         }
 
-        // ---- -est (superlative) ----
+        // ---- -est (doubled-consonant + plain + silent-e) ----
         if (len >= 5 && word.substr(len - 3) == "est")
         {
             AZStd::string base = word.substr(0, len - 3);
             if (base.size() >= 3 && base[base.size()-1] == base[base.size()-2] && IsConsonant(base.back()))
-            {
-                if (tryBase(base.substr(0, base.size() - 1), 0))
-                    return result;
-            }
-            if (tryBase(base, 0))
-                return result;
-            if (tryBase(base + "e", 0))
-                return result;
+                appendBase(base.substr(0, base.size() - 1), 0);
+            appendBase(base,       0);
+            appendBase(base + "e", 0);
         }
 
-        // ---- -es (e.g. "boxes" → "box", "watches" → "watch") ----
+        // ---- -es ----
         if (len >= 4 && word.substr(len - 2) == "es")
         {
-            if (tryBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD))
-                return result;
-            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))  // "e" forms
-                return result;
+            appendBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD);
+            appendBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD);  // keep -e
         }
 
         // ---- -s (plural / 3rd person) ----
         if (len >= 4 && word.back() == 's' && word[len-2] != 's')
-        {
-            if (tryBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD))
-                return result;
-        }
+            appendBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD);
 
-        // ---- -ily → -y (adverb from y-stem: e.g. "daily" → "day", "happily" → "happy") ----
+        // ---- -ily → -y ----
         if (len >= 5 && word.substr(len - 3) == "ily")
-        {
-            if (tryBase(word.substr(0, len - 3) + "y", 0))
-                return result;
-        }
+            appendBase(word.substr(0, len - 3) + "y", 0);
 
-        // ---- -ly (adverb) ----
+        // ---- -ly ----
         if (len >= 5 && word.substr(len - 2) == "ly")
-        {
-            if (tryBase(word.substr(0, len - 2), 0))
-                return result;
-        }
+            appendBase(word.substr(0, len - 2), 0);
 
         // ---- -ness ----
         if (len >= 6 && word.substr(len - 4) == "ness")
-        {
-            if (tryBase(word.substr(0, len - 4), 0))
-                return result;
-        }
+            appendBase(word.substr(0, len - 4), 0);
+    }
 
-        return result;  // No strip found
+    // ---- TryInflectionStrip ------------------------------------------------
+    // Returns ordered candidates for `word`:
+    //   Level 1 — all direct single-morpheme strips (priority order).
+    //   Level 2 — compound strips of each level-1 base (appended after all
+    //             level-1 entries so direct candidates are tried first).
+    //
+    // PBD against vocab beds is the existence check; no LMDB pre-screening.
+    // The caller drives sequential fallback: try candidates[0], if PBD fails
+    // try candidates[1], etc.  Level-2 entries handle cases like:
+    //   "gardeners" → level1: "gardener" (-s) → level2: "garden" (-er)
+    //   "runnings"  → level1: "running"  (-s) → level2: "run"    (-ing)
+    // -----------------------------------------------------------------------
+    static AZStd::vector<InflectionStripResult> TryInflectionStrip(const AZStd::string& word)
+    {
+        AZStd::vector<InflectionStripResult> results;
+        AZStd::unordered_set<AZStd::string> seen;
+
+        // Level 1: direct single-morpheme strips
+        CollectSingleStrip(word, 0, results, seen);
+
+        // Level 2: compound strips — checked after ALL level-1 candidates so a
+        // compound fallback never beats a later direct candidate in priority order.
+        const size_t level1Count = results.size();
+        for (size_t i = 0; i < level1Count; ++i)
+            CollectSingleStrip(results[i].baseWord, results[i].morphBits, results, seen);
+
+        return results;
     }
 
     // ========================================================================
@@ -1889,12 +1871,12 @@ namespace HCPEngine
         // Post-loop: scan manifest for resolved bases, propagate to dependents.
         // Unresolved bases → dependents become vars.
 
-        struct InflectedDependent
+        struct InflectionQueueEntry
         {
-            AZ::u32 runIndex;       // Original inflected run index
-            AZ::u16 morphBits;      // Inflection applied (delta)
+            AZ::u32 runIndex;
+            AZStd::vector<InflectionStripResult> candidates;  // priority-ordered
         };
-        AZStd::unordered_map<AZStd::string, AZStd::vector<InflectedDependent>> inflectedDependents;
+        AZStd::vector<InflectionQueueEntry> inflectionQueue;
         AZStd::vector<AZ::u32> allUnresolvedOriginal;
         AZ::u32 inflectionCount = 0;
         AZ::u32 syntheticInjections = 0;
@@ -1924,44 +1906,39 @@ namespace HCPEngine
                     continue;
                 }
 
-                InflectionStripResult strip = TryInflectionStrip(run.text, m_vocabulary);
-                if (!strip.stripped)
+                auto candidates = TryInflectionStrip(run.text);
+                if (candidates.empty())
                 {
                     allUnresolvedOriginal.push_back(idx);
                     continue;
                 }
 
-                AZ::u32 baseLen = static_cast<AZ::u32>(strip.baseWord.size());
-
-                // Record the delta: inflected form depends on base
-                inflectedDependents[strip.baseWord].push_back({idx, strip.morphBits});
+                inflectionQueue.push_back({idx, AZStd::move(candidates)});
                 ++inflectionCount;
 
-                // O(1) check: is base already queued at its shorter length?
-                bool alreadyQueued = false;
-                if (queuedTextByLength.count(baseLen))
-                    alreadyQueued = queuedTextByLength[baseLen].count(strip.baseWord) > 0;
-
-                if (!alreadyQueued && activeLenSet.count(baseLen))
+                // Inject a synthetic CharRun for every unique candidate base.
+                // All candidates are injected upfront; the dep-resolution pass
+                // selects the first one that resolves in PBD (priority order).
+                for (const auto& cand : inflectionQueue.back().candidates)
                 {
-                    // Inject synthetic CharRun for the base into shorter-length PBD queue.
-                    // No LMDB lookup — PBD at the base's length IS the existence check.
-                    CharRun synth;
-                    synth.text = strip.baseWord;
-                    synth.startPos = 0;
-                    synth.length = baseLen;
-                    synth.tag = RunTag::Word;
-                    synth.firstCap = false;
-                    synth.allCaps = false;
-
-                    AZ::u32 synthIdx = static_cast<AZ::u32>(runs.size());
-                    runs.push_back(synth);
-                    runsByLength[baseLen].push_back(synthIdx);
-                    queuedTextByLength[baseLen].insert(strip.baseWord);
-                    ++syntheticInjections;
+                    AZ::u32 baseLen = static_cast<AZ::u32>(cand.baseWord.size());
+                    bool alreadyQueued = queuedTextByLength.count(baseLen) &&
+                                        queuedTextByLength[baseLen].count(cand.baseWord);
+                    if (!alreadyQueued && activeLenSet.count(baseLen))
+                    {
+                        CharRun synth;
+                        synth.text     = cand.baseWord;
+                        synth.startPos = 0;
+                        synth.length   = baseLen;
+                        synth.tag      = RunTag::Word;
+                        synth.firstCap = false;
+                        synth.allCaps  = false;
+                        runs.push_back(synth);
+                        runsByLength[baseLen].push_back(static_cast<AZ::u32>(runs.size() - 1));
+                        queuedTextByLength[baseLen].insert(cand.baseWord);
+                        ++syntheticInjections;
+                    }
                 }
-                // If already queued: base will resolve via PBD at its natural length.
-                // Dependents picked up in post-loop scan.
             }
 
             fprintf(stderr, "[BedManager] Length %u: %zu runs, %zu unresolved\n",
@@ -1969,181 +1946,69 @@ namespace HCPEngine
             fflush(stderr);
         }
 
-        // ---- Resolve inflected dependents whose bases resolved (via PBD or synthetics) ----
-        // Scan all manifest results for base words that have pending dependents.
-        // Synthetic runs resolve via PBD → appear in manifest → dependents piggyback.
-        // Failed bases collected for silent-e fallback (e.g. "resolv" → "resolve").
-        AZStd::unordered_map<AZStd::string, AZStd::vector<InflectedDependent>*> silentECandidates;
+        // ---- Resolve inflected dependents — priority-ordered candidate matching ----
+        //
+        // For each queued inflected run, check its candidates in priority order.
+        // The first candidate whose base resolved in PBD wins; the rest are skipped.
+        // resolvedRunIndices prevents duplicate manifest entries (a run can appear in
+        // multiple candidate entries if it had several strip paths injected).
+        //
+        // Silent-e fallback is now folded in: base+"e" candidates were injected in the
+        // main loop alongside all other candidates, so no separate pass is needed.
         {
+            // Build resolved-base lookup from manifest
             AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedBases;
             for (const auto& r : manifest.results)
-            {
-                if (r.resolved && inflectedDependents.count(r.matchedWord))
-                    resolvedBases[r.matchedWord] = &r;
-            }
+                if (r.resolved) resolvedBases[r.matchedWord] = &r;
+
+            // Pre-populate resolvedRunIndices from already-resolved manifest entries
+            AZStd::unordered_set<AZ::u32> resolvedRunIndices;
+            for (const auto& r : manifest.results)
+                resolvedRunIndices.insert(r.runIndex);
 
             AZ::u32 depResolved = 0;
-            for (auto& [baseWord, deps] : inflectedDependents)
+            for (const auto& qe : inflectionQueue)
             {
-                auto bit = resolvedBases.find(baseWord);
-                if (bit != resolvedBases.end())
+                if (resolvedRunIndices.count(qe.runIndex)) continue;
+
+                bool resolved = false;
+                for (const auto& cand : qe.candidates)
                 {
-                    for (auto& dep : deps)
-                    {
-                        const CharRun& depRun = runs[dep.runIndex];
-                        ResolutionResult r;
-                        r.runText = depRun.text;
-                        r.resolved = true;
-                        r.matchedWord = bit->second->matchedWord;
-                        r.matchedTokenId = bit->second->matchedTokenId;
-                        r.morphBits = dep.morphBits;
-                        r.tierResolved = bit->second->tierResolved;
-                        r.runIndex = dep.runIndex;
-                        r.firstCap = depRun.firstCap;
-                        r.allCaps = depRun.allCaps;
-                        manifest.results.push_back(r);
-                        ++depResolved;
-                    }
+                    auto it = resolvedBases.find(cand.baseWord);
+                    if (it == resolvedBases.end()) continue;
+
+                    const CharRun& depRun = runs[qe.runIndex];
+                    ResolutionResult r;
+                    r.runText        = depRun.text;
+                    r.resolved       = true;
+                    r.matchedWord    = it->second->matchedWord;
+                    r.matchedTokenId = it->second->matchedTokenId;
+                    r.morphBits      = cand.morphBits;
+                    r.tierResolved   = it->second->tierResolved;
+                    r.runIndex       = qe.runIndex;
+                    r.firstCap       = depRun.firstCap;
+                    r.allCaps        = depRun.allCaps;
+                    manifest.results.push_back(r);
+                    resolvedRunIndices.insert(qe.runIndex);
+                    ++depResolved;
+                    resolved = true;
+                    break;
                 }
-                else
-                {
-                    // Base never resolved — collect for silent-e fallback
-                    silentECandidates[baseWord] = &deps;
-                }
+
+                if (!resolved)
+                    allUnresolvedOriginal.push_back(qe.runIndex);
             }
 
             if (depResolved > 0)
             {
-                fprintf(stderr, "[BedManager] Inflected dependents resolved via base PBD: %u\n", depResolved);
+                fprintf(stderr, "[BedManager] Inflected dependents resolved: %u\n", depResolved);
                 fflush(stderr);
-            }
-        }
-
-        // ---- Silent-e fallback: failed bases from -ed/-es/-s get "e" appended ----
-        // e.g. "resolv" failed → try "resolve", "issu" failed → try "issue"
-        // Only fires for bases that actually failed PBD. One cleanup cycle per length.
-        {
-            // Collect base+e candidates grouped by length
-            AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> silentEByLength;
-            AZStd::unordered_map<AZStd::string, AZStd::string> silentEOrigBase;  // base+e → original base
-            AZ::u32 silentECount = 0;
-
-            fprintf(stderr, "[BedManager] Silent-e candidates: %zu failed bases\n", silentECandidates.size());
-            fflush(stderr);
-            for (auto& [baseWord, depsPtr] : silentECandidates)
-            {
-                AZStd::string candidate = baseWord + "e";
-                AZ::u32 candidateLen = static_cast<AZ::u32>(candidate.size());
-                fprintf(stderr, "[BedManager]   '%s' -> try '%s' (len %u)\n",
-                    baseWord.c_str(), candidate.c_str(), candidateLen);
-                fflush(stderr);
-
-                // Only inject if the length has a bed
-                if (!activeLenSet.count(candidateLen))
-                {
-                    // No bed for this length — dependents are vars
-                    for (auto& dep : *depsPtr)
-                        allUnresolvedOriginal.push_back(dep.runIndex);
-                    continue;
-                }
-
-                // Inject synthetic run for base+e
-                CharRun synth;
-                synth.text = candidate;
-                synth.startPos = 0;
-                synth.length = candidateLen;
-                synth.tag = RunTag::Word;
-                synth.firstCap = false;
-                synth.allCaps = false;
-
-                AZ::u32 synthIdx = static_cast<AZ::u32>(runs.size());
-                runs.push_back(synth);
-                silentEByLength[candidateLen].push_back(synthIdx);
-                silentEOrigBase[candidate] = baseWord;
-                ++silentECount;
-            }
-
-            if (silentECount > 0)
-            {
-                // Run cleanup PBD cycles for each length that has candidates
-                AZ::u32 silentEResolved = 0;
-                for (auto& [len, indices] : silentEByLength)
-                {
-                    AZStd::vector<AZ::u32> unresolvedFromCleanup;
-                    ResolveLengthCycle(len, runs, indices,
-                                       manifest.results, unresolvedFromCleanup);
-                }
-
-                // Scan results: find resolved base+e words
-                // (collect first, then propagate — avoid modifying manifest during iteration)
-                AZStd::unordered_map<AZStd::string, const ResolutionResult*> silentEResolutions;
-                for (size_t ri = 0; ri < manifest.results.size(); ++ri)
-                {
-                    const auto& r = manifest.results[ri];
-                    if (!r.resolved) continue;
-                    if (silentEOrigBase.count(r.matchedWord))
-                        silentEResolutions[r.matchedWord] = &manifest.results[ri];
-                }
-
-                // Propagate to original dependents
-                AZStd::vector<AZStd::string> handledBases;
-                for (auto& [candidate, baseResult] : silentEResolutions)
-                {
-                    auto origIt = silentEOrigBase.find(candidate);
-                    if (origIt == silentEOrigBase.end()) continue;
-
-                    auto candIt = silentECandidates.find(origIt->second);
-                    if (candIt == silentECandidates.end()) continue;
-
-                    for (auto& dep : *(candIt->second))
-                    {
-                        const CharRun& depRun = runs[dep.runIndex];
-                        ResolutionResult dr;
-                        dr.runText = depRun.text;
-                        dr.resolved = true;
-                        dr.matchedWord = baseResult->matchedWord;
-                        dr.matchedTokenId = baseResult->matchedTokenId;
-                        dr.morphBits = dep.morphBits;
-                        dr.tierResolved = baseResult->tierResolved;
-                        dr.runIndex = dep.runIndex;
-                        dr.firstCap = depRun.firstCap;
-                        dr.allCaps = depRun.allCaps;
-                        manifest.results.push_back(dr);
-                        ++silentEResolved;
-                    }
-                    handledBases.push_back(origIt->second);
-                }
-                for (const auto& b : handledBases)
-                    silentECandidates.erase(b);
-
-                // Remaining failed silent-e candidates → vars
-                for (auto& [baseWord, depsPtr] : silentECandidates)
-                {
-                    for (auto& dep : *depsPtr)
-                        allUnresolvedOriginal.push_back(dep.runIndex);
-                }
-
-                if (silentEResolved > 0)
-                {
-                    fprintf(stderr, "[BedManager] Silent-e fallback: %u dependents resolved (%u candidates tried)\n",
-                        silentEResolved, silentECount);
-                    fflush(stderr);
-                }
-            }
-            else
-            {
-                // No silent-e candidates — push all remaining failed deps to unresolved
-                for (auto& [baseWord, depsPtr] : silentECandidates)
-                {
-                    for (auto& dep : *depsPtr)
-                        allUnresolvedOriginal.push_back(dep.runIndex);
-                }
             }
         }
 
         if (inflectionCount > 0)
         {
-            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs resolved via vocab lookup (%u synthetic bases still injected)\n",
+            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u synthetics injected)\n",
                 inflectionCount, syntheticInjections);
             fflush(stderr);
         }
@@ -2177,8 +2042,7 @@ namespace HCPEngine
                 // e.g., "runnin'" → "running" → TryInflectionStrip → "run" + PROG
                 if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                 {
-                    InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm, m_vocabulary);
-                    if (strip.stripped)
+                    for (const auto& strip : TryInflectionStrip(vr.normalizedForm))
                         vStrip[strip.baseWord].push_back({idx, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                 }
             };
@@ -2447,8 +2311,7 @@ namespace HCPEngine
                         dvAlt[vr.altForm].push_back({di, vr.variantBits});
                     if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                     {
-                        InflectionStripResult strip = TryInflectionStrip(vr.normalizedForm, m_vocabulary);
-                        if (strip.stripped)
+                        for (const auto& strip : TryInflectionStrip(vr.normalizedForm))
                             dvStrip[strip.baseWord].push_back({di, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                     }
                 }

@@ -323,5 +323,3 @@ namespace HCPEngine
     }
 
 } // namespace HCPEngine
-
-#include <Workstation/moc_HCPSocketClient.cpp>

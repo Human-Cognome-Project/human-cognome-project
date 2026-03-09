@@ -39,7 +39,8 @@ namespace HCPEngine
     public:
         explicit HCPWorkstationWindow(HCPWorkstationEngine* engine,
                                        HCPSocketClient* client,
-                                       QWidget* parent = nullptr);
+                                       QWidget* parent = nullptr,
+                                       bool viewerMode = false);
         ~HCPWorkstationWindow() override;
 
     protected:
@@ -102,6 +103,7 @@ namespace HCPEngine
         // Data sources — injected, not owned
         HCPWorkstationEngine* m_engine = nullptr;  // Direct DB + LMDB (offline-capable)
         HCPSocketClient* m_client = nullptr;        // Daemon socket (physics ops)
+        bool m_viewerMode = false;                  // Read-only viewer — hides write controls
 
         // Left panel — document navigator
         QTreeWidget* m_docList = nullptr;
