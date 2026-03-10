@@ -988,69 +988,27 @@ namespace HCPEngine
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        // Open vbed sub-databases and read vocab entries.
-        // Write txn to persist DBI handles, then read data in same txn.
-        MDB_txn* txn;
-        int rc = mdb_txn_begin(lmdbEnv, nullptr, 0, &txn);
-        if (rc != 0)
+        // Open w2t sub-db — populated by EnvelopeManager::ActivateEnvelope.
+        // MDB_CREATE ensures the handle is valid even if the envelope hasn't fired yet;
+        // RebuildVocab() will produce an empty index until it is populated.
         {
-            fprintf(stderr, "[BedManager] mdb_txn_begin: %s\n", mdb_strerror(rc));
-            return false;
-        }
-
-        AZ::u32 totalEntries = 0;
-        AZ::u32 totalLabels = 0;
-
-        for (int wlen = VBED_MIN_LEN; wlen <= VBED_MAX_LEN; ++wlen)
-        {
-            char dataName[16], metaName[24];
-            snprintf(dataName, sizeof(dataName), "vbed_%02d", wlen);
-            snprintf(metaName, sizeof(metaName), "vbed_%02d_meta", wlen);
-
-            MDB_dbi dataDbi, metaDbi;
-            rc = mdb_dbi_open(txn, dataName, MDB_CREATE, &dataDbi);
+            MDB_txn* txn;
+            int rc = mdb_txn_begin(lmdbEnv, nullptr, 0, &txn);
             if (rc != 0)
             {
-                fprintf(stderr, "[BedManager] Skip %s: %s\n", dataName, mdb_strerror(rc));
-                continue;
+                fprintf(stderr, "[BedManager] mdb_txn_begin: %s\n", mdb_strerror(rc));
+                return false;
             }
-            rc = mdb_dbi_open(txn, metaName, MDB_CREATE, &metaDbi);
-            if (rc != 0) continue;
-
-            // Read metadata
-            MDB_val key, val;
-            key.mv_data = const_cast<char*>("meta");
-            key.mv_size = 4;
-            rc = mdb_get(txn, metaDbi, &key, &val);
-            if (rc != 0 || val.mv_size < sizeof(VBedMeta))
-            {
-                if (rc != MDB_NOTFOUND)
-                    fprintf(stderr, "[BedManager] %s meta read: %s\n", metaName, mdb_strerror(rc));
-                continue;
-            }
-
-            VBedMeta meta;
-            memcpy(&meta, val.mv_data, sizeof(VBedMeta));
-
-            if (meta.total_entries == 0) continue;
-
-            // Store DBI handle and counts — data is read on-demand per phase
-            AZ::u32 len32 = static_cast<AZ::u32>(wlen);
-            m_dataDbiByLength[len32] = dataDbi;
-            m_totalEntriesByLength[len32] = meta.total_entries;
-
-            totalEntries += meta.total_entries;
-            totalLabels += meta.label_count;
-            m_activeWordLengths.push_back(len32);
-            m_labelCountByLength[len32] = meta.label_count;
-
-            fprintf(stderr, "[BedManager] vbed_%02d: %u entries (labels=%u, ranked=%u, unranked=%u)\n",
-                wlen, meta.total_entries, meta.label_count,
-                meta.tier1_end - meta.label_count,
-                meta.total_entries - meta.tier1_end);
+            rc = mdb_dbi_open(txn, "w2t", MDB_CREATE, &m_vocabDbi);
+            if (rc == 0)
+                m_vocabDbiOpen = true;
+            else
+                fprintf(stderr, "[BedManager] w2t open: %s\n", mdb_strerror(rc));
+            mdb_txn_commit(txn);
         }
 
-        mdb_txn_commit(txn);
+        // Build in-memory vocab index from whatever is in w2t right now.
+        RebuildVocab();
 
         // Sort lengths descending (resolve longest words first)
         AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
@@ -1079,9 +1037,13 @@ namespace HCPEngine
 
         m_initialized = true;
 
-        fprintf(stderr, "[BedManager] LMDB initialized: %zu lengths, %u entries (%u labels), "
+        AZ::u32 totalEntries = 0;
+        for (auto& [len, entries] : m_vocabByLength)
+            totalEntries += static_cast<AZ::u32>(entries.size());
+
+        fprintf(stderr, "[BedManager] Initialized: %zu lengths, %u entries in w2t, "
             "%u entries/phase, %u workspaces, %.1f ms\n",
-            m_activeWordLengths.size(), totalEntries, totalLabels,
+            m_activeWordLengths.size(), totalEntries,
             RC_VOCAB_PER_PHASE, createdCount, ms);
         fflush(stderr);
         fprintf(stderr, "[BedManager] Word lengths (descending):");
@@ -1280,12 +1242,68 @@ namespace HCPEngine
     }
 
 
-    // ---- ReadFilteredVocabSlice: on-demand LMDB read for one word length ----
+    // ---- RebuildVocab: scan w2t and build in-memory vocab index ----
     //
-    // Opens a read txn, gets the mmap'd data buffer for the given word length,
-    // and returns only entries [startEntry, endEntry) whose first char is in
-    // neededChars. The returned vector is on system heap (no AZ pool pressure).
-    // No in-memory vocab cache — called per-phase from ResolveLengthCycle.
+    // Called at Initialize and after each EnvelopeManager::ActivateEnvelope.
+    // Clears m_vocabByLength and rebuilds from whatever is in w2t at call time.
+    // Entries arrive in LMDB key order (lexicographic); envelope queries should
+    // ORDER BY frequency_rank ASC so common words come first within each length.
+    void BedManager::RebuildVocab()
+    {
+        m_vocabByLength.clear();
+        m_activeWordLengths.clear();
+        m_labelCountByLength.clear();
+
+        if (!m_vocabDbiOpen || !m_lmdbEnv) return;
+
+        MDB_txn* txn = nullptr;
+        if (mdb_txn_begin(m_lmdbEnv, nullptr, MDB_RDONLY, &txn) != 0) return;
+
+        MDB_cursor* cursor = nullptr;
+        if (mdb_cursor_open(txn, m_vocabDbi, &cursor) != 0)
+        {
+            mdb_txn_abort(txn);
+            return;
+        }
+
+        MDB_val key, val;
+        AZ::u32 totalEntries = 0;
+        while (mdb_cursor_get(cursor, &key, &val, MDB_NEXT) == 0)
+        {
+            AZ::u32 len = static_cast<AZ::u32>(key.mv_size);
+            if (len < static_cast<AZ::u32>(VBED_MIN_LEN) ||
+                len > static_cast<AZ::u32>(VBED_MAX_LEN)) continue;
+
+            VocabPack::Entry e;
+            e.word    = AZStd::string(static_cast<const char*>(key.mv_data), key.mv_size);
+            e.tokenId = AZStd::string(static_cast<const char*>(val.mv_data), val.mv_size);
+            e.tierIndex = 0;  // All common tier — label broadphase wired once envelope has tier data
+
+            m_vocabByLength[len].push_back(AZStd::move(e));
+            ++totalEntries;
+        }
+
+        mdb_cursor_close(cursor);
+        mdb_txn_abort(txn);
+
+        for (auto& [len, entries] : m_vocabByLength)
+        {
+            m_activeWordLengths.push_back(len);
+            m_labelCountByLength[len] = 0;
+        }
+        AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
+            [](AZ::u32 a, AZ::u32 b) { return a > b; });
+
+        fprintf(stderr, "[BedManager] RebuildVocab: %u entries across %zu word lengths\n",
+            totalEntries, m_activeWordLengths.size());
+        fflush(stderr);
+    }
+
+    // ---- ReadFilteredVocabSlice: read from in-memory vocab index ----
+    //
+    // Returns entries [startEntry, endEntry) for the given word length whose
+    // first char is in neededChars. Reads from m_vocabByLength — no LMDB I/O
+    // at resolve time. The returned vector is on system heap (no AZ pool pressure).
     std::vector<VocabPack::Entry> BedManager::ReadFilteredVocabSlice(
         AZ::u32 wordLength,
         const AZStd::unordered_set<char>& neededChars,
@@ -1294,66 +1312,27 @@ namespace HCPEngine
     {
         std::vector<VocabPack::Entry> filtered;
 
-        auto dbiIt = m_dataDbiByLength.find(wordLength);
-        if (dbiIt == m_dataDbiByLength.end() || !m_lmdbEnv)
+        auto it = m_vocabByLength.find(wordLength);
+        if (it == m_vocabByLength.end())
             return filtered;
 
-        MDB_txn* txn = nullptr;
-        int rc = mdb_txn_begin(m_lmdbEnv, nullptr, MDB_RDONLY, &txn);
-        if (rc != 0) return filtered;
-
-        MDB_val key, val;
-        key.mv_data = const_cast<char*>("data");
-        key.mv_size = 4;
-        rc = mdb_get(txn, dbiIt->second, &key, &val);
-        if (rc != 0)
-        {
-            mdb_txn_abort(txn);
-            return filtered;
-        }
-
-        AZ::u32 entrySize = wordLength + VBED_TOKEN_ID_WIDTH;
-        AZ::u32 maxEntries = static_cast<AZ::u32>(val.mv_size / entrySize);
+        const auto& allEntries = it->second;
+        AZ::u32 maxEntries = static_cast<AZ::u32>(allEntries.size());
         if (endEntry > maxEntries) endEntry = maxEntries;
         if (startEntry >= endEntry)
-        {
-            mdb_txn_abort(txn);
             return filtered;
-        }
 
-        filtered.reserve((endEntry - startEntry) / 8 + 1);
-        const uint8_t* buf = static_cast<const uint8_t*>(val.mv_data);
-
+        filtered.reserve((endEntry - startEntry) / 4 + 1);
         for (AZ::u32 i = startEntry; i < endEntry; ++i)
         {
-            AZ::u32 offset = i * entrySize;
-            const char* wordPtr = reinterpret_cast<const char*>(buf + offset);
-
-            // First-char filter — check before copying anything
-            if (neededChars.empty() || !neededChars.count(wordPtr[0]))
-                continue;
-
-            // Strip null padding from word
-            AZ::u32 actualWordLen = wordLength;
-            while (actualWordLen > 0 && wordPtr[actualWordLen - 1] == '\0')
-                --actualWordLen;
-
-            // Strip null padding from token ID
-            const char* tidPtr = reinterpret_cast<const char*>(buf + offset + wordLength);
-            AZ::u32 tidLen = VBED_TOKEN_ID_WIDTH;
-            while (tidLen > 0 && tidPtr[tidLen - 1] == '\0')
-                --tidLen;
-
-            VocabPack::Entry entry;
-            entry.word    = AZStd::string(wordPtr, actualWordLen);
-            entry.tokenId = AZStd::string(tidPtr, tidLen);
-            entry.tierIndex = 0;
-            filtered.push_back(AZStd::move(entry));
+            const auto& e = allEntries[i];
+            if (!e.word.empty() && (neededChars.empty() || neededChars.count(e.word[0])))
+                filtered.push_back(e);
         }
 
-        mdb_txn_abort(txn);
         return filtered;
     }
+
 
     // ---- RunPipelinedCascade: work-queue state machine that overlaps GPU phases ----
     //
@@ -1563,15 +1542,15 @@ namespace HCPEngine
     {
         if (runIndices.empty()) return;
 
-        auto totalIt = m_totalEntriesByLength.find(wordLength);
-        if (totalIt == m_totalEntriesByLength.end())
+        auto vocabIt = m_vocabByLength.find(wordLength);
+        if (vocabIt == m_vocabByLength.end() || vocabIt->second.empty())
         {
             for (AZ::u32 idx : runIndices)
                 unresolvedIndices.push_back(idx);
             return;
         }
 
-        AZ::u32 totalEntries = totalIt->second;
+        AZ::u32 totalEntries = static_cast<AZ::u32>(vocabIt->second.size());
         AZ::u32 labelCount = 0;
         {
             auto lIt = m_labelCountByLength.find(wordLength);
@@ -2594,8 +2573,8 @@ namespace HCPEngine
             ws.Shutdown();
         m_primaryWorkspaces.clear();
         m_extendedWorkspaces.clear();
-        m_dataDbiByLength.clear();
-        m_totalEntriesByLength.clear();
+        m_vocabByLength.clear();
+        m_vocabDbiOpen = false;
         m_activeWordLengths.clear();
         m_initialized = false;
         m_vocabulary = nullptr;

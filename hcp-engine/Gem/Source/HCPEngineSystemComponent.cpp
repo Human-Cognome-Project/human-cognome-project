@@ -913,5 +913,9 @@ namespace HCPEngine
         fprintf(stderr, "[source_activate_envelope] Result: %d entries loaded, %d evicted, %.1f ms\n",
             result.entriesLoaded, result.evictedEntries, result.loadTimeMs);
         fflush(stderr);
+
+        // Rebuild BedManager vocab index from the newly populated w2t
+        if (result.entriesLoaded > 0)
+            m_bedManager.RebuildVocab();
     }
 }

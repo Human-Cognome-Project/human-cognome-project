@@ -237,6 +237,10 @@ namespace HCPEngine
 
         ResolutionManifest Resolve(const AZStd::vector<CharRun>& runs);
 
+        //! Rebuild in-memory vocab index from LMDB w2t.
+        //! Call after EnvelopeManager::ActivateEnvelope() to pick up the new working set.
+        void RebuildVocab();
+
         void Shutdown();
 
         bool IsInitialized() const { return m_initialized; }
@@ -299,15 +303,18 @@ namespace HCPEngine
         AZStd::vector<Workspace> m_primaryWorkspaces;    // For lengths 2-10
         AZStd::vector<Workspace> m_extendedWorkspaces;   // For lengths 11-20+
 
-        // LMDB handles — opened once at init, used for on-demand per-phase reads.
-        // No in-memory vocab cache. Each ResolveLengthCycle reads the filtered slice
-        // it needs directly from the mmap'd LMDB region.
+        // LMDB environment + w2t handle.
+        // w2t is populated by EnvelopeManager::ActivateEnvelope before resolve.
+        // Call RebuildVocab() after each envelope activation to refresh in-memory index.
         MDB_env* m_lmdbEnv = nullptr;
-        std::unordered_map<AZ::u32, MDB_dbi> m_dataDbiByLength;     // data sub-db per length
-        std::unordered_map<AZ::u32, AZ::u32> m_totalEntriesByLength; // entry count per length
+        MDB_dbi m_vocabDbi = 0;
+        bool m_vocabDbiOpen = false;
 
-        // Label count per word length — entries [0..labelCount) are Labels.
-        // Used by ResolveLengthCycle to skip Labels for non-capitalized runs.
+        // In-memory vocab index built from w2t on each RebuildVocab() call.
+        // Grouped by word length, in insertion order (frequency-ordered by envelope query).
+        std::unordered_map<AZ::u32, std::vector<VocabPack::Entry>> m_vocabByLength;
+
+        // Label count per word length — zero until label tier is wired to envelope.
         AZStd::unordered_map<AZ::u32, AZ::u32> m_labelCountByLength;
 
         // Active word lengths (sorted descending)
