@@ -19,8 +19,16 @@ namespace HCPEngine
         //! Reconstructs PBMData from pbm_starters and bond subtables.
         PBMData LoadPBM(const AZStd::string& docId);
 
-        //! Load a document's positional token sequence.
+        //! Load a document's positional token sequence with per-position modifier bits.
         //! Decodes base-50 positions, resolves var starters, sorts by position.
+        //! Fills tokenIds and modifiers as parallel vectors (same index = same position).
+        //! modifier encoding: bit0=firstCap, bit1=allCaps, bits2+=morphBits.
+        //! @return true on success, false if document not found
+        bool LoadPositionsWithModifiers(const AZStd::string& docId,
+                                        AZStd::vector<AZStd::string>& tokenIds,
+                                        AZStd::vector<AZ::u32>& modifiers);
+
+        //! Convenience wrapper — loads token IDs only (discards modifiers).
         //! @return Ordered token IDs (ready for TokenIdsToText), or empty on failure
         AZStd::vector<AZStd::string> LoadPositions(const AZStd::string& docId);
 

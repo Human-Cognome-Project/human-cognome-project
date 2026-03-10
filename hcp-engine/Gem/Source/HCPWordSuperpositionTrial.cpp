@@ -446,6 +446,15 @@ namespace HCPEngine
                 paragraphBreakEmitted = false;
                 // Update preceding codepoint — punctuation affects cap suppression
                 lastPrecedingCodepoint = cp;
+
+                // Emit punctuation as SingleChar run for c2t token ID lookup.
+                // BedManager::Resolve handles it via LookupCodepoint.
+                CharRun punctRun;
+                AppendCodepointAsUtf8(punctRun.text, cp);
+                punctRun.startPos = collapse.streamPos;
+                punctRun.length = 1;
+                punctRun.tag = RunTag::SingleChar;
+                runs.push_back(punctRun);
                 continue;
             }
 
@@ -459,6 +468,24 @@ namespace HCPEngine
                 inRun = true;
                 currentStart = collapse.streamPos;
                 currentCodepoints.clear();
+            }
+
+            // Detect double-hyphen (Gutenberg em/en-dash) — split and emit emdash Word run.
+            if (cp == '-' && !currentCodepoints.empty() && currentCodepoints.back() == '-')
+            {
+                currentCodepoints.pop_back();  // Remove the pending '-'
+                boundaryCodepoint = '-';
+                FlushRun();
+                CharRun dashRun;
+                dashRun.text = "emdash";
+                dashRun.startPos = collapse.streamPos > 0 ? collapse.streamPos - 1 : 0;
+                dashRun.length = 2;
+                dashRun.tag = RunTag::Word;
+                runs.push_back(dashRun);
+                lastPrecedingCodepoint = '-';
+                consecutiveNewlines = 0;
+                paragraphBreakEmitted = false;
+                continue;
             }
 
             currentCodepoints.push_back(cp);

@@ -849,7 +849,8 @@ namespace HCPEngine
 
     AZStd::string TokenIdsToText(
         const AZStd::vector<AZStd::string>& tokenIds,
-        const HCPVocabulary& vocab)
+        const HCPVocabulary& vocab,
+        const AZStd::vector<AZ::u32>* modifiers)
     {
         AZStd::string result;
         bool capitalizeNext = true;  // Start of document — capitalize first word
@@ -857,6 +858,7 @@ namespace HCPEngine
         for (size_t i = 0; i < tokenIds.size(); ++i)
         {
             const auto& tid = tokenIds[i];
+            const AZ::u32 modifier = (modifiers && i < modifiers->size()) ? (*modifiers)[i] : 0;
 
             if (tid == STREAM_START || tid == STREAM_END) continue;
 
@@ -883,10 +885,20 @@ namespace HCPEngine
                     }
                 }
                 if (needsSpace) result += ' ';
-                if (capitalizeNext && !surface.empty())
                 {
-                    surface[0] = static_cast<char>(toupper(static_cast<unsigned char>(surface[0])));
-                    capitalizeNext = false;
+                    bool modFirstCap = (modifier & 1) != 0;
+                    bool modAllCaps  = (modifier & 2) != 0;
+                    if (modAllCaps && !surface.empty())
+                    {
+                        for (char& ch : surface)
+                            ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
+                        capitalizeNext = false;
+                    }
+                    else if ((modFirstCap || capitalizeNext) && !surface.empty())
+                    {
+                        surface[0] = static_cast<char>(toupper(static_cast<unsigned char>(surface[0])));
+                        capitalizeNext = false;
+                    }
                 }
                 result += surface;
                 continue;
@@ -973,12 +985,23 @@ namespace HCPEngine
 
             if (needsSpace) result += ' ';
 
-            // Positional capitalization — capitalize first word after sentence/paragraph boundary
-            if (capitalizeNext && !text.empty() && c == '\0')
+            // Capitalization: apply stored modifier bits (Labels, intrinsic caps like "I"),
+            // falling back to positional capitalization (sentence/paragraph boundary).
+            if (!text.empty() && c == '\0')  // word tokens only (not punctuation chars)
             {
-                // Only capitalize word tokens (not punctuation)
-                text[0] = static_cast<char>(toupper(static_cast<unsigned char>(text[0])));
-                capitalizeNext = false;
+                bool modFirstCap = (modifier & 1) != 0;
+                bool modAllCaps  = (modifier & 2) != 0;
+                if (modAllCaps)
+                {
+                    for (char& ch : text)
+                        ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
+                    capitalizeNext = false;
+                }
+                else if (modFirstCap || capitalizeNext)
+                {
+                    text[0] = static_cast<char>(toupper(static_cast<unsigned char>(text[0])));
+                    capitalizeNext = false;
+                }
             }
 
             // Sentence-ending punctuation triggers capitalize on next word

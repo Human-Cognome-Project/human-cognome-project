@@ -406,16 +406,18 @@ namespace HCPEngine
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            AZStd::vector<AZStd::string> tokenIds = m_engine->GetPbmReader().LoadPositions(docId);
-            if (tokenIds.empty())
+            AZStd::vector<AZStd::string> tokenIds;
+            AZStd::vector<AZ::u32> posModifiers;
+            if (!m_engine->GetPbmReader().LoadPositionsWithModifiers(docId, tokenIds, posModifiers)
+                || tokenIds.empty())
             {
                 return R"({"status":"error","message":"Document not found or has no positions"})";
             }
 
             auto tLoad = std::chrono::high_resolution_clock::now();
 
-            // Convert token IDs to text with stickiness rules
-            AZStd::string text = TokenIdsToText(tokenIds, m_engine->GetVocabulary());
+            // Convert token IDs to text with stickiness rules + stored cap/morph modifiers
+            AZStd::string text = TokenIdsToText(tokenIds, m_engine->GetVocabulary(), &posModifiers);
 
             auto t1 = std::chrono::high_resolution_clock::now();
             double loadMs = std::chrono::duration<double, std::milli>(tLoad - t0).count();

@@ -57,6 +57,7 @@ namespace HCPEngine
     //! @return Reconstructed text
     AZStd::string TokenIdsToText(
         const AZStd::vector<AZStd::string>& tokenIds,
-        const HCPVocabulary& vocab);
+        const HCPVocabulary& vocab,
+        const AZStd::vector<AZ::u32>* modifiers = nullptr);
 
 } // namespace HCPEngine

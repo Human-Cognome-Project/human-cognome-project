@@ -771,7 +771,8 @@ namespace HCPEngine
         const AZStd::string& word,
         AZ::u16 inheritedBits,
         AZStd::vector<InflectionStripResult>& results,
-        AZStd::unordered_set<AZStd::string>& seen)
+        AZStd::unordered_set<AZStd::string>& seen,
+        const HCPVocabulary* vocab)
     {
         const size_t len = word.size();
         if (len < 3) return;
@@ -779,6 +780,10 @@ namespace HCPEngine
         auto appendBase = [&](const AZStd::string& base, AZ::u16 bits)
         {
             if (base.size() < 2 || seen.count(base)) return;
+            // Validate base exists in LMDB before injecting as a synthetic.
+            // PBD would reject non-existent bases anyway; pre-filtering avoids
+            // injecting phantom synthetics that pollute later resolution stages.
+            if (vocab && vocab->LookupWordLocal(base).empty()) return;
             seen.insert(base);
             results.push_back({base, static_cast<AZ::u16>(inheritedBits | bits), true});
         };
@@ -886,13 +891,15 @@ namespace HCPEngine
     //   "gardeners" → level1: "gardener" (-s) → level2: "garden" (-er)
     //   "runnings"  → level1: "running"  (-s) → level2: "run"    (-ing)
     // -----------------------------------------------------------------------
-    static AZStd::vector<InflectionStripResult> TryInflectionStrip(const AZStd::string& word)
+    static AZStd::vector<InflectionStripResult> TryInflectionStrip(
+        const AZStd::string& word,
+        const HCPVocabulary* vocab = nullptr)
     {
         AZStd::vector<InflectionStripResult> results;
         AZStd::unordered_set<AZStd::string> seen;
 
         // Level 1: direct single-morpheme strips
-        CollectSingleStrip(word, 0, results, seen);
+        CollectSingleStrip(word, 0, results, seen, vocab);
 
         // Level 2: compound strips — checked after ALL level-1 candidates so a
         // compound fallback never beats a later direct candidate in priority order.
@@ -904,7 +911,7 @@ namespace HCPEngine
         {
             AZStd::string baseCopy = results[i].baseWord;
             AZ::u16 bitsCopy = results[i].morphBits;
-            CollectSingleStrip(baseCopy, bitsCopy, results, seen);
+            CollectSingleStrip(baseCopy, bitsCopy, results, seen, vocab);
         }
 
         return results;
@@ -1670,6 +1677,20 @@ namespace HCPEngine
                         cap[0] = static_cast<char>(toupper(static_cast<unsigned char>(cap[0])));
                         tokenId = m_vocabulary->LookupWordLocal(cap);
                     }
+                    // Fallback: decode UTF-8 codepoint and query c2t sub-db.
+                    // Punctuation is stored in c2t (char→token), not w2t (word→token).
+                    if (tokenId.empty() && !run.text.empty())
+                    {
+                        const unsigned char b0 = static_cast<unsigned char>(run.text[0]);
+                        AZ::u32 cp = b0;
+                        if (b0 >= 0xE0 && run.text.size() >= 3)
+                            cp = ((b0 & 0x0F) << 12)
+                               | ((static_cast<unsigned char>(run.text[1]) & 0x3F) << 6)
+                               | (static_cast<unsigned char>(run.text[2]) & 0x3F);
+                        else if (b0 >= 0xC0 && run.text.size() >= 2)
+                            cp = ((b0 & 0x1F) << 6) | (static_cast<unsigned char>(run.text[1]) & 0x3F);
+                        tokenId = m_vocabulary->LookupCodepoint(cp);
+                    }
                 }
                 ResolutionResult r;
                 r.runText = run.text;
@@ -1894,7 +1915,7 @@ namespace HCPEngine
                     continue;
                 }
 
-                auto candidates = TryInflectionStrip(run.text);
+                auto candidates = TryInflectionStrip(run.text, m_vocabulary);
                 if (candidates.empty())
                 {
                     allUnresolvedOriginal.push_back(idx);
@@ -2030,7 +2051,7 @@ namespace HCPEngine
                 // e.g., "runnin'" → "running" → TryInflectionStrip → "run" + PROG
                 if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                 {
-                    for (const auto& strip : TryInflectionStrip(vr.normalizedForm))
+                    for (const auto& strip : TryInflectionStrip(vr.normalizedForm, m_vocabulary))
                         vStrip[strip.baseWord].push_back({idx, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                 }
             };
@@ -2299,7 +2320,7 @@ namespace HCPEngine
                         dvAlt[vr.altForm].push_back({di, vr.variantBits});
                     if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                     {
-                        for (const auto& strip : TryInflectionStrip(vr.normalizedForm))
+                        for (const auto& strip : TryInflectionStrip(vr.normalizedForm, m_vocabulary))
                             dvStrip[strip.baseWord].push_back({di, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                     }
                 }

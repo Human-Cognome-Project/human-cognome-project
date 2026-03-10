@@ -196,14 +196,19 @@ namespace HCPEngine
         return result;
     }
 
-    AZStd::vector<AZStd::string> HCPPbmReader::LoadPositions(const AZStd::string& docId)
+    bool HCPPbmReader::LoadPositionsWithModifiers(
+        const AZStd::string& docId,
+        AZStd::vector<AZStd::string>& tokenIds,
+        AZStd::vector<AZ::u32>& modifiers)
     {
-        AZStd::vector<AZStd::string> result;
+        tokenIds.clear();
+        modifiers.clear();
+
         PGconn* pg = m_conn.Get();
         if (!pg)
         {
             AZLOG_ERROR("HCPPbmReader: Not connected");
-            return result;
+            return false;
         }
 
         // Get document PK and total_slots
@@ -218,7 +223,7 @@ namespace HCPEngine
             {
                 AZLOG_ERROR("HCPPbmReader::LoadPositions: Document %s not found", docId.c_str());
                 PQclear(res);
-                return result;
+                return false;
             }
             docPk = atoi(PQgetvalue(res, 0, 0));
             totalSlots = atoi(PQgetvalue(res, 0, 1));
@@ -305,18 +310,28 @@ namespace HCPEngine
         AZStd::sort(entries.begin(), entries.end(),
             [](const PosToken& a, const PosToken& b) { return a.pos < b.pos; });
 
-        // Build result
-        result.reserve(entries.size());
+        // Build parallel output vectors
+        tokenIds.reserve(entries.size());
+        modifiers.reserve(entries.size());
         for (auto& e : entries)
         {
-            result.push_back(AZStd::move(e.tokenId));
+            tokenIds.push_back(AZStd::move(e.tokenId));
+            modifiers.push_back(e.modifier);
         }
 
         fprintf(stderr, "[HCPPbmReader] LoadPositions: %s — %zu tokens, %d total_slots\n",
-            docId.c_str(), result.size(), totalSlots);
+            docId.c_str(), tokenIds.size(), totalSlots);
         fflush(stderr);
 
-        return result;
+        return true;
+    }
+
+    AZStd::vector<AZStd::string> HCPPbmReader::LoadPositions(const AZStd::string& docId)
+    {
+        AZStd::vector<AZStd::string> tokenIds;
+        AZStd::vector<AZ::u32> modifiers;
+        LoadPositionsWithModifiers(docId, tokenIds, modifiers);
+        return tokenIds;
     }
 
 } // namespace HCPEngine
