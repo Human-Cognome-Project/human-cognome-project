@@ -14,7 +14,7 @@ The HCP treats cognition as a physical system — decomposing all forms of expre
 
 **Variant normalization** — V-1 g-drop (`-in'` → `-ing`) and V-3 archaic (`-eth` → base form) implemented engine-side via `TryVariantNormalize`. Dialect speech resolves cleanly.
 
-**Databases** — 6 PostgreSQL shards (core, english, var, fic_pbm, fic_entities, nf_entities), 24 migrations applied. Entity annotation: 723 sequences across fiction and non-fiction corpora.
+**Databases** — 6 PostgreSQL shards (core, english, var, fic_pbm, fic_entities, nf_entities), 30 migrations applied. Entity annotation: 723 sequences across fiction and non-fiction corpora. English shard rebuild from Kaikki in progress (roots-only design with PoS, gloss, and characteristic tables).
 
 **Workstation** — Standalone Qt binary (14 MB). Offline (embedded DB kernels + LMDB vocab) and connected modes (via daemon). Browse documents, view bonds, edit metadata.
 
