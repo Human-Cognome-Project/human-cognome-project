@@ -1409,19 +1409,20 @@ namespace HCPEngine
         fflush(stderr);
     }
 
-    void BedManager::AdvanceEnvelopeSlice()
+    bool BedManager::AdvanceEnvelopeSlice()
     {
-        if (!m_envelopeManager || m_envelopeId == 0 || m_warmSetSize == 0) return;
+        if (!m_envelopeManager || m_envelopeId == 0 || m_warmSetSize == 0) return false;
 
         // The window covers [cursor, cursor + 3*SLICE). Advance by one slot.
         int nextFeedStart = m_sliceCursor + LMDB_SLICE_SIZE * 3;
-        if (nextFeedStart >= m_warmSetSize) return;  // window at end of warm set
+        if (nextFeedStart >= m_warmSetSize) return false;  // window at end of warm set
 
         m_envelopeManager->EvictSlice(m_envelopeId, m_sliceCursor, LMDB_SLICE_SIZE);
         m_envelopeManager->FeedSlice(m_envelopeId, nextFeedStart, LMDB_SLICE_SIZE);
         m_sliceCursor += LMDB_SLICE_SIZE;
 
         RebuildVocab();
+        return true;
     }
 
     // ---- RebuildVocab: scan w2t and build in-memory vocab index ----
@@ -1754,7 +1755,6 @@ namespace HCPEngine
             return;
         }
 
-        AZ::u32 totalEntries = static_cast<AZ::u32>(vocabIt->second.size());
         AZ::u32 labelCount = 0;
         {
             auto lIt = m_labelCountByLength.find(wordLength);
@@ -1794,34 +1794,50 @@ namespace HCPEngine
             }
         }
 
-        // ---- Pass 2: Common vocab (entries labelCount..end) — ALL remaining runs ----
+        // ---- Pass 2: Common vocab — ALL remaining runs, loop through ALL warm-set slices ----
+        //
+        // Each iteration processes the current hot-cache window for this word length.
+        // When unresolved runs remain, advance to the next slice and try again.
+        // Stop only when all runs are resolved, or no more slices exist for this length.
+        // Since warm-set rows are ordered (word_length, effective_priority), once the
+        // sliding window moves past the last entry for this length the inner check breaks.
         AZStd::vector<AZ::u32> commonRuns;
         commonRuns.reserve(capRuns.size() + plainRuns.size());
         for (AZ::u32 idx : capRuns)   commonRuns.push_back(idx);
         for (AZ::u32 idx : plainRuns) commonRuns.push_back(idx);
 
-        if (!commonRuns.empty())
+        while (!commonRuns.empty())
         {
+            auto curVocabIt = m_vocabByLength.find(wordLength);
+            if (curVocabIt == m_vocabByLength.end() || curVocabIt->second.empty())
+                break;  // no vocab for this length in the current hot window
+
+            AZ::u32 curTotal  = static_cast<AZ::u32>(curVocabIt->second.size());
+            AZ::u32 curLabels = 0;
+            {
+                auto lIt = m_labelCountByLength.find(wordLength);
+                if (lIt != m_labelCountByLength.end()) curLabels = lIt->second;
+            }
+
             AZStd::unordered_set<char> commonChars;
             for (AZ::u32 idx : commonRuns)
                 if (!runs[idx].text.empty())
                     commonChars.insert(runs[idx].text[0]);
 
-            auto filteredCommon = ReadFilteredVocabSlice(wordLength, commonChars, labelCount, totalEntries);
-            fprintf(stderr, "[BedManager] Length %u common pass: %zu runs, %u vocab → %zu filtered\n",
-                wordLength, commonRuns.size(), totalEntries - labelCount, filteredCommon.size());
+            auto filteredCommon = ReadFilteredVocabSlice(wordLength, commonChars, curLabels, curTotal);
+            fprintf(stderr, "[BedManager] Length %u common pass (cursor=%d): %zu runs, %u vocab → %zu filtered\n",
+                wordLength, m_sliceCursor, commonRuns.size(), curTotal - curLabels, filteredCommon.size());
             fflush(stderr);
 
             if (!filteredCommon.empty())
                 RunPipelinedCascade(wordLength, runs, filteredCommon, commonRuns, results, phaseIndex);
+
+            if (commonRuns.empty()) break;       // all runs resolved
+            if (!AdvanceEnvelopeSlice()) break;  // warm set exhausted; accept remainder as unresolved
         }
 
         for (AZ::u32 idx : commonRuns)
             unresolvedIndices.push_back(idx);
-
-        // Advance the LMDB hot-cache window: evict oldest slot, feed next slot.
-        // Next ResolveLengthCycle call picks up the updated vocab via RebuildVocab.
-        AdvanceEnvelopeSlice();
     }
 
     ResolutionManifest BedManager::Resolve(const AZStd::vector<CharRun>& inputRuns)

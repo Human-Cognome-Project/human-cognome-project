@@ -374,8 +374,8 @@ namespace HCPEngine
         int m_warmSetSize  = 0;
 
         //! Evict oldest slot, feed next slot, rebuild in-memory vocab.
-        //! Called at the end of each ResolveLengthCycle.
-        void AdvanceEnvelopeSlice();
+        //! Returns true if a new slot was loaded, false if at end of warm set.
+        bool AdvanceEnvelopeSlice();
 
         // Active word lengths (sorted descending)
         AZStd::vector<AZ::u32> m_activeWordLengths;
