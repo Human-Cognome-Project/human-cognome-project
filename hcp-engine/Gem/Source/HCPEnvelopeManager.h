@@ -4,6 +4,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include "HCPResolutionChamber.h"  // InflectionRule
 
 // Forward declarations
 typedef struct pg_conn PGconn;
@@ -18,8 +19,8 @@ namespace HCPEngine
     struct EnvelopeQuery
     {
         int id = 0;
-        AZStd::string shardDb;     // Target Postgres DB name
-        AZStd::string queryText;   // SQL to execute
+        AZStd::string shardDb;     // Source Postgres DB name (cold shard)
+        AZStd::string queryText;   // SQL to execute against cold shard
         AZStd::string description;
         int priority = 0;
         AZStd::string lmdbSubdb;   // Target LMDB sub-database
@@ -45,37 +46,58 @@ namespace HCPEngine
         int evictedEntries = 0;
     };
 
-    //! Manages the envelope→LMDB cache lifecycle.
+    //! In-memory vocab entry returned by QueryEnvelopeEntries.
+    //! Used for mid-resolve tense pre-fetch injection into BedManager.
+    struct VocabEntry
+    {
+        AZStd::string word;
+        AZStd::string tokenId;
+    };
+
+    //! Manages the three-layer cache lifecycle:
     //!
-    //! Mechanism only — provides plumbing for:
-    //!   - Loading envelope definitions from Postgres
-    //!   - Executing envelope queries (kernel chain) into LMDB
-    //!   - Evicting previous envelope data
-    //!   - Prefetching ahead in query chain
+    //!   Cold (hcp_english/hcp_core) → Warm (hcp_var.envelope_working_set) → Hot (LMDB)
+    //!
+    //! Assembly (cold → warm) happens ONCE per activation. After that, the warm db
+    //! is the working layer — adjustments (feedback, priority_delta) happen there.
+    //! LMDB is populated from warm in ordered slices and evicted on envelope change.
     //!
     //! NAPIER decides policy (what goes in which envelope, when to activate).
     class HCPEnvelopeManager
     {
     public:
-        //! Initialize with LMDB env and Postgres connection string.
-        //! Sets up the _manifest sub-db for tracking loaded keys.
-        bool Initialize(MDB_env* lmdbEnv, const char* coreConnStr);
+        //! Initialize with LMDB env and Postgres connection string for envelope definitions.
+        //! hcp_var (warm layer) is connected lazily on first use.
+        bool Initialize(MDB_env* lmdbEnv, const char* envelopeConnStr);
 
         //! Load envelope definition from Postgres by name.
         //! Resolves composed children recursively.
         EnvelopeDefinition LoadEnvelope(const AZStd::string& name);
 
-        //! Activate an envelope: execute its queries, write results to LMDB.
-        //! Evicts previous envelope first. Returns activation stats.
+        //! Activate an envelope:
+        //!   1. Evict previous envelope from LMDB + clear warm working set
+        //!   2. Assemble cold → warm (one-shot: run queries against cold shard,
+        //!      write enriched rows into hcp_var.envelope_working_set)
+        //!   3. Flush warm → LMDB (ordered by effective_priority)
+        //! Returns activation stats.
         EnvelopeActivation ActivateEnvelope(const AZStd::string& name);
 
-        //! Deactivate: evict entries loaded by this envelope from LMDB.
+        //! Deactivate: evict LMDB entries and clear warm working set for this envelope.
         void DeactivateEnvelope(const AZStd::string& name);
 
-        //! Prefetch: load the next N queries ahead of current progress.
-        //! For pipeline parallelism — engine never stalls on cold read.
-        //! @param depth Number of queries to prefetch (default 2)
+        //! Prefetch: assemble + flush the next N queries for a not-yet-active envelope.
+        //! No-op if envelope is already active (already fully assembled).
         void Prefetch(const AZStd::string& envelopeName, int depth = 2);
+
+        //! Return entries for an envelope from the warm db (hcp_var.envelope_working_set).
+        //! Does NOT query the cold shard — warm must be assembled first.
+        //! Used for mid-resolve pre-fetch injection into BedManager.
+        AZStd::vector<VocabEntry> QueryEnvelopeEntries(const AZStd::string& envelopeName);
+
+        //! Load inflection rules from the named Postgres database.
+        //! Queries inflection_rules table ordered by (morpheme, priority).
+        //! dbName defaults to "hcp_english" but is flaggable for other language shards.
+        AZStd::vector<InflectionRule> LoadInflectionRules(const char* dbName = "hcp_english");
 
         //! Get the currently active envelope name (empty if none).
         const AZStd::string& ActiveEnvelope() const { return m_activeEnvelope; }
@@ -83,14 +105,24 @@ namespace HCPEngine
         void Shutdown();
 
     private:
-        //! Execute a single envelope query and write results to LMDB.
-        //! Returns number of entries written.
-        int ExecuteQuery(const EnvelopeQuery& query);
+        //! Cold → warm: execute stored query against cold shard, write enriched rows
+        //! into hcp_var.envelope_working_set. Wraps query with characteristics/category
+        //! enrichment join. startOffset drives base_priority ordering.
+        //! Returns number of rows assembled.
+        int AssembleQuery(const EnvelopeQuery& query, int envelopeId, int startOffset);
 
-        //! Evict all entries tracked in _manifest for a given envelope.
+        //! Warm → LMDB: read envelope_working_set for envelopeId ordered by
+        //! effective_priority, write to LMDB sub-dbs. Also writes t2w reverse for w2t.
+        //! Returns number of entries written.
+        int FlushWorkingSetToLmdb(int envelopeId);
+
+        //! Clear warm working set rows for a given envelope (before re-assembly or eviction).
+        void ClearWorkingSet(int envelopeId);
+
+        //! Evict all LMDB entries tracked in _manifest for a given envelope.
         int EvictManifest(const AZStd::string& envelopeName);
 
-        //! Record loaded keys in _manifest for clean eviction.
+        //! Record loaded sub-dbs in _manifest for clean eviction.
         void RecordManifest(const AZStd::string& envelopeName,
                             const AZStd::string& subdb,
                             int entryCount);
@@ -99,21 +131,22 @@ namespace HCPEngine
         void LogActivation(const EnvelopeActivation& activation,
                            const AZStd::string& envelopeName);
 
-        //! Get a Postgres connection for a shard DB.
-        PGconn* GetShardConnection(const AZStd::string& shardDb);
+        //! Get (or lazily open) a Postgres connection for a named DB.
+        PGconn* GetShardConnection(const AZStd::string& dbName);
 
-        MDB_env* m_lmdbEnv = nullptr;
+        MDB_env*      m_lmdbEnv     = nullptr;
         AZStd::string m_coreConnStr;
-        PGconn* m_coreConn = nullptr;
+        PGconn*       m_coreConn    = nullptr;
 
-        // Per-shard Postgres connections (lazy-opened)
+        // Per-DB Postgres connections (lazy-opened) — includes shards and hcp_var
         AZStd::unordered_map<AZStd::string, PGconn*> m_shardConns;
 
         // LMDB _manifest sub-db handle
-        unsigned int m_manifestDbi = 0;
-        bool m_manifestOpen = false;
+        unsigned int m_manifestDbi  = 0;
+        bool         m_manifestOpen = false;
 
         AZStd::string m_activeEnvelope;
+        int           m_activeEnvelopeId = 0;
     };
 
 } // namespace HCPEngine

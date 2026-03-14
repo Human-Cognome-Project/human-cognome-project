@@ -491,7 +491,7 @@ namespace HCPEngine
         const AZStd::vector<AZStd::string>& tokenIds,
         const AZStd::vector<int>& positions,
         int totalSlots,
-        const AZStd::vector<AZ::u32>& modifiers)
+        const AZStd::unordered_map<AZStd::string, AZStd::vector<int>>& morphemePositions)
     {
         PGconn* pg = m_conn.Get();
         if (!pg || tokenIds.size() != positions.size())
@@ -500,21 +500,12 @@ namespace HCPEngine
             return false;
         }
 
-        bool hasModifiers = !modifiers.empty() && modifiers.size() == tokenIds.size();
-
         PQexec(pg, "BEGIN");
 
-        // Group positions by token ID + build position→modifier lookup
+        // Group positions by token ID
         AZStd::unordered_map<AZStd::string, AZStd::vector<int>> tokenPositions;
-        AZStd::unordered_map<int, AZ::u32> positionModifiers;  // position → modifier (non-zero only)
         for (size_t i = 0; i < tokenIds.size(); ++i)
-        {
             tokenPositions[tokenIds[i]].push_back(positions[i]);
-            if (hasModifiers && modifiers[i] != 0)
-            {
-                positionModifiers[positions[i]] = modifiers[i];
-            }
-        }
 
         // Update total_slots and unique_tokens
         {
@@ -587,109 +578,68 @@ namespace HCPEngine
                 starterTokenId = tokenId;
             }
 
-            // Encode sparse modifiers via O(1) lookup per position
-            AZStd::string modEncoded;
-            if (hasModifiers && !positionModifiers.empty())
-            {
-                for (int pos : posList)
-                {
-                    auto it = positionModifiers.find(pos);
-                    if (it != positionModifiers.end())
-                    {
-                        char posBuf[4];
-                        EncodePosition(pos, posBuf);
-                        char modBuf[4];
-                        EncodePosition(static_cast<int>(it->second), modBuf);
-                        modEncoded.append(posBuf, 4);
-                        modEncoded.append(modBuf, 4);
-                    }
-                }
-            }
-
             // Split token into component parts for matching (avoids generated-column format mismatch)
             AZStd::string aParts[5];
             SplitTokenId(starterTokenId, aParts);
 
-            // UPDATE starter row with positions (+ modifiers), matching on component parts
-            PGresult* res;
-            if (!modEncoded.empty())
-            {
-                const char* params[] = { packed.c_str(), modEncoded.c_str(),
-                                          docPkStr.c_str(),
-                                          aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                                          aParts[3].c_str(), aParts[4].c_str() };
-                res = PQexecParams(pg,
-                    "UPDATE pbm_starters SET positions = $1, modifiers = $2 "
-                    "WHERE doc_id = $3::integer AND a_ns = $4 AND a_p2 = $5 AND a_p3 = $6 AND a_p4 = $7 AND a_p5 = $8",
-                    8, nullptr, params, nullptr, nullptr, 0);
-            }
-            else
+            // UPDATE starter row with positions only
             {
                 const char* params[] = { packed.c_str(), docPkStr.c_str(),
                                           aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
                                           aParts[3].c_str(), aParts[4].c_str() };
-                res = PQexecParams(pg,
+                PGresult* res = PQexecParams(pg,
                     "UPDATE pbm_starters SET positions = $1 "
                     "WHERE doc_id = $2::integer AND a_ns = $3 AND a_p2 = $4 AND a_p3 = $5 AND a_p4 = $6 AND a_p5 = $7",
                     7, nullptr, params, nullptr, nullptr, 0);
-            }
 
-            if (PQresultStatus(res) == PGRES_COMMAND_OK)
-            {
-                int rows = atoi(PQcmdTuples(res));
-                if (rows > 0)
+                if (PQresultStatus(res) == PGRES_COMMAND_OK && atoi(PQcmdTuples(res)) > 0)
                 {
                     ++updated;
+                    PQclear(res);
                 }
                 else
                 {
-                    // No existing starter — INSERT a new position-only row
                     PQclear(res);
-
-                    if (!modEncoded.empty())
-                    {
-                        const char* insParams[] = {
-                            docPkStr.c_str(),
-                            aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                            aParts[3].c_str(), aParts[4].c_str(),
-                            packed.c_str(), modEncoded.c_str()
-                        };
-                        res = PQexecParams(pg,
-                            "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions, modifiers) "
-                            "VALUES ($1::integer, $2, $3, $4, $5, $6, $7, $8)",
-                            8, nullptr, insParams, nullptr, nullptr, 0);
-                    }
+                    // No existing starter — INSERT position-only row
+                    const char* insParams[] = {
+                        docPkStr.c_str(),
+                        aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                        aParts[3].c_str(), aParts[4].c_str(),
+                        packed.c_str()
+                    };
+                    res = PQexecParams(pg,
+                        "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
+                        "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
+                        7, nullptr, insParams, nullptr, nullptr, 0);
+                    if (PQresultStatus(res) == PGRES_COMMAND_OK)
+                        ++updated;
                     else
-                    {
-                        const char* insParams[] = {
-                            docPkStr.c_str(),
-                            aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                            aParts[3].c_str(), aParts[4].c_str(),
-                            packed.c_str()
-                        };
-                        res = PQexecParams(pg,
-                            "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
-                            "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
-                            7, nullptr, insParams, nullptr, nullptr, 0);
-                    }
-                    if (PQresultStatus(res) != PGRES_COMMAND_OK)
-                    {
                         fprintf(stderr, "[HCPPbmWriter] StorePositions: INSERT failed for '%s': %s\n",
                             starterTokenId.c_str(), PQerrorMessage(pg));
-                        fflush(stderr);
-                    }
-                    else
-                    {
-                        ++updated;
-                    }
+                    PQclear(res);
                 }
             }
-            else
-            {
-                fprintf(stderr, "[HCPPbmWriter] StorePositions: UPDATE failed for '%s': %s\n",
-                    starterTokenId.c_str(), PQerrorMessage(pg));
-                fflush(stderr);
-            }
+        }
+
+        // Write morpheme/cap overlay lists to pbm_morpheme_positions
+        AZStd::string docPkStrM = AZStd::to_string(docPk);
+        for (const auto& [morpheme, posList] : morphemePositions)
+        {
+            if (posList.empty()) continue;
+            AZStd::string packed;
+            packed.resize(posList.size() * 4);
+            for (size_t j = 0; j < posList.size(); ++j)
+                EncodePosition(posList[j], packed.data() + j * 4);
+
+            const char* params[] = { docPkStrM.c_str(), morpheme.c_str(), packed.c_str() };
+            PGresult* res = PQexecParams(pg,
+                "INSERT INTO pbm_morpheme_positions (doc_id, morpheme, positions) "
+                "VALUES ($1::integer, $2, $3) "
+                "ON CONFLICT (doc_id, morpheme) DO UPDATE SET positions = EXCLUDED.positions",
+                3, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_COMMAND_OK)
+                fprintf(stderr, "[HCPPbmWriter] morpheme_positions INSERT failed ('%s'): %s\n",
+                    morpheme.c_str(), PQerrorMessage(pg));
             PQclear(res);
         }
 
@@ -697,8 +647,8 @@ namespace HCPEngine
         bool ok = (PQresultStatus(commitRes) == PGRES_COMMAND_OK);
         PQclear(commitRes);
 
-        fprintf(stderr, "[HCPPbmWriter] StorePositions: pk=%d — %zu/%zu starters updated\n",
-            docPk, updated, tokenPositions.size());
+        fprintf(stderr, "[HCPPbmWriter] StorePositions: pk=%d — %zu/%zu starters, %zu morpheme lists\n",
+            docPk, updated, tokenPositions.size(), morphemePositions.size());
         fflush(stderr);
 
         return ok;

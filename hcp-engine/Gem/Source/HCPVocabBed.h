@@ -6,6 +6,7 @@
 #include <AzCore/std/string/string.h>
 #include <vector>          // std::vector for bulk vocab data (off AZ pool)
 #include <unordered_map>   // std::unordered_map for m_vocabByLength (off AZ pool)
+#include <regex>           // std::regex for compiled rule conditions
 #include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
 #include "HCPParticlePipeline.h"   // Bond, PBMData
 
@@ -27,7 +28,7 @@ namespace HCPEngine
     // ---- Constants ----
 
     //! Buffer capacity per workspace. Each workspace is a single PxPBDParticleSystem.
-    //! Sized to fit larger vocab slices (RC_VOCAB_PER_PHASE × maxWordLength) + stream runs.
+    //! Sized to fit dynamic vocab slices (computed per-call from stream run count) + stream runs.
     static constexpr AZ::u32 WS_BUFFER_CAPACITY = 131072;
 
     //! Max word length handled by primary workspaces (X-width=10).
@@ -178,7 +179,8 @@ namespace HCPEngine
         AZ::u32 m_maxTierCount = 0;
     };
 
-    class HCPVocabulary;  // For punctuation lookups (declared in HCPVocabulary.h)
+    class HCPVocabulary;      // For punctuation lookups (declared in HCPVocabulary.h)
+    class HCPEnvelopeManager; // For mid-resolve pre-fetch (declared in HCPEnvelopeManager.h)
 
     // ---- Manifest scanner output ----
     //
@@ -198,8 +200,13 @@ namespace HCPEngine
         // Positional data (parallel arrays, document order)
         AZStd::vector<AZStd::string> tokenIds;  // Token ID per position slot
         AZStd::vector<int> positions;            // Position number per slot
-        AZStd::vector<AZ::u32> modifiers;        // Packed modifier per slot (morphBits<<2 | capFlags)
         AZStd::vector<AZStd::string> entityIds;  // Entity ID per slot (empty = not part of entity)
+
+        // Sparse morpheme/cap overlay lists — one entry per morpheme that has any occurrences.
+        // Keys: 'PAST','PLURAL','PROG','3RD','POSS','NEG','WILL','HAVE','BE','AM','COND',
+        //       'FIRST_CAP','ALL_CAPS'. Values: sorted position lists.
+        // Written to pbm_morpheme_positions; applied as independent passes during reconstruction.
+        AZStd::unordered_map<AZStd::string, AZStd::vector<int>> morphemePositions;
         int totalSlots = 0;                       // Total position slots in document
         size_t entityAnnotations = 0;             // Count of tokens with entity annotations
     };
@@ -210,6 +217,26 @@ namespace HCPEngine
     //! Unresolved runs become vars (VAR_PREFIX + surface text).
     ManifestScanResult ScanManifestToPBM(const ResolutionManifest& manifest);
 
+    // ---- ShortPassSignal: tense/register context from short-word pass ----
+    //
+    // After resolving lengths 2-4 (function words), scan the manifest for
+    // tense/register signals. Use them to pre-fetch targeted Postgres envelopes
+    // before resolving longer words (lengths 5+).
+
+    struct ShortPassSignal
+    {
+        bool hasPast        = false;  // was, were, had, did, got, went
+        bool hasFuture      = false;  // will, shall, would, could, might
+        bool hasPresent     = false;  // is, are, am, has, does
+        bool hasProgressive = false;  // being, going (or -ing surface form detection)
+        bool hasArchaic     = false;  // hath, doth, thou, thee, hast, dost, wilt, wast
+        int  resolvedCount  = 0;      // total resolved tokens examined
+    };
+
+    //! Scan manifest results for tense/register signals.
+    //! Called after length-4 cycle; result drives pre-fetch envelope selection.
+    ShortPassSignal DetectSignals(const ResolutionManifest& manifest);
+
     // ---- BedManager: orchestrates Workspace pool + phased vocab resolution ----
     //
     // Data source: pre-compiled LMDB (data/vocab.lmdb/) with per-length sub-databases.
@@ -217,7 +244,7 @@ namespace HCPEngine
     // then unranked. No Postgres at runtime, no sorting, no tier assignment.
     //
     // Internally: 2-4 reusable Workspaces, frequency-ordered vocab per length,
-    // small phases (RC_VOCAB_PER_PHASE entries each), descending-length loop.
+    // dynamic phase sizing (computed from stream run count per length), ascending-length loop.
     // Each phase: tiny vocab + maximum stream slots → clean settlement.
     // Cycle through phases until all runs resolved or vocab exhausted.
 
@@ -233,9 +260,15 @@ namespace HCPEngine
             physx::PxPhysics* physics,
             physx::PxCudaContextManager* cuda,
             MDB_env* lmdbEnv,
-            HCPVocabulary* vocabulary);
+            HCPVocabulary* vocabulary,
+            HCPEnvelopeManager* envelopeManager = nullptr);
 
         ResolutionManifest Resolve(const AZStd::vector<CharRun>& runs);
+
+        //! Load and compile inflection rules from the DB.
+        //! Splits into suffix and prefix rule sets automatically (by rule_type field).
+        //! @param rules Loaded rules (from HCPEnvelopeManager::LoadInflectionRules)
+        void SetInflectionRules(AZStd::vector<InflectionRule> rules);
 
         //! Rebuild in-memory vocab index from LMDB w2t.
         //! Call after EnvelopeManager::ActivateEnvelope() to pick up the new working set.
@@ -297,7 +330,8 @@ namespace HCPEngine
         bool m_initialized = false;
         physx::PxPhysics* m_physics = nullptr;
         physx::PxCudaContextManager* m_cuda = nullptr;
-        HCPVocabulary* m_vocabulary = nullptr;  // For punctuation lookups
+        HCPVocabulary* m_vocabulary = nullptr;       // For punctuation lookups
+        HCPEnvelopeManager* m_envelopeManager = nullptr; // For pre-fetch (nullable)
 
         // Workspace pools (created once at startup)
         AZStd::vector<Workspace> m_primaryWorkspaces;    // For lengths 2-10
@@ -309,6 +343,13 @@ namespace HCPEngine
         MDB_env* m_lmdbEnv = nullptr;
         MDB_dbi m_vocabDbi = 0;
         bool m_vocabDbiOpen = false;
+
+        // Inflection rules loaded from hcp_english.inflection_rules at startup.
+        // Set via SetInflectionRules(); compiled conditions parallel the rules vector.
+        AZStd::vector<InflectionRule> m_inflectionRules;   // SUFFIX rules only
+        std::vector<std::regex>       m_compiledConditions;
+        AZStd::vector<InflectionRule> m_prefixRules;       // PREFIX rules only
+        std::vector<std::regex>       m_compiledPrefixConditions;
 
         // In-memory vocab index built from w2t on each RebuildVocab() call.
         // Grouped by word length, in insertion order (frequency-ordered by envelope query).

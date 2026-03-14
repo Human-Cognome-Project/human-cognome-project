@@ -63,7 +63,7 @@ def load_bucket_state(conn, ns: str) -> dict[tuple, int]:
         cur.execute("""
             SELECT p3, p4, p2, MAX(p5) AS max_p5
             FROM tokens
-            WHERE ns = %s AND p2 IN ('AA', 'AB')
+            WHERE ns = %s
             GROUP BY p3, p4, p2
         """, (ns,))
         for p3, p4, p2, max_p5 in cur.fetchall():
@@ -71,18 +71,18 @@ def load_bucket_state(conn, ns: str) -> dict[tuple, int]:
     return state
 
 def alloc_p5(state: dict, p3: str, p4: str) -> tuple[str, str]:
-    key_aa = (p3, p4, 'AA')
-    key_ab = (p3, p4, 'AB')
-    seq = state.get(key_aa, 0)
-    if seq < 2500:
-        p5 = encode_pair(seq)
-        state[key_aa] = seq + 1
-        return p5, 'AA'
-    seq2 = state.get(key_ab, 0)
-    p5 = encode_pair(seq2)
-    state[key_ab] = seq2 + 1
-    logging.warning(f"OVERFLOW bucket ({p3},{p4}): using p2=AB seq={seq2}")
-    return p5, 'AB'
+    block = 0
+    while True:
+        p2 = encode_pair(block)
+        key = (p3, p4, p2)
+        seq = state.get(key, 0)
+        if seq < 2500:
+            p5 = encode_pair(seq)
+            state[key] = seq + 1
+            if block > 0:
+                logging.warning(f"OVERFLOW bucket ({p3},{p4}): using p2={p2} seq={seq}")
+            return p5, p2
+        block += 1
 
 # ---------------------------------------------------------------------------
 # Kaikki helpers
@@ -274,30 +274,15 @@ def insert_name_batch(
                         ON CONFLICT (token_id, pos) DO NOTHING
                     """, pos_rows)
 
-                    # INSERT token_glosses (DRAFT)
+                    # INSERT token_glosses (DRAFT) — sense_number=1 (single primary sense)
                     gloss_map = {r[4]: r[5] for r in rows}
-                    gloss_rows = []
-                    for word, token_id in token_id_map.items():
-                        gloss_rows.append((token_id, 'N_PROPER', gloss_map[word]))
                     cur.executemany("""
                         INSERT INTO token_glosses
-                            (token_id, pos, gloss_text, status)
-                        VALUES (%s, 'N_PROPER'::pos_tag, %s, 'DRAFT')
-                        ON CONFLICT (token_id, pos) DO NOTHING
-                        RETURNING id
-                    """, [(tid, g) for tid, _, g in gloss_rows])
-
-                    # Wire gloss_id back to token_pos
-                    cur.execute("""
-                        UPDATE token_pos tp
-                           SET gloss_id = tg.id
-                          FROM token_glosses tg
-                         WHERE tg.token_id = tp.token_id
-                           AND tg.pos      = tp.pos
-                           AND tp.pos      = 'N_PROPER'::pos_tag
-                           AND tp.gloss_id IS NULL
-                           AND tp.token_id = ANY(%s)
-                    """, ([r[0] for r in pos_rows],))
+                            (token_id, pos, sense_number, gloss_text, tags, status)
+                        VALUES (%s, 'N_PROPER'::pos_tag, 1, %s, '{}', 'DRAFT')
+                        ON CONFLICT (token_id, pos, sense_number) DO NOTHING
+                    """, [(token_id_map[word], gloss_map[word])
+                          for word in token_id_map])
 
             inserted += len(new_entries)
         except Exception as e:

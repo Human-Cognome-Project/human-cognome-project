@@ -4,12 +4,12 @@ Pass 3: Insert token_glosses records from Kaikki.
 
 For each (token, PoS) pair with a token_pos record:
   1. Find the Kaikki entry for that word and PoS
-  2. Take the first gloss from the first non-form-of, non-alt-of sense
-  3. INSERT into token_glosses (status='DRAFT')
-  4. UPDATE token_pos.gloss_id to point to the new gloss record
+  2. Collect all root senses (not form-of or alt-of)
+  3. INSERT one token_glosses row per sense with sense_number (1-indexed) and tags
+     Unique constraint: (token_id, pos, sense_number)
 
-One gloss per (token_id, pos) pair — the primary meaning.
-Multi-sense disambiguation can be added later via nuance_note.
+Multiple senses per (token, PoS) are stored in sense order from Kaikki.
+Tags (domain, register, temporal) from each sense are stored in the tags TEXT[] column.
 
 Usage:
     python3 pass3_insert_glosses.py [--pos verb|noun|...] [--dry-run] [--batch-size N]
@@ -59,24 +59,36 @@ AUXILIARY_VERBS = frozenset({
 
 COPULA_VERBS = frozenset({'be'})
 
+# Tags that are structural markers, not domain/register metadata
+_STRUCTURAL_TAGS = frozenset({'form-of', 'alt-of'})
+
 
 def is_root_sense(sense: dict) -> bool:
     tags = set(sense.get('tags', []))
     return 'form-of' not in tags and 'alt-of' not in tags
 
 
-def get_first_root_gloss(entry: dict) -> str:
-    """Return first gloss from first non-form-of, non-alt-of sense."""
+def collect_root_senses(entry: dict) -> list[dict]:
+    """
+    Return all root senses from a Kaikki entry as a list of dicts, 1-indexed:
+      [{'sense_number': 1, 'gloss': str, 'tags': list[str]}, ...]
+    Skips senses with no gloss text. Tags exclude structural markers.
+    """
+    senses = []
     for sense in entry.get('senses', []):
-        if is_root_sense(sense):
-            glosses = sense.get('glosses', [])
-            if glosses:
-                # Clean up gloss text: strip trailing period, truncate very long ones
-                text = glosses[0].strip()
-                if len(text) > 500:
-                    text = text[:497] + '...'
-                return text
-    return ''
+        if not is_root_sense(sense):
+            continue
+        glosses = sense.get('glosses', [])
+        if not glosses:
+            continue
+        text = glosses[0].strip()
+        if len(text) > 500:
+            text = text[:497] + '...'
+        tags = [t for t in sense.get('tags', []) if t not in _STRUCTURAL_TAGS]
+        senses.append({'gloss': text, 'tags': tags})
+    for i, s in enumerate(senses, 1):
+        s['sense_number'] = i
+    return senses
 
 
 def pos_tags_for_entry(word: str, kaikki_pos: str) -> list[str]:
@@ -95,20 +107,21 @@ def pos_tags_for_entry(word: str, kaikki_pos: str) -> list[str]:
     return tags
 
 
-def load_kaikki_for_pos(target_pos: set[str]) -> dict[str, dict[str, str]]:
+def load_kaikki_for_pos(target_pos: set[str]) -> dict[str, dict[str, list[dict]]]:
     """
     Single pass through Kaikki.
-    Returns {pos: {word_lower: first_root_gloss}}.
+    Returns {kaikki_pos: {word_lower: [sense_dict, ...]}}.
+    Only the first Kaikki entry per (word, pos) is used; all its root senses are kept.
     """
-    result: dict[str, dict[str, str]] = defaultdict(dict)
+    result: dict[str, dict[str, list[dict]]] = defaultdict(dict)
     logging.info(f"Streaming Kaikki for PoS: {sorted(target_pos)}")
-    total = kept = 0
+    total = kept_entries = kept_senses = 0
 
     with open(KAIKKI_FILE, encoding='utf-8') as f:
         for i, line in enumerate(f):
             total += 1
             if i % 200_000 == 0 and i > 0:
-                logging.info(f"  scanned {i:,} lines, kept {kept:,}")
+                logging.info(f"  scanned {i:,} lines, kept {kept_entries:,} entries / {kept_senses:,} senses")
             try:
                 entry = json.loads(line)
             except json.JSONDecodeError:
@@ -118,35 +131,36 @@ def load_kaikki_for_pos(target_pos: set[str]) -> dict[str, dict[str, str]]:
             if pos not in target_pos:
                 continue
 
-            # Check has at least one root sense
-            if not any(is_root_sense(s) for s in entry.get('senses', [])):
-                continue
-
             word = entry.get('word', '').lower().strip()
             if not word or ' ' in word or word.startswith('-'):
                 continue
 
-            if word not in result[pos]:
-                gloss = get_first_root_gloss(entry)
-                if gloss:
-                    result[pos][word] = gloss
-                    kept += 1
+            if word in result[pos]:
+                continue  # already have senses for this (word, pos) from an earlier entry
 
-    logging.info(f"Done. Scanned {total:,} lines, kept {kept:,} glosses.")
+            senses = collect_root_senses(entry)
+            if senses:
+                result[pos][word] = senses
+                kept_entries += 1
+                kept_senses  += len(senses)
+
+    logging.info(f"Done. Scanned {total:,} lines, "
+                 f"kept {kept_entries:,} entries / {kept_senses:,} senses.")
     return result
 
 
-def process_pos(conn, pos: str, word_glosses: dict[str, str],
+def process_pos(conn, pos: str, word_senses: dict[str, list[dict]],
                 dry_run: bool, batch_size: int) -> tuple[int, int]:
     """
-    Insert token_glosses and update token_pos.gloss_id for one PoS.
+    Insert token_glosses rows for one PoS. Multiple senses per (token_id, pos).
     Returns (inserted, skipped).
     """
-    words   = sorted(word_glosses.keys())
+    words   = sorted(word_senses.keys())
     total   = len(words)
     inserted = skipped = 0
 
-    logging.info(f"  {pos}: {total:,} glosses to insert")
+    total_senses = sum(len(v) for v in word_senses.values())
+    logging.info(f"  {pos}: {total:,} words / {total_senses:,} senses to insert")
 
     for start in range(0, total, batch_size):
         batch_words = words[start:start + batch_size]
@@ -158,7 +172,9 @@ def process_pos(conn, pos: str, word_glosses: dict[str, str],
         conn.commit()
 
         if dry_run:
-            inserted += len([w for w in batch_words if w in token_map])
+            for word in batch_words:
+                if word in token_map:
+                    inserted += len(word_senses[word])
             continue
 
         try:
@@ -167,19 +183,17 @@ def process_pos(conn, pos: str, word_glosses: dict[str, str],
                     if word not in token_map:
                         continue
                     token_id = token_map[word]
-                    gloss_text = word_glosses[word]
+                    senses   = word_senses[word]
 
-                    # Determine pos_tags for this (word, kaikki_pos) pair
                     pos_tags = pos_tags_for_entry(word, pos)
                     if not pos_tags:
                         continue
 
                     for pos_tag in pos_tags:
                         # Check token_pos exists for this (token_id, pos_tag)
-                        # and doesn't already have a gloss_id set
                         with conn.cursor() as cur:
                             cur.execute("""
-                                SELECT id, gloss_id FROM token_pos
+                                SELECT id FROM token_pos
                                 WHERE token_id = %s AND pos = %s::pos_tag
                             """, (token_id, pos_tag))
                             tp_row = cur.fetchone()
@@ -187,40 +201,25 @@ def process_pos(conn, pos: str, word_glosses: dict[str, str],
                         if tp_row is None:
                             continue  # no token_pos for this PoS — skip
 
-                        tp_id, existing_gloss_id = tp_row
-                        if existing_gloss_id is not None:
-                            skipped += 1
-                            continue  # already has gloss
-
-                        # INSERT token_glosses
-                        with conn.cursor() as cur:
-                            cur.execute("""
-                                INSERT INTO token_glosses
-                                    (token_id, pos, gloss_text, status)
-                                VALUES (%s, %s::pos_tag, %s, 'DRAFT')
-                                ON CONFLICT (token_id, pos) DO NOTHING
-                                RETURNING id
-                            """, (token_id, pos_tag, gloss_text))
-                            row = cur.fetchone()
-
-                        if row is not None:
-                            gloss_id = row[0]
-                            # UPDATE token_pos.gloss_id
+                        for sense in senses:
                             with conn.cursor() as cur:
                                 cur.execute("""
-                                    UPDATE token_pos SET gloss_id = %s
-                                    WHERE id = %s
-                                """, (gloss_id, tp_id))
+                                    INSERT INTO token_glosses
+                                        (token_id, pos, sense_number, gloss_text, tags, status)
+                                    VALUES (%s, %s::pos_tag, %s, %s, %s, 'DRAFT')
+                                    ON CONFLICT (token_id, pos, sense_number) DO NOTHING
+                                """, (token_id, pos_tag,
+                                      sense['sense_number'],
+                                      sense['gloss'],
+                                      sense['tags']))
                             inserted += 1
-                        else:
-                            skipped += 1
 
         except Exception as e:
             logging.error(f"  {pos} batch [{start}:{start+batch_size}] FAILED: {e}")
             raise
 
         if start % 10_000 == 0 and start > 0:
-            logging.info(f"    {start:,}/{total:,} done")
+            logging.info(f"    {start:,}/{total:,} words done")
 
     logging.info(f"  {pos} done: inserted={inserted:,}, skipped={skipped:,}")
     return inserted, skipped
@@ -231,13 +230,22 @@ def verify(conn) -> None:
     with conn.cursor() as cur:
         cur.execute("SELECT count(*) FROM token_glosses")
         logging.info(f"token_glosses rows: {cur.fetchone()[0]:,}")
-        cur.execute("SELECT status, count(*) FROM token_glosses GROUP BY status")
+        cur.execute("SELECT status, count(*) FROM token_glosses GROUP BY status ORDER BY status")
         for row in cur.fetchall():
             logging.info(f"  status={row[0]}: {row[1]:,}")
         cur.execute("""
-            SELECT count(*) FROM token_pos WHERE gloss_id IS NOT NULL
+            SELECT pos, count(*) FROM token_glosses GROUP BY pos ORDER BY count DESC
         """)
-        logging.info(f"token_pos with gloss_id set: {cur.fetchone()[0]:,}")
+        logging.info("PoS distribution:")
+        for row in cur.fetchall():
+            logging.info(f"  {row[0]}: {row[1]:,}")
+        cur.execute("""
+            SELECT sense_number, count(*) FROM token_glosses
+            GROUP BY sense_number ORDER BY sense_number
+        """)
+        logging.info("Sense number distribution:")
+        for row in cur.fetchall():
+            logging.info(f"  sense {row[0]}: {row[1]:,}")
     conn.commit()
 
 

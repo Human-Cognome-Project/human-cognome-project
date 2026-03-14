@@ -892,14 +892,16 @@ namespace HCPEngine
         // Direct DB + vocab path — reconstruct text from positional tokens
         if (m_engine && m_engine->IsDbConnected() && m_engine->IsVocabLoaded())
         {
-            auto tokenIds = m_engine->GetPbmReader().LoadPositions(azDocId);
-            if (tokenIds.empty())
+            AZStd::vector<AZStd::string> words;
+            AZStd::vector<AZ::u32> modifiers;
+            if (!m_engine->GetPbmReader().LoadPositionsWithModifiers(azDocId, m_engine->GetVocabulary(), words, modifiers)
+                || words.empty())
             {
                 m_textView->setPlainText("(no text stored)");
                 return;
             }
 
-            AZStd::string text = TokenIdsToText(tokenIds, m_engine->GetVocabulary());
+            AZStd::string text = TokenIdsToText(words, &modifiers);
             if (text.empty())
                 m_textView->setPlainText("(reconstruction failed)");
             else

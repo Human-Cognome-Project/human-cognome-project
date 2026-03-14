@@ -50,14 +50,15 @@ namespace HCPEngine
     //!   - Opening punct (([{"'\n) sticks to following token
     //!   - Everything else gets a space before it
     //!
-    //! Stream markers (STREAM_START, STREAM_END) are skipped.
+    //! Words must be pre-resolved (via LoadPositionsWithModifiers) — no vocab
+    //! lookup is performed here.  Single-char strings are treated as punctuation.
+    //! "\n" triggers a paragraph break (rendered as "\n\n").
     //!
-    //! @param tokenIds Ordered token IDs (from Reassemble or Tokenize)
-    //! @param vocab The loaded vocabulary
+    //! @param words    Pre-resolved words in position order
+    //! @param modifiers Per-position modifier bits (bit0=firstCap, bit1=allCaps, bits2+=morph)
     //! @return Reconstructed text
     AZStd::string TokenIdsToText(
-        const AZStd::vector<AZStd::string>& tokenIds,
-        const HCPVocabulary& vocab,
+        const AZStd::vector<AZStd::string>& words,
         const AZStd::vector<AZ::u32>* modifiers = nullptr);
 
 } // namespace HCPEngine

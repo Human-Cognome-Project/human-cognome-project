@@ -46,6 +46,10 @@ namespace HCPEngine
         // Accessors for socket server and other subsystems
         const HCPVocabulary& GetVocabulary() const { return m_vocabulary; }
         HCPDbConnection& GetDbConnection() { return m_dbConn; }
+        // Store a JSON working document in hcp_var. Returns the new row id (>0) or 0 on failure.
+        int StoreWorkingDoc(const AZStd::string& name,
+                            const AZStd::string& rawJson,
+                            const AZStd::string& resolvedJson);
         HCPPbmWriter& GetPbmWriter() { return m_pbmWriter; }
         HCPPbmReader& GetPbmReader() { return m_pbmReader; }
         HCPDocumentQuery& GetDocumentQuery() { return m_docQuery; }
@@ -57,6 +61,7 @@ namespace HCPEngine
         BedManager& GetBedManager() { return m_bedManager; }
         HCPEnvelopeManager& GetEnvelopeManager() { return m_envelopeManager; }
         EntityAnnotator& GetEntityAnnotator() { return m_entityAnnotator; }
+        PGconn* GetVarConn() { return m_varConn; }
         bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
 
     protected:
@@ -114,6 +119,9 @@ namespace HCPEngine
 
         // Envelope cache lifecycle — LMDB hot cache management
         HCPEnvelopeManager m_envelopeManager;
+
+        // hcp_var connection — personal vars / working document store
+        PGconn* m_varConn = nullptr;
 
         // Entity annotator — multi-word entity recognition (LMDB-backed)
         EntityAnnotator m_entityAnnotator;

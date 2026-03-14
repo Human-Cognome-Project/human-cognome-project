@@ -1,5 +1,6 @@
 #include "HCPVocabBed.h"
 #include "HCPVocabulary.h"
+#include "HCPEnvelopeManager.h"
 
 #include <AzCore/std/sort.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -9,6 +10,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstring>
+#include <regex>
 
 #include <PxPhysicsAPI.h>
 #include <PxParticleGpu.h>
@@ -698,7 +700,7 @@ namespace HCPEngine
     // Entries are frequency-ordered at compile time: Labels first, then freq-ranked,
     // then unranked. No Postgres at runtime, no sorting, no tier assignment.
     //
-    // Each phase loads a small slice (RC_VOCAB_PER_PHASE entries) as static
+    // Each phase loads a vocab slice (sized dynamically from stream run count) as static
     // particles, leaving maximum buffer space for stream runs. Phases cycle
     // until all runs resolve or vocab is exhausted. Early exit on full resolution.
     // ========================================================================
@@ -762,7 +764,8 @@ namespace HCPEngine
     }
 
     // ---- CollectSingleStrip ------------------------------------------------
-    // Applies all inflection rules to `word` (no recursion).
+    // Applies inflection rules to `word` (no recursion).
+    // If `rules` + `compiled` are provided (non-null, non-empty), uses DB rules.
     // Appends one InflectionStripResult per matched candidate to `results`.
     // `inheritedBits` are OR'd into every candidate's morphBits (for compounds).
     // `seen` deduplicates base words across the full two-level collection.
@@ -772,7 +775,9 @@ namespace HCPEngine
         AZ::u16 inheritedBits,
         AZStd::vector<InflectionStripResult>& results,
         AZStd::unordered_set<AZStd::string>& seen,
-        const HCPVocabulary* vocab)
+        const HCPVocabulary* vocab,
+        const AZStd::vector<InflectionRule>* rules = nullptr,
+        const std::vector<std::regex>* compiled = nullptr)
     {
         const size_t len = word.size();
         if (len < 3) return;
@@ -781,29 +786,63 @@ namespace HCPEngine
         {
             if (base.size() < 2 || seen.count(base)) return;
             // Validate base exists in LMDB before injecting as a synthetic.
-            // PBD would reject non-existent bases anyway; pre-filtering avoids
-            // injecting phantom synthetics that pollute later resolution stages.
             if (vocab && vocab->LookupWordLocal(base).empty()) return;
             seen.insert(base);
             results.push_back({base, static_cast<AZ::u16>(inheritedBits | bits), true});
         };
 
+        // ---- DB rules path ----
+        if (rules && compiled && !rules->empty())
+        {
+            const std::string wordStd(word.c_str(), word.size());
+            for (size_t ri = 0; ri < rules->size(); ++ri)
+            {
+                const InflectionRule& r   = (*rules)[ri];
+                const std::regex&    cond = (*compiled)[ri];
+                const std::string&   add  = r.addSuffix.c_str();
+                const bool doubling       = (r.stripSuffix == "__DOUBLING__");
+
+                // Word must end with the inflected suffix
+                if (add.empty() || len <= add.size()) continue;
+                if (wordStd.substr(len - add.size()) != add) continue;
+
+                // Compute candidate base by reversing the transformation
+                std::string candidate = wordStd.substr(0, len - add.size());
+
+                if (doubling)
+                {
+                    // CVC doubling: candidate ends with doubled consonant → strip one
+                    size_t clen = candidate.size();
+                    if (clen < 2 || candidate[clen-1] != candidate[clen-2]
+                        || !IsConsonant(static_cast<char>(candidate[clen-1])))
+                        continue;
+                    candidate.pop_back();
+                }
+                else if (!r.stripSuffix.empty())
+                {
+                    // Restore the suffix that was removed from the base before inflecting
+                    candidate += r.stripSuffix.c_str();
+                }
+
+                // Check condition regex against candidate base
+                if (!std::regex_search(candidate, cond)) continue;
+
+                appendBase(AZStd::string(candidate.c_str(), candidate.size()), r.morphBit);
+            }
+            return;
+        }
+
+        // ---- Hardcoded fallback (no rules loaded yet) ----
+
         // ---- -ies → -y ----
         if (len >= 4 && word.substr(len - 3) == "ies")
             appendBase(word.substr(0, len - 3) + "y", MorphBit::PLURAL | MorphBit::THIRD);
-
-        // ---- -ves → -f / -fe ----
-        if (len >= 4 && word.substr(len - 3) == "ves")
-        {
-            appendBase(word.substr(0, len - 3) + "f",  MorphBit::PLURAL);
-            appendBase(word.substr(0, len - 3) + "fe", MorphBit::PLURAL);
-        }
 
         // ---- -ied → -y ----
         if (len >= 4 && word.substr(len - 3) == "ied")
             appendBase(word.substr(0, len - 3) + "y", MorphBit::PAST);
 
-        // ---- Doubled consonant + -ing (e.g. "running" → "run") ----
+        // ---- Doubled consonant + -ing ----
         if (len >= 6 && word.substr(len - 3) == "ing")
         {
             AZStd::string stem = word.substr(0, len - 3);
@@ -811,7 +850,7 @@ namespace HCPEngine
                 appendBase(stem.substr(0, stem.size() - 1), MorphBit::PROG);
         }
 
-        // ---- Doubled consonant + -ed (e.g. "stopped" → "stop") ----
+        // ---- Doubled consonant + -ed ----
         if (len >= 5 && word.substr(len - 2) == "ed")
         {
             AZStd::string stem = word.substr(0, len - 2);
@@ -822,17 +861,15 @@ namespace HCPEngine
         // ---- -ing (plain + silent-e) ----
         if (len >= 5 && word.substr(len - 3) == "ing")
         {
-            AZStd::string base = word.substr(0, len - 3);
-            appendBase(base,        MorphBit::PROG);
-            appendBase(base + "e",  MorphBit::PROG);
+            appendBase(word.substr(0, len - 3),        MorphBit::PROG);
+            appendBase(word.substr(0, len - 3) + "e",  MorphBit::PROG);
         }
 
         // ---- -ed (plain + silent-e) ----
         if (len >= 4 && word.substr(len - 2) == "ed")
         {
-            AZStd::string base = word.substr(0, len - 2);
-            appendBase(base,        MorphBit::PAST);
-            appendBase(base + "e",  MorphBit::PAST);
+            appendBase(word.substr(0, len - 2),        MorphBit::PAST);
+            appendBase(word.substr(0, len - 2) + "e",  MorphBit::PAST);
         }
 
         // ---- -er (doubled-consonant + plain + silent-e) ----
@@ -859,10 +896,10 @@ namespace HCPEngine
         if (len >= 4 && word.substr(len - 2) == "es")
         {
             appendBase(word.substr(0, len - 2), MorphBit::PLURAL | MorphBit::THIRD);
-            appendBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD);  // keep -e
+            appendBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD);
         }
 
-        // ---- -s (plural / 3rd person) ----
+        // ---- -s ----
         if (len >= 4 && word.back() == 's' && word[len-2] != 's')
             appendBase(word.substr(0, len - 1), MorphBit::PLURAL | MorphBit::THIRD);
 
@@ -893,13 +930,15 @@ namespace HCPEngine
     // -----------------------------------------------------------------------
     static AZStd::vector<InflectionStripResult> TryInflectionStrip(
         const AZStd::string& word,
-        const HCPVocabulary* vocab = nullptr)
+        const HCPVocabulary* vocab = nullptr,
+        const AZStd::vector<InflectionRule>* rules = nullptr,
+        const std::vector<std::regex>* compiled = nullptr)
     {
         AZStd::vector<InflectionStripResult> results;
         AZStd::unordered_set<AZStd::string> seen;
 
         // Level 1: direct single-morpheme strips
-        CollectSingleStrip(word, 0, results, seen, vocab);
+        CollectSingleStrip(word, 0, results, seen, vocab, rules, compiled);
 
         // Level 2: compound strips — checked after ALL level-1 candidates so a
         // compound fallback never beats a later direct candidate in priority order.
@@ -911,7 +950,7 @@ namespace HCPEngine
         {
             AZStd::string baseCopy = results[i].baseWord;
             AZ::u16 bitsCopy = results[i].morphBits;
-            CollectSingleStrip(baseCopy, bitsCopy, results, seen, vocab);
+            CollectSingleStrip(baseCopy, bitsCopy, results, seen, vocab, rules, compiled);
         }
 
         return results;
@@ -973,17 +1012,45 @@ namespace HCPEngine
         return result;
     }
 
+    // ---- DetectSignals: scan short-pass manifest for tense/register signals ----
+
+    ShortPassSignal DetectSignals(const ResolutionManifest& manifest)
+    {
+        static const AZStd::unordered_set<AZStd::string> kPast   = {
+            "was","were","had","did","got","went"};
+        static const AZStd::unordered_set<AZStd::string> kFuture = {
+            "will","shall","would","could","might"};
+        static const AZStd::unordered_set<AZStd::string> kPresent = {
+            "is","are","am","has","does"};
+        static const AZStd::unordered_set<AZStd::string> kArchaic = {
+            "hath","doth","thou","thee","hast","dost","wilt","wast"};
+
+        ShortPassSignal sig;
+        for (const auto& r : manifest.results)
+        {
+            if (!r.resolved) continue;
+            ++sig.resolvedCount;
+            if (kPast.count(r.runText))    sig.hasPast    = true;
+            if (kFuture.count(r.runText))  sig.hasFuture  = true;
+            if (kPresent.count(r.runText)) sig.hasPresent = true;
+            if (kArchaic.count(r.runText)) sig.hasArchaic = true;
+        }
+        return sig;
+    }
+
     bool BedManager::Initialize(
         physx::PxPhysics* physics,
         physx::PxCudaContextManager* cuda,
         MDB_env* lmdbEnv,
-        HCPVocabulary* vocabulary)
+        HCPVocabulary* vocabulary,
+        HCPEnvelopeManager* envelopeManager)
     {
         if (!physics || !cuda || !lmdbEnv) return false;
 
         m_physics = physics;
         m_cuda = cuda;
         m_vocabulary = vocabulary;
+        m_envelopeManager = envelopeManager;
         m_lmdbEnv = lmdbEnv;
 
         auto t0 = std::chrono::high_resolution_clock::now();
@@ -1010,9 +1077,9 @@ namespace HCPEngine
         // Build in-memory vocab index from whatever is in w2t right now.
         RebuildVocab();
 
-        // Sort lengths descending (resolve longest words first)
+        // Sort lengths ascending (resolve shortest words first — function words establish context)
         AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
-            [](AZ::u32 a, AZ::u32 b) { return a > b; });
+            [](AZ::u32 a, AZ::u32 b) { return a < b; });
 
         // Create workspace pools — each workspace gets its own PxScene
         // for pipelined GPU/CPU overlap (simulate A while reading B, loading C)
@@ -1042,11 +1109,11 @@ namespace HCPEngine
             totalEntries += static_cast<AZ::u32>(entries.size());
 
         fprintf(stderr, "[BedManager] Initialized: %zu lengths, %u entries in w2t, "
-            "%u entries/phase, %u workspaces, %.1f ms\n",
+            "phase floor=%u, %u workspaces, %.1f ms\n",
             m_activeWordLengths.size(), totalEntries,
-            RC_VOCAB_PER_PHASE, createdCount, ms);
+            RC_VOCAB_PHASE_FLOOR, createdCount, ms);
         fflush(stderr);
-        fprintf(stderr, "[BedManager] Word lengths (descending):");
+        fprintf(stderr, "[BedManager] Word lengths (ascending, shortest-first):");
         for (AZ::u32 len : m_activeWordLengths)
             fprintf(stderr, " %u", len);
         fprintf(stderr, "\n");
@@ -1057,7 +1124,7 @@ namespace HCPEngine
 
     // ---- ResolvePhase: load one small vocab slice, simulate, collect ----
     //
-    // Small vocab (RC_VOCAB_PER_PHASE entries) → maximum stream slots.
+    // Dynamic vocab slice (sized per stream run count) → maximum stream slots.
     // All runs that fit get checked in one simulate cycle.
 
     // Helper: load a workspace with vocab + stream runs, activate, return overflow indices.
@@ -1185,7 +1252,7 @@ namespace HCPEngine
 
     // ---- ResolveLengthCycle: slice through freq-ordered vocab for one word length ----
     //
-    // Phase 0 = entries [0..N), phase 1 = [N..2N), etc. N = RC_VOCAB_PER_PHASE.
+    // Phase 0 = entries [0..N), phase 1 = [N..2N), etc. N = phaseSize (dynamic).
     // Each phase: build tiny VocabPack on the fly, load all remaining runs,
     // simulate, collect resolved, pass unresolved to next phase.
     // Early exit when all runs resolved.
@@ -1242,6 +1309,94 @@ namespace HCPEngine
     }
 
 
+    // ---- SetInflectionRules: split by rule_type, compile conditions ----
+    void BedManager::SetInflectionRules(AZStd::vector<InflectionRule> rules)
+    {
+        m_inflectionRules.clear();
+        m_compiledConditions.clear();
+        m_prefixRules.clear();
+        m_compiledPrefixConditions.clear();
+
+        for (auto& r : rules)
+        {
+            if (r.ruleType == "PREFIX")
+            {
+                m_compiledPrefixConditions.emplace_back(r.condition.c_str(),
+                    std::regex::ECMAScript | std::regex::optimize);
+                m_prefixRules.push_back(AZStd::move(r));
+            }
+            else
+            {
+                m_compiledConditions.emplace_back(r.condition.c_str(),
+                    std::regex::ECMAScript | std::regex::optimize);
+                m_inflectionRules.push_back(AZStd::move(r));
+            }
+        }
+
+        fprintf(stderr, "[BedManager] SetInflectionRules: %zu suffix, %zu prefix rules\n",
+            m_inflectionRules.size(), m_prefixRules.size());
+        fflush(stderr);
+    }
+
+    // ---- TryPrefixStrip ----------------------------------------------------
+    // Data-driven prefix stripping. Mirrors TryInflectionStrip but strips from
+    // the front. Rules loaded from inflection_rules WHERE rule_type='PREFIX'.
+    //
+    // For each matching prefix rule:
+    //   1. Word starts with rule.stripPrefix
+    //   2. Remaining base satisfies condition regex
+    //   3. Base exists in LMDB (LookupWordLocal) — the vocab is the filter
+    //   4. Yield a strip result with the base and morpheme name
+    //
+    // Returns empty vector if no prefix matches or no base resolves.
+    // Prefix class (PFX_NEG, PFX_ITER, etc.) is stored as morpheme string in
+    // the result — goes into morphemePositions map, not a MorphBit (no bit reserved).
+    // -----------------------------------------------------------------------
+    struct PrefixStripResult
+    {
+        AZStd::string baseWord;
+        AZStd::string morpheme;   // e.g. "PFX_NEG", "PFX_ITER"
+        AZStd::string addPrefix;  // prefix to prepend for reconstruction
+    };
+
+    static AZStd::vector<PrefixStripResult> TryPrefixStrip(
+        const AZStd::string& word,
+        const HCPVocabulary* vocab,
+        const AZStd::vector<InflectionRule>* rules,
+        const std::vector<std::regex>* compiled)
+    {
+        AZStd::vector<PrefixStripResult> results;
+        if (!rules || !compiled || rules->empty()) return results;
+        if (!vocab) return results;
+
+        const std::string wordStd(word.c_str(), word.size());
+
+        for (size_t ri = 0; ri < rules->size(); ++ri)
+        {
+            const InflectionRule& r = (*rules)[ri];
+            const std::string&    pfx = r.stripPrefix.c_str();
+            if (pfx.empty() || wordStd.size() <= pfx.size()) continue;
+            if (wordStd.substr(0, pfx.size()) != pfx) continue;
+
+            std::string base = wordStd.substr(pfx.size());
+
+            // Condition regex applied against the base
+            if (!std::regex_search(base, (*compiled)[ri])) continue;
+
+            // Base must exist in LMDB — vocab is the filter
+            AZStd::string tokenId = vocab->LookupWordLocal(
+                AZStd::string(base.c_str(), base.size()));
+            if (tokenId.empty()) continue;
+
+            PrefixStripResult res;
+            res.baseWord  = AZStd::string(base.c_str(), base.size());
+            res.morpheme  = r.morpheme;
+            res.addPrefix = r.addPrefix;
+            results.push_back(AZStd::move(res));
+        }
+        return results;
+    }
+
     // ---- RebuildVocab: scan w2t and build in-memory vocab index ----
     //
     // Called at Initialize and after each EnvelopeManager::ActivateEnvelope.
@@ -1266,17 +1421,25 @@ namespace HCPEngine
             return;
         }
 
+        // Collect all w2t entries for t2w reverse map (no length filter — t2w must be complete).
+        // m_vocabByLength only holds the VBED range used by the physics beds.
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> allW2tEntries; // word, tokenId
+
         MDB_val key, val;
         AZ::u32 totalEntries = 0;
         while (mdb_cursor_get(cursor, &key, &val, MDB_NEXT) == 0)
         {
+            AZStd::string word(static_cast<const char*>(key.mv_data), key.mv_size);
+            AZStd::string tokenId(static_cast<const char*>(val.mv_data), val.mv_size);
+            allW2tEntries.emplace_back(word, tokenId);
+
             AZ::u32 len = static_cast<AZ::u32>(key.mv_size);
             if (len < static_cast<AZ::u32>(VBED_MIN_LEN) ||
                 len > static_cast<AZ::u32>(VBED_MAX_LEN)) continue;
 
             VocabPack::Entry e;
-            e.word    = AZStd::string(static_cast<const char*>(key.mv_data), key.mv_size);
-            e.tokenId = AZStd::string(static_cast<const char*>(val.mv_data), val.mv_size);
+            e.word    = word;
+            e.tokenId = tokenId;
             e.tierIndex = 0;  // All common tier — label broadphase wired once envelope has tier data
 
             m_vocabByLength[len].push_back(AZStd::move(e));
@@ -1286,13 +1449,34 @@ namespace HCPEngine
         mdb_cursor_close(cursor);
         mdb_txn_abort(txn);
 
+        // Sync t2w (token→word) from the FULL w2t scan — includes out-of-bed lengths
+        // (e.g. length-1 words "a", "I") needed by TokenToWord() during reconstruction.
+        {
+            MDB_txn* writeTxn = nullptr;
+            if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &writeTxn) == 0)
+            {
+                MDB_dbi t2wDbi;
+                if (mdb_dbi_open(writeTxn, "t2w", MDB_CREATE, &t2wDbi) == 0)
+                {
+                    mdb_drop(writeTxn, t2wDbi, 0);  // Clear stale entries
+                    for (const auto& [w, tid] : allW2tEntries)
+                    {
+                        MDB_val revKey = { tid.size(), const_cast<char*>(tid.data()) };
+                        MDB_val revVal = { w.size(),   const_cast<char*>(w.data()) };
+                        mdb_put(writeTxn, t2wDbi, &revKey, &revVal, 0);
+                    }
+                }
+                mdb_txn_commit(writeTxn);
+            }
+        }
+
         for (auto& [len, entries] : m_vocabByLength)
         {
             m_activeWordLengths.push_back(len);
             m_labelCountByLength[len] = 0;
         }
         AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
-            [](AZ::u32 a, AZ::u32 b) { return a > b; });
+            [](AZ::u32 a, AZ::u32 b) { return a < b; });
 
         fprintf(stderr, "[BedManager] RebuildVocab: %u entries across %zu word lengths\n",
             totalEntries, m_activeWordLengths.size());
@@ -1352,7 +1536,7 @@ namespace HCPEngine
     //
     // Work queue:  each item = (vocabStart, absPhaseIdx, runIndices)
     //   - Initial item: vocabStart=0, runIndices=all input runs
-    //   - On drain: unresolved runs → new item at vocabStart += RC_VOCAB_PER_PHASE
+    //   - On drain: unresolved runs → new item at vocabStart += phaseSize
     //   - On dispatch: leftover (overflow) → re-inserted at queue head (same phase)
     // VocabPack cache:  built once per vocabStart, never rebuilt.
     //   Pre-built during dispatch (after BeginSimulate, before FetchSimResults).
@@ -1367,6 +1551,25 @@ namespace HCPEngine
     {
         AZ::u32 totalFiltered = static_cast<AZ::u32>(filteredVocab.size());
         if (totalFiltered == 0 || currentIndices.empty()) return;
+
+        // ---- Dynamic phase sizing ----
+        // Allocate as much vocab as the buffer allows given the actual stream run count.
+        // At long lengths with few runs, the entire vocab often fits in one phase.
+        // At short lengths with many runs the stream side constrains the phase size.
+        AZ::u32 phaseSize;
+        {
+            AZ::u32 streamParticles = static_cast<AZ::u32>(currentIndices.size()) * wordLength;
+            AZ::u32 computed = RC_VOCAB_PHASE_FLOOR;
+            if (streamParticles < WS_BUFFER_CAPACITY)
+            {
+                AZ::u32 vocabAvail = WS_BUFFER_CAPACITY - streamParticles;
+                computed = AZStd::max(vocabAvail / wordLength, RC_VOCAB_PHASE_FLOOR);
+            }
+            phaseSize = AZStd::min(computed, totalFiltered);
+        }
+        fprintf(stderr, "[BedManager] Length %u: %zu stream runs → phaseSize=%u/%u\n",
+            wordLength, currentIndices.size(), phaseSize, totalFiltered);
+        fflush(stderr);
 
         AZStd::vector<Workspace*> workspaces = GetWorkspacesForLength(wordLength);
         if (workspaces.empty()) return;
@@ -1394,7 +1597,7 @@ namespace HCPEngine
             slots.push_back({ws, false, 0, 0});
 
         // --- VocabPack cache: built once per vocabStart, reused across workspaces ---
-        // Key: vocabStart (= phase * RC_VOCAB_PER_PHASE)
+        // Key: vocabStart (= phase * phaseSize)
         // Pointers into this map remain stable across emplace (unordered_map guarantee).
         AZStd::unordered_map<AZ::u32, VocabPack> packCache;
         auto getOrBuildPack = [&](AZ::u32 start) -> const VocabPack*
@@ -1403,7 +1606,7 @@ namespace HCPEngine
             if (it == packCache.end())
             {
                 auto ins = packCache.emplace(start,
-                    BuildVocabSliceFromEntries(wordLength, filteredVocab, start, RC_VOCAB_PER_PHASE));
+                    BuildVocabSliceFromEntries(wordLength, filteredVocab, start, phaseSize));
                 return &ins.first->second;
             }
             return &it->second;
@@ -1448,7 +1651,7 @@ namespace HCPEngine
 
                 if (!wsUnresolved.empty())
                 {
-                    AZ::u32 nextStart = slot.vocabStart + RC_VOCAB_PER_PHASE;
+                    AZ::u32 nextStart = slot.vocabStart + phaseSize;
                     if (nextStart < totalFiltered)
                     {
                         AZ::u32 nextPhaseIdx = slot.absPhaseIdx + 1;
@@ -1516,7 +1719,7 @@ namespace HCPEngine
                     // here — after BeginSimulate, before the next FetchSimResults — the
                     // build time is hidden behind GPU simulation rather than adding to
                     // the critical path between phases.
-                    AZ::u32 nextStart = savedVocabStart + RC_VOCAB_PER_PHASE;
+                    AZ::u32 nextStart = savedVocabStart + phaseSize;
                     if (nextStart < totalFiltered)
                         getOrBuildPack(nextStart);
                 }
@@ -1734,9 +1937,6 @@ namespace HCPEngine
         for (AZ::u32 len : m_activeWordLengths)
             activeLenSet.insert(len);
 
-        // Per-length text sets — O(1) "already queued" checks for interstitial stripping
-        AZStd::unordered_map<AZ::u32, AZStd::unordered_set<AZStd::string>> queuedTextByLength;
-
         for (AZ::u32 i = 0; i < originalRunCount; ++i)
         {
             const CharRun& run = runs[i];
@@ -1766,7 +1966,6 @@ namespace HCPEngine
                 if (activeLenSet.count(len))
                 {
                     runsByLength[len].push_back(i);
-                    queuedTextByLength[len].insert(run.text);
                 }
                 else
                     noVocabRuns.push_back(i);
@@ -1842,22 +2041,23 @@ namespace HCPEngine
             fflush(stderr);
         }
 
-        // ---- Descending length resolve loop with interstitial inflection stripping ----
+        // ---- Ascending length resolve loop with interstitial inflection stripping ----
         //
-        // Long-first order: "running" (7) processes before "run" (3).
+        // Shortest-first order: "run" (3) processes before "running" (7).
+        // Function words and short signal words resolve first, establishing context.
+        //
         // After each length cycle, unresolved runs get stripped:
         //   - Strip suffix → base word + morph bits (delta)
-        //   - O(1) check: is base already queued at shorter length?
-        //     YES → piggyback (just record dependent, PBD resolves it naturally)
-        //     NO  → inject synthetic CharRun into shorter-length queue
-        //   - If base can't strip → var
+        //   - Since shorter lengths are ALREADY processed, the base is either:
+        //     A) Already in manifest.results (appeared in text) → dep-resolution finds it
+        //     B) Not in text → direct LMDB lookup, synthetic manifest entry added
+        //   - If base can't strip or LMDB lookup fails → var
         //
-        // No LMDB lookups in the interstitial step — PBD IS the resolution
-        // mechanism. We only record deltas and let the natural descending
-        // flow resolve bases at their shorter length.
+        // No synthetic CharRuns injected into runsByLength (those queues are done).
+        // CPU manifest check + LMDB direct lookup replace the GPU injection path.
         //
-        // Post-loop: scan manifest for resolved bases, propagate to dependents.
-        // Unresolved bases → dependents become vars.
+        // Post-loop: dep-resolution pass scans manifest for resolved bases,
+        // propagates morph bits to dependents. Unresolved bases → vars.
 
         struct InflectionQueueEntry
         {
@@ -1867,7 +2067,9 @@ namespace HCPEngine
         AZStd::vector<InflectionQueueEntry> inflectionQueue;
         AZStd::vector<AZ::u32> allUnresolvedOriginal;
         AZ::u32 inflectionCount = 0;
-        AZ::u32 syntheticInjections = 0;
+        AZ::u32 syntheticInjections = 0;  // direct LMDB lookups that succeeded
+        AZStd::unordered_set<AZStd::string> lookupDone;  // dedup: base words already looked up
+        bool shortPassSignalFired = false;  // pre-fetch fires once, after first length >= 4
 
         for (AZ::u32 len : m_activeWordLengths)
         {
@@ -1894,7 +2096,59 @@ namespace HCPEngine
                     continue;
                 }
 
-                auto candidates = TryInflectionStrip(run.text, m_vocabulary);
+                // ---- Prefix strip (fires first — cheap startswith check) ----
+                auto prefixCands = TryPrefixStrip(run.text, m_vocabulary,
+                    m_prefixRules.empty() ? nullptr : &m_prefixRules,
+                    m_compiledPrefixConditions.empty() ? nullptr : &m_compiledPrefixConditions);
+                if (!prefixCands.empty())
+                {
+                    // Convert PrefixStripResult → InflectionStripResult (morphBit=0, morpheme in name)
+                    AZStd::vector<InflectionStripResult> pfxAsInflection;
+                    for (const auto& pc : prefixCands)
+                    {
+                        InflectionStripResult isr;
+                        isr.baseWord  = pc.baseWord;
+                        isr.morphBits = 0;  // prefix class goes to morphemePositions, not morphBit
+                        isr.stripped  = true;
+                        pfxAsInflection.push_back(AZStd::move(isr));
+                    }
+                    inflectionQueue.push_back({idx, AZStd::move(pfxAsInflection)});
+                    ++inflectionCount;
+                    // Fall through to synthetic injection below using the prefix candidates
+                    for (const auto& pc : prefixCands)
+                    {
+                        AZ::u32 baseLen = static_cast<AZ::u32>(pc.baseWord.size());
+                        if (!activeLenSet.count(baseLen)) continue;
+                        if (lookupDone.count(pc.baseWord)) continue;
+                        lookupDone.insert(pc.baseWord);
+                        bool alreadyResolved = false;
+                        for (const auto& r : manifest.results)
+                            if (r.resolved && r.matchedWord == pc.baseWord)
+                                { alreadyResolved = true; break; }
+                        if (!alreadyResolved && m_vocabulary)
+                        {
+                            AZStd::string tokenId = m_vocabulary->LookupWordLocal(pc.baseWord);
+                            if (!tokenId.empty())
+                            {
+                                ResolutionResult synthResult;
+                                synthResult.runText        = pc.baseWord;
+                                synthResult.resolved       = true;
+                                synthResult.matchedWord    = pc.baseWord;
+                                synthResult.matchedTokenId = tokenId;
+                                synthResult.tierResolved   = 99;
+                                synthResult.runIndex       = AZ::u32(-1);
+                                manifest.results.push_back(AZStd::move(synthResult));
+                                ++syntheticInjections;
+                            }
+                        }
+                    }
+                    continue;  // prefix handled — skip suffix strip for this run
+                }
+
+                // ---- Suffix strip (fallback when no prefix matched) ----
+                auto candidates = TryInflectionStrip(run.text, m_vocabulary,
+                    m_inflectionRules.empty() ? nullptr : &m_inflectionRules,
+                    m_compiledConditions.empty() ? nullptr : &m_compiledConditions);
                 if (candidates.empty())
                 {
                     allUnresolvedOriginal.push_back(idx);
@@ -1904,27 +2158,41 @@ namespace HCPEngine
                 inflectionQueue.push_back({idx, AZStd::move(candidates)});
                 ++inflectionCount;
 
-                // Inject a synthetic CharRun for every unique candidate base.
-                // All candidates are injected upfront; the dep-resolution pass
-                // selects the first one that resolves in PBD (priority order).
+                // Ascending order: shorter bases have already been processed.
+                // For each candidate base: if not already in manifest (appeared in text),
+                // do a direct LMDB lookup and inject a synthetic manifest entry.
+                // The dep-resolution pass finds it and attaches morph bits.
                 for (const auto& cand : inflectionQueue.back().candidates)
                 {
                     AZ::u32 baseLen = static_cast<AZ::u32>(cand.baseWord.size());
-                    bool alreadyQueued = queuedTextByLength.count(baseLen) &&
-                                        queuedTextByLength[baseLen].count(cand.baseWord);
-                    if (!alreadyQueued && activeLenSet.count(baseLen))
+                    if (!activeLenSet.count(baseLen)) continue;  // outside vocab range
+                    if (lookupDone.count(cand.baseWord)) continue;  // already handled
+                    lookupDone.insert(cand.baseWord);
+
+                    // If the base appeared in the text it's already in manifest.results
+                    // as a resolved entry — dep-resolution will find it. Only need to
+                    // act when it's NOT already there.
+                    bool alreadyResolved = false;
+                    for (const auto& r : manifest.results)
+                        if (r.resolved && r.matchedWord == cand.baseWord)
+                            { alreadyResolved = true; break; }
+
+                    if (!alreadyResolved && m_vocabulary)
                     {
-                        CharRun synth;
-                        synth.text     = cand.baseWord;
-                        synth.startPos = 0;
-                        synth.length   = baseLen;
-                        synth.tag      = RunTag::Word;
-                        synth.firstCap = false;
-                        synth.allCaps  = false;
-                        runs.push_back(synth);
-                        runsByLength[baseLen].push_back(static_cast<AZ::u32>(runs.size() - 1));
-                        queuedTextByLength[baseLen].insert(cand.baseWord);
-                        ++syntheticInjections;
+                        AZStd::string tokenId = m_vocabulary->LookupWordLocal(cand.baseWord);
+                        if (!tokenId.empty())
+                        {
+                            // Synthetic manifest entry: dep-resolution pass picks it up
+                            ResolutionResult synthResult;
+                            synthResult.runText        = cand.baseWord;
+                            synthResult.resolved       = true;
+                            synthResult.matchedWord    = cand.baseWord;
+                            synthResult.matchedTokenId = tokenId;
+                            synthResult.tierResolved   = 99;       // sentinel: direct LMDB
+                            synthResult.runIndex       = AZ::u32(-1); // not a real run
+                            manifest.results.push_back(AZStd::move(synthResult));
+                            ++syntheticInjections;
+                        }
                     }
                 }
             }
@@ -1932,6 +2200,63 @@ namespace HCPEngine
             fprintf(stderr, "[BedManager] Length %u: %zu runs, %zu unresolved\n",
                 len, indices.size(), unresolvedFromCycle.size());
             fflush(stderr);
+
+            // ---- Short-pass tense pre-fetch (fires once, after first length >= 4) ----
+            //
+            // After function-word lengths (2-4) resolve, detect tense/register signals
+            // (past: was/were/had; archaic: hath/thou/etc.) and query the matching Postgres
+            // envelope to inject inflected forms into m_vocabByLength for lengths 5+.
+            // These entries are included by the next ResolveLengthCycle call via
+            // ReadFilteredVocabSlice (which reads up to totalEntries = current vector size).
+            if (!shortPassSignalFired && len >= 4 && m_envelopeManager)
+            {
+                shortPassSignalFired = true;
+                ShortPassSignal sig = DetectSignals(manifest);
+
+                // Pick dominant signal — priority: past > progressive > present
+                AZStd::string targetEnvelope;
+                if      (sig.hasPast)        targetEnvelope = "english_past_tense";
+                else if (sig.hasProgressive) targetEnvelope = "english_progressive";
+                else if (sig.hasPresent)     targetEnvelope = "english_plural";
+
+                if (!targetEnvelope.empty())
+                {
+                    fprintf(stderr,
+                        "[BedManager] Short-pass signal: past=%d prog=%d pres=%d archaic=%d"
+                        " → pre-fetch '%s'\n",
+                        sig.hasPast, sig.hasProgressive, sig.hasPresent, sig.hasArchaic,
+                        targetEnvelope.c_str());
+                    fflush(stderr);
+
+                    auto entries = m_envelopeManager->QueryEnvelopeEntries(targetEnvelope);
+                    AZ::u32 injected = 0;
+                    for (const auto& e : entries)
+                    {
+                        AZ::u32 eLen = static_cast<AZ::u32>(e.word.size());
+                        if (eLen < 5 || eLen > 16) continue;  // only unprocessed lengths
+                        // Labels have tokenId starting "AD"; inject as tier 0, others as tier 1
+                        bool isLabel = (e.tokenId.size() >= 2
+                                        && e.tokenId[0] == 'A' && e.tokenId[1] == 'D');
+                        VocabPack::Entry entry;
+                        entry.word      = e.word;
+                        entry.tokenId   = e.tokenId;
+                        entry.tierIndex = isLabel ? 0u : 1u;
+                        m_vocabByLength[eLen].push_back(AZStd::move(entry));
+                        ++injected;
+                    }
+
+                    fprintf(stderr, "[BedManager] Pre-fetch injected %u entries from '%s'\n",
+                        injected, targetEnvelope.c_str());
+                    fflush(stderr);
+                }
+                else if (sig.hasArchaic)
+                {
+                    // Archaic envelope not yet defined — log for future wiring
+                    fprintf(stderr, "[BedManager] Archaic signal detected"
+                        " — no archaic envelope yet (future Task #16)\n");
+                    fflush(stderr);
+                }
+            }
         }
 
         // ---- Resolve inflected dependents — priority-ordered candidate matching ----
@@ -1944,10 +2269,12 @@ namespace HCPEngine
         // Silent-e fallback is now folded in: base+"e" candidates were injected in the
         // main loop alongside all other candidates, so no separate pass is needed.
         {
-            // Build resolved-base lookup from manifest
-            AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedBases;
+            // Build resolved-base lookup from manifest — store copies (not pointers).
+            // push_back() below can reallocate manifest.results, which would invalidate
+            // any raw pointers into it (same fix applied to resolvedLookup in dupe propagation).
+            AZStd::unordered_map<AZStd::string, ResolutionResult> resolvedBases;
             for (const auto& r : manifest.results)
-                if (r.resolved) resolvedBases[r.matchedWord] = &r;
+                if (r.resolved) resolvedBases[r.matchedWord] = r;
 
             // Pre-populate resolvedRunIndices from already-resolved manifest entries
             AZStd::unordered_set<AZ::u32> resolvedRunIndices;
@@ -1969,10 +2296,10 @@ namespace HCPEngine
                     ResolutionResult r;
                     r.runText        = depRun.text;
                     r.resolved       = true;
-                    r.matchedWord    = it->second->matchedWord;
-                    r.matchedTokenId = it->second->matchedTokenId;
+                    r.matchedWord    = it->second.matchedWord;
+                    r.matchedTokenId = it->second.matchedTokenId;
                     r.morphBits      = cand.morphBits;
-                    r.tierResolved   = it->second->tierResolved;
+                    r.tierResolved   = it->second.tierResolved;
                     r.runIndex       = qe.runIndex;
                     r.firstCap       = depRun.firstCap;
                     r.allCaps        = depRun.allCaps;
@@ -1996,7 +2323,7 @@ namespace HCPEngine
 
         if (inflectionCount > 0)
         {
-            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u synthetics injected)\n",
+            fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u direct LMDB lookups)\n",
                 inflectionCount, syntheticInjections);
             fflush(stderr);
         }
@@ -2030,7 +2357,9 @@ namespace HCPEngine
                 // e.g., "runnin'" → "running" → TryInflectionStrip → "run" + PROG
                 if (vr.variantBits & MorphBit::VARIANT_DIALECT)
                 {
-                    for (const auto& strip : TryInflectionStrip(vr.normalizedForm, m_vocabulary))
+                    for (const auto& strip : TryInflectionStrip(vr.normalizedForm, m_vocabulary,
+                        m_inflectionRules.empty() ? nullptr : &m_inflectionRules,
+                        m_compiledConditions.empty() ? nullptr : &m_compiledConditions))
                         vStrip[strip.baseWord].push_back({idx, static_cast<AZ::u16>(vr.variantBits | strip.morphBits)});
                 }
             };
@@ -2172,7 +2501,7 @@ namespace HCPEngine
                     if (text.size() > ms.len && text.substr(text.size() - ms.len) == ms.suffix)
                     {
                         AZStd::string base = text.substr(0, text.size() - ms.len);
-                        if (base.size() >= 2)
+                        if (base.size() >= 1)
                         {
                             DecompMapping dm;
                             dm.originalRunIndex = idx;
@@ -2276,6 +2605,40 @@ namespace HCPEngine
                                    decompResults, decompUnresolved);
                 for (AZ::u32 i : decompUnresolved)
                     allDecompUnresolved.push_back(i);
+            }
+
+            // ---- Length-1 bases: direct LMDB lookup (bypasses activeLenSet / beds) ----
+            // Handles "i'll" → base "i", "i'm" → "i", "i've" → "i".
+            // "I" is stored uppercase in LMDB (migration 017), so try lowercase first,
+            // then capitalized fallback — same logic as SingleChar resolution above.
+            if (m_vocabulary)
+            {
+                for (AZ::u32 i = 0; i < static_cast<AZ::u32>(decompRuns.size()); ++i)
+                {
+                    if (decompRuns[i].length != 1 || decompRuns[i].text.empty()) continue;
+                    const AZStd::string& baseText = decompRuns[i].text;
+                    AZStd::string tokenId = m_vocabulary->LookupWordLocal(baseText);
+                    if (tokenId.empty())
+                    {
+                        AZStd::string cap = baseText;
+                        cap[0] = static_cast<char>(toupper(static_cast<unsigned char>(cap[0])));
+                        tokenId = m_vocabulary->LookupWordLocal(cap);
+                    }
+                    if (!tokenId.empty())
+                    {
+                        ResolutionResult r;
+                        r.resolved = true;
+                        r.runText = baseText;
+                        r.matchedWord = baseText;
+                        r.matchedTokenId = tokenId;
+                        r.tierResolved = 0;
+                        r.morphBits = 0;
+                        r.runIndex = i;
+                        r.firstCap = false;
+                        r.allCaps = false;
+                        decompResults.push_back(r);
+                    }
+                }
             }
 
             // ---- Stage 4: TryVariantNormalize on unresolved decomp bases ----
@@ -2504,11 +2867,13 @@ namespace HCPEngine
         }
 
         // ---- Propagate results to stacked duplicates ----
-        AZStd::unordered_map<AZStd::string, const ResolutionResult*> resolvedLookup;
+        // Store copies (not pointers) — push_back below can reallocate manifest.results,
+        // which would invalidate any raw pointers into it.
+        AZStd::unordered_map<AZStd::string, ResolutionResult> resolvedLookup;
         for (const auto& r : manifest.results)
         {
             if (r.resolved)
-                resolvedLookup[r.runText] = &r;
+                resolvedLookup[r.runText] = r;
         }
 
         for (const auto& [firstIdx, dupes] : runStacks)
@@ -2525,11 +2890,11 @@ namespace HCPEngine
                 r.allCaps = dupeRun.allCaps;
                 if (it != resolvedLookup.end())
                 {
-                    r.resolved = it->second->resolved;
-                    r.matchedWord = it->second->matchedWord;
-                    r.matchedTokenId = it->second->matchedTokenId;
-                    r.tierResolved = it->second->tierResolved;
-                    r.morphBits = it->second->morphBits;
+                    r.resolved = it->second.resolved;
+                    r.matchedWord = it->second.matchedWord;
+                    r.matchedTokenId = it->second.matchedTokenId;
+                    r.tierResolved = it->second.tierResolved;
+                    r.morphBits = it->second.morphBits;
                 }
                 else
                 {
@@ -2620,21 +2985,51 @@ namespace HCPEngine
                 tokenId = AZStd::string(SCAN_VAR_PREFIX) + " " + r.runText;
             }
 
+            // Diagnostic: catch empty tokenIds before they route to '....' row
+            if (tokenId.empty())
+            {
+                static int emptyWarnings = 0;
+                if (emptyWarnings < 10)
+                {
+                    fprintf(stderr, "[ScanManifest] EMPTY tokenId: resolved=%d runText='%s' "
+                        "matchedWord='%s' runIndex=%u\n",
+                        (int)r.resolved, r.runText.c_str(),
+                        r.matchedWord.c_str(), r.runIndex);
+                    fflush(stderr);
+                    ++emptyWarnings;
+                }
+            }
+
             uniqueTokenSet.insert(tokenId);
 
-            // Pack positional modifier: morphBits in upper 14 bits, cap flags in lower 2
-            // Layout: [morphBits(14) | allCaps(1) | firstCap(1)]
-            AZ::u32 modifier = 0;
-            if (r.morphBits != 0 || r.firstCap || r.allCaps)
+            // Record sparse morpheme/cap overlays — separate lists per morpheme.
+            // Cap flags
+            if (r.firstCap) out.morphemePositions["FIRST_CAP"].push_back(position);
+            if (r.allCaps)  out.morphemePositions["ALL_CAPS"].push_back(position);
+            // Morpheme bits — one entry per set bit
+            if (r.morphBits != 0)
             {
-                modifier = (static_cast<AZ::u32>(r.morphBits) << 2)
-                         | (r.allCaps ? 2u : 0u)
-                         | (r.firstCap ? 1u : 0u);
+                static const struct { AZ::u16 bit; const char* name; } kBitNames[] = {
+                    { MorphBit::PLURAL,  "PLURAL"  },
+                    { MorphBit::POSS,    "POSS"    },
+                    { MorphBit::POSS_PL, "POSS_PL" },
+                    { MorphBit::PAST,    "PAST"    },
+                    { MorphBit::PROG,    "PROG"    },
+                    { MorphBit::THIRD,   "3RD"     },
+                    { MorphBit::NEG,     "NEG"     },
+                    { MorphBit::COND,    "COND"    },
+                    { MorphBit::WILL,    "WILL"    },
+                    { MorphBit::HAVE,    "HAVE"    },
+                    { MorphBit::BE,      "BE"      },
+                    { MorphBit::AM,      "AM"      },
+                };
+                for (const auto& bn : kBitNames)
+                    if (r.morphBits & bn.bit)
+                        out.morphemePositions[bn.name].push_back(position);
             }
 
             out.tokenIds.push_back(tokenId);
             out.positions.push_back(position);
-            out.modifiers.push_back(modifier);
             out.entityIds.push_back(r.entityId);
             if (!r.entityId.empty()) ++out.entityAnnotations;
 
@@ -2674,8 +3069,10 @@ namespace HCPEngine
             out.bonds.push_back(AZStd::move(bond));
         }
 
-        fprintf(stderr, "[ScanManifest] %zu tokens, %zu unique, %zu bond types, %zu total pairs\n",
-            out.tokenIds.size(), out.uniqueTokens, out.bonds.size(), out.totalPairs);
+        size_t emptyTotal = 0;
+        for (const auto& tid : out.tokenIds) if (tid.empty()) ++emptyTotal;
+        fprintf(stderr, "[ScanManifest] %zu tokens (%zu empty), %zu unique, %zu bond types, %zu total pairs\n",
+            out.tokenIds.size(), emptyTotal, out.uniqueTokens, out.bonds.size(), out.totalPairs);
         fflush(stderr);
 
         return out;

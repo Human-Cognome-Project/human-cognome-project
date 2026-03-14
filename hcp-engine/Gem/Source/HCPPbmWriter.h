@@ -5,6 +5,7 @@
 #include <AzCore/base.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace HCPEngine
 {
@@ -42,13 +43,14 @@ namespace HCPEngine
 
         //! Store position data alongside PBM bonds.
         //! Each unique token gets a base-50 encoded position list on its starter row.
-        //! @param modifiers Per-token (morphBits<<2 | capFlags). Empty = bare document.
+        //! Sparse morpheme/cap overlays written to pbm_morpheme_positions.
+        //! @param morphemePositions Map of morpheme name → position list (from ScanManifestToPBM).
         bool StorePositions(
             int docPk,
             const AZStd::vector<AZStd::string>& tokenIds,
             const AZStd::vector<int>& positions,
             int totalSlots,
-            const AZStd::vector<AZ::u32>& modifiers = {});
+            const AZStd::unordered_map<AZStd::string, AZStd::vector<int>>& morphemePositions = {});
 
     private:
         struct BondWriteSummary

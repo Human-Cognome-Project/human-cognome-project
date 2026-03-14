@@ -3,13 +3,14 @@
 #include "HCPVocabulary.h"
 #include "HCPTokenizer.h"
 #include "HCPParticlePipeline.h"
-#include "HCPJsonInterpreter.h"
 #include "HCPResolutionChamber.h"
 #include "HCPVocabBed.h"
 #include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPBondCompiler.h"
 #include "HCPEnvelopeManager.h"
+#include "HCPPhysIngest.h"
+#include "HCPGutenbergRunner.h"
 
 #include <AzCore/Console/ILogger.h>
 
@@ -198,141 +199,6 @@ namespace HCPEngine
         m_running.store(false);
     }
 
-    // Process a single JSON metadata entry (object) into the DB.
-    // Returns true on success. Used by DispatchJsonFile for both single-object
-    // and array (batch) files.
-    static bool ProcessOneJsonEntry(
-        const rapidjson::Value& entry,
-        const AZStd::string& catalog,
-        const AZStd::string& centuryCode,
-        HCPDocumentQuery& docQuery,
-        HCPPbmWriter& pbmWriter,
-        const HCPVocabulary& vocab,
-        int& outDocPk,
-        bool& outStubCreated,
-        JsonInterpretResult& outResult)
-    {
-        if (!entry.IsObject()) return false;
-
-        AZStd::string catalogId;
-        AZStd::string titleFromJson;
-        if (entry.HasMember("id") && entry["id"].IsInt())
-        {
-            char buf[32];
-            snprintf(buf, sizeof(buf), "%d", entry["id"].GetInt());
-            catalogId = buf;
-        }
-        if (entry.HasMember("title") && entry["title"].IsString())
-            titleFromJson = AZStd::string(entry["title"].GetString(), entry["title"].GetStringLength());
-
-        if (catalogId.empty()) return false;
-
-        outDocPk = docQuery.GetDocPkByCatalogId(catalog, catalogId);
-        outStubCreated = false;
-        if (outDocPk == 0)
-        {
-            if (titleFromJson.empty()) return false;
-            outDocPk = pbmWriter.CreateDocumentStub(titleFromJson, centuryCode);
-            outStubCreated = true;
-            if (outDocPk == 0) return false;
-        }
-
-        // Re-serialize this entry to pass to ProcessJsonMetadata
-        rapidjson::StringBuffer entrySb;
-        rapidjson::Writer<rapidjson::StringBuffer> entryW(entrySb);
-        entry.Accept(entryW);
-        AZStd::string entryJson(entrySb.GetString(), entrySb.GetSize());
-
-        outResult = ProcessJsonMetadata(entryJson, outDocPk, catalog, docQuery, vocab);
-        return true;
-    }
-
-    // Shared handler for JSON metadata file ingestion (used by both ingest and phys_ingest).
-    // Handles both single-object and array (batch) JSON files.
-    static AZStd::string DispatchJsonFile(
-        const AZStd::string& jsonText,
-        const AZStd::string& catalog,
-        const AZStd::string& centuryCode,
-        HCPEngineSystemComponent* engine)
-    {
-        rapidjson::Document jdoc;
-        jdoc.Parse(jsonText.c_str(), jsonText.size());
-        if (jdoc.HasParseError() || (!jdoc.IsObject() && !jdoc.IsArray()))
-            return R"({"status":"error","message":"JSON file parse error"})";
-
-        HCPDbConnection& db = engine->GetDbConnection();
-        if (!db.IsConnected()) db.Connect();
-        if (!db.IsConnected())
-            return R"({"status":"error","message":"No database connection"})";
-
-        HCPDocumentQuery& docQuery = engine->GetDocumentQuery();
-        HCPPbmWriter& pbmWriter = engine->GetPbmWriter();
-        const HCPVocabulary& vocab = engine->GetVocabulary();
-
-        if (jdoc.IsArray())
-        {
-            // Batch file — process each entry, return summary
-            int processed = 0, stubsCreated = 0, attached = 0, failed = 0;
-            for (rapidjson::SizeType i = 0; i < jdoc.Size(); ++i)
-            {
-                int docPk = 0; bool stubCreated = false; JsonInterpretResult result;
-                if (ProcessOneJsonEntry(jdoc[i], catalog, centuryCode,
-                                        docQuery, pbmWriter, vocab,
-                                        docPk, stubCreated, result))
-                {
-                    ++processed;
-                    stubCreated ? ++stubsCreated : ++attached;
-                }
-                else
-                {
-                    ++failed;
-                }
-            }
-            rapidjson::StringBuffer sb;
-            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
-            w.StartObject();
-            w.Key("status"); w.String("ok");
-            w.Key("mode"); w.String("batch");
-            w.Key("processed"); w.Int(processed);
-            w.Key("stubs_created"); w.Int(stubsCreated);
-            w.Key("attached"); w.Int(attached);
-            w.Key("failed"); w.Int(failed);
-            w.EndObject();
-            return AZStd::string(sb.GetString(), sb.GetSize());
-        }
-
-        // Single object
-        int docPk = 0; bool stubCreated = false; JsonInterpretResult jResult;
-        if (!ProcessOneJsonEntry(jdoc, catalog, centuryCode,
-                                  docQuery, pbmWriter, vocab,
-                                  docPk, stubCreated, jResult))
-        {
-            return R"({"status":"error","message":"JSON missing required 'id' or 'title' field"})";
-        }
-
-        // Extract catalog_id for response
-        AZStd::string catalogId;
-        if (jdoc.HasMember("id") && jdoc["id"].IsInt())
-        {
-            char buf[32]; snprintf(buf, sizeof(buf), "%d", jdoc["id"].GetInt());
-            catalogId = buf;
-        }
-
-        rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer> w(sb);
-        w.StartObject();
-        w.Key("status"); w.String("ok");
-        w.Key("mode"); w.String(stubCreated ? "stub_created" : "attached");
-        w.Key("doc_pk"); w.Int(docPk);
-        w.Key("catalog"); w.String(catalog.c_str());
-        w.Key("catalog_id"); w.String(catalogId.c_str());
-        w.Key("meta_known"); w.Int(jResult.knownFields);
-        w.Key("meta_unreviewed"); w.Int(jResult.unreviewedFields);
-        w.Key("provenance"); w.Bool(jResult.provenanceStored);
-        w.EndObject();
-        return AZStd::string(sb.GetString(), sb.GetSize());
-    }
-
     void HCPSocketServer::HandleClient(int clientFd)
     {
         while (!m_stopRequested.load())
@@ -406,25 +272,25 @@ namespace HCPEngine
                 return R"({"status":"error","message":"Database not available"})";
             }
 
-            AZStd::vector<AZStd::string> tokenIds;
+            AZStd::vector<AZStd::string> words;
             AZStd::vector<AZ::u32> posModifiers;
-            if (!m_engine->GetPbmReader().LoadPositionsWithModifiers(docId, tokenIds, posModifiers)
-                || tokenIds.empty())
+            if (!m_engine->GetPbmReader().LoadPositionsWithModifiers(docId, m_engine->GetVocabulary(), words, posModifiers)
+                || words.empty())
             {
                 return R"({"status":"error","message":"Document not found or has no positions"})";
             }
 
             auto tLoad = std::chrono::high_resolution_clock::now();
 
-            // Convert token IDs to text with stickiness rules + stored cap/morph modifiers
-            AZStd::string text = TokenIdsToText(tokenIds, m_engine->GetVocabulary(), &posModifiers);
+            // Reconstruct text from pre-resolved words with stickiness rules + stored cap/morph modifiers
+            AZStd::string text = TokenIdsToText(words, &posModifiers);
 
             auto t1 = std::chrono::high_resolution_clock::now();
             double loadMs = std::chrono::duration<double, std::milli>(tLoad - t0).count();
             double totalMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
 
-            fprintf(stderr, "[HCPSocketServer] Retrieved '%s': %zu tokens -> %zu chars, %.1f ms\n",
-                docId.c_str(), tokenIds.size(), text.size(), totalMs);
+            fprintf(stderr, "[HCPSocketServer] Retrieved '%s': %zu words -> %zu chars, %.1f ms\n",
+                docId.c_str(), words.size(), text.size(), totalMs);
             fflush(stderr);
 
             rapidjson::StringBuffer sb;
@@ -432,7 +298,7 @@ namespace HCPEngine
             w.StartObject();
             w.Key("status"); w.String("ok");
             w.Key("text"); w.String(text.c_str(), static_cast<rapidjson::SizeType>(text.size()));
-            w.Key("tokens"); w.Uint64(tokenIds.size());
+            w.Key("tokens"); w.Uint64(words.size());
             w.Key("load_ms"); w.Double(loadMs);
             w.Key("ms"); w.Double(totalMs);
             w.EndObject();
@@ -684,9 +550,11 @@ namespace HCPEngine
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 
-        // ---- phys_resolve (Phase 2: char→word resolution chambers) ----
+        // ---- phys_resolve — DEPRECATED: use phys_ingest ----
         if (strcmp(action, "phys_resolve") == 0)
         {
+            return R"({"status":"error","message":"phys_resolve is deprecated — use phys_ingest"})";
+            // Dead code below retained for reference only
             AZStd::string text;
             AZ::u32 maxChars = 0;  // 0 = process entire text
 
@@ -721,12 +589,6 @@ namespace HCPEngine
             if (!pipeline.IsInitialized())
             {
                 return R"({"status":"error","message":"Particle pipeline not initialized"})";
-            }
-
-            const HCPBondTable& charWordBonds = m_engine->GetCharWordBonds();
-            if (charWordBonds.PairCount() == 0)
-            {
-                return R"({"status":"error","message":"No char->word bond table loaded"})";
             }
 
             // Phase 1: byte→char settlement
@@ -877,8 +739,9 @@ namespace HCPEngine
         {
             AZStd::string text;
             AZStd::string docName;
-            AZStd::string centuryCode = "AB";  // Default: 21st century
-            bool fictionFirst = true;  // Default: fiction entities have priority
+            AZStd::string centuryCode = "AB";
+            bool fictionFirst = true;
+            bool isWorkingDoc = false;
 
             if (doc.HasMember("corpus") && doc["corpus"].IsString())
             {
@@ -898,24 +761,12 @@ namespace HCPEngine
                 ifs.close();
                 text = AZStd::string(stdText.c_str(), stdText.size());
 
-                // Derive doc name from filename if not provided
                 size_t lastSlash = filePath.rfind('/');
-                size_t lastDot = filePath.rfind('.');
+                size_t lastDot   = filePath.rfind('.');
                 if (lastSlash == AZStd::string::npos) lastSlash = 0; else ++lastSlash;
                 if (lastDot == AZStd::string::npos || lastDot <= lastSlash) lastDot = filePath.size();
                 docName = filePath.substr(lastSlash, lastDot - lastSlash);
-
-                // JSON file — route to metadata interpreter, not physics pipeline
-                if (lastDot < filePath.size() && filePath.substr(lastDot) == ".json")
-                {
-                    AZStd::string catalog = "gutenberg";
-                    if (doc.HasMember("catalog") && doc["catalog"].IsString())
-                        catalog = AZStd::string(doc["catalog"].GetString(), doc["catalog"].GetStringLength());
-                    AZStd::string cent = centuryCode;
-                    if (doc.HasMember("century") && doc["century"].IsString())
-                        cent = AZStd::string(doc["century"].GetString(), doc["century"].GetStringLength());
-                    return DispatchJsonFile(text, catalog, cent, m_engine);
-                }
+                isWorkingDoc = (lastDot < filePath.size() && filePath.substr(lastDot) == ".json");
             }
             else if (doc.HasMember("text") && doc["text"].IsString())
             {
@@ -930,11 +781,8 @@ namespace HCPEngine
                 docName = AZStd::string(doc["name"].GetString(), doc["name"].GetStringLength());
             if (doc.HasMember("century") && doc["century"].IsString())
                 centuryCode = AZStd::string(doc["century"].GetString(), doc["century"].GetStringLength());
+            if (docName.empty()) docName = "untitled";
 
-            if (docName.empty())
-                docName = "untitled";
-
-            // Optional stub lookup: if caller provides catalog+catalog_id, check for pre-staged stub
             AZStd::string ingestCatalog;
             AZStd::string ingestCatalogId;
             if (doc.HasMember("catalog") && doc["catalog"].IsString())
@@ -942,161 +790,63 @@ namespace HCPEngine
             if (doc.HasMember("catalog_id") && doc["catalog_id"].IsString())
                 ingestCatalogId = AZStd::string(doc["catalog_id"].GetString(), doc["catalog_id"].GetStringLength());
 
-            // Check prerequisites
-            HCPParticlePipeline& pipeline = m_engine->GetParticlePipeline();
-            if (!pipeline.IsInitialized())
-                return R"({"status":"error","message":"Particle pipeline not initialized"})";
+            PhysIngestResult pir = PhysIngestText(
+                text, docName, centuryCode,
+                ingestCatalog, ingestCatalogId,
+                fictionFirst, isWorkingDoc, m_engine);
 
-            const HCPBondTable& charWordBonds = m_engine->GetCharWordBonds();
-            if (charWordBonds.PairCount() == 0)
-                return R"({"status":"error","message":"No char->word bond table loaded"})";
+            if (!pir.errorMessage.empty())
+                return R"({"status":"error","message":")" + pir.errorMessage + R"("})";
 
-            BedManager& bedManager = m_engine->GetBedManager();
-            if (!bedManager.IsInitialized())
-                return R"({"status":"error","message":"BedManager not initialized"})";
-
-            HCPDbConnection& dbConn = m_engine->GetDbConnection();
-            if (!dbConn.IsConnected()) dbConn.Connect();
-            if (!dbConn.IsConnected())
-                return R"({"status":"error","message":"No database connection"})";
-            HCPPbmWriter& pbmWriter = m_engine->GetPbmWriter();
-
-            fprintf(stderr, "[phys_ingest] Starting: '%s' (%zu bytes)\n",
-                docName.c_str(), text.size());
-            fflush(stderr);
-
-            // Phase 1: byte→char settlement
-            SuperpositionTrialResult phase1 = RunSuperpositionTrial(
-                pipeline.GetPhysics(), pipeline.GetScene(), pipeline.GetCuda(),
-                text, m_engine->GetVocabulary(), 0);
-
-            fprintf(stderr, "[phys_ingest] Phase 1: %u/%u settled (%.1f%%) in %.1f ms\n",
-                phase1.settledCount, phase1.totalCodepoints,
-                phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
-                phase1.simulationTimeMs);
-            fflush(stderr);
-
-            // Extract runs
-            AZStd::vector<CharRun> runs = ExtractRunsFromCollapses(phase1);
-            if (runs.empty())
-                return R"({"status":"error","message":"No runs from Phase 1"})";
-
-            // Phase 2: word resolution
-            ResolutionManifest manifest = bedManager.Resolve(runs);
-
-            fprintf(stderr, "[phys_ingest] Phase 2: %u/%u resolved (%.1f%%) in %.1f ms\n",
-                manifest.resolvedRuns, manifest.totalRuns,
-                manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f,
-                manifest.totalTimeMs);
-            fflush(stderr);
-
-            // Entity annotation: multi-word entity recognition
-            auto& entityAnnotator = m_engine->GetEntityAnnotator();
-            if (entityAnnotator.IsInitialized())
-            {
-                entityAnnotator.AnnotateManifest(manifest, fictionFirst);
-            }
-
-            // Scanner: manifest → bonds + positions (single pass)
-            ManifestScanResult scan = ScanManifestToPBM(manifest);
-
-            // Build PBMData for StorePBM
-            PBMData pbmData;
-            pbmData.bonds = AZStd::move(scan.bonds);
-            pbmData.firstFpbA = scan.firstFpbA;
-            pbmData.firstFpbB = scan.firstFpbB;
-            pbmData.totalPairs = scan.totalPairs;
-            pbmData.uniqueTokens = scan.uniqueTokens;
-
-            // Store PBM — use existing stub if one was pre-staged by a JSON metadata file
-            AZStd::string docId;
-            bool usedStub = false;
-            if (!ingestCatalog.empty() && !ingestCatalogId.empty())
-            {
-                int stubPk = m_engine->GetDocumentQuery().GetDocPkByCatalogId(
-                    ingestCatalog, ingestCatalogId);
-                if (stubPk != 0)
-                {
-                    docId = pbmWriter.FillPBMData(stubPk, pbmData);
-                    usedStub = true;
-                }
-            }
-            if (docId.empty() && !usedStub)
-                docId = pbmWriter.StorePBM(docName, centuryCode, pbmData);
-            if (docId.empty())
-                return R"({"status":"error","message":"StorePBM/FillPBMData failed"})";
-
-            // Store positions (with positional modifiers)
-            int docPk = pbmWriter.LastDocPk();
-            bool posOk = pbmWriter.StorePositions(
-                docPk, scan.tokenIds, scan.positions,
-                scan.totalSlots, scan.modifiers);
-
-            // Attach metadata if provided inline
-            int metaKnown = 0, metaUnreviewed = 0;
-            bool metaProvenance = false;
-            if (doc.HasMember("metadata") && doc["metadata"].IsString())
-            {
-                AZStd::string metaJson(doc["metadata"].GetString(),
-                                       doc["metadata"].GetStringLength());
-                AZStd::string catalog = ingestCatalog.empty() ? "unknown" : ingestCatalog;
-                HCPDocumentQuery& docQuery = m_engine->GetDocumentQuery();
-                JsonInterpretResult jResult = ProcessJsonMetadata(
-                    metaJson, docPk, catalog, docQuery, m_engine->GetVocabulary());
-                metaKnown = jResult.knownFields;
-                metaUnreviewed = jResult.unreviewedFields;
-                metaProvenance = jResult.provenanceStored;
-            }
-
-            // Build response
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
             w.StartObject();
             w.Key("status"); w.String("ok");
-            w.Key("doc_id"); w.String(docId.c_str());
-            w.Key("doc_pk"); w.Int(docPk);
-            w.Key("doc_name"); w.String(docName.c_str());
-            if (usedStub) { w.Key("stub_filled"); w.Bool(true); }
-            w.Key("phase1_settled"); w.Uint(phase1.settledCount);
-            w.Key("phase1_total"); w.Uint(phase1.totalCodepoints);
-            w.Key("phase1_time_ms"); w.Double(static_cast<double>(phase1.simulationTimeMs));
-            w.Key("total_runs"); w.Uint(manifest.totalRuns);
-            w.Key("resolved"); w.Uint(manifest.resolvedRuns);
-            w.Key("unresolved"); w.Uint(manifest.unresolvedRuns);
-            w.Key("resolve_time_ms"); w.Double(static_cast<double>(manifest.totalTimeMs));
-            w.Key("bond_types"); w.Uint64(pbmData.bonds.size());
-            w.Key("total_pairs"); w.Uint64(scan.totalPairs);
-            w.Key("unique_tokens"); w.Uint64(scan.uniqueTokens);
-            w.Key("total_slots"); w.Int(scan.totalSlots);
-            w.Key("positions_stored"); w.Bool(posOk);
-            w.Key("entity_annotations"); w.Uint64(scan.entityAnnotations);
-            if (metaKnown > 0 || metaUnreviewed > 0)
+            w.Key("phase1_settled"); w.Uint(pir.phase1Settled);
+            w.Key("phase1_total");   w.Uint(pir.phase1Total);
+            w.Key("phase1_time_ms"); w.Double(static_cast<double>(pir.phase1TimeMs));
+            w.Key("total_runs");     w.Uint(pir.totalRuns);
+            w.Key("resolved");       w.Uint(pir.resolved);
+            w.Key("unresolved");     w.Uint(pir.unresolved);
+            if (pir.isWorkingDoc)
             {
-                w.Key("meta_known"); w.Int(metaKnown);
-                w.Key("meta_unreviewed"); w.Int(metaUnreviewed);
-                w.Key("meta_provenance"); w.Bool(metaProvenance);
+                w.Key("mode");           w.String("working_doc");
+                w.Key("working_doc_id"); w.Int(pir.workingDocId);
+                w.Key("doc_name");       w.String(docName.c_str());
+            }
+            else
+            {
+                w.Key("doc_id");          w.String(pir.docId.c_str());
+                w.Key("doc_pk");          w.Int(pir.docPk);
+                w.Key("doc_name");        w.String(docName.c_str());
+                if (pir.usedStub) { w.Key("stub_filled"); w.Bool(true); }
+                w.Key("resolve_time_ms"); w.Double(static_cast<double>(pir.resolveTimeMs));
+                w.Key("bond_types");      w.Uint64(pir.bondTypes);
+                w.Key("total_pairs");     w.Uint64(pir.totalPairs);
+                w.Key("unique_tokens");   w.Uint64(pir.uniqueTokens);
+                w.Key("total_slots");     w.Int(pir.totalSlots);
+                w.Key("positions_stored"); w.Bool(pir.positionsStored);
+                w.Key("entity_annotations"); w.Uint64(pir.entityAnnotations);
             }
             w.EndObject();
-
-            fprintf(stderr, "[phys_ingest] Complete: %s → %zu bond types, %zu total pairs, %d positions\n",
-                docId.c_str(), pbmData.bonds.size(), scan.totalPairs, scan.totalSlots);
-            fflush(stderr);
-
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 
         // ---- activate_envelope ----
         if (strcmp(action, "activate_envelope") == 0)
         {
-            if (!doc.HasMember("name") || !doc["name"].IsString())
+            // Accept both "name" and "envelope" as the key for the envelope name.
+            const char* nameKey = doc.HasMember("name") ? "name" : "envelope";
+            if (!doc.HasMember(nameKey) || !doc[nameKey].IsString())
             {
-                return R"({"status":"error","message":"Missing 'name' field"})";
+                return R"({"status":"error","message":"Missing 'name' or 'envelope' field"})";
             }
 
-            AZStd::string name(doc["name"].GetString(), doc["name"].GetStringLength());
+            AZStd::string name(doc[nameKey].GetString(), doc[nameKey].GetStringLength());
 
             HCPEnvelopeManager& envMgr = m_engine->GetEnvelopeManager();
             EnvelopeActivation result = envMgr.ActivateEnvelope(name);
+            m_engine->GetBedManager().RebuildVocab();
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
@@ -1127,6 +877,50 @@ namespace HCPEngine
             w.Key("status"); w.String("ok");
             w.Key("envelope"); w.String(name.c_str());
             w.Key("deactivated"); w.Bool(true);
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
+        // ---- run_gutenberg ----
+        if (strcmp(action, "run_gutenberg") == 0)
+        {
+            if (!doc.HasMember("working_doc_id") || !doc["working_doc_id"].IsInt())
+                return R"({"status":"error","message":"Missing 'working_doc_id'"})";
+            if (!doc.HasMember("texts_dir") || !doc["texts_dir"].IsString())
+                return R"({"status":"error","message":"Missing 'texts_dir'"})";
+
+            int workingDocId = doc["working_doc_id"].GetInt();
+            AZStd::string textsDir(doc["texts_dir"].GetString(), doc["texts_dir"].GetStringLength());
+            AZStd::string centuryCode = "AB";
+            bool fictionFirst = true;
+
+            if (doc.HasMember("century") && doc["century"].IsString())
+                centuryCode = AZStd::string(doc["century"].GetString(), doc["century"].GetStringLength());
+            if (doc.HasMember("corpus") && doc["corpus"].IsString())
+            {
+                AZStd::string corpus(doc["corpus"].GetString(), doc["corpus"].GetStringLength());
+                if (corpus == "nonfiction" || corpus == "nf") fictionFirst = false;
+            }
+
+            GutenbergRunResult runResult = RunGutenbergTexts(
+                workingDocId, textsDir, centuryCode, fictionFirst,
+                m_engine, m_engine->GetVarConn());
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status");    w.String(runResult.failed > 0 && runResult.succeeded == 0 ? "error" : "ok");
+            w.Key("processed"); w.Int(runResult.processed);
+            w.Key("succeeded"); w.Int(runResult.succeeded);
+            w.Key("failed");    w.Int(runResult.failed);
+            w.Key("skipped");   w.Int(runResult.skipped);
+            if (!runResult.errors.empty())
+            {
+                w.Key("errors");
+                w.StartArray();
+                for (const auto& e : runResult.errors) w.String(e.c_str());
+                w.EndArray();
+            }
             w.EndObject();
             return AZStd::string(sb.GetString(), sb.GetSize());
         }

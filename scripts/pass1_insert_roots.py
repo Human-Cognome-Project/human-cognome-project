@@ -178,7 +178,7 @@ def load_bucket_state(conn) -> dict[tuple, int]:
         cur.execute("""
             SELECT p3, p4, p2, MAX(p5) AS max_p5
             FROM tokens
-            WHERE ns = 'AB' AND p2 IN ('AA', 'AB')
+            WHERE ns = 'AB'
             GROUP BY p3, p4, p2
         """)
         for p3, p4, p2, max_p5 in cur.fetchall():
@@ -189,25 +189,21 @@ def alloc_p5(state: dict, p3: str, p4: str) -> tuple[str, str]:
     """
     Allocate next p5 for (p3, p4) bucket.
     Returns (p5_str, p2_str). Advances counter.
-    Uses p2='AA' (standard). At 2500+, promotes to p2='AB' (overflow).
+    Uses p2='AA' first (2500 slots), then 'AB', 'AC', 'AD', ... as needed.
+    p2 overflow index = encode_pair(block) where block = global_seq // 2500.
     """
-    key_aa = (p3, p4, 'AA')
-    key_ab = (p3, p4, 'AB')
-
-    seq = state.get(key_aa, 0)
-    if seq < 2500:
-        p5 = encode_pair(seq)
-        state[key_aa] = seq + 1
-        if seq >= 2400:
-            logging.warning(f"Bucket ({p3},{p4}) p2=AA nearing limit: {seq+1}/2500")
-        return p5, 'AA'
-
-    # Overflow
-    seq2 = state.get(key_ab, 0)
-    p5 = encode_pair(seq2)
-    state[key_ab] = seq2 + 1
-    logging.warning(f"OVERFLOW bucket ({p3},{p4}): using p2=AB seq={seq2}")
-    return p5, 'AB'
+    block = 0
+    while True:
+        p2 = encode_pair(block)
+        key = (p3, p4, p2)
+        seq = state.get(key, 0)
+        if seq < 2500:
+            p5 = encode_pair(seq)
+            state[key] = seq + 1
+            if block > 0:
+                logging.warning(f"OVERFLOW bucket ({p3},{p4}): using p2={p2} seq={seq}")
+            return p5, p2
+        block += 1
 
 # ---------------------------------------------------------------------------
 # DB insertion

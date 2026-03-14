@@ -251,6 +251,17 @@ namespace HCPEngine
 
             if (stripRight <= stripLeft)
             {
+                // Pure-punct run (e.g. bare "-" list marker) — emit each char as SingleChar
+                // so punctuation-only tokens (dashes, bullets) aren't silently dropped.
+                for (AZ::u32 ci = 0; ci < static_cast<AZ::u32>(currentCodepoints.size()); ++ci)
+                {
+                    CharRun pr;
+                    AppendCodepointAsUtf8(pr.text, currentCodepoints[ci]);
+                    pr.startPos = currentStart + ci;
+                    pr.length   = 1;
+                    pr.tag      = RunTag::SingleChar;
+                    runs.push_back(pr);
+                }
                 inRun = false;
                 currentCodepoints.clear();
                 return;
@@ -417,8 +428,8 @@ namespace HCPEngine
                 FlushRun();
 
                 // Track consecutive newlines for paragraph-break detection.
-                // Two or more \n (with optional whitespace between) → emit one Newline run.
-                if (cp == '\n' || cp == '\r')
+                // Two or more \n → emit one Newline run. \r ignored (CRLF: \r\n counts as one \n).
+                if (cp == '\n')
                 {
                     ++consecutiveNewlines;
                     if (consecutiveNewlines >= 2 && !paragraphBreakEmitted)
@@ -436,7 +447,25 @@ namespace HCPEngine
                 continue;
             }
 
-            // Non-word codepoint → run boundary (em-dashes, smart quotes, etc.)
+            // Unicode em-dash (U+2014) and en-dash (U+2013) → word boundary + single '-' token.
+            // These are typographic dashes; emit as a hyphen for reconstruction.
+            if (cp == 0x2014 || cp == 0x2013)
+            {
+                boundaryCodepoint = cp;
+                FlushRun();
+                consecutiveNewlines  = 0;
+                paragraphBreakEmitted = false;
+                lastPrecedingCodepoint = cp;
+                CharRun dashRun;
+                dashRun.text     = "-";
+                dashRun.startPos = collapse.streamPos;
+                dashRun.length   = 1;
+                dashRun.tag      = RunTag::SingleChar;
+                runs.push_back(dashRun);
+                continue;
+            }
+
+            // Non-word codepoint → run boundary (smart quotes, etc.)
             // Only ASCII letters, digits, hyphen, and apostrophe continue runs.
             if (!IsWordCodepoint(cp))
             {
@@ -470,18 +499,20 @@ namespace HCPEngine
                 currentCodepoints.clear();
             }
 
-            // Detect double-hyphen (Gutenberg em/en-dash) — split and emit emdash Word run.
+            // Detect double-hyphen (Gutenberg em/en-dash) → two '-' SingleChar tokens.
+            // "--" is Gutenberg's encoding of an em dash; emit two hyphens for reconstruction.
             if (cp == '-' && !currentCodepoints.empty() && currentCodepoints.back() == '-')
             {
                 currentCodepoints.pop_back();  // Remove the pending '-'
                 boundaryCodepoint = '-';
                 FlushRun();
-                CharRun dashRun;
-                dashRun.text = "emdash";
-                dashRun.startPos = collapse.streamPos > 0 ? collapse.streamPos - 1 : 0;
-                dashRun.length = 2;
-                dashRun.tag = RunTag::Word;
-                runs.push_back(dashRun);
+                CharRun h1, h2;
+                h1.text = "-"; h1.startPos = collapse.streamPos > 0 ? collapse.streamPos - 1 : 0;
+                h1.length = 1; h1.tag = RunTag::SingleChar;
+                h2.text = "-"; h2.startPos = collapse.streamPos;
+                h2.length = 1; h2.tag = RunTag::SingleChar;
+                runs.push_back(h1);
+                runs.push_back(h2);
                 lastPrecedingCodepoint = '-';
                 consecutiveNewlines = 0;
                 paragraphBreakEmitted = false;

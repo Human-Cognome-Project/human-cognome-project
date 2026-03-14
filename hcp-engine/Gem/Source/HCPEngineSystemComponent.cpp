@@ -11,6 +11,7 @@
 #include "HCPVocabBed.h"
 
 #include <AzCore/std/sort.h>
+#include <libpq-fe.h>
 #include <fstream>
 #include <chrono>
 #include <cstdio>
@@ -284,11 +285,17 @@ namespace HCPEngine
 
         // Initialize envelope manager for LMDB cache lifecycle
         {
-            const char* coreConnStr = "host=localhost dbname=hcp_core user=hcp password=hcp_dev";
+            const char* coreConnStr = "host=localhost dbname=hcp_envelope user=hcp password=hcp_dev";
             if (m_envelopeManager.Initialize(m_vocabulary.GetLmdbEnv(), coreConnStr))
             {
                 fprintf(stderr, "[HCPEngine] Envelope manager initialized\n");
                 fflush(stderr);
+
+                // Load inflection rules from hcp_english and wire into BedManager.
+                // dbName is flaggable — defaults to "hcp_english" for English shard.
+                auto rules = m_envelopeManager.LoadInflectionRules("hcp_english");
+                if (!rules.empty())
+                    m_bedManager.SetInflectionRules(AZStd::move(rules));
             }
         }
 
@@ -296,6 +303,21 @@ namespace HCPEngine
         if (m_vocabulary.GetLmdbEnv())
         {
             m_entityAnnotator.Initialize(m_vocabulary.GetLmdbEnv());
+        }
+
+        // Connect to hcp_var — personal vars / working document store
+        m_varConn = PQconnectdb("host=localhost dbname=hcp_var user=hcp password=hcp_dev");
+        if (PQstatus(m_varConn) != CONNECTION_OK)
+        {
+            fprintf(stderr, "[HCPEngine] WARNING: hcp_var connection failed: %s\n", PQerrorMessage(m_varConn));
+            fflush(stderr);
+            PQfinish(m_varConn);
+            m_varConn = nullptr;
+        }
+        else
+        {
+            fprintf(stderr, "[HCPEngine] hcp_var connected\n");
+            fflush(stderr);
         }
 
         // Start socket server — API for ingestion and retrieval
@@ -324,8 +346,32 @@ namespace HCPEngine
         m_bedManager.Shutdown();
         m_resolver.Shutdown();
         m_dbConn.Disconnect();
+        if (m_varConn) { PQfinish(m_varConn); m_varConn = nullptr; }
         m_particlePipeline.Shutdown();
         HCPEngineRequestBus::Handler::BusDisconnect();
+    }
+
+    int HCPEngineSystemComponent::StoreWorkingDoc(
+        const AZStd::string& name,
+        const AZStd::string& rawJson,
+        const AZStd::string& resolvedJson)
+    {
+        if (!m_varConn || PQstatus(m_varConn) != CONNECTION_OK) return 0;
+
+        const char* params[3] = { name.c_str(), rawJson.c_str(), resolvedJson.c_str() };
+        PGresult* res = PQexecParams(m_varConn,
+            "INSERT INTO working_docs (name, raw_content, resolved) "
+            "VALUES ($1, $2::jsonb, $3::jsonb) RETURNING id",
+            3, nullptr, params, nullptr, nullptr, 0);
+
+        int id = 0;
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            id = atoi(PQgetvalue(res, 0, 0));
+        else
+            fprintf(stderr, "[HCPEngine] StoreWorkingDoc failed: %s\n", PQerrorMessage(m_varConn));
+
+        PQclear(res);
+        return id;
     }
 
     bool HCPEngineSystemComponent::IsReady() const
@@ -354,18 +400,19 @@ namespace HCPEngine
         }
 
         // Load positions — direct reconstruction from positional tree
-        AZStd::vector<AZStd::string> tokenIds = m_pbmReader.LoadPositions(docId);
-        if (tokenIds.empty())
+        AZStd::vector<AZStd::string> words;
+        AZStd::vector<AZ::u32> modifiers;
+        if (!m_pbmReader.LoadPositionsWithModifiers(docId, m_vocabulary, words, modifiers) || words.empty())
         {
             AZLOG_ERROR("HCPEngine: Failed to load positions for %s", docId.c_str());
             return {};
         }
 
-        // Convert token IDs to text with stickiness rules
-        AZStd::string text = TokenIdsToText(tokenIds, m_vocabulary);
+        // Reconstruct text from pre-resolved words
+        AZStd::string text = TokenIdsToText(words, &modifiers);
 
-        AZLOG_INFO("HCPEngine: Reassembled %zu tokens → %zu chars",
-            tokenIds.size(), text.size());
+        AZLOG_INFO("HCPEngine: Reassembled %zu words → %zu chars",
+            words.size(), text.size());
         return text;
     }
 
@@ -392,21 +439,22 @@ namespace HCPEngine
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        AZStd::vector<AZStd::string> tokenIds = m_pbmReader.LoadPositions(docId);
-        if (tokenIds.empty())
+        AZStd::vector<AZStd::string> words;
+        AZStd::vector<AZ::u32> modifiers;
+        if (!m_pbmReader.LoadPositionsWithModifiers(docId, m_vocabulary, words, modifiers) || words.empty())
         {
             fprintf(stderr, "[source_decode] ERROR: Document not found or no positions: %s\n", docId.c_str());
             fflush(stderr);
             return;
         }
 
-        AZStd::string text = TokenIdsToText(tokenIds, m_vocabulary);
+        AZStd::string text = TokenIdsToText(words, &modifiers);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
 
-        fprintf(stderr, "[source_decode] %s -> %zu tokens -> %zu chars (%.1f ms)\n",
-            docId.c_str(), tokenIds.size(), text.size(), ms);
+        fprintf(stderr, "[source_decode] %s -> %zu words -> %zu chars (%.1f ms)\n",
+            docId.c_str(), words.size(), text.size(), ms);
         fflush(stderr);
 
         // Output decoded text to stdout
@@ -713,13 +761,6 @@ namespace HCPEngine
         if (!m_particlePipeline.IsInitialized())
         {
             fprintf(stderr, "[source_phys_word_resolve] ERROR: Particle pipeline not initialized\n");
-            fflush(stderr);
-            return;
-        }
-
-        if (m_charWordBonds.PairCount() == 0)
-        {
-            fprintf(stderr, "[source_phys_word_resolve] ERROR: No char->word bond table loaded\n");
             fflush(stderr);
             return;
         }

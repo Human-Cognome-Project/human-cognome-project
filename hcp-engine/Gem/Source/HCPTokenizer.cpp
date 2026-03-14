@@ -848,80 +848,42 @@ namespace HCPEngine
     }
 
     AZStd::string TokenIdsToText(
-        const AZStd::vector<AZStd::string>& tokenIds,
-        const HCPVocabulary& vocab,
+        const AZStd::vector<AZStd::string>& words,
         const AZStd::vector<AZ::u32>* modifiers)
     {
         AZStd::string result;
         bool capitalizeNext = true;  // Start of document — capitalize first word
 
-        for (size_t i = 0; i < tokenIds.size(); ++i)
+        for (size_t i = 0; i < words.size(); ++i)
         {
-            const auto& tid = tokenIds[i];
+            AZStd::string text = words[i];
+            if (text.empty()) continue;
+
             const AZ::u32 modifier = (modifiers && i < modifiers->size()) ? (*modifiers)[i] : 0;
 
-            if (tid == STREAM_START || tid == STREAM_END) continue;
-
-            // Var tokens: VAR_REQUEST + " " + surface form — extract the surface directly
-            if (tid.starts_with(VAR_REQUEST) && tid.size() > strlen(VAR_REQUEST) + 1
-                && tid[strlen(VAR_REQUEST)] == ' ')
-            {
-                AZStd::string surface(tid.data() + strlen(VAR_REQUEST) + 1,
-                                      tid.size() - strlen(VAR_REQUEST) - 1);
-                bool needsSpace = !result.empty();
-                if (needsSpace)
-                {
-                    char lastChar = result.back();
-                    if (lastChar == '(' || lastChar == '[' || lastChar == '{' ||
-                        lastChar == '"' || lastChar == '\'' ||
-                        lastChar == '\n' || lastChar == '\t' || lastChar == '\f')
-                        needsSpace = false;
-                    if (result.size() >= 3)
-                    {
-                        auto s = result.size();
-                        unsigned char b0 = result[s-3], b1 = result[s-2], b2 = result[s-1];
-                        if (b0 == 0xE2 && b1 == 0x80 && (b2 == 0x94 || b2 == 0x93))
-                            needsSpace = false;
-                    }
-                }
-                if (needsSpace) result += ' ';
-                {
-                    bool modFirstCap = (modifier & 1) != 0;
-                    bool modAllCaps  = (modifier & 2) != 0;
-                    if (modAllCaps && !surface.empty())
-                    {
-                        for (char& ch : surface)
-                            ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
-                        capitalizeNext = false;
-                    }
-                    else if ((modFirstCap || capitalizeNext) && !surface.empty())
-                    {
-                        surface[0] = static_cast<char>(toupper(static_cast<unsigned char>(surface[0])));
-                        capitalizeNext = false;
-                    }
-                }
-                result += surface;
-                continue;
-            }
-
-            AZStd::string text;
-            char c = vocab.TokenToChar(tid);
+            // Determine token character class from resolved word content.
+            // Single-char strings are punctuation/control; multi-char are words.
+            char c = (text.size() == 1) ? text[0] : '\0';
             bool isDash = false;
             bool isControl = false;
+
             if (c != '\0')
             {
-                // Newline token represents a paragraph break — render as \n\n for visual separation
+                // Newline token = paragraph break. Source double-\n collapsed to single \n.
+                // Single \n in source is whitespace (space), not a paragraph break.
                 if (c == '\n')
+                {
                     text = "\n\n";
+                    isControl = true;
+                }
                 else
-                    text = AZStd::string(1, c);
-                isControl = (c == '\n' || c == '\t' || c == '\f');
+                {
+                    isControl = (c == '\t' || c == '\f');
+                }
             }
             else
             {
-                text = vocab.TokenToWord(tid);
-
-                // Em/en-dash are stored as words but render as Unicode punctuation
+                // Em/en-dash: stored as words, render as Unicode
                 if (text == "emdash")
                 {
                     text = "\xe2\x80\x94";  // U+2014 —
@@ -934,23 +896,15 @@ namespace HCPEngine
                 }
             }
 
-            if (text.empty()) continue;
-
             bool needsSpace = !result.empty();
 
-            // Control characters — no space before them, they ARE the formatting
             if (needsSpace && isControl)
-            {
                 needsSpace = false;
-            }
 
-            // Em/en-dashes attach directly (no spaces)
             if (needsSpace && isDash)
-            {
                 needsSpace = false;
-            }
 
-            // Closing/trailing punctuation sticks to preceding token
+            // Closing punctuation sticks to preceding token
             if (needsSpace && c != '\0' && !isControl)
             {
                 if (c == '.' || c == ',' || c == ';' || c == ':' ||
@@ -961,7 +915,7 @@ namespace HCPEngine
                 }
             }
 
-            // Opening punctuation / control chars stick to what follows
+            // Opening punctuation / post-newline: no space before following token
             if (needsSpace && !result.empty())
             {
                 char lastChar = result.back();
@@ -971,23 +925,21 @@ namespace HCPEngine
                 {
                     needsSpace = false;
                 }
-                // After em/en-dash (3-byte UTF-8), no space before next word
+                // After em/en-dash (3-byte UTF-8 sequence)
                 if (result.size() >= 3)
                 {
                     auto s = result.size();
                     unsigned char b0 = result[s-3], b1 = result[s-2], b2 = result[s-1];
                     if (b0 == 0xE2 && b1 == 0x80 && (b2 == 0x94 || b2 == 0x93))
-                    {
                         needsSpace = false;
-                    }
                 }
             }
 
             if (needsSpace) result += ' ';
 
-            // Capitalization: apply stored modifier bits (Labels, intrinsic caps like "I"),
-            // falling back to positional capitalization (sentence/paragraph boundary).
-            if (!text.empty() && c == '\0')  // word tokens only (not punctuation chars)
+            // Capitalization: word tokens and single-char alphabetic tokens (e.g. "I", "a")
+            // Skip punctuation chars (non-alpha single chars).
+            if (!text.empty() && (c == '\0' || isalpha(static_cast<unsigned char>(c))))
             {
                 bool modFirstCap = (modifier & 1) != 0;
                 bool modAllCaps  = (modifier & 2) != 0;
@@ -1004,17 +956,9 @@ namespace HCPEngine
                 }
             }
 
-            // Sentence-ending punctuation triggers capitalize on next word
-            if (c == '.' || c == '!' || c == '?')
-            {
+            // Sentence-ending punct and paragraph breaks trigger next-word capitalize
+            if (c == '.' || c == '!' || c == '?' || c == '\n')
                 capitalizeNext = true;
-            }
-
-            // Newline token = paragraph break → next word is a sentence start
-            if (c == '\n')
-            {
-                capitalizeNext = true;
-            }
 
             result += text;
         }

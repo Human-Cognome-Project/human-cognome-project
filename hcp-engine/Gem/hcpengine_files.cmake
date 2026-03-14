@@ -18,8 +18,6 @@ set(FILES
     Source/HCPBondCompiler.h
     Source/HCPCacheMissResolver.cpp
     Source/HCPCacheMissResolver.h
-    Source/HCPJsonInterpreter.cpp
-    Source/HCPJsonInterpreter.h
     Source/HCPSuperpositionTrial.cpp
     Source/HCPSuperpositionTrial.h
     Source/HCPWordSuperpositionTrial.cpp
@@ -38,6 +36,10 @@ set(FILES
     Source/HCPPbmWriter.h
     Source/HCPPbmReader.cpp
     Source/HCPPbmReader.h
+    Source/HCPPhysIngest.cpp
+    Source/HCPPhysIngest.h
+    Source/HCPGutenbergRunner.cpp
+    Source/HCPGutenbergRunner.h
     Source/HCPDocumentQuery.cpp
     Source/HCPDocumentQuery.h
     Source/HCPDocVarQuery.cpp

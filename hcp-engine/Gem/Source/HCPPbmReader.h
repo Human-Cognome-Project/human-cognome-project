@@ -2,6 +2,7 @@
 
 #include "HCPDbConnection.h"
 #include "HCPParticlePipeline.h"
+#include "HCPVocabulary.h"
 #include <AzCore/base.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -19,18 +20,22 @@ namespace HCPEngine
         //! Reconstructs PBMData from pbm_starters and bond subtables.
         PBMData LoadPBM(const AZStd::string& docId);
 
-        //! Load a document's positional token sequence with per-position modifier bits.
-        //! Decodes base-50 positions, resolves var starters, sorts by position.
-        //! Fills tokenIds and modifiers as parallel vectors (same index = same position).
+        //! Load a document's positional token sequence, pre-resolved to words.
+        //!
+        //! Each unique token (starter row) is resolved to its word string ONCE,
+        //! then placed at every position from its packed position list.
+        //! Result is a position-sorted parallel pair of pre-resolved words and
+        //! per-position modifier bits — no further vocab lookup needed.
+        //!
+        //! Tokens that cannot be resolved (stream markers, unknown IDs) are
+        //! silently dropped.  Var tokens are resolved to their surface form.
+        //!
         //! modifier encoding: bit0=firstCap, bit1=allCaps, bits2+=morphBits.
         //! @return true on success, false if document not found
         bool LoadPositionsWithModifiers(const AZStd::string& docId,
-                                        AZStd::vector<AZStd::string>& tokenIds,
+                                        const HCPVocabulary& vocab,
+                                        AZStd::vector<AZStd::string>& words,
                                         AZStd::vector<AZ::u32>& modifiers);
-
-        //! Convenience wrapper — loads token IDs only (discards modifiers).
-        //! @return Ordered token IDs (ready for TokenIdsToText), or empty on failure
-        AZStd::vector<AZStd::string> LoadPositions(const AZStd::string& docId);
 
     private:
         HCPDbConnection& m_conn;

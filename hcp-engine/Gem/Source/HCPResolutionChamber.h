@@ -2,11 +2,28 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include "HCPWordSuperpositionTrial.h"  // CharRun
 
 namespace HCPEngine
 {
+    // ---- Inflection rule loaded from hcp_english.inflection_rules ----
+    // Loaded at startup via HCPEnvelopeManager::LoadInflectionRules().
+    // Applied in (morpheme, priority) order during inflection stripping.
+    struct InflectionRule
+    {
+        AZStd::string morpheme;     // 'PAST', 'PROGRESSIVE', 'PLURAL', 'PFX_NEG', etc.
+        int           priority = 0;
+        AZStd::string ruleType;     // 'SUFFIX' (default) or 'PREFIX'
+        AZStd::string condition;    // Regex applied against the candidate base form
+        AZStd::string stripSuffix;  // Suffix rules: suffix removed from base before adding
+        AZStd::string addSuffix;    // Suffix rules: suffix added to base → inflected form
+        AZStd::string stripPrefix;  // Prefix rules: prefix stripped from surface → base
+        AZStd::string addPrefix;    // Prefix rules: prefix prepended to base → surface form
+        AZ::u16       morphBit = 0; // Resolved MorphBit constant (0 for unmapped / prefix rules)
+    };
+
     // ---- Morphological bit field (16-bit) ----
     // Each bit records one inflection/contraction applied during resolution.
     // Stored as positional modifiers alongside token_id — zero for bare tokens.
@@ -42,7 +59,7 @@ namespace HCPEngine
     static constexpr float RC_RUN_X_GAP = 2.0f;
     static constexpr float RC_DT = 1.0f / 60.0f;
     static constexpr int RC_SETTLE_STEPS = 60;
-    static constexpr AZ::u32 RC_VOCAB_PER_PHASE = 2000;  // Vocab entries per phase slice (larger = fewer phases, fewer simulate() rounds)
+    static constexpr AZ::u32 RC_VOCAB_PHASE_FLOOR = 100;  // Minimum vocab entries per phase (floor for dynamic sizing)
 
     //! Tracking slot for a stream run loaded into a workspace buffer.
     struct StreamRunSlot
