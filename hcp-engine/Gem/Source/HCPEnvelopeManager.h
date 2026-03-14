@@ -76,11 +76,24 @@ namespace HCPEngine
 
         //! Activate an envelope:
         //!   1. Evict previous envelope from LMDB + clear warm working set
-        //!   2. Assemble cold → warm (one-shot: run queries against cold shard,
+        //!   2. Clear hot cache (w2t/t2w) — caller feeds initial window via FeedSlice()
+        //!   3. Assemble cold → warm (one-shot: run queries against cold shard,
         //!      write enriched rows into hcp_var.envelope_working_set)
-        //!   3. Flush warm → LMDB (ordered by effective_priority)
-        //! Returns activation stats.
+        //! Returns activation stats (entriesLoaded = warm assembly count, not LMDB).
+        //! After activation, call FeedSlice() to load the initial hot window.
         EnvelopeActivation ActivateEnvelope(const AZStd::string& name);
+
+        //! Feed rows [offset, offset+count) from warm set into LMDB w2t (and t2w).
+        //! Used by BedManager to advance the sliding hot-cache window.
+        //! Returns number of entries written.
+        int FeedSlice(int envelopeId, int offset, int count);
+
+        //! Evict rows [offset, offset+count) from LMDB w2t.
+        //! t2w is NOT evicted — reverse map accumulates across the document for reconstruction.
+        void EvictSlice(int envelopeId, int offset, int count);
+
+        //! Return total rows in warm set for this envelope.
+        int GetWorkingSetSize(int envelopeId);
 
         //! Deactivate: evict LMDB entries and clear warm working set for this envelope.
         void DeactivateEnvelope(const AZStd::string& name);

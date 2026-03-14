@@ -206,9 +206,8 @@ namespace HCPEngine
         fprintf(stderr, "[EnvelopeManager] Assembly complete: %d rows in warm db\n", rowOffset);
         fflush(stderr);
 
-        // Step 2: Drop stale w2t/t2w data before flush.
-        // On cold start, EvictManifest is not called (no prior active envelope).
-        // Drop now to ensure LMDB never serves stale entries from a previous build.
+        // Clear hot cache — w2t and t2w are rebuilt from warm via FeedSlice().
+        // Caller feeds the initial 3-slice window after activation completes.
         {
             MDB_txn* dropTxn = nullptr;
             if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &dropTxn) == 0)
@@ -217,15 +216,12 @@ namespace HCPEngine
                 if (mdb_dbi_open(dropTxn, "w2t", 0, &dbiW2t) == 0) mdb_drop(dropTxn, dbiW2t, 0);
                 if (mdb_dbi_open(dropTxn, "t2w", 0, &dbiT2w) == 0) mdb_drop(dropTxn, dbiT2w, 0);
                 mdb_txn_commit(dropTxn);
-                fprintf(stderr, "[EnvelopeManager] Cleared stale w2t/t2w before rebuild\n");
-                fflush(stderr);
             }
         }
 
-        // Step 3: Flush warm → LMDB (reads warm ordered by effective_priority)
-        int flushed = FlushWorkingSetToLmdb(def.id);
-        activation.entriesLoaded = flushed;
-        RecordManifest(name, "w2t", flushed);
+        // entriesLoaded reflects warm assembly count; LMDB is populated via FeedSlice().
+        activation.entriesLoaded = rowOffset;
+        RecordManifest(name, "w2t", rowOffset);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         activation.loadTimeMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
@@ -243,8 +239,8 @@ namespace HCPEngine
 
         LogActivation(activation, name);
 
-        fprintf(stderr, "[EnvelopeManager] Activated '%s': %d entries in %.1f ms\n",
-            name.c_str(), flushed, activation.loadTimeMs);
+        fprintf(stderr, "[EnvelopeManager] Activated '%s': %d warm rows in %.1f ms\n",
+            name.c_str(), rowOffset, activation.loadTimeMs);
         fflush(stderr);
 
         return activation;
@@ -300,10 +296,7 @@ namespace HCPEngine
             ++count;
         }
 
-        if (rowOffset > 0)
-            FlushWorkingSetToLmdb(def.id);
-
-        fprintf(stderr, "[EnvelopeManager] Prefetch '%s' (%d queries, %d rows)\n",
+        fprintf(stderr, "[EnvelopeManager] Prefetch '%s' (%d queries, %d rows warm)\n",
             envelopeName.c_str(), count, rowOffset);
         fflush(stderr);
     }
@@ -611,6 +604,175 @@ namespace HCPEngine
             dbName, n);
         fflush(stderr);
         return rules;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Hot-cache window management
+    // ---------------------------------------------------------------------------
+
+    int HCPEnvelopeManager::FeedSlice(int envelopeId, int offset, int count)
+    {
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn || !m_lmdbEnv) return 0;
+
+        AZStd::string envIdStr  = AZStd::string::format("%d", envelopeId);
+        AZStd::string offsetStr = AZStd::string::format("%d", offset);
+        AZStd::string countStr  = AZStd::string::format("%d", count);
+        const char* params[] = { envIdStr.c_str(), offsetStr.c_str(), countStr.c_str() };
+
+        PGresult* res = PQexecParams(varConn,
+            "SELECT word, token_id, lmdb_subdb "
+            "FROM envelope_working_set "
+            "WHERE envelope_id = $1 "
+            "ORDER BY lmdb_subdb, word_length, effective_priority "
+            "OFFSET $2 LIMIT $3",
+            3, nullptr, params, nullptr, nullptr, 0);
+
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+            fprintf(stderr, "[EnvelopeManager] FeedSlice query failed: %s\n",
+                PQerrorMessage(varConn));
+            fflush(stderr);
+            PQclear(res);
+            return 0;
+        }
+
+        int nrows = PQntuples(res);
+        if (nrows == 0) { PQclear(res); return 0; }
+
+        MDB_txn* txn = nullptr;
+        if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) != 0) { PQclear(res); return 0; }
+
+        std::string currentSubdb;
+        MDB_dbi dbi    = 0;
+        MDB_dbi dbiT2w = 0;
+        bool t2wOpen   = false;
+        int written    = 0;
+
+        for (int i = 0; i < nrows; ++i)
+        {
+            const char* word    = PQgetvalue(res, i, 0);
+            const char* tokenId = PQgetvalue(res, i, 1);
+            const char* subdb   = PQgetvalue(res, i, 2);
+            int wordLen  = PQgetlength(res, i, 0);
+            int tokenLen = PQgetlength(res, i, 1);
+
+            if (currentSubdb != subdb)
+            {
+                currentSubdb = subdb;
+                if (mdb_dbi_open(txn, subdb, MDB_CREATE, &dbi) != 0) { dbi = 0; continue; }
+                t2wOpen = false;
+                if (currentSubdb == "w2t")
+                    t2wOpen = (mdb_dbi_open(txn, "t2w", MDB_CREATE, &dbiT2w) == 0);
+            }
+
+            if (dbi == 0) continue;
+
+            MDB_val mKey = { static_cast<size_t>(wordLen),  const_cast<char*>(word) };
+            MDB_val mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+
+            if (mdb_put(txn, dbi, &mKey, &mVal, 0) == 0)
+            {
+                ++written;
+                if (t2wOpen)
+                {
+                    MDB_val rKey = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+                    MDB_val rVal = { static_cast<size_t>(wordLen),  const_cast<char*>(word) };
+                    mdb_put(txn, dbiT2w, &rKey, &rVal, MDB_NOOVERWRITE);
+                }
+            }
+        }
+
+        mdb_txn_commit(txn);
+        PQclear(res);
+
+        fprintf(stderr, "[EnvelopeManager] FeedSlice(offset=%d, count=%d): %d written\n",
+            offset, count, written);
+        fflush(stderr);
+        return written;
+    }
+
+    // ---------------------------------------------------------------------------
+    void HCPEnvelopeManager::EvictSlice(int envelopeId, int offset, int count)
+    {
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn || !m_lmdbEnv) return;
+
+        AZStd::string envIdStr  = AZStd::string::format("%d", envelopeId);
+        AZStd::string offsetStr = AZStd::string::format("%d", offset);
+        AZStd::string countStr  = AZStd::string::format("%d", count);
+        const char* params[] = { envIdStr.c_str(), offsetStr.c_str(), countStr.c_str() };
+
+        // Query only word + subdb — t2w is NOT evicted (accumulates for reconstruction).
+        PGresult* res = PQexecParams(varConn,
+            "SELECT word, lmdb_subdb "
+            "FROM envelope_working_set "
+            "WHERE envelope_id = $1 "
+            "ORDER BY lmdb_subdb, word_length, effective_priority "
+            "OFFSET $2 LIMIT $3",
+            3, nullptr, params, nullptr, nullptr, 0);
+
+        if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
+        {
+            PQclear(res);
+            return;
+        }
+
+        int nrows = PQntuples(res);
+
+        MDB_txn* txn = nullptr;
+        if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) != 0) { PQclear(res); return; }
+
+        std::string currentSubdb;
+        MDB_dbi dbi = 0;
+        int evicted = 0;
+
+        for (int i = 0; i < nrows; ++i)
+        {
+            const char* word  = PQgetvalue(res, i, 0);
+            const char* subdb = PQgetvalue(res, i, 1);
+            int wordLen = PQgetlength(res, i, 0);
+
+            if (currentSubdb != subdb)
+            {
+                currentSubdb = subdb;
+                dbi = 0;
+                mdb_dbi_open(txn, subdb, 0, &dbi);
+            }
+
+            if (dbi == 0) continue;
+
+            MDB_val mKey = { static_cast<size_t>(wordLen), const_cast<char*>(word) };
+            if (mdb_del(txn, dbi, &mKey, nullptr) == 0)
+                ++evicted;
+        }
+
+        mdb_txn_commit(txn);
+        PQclear(res);
+
+        fprintf(stderr, "[EnvelopeManager] EvictSlice(offset=%d, count=%d): %d evicted\n",
+            offset, count, evicted);
+        fflush(stderr);
+    }
+
+    // ---------------------------------------------------------------------------
+    int HCPEnvelopeManager::GetWorkingSetSize(int envelopeId)
+    {
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn) return 0;
+
+        AZStd::string envIdStr = AZStd::string::format("%d", envelopeId);
+        const char* params[] = { envIdStr.c_str() };
+
+        PGresult* res = PQexecParams(varConn,
+            "SELECT COUNT(*) FROM envelope_working_set WHERE envelope_id = $1",
+            1, nullptr, params, nullptr, nullptr, 0);
+
+        int count = 0;
+        if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+            count = atoi(PQgetvalue(res, 0, 0));
+        PQclear(res);
+        return count;
     }
 
     // ---------------------------------------------------------------------------

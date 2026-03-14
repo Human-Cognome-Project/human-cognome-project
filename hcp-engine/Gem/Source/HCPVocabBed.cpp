@@ -1397,12 +1397,38 @@ namespace HCPEngine
         return results;
     }
 
+    // ---- Envelope sliding window ----
+
+    void BedManager::InitEnvelopeWindow(int envelopeId, int warmSetSize)
+    {
+        m_envelopeId  = envelopeId;
+        m_sliceCursor = 0;
+        m_warmSetSize = warmSetSize;
+        fprintf(stderr, "[BedManager] Envelope window init: id=%d warm=%d slice=%d\n",
+            envelopeId, warmSetSize, LMDB_SLICE_SIZE);
+        fflush(stderr);
+    }
+
+    void BedManager::AdvanceEnvelopeSlice()
+    {
+        if (!m_envelopeManager || m_envelopeId == 0 || m_warmSetSize == 0) return;
+
+        // The window covers [cursor, cursor + 3*SLICE). Advance by one slot.
+        int nextFeedStart = m_sliceCursor + LMDB_SLICE_SIZE * 3;
+        if (nextFeedStart >= m_warmSetSize) return;  // window at end of warm set
+
+        m_envelopeManager->EvictSlice(m_envelopeId, m_sliceCursor, LMDB_SLICE_SIZE);
+        m_envelopeManager->FeedSlice(m_envelopeId, nextFeedStart, LMDB_SLICE_SIZE);
+        m_sliceCursor += LMDB_SLICE_SIZE;
+
+        RebuildVocab();
+    }
+
     // ---- RebuildVocab: scan w2t and build in-memory vocab index ----
     //
-    // Called at Initialize and after each EnvelopeManager::ActivateEnvelope.
-    // Clears m_vocabByLength and rebuilds from whatever is in w2t at call time.
-    // Entries arrive in LMDB key order (lexicographic); envelope queries should
-    // ORDER BY frequency_rank ASC so common words come first within each length.
+    // Reads whatever entries are currently in the LMDB hot window (w2t).
+    // With the sliding window, this is at most 3 * LMDB_SLICE_SIZE entries.
+    // t2w is maintained by EnvelopeManager::FeedSlice — not rebuilt here.
     void BedManager::RebuildVocab()
     {
         m_vocabByLength.clear();
@@ -1421,25 +1447,17 @@ namespace HCPEngine
             return;
         }
 
-        // Collect all w2t entries for t2w reverse map (no length filter — t2w must be complete).
-        // m_vocabByLength only holds the VBED range used by the physics beds.
-        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> allW2tEntries; // word, tokenId
-
         MDB_val key, val;
         AZ::u32 totalEntries = 0;
         while (mdb_cursor_get(cursor, &key, &val, MDB_NEXT) == 0)
         {
-            AZStd::string word(static_cast<const char*>(key.mv_data), key.mv_size);
-            AZStd::string tokenId(static_cast<const char*>(val.mv_data), val.mv_size);
-            allW2tEntries.emplace_back(word, tokenId);
-
             AZ::u32 len = static_cast<AZ::u32>(key.mv_size);
             if (len < static_cast<AZ::u32>(VBED_MIN_LEN) ||
                 len > static_cast<AZ::u32>(VBED_MAX_LEN)) continue;
 
             VocabPack::Entry e;
-            e.word    = word;
-            e.tokenId = tokenId;
+            e.word    = AZStd::string(static_cast<const char*>(key.mv_data), key.mv_size);
+            e.tokenId = AZStd::string(static_cast<const char*>(val.mv_data), val.mv_size);
             e.tierIndex = 0;  // All common tier — label broadphase wired once envelope has tier data
 
             m_vocabByLength[len].push_back(AZStd::move(e));
@@ -1449,26 +1467,9 @@ namespace HCPEngine
         mdb_cursor_close(cursor);
         mdb_txn_abort(txn);
 
-        // Sync t2w (token→word) from the FULL w2t scan — includes out-of-bed lengths
-        // (e.g. length-1 words "a", "I") needed by TokenToWord() during reconstruction.
-        {
-            MDB_txn* writeTxn = nullptr;
-            if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &writeTxn) == 0)
-            {
-                MDB_dbi t2wDbi;
-                if (mdb_dbi_open(writeTxn, "t2w", MDB_CREATE, &t2wDbi) == 0)
-                {
-                    mdb_drop(writeTxn, t2wDbi, 0);  // Clear stale entries
-                    for (const auto& [w, tid] : allW2tEntries)
-                    {
-                        MDB_val revKey = { tid.size(), const_cast<char*>(tid.data()) };
-                        MDB_val revVal = { w.size(),   const_cast<char*>(w.data()) };
-                        mdb_put(writeTxn, t2wDbi, &revKey, &revVal, 0);
-                    }
-                }
-                mdb_txn_commit(writeTxn);
-            }
-        }
+        // t2w is maintained by EnvelopeManager::FeedSlice (written with MDB_NOOVERWRITE,
+        // accumulates across slices, survives EvictSlice). Do not rebuild t2w here —
+        // that would wipe accumulated reverse-map entries from previous slices.
 
         for (auto& [len, entries] : m_vocabByLength)
         {
@@ -1817,6 +1818,10 @@ namespace HCPEngine
 
         for (AZ::u32 idx : commonRuns)
             unresolvedIndices.push_back(idx);
+
+        // Advance the LMDB hot-cache window: evict oldest slot, feed next slot.
+        // Next ResolveLengthCycle call picks up the updated vocab via RebuildVocab.
+        AdvanceEnvelopeSlice();
     }
 
     ResolutionManifest BedManager::Resolve(const AZStd::vector<CharRun>& inputRuns)

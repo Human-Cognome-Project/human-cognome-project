@@ -271,8 +271,16 @@ namespace HCPEngine
         void SetInflectionRules(AZStd::vector<InflectionRule> rules);
 
         //! Rebuild in-memory vocab index from LMDB w2t.
-        //! Call after EnvelopeManager::ActivateEnvelope() to pick up the new working set.
+        //! Call after FeedSlice() to pick up the new hot window.
         void RebuildVocab();
+
+        //! Record envelope context after activation. Must be called before Resolve().
+        //! envelopeId: from EnvelopeActivation.envelopeId
+        //! warmSetSize: total rows in warm set (from GetWorkingSetSize)
+        void InitEnvelopeWindow(int envelopeId, int warmSetSize);
+
+        //! Entries per LMDB hot-cache slot. 3 slots active at any time = 3 × LMDB_SLICE_SIZE.
+        static constexpr int LMDB_SLICE_SIZE = 5000;
 
         void Shutdown();
 
@@ -357,6 +365,17 @@ namespace HCPEngine
 
         // Label count per word length — zero until label tier is wired to envelope.
         AZStd::unordered_map<AZ::u32, AZ::u32> m_labelCountByLength;
+
+        // Envelope sliding window state.
+        // LMDB hot cache holds [m_sliceCursor, m_sliceCursor + 3*LMDB_SLICE_SIZE) of warm set.
+        // Advances by one slot (LMDB_SLICE_SIZE) after each ResolveLengthCycle.
+        int m_envelopeId   = 0;
+        int m_sliceCursor  = 0;
+        int m_warmSetSize  = 0;
+
+        //! Evict oldest slot, feed next slot, rebuild in-memory vocab.
+        //! Called at the end of each ResolveLengthCycle.
+        void AdvanceEnvelopeSlice();
 
         // Active word lengths (sorted descending)
         AZStd::vector<AZ::u32> m_activeWordLengths;
