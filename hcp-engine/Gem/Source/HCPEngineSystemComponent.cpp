@@ -296,6 +296,20 @@ namespace HCPEngine
                 auto rules = m_envelopeManager.LoadInflectionRules("hcp_english");
                 if (!rules.empty())
                     m_bedManager.SetInflectionRules(AZStd::move(rules));
+
+                // Activate the default English envelope to rebuild LMDB from current
+                // hcp_english. Clears stale w2t data from any previous offline build,
+                // then re-populates from the live DB. RebuildVocab re-indexes after.
+                auto t0 = std::chrono::high_resolution_clock::now();
+                fprintf(stderr, "[HCPEngine] Activating default envelope 'english_vocab_full'...\n");
+                fflush(stderr);
+                EnvelopeActivation act = m_envelopeManager.ActivateEnvelope("english_vocab_full");
+                m_bedManager.RebuildVocab();
+                auto t1 = std::chrono::high_resolution_clock::now();
+                double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+                fprintf(stderr, "[HCPEngine] Envelope activated: %d entries loaded in %.1f ms\n",
+                    act.entriesLoaded, ms);
+                fflush(stderr);
             }
         }
 

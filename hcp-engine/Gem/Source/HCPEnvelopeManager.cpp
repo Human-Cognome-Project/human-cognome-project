@@ -206,7 +206,23 @@ namespace HCPEngine
         fprintf(stderr, "[EnvelopeManager] Assembly complete: %d rows in warm db\n", rowOffset);
         fflush(stderr);
 
-        // Step 2: Flush warm → LMDB (reads warm ordered by effective_priority)
+        // Step 2: Drop stale w2t/t2w data before flush.
+        // On cold start, EvictManifest is not called (no prior active envelope).
+        // Drop now to ensure LMDB never serves stale entries from a previous build.
+        {
+            MDB_txn* dropTxn = nullptr;
+            if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &dropTxn) == 0)
+            {
+                MDB_dbi dbiW2t = 0, dbiT2w = 0;
+                if (mdb_dbi_open(dropTxn, "w2t", 0, &dbiW2t) == 0) mdb_drop(dropTxn, dbiW2t, 0);
+                if (mdb_dbi_open(dropTxn, "t2w", 0, &dbiT2w) == 0) mdb_drop(dropTxn, dbiT2w, 0);
+                mdb_txn_commit(dropTxn);
+                fprintf(stderr, "[EnvelopeManager] Cleared stale w2t/t2w before rebuild\n");
+                fflush(stderr);
+            }
+        }
+
+        // Step 3: Flush warm → LMDB (reads warm ordered by effective_priority)
         int flushed = FlushWorkingSetToLmdb(def.id);
         activation.entriesLoaded = flushed;
         RecordManifest(name, "w2t", flushed);
