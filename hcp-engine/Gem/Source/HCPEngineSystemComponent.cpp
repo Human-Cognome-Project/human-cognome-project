@@ -274,7 +274,8 @@ namespace HCPEngine
                     pxPhysics,
                     m_particlePipeline.GetCuda(),
                     m_vocabulary.GetLmdbEnv(),
-                    &m_vocabulary);
+                    &m_vocabulary,
+                    &m_envelopeManager);
 
                 auto bedEnd = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Persistent vocab beds initialized in %.1f ms\n",

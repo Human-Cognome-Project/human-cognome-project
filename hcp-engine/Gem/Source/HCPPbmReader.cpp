@@ -404,8 +404,11 @@ namespace HCPEngine
                                 nameMap[PQgetvalue(nr, j, 0)] = PQgetvalue(nr, j, 1);
                         }
                         PQclear(nr);
-                        // Fetch irregular forms for morph re-inflection (variantMap)
-                        std::string q2 = "SELECT canonical_id, morpheme, name FROM token_variants WHERE canonical_id = ANY(" + arr + ") AND morpheme IS NOT NULL";
+                        // Fetch irregular forms for morph re-inflection (variantMap).
+                        // Only use modern irregular forms: IRREGULAR bit (1<<21) set AND
+                        // ARCHAIC (1<<8) + DIALECT (1<<12) bits clear.
+                        // Archaic forms (laugheth, goeth) must not override modern -s/-ed rules.
+                        std::string q2 = "SELECT canonical_id, morpheme, name FROM token_variants WHERE canonical_id = ANY(" + arr + ") AND morpheme IS NOT NULL AND (characteristics & 2097152) != 0 AND (characteristics & 4352) = 0";
                         PGresult* vr = PQexec(eng, q2.c_str());
                         if (PQresultStatus(vr) == PGRES_TUPLES_OK)
                         {

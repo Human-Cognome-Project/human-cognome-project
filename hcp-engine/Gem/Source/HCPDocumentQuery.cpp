@@ -295,4 +295,57 @@ namespace HCPEngine
         return ok;
     }
 
+    int HCPDocumentQuery::DeleteDocument(int docPk)
+    {
+        PGconn* pg = m_conn.Get();
+        if (!pg) return 0;
+
+        AZStd::string pkStr = AZStd::to_string(docPk);
+        const char* params[] = { pkStr.c_str() };
+
+        // Delete in dependency order (no ON DELETE CASCADE on most tables).
+        // Bond tables reference pbm_starters, which references pbm_documents.
+        static const char* childDeletes[] = {
+            "DELETE FROM pbm_word_bonds   WHERE starter_id IN (SELECT id FROM pbm_starters WHERE doc_id = $1::integer)",
+            "DELETE FROM pbm_char_bonds   WHERE starter_id IN (SELECT id FROM pbm_starters WHERE doc_id = $1::integer)",
+            "DELETE FROM pbm_marker_bonds WHERE starter_id IN (SELECT id FROM pbm_starters WHERE doc_id = $1::integer)",
+            "DELETE FROM pbm_var_bonds    WHERE starter_id IN (SELECT id FROM pbm_starters WHERE doc_id = $1::integer)",
+            "DELETE FROM pbm_starters     WHERE doc_id = $1::integer",
+            "DELETE FROM pbm_docvars      WHERE doc_id = $1::integer",
+            "DELETE FROM docvar_staging   WHERE doc_id = $1::integer",
+            "DELETE FROM document_provenance    WHERE doc_id = $1::integer",
+            "DELETE FROM document_cross_refs    WHERE source_doc_id = $1::integer",
+            nullptr
+        };
+        for (int i = 0; childDeletes[i]; ++i)
+        {
+            PGresult* res = PQexecParams(pg, childDeletes[i], 1, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            {
+                fprintf(stderr, "[HCPDocumentQuery] DeleteDocument child delete failed: %s\n",
+                    PQerrorMessage(pg));
+                fflush(stderr);
+                // Reset connection error state so subsequent statements can run
+                PQclear(res);
+                PQexec(pg, "ROLLBACK");
+                continue;
+            }
+            PQclear(res);
+        }
+
+        // Delete the document itself — ON DELETE CASCADE handles pbm_position_caps + pbm_morpheme_positions
+        PGresult* res = PQexecParams(pg,
+            "DELETE FROM pbm_documents WHERE id = $1::integer",
+            1, nullptr, params, nullptr, nullptr, 0);
+        bool ok = (PQresultStatus(res) == PGRES_COMMAND_OK);
+        if (!ok)
+        {
+            fprintf(stderr, "[HCPDocumentQuery] DeleteDocument failed: %s\n", PQerrorMessage(pg));
+            fflush(stderr);
+        }
+        int deleted = ok ? atoi(PQcmdTuples(res)) : 0;
+        PQclear(res);
+        return deleted;
+    }
+
 } // namespace HCPEngine

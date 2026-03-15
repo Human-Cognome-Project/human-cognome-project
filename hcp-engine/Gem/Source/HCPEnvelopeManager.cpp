@@ -320,9 +320,23 @@ namespace HCPEngine
                 baseQuery.back() == '\n' || baseQuery.back() == '\r'))
             baseQuery.pop_back();
 
+        // Probe: check if the stored query returns a 'morpheme' column.
+        // Queries like query 26 (token_variants) do; most vocab queries don't.
+        // Run a LIMIT 0 probe to get column metadata without fetching rows.
+        bool hasMorpheme = false;
+        {
+            std::string probeQ = "WITH _probe AS (" + baseQuery + ") SELECT * FROM _probe LIMIT 0";
+            PGresult* probe = PQexec(shardConn, probeQ.c_str());
+            if (PQresultStatus(probe) == PGRES_TUPLES_OK)
+                hasMorpheme = (PQfnumber(probe, "morpheme") >= 0);
+            PQclear(probe);
+        }
+
         // Wrap with enrichment join to get characteristics + category from tokens table.
         // Stored queries return at minimum (name, token_id); the wrap adds the rest.
+        // If the base query returns a 'morpheme' column, pass it through as column 7.
         // No explicit type casts — PostgreSQL coerces from text on COPY insert.
+        std::string morphemeExpr = hasMorpheme ? "_b.morpheme" : "NULL::text";
         std::string enrichedQuery =
             "WITH _base AS (" + baseQuery + ") "
             "SELECT _b.name, "
@@ -330,7 +344,8 @@ namespace HCPEngine
             "       length(_b.name), "
             "       split_part(_b.token_id, '.', 1), "
             "       COALESCE(_t.characteristics, 0), "
-            "       _t.category "
+            "       _t.category, "
+            "       " + morphemeExpr + " "
             "FROM _base _b "
             "LEFT JOIN tokens _t ON _t.token_id = _b.token_id";
 
@@ -350,17 +365,20 @@ namespace HCPEngine
         // Bulk insert via COPY to a temp staging table, then merge with ON CONFLICT DO NOTHING.
         // This avoids the UNIQUE (envelope_id, lmdb_subdb, word) constraint killing the whole batch
         // when later queries overlap with earlier ones (e.g. irregular forms sharing names with Labels).
+        // Drop + recreate to ensure schema matches (morpheme column added in migration 044).
+        PQexec(varConn, "DROP TABLE IF EXISTS _ews_stage");
         PGresult* tmpRes = PQexec(varConn,
-            "CREATE TEMP TABLE IF NOT EXISTS _ews_stage "
+            "CREATE TEMP TABLE _ews_stage "
             "(envelope_id INT, shard_db TEXT, lmdb_subdb TEXT, word TEXT, token_id TEXT, "
-            " word_length SMALLINT, ns TEXT, characteristics INT, category TEXT, base_priority INT) "
+            " word_length SMALLINT, ns TEXT, characteristics INT, category TEXT, base_priority INT, "
+            " morpheme TEXT) "
             "ON COMMIT DELETE ROWS");
         PQclear(tmpRes);
         PQexec(varConn, "BEGIN");
         PGresult* copyRes = PQexec(varConn,
             "COPY _ews_stage "
             "(envelope_id, shard_db, lmdb_subdb, word, token_id, "
-            " word_length, ns, characteristics, category, base_priority) "
+            " word_length, ns, characteristics, category, base_priority, morpheme) "
             "FROM STDIN");
 
         if (PQresultStatus(copyRes) != PGRES_COPY_IN)
@@ -387,9 +405,11 @@ namespace HCPEngine
             const char* ns       = PQgetvalue(res, i, 3);
             const char* charStr  = PQgetvalue(res, i, 4);
             const char* category = PQgetlength(res, i, 5) > 0 ? PQgetvalue(res, i, 5) : nullptr;
+            // Column 6: morpheme (NULL::text for queries that don't provide it)
+            const char* morpheme = PQgetlength(res, i, 6) > 0 ? PQgetvalue(res, i, 6) : nullptr;
 
             std::string line;
-            line.reserve(64);
+            line.reserve(72);
 
             // envelope_id
             line += envIdStr; line += '\t';
@@ -411,7 +431,9 @@ namespace HCPEngine
             AppendCopyField(line, category, category ? (int)strlen(category) : 0, true);
             // base_priority
             std::string priorityStr = std::to_string(startOffset + i);
-            line += priorityStr;
+            line += priorityStr; line += '\t';
+            // morpheme (nullable — present for token_variant queries)
+            AppendCopyField(line, morpheme, morpheme ? (int)strlen(morpheme) : 0, false);
             line += '\n';
 
             if (PQputCopyData(varConn, line.c_str(), (int)line.size()) != 1)
@@ -439,8 +461,8 @@ namespace HCPEngine
         // Label rows that share the same surface form.
         PGresult* mergeRes = PQexec(varConn,
             "INSERT INTO envelope_working_set "
-            "(envelope_id, shard_db, lmdb_subdb, word, token_id, word_length, ns, characteristics, category, base_priority) "
-            "SELECT envelope_id, shard_db, lmdb_subdb, word, token_id, word_length, ns, characteristics, category, base_priority "
+            "(envelope_id, shard_db, lmdb_subdb, word, token_id, word_length, ns, characteristics, category, base_priority, morpheme) "
+            "SELECT envelope_id, shard_db, lmdb_subdb, word, token_id, word_length, ns, characteristics, category, base_priority, morpheme "
             "FROM _ews_stage "
             "ON CONFLICT (envelope_id, lmdb_subdb, word) DO NOTHING");
 
@@ -474,7 +496,7 @@ namespace HCPEngine
         const char*   params[]    = { envIdStr.c_str() };
 
         PGresult* res = PQexecParams(varConn,
-            "SELECT word, token_id, lmdb_subdb "
+            "SELECT word, token_id, lmdb_subdb, morpheme "
             "FROM envelope_working_set "
             "WHERE envelope_id = $1 "
             "ORDER BY lmdb_subdb, word_length, effective_priority",
@@ -507,11 +529,13 @@ namespace HCPEngine
 
         for (int i = 0; i < nrows; ++i)
         {
-            const char* word    = PQgetvalue(res, i, 0);
-            const char* tokenId = PQgetvalue(res, i, 1);
-            const char* subdb   = PQgetvalue(res, i, 2);
-            int wordLen   = PQgetlength(res, i, 0);
-            int tokenLen  = PQgetlength(res, i, 1);
+            const char* word     = PQgetvalue(res, i, 0);
+            const char* tokenId  = PQgetvalue(res, i, 1);
+            const char* subdb    = PQgetvalue(res, i, 2);
+            int wordLen  = PQgetlength(res, i, 0);
+            int tokenLen = PQgetlength(res, i, 1);
+            int morphLen = PQgetlength(res, i, 3);
+            const char* morpheme = (morphLen > 0) ? PQgetvalue(res, i, 3) : nullptr;
 
             // Open new sub-db handle when target changes
             if (currentSubdb != subdb)
@@ -525,8 +549,22 @@ namespace HCPEngine
                     t2wOpen = (mdb_dbi_open(txn, "t2w", MDB_CREATE, &dbiT2w) == 0);
             }
 
-            MDB_val mKey = { static_cast<size_t>(wordLen),  const_cast<char*>(word) };
-            MDB_val mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+            MDB_val mKey = { static_cast<size_t>(wordLen), const_cast<char*>(word) };
+
+            // Extended LMDB value: token_id + '\x00' + morpheme (if non-empty)
+            std::string extVal;
+            MDB_val mVal;
+            if (morpheme && morphLen > 0)
+            {
+                extVal.assign(tokenId, tokenLen);
+                extVal += '\x00';
+                extVal.append(morpheme, morphLen);
+                mVal = { extVal.size(), const_cast<char*>(extVal.data()) };
+            }
+            else
+            {
+                mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+            }
 
             if (mdb_put(txn, dbi, &mKey, &mVal, 0) == 0)
             {
@@ -546,18 +584,6 @@ namespace HCPEngine
         PQclear(res);
 
         return written;
-    }
-
-    // ---------------------------------------------------------------------------
-    // Map morpheme name string to the corresponding MorphBit constant.
-    // Returns 0 for morphemes without a current bit (COMPARATIVE, SUPERLATIVE, ADVERB_LY).
-    static AZ::u16 MorphemeNameToBit(const char* morpheme)
-    {
-        if (strcmp(morpheme, "PAST")        == 0) return MorphBit::PAST;
-        if (strcmp(morpheme, "PROGRESSIVE") == 0) return MorphBit::PROG;
-        if (strcmp(morpheme, "PLURAL")      == 0) return MorphBit::PLURAL;
-        if (strcmp(morpheme, "3RD_SING")    == 0) return MorphBit::THIRD;
-        return 0;
     }
 
     // ---------------------------------------------------------------------------
@@ -620,8 +646,10 @@ namespace HCPEngine
         AZStd::string countStr  = AZStd::string::format("%d", count);
         const char* params[] = { envIdStr.c_str(), offsetStr.c_str(), countStr.c_str() };
 
+        // Include morpheme column (migration 044) — stored as extended LMDB value
+        // format: token_id (14 bytes) + '\x00' + morpheme_name (if non-empty).
         PGresult* res = PQexecParams(varConn,
-            "SELECT word, token_id, lmdb_subdb "
+            "SELECT word, token_id, lmdb_subdb, morpheme "
             "FROM envelope_working_set "
             "WHERE envelope_id = $1 "
             "ORDER BY lmdb_subdb, word_length, effective_priority "
@@ -651,11 +679,13 @@ namespace HCPEngine
 
         for (int i = 0; i < nrows; ++i)
         {
-            const char* word    = PQgetvalue(res, i, 0);
-            const char* tokenId = PQgetvalue(res, i, 1);
-            const char* subdb   = PQgetvalue(res, i, 2);
+            const char* word     = PQgetvalue(res, i, 0);
+            const char* tokenId  = PQgetvalue(res, i, 1);
+            const char* subdb    = PQgetvalue(res, i, 2);
             int wordLen  = PQgetlength(res, i, 0);
             int tokenLen = PQgetlength(res, i, 1);
+            int morphLen = PQgetlength(res, i, 3);
+            const char* morpheme = (morphLen > 0) ? PQgetvalue(res, i, 3) : nullptr;
 
             if (currentSubdb != subdb)
             {
@@ -668,8 +698,23 @@ namespace HCPEngine
 
             if (dbi == 0) continue;
 
-            MDB_val mKey = { static_cast<size_t>(wordLen),  const_cast<char*>(word) };
-            MDB_val mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+            MDB_val mKey = { static_cast<size_t>(wordLen), const_cast<char*>(word) };
+
+            // Extended LMDB value: token_id + '\x00' + morpheme (if non-empty)
+            // RebuildVocab checks val.mv_size > 14 && val.mv_data[14] == '\x00' to decode.
+            std::string extVal;
+            MDB_val mVal;
+            if (morpheme && morphLen > 0)
+            {
+                extVal.assign(tokenId, tokenLen);
+                extVal += '\x00';
+                extVal.append(morpheme, morphLen);
+                mVal = { extVal.size(), const_cast<char*>(extVal.data()) };
+            }
+            else
+            {
+                mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+            }
 
             if (mdb_put(txn, dbi, &mKey, &mVal, 0) == 0)
             {
@@ -690,6 +735,18 @@ namespace HCPEngine
             offset, count, written);
         fflush(stderr);
         return written;
+    }
+
+    // ---------------------------------------------------------------------------
+    void HCPEnvelopeManager::ClearHotWindow()
+    {
+        if (!m_lmdbEnv) return;
+        MDB_txn* txn = nullptr;
+        if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) != 0) return;
+        MDB_dbi dbi = 0;
+        if (mdb_dbi_open(txn, "w2t", 0, &dbi) == 0)
+            mdb_drop(txn, dbi, 0);   // del=0: clear contents, keep the named db
+        mdb_txn_commit(txn);
     }
 
     // ---------------------------------------------------------------------------
@@ -822,7 +879,7 @@ namespace HCPEngine
         const char*   qParams[]   = { envIdStr.c_str() };
 
         res = PQexecParams(varConn,
-            "SELECT word, token_id "
+            "SELECT word, token_id, morpheme "
             "FROM envelope_working_set "
             "WHERE envelope_id = $1 "
             "ORDER BY word_length, effective_priority",
@@ -841,6 +898,8 @@ namespace HCPEngine
             VocabEntry e;
             e.word    = PQgetvalue(res, i, 0);
             e.tokenId = PQgetvalue(res, i, 1);
+            if (PQgetlength(res, i, 2) > 0)
+                e.morpheme = PQgetvalue(res, i, 2);
             out.push_back(AZStd::move(e));
         }
         PQclear(res);
@@ -848,6 +907,51 @@ namespace HCPEngine
         fprintf(stderr, "[EnvelopeManager] QueryEnvelopeEntries('%s'): %zu entries from warm db\n",
             name.c_str(), out.size());
         fflush(stderr);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Per-length warm batch query — small per-length OFFSET instead of global 535K scan.
+    // Per-length offsets are max ~40K (length 8 = ~80K entries), so OFFSET scans are fast.
+    AZStd::vector<VocabEntry> HCPEnvelopeManager::QueryWarmBatch(
+        int envelopeId, int wordLength, int offset, int count)
+    {
+        AZStd::vector<VocabEntry> out;
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn) return out;
+
+        AZStd::string envIdStr  = AZStd::string::format("%d", envelopeId);
+        AZStd::string lenStr    = AZStd::string::format("%d", wordLength);
+        AZStd::string offsetStr = AZStd::string::format("%d", offset);
+        AZStd::string countStr  = AZStd::string::format("%d", count);
+        const char* params[] = { envIdStr.c_str(), lenStr.c_str(), offsetStr.c_str(), countStr.c_str() };
+
+        PGresult* res = PQexecParams(varConn,
+            "SELECT word, token_id, morpheme "
+            "FROM envelope_working_set "
+            "WHERE envelope_id = $1 AND word_length = $2 "
+            "ORDER BY effective_priority "
+            "OFFSET $3 LIMIT $4",
+            4, nullptr, params, nullptr, nullptr, 0);
+
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+            PQclear(res);
+            return out;
+        }
+
+        int rows = PQntuples(res);
+        out.reserve(rows);
+        for (int i = 0; i < rows; ++i)
+        {
+            VocabEntry e;
+            e.word    = AZStd::string(PQgetvalue(res, i, 0));
+            e.tokenId = AZStd::string(PQgetvalue(res, i, 1));
+            if (PQgetlength(res, i, 2) > 0)
+                e.morpheme = AZStd::string(PQgetvalue(res, i, 2));
+            out.push_back(AZStd::move(e));
+        }
+        PQclear(res);
         return out;
     }
 

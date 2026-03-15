@@ -70,7 +70,8 @@ namespace HCPEngine
         {
             AZStd::string word;
             AZStd::string tokenId;
-            AZ::u32 tierIndex;
+            AZ::u32 tierIndex = 0;
+            AZ::u16 morphBits = 0;  // Morph bits from warm-set entry (e.g. PAST for "stood")
         };
         AZStd::vector<Entry> entries;
 
@@ -280,7 +281,9 @@ namespace HCPEngine
         void InitEnvelopeWindow(int envelopeId, int warmSetSize);
 
         //! Entries per LMDB hot-cache slot. 3 slots active at any time = 3 × LMDB_SLICE_SIZE.
-        static constexpr int LMDB_SLICE_SIZE = 5000;
+        //! Also controls per-length batch size in QueryWarmBatch multi-slice loop.
+        //! Larger value = fewer Postgres round-trips per length, more GPU particles per pass.
+        static constexpr int LMDB_SLICE_SIZE = 20000;
 
         void Shutdown();
 
@@ -368,13 +371,27 @@ namespace HCPEngine
 
         // Envelope sliding window state.
         // LMDB hot cache holds [m_sliceCursor, m_sliceCursor + 3*LMDB_SLICE_SIZE) of warm set.
-        // Advances by one slot (LMDB_SLICE_SIZE) after each ResolveLengthCycle.
         int m_envelopeId   = 0;
         int m_sliceCursor  = 0;
         int m_warmSetSize  = 0;
 
+        // Per-length batch cursors for QueryWarmBatch (offset per word length).
+        // Reset at the start of each Resolve() call. Updated as multi-slice loop advances.
+        std::unordered_map<AZ::u32, int> m_lengthCursorByLen;
+
+        //! Reset per-length batch cursors at the start of each Resolve() call.
+        //! LMDB hot window is not modified — it keeps its initial high-priority entries
+        //! for single-word lookups throughout the document.
+        void ResetWindowToStart();
+
+        //! Load the next batch of vocab for a specific word length directly from the
+        //! warm Postgres set (no LMDB round-trip). Replaces m_vocabByLength[wordLength]
+        //! with the new batch. Returns true if entries were loaded, false if exhausted.
+        //! Per-length OFFSET stays small (max ~80K) — no global 535K scan.
+        bool AdvanceEnvelopeLengthBatch(AZ::u32 wordLength);
+
         //! Evict oldest slot, feed next slot, rebuild in-memory vocab.
-        //! Returns true if a new slot was loaded, false if at end of warm set.
+        //! (Legacy global cursor — kept for envelope changes. Not used in resolution loop.)
         bool AdvanceEnvelopeSlice();
 
         // Active word lengths (sorted descending)

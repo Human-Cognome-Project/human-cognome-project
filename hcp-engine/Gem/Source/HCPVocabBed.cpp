@@ -448,6 +448,7 @@ namespace HCPEngine
                     slot.tierResolved = tierIndex;
                     slot.matchedWord = pack.entries[entryIdx].word;
                     slot.matchedTokenId = pack.entries[entryIdx].tokenId;
+                    slot.morphBits = pack.entries[entryIdx].morphBits;
                 }
             }
         }
@@ -529,6 +530,7 @@ namespace HCPEngine
             r.runIndex = slot.runIndex;
             r.firstCap = slot.firstCap;
             r.allCaps = slot.allCaps;
+            r.morphBits = slot.morphBits;
             out.push_back(r);
         }
     }
@@ -559,6 +561,7 @@ namespace HCPEngine
                 r.runIndex = slot.runIndex;
                 r.firstCap = slot.firstCap;
                 r.allCaps = slot.allCaps;
+                r.morphBits = slot.morphBits;
                 resolved.push_back(r);
             }
             else
@@ -1409,6 +1412,53 @@ namespace HCPEngine
         fflush(stderr);
     }
 
+    void BedManager::ResetWindowToStart()
+    {
+        // Reset per-length batch cursors so each new document starts from offset 0.
+        // LMDB hot window is NOT modified — the initial high-priority entries loaded at
+        // envelope activation remain valid for single-word lookups (TryInflectionStrip).
+        // The multi-slice loop uses QueryWarmBatch (direct Postgres per-length) rather
+        // than LMDB advances, so the LMDB window is stable across documents.
+        m_lengthCursorByLen.clear();
+
+        // Also reset m_vocabByLength to the LMDB-resident entries (initial hot window).
+        // This ensures the first pass for each length uses what's already in LMDB,
+        // only going to Postgres when those entries are exhausted.
+        RebuildVocab();
+    }
+
+    bool BedManager::AdvanceEnvelopeLengthBatch(AZ::u32 wordLength)
+    {
+        if (!m_envelopeManager || m_envelopeId == 0) return false;
+
+        int& cursor = m_lengthCursorByLen[wordLength];
+        cursor += LMDB_SLICE_SIZE;  // advance past the batch we just processed
+
+        auto batch = m_envelopeManager->QueryWarmBatch(
+            m_envelopeId, static_cast<int>(wordLength), cursor, LMDB_SLICE_SIZE);
+
+        if (batch.empty()) return false;  // exhausted for this length
+
+        // Replace (not append) the in-memory vocab for this length.
+        auto& vec = m_vocabByLength[wordLength];
+        vec.clear();
+        vec.reserve(batch.size());
+        for (const auto& e : batch)
+        {
+            VocabPack::Entry entry;
+            entry.word      = e.word;
+            entry.tokenId   = e.tokenId;
+            entry.tierIndex = 0;
+            entry.morphBits = MorphemeNameToBit(e.morpheme.c_str());
+            vec.push_back(AZStd::move(entry));
+        }
+
+        fprintf(stderr, "[BedManager] Length %u batch advance: offset=%d, %zu entries loaded\n",
+            wordLength, cursor, batch.size());
+        fflush(stderr);
+        return true;
+    }
+
     bool BedManager::AdvanceEnvelopeSlice()
     {
         if (!m_envelopeManager || m_envelopeId == 0 || m_warmSetSize == 0) return false;
@@ -1457,9 +1507,32 @@ namespace HCPEngine
                 len > static_cast<AZ::u32>(VBED_MAX_LEN)) continue;
 
             VocabPack::Entry e;
-            e.word    = AZStd::string(static_cast<const char*>(key.mv_data), key.mv_size);
-            e.tokenId = AZStd::string(static_cast<const char*>(val.mv_data), val.mv_size);
+            e.word      = AZStd::string(static_cast<const char*>(key.mv_data), key.mv_size);
             e.tierIndex = 0;  // All common tier — label broadphase wired once envelope has tier data
+            e.morphBits = 0;
+
+            // Extended LMDB value format (migration 044):
+            //   token_id (14 bytes) + '\x00' + morpheme_name (if variant has a morpheme)
+            // Standard format: just token_id (14 bytes, backward compatible).
+            const char* valData = static_cast<const char*>(val.mv_data);
+            size_t valSize = val.mv_size;
+            if (valSize > 14 && valData[14] == '\x00')
+            {
+                e.tokenId = AZStd::string(valData, 14);
+                const char* morphStart = valData + 15;
+                int morphLen = static_cast<int>(valSize) - 15;
+                if (morphLen > 0)
+                {
+                    char morphBuf[32] = {};
+                    int copyLen = morphLen < 31 ? morphLen : 31;
+                    memcpy(morphBuf, morphStart, copyLen);
+                    e.morphBits = MorphemeNameToBit(morphBuf);
+                }
+            }
+            else
+            {
+                e.tokenId = AZStd::string(valData, valSize);
+            }
 
             m_vocabByLength[len].push_back(AZStd::move(e));
             ++totalEntries;
@@ -1832,8 +1905,8 @@ namespace HCPEngine
             if (!filteredCommon.empty())
                 RunPipelinedCascade(wordLength, runs, filteredCommon, commonRuns, results, phaseIndex);
 
-            if (commonRuns.empty()) break;       // all runs resolved
-            if (!AdvanceEnvelopeSlice()) break;  // warm set exhausted; accept remainder as unresolved
+            if (commonRuns.empty()) break;                              // all runs resolved
+            if (!AdvanceEnvelopeLengthBatch(wordLength)) break;        // exhausted for this length
         }
 
         for (AZ::u32 idx : commonRuns)
@@ -1850,6 +1923,11 @@ namespace HCPEngine
             manifest.unresolvedRuns = manifest.totalRuns;
             return manifest;
         }
+
+        // Reset the LMDB hot window to offset 0 for each new document.
+        // Each document needs the highest-priority vocab entries first.
+        // Without this reset, the cursor would remain wherever the last document left it.
+        ResetWindowToStart();
 
         // Mutable copy — synthetic base runs get appended during interstitial stripping.
         // Original runs at [0..inputRuns.size()), synthetics at [inputRuns.size()..N).
@@ -2262,6 +2340,7 @@ namespace HCPEngine
                         entry.word      = e.word;
                         entry.tokenId   = e.tokenId;
                         entry.tierIndex = isLabel ? 0u : 1u;
+                        entry.morphBits = MorphemeNameToBit(e.morpheme.c_str());
                         m_vocabByLength[eLen].push_back(AZStd::move(entry));
                         ++injected;
                     }

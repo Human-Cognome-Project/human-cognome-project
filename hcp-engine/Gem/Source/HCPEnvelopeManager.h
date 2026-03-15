@@ -46,12 +46,28 @@ namespace HCPEngine
         int evictedEntries = 0;
     };
 
-    //! In-memory vocab entry returned by QueryEnvelopeEntries.
+    //! Map a morpheme name string (e.g. "PAST", "PLURAL") to the corresponding MorphBit.
+    //! Returns 0 for morphemes not yet mapped to a bit.
+    inline AZ::u16 MorphemeNameToBit(const char* morpheme) noexcept
+    {
+        if (!morpheme || !morpheme[0]) return 0;
+        if (morpheme[0] == 'P')
+        {
+            if (morpheme[1] == 'A') return MorphBit::PAST;        // PAST
+            if (morpheme[1] == 'L') return MorphBit::PLURAL;      // PLURAL
+            if (morpheme[1] == 'R') return MorphBit::PROG;        // PROGRESSIVE
+        }
+        if (morpheme[0] == '3') return MorphBit::THIRD;           // 3RD_SING
+        return 0;
+    }
+
+    //! In-memory vocab entry returned by QueryEnvelopeEntries / QueryWarmBatch.
     //! Used for mid-resolve tense pre-fetch injection into BedManager.
     struct VocabEntry
     {
         AZStd::string word;
         AZStd::string tokenId;
+        AZStd::string morpheme;  // Morpheme name (e.g. "PAST", "PLURAL") or empty for canonical forms
     };
 
     //! Manages the three-layer cache lifecycle:
@@ -88,6 +104,11 @@ namespace HCPEngine
         //! Returns number of entries written.
         int FeedSlice(int envelopeId, int offset, int count);
 
+        //! Clear the w2t hot-cache sub-db (empty it, do not delete).
+        //! Call before FeedSlice(envelopeId, 0, ...) to reset the window to the beginning
+        //! of the warm set for a new document. t2w is intentionally left intact.
+        void ClearHotWindow();
+
         //! Evict rows [offset, offset+count) from LMDB w2t.
         //! t2w is NOT evicted — reverse map accumulates across the document for reconstruction.
         void EvictSlice(int envelopeId, int offset, int count);
@@ -106,6 +127,12 @@ namespace HCPEngine
         //! Does NOT query the cold shard — warm must be assembled first.
         //! Used for mid-resolve pre-fetch injection into BedManager.
         AZStd::vector<VocabEntry> QueryEnvelopeEntries(const AZStd::string& envelopeName);
+
+        //! Query a single batch of vocab for one word length from the warm set.
+        //! Uses per-length OFFSET so offsets stay small (max ~40K) instead of scanning
+        //! through the global 535K ordering. Called from ResolveLengthCycle multi-slice loop.
+        //! Returns entries in effective_priority order (highest-priority first, offset=0).
+        AZStd::vector<VocabEntry> QueryWarmBatch(int envelopeId, int wordLength, int offset, int count);
 
         //! Load inflection rules from the named Postgres database.
         //! Queries inflection_rules table ordered by (morpheme, priority).

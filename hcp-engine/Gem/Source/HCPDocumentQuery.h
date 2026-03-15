@@ -76,6 +76,10 @@ namespace HCPEngine
         bool UpdateMetadata(int docPk, const AZStd::string& setJson,
                             const AZStd::vector<AZStd::string>& removeKeys);
 
+        //! Delete a document and all its associated data (bonds, positions, vars, provenance).
+        //! Returns number of documents deleted (0 or 1).
+        int DeleteDocument(int docPk);
+
         //! Insert/update a row in document_provenance.
         bool StoreProvenance(
             int docPk,

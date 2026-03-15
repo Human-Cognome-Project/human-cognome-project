@@ -417,6 +417,42 @@ namespace HCPEngine
             return AZStd::string(sb.GetString(), sb.GetSize());
         }
 
+        // ---- delete_doc ----
+        if (strcmp(action, "delete_doc") == 0)
+        {
+            if (!doc.HasMember("doc_id") || !doc["doc_id"].IsString())
+                return R"({"status":"error","message":"Missing 'doc_id' field"})";
+
+            HCPDbConnection& db = m_engine->GetDbConnection();
+            if (!db.IsConnected()) db.Connect();
+            if (!db.IsConnected())
+                return R"({"status":"error","message":"Database not available"})";
+
+            AZStd::string docIdStr(doc["doc_id"].GetString(), doc["doc_id"].GetStringLength());
+            int docPk = m_engine->GetDocumentQuery().GetDocPk(docIdStr);
+            if (docPk == 0)
+            {
+                rapidjson::StringBuffer sb;
+                rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+                w.StartObject();
+                w.Key("status"); w.String("error");
+                w.Key("message"); w.String("Document not found");
+                w.Key("doc_id"); w.String(docIdStr.c_str());
+                w.EndObject();
+                return AZStd::string(sb.GetString(), sb.GetSize());
+            }
+
+            int deleted = m_engine->GetDocumentQuery().DeleteDocument(docPk);
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+            w.StartObject();
+            w.Key("status"); w.String(deleted > 0 ? "ok" : "error");
+            w.Key("doc_id"); w.String(docIdStr.c_str());
+            w.Key("deleted"); w.Int(deleted);
+            w.EndObject();
+            return AZStd::string(sb.GetString(), sb.GetSize());
+        }
+
         // ---- update_meta ----
         if (strcmp(action, "update_meta") == 0)
         {

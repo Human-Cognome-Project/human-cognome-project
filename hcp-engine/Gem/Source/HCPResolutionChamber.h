@@ -74,6 +74,7 @@ namespace HCPEngine
         AZ::u32 tierResolved = 0xFF;  // Which tier resolved it (0xFF = unresolved)
         bool firstCap = false;     // Positional cap data from original CharRun
         bool allCaps = false;
+        AZ::u16 morphBits = 0;     // Morph bits from matched VocabPack::Entry (token_variants)
     };
 
     //! Result for a single run's resolution.
