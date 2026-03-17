@@ -1,0 +1,141 @@
+2026-03-10 15:30:38,795 INFO ============================================================
+2026-03-10 15:30:38,795 INFO Pass 4 start  dry_run=True  batch_size=500
+2026-03-10 15:30:38,800 INFO Loading token map from DB …
+2026-03-10 15:30:41,667 INFO   Loaded 1,415,731 tokens.
+2026-03-10 15:30:41,677 INFO Streaming /opt/project/sources/data/kaikki/english.jsonl for variant entries …
+2026-03-10 15:31:26,941 INFO   scanned 300,000 lines  irr=70  arch=34
+2026-03-10 15:31:41,477 INFO   scanned 600,000 lines  irr=173  arch=212
+2026-03-10 15:31:53,798 INFO   scanned 900,000 lines  irr=329  arch=315
+2026-03-10 15:32:06,210 INFO   scanned 1,200,000 lines  irr=490  arch=443
+2026-03-10 15:32:16,095 INFO Done. Scanned 1,454,988 lines. Irregular: 749  Archaic/obsolete: 658
+2026-03-10 15:32:16,095 INFO   IRREGULAR: 749 candidates
+2026-03-10 15:32:16,095 INFO   IRREGULAR done: inserted=749 skipped=0
+2026-03-10 15:32:16,096 INFO   ARCHAIC/obsolete: 658 candidates
+2026-03-10 15:32:16,096 INFO   ARCHAIC/obsolete done: inserted=658 skipped=0
+2026-03-10 15:32:16,096 INFO Pass 4 inserts: inserted=1,407 skipped=0
+2026-03-10 15:32:16,124 INFO   Cleanup (dry-run): would delete 0 token_morph_rules rows
+2026-03-10 15:32:16,124 INFO Done.
+2026-03-10 15:33:12,241 INFO ============================================================
+2026-03-10 15:33:12,242 INFO Pass 4 start  dry_run=True  batch_size=500
+2026-03-10 15:33:12,248 INFO Loading token map from DB …
+2026-03-10 15:33:14,797 INFO   Loaded 1,415,731 tokens.
+2026-03-10 15:33:14,806 INFO Streaming /opt/project/sources/data/kaikki/english.jsonl for variant entries …
+2026-03-10 15:33:59,108 INFO   scanned 300,000 lines  irr=4,442  arch=3,025
+2026-03-10 15:34:14,420 INFO   scanned 600,000 lines  irr=11,055  arch=9,482
+2026-03-10 15:34:27,714 INFO   scanned 900,000 lines  irr=16,441  arch=11,863
+2026-03-10 15:34:40,867 INFO   scanned 1,200,000 lines  irr=20,337  arch=14,250
+2026-03-10 15:34:51,471 INFO Done. Scanned 1,454,988 lines. Irregular: 23,789  Archaic/obsolete: 16,642
+2026-03-10 15:34:51,471 INFO   IRREGULAR: 23,789 candidates
+2026-03-10 15:34:51,471 INFO   IRREGULAR done: inserted=23,789 skipped=0
+2026-03-10 15:34:51,472 INFO   ARCHAIC/obsolete: 16,642 candidates
+2026-03-10 15:34:51,472 INFO   ARCHAIC/obsolete done: inserted=16,642 skipped=0
+2026-03-10 15:34:51,472 INFO Pass 4 inserts: inserted=40,431 skipped=0
+2026-03-10 15:34:51,475 INFO   Cleanup (dry-run): would delete 0 token_morph_rules rows
+2026-03-10 15:34:51,477 INFO Done.
+2026-03-10 15:42:12,922 INFO ============================================================
+2026-03-10 15:42:12,922 INFO Pass 4 start  dry_run=True  batch_size=500
+2026-03-10 15:42:12,928 INFO Loading token map from DB …
+2026-03-10 15:42:15,476 INFO   Loaded 1,415,731 tokens.
+2026-03-10 15:42:15,485 INFO Streaming /opt/project/sources/data/kaikki/english.jsonl for variant entries …
+2026-03-10 15:43:00,224 INFO   scanned 300,000 lines  irr=5,940  arch=3,244
+2026-03-10 15:43:15,466 INFO   scanned 600,000 lines  irr=14,108  arch=9,789
+2026-03-10 15:43:28,687 INFO   scanned 900,000 lines  irr=20,487  arch=12,190
+2026-03-10 15:43:41,327 INFO   scanned 1,200,000 lines  irr=25,307  arch=14,602
+2026-03-10 15:43:51,713 INFO Done. Scanned 1,454,988 lines. Irregular: 29,581  Archaic/obsolete: 17,007
+2026-03-10 15:43:51,713 INFO   IRREGULAR: 29,581 candidates
+2026-03-10 15:43:51,714 INFO   IRREGULAR done: inserted=29,581 skipped=0
+2026-03-10 15:43:51,714 INFO   ARCHAIC/obsolete: 17,007 candidates
+2026-03-10 15:43:51,715 INFO   ARCHAIC/obsolete done: inserted=17,007 skipped=0
+2026-03-10 15:43:51,715 INFO Pass 4 inserts: inserted=46,588 skipped=0
+2026-03-10 15:43:51,717 INFO   Cleanup (dry-run): would delete 0 token_morph_rules rows
+2026-03-10 15:43:51,717 INFO Done.
+2026-03-10 15:45:59,441 INFO ============================================================
+2026-03-10 15:45:59,441 INFO Pass 4 start  dry_run=False  batch_size=500
+2026-03-10 15:45:59,447 INFO Loading token map from DB …
+2026-03-10 15:46:02,043 INFO   Loaded 1,415,731 tokens.
+2026-03-10 15:46:02,053 INFO Streaming /opt/project/sources/data/kaikki/english.jsonl for variant entries …
+2026-03-10 15:46:49,557 INFO   scanned 300,000 lines  irr=5,940  arch=3,244
+2026-03-10 15:47:04,424 INFO   scanned 600,000 lines  irr=14,108  arch=9,789
+2026-03-10 15:47:17,286 INFO   scanned 900,000 lines  irr=20,487  arch=12,190
+2026-03-10 15:47:29,935 INFO   scanned 1,200,000 lines  irr=25,307  arch=14,602
+2026-03-10 15:47:39,787 INFO Done. Scanned 1,454,988 lines. Irregular: 29,581  Archaic/obsolete: 17,007
+2026-03-10 15:47:39,787 INFO   IRREGULAR: 29,581 candidates
+2026-03-10 15:47:45,410 INFO     10,000/29,581 done
+2026-03-10 15:47:51,821 INFO     20,000/29,581 done
+2026-03-10 15:47:57,451 INFO   IRREGULAR done: inserted=29,289 skipped=292
+2026-03-10 15:47:57,451 INFO   ARCHAIC/obsolete: 17,007 candidates
+2026-03-10 15:48:03,603 INFO     10,000/17,007 done
+2026-03-10 15:48:07,182 INFO   ARCHAIC/obsolete done: inserted=15,734 skipped=1,273
+2026-03-10 15:48:07,183 INFO Pass 4 inserts: inserted=45,023 skipped=1,565
+2026-03-10 15:48:09,987 INFO   Cleanup: deleted 22,069 superseded token_morph_rules rows
+2026-03-10 15:48:09,987 INFO --- Verification ---
+2026-03-10 15:48:09,995 INFO token_variants rows: 45,023
+2026-03-10 15:48:10,004 INFO   IRREGULAR: 29,289
+2026-03-10 15:48:10,014 INFO   ARCHAIC: 18,912
+2026-03-10 15:48:10,031 INFO     PLURAL: 16,661
+2026-03-10 15:48:10,031 INFO     PAST: 6,991
+2026-03-10 15:48:10,031 INFO     3RD_SING: 2,845
+2026-03-10 15:48:10,031 INFO     PROGRESSIVE: 1,835
+2026-03-10 15:48:10,031 INFO     SUPERLATIVE: 501
+2026-03-10 15:48:10,031 INFO     COMPARATIVE: 456
+2026-03-10 15:48:10,586 INFO token_morph_rules rows after cleanup: 579,388
+2026-03-10 15:48:10,591 INFO Done.
+2026-03-11 15:12:27,718 INFO ============================================================
+2026-03-11 15:12:27,749 INFO Pass 4 start  dry_run=False  batch_size=500
+2026-03-11 15:12:27,755 INFO Loading token map from DB …
+2026-03-11 15:12:28,438 INFO   Loaded 460,549 tokens.
+2026-03-11 15:12:28,465 INFO Streaming /opt/project/sources/data/kaikki/english.jsonl for variant entries …
+2026-03-11 15:13:03,004 INFO   scanned 300,000 lines  irr=76,754  arch=3,080
+2026-03-11 15:13:14,263 INFO   scanned 600,000 lines  irr=151,299  arch=9,378
+2026-03-11 15:13:23,787 INFO   scanned 900,000 lines  irr=216,174  arch=11,525
+2026-03-11 15:13:33,083 INFO   scanned 1,200,000 lines  irr=270,023  arch=13,574
+2026-03-11 15:13:40,602 INFO Done. Scanned 1,454,988 lines. Irregular: 304,854  Archaic/obsolete: 15,697
+2026-03-11 15:13:40,602 INFO   IRREGULAR: 304,854 candidates
+2026-03-11 15:13:44,612 INFO     10,000/304,854 done
+2026-03-11 15:13:48,506 INFO     20,000/304,854 done
+2026-03-11 15:13:52,195 INFO     30,000/304,854 done
+2026-03-11 15:13:55,813 INFO     40,000/304,854 done
+2026-03-11 15:13:59,245 INFO     50,000/304,854 done
+2026-03-11 15:14:02,737 INFO     60,000/304,854 done
+2026-03-11 15:14:05,802 INFO     70,000/304,854 done
+2026-03-11 15:14:09,222 INFO     80,000/304,854 done
+2026-03-11 15:14:12,885 INFO     90,000/304,854 done
+2026-03-11 15:14:16,231 INFO     100,000/304,854 done
+2026-03-11 15:14:19,718 INFO     110,000/304,854 done
+2026-03-11 15:14:23,321 INFO     120,000/304,854 done
+2026-03-11 15:14:27,136 INFO     130,000/304,854 done
+2026-03-11 15:14:30,934 INFO     140,000/304,854 done
+2026-03-11 15:14:34,702 INFO     150,000/304,854 done
+2026-03-11 15:14:38,746 INFO     160,000/304,854 done
+2026-03-11 15:14:42,613 INFO     170,000/304,854 done
+2026-03-11 15:14:46,090 INFO     180,000/304,854 done
+2026-03-11 15:14:49,152 INFO     190,000/304,854 done
+2026-03-11 15:14:52,890 INFO     200,000/304,854 done
+2026-03-11 15:14:56,746 INFO     210,000/304,854 done
+2026-03-11 15:15:00,632 INFO     220,000/304,854 done
+2026-03-11 15:15:04,591 INFO     230,000/304,854 done
+2026-03-11 15:15:08,189 INFO     240,000/304,854 done
+2026-03-11 15:15:11,736 INFO     250,000/304,854 done
+2026-03-11 15:15:15,246 INFO     260,000/304,854 done
+2026-03-11 15:15:18,387 INFO     270,000/304,854 done
+2026-03-11 15:15:22,239 INFO     280,000/304,854 done
+2026-03-11 15:15:26,019 INFO     290,000/304,854 done
+2026-03-11 15:15:30,212 INFO     300,000/304,854 done
+2026-03-11 15:15:32,028 INFO   IRREGULAR done: inserted=297,929 skipped=6,925
+2026-03-11 15:15:32,028 INFO   ARCHAIC/obsolete: 15,697 candidates
+2026-03-11 15:15:36,308 INFO     10,000/15,697 done
+2026-03-11 15:15:38,257 INFO   ARCHAIC/obsolete done: inserted=14,439 skipped=1,258
+2026-03-11 15:15:38,257 INFO Pass 4 inserts: inserted=312,368 skipped=8,183
+2026-03-11 15:15:38,277 INFO   Cleanup: deleted 0 superseded token_morph_rules rows
+2026-03-11 15:15:38,277 INFO --- Verification ---
+2026-03-11 15:15:38,311 INFO token_variants rows: 312,368
+2026-03-11 15:15:38,359 INFO   IRREGULAR: 297,929
+2026-03-11 15:15:38,395 INFO   ARCHAIC: 17,903
+2026-03-11 15:15:38,432 INFO     PLURAL: 195,021
+2026-03-11 15:15:38,432 INFO     PAST: 34,310
+2026-03-11 15:15:38,432 INFO     PROGRESSIVE: 31,491
+2026-03-11 15:15:38,432 INFO     3RD_SING: 31,211
+2026-03-11 15:15:38,432 INFO     SUPERLATIVE: 3,055
+2026-03-11 15:15:38,432 INFO     COMPARATIVE: 2,841
+2026-03-11 15:15:38,433 INFO token_morph_rules rows after cleanup: 0
+2026-03-11 15:15:38,433 INFO Done.

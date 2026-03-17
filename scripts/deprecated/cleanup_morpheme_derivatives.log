@@ -1,0 +1,1029 @@
+2026-03-13 09:34:06,003 INFO Loading tokens...
+2026-03-13 09:34:09,804 INFO Loaded 460549 distinct name entries
+2026-03-13 09:34:09,804 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 09:34:15,736 INFO Found 78968 derivative candidates
+2026-03-13 09:34:15,894 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 09:34:15,915 INFO   PFX_NEG                         25635
+2026-03-13 09:34:15,915 INFO   ADV_LY                          13626
+2026-03-13 09:34:15,915 INFO   NMLZ                            10151
+2026-03-13 09:34:15,915 INFO   AGENT                            8006
+2026-03-13 09:34:15,915 INFO   PROG                             6397
+2026-03-13 09:34:15,915 INFO   PFX_ANTI                         3544
+2026-03-13 09:34:15,915 INFO   PFX_NEG+PAST                     2716
+2026-03-13 09:34:15,915 INFO   PFX_ITER                         2486
+2026-03-13 09:34:15,915 INFO   PLURAL_3SG                       1834
+2026-03-13 09:34:15,915 INFO   PFX_REV                          1153
+2026-03-13 09:34:15,915 INFO   PFX_MIS                           845
+2026-03-13 09:34:15,915 INFO   PFX_PRE                           505
+2026-03-13 09:34:15,916 INFO   PFX_NEG+PROG                      381
+2026-03-13 09:34:15,916 INFO   ADV_LY+PROG                       222
+2026-03-13 09:34:15,916 INFO   PFX_NEG+NMLZ                      184
+2026-03-13 09:34:15,916 INFO   AGENT+PFX_NEG                     156
+2026-03-13 09:34:15,916 INFO   ADV_LY+PFX_NEG                    108
+2026-03-13 09:34:15,916 INFO   COMP                               82
+2026-03-13 09:34:15,916 INFO   PFX_NEG+ADV_LY                     79
+2026-03-13 09:34:15,916 INFO   AGENT+PLURAL_3SG                   63
+2026-03-13 09:34:15,916 INFO   PROG+PFX_NEG                       53
+2026-03-13 09:34:15,916 INFO   ADV_LY+PAST                        52
+2026-03-13 09:34:15,916 INFO   NMLZ+PAST                          52
+2026-03-13 09:34:15,916 INFO   PROG+PLURAL_3SG                    47
+2026-03-13 09:34:15,916 INFO   NMLZ+PFX_NEG                       39
+2026-03-13 09:34:15,916 INFO   COMP+PFX_NEG                       33
+2026-03-13 09:34:15,916 INFO   SUP                                32
+2026-03-13 09:34:15,917 INFO   PAST                               28
+2026-03-13 09:34:15,917 INFO   PROG+PFX_REV                       28
+2026-03-13 09:34:15,917 INFO   AGENT+PFX_ITER                     28
+2026-03-13 09:34:15,917 INFO   COMP+PFX_ANTI                      27
+2026-03-13 09:34:15,917 INFO   AGENT+SUP                          24
+2026-03-13 09:34:15,917 INFO   AGENT+PFX_REV                      24
+2026-03-13 09:34:15,917 INFO   PROG+PFX_ITER                      24
+2026-03-13 09:34:15,917 INFO   AGENT+PFX_ANTI                     23
+2026-03-13 09:34:15,917 INFO   PROG+PFX_PRE                       21
+2026-03-13 09:34:15,917 INFO   PLURAL_3SG+PROG                    19
+2026-03-13 09:34:15,917 INFO   PFX_NEG+PFX_NEG                    19
+2026-03-13 09:34:15,917 INFO   PFX_ANTI+PROG                      17
+2026-03-13 09:34:15,917 INFO   AGENT+PFX_PRE                      16
+2026-03-13 09:34:15,917 INFO   ADV_LY+PFX_ANTI                    14
+2026-03-13 09:34:15,918 INFO   PFX_NEG+PLURAL_3SG                 11
+2026-03-13 09:34:15,918 INFO   PROG+PFX_MIS                       11
+2026-03-13 09:34:15,918 INFO   PFX_NEG+PFX_REV                    10
+2026-03-13 09:34:15,918 INFO   PROG+PFX_ANTI                       9
+2026-03-13 09:34:15,918 INFO   NMLZ+PROG                           9
+2026-03-13 09:34:15,918 INFO   PLURAL_3SG+PLURAL_3SG               8
+2026-03-13 09:34:15,918 INFO   PFX_NEG+AGENT                       7
+2026-03-13 09:34:15,918 INFO   PFX_ANTI+PLURAL_3SG                 6
+2026-03-13 09:34:15,918 INFO   PLURAL_3SG+COMP                     6
+2026-03-13 09:34:15,918 INFO   SUP+PFX_NEG                         6
+2026-03-13 09:34:15,918 INFO   PLURAL_3SG+PFX_ANTI                 5
+2026-03-13 09:34:15,918 INFO   COMP+PFX_PRE                        5
+2026-03-13 09:34:15,918 INFO   AGENT+PROG                          4
+2026-03-13 09:34:15,918 INFO   PAST+PFX_NEG                        4
+2026-03-13 09:34:15,918 INFO   AGENT+PFX_MIS                       4
+2026-03-13 09:34:15,919 INFO   PFX_NEG+COMP                        4
+2026-03-13 09:34:15,919 INFO   NMLZ+PFX_PRE                        4
+2026-03-13 09:34:15,919 INFO   PFX_ANTI+PAST                       3
+2026-03-13 09:34:15,919 INFO   PLURAL_3SG+PFX_NEG                  3
+2026-03-13 09:34:15,919 INFO   PLURAL_3SG+PFX_ITER                 3
+2026-03-13 09:34:15,919 INFO   PAST+PFX_ITER                       3
+2026-03-13 09:34:15,919 INFO   NMLZ+PFX_ANTI                       2
+2026-03-13 09:34:15,919 INFO   PFX_ANTI+NMLZ                       2
+2026-03-13 09:34:15,919 INFO   COMP+PLURAL_3SG                     2
+2026-03-13 09:34:15,919 INFO   PROG+PROG                           2
+2026-03-13 09:34:15,919 INFO   ADV_LY+PFX_REV                      2
+2026-03-13 09:34:15,919 INFO   PAST+PFX_REV                        2
+2026-03-13 09:34:15,919 INFO   AGENT+COMP                          2
+2026-03-13 09:34:15,919 INFO   AGENT+AGENT                         2
+2026-03-13 09:34:15,919 INFO   PROG+AGENT                          2
+2026-03-13 09:34:15,920 INFO   SUP+PFX_PRE                         2
+2026-03-13 09:34:15,920 INFO   PAST+PFX_PRE                        2
+2026-03-13 09:34:15,920 INFO   AGENT+PAST                          2
+2026-03-13 09:34:15,920 INFO   PFX_ITER+AGENT                      2
+2026-03-13 09:34:15,920 INFO   PLURAL_3SG+AGENT                    2
+2026-03-13 09:34:15,920 INFO   PFX_ANTI+AGENT                      1
+2026-03-13 09:34:15,920 INFO   SUP+PFX_ANTI                        1
+2026-03-13 09:34:15,920 INFO   PAST+PLURAL_3SG                     1
+2026-03-13 09:34:15,920 INFO   COMP+PFX_REV                        1
+2026-03-13 09:34:15,920 INFO   PLURAL_3SG+PFX_REV                  1
+2026-03-13 09:34:15,920 INFO   PROG+ADV_LY                         1
+2026-03-13 09:34:15,920 INFO   PLURAL_3SG+ADV_LY                   1
+2026-03-13 09:34:15,920 INFO   NMLZ+AGENT                          1
+2026-03-13 09:34:15,920 INFO   PAST+PFX_MIS                        1
+2026-03-13 09:34:15,920 INFO   PLURAL_3SG+PFX_MIS                  1
+2026-03-13 09:34:15,921 INFO   NMLZ+ADV_LY                         1
+2026-03-13 09:34:15,921 INFO   PROG+SUP                            1
+2026-03-13 09:34:15,921 INFO   COMP+SUP                            1
+2026-03-13 09:34:15,921 INFO   PFX_PRE+PFX_REV                     1
+2026-03-13 09:34:15,921 INFO   PLURAL_3SG+PFX_PRE                  1
+2026-03-13 09:34:15,921 INFO   PFX_ITER+COMP                       1
+2026-03-13 09:34:15,921 INFO   PROG+PAST                           1
+2026-03-13 09:34:15,921 INFO   PFX_ITER+PFX_NEG                    1
+2026-03-13 09:34:15,921 INFO   ADV_LY+PFX_ITER                     1
+2026-03-13 09:34:15,921 INFO   NMLZ+SUP                            1
+2026-03-13 09:34:15,921 INFO   PROG+COMP                           1
+2026-03-13 09:34:15,921 INFO   PFX_NEG+PFX_ITER                    1
+2026-03-13 09:34:15,921 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 09:34:24,800 INFO Loading tokens...
+2026-03-13 09:34:28,638 INFO Loaded 460549 distinct name entries
+2026-03-13 09:34:28,638 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 09:34:34,475 INFO Found 78968 derivative candidates
+2026-03-13 09:34:34,651 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 09:34:34,673 INFO   PFX_NEG                         25635
+2026-03-13 09:34:34,673 INFO   ADV_LY                          13626
+2026-03-13 09:34:34,673 INFO   NMLZ                            10151
+2026-03-13 09:34:34,673 INFO   AGENT                            8006
+2026-03-13 09:34:34,673 INFO   PROG                             6397
+2026-03-13 09:34:34,673 INFO   PFX_ANTI                         3544
+2026-03-13 09:34:34,674 INFO   PFX_NEG+PAST                     2716
+2026-03-13 09:34:34,674 INFO   PFX_ITER                         2486
+2026-03-13 09:34:34,674 INFO   PLURAL_3SG                       1834
+2026-03-13 09:34:34,674 INFO   PFX_REV                          1153
+2026-03-13 09:34:34,674 INFO   PFX_MIS                           845
+2026-03-13 09:34:34,674 INFO   PFX_PRE                           505
+2026-03-13 09:34:34,674 INFO   PFX_NEG+PROG                      381
+2026-03-13 09:34:34,674 INFO   ADV_LY+PROG                       222
+2026-03-13 09:34:34,674 INFO   PFX_NEG+NMLZ                      184
+2026-03-13 09:34:34,674 INFO   AGENT+PFX_NEG                     156
+2026-03-13 09:34:34,674 INFO   ADV_LY+PFX_NEG                    108
+2026-03-13 09:34:34,674 INFO   COMP                               82
+2026-03-13 09:34:34,674 INFO   PFX_NEG+ADV_LY                     79
+2026-03-13 09:34:34,674 INFO   AGENT+PLURAL_3SG                   63
+2026-03-13 09:34:34,674 INFO   PROG+PFX_NEG                       53
+2026-03-13 09:34:34,675 INFO   ADV_LY+PAST                        52
+2026-03-13 09:34:34,675 INFO   NMLZ+PAST                          52
+2026-03-13 09:34:34,675 INFO   PROG+PLURAL_3SG                    47
+2026-03-13 09:34:34,675 INFO   NMLZ+PFX_NEG                       39
+2026-03-13 09:34:34,675 INFO   COMP+PFX_NEG                       33
+2026-03-13 09:34:34,675 INFO   SUP                                32
+2026-03-13 09:34:34,675 INFO   PAST                               28
+2026-03-13 09:34:34,675 INFO   PROG+PFX_REV                       28
+2026-03-13 09:34:34,675 INFO   AGENT+PFX_ITER                     28
+2026-03-13 09:34:34,675 INFO   COMP+PFX_ANTI                      27
+2026-03-13 09:34:34,675 INFO   AGENT+SUP                          24
+2026-03-13 09:34:34,675 INFO   AGENT+PFX_REV                      24
+2026-03-13 09:34:34,675 INFO   PROG+PFX_ITER                      24
+2026-03-13 09:34:34,675 INFO   AGENT+PFX_ANTI                     23
+2026-03-13 09:34:34,675 INFO   PROG+PFX_PRE                       21
+2026-03-13 09:34:34,675 INFO   PLURAL_3SG+PROG                    19
+2026-03-13 09:34:34,676 INFO   PFX_NEG+PFX_NEG                    19
+2026-03-13 09:34:34,676 INFO   PFX_ANTI+PROG                      17
+2026-03-13 09:34:34,676 INFO   AGENT+PFX_PRE                      16
+2026-03-13 09:34:34,676 INFO   ADV_LY+PFX_ANTI                    14
+2026-03-13 09:34:34,676 INFO   PFX_NEG+PLURAL_3SG                 11
+2026-03-13 09:34:34,676 INFO   PROG+PFX_MIS                       11
+2026-03-13 09:34:34,676 INFO   PFX_NEG+PFX_REV                    10
+2026-03-13 09:34:34,676 INFO   PROG+PFX_ANTI                       9
+2026-03-13 09:34:34,676 INFO   NMLZ+PROG                           9
+2026-03-13 09:34:34,676 INFO   PLURAL_3SG+PLURAL_3SG               8
+2026-03-13 09:34:34,676 INFO   PFX_NEG+AGENT                       7
+2026-03-13 09:34:34,676 INFO   PFX_ANTI+PLURAL_3SG                 6
+2026-03-13 09:34:34,676 INFO   PLURAL_3SG+COMP                     6
+2026-03-13 09:34:34,676 INFO   SUP+PFX_NEG                         6
+2026-03-13 09:34:34,676 INFO   PLURAL_3SG+PFX_ANTI                 5
+2026-03-13 09:34:34,676 INFO   COMP+PFX_PRE                        5
+2026-03-13 09:34:34,677 INFO   AGENT+PROG                          4
+2026-03-13 09:34:34,677 INFO   PAST+PFX_NEG                        4
+2026-03-13 09:34:34,677 INFO   AGENT+PFX_MIS                       4
+2026-03-13 09:34:34,677 INFO   PFX_NEG+COMP                        4
+2026-03-13 09:34:34,677 INFO   NMLZ+PFX_PRE                        4
+2026-03-13 09:34:34,677 INFO   PFX_ANTI+PAST                       3
+2026-03-13 09:34:34,677 INFO   PLURAL_3SG+PFX_NEG                  3
+2026-03-13 09:34:34,677 INFO   PLURAL_3SG+PFX_ITER                 3
+2026-03-13 09:34:34,677 INFO   PAST+PFX_ITER                       3
+2026-03-13 09:34:34,677 INFO   NMLZ+PFX_ANTI                       2
+2026-03-13 09:34:34,677 INFO   PFX_ANTI+NMLZ                       2
+2026-03-13 09:34:34,677 INFO   COMP+PLURAL_3SG                     2
+2026-03-13 09:34:34,677 INFO   PROG+PROG                           2
+2026-03-13 09:34:34,677 INFO   ADV_LY+PFX_REV                      2
+2026-03-13 09:34:34,678 INFO   PAST+PFX_REV                        2
+2026-03-13 09:34:34,678 INFO   AGENT+COMP                          2
+2026-03-13 09:34:34,678 INFO   AGENT+AGENT                         2
+2026-03-13 09:34:34,678 INFO   PROG+AGENT                          2
+2026-03-13 09:34:34,678 INFO   SUP+PFX_PRE                         2
+2026-03-13 09:34:34,678 INFO   PAST+PFX_PRE                        2
+2026-03-13 09:34:34,678 INFO   AGENT+PAST                          2
+2026-03-13 09:34:34,678 INFO   PFX_ITER+AGENT                      2
+2026-03-13 09:34:34,678 INFO   PLURAL_3SG+AGENT                    2
+2026-03-13 09:34:34,678 INFO   PFX_ANTI+AGENT                      1
+2026-03-13 09:34:34,678 INFO   SUP+PFX_ANTI                        1
+2026-03-13 09:34:34,678 INFO   PAST+PLURAL_3SG                     1
+2026-03-13 09:34:34,678 INFO   COMP+PFX_REV                        1
+2026-03-13 09:34:34,679 INFO   PLURAL_3SG+PFX_REV                  1
+2026-03-13 09:34:34,679 INFO   PROG+ADV_LY                         1
+2026-03-13 09:34:34,679 INFO   PLURAL_3SG+ADV_LY                   1
+2026-03-13 09:34:34,679 INFO   NMLZ+AGENT                          1
+2026-03-13 09:34:34,679 INFO   PAST+PFX_MIS                        1
+2026-03-13 09:34:34,679 INFO   PLURAL_3SG+PFX_MIS                  1
+2026-03-13 09:34:34,679 INFO   NMLZ+ADV_LY                         1
+2026-03-13 09:34:34,679 INFO   PROG+SUP                            1
+2026-03-13 09:34:34,679 INFO   COMP+SUP                            1
+2026-03-13 09:34:34,679 INFO   PFX_PRE+PFX_REV                     1
+2026-03-13 09:34:34,679 INFO   PLURAL_3SG+PFX_PRE                  1
+2026-03-13 09:34:34,679 INFO   PFX_ITER+COMP                       1
+2026-03-13 09:34:34,679 INFO   PROG+PAST                           1
+2026-03-13 09:34:34,680 INFO   PFX_ITER+PFX_NEG                    1
+2026-03-13 09:34:34,680 INFO   ADV_LY+PFX_ITER                     1
+2026-03-13 09:34:34,680 INFO   NMLZ+SUP                            1
+2026-03-13 09:34:34,680 INFO   PROG+COMP                           1
+2026-03-13 09:34:34,680 INFO   PFX_NEG+PFX_ITER                    1
+2026-03-13 09:34:34,680 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 09:49:09,348 INFO Loading tokens...
+2026-03-13 09:49:13,230 INFO Loaded 460549 distinct name entries
+2026-03-13 09:49:13,231 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 09:49:18,912 INFO Found 72277 derivative candidates
+2026-03-13 09:49:19,060 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 09:49:19,081 INFO   ADV_LY                          13626
+2026-03-13 09:49:19,081 INFO   PFX_NEG                         10243
+2026-03-13 09:49:19,081 INFO   NMLZ                            10151
+2026-03-13 09:49:19,081 INFO   PFX_NEG_NON                      9610
+2026-03-13 09:49:19,081 INFO   AGENT                            8006
+2026-03-13 09:49:19,082 INFO   PROG                             6397
+2026-03-13 09:49:19,082 INFO   PFX_ANTI                         3553
+2026-03-13 09:49:19,082 INFO   PFX_ITER                         2597
+2026-03-13 09:49:19,082 INFO   PLURAL_3SG                       1834
+2026-03-13 09:49:19,082 INFO   PFX_REV                          1236
+2026-03-13 09:49:19,082 INFO   PFX_NEG_IN                       1007
+2026-03-13 09:49:19,082 INFO   PFX_MIS                           926
+2026-03-13 09:49:19,082 INFO   PFX_PRE                           918
+2026-03-13 09:49:19,082 INFO   PFX_NEG_DIS                       855
+2026-03-13 09:49:19,082 INFO   PFX_NEG_IM                        265
+2026-03-13 09:49:19,082 INFO   AGENT+PFX_NEG_NON                 135
+2026-03-13 09:49:19,082 INFO   PFX_NEG_IR                        125
+2026-03-13 09:49:19,082 INFO   COMP                               82
+2026-03-13 09:49:19,083 INFO   ADV_LY+PFX_NEG_NON                 46
+2026-03-13 09:49:19,083 INFO   ADV_LY+PFX_NEG                     45
+2026-03-13 09:49:19,083 INFO   PFX_NEG_IL                         39
+2026-03-13 09:49:19,083 INFO   SUP                                32
+2026-03-13 09:49:19,083 INFO   PROG+PFX_REV                       29
+2026-03-13 09:49:19,083 INFO   PAST                               28
+2026-03-13 09:49:19,083 INFO   AGENT+PFX_ITER                     28
+2026-03-13 09:49:19,083 INFO   COMP+PFX_ANTI                      27
+2026-03-13 09:49:19,083 INFO   COMP+PFX_NEG_NON                   27
+2026-03-13 09:49:19,083 INFO   PROG+PFX_ITER                      25
+2026-03-13 09:49:19,083 INFO   NMLZ+PFX_NEG                       25
+2026-03-13 09:49:19,083 INFO   AGENT+PFX_REV                      24
+2026-03-13 09:49:19,084 INFO   AGENT+PFX_ANTI                     23
+2026-03-13 09:49:19,084 INFO   PFX_NEG+PFX_NEG_DIS                23
+2026-03-13 09:49:19,084 INFO   PROG+PFX_PRE                       21
+2026-03-13 09:49:19,084 INFO   PFX_NEG+PFX_NEG_IN                 21
+2026-03-13 09:49:19,084 INFO   PROG+PFX_NEG_NON                   20
+2026-03-13 09:49:19,084 INFO   AGENT+PFX_PRE                      16
+2026-03-13 09:49:19,084 INFO   ADV_LY+PFX_ANTI                    14
+2026-03-13 09:49:19,084 INFO   PROG+PFX_MIS                       11
+2026-03-13 09:49:19,084 INFO   PFX_NEG+PFX_NEG_IM                 10
+2026-03-13 09:49:19,084 INFO   PROG+PFX_ANTI                       9
+2026-03-13 09:49:19,084 INFO   AGENT+PFX_NEG_DIS                   9
+2026-03-13 09:49:19,084 INFO   PFX_NEG+PFX_REV                     9
+2026-03-13 09:49:19,084 INFO   PROG+PFX_NEG_IN                     8
+2026-03-13 09:49:19,085 INFO   ADV_LY+PFX_NEG_IN                   7
+2026-03-13 09:49:19,085 INFO   PLURAL_3SG+PFX_ANTI                 5
+2026-03-13 09:49:19,085 INFO   PROG+PFX_NEG_DIS                    5
+2026-03-13 09:49:19,085 INFO   NMLZ+PFX_NEG_NON                    5
+2026-03-13 09:49:19,085 INFO   COMP+PFX_PRE                        5
+2026-03-13 09:49:19,085 INFO   PROG+PFX_NEG                        5
+2026-03-13 09:49:19,085 INFO   COMP+PFX_NEG                        5
+2026-03-13 09:49:19,085 INFO   ADV_LY+PFX_NEG_IM                   4
+2026-03-13 09:49:19,085 INFO   NMLZ+PFX_NEG_IN                     4
+2026-03-13 09:49:19,085 INFO   AGENT+PFX_MIS                       4
+2026-03-13 09:49:19,085 INFO   PFX_NEG_NON+PFX_NEG_DIS             4
+2026-03-13 09:49:19,085 INFO   NMLZ+PFX_PRE                        4
+2026-03-13 09:49:19,085 INFO   PFX_ITER+PFX_NEG_IN                 4
+2026-03-13 09:49:19,086 INFO   ADV_LY+PFX_NEG_DIS                  3
+2026-03-13 09:49:19,086 INFO   NMLZ+PFX_NEG_DIS                    3
+2026-03-13 09:49:19,086 INFO   AGENT+PFX_NEG_IN                    3
+2026-03-13 09:49:19,086 INFO   PFX_NEG_NON+PFX_NEG_IN              3
+2026-03-13 09:49:19,086 INFO   PLURAL_3SG+PFX_ITER                 3
+2026-03-13 09:49:19,086 INFO   PAST+PFX_ITER                       3
+2026-03-13 09:49:19,086 INFO   PFX_ITER+PFX_ITER                   3
+2026-03-13 09:49:19,086 INFO   PFX_NEG+PFX_NEG_IL                  3
+2026-03-13 09:49:19,086 INFO   NMLZ+PFX_ANTI                       2
+2026-03-13 09:49:19,086 INFO   ADV_LY+PFX_REV                      2
+2026-03-13 09:49:19,086 INFO   PAST+PFX_REV                        2
+2026-03-13 09:49:19,086 INFO   PFX_NEG_IN+PFX_NEG                  2
+2026-03-13 09:49:19,086 INFO   PLURAL_3SG+PFX_NEG_NON              2
+2026-03-13 09:49:19,087 INFO   SUP+PFX_NEG_NON                     2
+2026-03-13 09:49:19,087 INFO   PFX_NEG_NON+PFX_NEG_IM              2
+2026-03-13 09:49:19,087 INFO   SUP+PFX_PRE                         2
+2026-03-13 09:49:19,087 INFO   PFX_PRE+PFX_REV                     2
+2026-03-13 09:49:19,087 INFO   PAST+PFX_PRE                        2
+2026-03-13 09:49:19,087 INFO   PFX_ITER+PFX_REV                    2
+2026-03-13 09:49:19,087 INFO   SUP+PFX_NEG                         2
+2026-03-13 09:49:19,087 INFO   AGENT+PFX_NEG                       2
+2026-03-13 09:49:19,087 INFO   SUP+PFX_ANTI                        1
+2026-03-13 09:49:19,087 INFO   COMP+PFX_REV                        1
+2026-03-13 09:49:19,087 INFO   PFX_REV+PFX_MIS                     1
+2026-03-13 09:49:19,087 INFO   PLURAL_3SG+PFX_REV                  1
+2026-03-13 09:49:19,087 INFO   PFX_REV+PFX_PRE                     1
+2026-03-13 09:49:19,088 INFO   PFX_REV+PFX_ITER                    1
+2026-03-13 09:49:19,088 INFO   SUP+PFX_NEG_DIS                     1
+2026-03-13 09:49:19,088 INFO   PFX_NEG_DIS+PFX_MIS                 1
+2026-03-13 09:49:19,088 INFO   PAST+PFX_NEG_DIS                    1
+2026-03-13 09:49:19,088 INFO   PLURAL_3SG+PFX_NEG_DIS              1
+2026-03-13 09:49:19,088 INFO   SUP+PFX_NEG_IM                      1
+2026-03-13 09:49:19,088 INFO   NMLZ+PFX_NEG_IM                     1
+2026-03-13 09:49:19,088 INFO   PFX_NEG_IN+PFX_REV                  1
+2026-03-13 09:49:19,088 INFO   PFX_NEG_IR+PFX_NEG_IL               1
+2026-03-13 09:49:19,088 INFO   NMLZ+PFX_NEG_IR                     1
+2026-03-13 09:49:19,088 INFO   ADV_LY+PFX_NEG_IR                   1
+2026-03-13 09:49:19,088 INFO   PAST+PFX_MIS                        1
+2026-03-13 09:49:19,088 INFO   PLURAL_3SG+PFX_MIS                  1
+2026-03-13 09:49:19,088 INFO   PFX_NEG_NON+PFX_REV                 1
+2026-03-13 09:49:19,088 INFO   PFX_NEG_NON+PFX_NEG_IL              1
+2026-03-13 09:49:19,089 INFO   PFX_NEG_NON+PFX_ITER                1
+2026-03-13 09:49:19,089 INFO   PFX_PRE+PFX_NEG_DIS                 1
+2026-03-13 09:49:19,089 INFO   PLURAL_3SG+PFX_PRE                  1
+2026-03-13 09:49:19,089 INFO   PFX_ITER+PFX_NEG_DIS                1
+2026-03-13 09:49:19,089 INFO   PFX_ITER+PFX_NEG_IM                 1
+2026-03-13 09:49:19,089 INFO   ADV_LY+PFX_ITER                     1
+2026-03-13 09:49:19,089 INFO   PFX_NEG+PFX_NEG_IR                  1
+2026-03-13 09:49:19,089 INFO   PFX_NEG+PFX_MIS                     1
+2026-03-13 09:49:19,089 INFO   PFX_NEG+PFX_ITER                    1
+2026-03-13 09:49:19,089 INFO   PFX_NEG+PFX_NEG                     1
+2026-03-13 09:49:19,089 INFO   PAST+PFX_NEG                        1
+2026-03-13 09:49:19,089 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 09:57:27,999 INFO Loading tokens...
+2026-03-13 09:57:31,853 INFO Loaded 460549 distinct name entries
+2026-03-13 09:57:31,853 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 09:57:50,041 INFO Found 116318 derivative candidates
+2026-03-13 09:57:50,308 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 09:57:50,338 INFO   ADV_LY                          13626
+2026-03-13 09:57:50,338 INFO   NMLZ                            10151
+2026-03-13 09:57:50,338 INFO   PFX_NEG                         10097
+2026-03-13 09:57:50,338 INFO   PFX_NEG_NON                      9607
+2026-03-13 09:57:50,338 INFO   AGENT                            8006
+2026-03-13 09:57:50,338 INFO   PROG                             6397
+2026-03-13 09:57:50,338 INFO   ADJ_ABLE                         4286
+2026-03-13 09:57:50,338 INFO   NMLZ_ITY                         4032
+2026-03-13 09:57:50,338 INFO   ADJ_AL                           3855
+2026-03-13 09:57:50,338 INFO   NMLZ_ION                         3673
+2026-03-13 09:57:50,339 INFO   ADJ_Y                            3659
+2026-03-13 09:57:50,339 INFO   ADJ_LESS                         3556
+2026-03-13 09:57:50,339 INFO   PFX_ANTI                         3544
+2026-03-13 09:57:50,339 INFO   NMLZ_ISM                         3400
+2026-03-13 09:57:50,339 INFO   ADJ_LIKE                         3350
+2026-03-13 09:57:50,339 INFO   PFX_ITER                         2486
+2026-03-13 09:57:50,339 INFO   NMLZ_IST                         2366
+2026-03-13 09:57:50,339 INFO   V_IZE                            1950
+2026-03-13 09:57:50,339 INFO   PLURAL_3SG                       1834
+2026-03-13 09:57:50,339 INFO   ADJ_ISH                          1622
+2026-03-13 09:57:50,339 INFO   AGENT_OR                         1374
+2026-03-13 09:57:50,339 INFO   NMLZ_MENT                        1354
+2026-03-13 09:57:50,339 INFO   NMLZ_SHIP                        1215
+2026-03-13 09:57:50,339 INFO   PFX_REV                          1153
+2026-03-13 09:57:50,340 INFO   PFX_NEG_IN                        905
+2026-03-13 09:57:50,340 INFO   PFX_MIS                           845
+2026-03-13 09:57:50,340 INFO   PFX_NEG_DIS                       788
+2026-03-13 09:57:50,340 INFO   ADJ_FUL                           761
+2026-03-13 09:57:50,340 INFO   NMLZ_DOM                          676
+2026-03-13 09:57:50,340 INFO   ADJ_SOME                          653
+2026-03-13 09:57:50,340 INFO   NMLZ_HOOD                         600
+2026-03-13 09:57:50,340 INFO   PFX_PRE                           505
+2026-03-13 09:57:50,340 INFO   V_ANCE                            499
+2026-03-13 09:57:50,340 INFO   ADV_WISE                          486
+2026-03-13 09:57:50,340 INFO   V_IFY                             470
+2026-03-13 09:57:50,340 INFO   ADV_WARD                          462
+2026-03-13 09:57:50,340 INFO   ADJ_ANT                           427
+2026-03-13 09:57:50,340 INFO   ADJ_ARY                           380
+2026-03-13 09:57:50,341 INFO   PP_EN                             273
+2026-03-13 09:57:50,341 INFO   PAST_T                            257
+2026-03-13 09:57:50,341 INFO   PFX_NEG_IM                        236
+2026-03-13 09:57:50,341 INFO   V_EN                              205
+2026-03-13 09:57:50,341 INFO   PFX_NEG_IR                        119
+2026-03-13 09:57:50,341 INFO   COMP                               82
+2026-03-13 09:57:50,341 INFO   PFX_NEG_IL                         36
+2026-03-13 09:57:50,341 INFO   SUP                                32
+2026-03-13 09:57:50,341 INFO   PAST                               28
+2026-03-13 09:57:50,341 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:14:44,855 INFO Loading tokens...
+2026-03-13 10:14:48,810 INFO Loaded 460549 distinct name entries
+2026-03-13 10:14:48,811 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:15:07,270 INFO Found 101557 derivative candidates
+2026-03-13 10:15:07,500 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:15:07,526 INFO   ADV_LY                          12664
+2026-03-13 10:15:07,527 INFO   NMLZ                             9397
+2026-03-13 10:15:07,527 INFO   PFX_NEG                          9397
+2026-03-13 10:15:07,527 INFO   PFX_NEG_NON                      8399
+2026-03-13 10:15:07,527 INFO   AGENT                            7161
+2026-03-13 10:15:07,527 INFO   PROG                             5807
+2026-03-13 10:15:07,527 INFO   ADJ_ABLE                         3735
+2026-03-13 10:15:07,527 INFO   NMLZ_ITY                         3548
+2026-03-13 10:15:07,527 INFO   ADJ_AL                           3206
+2026-03-13 10:15:07,527 INFO   ADJ_Y                            3201
+2026-03-13 10:15:07,527 INFO   PFX_ANTI                         3015
+2026-03-13 10:15:07,527 INFO   ADJ_LESS                         2964
+2026-03-13 10:15:07,527 INFO   NMLZ_ION                         2950
+2026-03-13 10:15:07,527 INFO   NMLZ_ISM                         2751
+2026-03-13 10:15:07,528 INFO   ADJ_LIKE                         2596
+2026-03-13 10:15:07,528 INFO   PFX_ITER                         2037
+2026-03-13 10:15:07,528 INFO   NMLZ_IST                         1799
+2026-03-13 10:15:07,528 INFO   PLURAL_3SG                       1540
+2026-03-13 10:15:07,528 INFO   V_IZE                            1493
+2026-03-13 10:15:07,528 INFO   ADJ_ISH                          1417
+2026-03-13 10:15:07,528 INFO   NMLZ_MENT                        1202
+2026-03-13 10:15:07,528 INFO   NMLZ_SHIP                        1027
+2026-03-13 10:15:07,528 INFO   PFX_REV                           970
+2026-03-13 10:15:07,528 INFO   AGENT_OR                          961
+2026-03-13 10:15:07,528 INFO   PFX_NEG_IN                        736
+2026-03-13 10:15:07,528 INFO   PFX_MIS                           714
+2026-03-13 10:15:07,528 INFO   ADJ_FUL                           705
+2026-03-13 10:15:07,528 INFO   PFX_NEG_DIS                       685
+2026-03-13 10:15:07,528 INFO   ADJ_SOME                          613
+2026-03-13 10:15:07,529 INFO   NMLZ_DOM                          563
+2026-03-13 10:15:07,529 INFO   NMLZ_HOOD                         518
+2026-03-13 10:15:07,529 INFO   ADV_WISE                          427
+2026-03-13 10:15:07,529 INFO   ADV_WARD                          422
+2026-03-13 10:15:07,529 INFO   PFX_PRE                           411
+2026-03-13 10:15:07,529 INFO   V_ANCE                            408
+2026-03-13 10:15:07,529 INFO   V_IFY                             392
+2026-03-13 10:15:07,529 INFO   ADJ_ANT                           324
+2026-03-13 10:15:07,529 INFO   ADJ_ARY                           295
+2026-03-13 10:15:07,529 INFO   PP_EN                             250
+2026-03-13 10:15:07,529 INFO   PAST_T                            218
+2026-03-13 10:15:07,529 INFO   PFX_NEG_IM                        196
+2026-03-13 10:15:07,529 INFO   V_EN                              191
+2026-03-13 10:15:07,529 INFO   PFX_NEG_IR                         94
+2026-03-13 10:15:07,529 INFO   COMP                               76
+2026-03-13 10:15:07,529 INFO   SUP                                29
+2026-03-13 10:15:07,530 INFO   PFX_NEG_IL                         27
+2026-03-13 10:15:07,530 INFO   PAST                               26
+2026-03-13 10:15:07,530 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:16:08,836 INFO Loading tokens...
+2026-03-13 10:16:12,837 INFO Loaded 460549 distinct name entries
+2026-03-13 10:16:12,838 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:16:31,146 INFO Found 115278 derivative candidates
+2026-03-13 10:16:31,399 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:16:31,428 INFO   ADV_LY                          13626
+2026-03-13 10:16:31,429 INFO   NMLZ                            10151
+2026-03-13 10:16:31,429 INFO   PFX_NEG                         10095
+2026-03-13 10:16:31,429 INFO   PFX_NEG_NON                      9604
+2026-03-13 10:16:31,429 INFO   AGENT                            7930
+2026-03-13 10:16:31,429 INFO   PROG                             6389
+2026-03-13 10:16:31,429 INFO   ADJ_ABLE                         4251
+2026-03-13 10:16:31,429 INFO   NMLZ_ITY                         3991
+2026-03-13 10:16:31,429 INFO   ADJ_AL                           3796
+2026-03-13 10:16:31,429 INFO   ADJ_Y                            3616
+2026-03-13 10:16:31,429 INFO   ADJ_LESS                         3555
+2026-03-13 10:16:31,429 INFO   PFX_ANTI                         3532
+2026-03-13 10:16:31,429 INFO   NMLZ_ION                         3461
+2026-03-13 10:16:31,429 INFO   NMLZ_ISM                         3371
+2026-03-13 10:16:31,429 INFO   ADJ_LIKE                         3350
+2026-03-13 10:16:31,430 INFO   PFX_ITER                         2455
+2026-03-13 10:16:31,430 INFO   NMLZ_IST                         2339
+2026-03-13 10:16:31,430 INFO   V_IZE                            1934
+2026-03-13 10:16:31,430 INFO   PLURAL_3SG                       1750
+2026-03-13 10:16:31,430 INFO   ADJ_ISH                          1621
+2026-03-13 10:16:31,430 INFO   NMLZ_MENT                        1320
+2026-03-13 10:16:31,430 INFO   AGENT_OR                         1302
+2026-03-13 10:16:31,430 INFO   NMLZ_SHIP                        1214
+2026-03-13 10:16:31,430 INFO   PFX_REV                          1124
+2026-03-13 10:16:31,430 INFO   PFX_NEG_IN                        857
+2026-03-13 10:16:31,430 INFO   PFX_MIS                           845
+2026-03-13 10:16:31,430 INFO   PFX_NEG_DIS                       771
+2026-03-13 10:16:31,430 INFO   ADJ_FUL                           760
+2026-03-13 10:16:31,430 INFO   NMLZ_DOM                          675
+2026-03-13 10:16:31,430 INFO   ADJ_SOME                          653
+2026-03-13 10:16:31,431 INFO   NMLZ_HOOD                         600
+2026-03-13 10:16:31,431 INFO   PFX_PRE                           497
+2026-03-13 10:16:31,431 INFO   ADV_WISE                          486
+2026-03-13 10:16:31,431 INFO   V_ANCE                            471
+2026-03-13 10:16:31,431 INFO   ADV_WARD                          462
+2026-03-13 10:16:31,431 INFO   V_IFY                             459
+2026-03-13 10:16:31,431 INFO   ADJ_ANT                           383
+2026-03-13 10:16:31,431 INFO   ADJ_ARY                           364
+2026-03-13 10:16:31,431 INFO   PP_EN                             269
+2026-03-13 10:16:31,431 INFO   PAST_T                            239
+2026-03-13 10:16:31,431 INFO   PFX_NEG_IM                        221
+2026-03-13 10:16:31,431 INFO   V_EN                              203
+2026-03-13 10:16:31,431 INFO   PFX_NEG_IR                        110
+2026-03-13 10:16:31,431 INFO   COMP                               81
+2026-03-13 10:16:31,432 INFO   PFX_NEG_IL                         35
+2026-03-13 10:16:31,432 INFO   SUP                                32
+2026-03-13 10:16:31,432 INFO   PAST                               28
+2026-03-13 10:16:31,432 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:16:39,628 INFO Loading tokens...
+2026-03-13 10:16:43,630 INFO Loaded 460549 distinct name entries
+2026-03-13 10:16:43,630 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:17:02,208 INFO Found 115278 derivative candidates
+2026-03-13 10:17:02,461 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:17:02,491 INFO   ADV_LY                          13626
+2026-03-13 10:17:02,491 INFO   NMLZ                            10151
+2026-03-13 10:17:02,491 INFO   PFX_NEG                         10095
+2026-03-13 10:17:02,491 INFO   PFX_NEG_NON                      9604
+2026-03-13 10:17:02,491 INFO   AGENT                            7930
+2026-03-13 10:17:02,491 INFO   PROG                             6389
+2026-03-13 10:17:02,491 INFO   ADJ_ABLE                         4251
+2026-03-13 10:17:02,491 INFO   NMLZ_ITY                         3991
+2026-03-13 10:17:02,491 INFO   ADJ_AL                           3796
+2026-03-13 10:17:02,491 INFO   ADJ_Y                            3616
+2026-03-13 10:17:02,491 INFO   ADJ_LESS                         3555
+2026-03-13 10:17:02,491 INFO   PFX_ANTI                         3532
+2026-03-13 10:17:02,492 INFO   NMLZ_ION                         3461
+2026-03-13 10:17:02,492 INFO   NMLZ_ISM                         3371
+2026-03-13 10:17:02,492 INFO   ADJ_LIKE                         3350
+2026-03-13 10:17:02,492 INFO   PFX_ITER                         2455
+2026-03-13 10:17:02,492 INFO   NMLZ_IST                         2339
+2026-03-13 10:17:02,492 INFO   V_IZE                            1934
+2026-03-13 10:17:02,492 INFO   PLURAL_3SG                       1750
+2026-03-13 10:17:02,492 INFO   ADJ_ISH                          1621
+2026-03-13 10:17:02,492 INFO   NMLZ_MENT                        1320
+2026-03-13 10:17:02,492 INFO   AGENT_OR                         1302
+2026-03-13 10:17:02,492 INFO   NMLZ_SHIP                        1214
+2026-03-13 10:17:02,492 INFO   PFX_REV                          1124
+2026-03-13 10:17:02,492 INFO   PFX_NEG_IN                        857
+2026-03-13 10:17:02,492 INFO   PFX_MIS                           845
+2026-03-13 10:17:02,492 INFO   PFX_NEG_DIS                       771
+2026-03-13 10:17:02,493 INFO   ADJ_FUL                           760
+2026-03-13 10:17:02,493 INFO   NMLZ_DOM                          675
+2026-03-13 10:17:02,493 INFO   ADJ_SOME                          653
+2026-03-13 10:17:02,493 INFO   NMLZ_HOOD                         600
+2026-03-13 10:17:02,493 INFO   PFX_PRE                           497
+2026-03-13 10:17:02,493 INFO   ADV_WISE                          486
+2026-03-13 10:17:02,493 INFO   V_ANCE                            471
+2026-03-13 10:17:02,493 INFO   ADV_WARD                          462
+2026-03-13 10:17:02,493 INFO   V_IFY                             459
+2026-03-13 10:17:02,493 INFO   ADJ_ANT                           383
+2026-03-13 10:17:02,493 INFO   ADJ_ARY                           364
+2026-03-13 10:17:02,493 INFO   PP_EN                             269
+2026-03-13 10:17:02,493 INFO   PAST_T                            239
+2026-03-13 10:17:02,493 INFO   PFX_NEG_IM                        221
+2026-03-13 10:17:02,493 INFO   V_EN                              203
+2026-03-13 10:17:02,493 INFO   PFX_NEG_IR                        110
+2026-03-13 10:17:02,494 INFO   COMP                               81
+2026-03-13 10:17:02,494 INFO   PFX_NEG_IL                         35
+2026-03-13 10:17:02,494 INFO   SUP                                32
+2026-03-13 10:17:02,494 INFO   PAST                               28
+2026-03-13 10:17:02,494 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:18:39,278 INFO Loading tokens...
+2026-03-13 10:18:43,271 INFO Loaded 460549 distinct name entries
+2026-03-13 10:18:43,272 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:19:01,929 INFO Found 115259 derivative candidates
+2026-03-13 10:19:02,167 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:19:02,196 INFO   ADV_LY                          13626
+2026-03-13 10:19:02,197 INFO   NMLZ                            10151
+2026-03-13 10:19:02,197 INFO   PFX_NEG                         10095
+2026-03-13 10:19:02,197 INFO   PFX_NEG_NON                      9604
+2026-03-13 10:19:02,197 INFO   AGENT                            7930
+2026-03-13 10:19:02,197 INFO   PROG                             6389
+2026-03-13 10:19:02,197 INFO   ADJ_ABLE                         4251
+2026-03-13 10:19:02,197 INFO   NMLZ_ITY                         3991
+2026-03-13 10:19:02,197 INFO   ADJ_AL                           3796
+2026-03-13 10:19:02,197 INFO   ADJ_Y                            3616
+2026-03-13 10:19:02,197 INFO   ADJ_LESS                         3555
+2026-03-13 10:19:02,197 INFO   PFX_ANTI                         3532
+2026-03-13 10:19:02,197 INFO   NMLZ_ION                         3461
+2026-03-13 10:19:02,197 INFO   NMLZ_ISM                         3371
+2026-03-13 10:19:02,198 INFO   ADJ_LIKE                         3350
+2026-03-13 10:19:02,198 INFO   PFX_ITER                         2455
+2026-03-13 10:19:02,198 INFO   NMLZ_IST                         2339
+2026-03-13 10:19:02,198 INFO   V_IZE                            1934
+2026-03-13 10:19:02,198 INFO   PLURAL_3SG                       1750
+2026-03-13 10:19:02,198 INFO   ADJ_ISH                          1621
+2026-03-13 10:19:02,198 INFO   NMLZ_MENT                        1320
+2026-03-13 10:19:02,198 INFO   AGENT_OR                         1302
+2026-03-13 10:19:02,198 INFO   NMLZ_SHIP                        1214
+2026-03-13 10:19:02,198 INFO   PFX_REV                          1105
+2026-03-13 10:19:02,198 INFO   PFX_NEG_IN                        857
+2026-03-13 10:19:02,198 INFO   PFX_MIS                           845
+2026-03-13 10:19:02,198 INFO   PFX_NEG_DIS                       771
+2026-03-13 10:19:02,198 INFO   ADJ_FUL                           760
+2026-03-13 10:19:02,198 INFO   NMLZ_DOM                          675
+2026-03-13 10:19:02,198 INFO   ADJ_SOME                          653
+2026-03-13 10:19:02,199 INFO   NMLZ_HOOD                         600
+2026-03-13 10:19:02,199 INFO   PFX_PRE                           497
+2026-03-13 10:19:02,199 INFO   ADV_WISE                          486
+2026-03-13 10:19:02,199 INFO   V_ANCE                            471
+2026-03-13 10:19:02,199 INFO   ADV_WARD                          462
+2026-03-13 10:19:02,199 INFO   V_IFY                             459
+2026-03-13 10:19:02,199 INFO   ADJ_ANT                           383
+2026-03-13 10:19:02,199 INFO   ADJ_ARY                           364
+2026-03-13 10:19:02,199 INFO   PP_EN                             269
+2026-03-13 10:19:02,199 INFO   PAST_T                            239
+2026-03-13 10:19:02,199 INFO   PFX_NEG_IM                        221
+2026-03-13 10:19:02,199 INFO   V_EN                              203
+2026-03-13 10:19:02,199 INFO   PFX_NEG_IR                        110
+2026-03-13 10:19:02,199 INFO   COMP                               81
+2026-03-13 10:19:02,199 INFO   PFX_NEG_IL                         35
+2026-03-13 10:19:02,200 INFO   SUP                                32
+2026-03-13 10:19:02,200 INFO   PAST                               28
+2026-03-13 10:19:02,200 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:40:56,563 INFO Loading tokens...
+2026-03-13 10:41:00,504 INFO Loaded 460549 distinct name entries
+2026-03-13 10:41:00,505 INFO Loading glosses...
+2026-03-13 10:41:04,280 INFO Loaded glosses for 460060 tokens
+2026-03-13 10:41:04,280 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:41:23,717 INFO Found 84001 derivative candidates
+2026-03-13 10:41:23,908 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:41:23,931 INFO   ADV_LY                           9810
+2026-03-13 10:41:23,931 INFO   PFX_NEG_NON                      8502
+2026-03-13 10:41:23,931 INFO   NMLZ                             8309
+2026-03-13 10:41:23,931 INFO   PFX_NEG                          7855
+2026-03-13 10:41:23,931 INFO   AGENT                            6069
+2026-03-13 10:41:23,931 INFO   PROG                             3656
+2026-03-13 10:41:23,931 INFO   ADJ_LESS                         3361
+2026-03-13 10:41:23,932 INFO   ADJ_LIKE                         3292
+2026-03-13 10:41:23,932 INFO   ADJ_ABLE                         3011
+2026-03-13 10:41:23,932 INFO   NMLZ_ITY                         2985
+2026-03-13 10:41:23,932 INFO   ADJ_AL                           2858
+2026-03-13 10:41:23,932 INFO   ADJ_Y                            2452
+2026-03-13 10:41:23,932 INFO   PFX_ITER                         2234
+2026-03-13 10:41:23,932 INFO   PFX_ANTI                         2062
+2026-03-13 10:41:23,932 INFO   NMLZ_IST                         1905
+2026-03-13 10:41:23,932 INFO   NMLZ_ISM                         1869
+2026-03-13 10:41:23,932 INFO   V_IZE                            1546
+2026-03-13 10:41:23,932 INFO   ADJ_ISH                          1451
+2026-03-13 10:41:23,932 INFO   NMLZ_SHIP                        1015
+2026-03-13 10:41:23,932 INFO   AGENT_OR                          779
+2026-03-13 10:41:23,932 INFO   PFX_MIS                           764
+2026-03-13 10:41:23,932 INFO   NMLZ_MENT                         666
+2026-03-13 10:41:23,932 INFO   NMLZ_DOM                          578
+2026-03-13 10:41:23,933 INFO   ADJ_FUL                           560
+2026-03-13 10:41:23,933 INFO   NMLZ_HOOD                         557
+2026-03-13 10:41:23,933 INFO   PLURAL_3SG                        540
+2026-03-13 10:41:23,933 INFO   ADJ_SOME                          504
+2026-03-13 10:41:23,933 INFO   PFX_REV                           495
+2026-03-13 10:41:23,933 INFO   NMLZ_ION                          489
+2026-03-13 10:41:23,933 INFO   ADV_WISE                          460
+2026-03-13 10:41:23,933 INFO   PFX_PRE                           444
+2026-03-13 10:41:23,933 INFO   ADV_WARD                          434
+2026-03-13 10:41:23,933 INFO   PFX_NEG_IN                        433
+2026-03-13 10:41:23,933 INFO   V_IFY                             327
+2026-03-13 10:41:23,933 INFO   PFX_NEG_DIS                       327
+2026-03-13 10:41:23,933 INFO   ADJ_ARY                           287
+2026-03-13 10:41:23,933 INFO   V_ANCE                            224
+2026-03-13 10:41:23,933 INFO   PP_EN                             221
+2026-03-13 10:41:23,933 INFO   ADJ_ANT                           171
+2026-03-13 10:41:23,934 INFO   V_EN                              169
+2026-03-13 10:41:23,934 INFO   PFX_NEG_IM                        103
+2026-03-13 10:41:23,934 INFO   PAST_T                             82
+2026-03-13 10:41:23,934 INFO   PFX_NEG_IR                         54
+2026-03-13 10:41:23,934 INFO   COMP                               33
+2026-03-13 10:41:23,934 INFO   SUP                                22
+2026-03-13 10:41:23,934 INFO   PAST                               18
+2026-03-13 10:41:23,934 INFO   PFX_NEG_IL                         18
+2026-03-13 10:41:23,934 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:42:37,568 INFO Loading tokens...
+2026-03-13 10:42:41,552 INFO Loaded 460549 distinct name entries
+2026-03-13 10:42:41,552 INFO Loading glosses...
+2026-03-13 10:42:45,301 INFO Loaded glosses for 460060 tokens
+2026-03-13 10:42:45,301 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:43:04,183 INFO Found 84001 derivative candidates
+2026-03-13 10:43:04,383 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:43:04,406 INFO   ADV_LY                           9810
+2026-03-13 10:43:04,406 INFO   PFX_NEG_NON                      8502
+2026-03-13 10:43:04,406 INFO   NMLZ                             8309
+2026-03-13 10:43:04,406 INFO   PFX_NEG                          7855
+2026-03-13 10:43:04,406 INFO   AGENT                            6069
+2026-03-13 10:43:04,407 INFO   PROG                             3656
+2026-03-13 10:43:04,407 INFO   ADJ_LESS                         3361
+2026-03-13 10:43:04,407 INFO   ADJ_LIKE                         3292
+2026-03-13 10:43:04,407 INFO   ADJ_ABLE                         3011
+2026-03-13 10:43:04,407 INFO   NMLZ_ITY                         2985
+2026-03-13 10:43:04,407 INFO   ADJ_AL                           2858
+2026-03-13 10:43:04,407 INFO   ADJ_Y                            2452
+2026-03-13 10:43:04,407 INFO   PFX_ITER                         2234
+2026-03-13 10:43:04,407 INFO   PFX_ANTI                         2062
+2026-03-13 10:43:04,407 INFO   NMLZ_IST                         1905
+2026-03-13 10:43:04,407 INFO   NMLZ_ISM                         1869
+2026-03-13 10:43:04,407 INFO   V_IZE                            1546
+2026-03-13 10:43:04,407 INFO   ADJ_ISH                          1451
+2026-03-13 10:43:04,407 INFO   NMLZ_SHIP                        1015
+2026-03-13 10:43:04,407 INFO   AGENT_OR                          779
+2026-03-13 10:43:04,408 INFO   PFX_MIS                           764
+2026-03-13 10:43:04,408 INFO   NMLZ_MENT                         666
+2026-03-13 10:43:04,408 INFO   NMLZ_DOM                          578
+2026-03-13 10:43:04,408 INFO   ADJ_FUL                           560
+2026-03-13 10:43:04,408 INFO   NMLZ_HOOD                         557
+2026-03-13 10:43:04,408 INFO   PLURAL_3SG                        540
+2026-03-13 10:43:04,408 INFO   ADJ_SOME                          504
+2026-03-13 10:43:04,408 INFO   PFX_REV                           495
+2026-03-13 10:43:04,408 INFO   NMLZ_ION                          489
+2026-03-13 10:43:04,408 INFO   ADV_WISE                          460
+2026-03-13 10:43:04,408 INFO   PFX_PRE                           444
+2026-03-13 10:43:04,408 INFO   ADV_WARD                          434
+2026-03-13 10:43:04,408 INFO   PFX_NEG_IN                        433
+2026-03-13 10:43:04,408 INFO   V_IFY                             327
+2026-03-13 10:43:04,408 INFO   PFX_NEG_DIS                       327
+2026-03-13 10:43:04,409 INFO   ADJ_ARY                           287
+2026-03-13 10:43:04,409 INFO   V_ANCE                            224
+2026-03-13 10:43:04,409 INFO   PP_EN                             221
+2026-03-13 10:43:04,409 INFO   ADJ_ANT                           171
+2026-03-13 10:43:04,409 INFO   V_EN                              169
+2026-03-13 10:43:04,409 INFO   PFX_NEG_IM                        103
+2026-03-13 10:43:04,409 INFO   PAST_T                             82
+2026-03-13 10:43:04,409 INFO   PFX_NEG_IR                         54
+2026-03-13 10:43:04,409 INFO   COMP                               33
+2026-03-13 10:43:04,409 INFO   SUP                                22
+2026-03-13 10:43:04,409 INFO   PAST                               18
+2026-03-13 10:43:04,409 INFO   PFX_NEG_IL                         18
+2026-03-13 10:43:04,409 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 10:44:10,820 INFO Loading tokens...
+2026-03-13 10:44:14,862 INFO Loaded 460549 distinct name entries
+2026-03-13 10:44:14,862 INFO Loading glosses...
+2026-03-13 10:44:18,640 INFO Loaded glosses for 460060 tokens
+2026-03-13 10:44:18,640 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 10:44:36,927 INFO Found 108423 derivative candidates
+2026-03-13 10:44:37,177 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 10:44:37,204 INFO   ADV_LY                          13626
+2026-03-13 10:44:37,204 INFO   NMLZ                            10151
+2026-03-13 10:44:37,204 INFO   PFX_NEG_NON                      8502
+2026-03-13 10:44:37,204 INFO   AGENT                            7930
+2026-03-13 10:44:37,205 INFO   PFX_NEG                          7855
+2026-03-13 10:44:37,205 INFO   PROG                             6389
+2026-03-13 10:44:37,205 INFO   ADJ_ABLE                         4251
+2026-03-13 10:44:37,205 INFO   NMLZ_ITY                         3991
+2026-03-13 10:44:37,205 INFO   ADJ_AL                           3796
+2026-03-13 10:44:37,205 INFO   ADJ_Y                            3616
+2026-03-13 10:44:37,205 INFO   ADJ_LESS                         3555
+2026-03-13 10:44:37,205 INFO   NMLZ_ION                         3461
+2026-03-13 10:44:37,205 INFO   NMLZ_ISM                         3371
+2026-03-13 10:44:37,205 INFO   ADJ_LIKE                         3350
+2026-03-13 10:44:37,205 INFO   NMLZ_IST                         2339
+2026-03-13 10:44:37,205 INFO   PFX_ITER                         2234
+2026-03-13 10:44:37,205 INFO   PFX_ANTI                         2062
+2026-03-13 10:44:37,205 INFO   V_IZE                            1934
+2026-03-13 10:44:37,205 INFO   PLURAL_3SG                       1750
+2026-03-13 10:44:37,205 INFO   ADJ_ISH                          1621
+2026-03-13 10:44:37,206 INFO   NMLZ_MENT                        1320
+2026-03-13 10:44:37,206 INFO   AGENT_OR                         1302
+2026-03-13 10:44:37,206 INFO   NMLZ_SHIP                        1214
+2026-03-13 10:44:37,206 INFO   PFX_MIS                           764
+2026-03-13 10:44:37,206 INFO   ADJ_FUL                           760
+2026-03-13 10:44:37,206 INFO   NMLZ_DOM                          675
+2026-03-13 10:44:37,206 INFO   ADJ_SOME                          653
+2026-03-13 10:44:37,206 INFO   NMLZ_HOOD                         600
+2026-03-13 10:44:37,206 INFO   PFX_REV                           495
+2026-03-13 10:44:37,206 INFO   ADV_WISE                          486
+2026-03-13 10:44:37,206 INFO   V_ANCE                            471
+2026-03-13 10:44:37,206 INFO   ADV_WARD                          462
+2026-03-13 10:44:37,206 INFO   V_IFY                             459
+2026-03-13 10:44:37,206 INFO   PFX_PRE                           444
+2026-03-13 10:44:37,206 INFO   PFX_NEG_IN                        433
+2026-03-13 10:44:37,206 INFO   ADJ_ANT                           383
+2026-03-13 10:44:37,207 INFO   ADJ_ARY                           364
+2026-03-13 10:44:37,207 INFO   PFX_NEG_DIS                       327
+2026-03-13 10:44:37,207 INFO   PP_EN                             269
+2026-03-13 10:44:37,207 INFO   PAST_T                            239
+2026-03-13 10:44:37,207 INFO   V_EN                              203
+2026-03-13 10:44:37,207 INFO   PFX_NEG_IM                        103
+2026-03-13 10:44:37,207 INFO   COMP                               81
+2026-03-13 10:44:37,207 INFO   PFX_NEG_IR                         54
+2026-03-13 10:44:37,207 INFO   SUP                                32
+2026-03-13 10:44:37,207 INFO   PAST                               28
+2026-03-13 10:44:37,207 INFO   PFX_NEG_IL                         18
+2026-03-13 10:44:37,207 INFO DRY RUN — no changes. Re-run with --execute to delete.
+2026-03-13 13:45:43,153 INFO Loading tokens...
+2026-03-13 13:45:47,111 INFO Loaded 460549 distinct name entries
+2026-03-13 13:45:47,111 INFO Loading glosses...
+2026-03-13 13:45:50,902 INFO Loaded glosses for 460060 tokens
+2026-03-13 13:45:50,902 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 13:46:09,659 INFO Found 84012 derivative candidates
+2026-03-13 13:46:09,874 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 13:46:09,910 INFO   ADV_LY                           9810
+2026-03-13 13:46:09,910 INFO   PFX_NEG_NON                      8502
+2026-03-13 13:46:09,910 INFO   NMLZ                             8309
+2026-03-13 13:46:09,910 INFO   PFX_NEG                          7855
+2026-03-13 13:46:09,910 INFO   AGENT                            6069
+2026-03-13 13:46:09,910 INFO   PROG                             3656
+2026-03-13 13:46:09,910 INFO   ADJ_LESS                         3361
+2026-03-13 13:46:09,910 INFO   ADJ_LIKE                         3292
+2026-03-13 13:46:09,910 INFO   ADJ_ABLE                         3011
+2026-03-13 13:46:09,911 INFO   NMLZ_ITY                         2985
+2026-03-13 13:46:09,911 INFO   ADJ_AL                           2858
+2026-03-13 13:46:09,911 INFO   ADJ_Y                            2452
+2026-03-13 13:46:09,911 INFO   PFX_ITER                         2234
+2026-03-13 13:46:09,911 INFO   PFX_ANTI                         2062
+2026-03-13 13:46:09,911 INFO   NMLZ_IST                         1905
+2026-03-13 13:46:09,911 INFO   NMLZ_ISM                         1869
+2026-03-13 13:46:09,911 INFO   V_IZE                            1546
+2026-03-13 13:46:09,911 INFO   ADJ_ISH                          1451
+2026-03-13 13:46:09,911 INFO   NMLZ_SHIP                        1015
+2026-03-13 13:46:09,911 INFO   AGENT_OR                          779
+2026-03-13 13:46:09,911 INFO   PFX_MIS                           764
+2026-03-13 13:46:09,911 INFO   NMLZ_MENT                         666
+2026-03-13 13:46:09,911 INFO   NMLZ_DOM                          578
+2026-03-13 13:46:09,911 INFO   ADJ_FUL                           560
+2026-03-13 13:46:09,911 INFO   NMLZ_HOOD                         557
+2026-03-13 13:46:09,912 INFO   PLURAL_3SG                        540
+2026-03-13 13:46:09,912 INFO   PFX_REV                           506
+2026-03-13 13:46:09,912 INFO   ADJ_SOME                          504
+2026-03-13 13:46:09,912 INFO   NMLZ_ION                          489
+2026-03-13 13:46:09,912 INFO   ADV_WISE                          460
+2026-03-13 13:46:09,912 INFO   PFX_PRE                           444
+2026-03-13 13:46:09,912 INFO   ADV_WARD                          434
+2026-03-13 13:46:09,912 INFO   PFX_NEG_IN                        433
+2026-03-13 13:46:09,912 INFO   V_IFY                             327
+2026-03-13 13:46:09,912 INFO   PFX_NEG_DIS                       327
+2026-03-13 13:46:09,912 INFO   ADJ_ARY                           287
+2026-03-13 13:46:09,912 INFO   V_ANCE                            224
+2026-03-13 13:46:09,912 INFO   PP_EN                             221
+2026-03-13 13:46:09,912 INFO   ADJ_ANT                           171
+2026-03-13 13:46:09,912 INFO   V_EN                              169
+2026-03-13 13:46:09,912 INFO   PFX_NEG_IM                        103
+2026-03-13 13:46:09,913 INFO   PAST_T                             82
+2026-03-13 13:46:09,913 INFO   PFX_NEG_IR                         54
+2026-03-13 13:46:09,913 INFO   COMP                               33
+2026-03-13 13:46:09,913 INFO   SUP                                22
+2026-03-13 13:46:09,913 INFO   PAST                               18
+2026-03-13 13:46:09,913 INFO   PFX_NEG_IL                         18
+2026-03-13 13:46:09,913 INFO Actions: delete=74491  prune=9521
+2026-03-13 13:46:09,913 INFO DRY RUN — no changes. Re-run with --execute to apply.
+2026-03-13 13:46:33,393 INFO Loading tokens...
+2026-03-13 13:46:37,361 INFO Loaded 460549 distinct name entries
+2026-03-13 13:46:37,361 INFO Loading glosses...
+2026-03-13 13:46:41,098 INFO Loaded glosses for 460060 tokens
+2026-03-13 13:46:41,098 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 13:46:59,447 INFO Found 84012 derivative candidates
+2026-03-13 13:46:59,648 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 13:46:59,684 INFO   ADV_LY                           9810
+2026-03-13 13:46:59,684 INFO   PFX_NEG_NON                      8502
+2026-03-13 13:46:59,684 INFO   NMLZ                             8309
+2026-03-13 13:46:59,684 INFO   PFX_NEG                          7855
+2026-03-13 13:46:59,684 INFO   AGENT                            6069
+2026-03-13 13:46:59,684 INFO   PROG                             3656
+2026-03-13 13:46:59,684 INFO   ADJ_LESS                         3361
+2026-03-13 13:46:59,684 INFO   ADJ_LIKE                         3292
+2026-03-13 13:46:59,684 INFO   ADJ_ABLE                         3011
+2026-03-13 13:46:59,684 INFO   NMLZ_ITY                         2985
+2026-03-13 13:46:59,684 INFO   ADJ_AL                           2858
+2026-03-13 13:46:59,685 INFO   ADJ_Y                            2452
+2026-03-13 13:46:59,685 INFO   PFX_ITER                         2234
+2026-03-13 13:46:59,685 INFO   PFX_ANTI                         2062
+2026-03-13 13:46:59,685 INFO   NMLZ_IST                         1905
+2026-03-13 13:46:59,685 INFO   NMLZ_ISM                         1869
+2026-03-13 13:46:59,685 INFO   V_IZE                            1546
+2026-03-13 13:46:59,685 INFO   ADJ_ISH                          1451
+2026-03-13 13:46:59,685 INFO   NMLZ_SHIP                        1015
+2026-03-13 13:46:59,685 INFO   AGENT_OR                          779
+2026-03-13 13:46:59,685 INFO   PFX_MIS                           764
+2026-03-13 13:46:59,685 INFO   NMLZ_MENT                         666
+2026-03-13 13:46:59,685 INFO   NMLZ_DOM                          578
+2026-03-13 13:46:59,685 INFO   ADJ_FUL                           560
+2026-03-13 13:46:59,685 INFO   NMLZ_HOOD                         557
+2026-03-13 13:46:59,685 INFO   PLURAL_3SG                        540
+2026-03-13 13:46:59,685 INFO   PFX_REV                           506
+2026-03-13 13:46:59,686 INFO   ADJ_SOME                          504
+2026-03-13 13:46:59,686 INFO   NMLZ_ION                          489
+2026-03-13 13:46:59,686 INFO   ADV_WISE                          460
+2026-03-13 13:46:59,686 INFO   PFX_PRE                           444
+2026-03-13 13:46:59,686 INFO   ADV_WARD                          434
+2026-03-13 13:46:59,686 INFO   PFX_NEG_IN                        433
+2026-03-13 13:46:59,686 INFO   V_IFY                             327
+2026-03-13 13:46:59,686 INFO   PFX_NEG_DIS                       327
+2026-03-13 13:46:59,686 INFO   ADJ_ARY                           287
+2026-03-13 13:46:59,686 INFO   V_ANCE                            224
+2026-03-13 13:46:59,686 INFO   PP_EN                             221
+2026-03-13 13:46:59,686 INFO   ADJ_ANT                           171
+2026-03-13 13:46:59,686 INFO   V_EN                              169
+2026-03-13 13:46:59,686 INFO   PFX_NEG_IM                        103
+2026-03-13 13:46:59,687 INFO   PAST_T                             82
+2026-03-13 13:46:59,687 INFO   PFX_NEG_IR                         54
+2026-03-13 13:46:59,687 INFO   COMP                               33
+2026-03-13 13:46:59,687 INFO   SUP                                22
+2026-03-13 13:46:59,687 INFO   PAST                               18
+2026-03-13 13:46:59,687 INFO   PFX_NEG_IL                         18
+2026-03-13 13:46:59,687 INFO Actions: delete=74491  prune=9521
+2026-03-13 13:46:59,687 INFO DRY RUN — no changes. Re-run with --execute to apply.
+2026-03-13 14:16:12,770 INFO Loading tokens...
+2026-03-13 14:16:16,750 INFO Loaded 460549 distinct name entries
+2026-03-13 14:16:16,750 INFO Loading glosses...
+2026-03-13 14:16:20,551 INFO Loaded glosses for 460060 tokens
+2026-03-13 14:16:20,551 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 14:16:38,837 INFO Found 84012 derivative candidates
+2026-03-13 14:16:39,042 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 14:16:39,078 INFO   ADV_LY                           9810
+2026-03-13 14:16:39,078 INFO   PFX_NEG_NON                      8502
+2026-03-13 14:16:39,078 INFO   NMLZ                             8309
+2026-03-13 14:16:39,078 INFO   PFX_NEG                          7855
+2026-03-13 14:16:39,078 INFO   AGENT                            6069
+2026-03-13 14:16:39,078 INFO   PROG                             3656
+2026-03-13 14:16:39,078 INFO   ADJ_LESS                         3361
+2026-03-13 14:16:39,078 INFO   ADJ_LIKE                         3292
+2026-03-13 14:16:39,078 INFO   ADJ_ABLE                         3011
+2026-03-13 14:16:39,078 INFO   NMLZ_ITY                         2985
+2026-03-13 14:16:39,079 INFO   ADJ_AL                           2858
+2026-03-13 14:16:39,079 INFO   ADJ_Y                            2452
+2026-03-13 14:16:39,079 INFO   PFX_ITER                         2234
+2026-03-13 14:16:39,079 INFO   PFX_ANTI                         2062
+2026-03-13 14:16:39,079 INFO   NMLZ_IST                         1905
+2026-03-13 14:16:39,079 INFO   NMLZ_ISM                         1869
+2026-03-13 14:16:39,079 INFO   V_IZE                            1546
+2026-03-13 14:16:39,079 INFO   ADJ_ISH                          1451
+2026-03-13 14:16:39,079 INFO   NMLZ_SHIP                        1015
+2026-03-13 14:16:39,079 INFO   AGENT_OR                          779
+2026-03-13 14:16:39,079 INFO   PFX_MIS                           764
+2026-03-13 14:16:39,079 INFO   NMLZ_MENT                         666
+2026-03-13 14:16:39,079 INFO   NMLZ_DOM                          578
+2026-03-13 14:16:39,079 INFO   ADJ_FUL                           560
+2026-03-13 14:16:39,079 INFO   NMLZ_HOOD                         557
+2026-03-13 14:16:39,080 INFO   PLURAL_3SG                        540
+2026-03-13 14:16:39,080 INFO   PFX_REV                           506
+2026-03-13 14:16:39,080 INFO   ADJ_SOME                          504
+2026-03-13 14:16:39,080 INFO   NMLZ_ION                          489
+2026-03-13 14:16:39,080 INFO   ADV_WISE                          460
+2026-03-13 14:16:39,080 INFO   PFX_PRE                           444
+2026-03-13 14:16:39,080 INFO   ADV_WARD                          434
+2026-03-13 14:16:39,080 INFO   PFX_NEG_IN                        433
+2026-03-13 14:16:39,080 INFO   V_IFY                             327
+2026-03-13 14:16:39,080 INFO   PFX_NEG_DIS                       327
+2026-03-13 14:16:39,080 INFO   ADJ_ARY                           287
+2026-03-13 14:16:39,080 INFO   V_ANCE                            224
+2026-03-13 14:16:39,080 INFO   PP_EN                             221
+2026-03-13 14:16:39,080 INFO   ADJ_ANT                           171
+2026-03-13 14:16:39,081 INFO   V_EN                              169
+2026-03-13 14:16:39,081 INFO   PFX_NEG_IM                        103
+2026-03-13 14:16:39,081 INFO   PAST_T                             82
+2026-03-13 14:16:39,081 INFO   PFX_NEG_IR                         54
+2026-03-13 14:16:39,081 INFO   COMP                               33
+2026-03-13 14:16:39,081 INFO   SUP                                22
+2026-03-13 14:16:39,081 INFO   PAST                               18
+2026-03-13 14:16:39,081 INFO   PFX_NEG_IL                         18
+2026-03-13 14:16:39,081 INFO Actions: delete=74491  prune=9521
+2026-03-13 14:16:39,133 INFO Deleting 74362 tokens (CASCADE)...
+2026-03-13 14:16:41,135 INFO   deleted 500 / 74362
+2026-03-13 14:16:48,068 INFO   deleted 5500 / 74362
+2026-03-13 14:16:50,215 INFO   deleted 10500 / 74362
+2026-03-13 14:16:51,865 INFO   deleted 15500 / 74362
+2026-03-13 14:16:53,622 INFO   deleted 20500 / 74362
+2026-03-13 14:16:55,051 INFO   deleted 25500 / 74362
+2026-03-13 14:16:56,432 INFO   deleted 30500 / 74362
+2026-03-13 14:16:57,624 INFO   deleted 35500 / 74362
+2026-03-13 14:16:59,149 INFO   deleted 40500 / 74362
+2026-03-13 14:17:00,217 INFO   deleted 45500 / 74362
+2026-03-13 14:17:01,468 INFO   deleted 50500 / 74362
+2026-03-13 14:17:02,710 INFO   deleted 55500 / 74362
+2026-03-13 14:17:03,933 INFO   deleted 60500 / 74362
+2026-03-13 14:17:05,362 INFO   deleted 65500 / 74362
+2026-03-13 14:17:06,561 INFO   deleted 70500 / 74362
+2026-03-13 14:17:07,516 INFO Deleted 74362 tokens.
+2026-03-13 14:17:07,516 INFO Pruning 9521 tokens (remove root glosses, add variant entry)...
+2026-03-13 14:17:37,412 INFO Loading tokens...
+2026-03-13 14:17:41,586 INFO Loaded 460549 distinct name entries
+2026-03-13 14:17:41,586 INFO Loading glosses...
+2026-03-13 14:17:45,541 INFO Loaded glosses for 460060 tokens
+2026-03-13 14:17:45,541 INFO Finding morpheme derivatives (1- and 2-level)...
+2026-03-13 14:18:04,047 INFO Found 84012 derivative candidates
+2026-03-13 14:18:04,243 INFO Report: /opt/project/repo/scripts/cleanup_morpheme_derivatives_report.csv
+2026-03-13 14:18:04,280 INFO   ADV_LY                           9810
+2026-03-13 14:18:04,281 INFO   PFX_NEG_NON                      8502
+2026-03-13 14:18:04,281 INFO   NMLZ                             8309
+2026-03-13 14:18:04,281 INFO   PFX_NEG                          7855
+2026-03-13 14:18:04,281 INFO   AGENT                            6069
+2026-03-13 14:18:04,281 INFO   PROG                             3656
+2026-03-13 14:18:04,281 INFO   ADJ_LESS                         3361
+2026-03-13 14:18:04,281 INFO   ADJ_LIKE                         3292
+2026-03-13 14:18:04,281 INFO   ADJ_ABLE                         3011
+2026-03-13 14:18:04,281 INFO   NMLZ_ITY                         2985
+2026-03-13 14:18:04,281 INFO   ADJ_AL                           2858
+2026-03-13 14:18:04,281 INFO   ADJ_Y                            2452
+2026-03-13 14:18:04,281 INFO   PFX_ITER                         2234
+2026-03-13 14:18:04,281 INFO   PFX_ANTI                         2062
+2026-03-13 14:18:04,282 INFO   NMLZ_IST                         1905
+2026-03-13 14:18:04,282 INFO   NMLZ_ISM                         1869
+2026-03-13 14:18:04,282 INFO   V_IZE                            1546
+2026-03-13 14:18:04,282 INFO   ADJ_ISH                          1451
+2026-03-13 14:18:04,282 INFO   NMLZ_SHIP                        1015
+2026-03-13 14:18:04,282 INFO   AGENT_OR                          779
+2026-03-13 14:18:04,282 INFO   PFX_MIS                           764
+2026-03-13 14:18:04,282 INFO   NMLZ_MENT                         666
+2026-03-13 14:18:04,282 INFO   NMLZ_DOM                          578
+2026-03-13 14:18:04,282 INFO   ADJ_FUL                           560
+2026-03-13 14:18:04,282 INFO   NMLZ_HOOD                         557
+2026-03-13 14:18:04,282 INFO   PLURAL_3SG                        540
+2026-03-13 14:18:04,282 INFO   PFX_REV                           506
+2026-03-13 14:18:04,282 INFO   ADJ_SOME                          504
+2026-03-13 14:18:04,283 INFO   NMLZ_ION                          489
+2026-03-13 14:18:04,283 INFO   ADV_WISE                          460
+2026-03-13 14:18:04,283 INFO   PFX_PRE                           444
+2026-03-13 14:18:04,283 INFO   ADV_WARD                          434
+2026-03-13 14:18:04,283 INFO   PFX_NEG_IN                        433
+2026-03-13 14:18:04,283 INFO   V_IFY                             327
+2026-03-13 14:18:04,283 INFO   PFX_NEG_DIS                       327
+2026-03-13 14:18:04,283 INFO   ADJ_ARY                           287
+2026-03-13 14:18:04,283 INFO   V_ANCE                            224
+2026-03-13 14:18:04,283 INFO   PP_EN                             221
+2026-03-13 14:18:04,283 INFO   ADJ_ANT                           171
+2026-03-13 14:18:04,283 INFO   V_EN                              169
+2026-03-13 14:18:04,283 INFO   PFX_NEG_IM                        103
+2026-03-13 14:18:04,284 INFO   PAST_T                             82
+2026-03-13 14:18:04,284 INFO   PFX_NEG_IR                         54
+2026-03-13 14:18:04,284 INFO   COMP                               33
+2026-03-13 14:18:04,284 INFO   SUP                                22
+2026-03-13 14:18:04,284 INFO   PAST                               18
+2026-03-13 14:18:04,284 INFO   PFX_NEG_IL                         18
+2026-03-13 14:18:04,284 INFO Actions: delete=74491  prune=9521
+2026-03-13 14:18:04,355 INFO Deleting 74362 tokens (CASCADE)...
+2026-03-13 14:18:04,452 INFO   deleted 500 / 74362
+2026-03-13 14:18:05,702 INFO   deleted 5500 / 74362
+2026-03-13 14:18:07,199 INFO   deleted 10500 / 74362
+2026-03-13 14:18:08,836 INFO   deleted 15500 / 74362
+2026-03-13 14:18:10,364 INFO   deleted 20500 / 74362
+2026-03-13 14:18:11,910 INFO   deleted 25500 / 74362
+2026-03-13 14:18:13,577 INFO   deleted 30500 / 74362
+2026-03-13 14:18:15,195 INFO   deleted 35500 / 74362
+2026-03-13 14:18:16,805 INFO   deleted 40500 / 74362
+2026-03-13 14:18:18,199 INFO   deleted 45500 / 74362
+2026-03-13 14:18:19,744 INFO   deleted 50500 / 74362
+2026-03-13 14:18:21,721 INFO   deleted 55500 / 74362
+2026-03-13 14:18:23,359 INFO   deleted 60500 / 74362
+2026-03-13 14:18:25,262 INFO   deleted 65500 / 74362
+2026-03-13 14:18:26,639 INFO   deleted 70500 / 74362
+2026-03-13 14:18:27,927 INFO Deleted 74362 tokens.
+2026-03-13 14:18:27,927 INFO Pruning 9292 tokens (remove root glosses, add variant entry)...
+2026-03-13 14:18:28,135 INFO   pruned 500 / 9292
+2026-03-13 14:18:28,327 INFO   pruned 1000 / 9292
+2026-03-13 14:18:28,518 INFO   pruned 1500 / 9292
+2026-03-13 14:18:28,712 INFO   pruned 2000 / 9292
+2026-03-13 14:18:28,912 INFO   pruned 2500 / 9292
+2026-03-13 14:18:29,107 INFO   pruned 3000 / 9292
+2026-03-13 14:18:29,364 INFO   pruned 3500 / 9292
+2026-03-13 14:18:29,591 INFO   pruned 4000 / 9292
+2026-03-13 14:18:29,811 INFO   pruned 4500 / 9292
+2026-03-13 14:18:30,045 INFO   pruned 5000 / 9292
+2026-03-13 14:18:30,275 INFO   pruned 5500 / 9292
+2026-03-13 14:18:30,476 INFO   pruned 6000 / 9292
+2026-03-13 14:18:30,681 INFO   pruned 6500 / 9292
+2026-03-13 14:18:30,880 INFO   pruned 7000 / 9292
+2026-03-13 14:18:31,177 INFO   pruned 7500 / 9292
+2026-03-13 14:18:31,679 INFO   pruned 8000 / 9292
+2026-03-13 14:18:32,108 INFO   pruned 8500 / 9292
+2026-03-13 14:18:32,947 INFO   pruned 9000 / 9292
+2026-03-13 14:18:33,400 INFO Done. 74362 deleted, 9292 pruned.

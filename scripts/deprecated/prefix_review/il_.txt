@@ -1,0 +1,39 @@
+# il- candidates (35 total)
+# Format: candidate -> root
+# Mark FALSE POSITIVES with FP, KEEP with ok, BORDERLINE with ?
+
+illabial                            -> labial
+illative                            -> lative
+illaudable                          -> laudable
+illaudatory                         -> laudatory
+illegal                             -> legal
+illegible                           -> legible
+illegit                             -> legit
+illegitimate                        -> legitimate
+illeviable                          -> leviable
+illiberal                           -> liberal
+illibertarian                       -> libertarian
+illimitable                         -> limitable
+illimitate                          -> limitate
+illimited                           -> limited
+illiquid                            -> liquid
+illish                              -> lish
+illiteral                           -> literal
+illiterate                          -> literate
+illocal                             -> local
+illocutional                        -> locutional
+illocutionary                       -> locutionary
+illocutive                          -> locutive
+illogic                             -> logic
+illogical                           -> logical
+illoricate                          -> loricate
+illoyal                             -> loyal
+illuminant                          -> luminant
+illuminous                          -> luminous
+illustrable                         -> lustrable
+illustrational                      -> lustrational
+illustrative                        -> lustrative
+illustratory                        -> lustratory
+illustrious                         -> lustrious
+illustrous                          -> lustrous
+illyric                             -> lyric

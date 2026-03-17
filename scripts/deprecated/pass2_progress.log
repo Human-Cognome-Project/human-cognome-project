@@ -1,0 +1,309 @@
+2026-03-10 13:43:24,640 INFO ============================================================
+2026-03-10 13:43:24,640 INFO Pass 2 start  dry_run=True  batch_size=1000
+2026-03-10 13:43:24,641 INFO Streaming Kaikki for PoS: ['verb']
+2026-03-10 13:44:06,359 INFO   scanned 200,000 lines, kept 13,114
+2026-03-10 13:44:16,511 INFO   scanned 400,000 lines, kept 17,310
+2026-03-10 13:44:24,864 INFO   scanned 600,000 lines, kept 22,885
+2026-03-10 13:44:32,084 INFO   scanned 800,000 lines, kept 25,835
+2026-03-10 13:44:40,121 INFO   scanned 1,000,000 lines, kept 28,567
+2026-03-10 13:44:47,639 INFO   scanned 1,200,000 lines, kept 31,671
+2026-03-10 13:44:54,444 INFO   scanned 1,400,000 lines, kept 33,933
+2026-03-10 13:44:56,328 INFO Done. Scanned 1,454,988 lines, kept 34,556 root entries.
+2026-03-10 13:44:56,351 INFO Loaded inflection rules for morphemes: ['3RD_SING', 'ADVERB_LY', 'COMPARATIVE', 'PAST', 'PLURAL', 'POSSESSIVE', 'PROGRESSIVE', 'SUPERLATIVE']
+2026-03-10 13:44:56,389 INFO   verb: 34,556 entries to process
+2026-03-10 13:44:56,803 INFO     10,000/34,556 done
+2026-03-10 13:44:57,192 INFO     20,000/34,556 done
+2026-03-10 13:44:57,541 INFO     30,000/34,556 done
+2026-03-10 13:44:57,679 INFO   verb done: pos_records=34,572, morph_rules=0, not_found=0
+2026-03-10 13:44:57,681 INFO Pass 2 complete: pos_records=34,572, morph_rules=0, not_found=0
+2026-03-10 13:44:57,684 INFO Done.
+2026-03-10 13:45:09,625 INFO ============================================================
+2026-03-10 13:45:09,625 INFO Pass 2 start  dry_run=False  batch_size=1000
+2026-03-10 13:45:09,625 INFO Streaming Kaikki for PoS: ['verb']
+2026-03-10 13:45:51,175 INFO   scanned 200,000 lines, kept 13,114
+2026-03-10 13:46:01,457 INFO   scanned 400,000 lines, kept 17,310
+2026-03-10 13:46:09,784 INFO   scanned 600,000 lines, kept 22,885
+2026-03-10 13:46:17,664 INFO   scanned 800,000 lines, kept 25,835
+2026-03-10 13:46:25,793 INFO   scanned 1,000,000 lines, kept 28,567
+2026-03-10 13:46:33,430 INFO   scanned 1,200,000 lines, kept 31,671
+2026-03-10 13:46:40,348 INFO   scanned 1,400,000 lines, kept 33,933
+2026-03-10 13:46:42,273 INFO Done. Scanned 1,454,988 lines, kept 34,556 root entries.
+2026-03-10 13:46:42,282 INFO Loaded inflection rules for morphemes: ['3RD_SING', 'ADVERB_LY', 'COMPARATIVE', 'PAST', 'PLURAL', 'POSSESSIVE', 'PROGRESSIVE', 'SUPERLATIVE']
+2026-03-10 13:46:42,314 INFO   verb: 34,556 entries to process
+2026-03-10 13:46:58,561 INFO     10,000/34,556 done
+2026-03-10 13:47:12,239 INFO     20,000/34,556 done
+2026-03-10 13:47:27,332 INFO     30,000/34,556 done
+2026-03-10 13:47:32,671 INFO   verb done: pos_records=34,572, morph_rules=103,668, not_found=0
+2026-03-10 13:47:32,673 INFO Pass 2 complete: pos_records=34,572, morph_rules=103,668, not_found=0
+2026-03-10 13:47:32,673 INFO --- Verification ---
+2026-03-10 13:47:32,679 INFO token_pos rows: 34,572
+2026-03-10 13:47:32,693 INFO token_morph_rules rows: 103,668
+2026-03-10 13:47:32,706 INFO PoS distribution:
+2026-03-10 13:47:32,706 INFO   V_MAIN: 34,556
+2026-03-10 13:47:32,706 INFO   V_AUX: 15
+2026-03-10 13:47:32,706 INFO   V_COPULA: 1
+2026-03-10 13:47:32,708 INFO Done.
+2026-03-10 13:48:23,373 INFO ============================================================
+2026-03-10 13:48:23,373 INFO Pass 2 start  dry_run=False  batch_size=1000
+2026-03-10 13:48:23,373 INFO Streaming Kaikki for PoS: ['adj', 'adv', 'conj', 'det', 'intj', 'noun', 'num', 'particle', 'prep', 'pron', 'verb']
+2026-03-10 13:49:26,429 INFO   scanned 200,000 lines, kept 97,800
+2026-03-10 13:49:42,587 INFO   scanned 400,000 lines, kept 177,397
+2026-03-10 13:49:58,622 INFO   scanned 600,000 lines, kept 267,296
+2026-03-10 13:50:07,560 INFO   scanned 800,000 lines, kept 331,205
+2026-03-10 13:50:17,597 INFO   scanned 1,000,000 lines, kept 393,859
+2026-03-10 13:50:34,073 INFO   scanned 1,200,000 lines, kept 447,235
+2026-03-10 13:50:56,430 INFO   scanned 1,400,000 lines, kept 486,678
+2026-03-10 13:51:00,275 INFO Done. Scanned 1,454,988 lines, kept 496,348 root entries.
+2026-03-10 13:51:05,282 INFO Loaded inflection rules for morphemes: ['3RD_SING', 'ADVERB_LY', 'COMPARATIVE', 'PAST', 'PLURAL', 'POSSESSIVE', 'PROGRESSIVE', 'SUPERLATIVE']
+2026-03-10 13:51:05,671 INFO   verb: 34,556 entries to process
+2026-03-10 13:51:52,331 INFO     10,000/34,556 done
+2026-03-10 13:52:18,405 INFO     20,000/34,556 done
+2026-03-10 13:52:34,619 INFO     30,000/34,556 done
+2026-03-10 13:52:40,152 INFO   verb done: pos_records=0, morph_rules=0, not_found=0
+2026-03-10 13:52:40,861 INFO   noun: 286,763 entries to process
+2026-03-10 13:53:18,898 INFO     10,000/286,763 done
+2026-03-10 13:53:39,402 INFO     20,000/286,763 done
+2026-03-10 13:54:05,640 INFO     30,000/286,763 done
+2026-03-10 13:54:30,826 INFO     40,000/286,763 done
+2026-03-10 13:54:54,140 INFO     50,000/286,763 done
+2026-03-10 13:55:20,163 INFO     60,000/286,763 done
+2026-03-10 13:55:43,939 INFO     70,000/286,763 done
+2026-03-10 13:56:07,072 INFO     80,000/286,763 done
+2026-03-10 13:56:21,281 INFO     90,000/286,763 done
+2026-03-10 13:56:34,903 INFO     100,000/286,763 done
+2026-03-10 13:56:47,993 INFO     110,000/286,763 done
+2026-03-10 13:56:58,112 INFO     120,000/286,763 done
+2026-03-10 13:57:09,993 INFO     130,000/286,763 done
+2026-03-10 13:57:28,582 INFO     140,000/286,763 done
+2026-03-10 13:57:51,817 INFO     150,000/286,763 done
+2026-03-10 13:58:03,744 INFO     160,000/286,763 done
+2026-03-10 13:58:15,312 INFO     170,000/286,763 done
+2026-03-10 13:58:31,276 INFO     180,000/286,763 done
+2026-03-10 13:58:49,997 INFO     190,000/286,763 done
+2026-03-10 13:59:00,262 INFO     200,000/286,763 done
+2026-03-10 13:59:13,746 INFO     210,000/286,763 done
+2026-03-10 13:59:31,044 INFO     220,000/286,763 done
+2026-03-10 14:00:01,417 INFO     230,000/286,763 done
+2026-03-10 14:00:14,527 INFO     240,000/286,763 done
+2026-03-10 14:00:23,907 INFO     250,000/286,763 done
+2026-03-10 14:00:45,318 INFO     260,000/286,763 done
+2026-03-10 14:00:53,840 INFO     270,000/286,763 done
+2026-03-10 14:01:06,248 INFO     280,000/286,763 done
+2026-03-10 14:01:18,858 INFO   noun done: pos_records=286,763, morph_rules=168,046, not_found=0
+2026-03-10 14:01:19,121 INFO   adj: 149,404 entries to process
+2026-03-10 14:01:53,500 INFO     10,000/149,404 done
+2026-03-10 14:02:18,665 INFO     20,000/149,404 done
+2026-03-10 14:03:05,849 INFO     30,000/149,404 done
+2026-03-10 14:03:40,522 INFO     40,000/149,404 done
+2026-03-10 14:04:13,421 INFO     50,000/149,404 done
+2026-03-10 14:04:46,117 INFO     60,000/149,404 done
+2026-03-10 14:05:11,885 INFO     70,000/149,404 done
+2026-03-10 14:05:31,304 INFO     80,000/149,404 done
+2026-03-10 14:06:05,250 INFO     90,000/149,404 done
+2026-03-10 14:06:25,513 INFO     100,000/149,404 done
+2026-03-10 14:06:46,679 INFO     110,000/149,404 done
+2026-03-10 14:07:08,900 INFO     120,000/149,404 done
+2026-03-10 14:07:27,822 INFO     130,000/149,404 done
+2026-03-10 14:07:48,267 INFO     140,000/149,404 done
+2026-03-10 14:08:27,742 INFO   adj done: pos_records=149,404, morph_rules=298,808, not_found=0
+2026-03-10 14:08:28,288 INFO   adv: 22,607 entries to process
+2026-03-10 14:09:12,419 INFO     10,000/22,607 done
+2026-03-10 14:09:31,682 INFO     20,000/22,607 done
+2026-03-10 14:09:33,129 INFO   adv done: pos_records=22,607, morph_rules=0, not_found=0
+2026-03-10 14:09:33,132 INFO   pron: 318 entries to process
+2026-03-10 14:09:34,640 INFO   pron done: pos_records=318, morph_rules=0, not_found=0
+2026-03-10 14:09:34,640 INFO   prep: 288 entries to process
+2026-03-10 14:09:35,862 INFO   prep done: pos_records=288, morph_rules=0, not_found=0
+2026-03-10 14:09:35,862 INFO   conj: 150 entries to process
+2026-03-10 14:09:36,033 INFO   conj done: pos_records=150, morph_rules=0, not_found=0
+2026-03-10 14:09:36,034 INFO   det: 127 entries to process
+2026-03-10 14:09:36,611 INFO   det done: pos_records=127, morph_rules=0, not_found=0
+2026-03-10 14:09:36,612 INFO   intj: 1,777 entries to process
+2026-03-10 14:09:43,328 INFO   intj done: pos_records=1,777, morph_rules=0, not_found=0
+2026-03-10 14:09:43,328 INFO   particle: 57 entries to process
+2026-03-10 14:09:43,745 INFO   particle done: pos_records=57, morph_rules=0, not_found=0
+2026-03-10 14:09:43,746 INFO   num: 301 entries to process
+2026-03-10 14:09:45,034 INFO   num done: pos_records=301, morph_rules=0, not_found=0
+2026-03-10 14:09:45,035 INFO Pass 2 complete: pos_records=461,792, morph_rules=466,854, not_found=0
+2026-03-10 14:09:45,035 INFO --- Verification ---
+2026-03-10 14:09:46,939 INFO token_pos rows: 496,364
+2026-03-10 14:09:47,238 INFO token_morph_rules rows: 570,522
+2026-03-10 14:09:47,484 INFO PoS distribution:
+2026-03-10 14:09:47,485 INFO   N_COMMON: 286,763
+2026-03-10 14:09:47,485 INFO   ADJ: 149,404
+2026-03-10 14:09:47,485 INFO   V_MAIN: 34,556
+2026-03-10 14:09:47,485 INFO   ADV: 22,607
+2026-03-10 14:09:47,485 INFO   INTJ: 1,777
+2026-03-10 14:09:47,485 INFO   N_PRONOUN: 318
+2026-03-10 14:09:47,485 INFO   NUM: 301
+2026-03-10 14:09:47,485 INFO   PREP: 288
+2026-03-10 14:09:47,486 INFO   CONJ_SUB: 140
+2026-03-10 14:09:47,486 INFO   DET: 127
+2026-03-10 14:09:47,486 INFO   PART: 57
+2026-03-10 14:09:47,486 INFO   V_AUX: 15
+2026-03-10 14:09:47,486 INFO   CONJ_COORD: 10
+2026-03-10 14:09:47,486 INFO   V_COPULA: 1
+2026-03-10 14:09:47,503 INFO Done.
+2026-03-10 14:56:16,600 INFO ============================================================
+2026-03-10 14:56:16,601 INFO Pass 2 start  dry_run=False  batch_size=1000
+2026-03-10 14:56:16,601 INFO Streaming Kaikki for PoS: ['noun']
+2026-03-10 14:57:10,835 INFO   scanned 200,000 lines, kept 56,282
+2026-03-10 14:57:24,419 INFO   scanned 400,000 lines, kept 100,000
+2026-03-10 14:57:37,854 INFO   scanned 600,000 lines, kept 153,960
+2026-03-10 14:57:45,765 INFO   scanned 800,000 lines, kept 190,379
+2026-03-10 14:57:58,393 INFO   scanned 1,000,000 lines, kept 227,186
+2026-03-10 14:58:06,281 INFO   scanned 1,200,000 lines, kept 256,462
+2026-03-10 14:58:13,493 INFO   scanned 1,400,000 lines, kept 280,528
+2026-03-10 14:58:15,526 INFO Done. Scanned 1,454,988 lines, kept 286,763 root entries.
+2026-03-10 14:58:15,606 INFO Loaded inflection rules for morphemes: ['3RD_SING', 'ADVERB_LY', 'COMPARATIVE', 'PAST', 'PLURAL', 'POSSESSIVE', 'PROGRESSIVE', 'SUPERLATIVE']
+2026-03-10 14:58:16,041 INFO   noun: 286,763 entries to process
+2026-03-10 14:58:25,403 INFO     10,000/286,763 done
+2026-03-10 14:58:33,090 INFO     20,000/286,763 done
+2026-03-10 14:58:39,942 INFO     30,000/286,763 done
+2026-03-10 14:58:46,813 INFO     40,000/286,763 done
+2026-03-10 14:58:53,738 INFO     50,000/286,763 done
+2026-03-10 14:59:01,051 INFO     60,000/286,763 done
+2026-03-10 14:59:07,920 INFO     70,000/286,763 done
+2026-03-10 14:59:14,363 INFO     80,000/286,763 done
+2026-03-10 14:59:20,944 INFO     90,000/286,763 done
+2026-03-10 14:59:29,603 INFO     100,000/286,763 done
+2026-03-10 14:59:37,849 INFO     110,000/286,763 done
+2026-03-10 14:59:43,727 INFO     120,000/286,763 done
+2026-03-10 14:59:50,383 INFO     130,000/286,763 done
+2026-03-10 14:59:58,334 INFO     140,000/286,763 done
+2026-03-10 15:00:05,469 INFO     150,000/286,763 done
+2026-03-10 15:00:11,389 INFO     160,000/286,763 done
+2026-03-10 15:00:17,205 INFO     170,000/286,763 done
+2026-03-10 15:00:23,121 INFO     180,000/286,763 done
+2026-03-10 15:00:29,974 INFO     190,000/286,763 done
+2026-03-10 15:00:36,418 INFO     200,000/286,763 done
+2026-03-10 15:00:42,128 INFO     210,000/286,763 done
+2026-03-10 15:00:47,924 INFO     220,000/286,763 done
+2026-03-10 15:00:54,226 INFO     230,000/286,763 done
+2026-03-10 15:01:03,206 INFO     240,000/286,763 done
+2026-03-10 15:01:11,546 INFO     250,000/286,763 done
+2026-03-10 15:01:18,897 INFO     260,000/286,763 done
+2026-03-10 15:01:24,873 INFO     270,000/286,763 done
+2026-03-10 15:01:33,788 INFO     280,000/286,763 done
+2026-03-10 15:01:39,250 INFO   noun done: pos_records=286,763, morph_rules=30,935, not_found=0
+2026-03-10 15:01:39,268 INFO Pass 2 complete: pos_records=286,763, morph_rules=30,935, not_found=0
+2026-03-10 15:01:39,268 INFO --- Verification ---
+2026-03-10 15:01:39,461 INFO token_pos rows: 496,364
+2026-03-10 15:01:39,521 INFO token_morph_rules rows: 601,457
+2026-03-10 15:01:39,630 INFO PoS distribution:
+2026-03-10 15:01:39,630 INFO   N_COMMON: 286,763
+2026-03-10 15:01:39,630 INFO   ADJ: 149,404
+2026-03-10 15:01:39,630 INFO   V_MAIN: 34,556
+2026-03-10 15:01:39,630 INFO   ADV: 22,607
+2026-03-10 15:01:39,630 INFO   INTJ: 1,777
+2026-03-10 15:01:39,630 INFO   N_PRONOUN: 318
+2026-03-10 15:01:39,631 INFO   NUM: 301
+2026-03-10 15:01:39,631 INFO   PREP: 288
+2026-03-10 15:01:39,631 INFO   CONJ_SUB: 140
+2026-03-10 15:01:39,631 INFO   DET: 127
+2026-03-10 15:01:39,631 INFO   PART: 57
+2026-03-10 15:01:39,631 INFO   V_AUX: 15
+2026-03-10 15:01:39,631 INFO   CONJ_COORD: 10
+2026-03-10 15:01:39,631 INFO   V_COPULA: 1
+2026-03-10 15:01:39,632 INFO Done.
+2026-03-11 14:44:40,787 INFO ============================================================
+2026-03-11 14:44:40,787 INFO Pass 2 start  dry_run=False  batch_size=1000
+2026-03-11 14:44:40,787 INFO Streaming Kaikki for PoS: ['adj', 'adv', 'conj', 'det', 'intj', 'noun', 'num', 'particle', 'prep', 'pron', 'verb']
+2026-03-11 14:45:33,521 INFO   scanned 200,000 lines, kept 97,800
+2026-03-11 14:45:47,028 INFO   scanned 400,000 lines, kept 177,397
+2026-03-11 14:46:00,843 INFO   scanned 600,000 lines, kept 267,296
+2026-03-11 14:46:09,283 INFO   scanned 800,000 lines, kept 331,205
+2026-03-11 14:46:17,407 INFO   scanned 1,000,000 lines, kept 393,859
+2026-03-11 14:46:35,728 INFO   scanned 1,200,000 lines, kept 447,235
+2026-03-11 14:46:59,207 INFO   scanned 1,400,000 lines, kept 486,678
+2026-03-11 14:47:03,737 INFO Done. Scanned 1,454,988 lines, kept 496,348 root entries.
+2026-03-11 14:47:07,602 INFO Loaded inflection rules for morphemes: []
+2026-03-11 14:47:17,223 INFO   verb: 34,556 entries to process
+2026-03-11 14:47:56,157 INFO     10,000/34,556 done
+2026-03-11 14:48:25,348 INFO     20,000/34,556 done
+2026-03-11 14:48:59,874 INFO     30,000/34,556 done
+2026-03-11 14:49:11,241 INFO   verb done: pos_records=34,572, morph_rules=0, not_found=0
+2026-03-11 14:49:29,244 INFO   noun: 286,763 entries to process
+2026-03-11 14:49:48,056 INFO     10,000/286,763 done
+2026-03-11 14:50:02,967 INFO     20,000/286,763 done
+2026-03-11 14:50:24,917 INFO     30,000/286,763 done
+2026-03-11 14:50:53,475 INFO     40,000/286,763 done
+2026-03-11 14:51:12,174 INFO     50,000/286,763 done
+2026-03-11 14:51:28,088 INFO     60,000/286,763 done
+2026-03-11 14:51:45,382 INFO     70,000/286,763 done
+2026-03-11 14:51:57,043 INFO     80,000/286,763 done
+2026-03-11 14:52:08,823 INFO     90,000/286,763 done
+2026-03-11 14:52:21,583 INFO     100,000/286,763 done
+2026-03-11 14:52:33,277 INFO     110,000/286,763 done
+2026-03-11 14:52:42,760 INFO     120,000/286,763 done
+2026-03-11 14:52:52,737 INFO     130,000/286,763 done
+2026-03-11 14:53:07,035 INFO     140,000/286,763 done
+2026-03-11 14:53:20,318 INFO     150,000/286,763 done
+2026-03-11 14:53:28,587 INFO     160,000/286,763 done
+2026-03-11 14:53:38,669 INFO     170,000/286,763 done
+2026-03-11 14:53:47,793 INFO     180,000/286,763 done
+2026-03-11 14:53:56,696 INFO     190,000/286,763 done
+2026-03-11 14:54:05,635 INFO     200,000/286,763 done
+2026-03-11 14:54:15,631 INFO     210,000/286,763 done
+2026-03-11 14:54:26,853 INFO     220,000/286,763 done
+2026-03-11 14:54:37,837 INFO     230,000/286,763 done
+2026-03-11 14:54:55,913 INFO     240,000/286,763 done
+2026-03-11 14:55:06,995 INFO     250,000/286,763 done
+2026-03-11 14:55:18,418 INFO     260,000/286,763 done
+2026-03-11 14:55:28,183 INFO     270,000/286,763 done
+2026-03-11 14:55:41,007 INFO     280,000/286,763 done
+2026-03-11 14:55:47,970 INFO   noun done: pos_records=286,763, morph_rules=0, not_found=0
+2026-03-11 14:55:58,142 INFO   adj: 149,404 entries to process
+2026-03-11 14:56:09,953 INFO     10,000/149,404 done
+2026-03-11 14:56:19,873 INFO     20,000/149,404 done
+2026-03-11 14:56:29,407 INFO     30,000/149,404 done
+2026-03-11 14:56:39,044 INFO     40,000/149,404 done
+2026-03-11 14:56:49,378 INFO     50,000/149,404 done
+2026-03-11 14:56:56,210 INFO     60,000/149,404 done
+2026-03-11 14:57:06,668 INFO     70,000/149,404 done
+2026-03-11 14:57:12,278 INFO     80,000/149,404 done
+2026-03-11 14:57:18,728 INFO     90,000/149,404 done
+2026-03-11 14:57:25,477 INFO     100,000/149,404 done
+2026-03-11 14:57:35,929 INFO     110,000/149,404 done
+2026-03-11 14:57:44,222 INFO     120,000/149,404 done
+2026-03-11 14:57:53,131 INFO     130,000/149,404 done
+2026-03-11 14:57:58,004 INFO     140,000/149,404 done
+2026-03-11 14:58:07,035 INFO   adj done: pos_records=149,404, morph_rules=0, not_found=0
+2026-03-11 14:58:09,388 INFO   adv: 22,607 entries to process
+2026-03-11 14:58:22,933 INFO     10,000/22,607 done
+2026-03-11 14:58:30,771 INFO     20,000/22,607 done
+2026-03-11 14:58:32,247 INFO   adv done: pos_records=22,607, morph_rules=0, not_found=0
+2026-03-11 14:58:32,531 INFO   pron: 318 entries to process
+2026-03-11 14:58:34,711 INFO   pron done: pos_records=318, morph_rules=0, not_found=0
+2026-03-11 14:58:35,024 INFO   prep: 288 entries to process
+2026-03-11 14:58:37,136 INFO   prep done: pos_records=288, morph_rules=0, not_found=0
+2026-03-11 14:58:37,364 INFO   conj: 150 entries to process
+2026-03-11 14:58:38,587 INFO   conj done: pos_records=150, morph_rules=0, not_found=0
+2026-03-11 14:58:38,844 INFO   det: 127 entries to process
+2026-03-11 14:58:39,752 INFO   det done: pos_records=127, morph_rules=0, not_found=0
+2026-03-11 14:58:40,801 INFO   intj: 1,777 entries to process
+2026-03-11 14:58:46,411 INFO   intj done: pos_records=1,777, morph_rules=0, not_found=0
+2026-03-11 14:58:46,507 INFO   particle: 57 entries to process
+2026-03-11 14:58:46,737 INFO   particle done: pos_records=57, morph_rules=0, not_found=0
+2026-03-11 14:58:46,860 INFO   num: 301 entries to process
+2026-03-11 14:58:48,131 INFO   num done: pos_records=301, morph_rules=0, not_found=0
+2026-03-11 14:58:48,131 INFO Pass 2 complete: pos_records=496,364, morph_rules=0, not_found=0
+2026-03-11 14:58:48,131 INFO --- Verification ---
+2026-03-11 14:58:48,353 INFO token_pos rows: 496,364
+2026-03-11 14:58:48,479 INFO token_morph_rules rows: 0
+2026-03-11 14:58:48,740 INFO PoS distribution:
+2026-03-11 14:58:48,748 INFO   N_COMMON: 286,763
+2026-03-11 14:58:48,748 INFO   ADJ: 149,404
+2026-03-11 14:58:48,748 INFO   V_MAIN: 34,556
+2026-03-11 14:58:48,748 INFO   ADV: 22,607
+2026-03-11 14:58:48,748 INFO   INTJ: 1,777
+2026-03-11 14:58:48,748 INFO   N_PRONOUN: 318
+2026-03-11 14:58:48,748 INFO   NUM: 301
+2026-03-11 14:58:48,748 INFO   PREP: 288
+2026-03-11 14:58:48,749 INFO   CONJ_SUB: 140
+2026-03-11 14:58:48,749 INFO   DET: 127
+2026-03-11 14:58:48,749 INFO   PART: 57
+2026-03-11 14:58:48,749 INFO   V_AUX: 15
+2026-03-11 14:58:48,749 INFO   CONJ_COORD: 10
+2026-03-11 14:58:48,749 INFO   V_COPULA: 1
+2026-03-11 14:58:48,750 INFO Done.
