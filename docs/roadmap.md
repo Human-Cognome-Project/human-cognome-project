@@ -26,7 +26,7 @@ Creation of a linguistic interpretation database and engine using game engine ke
 PBMs for byte code combinations. Phase 1 PBD superposition resolves bytes to Unicode codepoints. 100% settlement on all tested inputs.
 
 ### 2. Kaikki English dictionary -- COMPLETE
-All of Kaikki English mapped as first language reference database. 1.4M tokens ingested and cross-referenced. Pre-compiled to LMDB (809K entries after morphological stripping).
+Full Kaikki English curation (2026-03-17): 569,471 tokens (all AB namespace), 619,433 PoS branches, 789,548 glosses, 89,075 variants. Tree model with junction tables for PoS and variant data. Regular inflections (517K) handled by engine at runtime. LMDB populated via envelope system.
 
 ### 3. Character to word and morpheme patterns -- COMPLETE
 Physics-based char-to-word resolution via persistent VocabBeds. Inflection stripping with PBD existence check. Silent-e fallback. Morphological normalization (16-bit morph field). 94-98.5% resolution on full novel-length texts.
@@ -64,17 +64,22 @@ Extend the same structural primitives beyond text to other forms of expression.
 - Build covalent bonding tables for non-text formats
 - Cross-modal conceptual mapping via shared NSM primitives
 
-## Current Focus (2026-03-06)
+## Current Focus (2026-03-17)
 
-- **Envelope-based variant loading** -- Wire variant DB entries (env_archaic / env_dialect / env_casual) with VARIANT morph bits (bits 12-15). Variant forms in DB; loading path not yet wired.
+- **LMDB compiler update** -- Must read new `token_pos` + tree model schema. Envelope system populates LMDB from warm cache.
+- **Envelope-based variant loading** -- Wire variant DB entries with VARIANT morph bits (bits 12-15). Variant forms in DB; loading path not yet wired.
 - **Label propagation** -- Restore firstCap on all instances if word appears as Label anywhere.
-- **Entity LMDB recompile** -- Entity DB cleaned (2026-03-05); `compile_entity_lmdb.py` needs review for variant/morph category support before next compile.
 - **Source Workstation** -- Packaging: installer for multiple configs, viewer first.
 
-## Recently Completed (2026-03-04 – 2026-03-05)
+## Recently Completed (2026-03-04 – 2026-03-17)
 
-- **V-1/V-3 variant normalization** (2026-03-04, `d59c2fa`) -- `TryVariantNormalize` in resolve loop. V-1 g-drop (`-in'`→`-ing`) and V-3 archaic (`-eth`). 12/12 dialect g-drops resolved in Sign of Four.
-- **Entity data cleanup** (2026-03-05) -- `hcp_fic_entities` and `hcp_nf_entities` normalized in-place. 723 sequences verified via dry-run.
+- **Kaikki curation COMPLETE** (2026-03-17) -- 569K tokens, 619K PoS, 789K glosses, 89K variants. All AB namespace, tree model.
+- **LMDB sliding window** (2026-03-14) -- Hot cache holds 3 slices (~15K entries). ResolveLengthCycle exhausts all warm-set slices per length.
+- **Prefix stripping rules** (2026-03-14) -- Data-driven, DB-sourced prefix stripping.
+- **Variant morph bits + archaic reconstruction** (2026-03-14) -- Propagated through warm cache.
+- **Migrations 033-044** -- AD/AE collapse, envelope working set, inflection fixes, prefix rules, EWS morpheme propagation.
+- **V-1/V-3 variant normalization** (2026-03-04) -- 12/12 dialect g-drops resolved in Sign of Four.
+- **Entity data cleanup** (2026-03-05) -- 723 sequences verified.
 
 ## Performance Reality
 

@@ -10,11 +10,11 @@ The HCP treats cognition as a physical system — decomposing all forms of expre
 
 **Engine** — O3DE + PhysX 5 PBD superposition pipeline (~21K LOC C++). GPU-accelerated resolution via 5 persistent VocabBed scenes (3 primary + 2 extended), triple-pipelined via `RunPipelinedCascade`. Headless daemon on port 9720 with JSON socket API.
 
-**Vocabulary** — English shard rebuilt from Kaikki (2026-03-10): ~1,421,622 tokens across AB/AD/AE namespaces, 502K token_pos records, 579K morph_rules, 501K glosses, 45K variants. 809K entries pre-compiled to LMDB (37% reduction from 1.28M via morphological stripping). Frequency-ranked from Wikipedia 2023 + OpenSubtitles.
+**Vocabulary** — English shard curated from Kaikki (2026-03-17): 569,471 tokens (all AB namespace), 619,433 PoS branches (15 types), 789,548 glosses, 89,075 variants. Tree model — PoS and variant data via junction tables, not namespace separation. Frequency-ranked from Wikipedia 2023 + OpenSubtitles. Regular inflections handled at runtime by engine morph strip.
 
 **Variant normalization** — V-1 g-drop (`-in'` → `-ing`) and V-3 archaic (`-eth` → base form) implemented engine-side via `TryVariantNormalize`. Dialect speech resolves cleanly.
 
-**Databases** — 6 PostgreSQL shards (core, english, var, fic_pbm, fic_entities, nf_entities), 32 migrations applied. Entity annotation: 723 sequences across fiction and non-fiction corpora. English shard fully rebuilt from Kaikki (roots-only design: token_pos, token_morph_rules, token_glosses, token_variants, characteristics bitmask).
+**Databases** — 7 PostgreSQL shards (core, english, var, envelope, fic_pbm, fic_entities, nf_entities), 44 migrations applied. Entity annotation: 723 sequences across fiction and non-fiction corpora. English shard curated from Kaikki via tree model (token_pos, token_glosses, token_variants, characteristics bitmask).
 
 **Workstation** — Standalone Qt binary (14 MB). Offline (embedded DB kernels + LMDB vocab) and connected modes (via daemon). Browse documents, view bonds, edit metadata.
 

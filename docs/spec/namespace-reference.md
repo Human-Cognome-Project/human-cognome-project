@@ -66,11 +66,17 @@ AA                          Universal mode
 │   ├── AA.AE.AD             Alignment/layout markers (13)
 │   ├── AA.AE.AE             Non-text content markers (10)
 │   └── AA.AE.AF             Stream boundary anchors (2) — engine particle types
-└── AA.AF                   Entity Classification Tokens
-    ├── AA.AF.AA             Person sub-types (4)
-    ├── AA.AF.AB             Place sub-types (6)
-    ├── AA.AF.AC             Thing sub-types (7)
-    └── AA.AF.AD             Entity relationship types
+├── AA.AF                   Entity Classification Tokens
+│   ├── AA.AF.AA             Person sub-types (4)
+│   ├── AA.AF.AB             Place sub-types (6)
+│   ├── AA.AF.AC             Thing sub-types (7)
+│   └── AA.AF.AD             Entity relationship types
+└── AA.AG                   URI Elements (56 tokens)
+    ├── AA.AG.AA             Network Protocols (http, https, ftp, etc.)
+    ├── AA.AG.AB             File Formats (html, xml, pdf, json, etc.)
+    ├── AA.AG.AC             Programming Tools (css, php, api, sql, etc.)
+    ├── AA.AG.AD             Standards/IDs (ascii, ieee, iso, url, etc.)
+    └── AA.AG.AE             TLDs (com, net, org, edu, gov, io)
 ```
 
 ### Text Mode (AB)
@@ -78,97 +84,38 @@ AA                          Universal mode
 ```
 AB                              Text mode
 ├── AB.AA                       Unicode Characters
-│   └── AB.AA.AA.{cat}.{n}      Character tokens by category (2,032 tokens)
-└── AB.AB                       English Language Family (~1.4M tokens)
-    ├── AB.AB.A{sub}.{n}.{n}    Layer A: Affixes (3,696 tokens)
-    ├── AB.AB.B{sub}.{n}.{n}    Layer B: Fragments (reserved)
-    ├── AB.AB.C{sub}.{n}.{n}    Layer C: Words (~1.29M tokens)
-    ├── AB.AB.D{sub}.{n}.{n}    Layer D: Derivatives (3,979 tokens)
-    ├── AB.AB.E{sub}.{n}.{n}    Layer E: Multi-word (9,084 tokens)
-    └── AB.AB.FA.{sub}.{n}      Sub-cat Patterns (30 tokens)
-        ├── AB.AB.FA.AA          Verb patterns (17)
-        ├── AB.AB.FA.AB          Noun patterns (5)
-        ├── AB.AB.FA.AC          Adjective patterns (5)
-        └── AB.AB.FA.AD          Preposition patterns (3)
+│   └── AB.AA.AA.{cat}.{n}      Character tokens by category
+└── AB.AB                       English Language (569,471 tokens, tree model)
+    └── AB.AB.{p3}.{p4}.{p5}    All tokens in flat AB namespace
 ```
 
-#### Word Addressing (AB.AB)
+> **Note (2026-03-17)**: The old Layer A-F breakdown (affixes, words, derivatives, multi-word, sub-cat patterns) has been superseded by the tree model. PoS and variant data are now stored in junction tables (`token_pos`, `token_glosses`, `token_variants`) rather than encoded in namespace layers. The p3 pair still uses derivation-based bucketing for addressing but PoS classification is decoupled from the namespace. See `docs/hcp-english-schema-design.md` for current schema.
 
-The 3rd pair uses double-duty encoding:
-- 1st character: Layer (by derivation, bottom to top)
-- 2nd character: Sub-category within layer
+#### Word Addressing (AB.AB) — Current Tree Model
 
-##### Layers (by derivation chain)
+The p3 pair still uses derivation-based bucketing for token addressing. However, Part-of-Speech classification is now stored in the `token_pos` junction table with 15 PoS types, not encoded in the namespace layers.
 
-| Layer | Prefix | Description | Count |
-|-------|--------|-------------|-------|
-| A | AA-AF | Affixes: prefix, suffix, infix, interfix, circumfix | 3,696 |
-| B | B* | Fragments (reserved for incomplete words) | - |
-| C | CA-CR | Words: noun, verb, adj, adv, prep, conj, etc. | ~1,290,000 |
-| D | DA-DE | Derivatives: abbreviation, initialism, acronym, contraction, clipping | 3,979 |
-| E | EA-EC | Multi-word: phrase, prep_phrase, proverb | 9,084 |
-| F | FA | Sub-categorization patterns | 30 |
+**Current PoS distribution (2026-03-17)**:
 
-Reading bottom-up: affixes → fragments → words → derivatives → multi-word.
-Each layer atomizes to the layer below (or to characters if at word level).
+| PoS | Count |
+|-----|-------|
+| N_COMMON | 285,586 |
+| ADJ | 149,357 |
+| N_PROPER | 124,171 |
+| V_MAIN | 34,472 |
+| ADV | 22,595 |
+| INTJ | 1,773 |
+| N_PRONOUN | 324 |
+| NUM | 291 |
+| PREP | 288 |
+| PART | 277 |
+| DET | 134 |
+| CONJ_COORD | 124 |
+| CONJ_SUB | 25 |
+| V_AUX | 15 |
+| V_COPULA | 1 |
 
-##### Layer A: Affixes
-
-| Sub | Prefix | POS | Count |
-|-----|--------|-----|-------|
-| AA | prefix | 2,281 |
-| AB | suffix | 1,319 |
-| AC | infix | 51 |
-| AD | interfix | 39 |
-| AE | circumfix | 5 |
-| AF | affix (generic) | 1 |
-
-##### Layer C: Words
-
-| Sub | Prefix | POS | Count |
-|-----|--------|-----|-------|
-| CA | noun | 930,925 |
-| CB | verb | 180,945 |
-| CC | adj | 148,596 |
-| CD | adv | 23,729 |
-| CE | prep | 509 |
-| CF | conj | 209 |
-| CG | det | 173 |
-| CH | pron | 608 |
-| CI | intj | 3,024 |
-| CJ | num | 456 |
-| CK | symbol | 409 |
-| CL | particle | 36 |
-| CM | punct | 50 |
-| CN | article | 5 |
-| CR | character | 109 |
-
-Note: CA (noun) count includes ~143K label tokens from the names merge (Decision 002/Migration 004).
-
-##### Layer D: Derivatives
-
-| Sub | Prefix | Type | Count |
-|-----|--------|------|-------|
-| DA | abbreviation | 3,465 |
-| DB | initialism | 21 |
-| DD | contraction | 493 |
-
-##### Layer E: Multi-word
-
-| Sub | Prefix | Type | Count |
-|-----|--------|------|-------|
-| EA | phrase | 4,690 |
-| EB | prep_phrase | 2,864 |
-| EC | proverb | 1,530 |
-
-##### Layer F: Sub-categorization Patterns
-
-| Sub | Prefix | Type | Count |
-|-----|--------|------|-------|
-| FA.AA | verb patterns | 17 |
-| FA.AB | noun patterns | 5 |
-| FA.AC | adjective patterns | 5 |
-| FA.AD | preposition patterns | 3 |
+Total: 619,433 PoS branches across 569,471 tokens (some tokens have multiple PoS).
 
 ### Non-Fiction Namespaces
 
@@ -251,12 +198,13 @@ s*                              Fiction Thing Entities
 
 | Database | Namespaces | Contents |
 |----------|------------|----------|
-| hcp_core | AA | Universal tokens, encoding, structural, force infrastructure |
-| hcp_english | AB | English language family (~1.4M tokens) |
-| hcp_en_pbm | zA | Non-fiction PBMs — DROPPED: prior implementation was incorrect (flat word list, not bond maps). Will be recreated with correct aggregated bond pair schema. |
-| hcp_fic_entities | u*, t*, s* | All fiction entities (bootstrap — splits later) |
-| hcp_nf_entities | y*, x*, w* | All non-fiction entities (bootstrap — splits later) |
-| (future) | vA | Fiction PBMs |
+| hcp_core | AA | Universal tokens (~5,470), encoding, structural, URI elements, force infrastructure |
+| hcp_english | AB | English language (569,471 tokens, tree model) |
+| hcp_fic_pbm | v* | Fiction PBMs, positional tokens, document-local vars |
+| hcp_fic_entities | u*, t*, s* | Fiction entities (584 tokens) |
+| hcp_nf_entities | y*, x*, w* | Non-fiction entities (116 tokens) |
+| hcp_var | — | Short-term memory, unresolved sequences, envelope working set |
+| hcp_envelope | — | Envelope lifecycle and cache coordination |
 
 #### Atomization Rules
 
