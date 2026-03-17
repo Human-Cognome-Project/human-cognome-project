@@ -1,6 +1,6 @@
 # Project Status
 
-_Last updated: 2026-03-10_
+_Last updated: 2026-03-17_
 
 ## What Exists
 
@@ -88,69 +88,69 @@ Standalone Qt binary (`HCPWorkstation`, 14 MB) with dual-mode architecture:
 ### Pre-Compiled LMDB Vocab
 
 Offline-compiled LMDB vocabulary for zero-SQL runtime:
-- 809,303 entries (37% reduction from 1.28M via morphological stripping), ~34 MB on disk
 - Per-word-length sub-databases (`vbed_02`..`vbed_16`), frequency-ordered
 - Labels (tier 0) -> freq-ranked (tier 1) -> unranked remainder (tier 2)
-- Entity sub-databases: 723 sequences total (fic + nf), verified via dry-run. DB cleaned 2026-03-05; LMDB recompile pending (compile_entity_lmdb.py needs review for variant/morph categories before next full compile).
+- Entity sub-databases: 723 sequences total (fic + nf), verified via dry-run. DB cleaned 2026-03-05; LMDB recompile pending.
 - Frequency data: Wikipedia 2023 + OpenSubtitles merged. 176K tokens ranked.
-- Scripts: `compile_vocab_lmdb.py`, `compile_entity_lmdb.py`, `merge_frequency_ranks.py`
+- LMDB population done via envelope system at runtime (EnvelopeManager::ExecuteQuery). No offline compilation script needed.
 
-### Database Shards (6 databases, 32 migrations applied)
+### Database Shards (7 databases, 44 migrations applied)
 
 **Core shard (`hcp_core`)** -- AA namespace
-- ~5,200 tokens: byte codes, Unicode characters, structural markers, NSM primitives
+- ~5,470 tokens: byte codes, Unicode characters, structural markers, NSM primitives, URI elements
+- AA.AG: URI Elements (56 tokens -- protocols, file formats, programming tools, standards, TLDs)
 - Namespace allocations, shard registry (10 entries)
 - Activity envelope schema (definitions, queries, composition, audit log)
 - Punctuation and single-character tokens live here, not in hcp_english
 - LMDB sub-db split: `env_vocab` (envelope-loaded, evicted on switch) vs `w2t` (cache-miss fills, persistent)
 
-**English shard (`hcp_english`)** -- AB/AD/AE namespaces
-- **Kaikki rebuild COMPLETE** (2026-03-10, 6 passes from enwiktionary 2026-03-03 dump)
-- **Namespace layout**: AB = common vocab (root tokens), AD = Labels (N_PROPER), AE = Initialisms, AF = reserved for idioms (deferred)
-- **DB totals**: ~1,421,622 tokens, 502,295 token_pos, 579,388 morph_rules, 501,696 glosses, 45,023 variants
-- **Pass results**:
-  - Pass 1: 21,019 root tokens (AB namespace)
-  - Pass 2: 496,364 token_pos entries + 601,457 token_morph_rules
-  - Pass 3: 495,765 glosses
-  - Pass 4: 29,289 irregular variants + 15,734 archaic forms
-  - Pass 5: 26,926 loanword tags
-  - Pass 6: 4,188 Labels (AD namespace) + 1,743 initialisms (AE namespace)
-- **Known data quality issue**: V_MAIN over-assigned by Kaikki (~2K tokens that aren't primarily verbs); flagged for downstream cleanup
-- **New schema tables** (migrations 029-032, roots-only design):
-  - `token_pos` -- (token_id, pos, is_primary, gloss_id) junction table, `pos_tag` enum (N_COMMON, N_PROPER, V_MAIN, V_AUX, V_COPULA, ADJ, ADV, PREP, CONJ_COORD, CONJ_SUB, DET, INTJ, PART, NUM)
+**English shard (`hcp_english`)** -- AB namespace (tree model)
+- **Kaikki curation COMPLETE** (2026-03-17, 6 phases from enwiktionary 2026-03-03 dump)
+- **All tokens in AB namespace** -- AD/AE namespaces deprecated; tree model stores PoS/variant data via junction tables instead of namespace separation
+- **DB totals**: 569,471 tokens, 619,433 token_pos (15 PoS types), 789,548 glosses, 89,075 variants
+- **PoS distribution**: N_COMMON (285,586), ADJ (149,357), N_PROPER (124,171), V_MAIN (34,472), ADV (22,595), INTJ (1,773), N_PRONOUN (324), NUM (291), PREP (288), PART (277), DET (134), CONJ_COORD (124), CONJ_SUB (25), V_AUX (15), V_COPULA (1)
+- **Phase results**:
+  - Phase 0-1: Schema + closed-class words (~500)
+  - Phase 2: High-frequency open-class roots (~5,000)
+  - Phase 3: Full batch verb/noun/adj/adv (~455,000, 57 errors = 0.01%)
+  - Phase 4: Minor PoS -- intj, pron, conj, det, particle, num (~3,000)
+  - Phase 5: Labels/N_PROPER (~108,000, 7 errors = 0.005%)
+  - Phase 6: Abbreviation/initialism roots (15,872), alt-spelling variants (247), dialect/archaic form-of variants (5,445), regular inflections skipped (517,069 -- engine handles at runtime)
+- **Schema tables** (tree model, roots-only design):
+  - `token_pos` -- (token_id, pos, is_primary) junction table, `pos_tag` enum (15 types)
   - `token_glosses` -- (id, token_id, pos, gloss_text, nsm_prime_refs, nuance_note, status)
   - `token_variants` -- (token_id, canonical_id, morph_type, characteristic_bits)
-  - `token_morph_rules` -- (migration 031) morphological rule storage per token
+  - `token_morph_rules` -- morphological rule storage per token
   - `inflection_rules` + tense envelope functions
   - 32-bit `characteristics` bitmask: register (FORMAL/CASUAL/SLANG/VULGAR/DEROGATORY/LITERARY/TECHNICAL), temporal (ARCHAIC/DATED/NEOLOGISM), geographic (DIALECT/BRITISH/AMERICAN/AUSTRALIAN)
-- Migration 032: `envelope_queries` updated to new schema JOINs
-- Lowercase-normalized (migration 016), particle_key indexed (migration 018)
-- Frequency ranks from OpenSubtitles + Wikipedia (migration 019)
-- Migration 026: 141K proper nouns tagged `proper_common='proper'` for Label tier 0 broadphase
-- Migration 027: 141,755 proper noun names lowercased (canonical form in DB)
-- Migration 028: 58,784 uppercase/lowercase collision pairs wired as variants; 12,325 canonicals tagged proper
+- Engine identifies Labels by `proper_common='P'` flag on tokens table
+- Lowercase-normalized, particle_key indexed, frequency-ranked (OpenSubtitles + Wikipedia)
 - All tokens atomized to character Token IDs
+- Kaikki staging table: 641,713 processed + 813,275 skipped = 1,454,988 total entries (100%)
 
 **Fiction PBM shard (`hcp_fic_pbm`)** -- v* PBMs
-- PBM prefix tree storage (migration 011): documents -> starters -> bond subtables
-- Positional token lists on starters (migration 013)
-- Positional modifiers (migration 020): morph bits + cap flags
-- Document-local vars (migration 012), var staging pipeline (migration 015)
+- PBM prefix tree storage: documents -> starters -> bond subtables
+- Positional token lists on starters, positional modifiers (morph bits + cap flags)
+- Document-local vars, var staging pipeline
 
 **Fiction entities (`hcp_fic_entities`)** -- u*/t*/s* namespaces
 - Fiction people, places, things from cataloged texts
 - 584 tokens; entity names cleaned 2026-03-05 (lowercase_underscore, 1-indexed positions, phantom refs fixed)
 
 **Non-fiction entities (`hcp_nf_entities`)** -- y*/x*/w* namespaces
-- Source records, editions, entity lists (migration 014)
+- Source records, editions, entity lists
 - Work entities (wA.DA.*), author entities
 - 116 tokens; 27 missing place name rows inserted 2026-03-05
 
 **Var shard (`hcp_var`)** -- short-term memory for unresolved sequences
 - Var token dedup by surface form
-- var_sources with doc_token_id for cross-shard references (migration 022)
+- var_sources with doc_token_id for cross-shard references
+- `envelope_working_set` table for warm cache assembly
 
-DB dumps: gzipped with SHA-256 checksums. `load.sh` handles all 6 databases with auto-creation and checksum verification.
+**Envelope shard (`hcp_envelope`)** -- envelope management
+- Dedicated DB for envelope lifecycle and cache coordination
+
+DB dumps: gzipped with SHA-256 checksums. `load.sh` handles all databases with auto-creation and checksum verification.
 
 ### JSON Ingestion Pipeline (2026-03-07, commits 9797ed4, 125b998)
 
@@ -161,21 +161,24 @@ Batch JSON ingestion support wired into the `ingest`/`phys_ingest` socket API:
 - 110 Gutenberg texts ingested: batch JSON creates stubs, TXT files fill bond data via `FillPBMData`
 
 ### Python Tooling (`scripts/`)
-- `compile_vocab_lmdb.py` -- LMDB compiler with morphological stripping
-- `compile_entity_lmdb.py` -- Entity LMDB compiler (fic/nf sub-dbs)
 - `merge_frequency_ranks.py` -- Frequency data merge (Wikipedia + OpenSubtitles -> Postgres)
 - `ingest_texts.py` -- Text ingestion via socket API
 - `run_benchmark.py` -- Benchmark runner
+- `hcp_client.py` -- Socket API client library
+- Deprecated scripts (Kaikki pass scripts, morpheme cleanup, prefix review) moved to `scripts/deprecated/`
 
 ### Schema & Kaikki Design Docs
 
-- `docs/hcp-english-schema-design.md` -- New hcp_english schema (DB Specialist, 2026-03-10). Answers Q1-Q6 from restructure spec. PoS enum, characteristic bitmask layout, migration path (rebuild alongside, no in-place migration).
-- `docs/kaikki-analysis.md` -- Full analysis of Kaikki English dump (1,454,988 entries, 2026-03-10). PoS distribution, form-of senses, Label/proper noun count, characteristic tag corpus, multi-pass population plan.
+- `docs/hcp-english-schema-design.md` -- hcp_english schema design: tree model, PoS enum, characteristic bitmask layout.
+- `docs/kaikki-analysis.md` -- Full analysis of Kaikki English dump (1,454,988 entries). PoS distribution, form-of senses, Label/proper noun count.
+- `docs/kaikki-curation-standards.md` -- Curation rules, encoding spec, and phase documentation.
 - `docs/kaikki-tag-mapping.md` -- Kaikki tag → HCP characteristic bit mapping table.
-- `docs/kaikki-population-plan.md` -- 6-pass population plan: Pass 1 roots → Pass 2 delta variants → Pass 3 alt-of → Pass 4 loanwords → Pass 5 derogatory/vulgar → Pass 6 Labels.
-- `docs/language-shard-restructure-spec.md` -- Strategic spec that drove schema design. Roots-only DB, regular inflections by rule, morpheme acceptance flags, envelope-tense-awareness.
+- `docs/kaikki-population-plan.md` -- 6-phase population plan (superseded by curation standards doc but retained for historical context).
+- `docs/language-shard-restructure-spec.md` -- Strategic spec: roots-only DB, regular inflections by rule, envelope-tense-awareness.
 - `docs/grammar-identifier-spec.md` -- Grammar identifier spec (SVO detection, PoS tagging, morpheme-first resolution).
-- `docs/envelope-vocab-spec.md` -- Rewritten 2026-03-07 to reflect migrations 025-028 decisions (env_vocab sub-db, Label tier query, LMDB sub-db separation).
+- `docs/envelope-vocab-spec.md` -- Envelope system: env_vocab sub-db, Label tier query, LMDB sub-db separation.
+- `docs/db-uri-elements-spec.md` -- AA.AG URI element namespace design.
+- `docs/prefix-predictive-pipeline-design.md` -- Prefix stripping pipeline design.
 
 ### Decision Records (`docs/decisions/`)
 - 001: Token ID decomposition
@@ -198,18 +201,14 @@ Batch JSON ingestion support wired into the `ingest`/`phys_ingest` socket API:
 
 ## Recently Completed
 
-- **English shard rebuild from Kaikki COMPLETE** (2026-03-10, commits `33b6b42` + `d31a3d2`) -- All 6 passes done. 21,019 root tokens (AB namespace), 496,364 token_pos, 601,457 token_morph_rules, 495,765 glosses, 29,289 irregular + 15,734 archaic variants, 26,926 loanword tags, 4,188 Labels (AD), 1,743 initialisms (AE). DB totals: ~1,421,622 tokens, 502,295 token_pos, 579,388 morph_rules, 501,696 glosses, 45,023 variants. Known data quality issue: V_MAIN over-assigned ~2K tokens (not primarily verbs); flagged for downstream cleanup.
-- **Migrations 031-032** (2026-03-10) -- 031: `token_morph_rules` table added. 032: `envelope_queries` updated to new schema JOINs.
-- **Migrations 025-030** (2026-03-07–2026-03-10) -- 025: envelope query fixes (word→name, frequency_rank→freq_rank, lmdb_subdb→env_vocab). 026: Label tier broadphase (141K proper nouns tagged `proper_common='proper'`). 027: 141,755 proper nouns lowercased. 028: 58,784 collision pairs wired as variants. 029-030: new hcp_english schema tables (token_pos, token_glosses, token_variants) + inflection functions + tense envelopes.
-- **Kaikki data analysis** (2026-03-10, `docs/kaikki-analysis.md`) -- Full analysis of 2026-03-03 enwiktionary dump: 1,454,988 entries, 1,323,204 unique lowercase words, 84,051 multi-PoS, 193K proper nouns, 525,941 form-of senses, rich characteristic tag inventory. 6-pass population plan documented.
-- **hcp_english schema design** (2026-03-10, `docs/hcp-english-schema-design.md`) -- DB Specialist design: token_pos junction, token_glosses, token_variants, pos_tag enum, 32-bit characteristics bitmask, migration path decided (rebuild alongside, no in-place migration).
-- **JSON ingestion pipeline** (2026-03-07, commits `9797ed4` + `125b998`) -- Batch JSON support: DispatchJsonFile, CreateDocumentStub, FillPBMData, GetDocPkByCatalogId, phys_ingest metadata path. 110 Gutenberg texts ingested.
-- **CONTRIBUTING.md language policy** (2026-03-07, commit `700495d`) -- C++ for engine runtime, Python for tooling/scripts only. Policy codified.
-- **Codex review fixes** (commit `01f451e`) -- psycopg2→psycopg3, stale AGENTS.md/CONTRIBUTING.md refs fixed.
-- **Envelope vocab spec rewrite** (2026-03-07, `docs/envelope-vocab-spec.md`) -- Reflects all migrations 025-028 decisions; env_vocab vs w2t sub-db split; Label tier query design.
-- **PR reviews** (#44, #45) -- HTML text extractor and LMDB verification script from contributor `dhitalprashant77-lab`. Reviewed and feedback posted (first external contributions).
-- **V-1/V-3 variant normalization** (2026-03-04, commit `d59c2fa`) -- `TryVariantNormalize` in `HCPVocabBed.cpp`. V-1 g-drop (`-in'`→`-ing`, dialect speech) and V-3 archaic (`-eth` 3rd person). Validated: 12/12 dialect g-drops resolved in Sign of Four.
-- **Entity data cleanup** (2026-03-05) -- `hcp_fic_entities` and `hcp_nf_entities` cleaned in-place. tokens.name normalized (lowercase_underscore). 27 missing nf place name rows inserted. 723 sequences verified.
+- **Kaikki curation COMPLETE** (2026-03-17) -- Full 6-phase curation of Kaikki English dump (1,454,988 Wiktionary entries). Final state: 569,471 tokens (all AB namespace), 619,433 PoS branches (15 types), 789,548 glosses, 89,075 variants. Tree model replaces old AD/AE namespace separation. Regular inflections (517,069 entries) skipped — engine handles at runtime. N_PROPER branches: 124,171 (proper nouns, abbreviations, initialisms). Curation scripts documented in `docs/kaikki-curation-standards.md`.
+- **Migrations 033-044** (2026-03-10–2026-03-17) -- AD/AE namespace collapse, envelope working set, inflection rule fixes, PBM morpheme positions, archaic filter fixes, prefix rules, EWS morpheme propagation.
+- **LMDB sliding window** (2026-03-14) -- Hot cache holds 3 slices (~15K entries) instead of full 535K. ResolveLengthCycle exhausts all warm-set slices per length.
+- **Prefix stripping rules** (2026-03-14) -- Data-driven, DB-sourced prefix stripping in engine resolve loop.
+- **Variant morph bits** (2026-03-14) -- Archaic reconstruction + delete_doc support. Variant morph bits propagated through warm cache.
+- **JSON ingestion pipeline** (2026-03-07) -- Batch JSON support: DispatchJsonFile, CreateDocumentStub, FillPBMData. 110 Gutenberg texts ingested.
+- **V-1/V-3 variant normalization** (2026-03-04, commit `d59c2fa`) -- `TryVariantNormalize`: V-1 g-drop (`-in'`→`-ing`) and V-3 archaic (`-eth`). 12/12 dialect g-drops resolved in Sign of Four.
+- **Entity data cleanup** (2026-03-05) -- `hcp_fic_entities` and `hcp_nf_entities` normalized in-place. 723 sequences verified.
 
 ## What Doesn't Exist Yet
 
@@ -229,18 +228,16 @@ Batch JSON ingestion support wired into the `ingest`/`phys_ingest` socket API:
 - **OpenSubtitles word frequency** (CC BY-SA 4.0) -- 1.6M entries
 - **Project Gutenberg** -- Source texts for PBM construction and benchmarking
 
-## Docs Referencing Old hcp_english Structure (needs future update)
+## Historical Docs (reference only)
 
-The following docs still reference the old hcp_english schema (1.4M Wiktionary tokens, `canonical_id` on `tokens` table, `tokens.category`, old migration counts). They are not wrong for their historical context but need updating now that the Kaikki rebuild is complete:
+The following docs predate the Kaikki curation rebuild (2026-03-17) and tree model adoption. They document historical decisions and are retained for context but should not be treated as current specifications:
 
-- `docs/roadmap.md` -- references old vocab numbers
-- `docs/variant-rules-proposal.md` -- references `tokens.canonical_id`
-- `docs/variant-forms-audit-2026-03-04.md` -- pre-migration-028 variant analysis
-- `docs/brief-lmdb-vocab-compilation.md` -- references old schema columns
+- `docs/variant-rules-proposal.md` -- pre-tree-model variant design (references `tokens.canonical_id`)
+- `docs/variant-forms-audit-2026-03-04.md` -- pre-tree-model variant analysis
+- `docs/brief-lmdb-vocab-compilation.md` -- references old schema columns; LMDB now populated via envelope system
 - `docs/spec/cache-miss-resolver-spec.md` -- references old token table layout
 - `docs/spec/namespace-reference.md` -- migration count and token counts stale
-- `docs/research/pbm-storage-schema-design.md` -- early design doc, pre-schema-rebuild
+- `docs/research/pbm-storage-schema-design.md` -- early design doc
 - `docs/research/concept-mesh-decomposition.md` -- references old token structure
 - `docs/research/force-pattern-db-review.md` -- references old schema
-- `docs/decisions/001-token-id-decomposition.md` -- historical, not stale but predates new PoS tables
-- `docs/decisions/002-names-shard-elimination.md` -- historical
+- `docs/decisions/001-token-id-decomposition.md`, `002-names-shard-elimination.md` -- historical decisions, still valid
