@@ -99,7 +99,7 @@ Offline-compiled LMDB vocabulary for zero-SQL runtime:
 **Core shard (`hcp_core`)** -- AA namespace
 - ~5,470 tokens: byte codes, Unicode characters, structural markers, NSM primitives, URI elements
 - AA.AG: URI Elements (56 tokens -- protocols, file formats, programming tools, standards, TLDs)
-- Namespace allocations, shard registry (10 entries)
+- Namespace allocations, shard registry (3 entries — stale/TBD, was intended as shard traffic manager but not maintained)
 - Activity envelope schema (definitions, queries, composition, audit log)
 - Punctuation and single-character tokens live here, not in hcp_english
 - LMDB sub-db split: `env_vocab` (envelope-loaded, evicted on switch) vs `w2t` (cache-miss fills, persistent)
