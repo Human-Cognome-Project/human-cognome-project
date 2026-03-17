@@ -1,6 +1,6 @@
 # Scripts — TODO
 
-Last updated: 2026-03-06
+Last updated: 2026-03-17
 
 ---
 
@@ -8,11 +8,12 @@ Last updated: 2026-03-06
 
 | Script | Purpose | Status |
 |--------|---------|--------|
-| `compile_vocab_lmdb.py` | Build LMDB vocab beds from Postgres | Working |
-| `compile_entity_lmdb.py` | Build entity starter maps as LMDB sub-dbs | Working |
 | `merge_frequency_ranks.py` | Merge Wikipedia + OpenSubtitles frequency data into Postgres | Working |
 | `run_benchmark.py` | Benchmark runner (Sherlock/Dracula/Scarlet) | Working |
 | `ingest_texts.py` | Text ingestion via socket API | Working |
+| `hcp_client.py` | Socket API client library | Working |
+
+**Note**: `compile_vocab_lmdb.py` and `compile_entity_lmdb.py` previously referenced here are no longer needed — LMDB is now populated via the envelope system at runtime (`EnvelopeManager::ExecuteQuery`). Kaikki pass scripts (pass1-6) moved to `scripts/deprecated/`.
 
 ## Improvements
 
