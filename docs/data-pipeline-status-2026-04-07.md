@@ -44,7 +44,7 @@ are populated and cross-referenced. Zero unminted entries remain.
 | english_characters | Character → core Unicode token links |
 | inflection_rules | Engine morphological stripping rules |
 | token_morph_rules | Engine morphology rules |
-| ~~tokens / token_pos / token_variants~~ | **DROPPED** — old schema, engine C++ needs updating to use `entries` |
+| ~~tokens / token_pos / token_variants~~ | **DROPPED** — old schema replaced by `entries` table with ns/p2-p5 decomposition |
 
 ### Stale Tables (Dropped)
 
@@ -53,47 +53,37 @@ staging_morphynet_deriv, staging_morphynet_infl, morpheme_inventory, token_gloss
 
 ## Entity Databases
 
-### hcp_nf_entities (~148K entities)
+### Entity Databases (6 DBs, split by literary/non-literary × person/place/thing)
 
-| Namespace | Category | Count |
-|-----------|----------|-------|
-| wA | Things (other) | 81,321 |
-| wA | Languages | 3,100 |
-| wA | Science | 702 |
-| wA | Technology | 693 |
-| wA | Organizations | 585 |
-| wA | Temporal | 93 |
-| wA | Holidays | 41 |
-| wA | Ethnonyms | 31 |
-| xA | Places (astronomical) | 461 |
-| xA | Countries | 265 |
-| xA | Constellations | 87 |
-| xA | Continents | 38 |
-| xA | Planets | 15 |
-| xA | Settlements/regions (librarian) | 45 |
-| yA | Religious figures | 1,260 |
-| yA | Historical persons | 1,049 |
-| yA | Greek mythology | 430 |
-| yA | Other mythology (Norse, Irish, Celtic, etc.) | 261 |
-| yA | Other persons | 917 |
+| Database | Tokens | Contents |
+|----------|--------|----------|
+| hcp_nf_things | 142,513 | Languages, science, technology, organizations, holidays, ethnonyms, other |
+| hcp_nf_people | 3,917 | Historical persons, religious figures, mythology (all traditions) |
+| hcp_nf_places | 1,452 | Countries, continents, constellations, planets, settlements |
+| hcp_fic_people | 962 | Fictional characters, literary individuals (librarian + Kaikki) |
+| hcp_fic_places | 10 | Fictional settings (librarian data) |
+| hcp_fic_things | 1 | Fictional objects (librarian data) |
 
-### hcp_fic_entities (~973 entities)
+### Entity Structure (same across all 6 DBs)
 
-| Namespace | Category | Count |
-|-----------|----------|-------|
-| uA | People (individuals) | 305 |
-| uA | Fictional characters | 276 |
-| uA | Other people (librarian + sweep) | 381 |
-| tA | Places (librarian) | 10 |
-| sA | Things (librarian) | 1 |
-
-### Entity Structure
-
-- **entity_names**: Links entity tokens to shard Label tokens (position-ordered)
-- **entity_descriptions**: Glosses moved from kk_senses (tokenized, comma-separated)
+- **tokens**: ns/p2/p3/p4/p5 decomposed, generated token_id, name, category, subcategory, metadata
+- **entity_names**: Links entity tokens to shard Label tokens (position-ordered, multi-language ready)
+- **entity_descriptions**: Glosses moved from senses table (tokenized, comma-separated)
 - **entity_properties**: Category tags, tradition, subcategory
-- **entity_relationships**: Source/target entity links with relationship types (librarian data)
+- **entity_relationships**: Source/target entity links with relationship types
+- **entity_appearances**: Entity → document links with role/prominence
+- **entity_rights**: Rights/permissions metadata
 - Token_ids use sequential encoding (Dewey-derived classification deferred)
+
+### Other Databases
+
+| Database | Purpose |
+|----------|---------|
+| hcp_core | Unicode characters, temporal namespace |
+| hcp_envelope | Envelope definitions and queries |
+| hcp_fic_pbm | Fiction document PBM bonds (1 doc, scaffolding) |
+| hcp_var | Working set assembly (envelope hot cache staging) |
+| *(hcp_nf_pbm)* | *(Future: nonfiction document PBM bonds)* |
 
 ## Engine Bridge (Pending C++ Work)
 
