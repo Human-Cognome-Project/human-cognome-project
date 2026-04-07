@@ -57,7 +57,7 @@ def ingest_file(sock, filepath: str, century: str = "AS") -> dict:
         text = f.read()
 
     request = json.dumps({
-        "action": "ingest",
+        "action": "phys_ingest",
         "name": name,
         "text": text,
         "century": century,
