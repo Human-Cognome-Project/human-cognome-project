@@ -86,7 +86,7 @@ namespace HCPEngine
         }
 
         // Query all word forms from hcp_english
-        PGresult* res = PQexec(conn, "SELECT name FROM tokens WHERE layer = 'word'");
+        PGresult* res = PQexec(conn, "SELECT word FROM entries WHERE ns = 'AB' AND p2 = 'AA'");
         if (PQresultStatus(res) != PGRES_TUPLES_OK)
         {
             fprintf(stderr, "[HCPBondCompiler] Query failed: %s\n", PQerrorMessage(conn));

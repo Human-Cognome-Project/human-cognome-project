@@ -112,7 +112,7 @@ namespace HCPEngine
         const char* params[] = { pattern.c_str() };
         PGresult* res = PQexecParams(nfEntConn,
             "SELECT token_id, name, category FROM tokens "
-            "WHERE name LIKE $1 AND (category = 'person' OR subcategory = 'individual') LIMIT 1",
+            "WHERE name LIKE $1 LIMIT 1",
             1, nullptr, params, nullptr, nullptr, 0);
         if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) == 0)
         {

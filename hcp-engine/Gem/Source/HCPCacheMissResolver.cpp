@@ -220,7 +220,7 @@ namespace HCPEngine
         int paramFormats[1] = { 0 }; // text
 
         PGresult* res = PQexecParams(conn,
-            "SELECT token_id FROM tokens WHERE name = $1 LIMIT 1",
+            "SELECT token_id FROM entries WHERE word = $1 LIMIT 1",
             1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
         if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
@@ -241,7 +241,7 @@ namespace HCPEngine
             paramLengths[0] = static_cast<int>(lower.size());
 
             res = PQexecParams(conn,
-                "SELECT token_id FROM tokens WHERE name = $1 LIMIT 1",
+                "SELECT token_id FROM entries WHERE word = $1 LIMIT 1",
                 1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
             if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
@@ -306,7 +306,7 @@ namespace HCPEngine
         if (conn)
         {
             PGresult* res = PQexecParams(conn,
-                "SELECT token_id FROM tokens WHERE name = $1 AND layer = 'label' LIMIT 1",
+                "SELECT token_id FROM entries WHERE word = $1 AND ns = 'AD' LIMIT 1",
                 1, nullptr, paramValues, paramLengths, paramFormats, 0);
 
             if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)

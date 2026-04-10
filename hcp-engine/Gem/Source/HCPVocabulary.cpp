@@ -326,7 +326,7 @@ namespace HCPEngine
         }
 
         PGresult* res = PQexec(conn,
-            "SELECT name, token_id FROM tokens WHERE layer = 'affix'");
+            "SELECT word, token_id FROM entries WHERE ns = 'AC' AND p2 = 'AA'");
 
         if (PQresultStatus(res) != PGRES_TUPLES_OK)
         {

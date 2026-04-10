@@ -332,22 +332,28 @@ namespace HCPEngine
             PQclear(probe);
         }
 
-        // Wrap with enrichment join to get characteristics + category from tokens table.
-        // Stored queries return at minimum (name, token_id); the wrap adds the rest.
-        // If the base query returns a 'morpheme' column, pass it through as column 7.
-        // No explicit type casts — PostgreSQL coerces from text on COPY insert.
+        // Enrichment: extract broadphase + Label detection from the base query results.
+        // Base queries select from entries table which already has broadphase and ns columns.
+        // The CTE wraps the base query; we enrich with a self-join on token_id to get
+        // columns that may not be in the base SELECT list.
+        //
+        // UPDATED (2026-04-10): entries table replaces old tokens table.
+        // entries.broadphase replaces tokens.characteristics for filter bits.
+        // Label detection via ns='AD' replaces proper_common='P'.
+        // Note: base queries from non-English shards (hcp_core) may still use 'tokens'
+        // table — the LEFT JOIN handles mismatches gracefully (NULL broadphase → 0).
         std::string morphemeExpr = hasMorpheme ? "_b.morpheme" : "NULL::text";
         std::string enrichedQuery =
             "WITH _base AS (" + baseQuery + ") "
-            "SELECT _b.name, "
+            "SELECT _b.word, "
             "       _b.token_id, "
-            "       length(_b.name), "
+            "       length(_b.word), "
             "       split_part(_b.token_id, '.', 1), "
-            "       COALESCE(_t.characteristics, 0), "
-            "       _t.category, "
+            "       COALESCE(_e.broadphase, 0), "
+            "       CASE WHEN _e.ns = 'AD' THEN 'P' ELSE NULL END, "
             "       " + morphemeExpr + " "
             "FROM _base _b "
-            "LEFT JOIN tokens _t ON _t.token_id = _b.token_id";
+            "LEFT JOIN entries _e ON _e.token_id = _b.token_id";
 
         PGresult* res = PQexec(shardConn, enrichedQuery.c_str());
         if (PQresultStatus(res) != PGRES_TUPLES_OK)

@@ -396,7 +396,7 @@ namespace HCPEngine
                             arr += '\'';
                         }
                         arr += "]";
-                        std::string q = "SELECT token_id, name FROM tokens WHERE token_id = ANY(" + arr + ")";
+                        std::string q = "SELECT token_id, word FROM entries WHERE token_id = ANY(" + arr + ")";
                         PGresult* nr = PQexec(eng, q.c_str());
                         if (PQresultStatus(nr) == PGRES_TUPLES_OK)
                         {
