@@ -298,23 +298,21 @@ namespace HCPEngine
                 if (!rules.empty())
                     m_bedManager.SetInflectionRules(AZStd::move(rules));
 
-                // Activate the default English envelope: assembles cold→warm (Postgres).
-                // Then feed the initial 3-slot hot window into LMDB (3 × LMDB_SLICE_SIZE
-                // entries, not the full warm set). BedManager slides this window forward
-                // one slot per ResolveLengthCycle as the document progresses.
+                // Activate the English resolution envelope: assembles cold→warm (Postgres).
+                // LMDB is NOT pre-populated — the resolution loop drives per-length
+                // batch loading via AdvanceEnvelopeLengthBatch, which queries Postgres
+                // directly for right-sized candidate sets. LMDB w2t is only used for
+                // single-word lookups during inflection stripping (populated on-demand).
                 auto t0 = std::chrono::high_resolution_clock::now();
-                fprintf(stderr, "[HCPEngine] Activating default envelope 'english_vocab_full'...\n");
+                fprintf(stderr, "[HCPEngine] Activating envelope 'english_resolve'...\n");
                 fflush(stderr);
-                EnvelopeActivation act = m_envelopeManager.ActivateEnvelope("english_vocab_full");
-                int warmSize  = m_envelopeManager.GetWorkingSetSize(act.envelopeId);
-                int initCount = m_envelopeManager.FeedSlice(
-                    act.envelopeId, 0, BedManager::LMDB_SLICE_SIZE * 3);
+                EnvelopeActivation act = m_envelopeManager.ActivateEnvelope("english_resolve");
+                int warmSize = m_envelopeManager.GetWorkingSetSize(act.envelopeId);
                 m_bedManager.InitEnvelopeWindow(act.envelopeId, warmSize);
-                m_bedManager.RebuildVocab();
                 auto t1 = std::chrono::high_resolution_clock::now();
                 double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
-                fprintf(stderr, "[HCPEngine] Envelope ready: %d warm, %d hot, %.1f ms\n",
-                    warmSize, initCount, ms);
+                fprintf(stderr, "[HCPEngine] Envelope ready: %d warm rows, %.1f ms\n",
+                    warmSize, ms);
                 fflush(stderr);
             }
         }
@@ -970,14 +968,11 @@ namespace HCPEngine
         fflush(stderr);
 
         EnvelopeActivation result = m_envelopeManager.ActivateEnvelope(name);
-        int warmSize  = m_envelopeManager.GetWorkingSetSize(result.envelopeId);
-        int initCount = m_envelopeManager.FeedSlice(
-            result.envelopeId, 0, BedManager::LMDB_SLICE_SIZE * 3);
+        int warmSize = m_envelopeManager.GetWorkingSetSize(result.envelopeId);
         m_bedManager.InitEnvelopeWindow(result.envelopeId, warmSize);
-        m_bedManager.RebuildVocab();
 
-        fprintf(stderr, "[source_activate_envelope] Result: %d warm, %d hot, %d evicted, %.1f ms\n",
-            warmSize, initCount, result.evictedEntries, result.loadTimeMs);
+        fprintf(stderr, "[source_activate_envelope] Result: %d warm, %d evicted, %.1f ms\n",
+            warmSize, result.evictedEntries, result.loadTimeMs);
         fflush(stderr);
     }
 }

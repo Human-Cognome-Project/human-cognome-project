@@ -459,6 +459,121 @@ namespace HCPEngine
         }
     }
 
+    // ---- LoadRulePack: load partial-match patterns into vocab region ----
+    AZ::u32 Workspace::LoadRulePack(const RulePack& pack)
+    {
+        if (!m_particleBuffer || !m_cuda) return 0;
+        if (pack.totalPatternParticles == 0 || pack.totalPatternParticles > m_bufferCapacity) return 0;
+
+        m_vocabParticleCount = pack.totalPatternParticles;
+        m_currentWordLength = pack.cellLength;
+
+        AZ::u32 remainingCapacity = m_bufferCapacity - m_vocabParticleCount;
+        m_maxStreamSlots = remainingCapacity / pack.cellLength;
+        if (m_maxStreamSlots < 1) m_maxStreamSlots = 1;
+
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
+            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
+            physx::PxU32* devPhase = m_particleBuffer->getPhases();
+
+            physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
+            physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
+            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(m_vocabParticleCount);
+
+            for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
+            {
+                AZ::u32 base = i * 4;
+                hostPos[i] = physx::PxVec4(pack.positions[base], pack.positions[base+1],
+                                            pack.positions[base+2], pack.positions[base+3]);
+                hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
+                hostPhase[i] = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
+            }
+
+            m_cuda->copyHToD(devPos, hostPos, m_vocabParticleCount);
+            m_cuda->copyHToD(devVel, hostVel, m_vocabParticleCount);
+            m_cuda->copyHToD(devPhase, hostPhase, m_vocabParticleCount);
+            m_cuda->freePinnedHostBuffer(hostPos);
+            m_cuda->freePinnedHostBuffer(hostVel);
+            m_cuda->freePinnedHostBuffer(hostPhase);
+        }
+
+        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
+        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
+        m_streamSlots.clear();
+        return m_maxStreamSlots;
+    }
+
+    // ---- CheckPartialSettlement: only non-\0 pattern positions must settle ----
+    void Workspace::CheckPartialSettlement(const RulePack& pack,
+        AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>>& matches)
+    {
+        if (!m_particleBuffer || !m_cuda || m_streamSlots.empty()) return;
+
+        AZ::u32 readbackCount = m_vocabParticleCount +
+            static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
+        if (readbackCount > m_bufferCapacity) readbackCount = m_bufferCapacity;
+
+        physx::PxVec4* hostPos = nullptr;
+        physx::PxVec4* hostVel = nullptr;
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
+            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
+            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
+            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
+            m_cuda->copyDToH(hostPos, devPos, readbackCount);
+            m_cuda->copyDToH(hostVel, devVel, readbackCount);
+        }
+
+        for (AZ::u32 si = 0; si < static_cast<AZ::u32>(m_streamSlots.size()); ++si)
+        {
+            auto& slot = m_streamSlots[si];
+            if (slot.resolved) continue;
+
+            for (AZ::u32 pi = 0; pi < pack.patternCount; ++pi)
+            {
+                AZ::u32 activeCount = pack.activePositionCount[pi];
+                if (activeCount == 0) continue;
+
+                AZ::u32 activeSettled = 0;
+                for (AZ::u32 c = 0; c < pack.cellLength; ++c)
+                {
+                    float patZ = pack.positions[(pi * pack.cellLength + c) * 4 + 2];
+                    if (patZ == 0.0f) continue;  // Inert position
+
+                    AZ::u32 streamIdx = slot.bufferStart + c;
+                    if (streamIdx >= readbackCount) break;
+
+                    float vMag = fabsf(hostVel[streamIdx].x) + fabsf(hostVel[streamIdx].y)
+                               + fabsf(hostVel[streamIdx].z);
+                    if (vMag < WS_VELOCITY_SETTLE_THRESHOLD)
+                    {
+                        float streamZ = hostPos[streamIdx].z;
+                        if (fabsf(streamZ - patZ) < RC_Z_SCALE * 0.5f)
+                            ++activeSettled;
+                    }
+                }
+
+                if (activeSettled == activeCount)
+                {
+                    matches.push_back({si, pi});
+                    slot.resolved = true;
+                    break;
+                }
+            }
+        }
+
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            m_cuda->freePinnedHostBuffer(hostPos);
+            m_cuda->freePinnedHostBuffer(hostVel);
+        }
+    }
+
     void Workspace::FlipToTier(AZ::u32 nextTier)
     {
         if (!m_particleBuffer || !m_cuda) return;
@@ -1312,6 +1427,438 @@ namespace HCPEngine
     }
 
 
+    // ---- BuildRulePack: construct partial-match patterns for one cell length ----
+    //
+    // Suffix rules: right-aligned (front-padded \0). Prefix rules: left-aligned (end-padded \0).
+    // Contraction patterns included alongside suffix rules.
+    // \0 positions inert (Z=0). CheckPartialSettlement skips them.
+
+    RulePack BedManager::BuildRulePack(AZ::u32 cellLength) const
+    {
+        RulePack pack;
+        pack.cellLength = cellLength;
+
+        // Collect applicable rules for this cell length.
+        // Suffix: add_suffix length must be < cellLength (need at least 1 char base).
+        // Prefix: strip_prefix length must be < cellLength.
+        AZStd::vector<RulePackEntry> entries;
+
+        for (const auto& rule : m_inflectionRules)
+        {
+            if (rule.addSuffix.empty()) continue;
+            AZ::u32 suffLen = static_cast<AZ::u32>(rule.addSuffix.size());
+            if (suffLen >= cellLength) continue;  // Suffix must be shorter than word
+
+            RulePackEntry e;
+            e.pattern = rule.addSuffix;       // Suffix text on inflected form (match target)
+            e.morpheme = rule.morpheme;
+            e.morphBits = rule.morphBit;
+            e.patternLen = suffLen;
+            e.isSuffix = true;
+            e.stripSuffix = rule.addSuffix;   // What to strip from inflected form = pattern text
+            e.addBase = rule.stripSuffix;      // What to restore on stem to get base (e.g. "y" for -ies)
+            entries.push_back(AZStd::move(e));
+        }
+
+        for (const auto& rule : m_prefixRules)
+        {
+            if (rule.stripPrefix.empty()) continue;
+            AZ::u32 pfxLen = static_cast<AZ::u32>(rule.stripPrefix.size());
+            if (pfxLen >= cellLength) continue;  // Prefix must be shorter than word
+
+            RulePackEntry e;
+            e.pattern = rule.stripPrefix;     // Prefix text on surface form (match target)
+            e.morpheme = rule.morpheme;
+            e.morphBits = 0;  // Prefix morphemes use name, not bit
+            e.patternLen = pfxLen;
+            e.isSuffix = false;
+            e.stripPrefix = rule.stripPrefix; // Same as pattern — the prefix to remove
+            entries.push_back(AZStd::move(e));
+        }
+
+        // Also add contraction suffix patterns (apostrophe-based)
+        // These are compound word splits, not morphemes, but use the same
+        // partial-matching machinery. Apostrophe is a valid character with
+        // a non-zero Z value, so it participates in matching.
+        static const struct { const char* suffix; const char* secondWord; } contractions[] = {
+            {"n't", "not"},
+            {"'re", "are"},
+            {"'ve", "have"},
+            {"'ll", "will"},
+            {"'s",  nullptr},  // ambiguous: is/has/possessive — handled downstream
+            {"'m",  "am"},
+            {"'d",  nullptr},  // ambiguous: had/would — handled downstream
+        };
+        for (const auto& ct : contractions)
+        {
+            AZ::u32 suffLen = static_cast<AZ::u32>(strlen(ct.suffix));
+            if (suffLen >= cellLength) continue;
+
+            RulePackEntry e;
+            e.pattern = ct.suffix;
+            e.morpheme = "CONTRACTION";
+            e.morphBits = 0;
+            e.patternLen = suffLen;
+            e.isSuffix = true;
+            e.stripSuffix = ct.suffix;
+            if (ct.secondWord) e.secondWord = ct.secondWord;  // "not", "are", "have", etc.
+            entries.push_back(AZStd::move(e));
+        }
+
+        if (entries.empty()) return pack;
+
+        // Deduplicate: same suffix text at this length only needs one pattern.
+        // Keep first occurrence (suffix rules before prefix, priority order preserved).
+        AZStd::unordered_set<AZStd::string> seen;
+        AZStd::vector<RulePackEntry> deduped;
+        for (auto& e : entries)
+        {
+            AZStd::string key = e.pattern + (e.isSuffix ? "_S" : "_P");
+            if (seen.count(key)) continue;
+            seen.insert(key);
+            deduped.push_back(AZStd::move(e));
+        }
+
+        pack.patternCount = static_cast<AZ::u32>(deduped.size());
+        pack.totalPatternParticles = pack.patternCount * cellLength;
+        pack.positions.resize(pack.totalPatternParticles * 4, 0.0f);
+        pack.phases.resize(pack.totalPatternParticles, 0);
+        pack.activePositionCount.resize(pack.patternCount, 0);
+        pack.rules = AZStd::move(deduped);
+
+        // Build particle positions
+        for (AZ::u32 pi = 0; pi < pack.patternCount; ++pi)
+        {
+            const auto& rule = pack.rules[pi];
+            AZ::u32 activeCount = 0;
+
+            for (AZ::u32 c = 0; c < cellLength; ++c)
+            {
+                AZ::u32 particleIdx = pi * cellLength + c;
+                AZ::u32 base = particleIdx * 4;
+
+                char ch = '\0';
+                if (rule.isSuffix)
+                {
+                    // Right-aligned: pattern chars at end of cell
+                    AZ::u32 offset = cellLength - rule.patternLen;
+                    if (c >= offset)
+                        ch = rule.pattern[c - offset];
+                }
+                else
+                {
+                    // Left-aligned: pattern chars at start of cell
+                    if (c < rule.patternLen)
+                        ch = rule.pattern[c];
+                }
+
+                float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
+
+                pack.positions[base + 0] = static_cast<float>(c);  // X = char position
+                pack.positions[base + 1] = 0.0f;                    // Y = 0 (static)
+                pack.positions[base + 2] = z;                        // Z = char identity
+                pack.positions[base + 3] = 0.0f;                    // W = 0 (invMass=0, static)
+
+                if (ch != '\0') ++activeCount;
+            }
+
+            pack.activePositionCount[pi] = activeCount;
+        }
+
+        return pack;
+    }
+
+
+    // ---- RunBroadphaseFilter: GPU partial-match broadphase ----
+    //
+    // Stage 1 of 3: GPU identifies which suffix/prefix patterns match which words.
+    // Runs one PBD pass per word length with partial matching (~50 patterns, fast).
+    // Returns (runIndex, patternIndex) pairs grouped by pattern.
+    // Candidate expansion (Stage 2) and PBD resolution (Stage 3) follow on CPU.
+
+    AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>> BedManager::RunBroadphaseFilter(
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZ::u32>& candidateIndices)
+    {
+        AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>> allMatches;
+        if (candidateIndices.empty() || !m_initialized) return allMatches;
+
+        // Group candidates by word length
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> byLength;
+        for (AZ::u32 idx : candidateIndices)
+        {
+            AZ::u32 len = static_cast<AZ::u32>(runs[idx].text.size());
+            if (len >= 2 && len <= 20)
+                byLength[len].push_back(idx);
+        }
+
+        fprintf(stderr, "[BedManager] Broadphase filter: %zu candidates across %zu lengths\n",
+            candidateIndices.size(), byLength.size());
+        fflush(stderr);
+
+        // Process each word length: GPU partial-match against rule patterns
+        for (auto& [len, indices] : byLength)
+        {
+            RulePack rulePack = BuildRulePack(len);
+            if (rulePack.patternCount == 0) continue;
+
+            auto workspaces = GetWorkspacesForLength(len);
+            if (workspaces.empty()) continue;
+            Workspace* ws = workspaces[0];
+
+            // Process in batches (may overflow workspace capacity)
+            AZ::u32 cursor = 0;
+            while (cursor < static_cast<AZ::u32>(indices.size()))
+            {
+                ws->LoadRulePack(rulePack);
+
+                AZ::u32 remaining = static_cast<AZ::u32>(indices.size()) - cursor;
+                AZStd::vector<AZ::u32> batchIndices(
+                    indices.begin() + cursor,
+                    indices.begin() + cursor + remaining);
+
+                AZ::u32 overflow = ws->LoadStreamRuns(runs, batchIndices, len);
+                AZ::u32 loaded = remaining - overflow;
+
+                // Simulate — fast pass, small pattern set settles quickly
+                ws->ActivateInScene();
+                ws->BeginSimulate(RC_SETTLE_STEPS, RC_DT);
+                ws->FetchSimResults();
+
+                // Check partial settlement — only non-\0 positions
+                AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>> matches;
+                ws->CheckPartialSettlement(rulePack, matches);
+
+                ws->DeactivateFromScene();
+                ws->ResetDynamics();
+
+                // Translate slot indices to run indices
+                for (const auto& [slotIdx, patternIdx] : matches)
+                {
+                    AZ::u32 runIdx = batchIndices[slotIdx];
+                    allMatches.push_back({runIdx, patternIdx});
+                }
+
+                cursor += loaded;
+                if (overflow == 0) break;
+            }
+        }
+
+        fprintf(stderr, "[BedManager] Broadphase filter: %zu pattern matches\n", allMatches.size());
+        fflush(stderr);
+
+        return allMatches;
+    }
+
+
+    // ---- GenerateStripCandidates: CPU recursive expansion ----
+    //
+    // Stage 2 of 3: Takes GPU pattern matches, mechanically generates ALL possible
+    // base words from each match — then recursively strips each base against all
+    // ~50 patterns to handle chained morphemes (e.g. antidisestablishmentarianism
+    // → anti- + dis- + establish + -ment + -arian + -ism, 5 levels deep).
+    //
+    // No existence check — ALL candidates injected. Ascending PBD filters to valid.
+    // No depth limit — each strip shortens the word, so it terminates naturally.
+    // Morph bits accumulate through the chain (position carries the full stack).
+    //
+    // GPU broadphase only runs on original surface forms. All recursive stripping
+    // is pure CPU string suffix/prefix matching — fast for ~50 patterns.
+    //
+    // Contraction irregular: won't → will + not (special-cased).
+
+    AZStd::vector<StripCandidate> BedManager::GenerateStripCandidates(
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>>& gpuMatches,
+        const AZStd::unordered_map<AZ::u32, RulePack>& rulePacksByLength) const
+    {
+        AZStd::vector<StripCandidate> candidates;
+        if (gpuMatches.empty()) return candidates;
+
+        // Collect all rule entries across all lengths for CPU recursive matching.
+        // Indexed by suffix/prefix text for O(1) lookup during recursion.
+        // Small set (~50) — vector scan is also fine, but map is cleaner.
+        struct FlatRule
+        {
+            AZStd::string pattern;
+            AZStd::string morpheme;
+            AZ::u16 morphBits = 0;
+            bool isSuffix = true;
+            AZStd::string addBase;
+            AZStd::string stripPrefix;
+            AZStd::string secondWord;
+        };
+        AZStd::vector<FlatRule> allRules;
+        AZStd::unordered_set<AZStd::string> ruleDedup;
+
+        for (const auto& [len, pack] : rulePacksByLength)
+        {
+            for (const auto& rule : pack.rules)
+            {
+                AZStd::string key = rule.pattern + (rule.isSuffix ? "_S" : "_P");
+                if (ruleDedup.count(key)) continue;
+                ruleDedup.insert(key);
+
+                FlatRule fr;
+                fr.pattern = rule.pattern;
+                fr.morpheme = rule.morpheme;
+                fr.morphBits = rule.morphBits;
+                fr.isSuffix = rule.isSuffix;
+                fr.addBase = rule.addBase;
+                fr.stripPrefix = rule.stripPrefix;
+                fr.secondWord = rule.secondWord;
+                allRules.push_back(AZStd::move(fr));
+            }
+        }
+
+        // Apply one rule to a word, returning the stripped base (empty if rule doesn't apply).
+        auto applyRule = [](const AZStd::string& word, const FlatRule& rule) -> AZStd::string
+        {
+            AZ::u32 wordLen = static_cast<AZ::u32>(word.size());
+            AZ::u32 patLen = static_cast<AZ::u32>(rule.pattern.size());
+            if (patLen >= wordLen) return {};  // Pattern must be shorter than word
+
+            if (rule.morpheme == "CONTRACTION")
+            {
+                // Contractions only fire on the original surface form (have apostrophe).
+                // Don't recurse contractions on stripped bases.
+                return {};
+            }
+
+            if (rule.isSuffix)
+            {
+                // Check suffix match
+                if (word.substr(wordLen - patLen) != rule.pattern) return {};
+
+                AZStd::string stem = word.substr(0, wordLen - patLen);
+                if (!rule.addBase.empty() && rule.addBase != "__DOUBLING__")
+                {
+                    return stem + rule.addBase;
+                }
+                else if (rule.addBase == "__DOUBLING__" && stem.size() >= 2
+                         && stem[stem.size()-1] == stem[stem.size()-2])
+                {
+                    return stem.substr(0, stem.size() - 1);
+                }
+                return stem;
+            }
+            else
+            {
+                // Check prefix match
+                if (word.substr(0, patLen) != rule.pattern) return {};
+                return word.substr(patLen);
+            }
+        };
+
+        // Process each GPU match: generate first-level candidate, then recurse.
+        AZ::u32 level1Count = 0;
+        AZ::u32 recursiveCount = 0;
+
+        for (const auto& [runIdx, patternIdx] : gpuMatches)
+        {
+            const AZStd::string& text = runs[runIdx].text;
+            AZ::u32 len = static_cast<AZ::u32>(text.size());
+
+            auto packIt = rulePacksByLength.find(len);
+            if (packIt == rulePacksByLength.end()) continue;
+            const RulePack& pack = packIt->second;
+            if (patternIdx >= pack.rules.size()) continue;
+
+            const RulePackEntry& rule = pack.rules[patternIdx];
+
+            StripCandidate cand;
+            cand.sourceRunIndex = runIdx;
+            cand.morpheme = rule.morpheme;
+            cand.morphBits = rule.morphBits;
+
+            if (rule.morpheme == "CONTRACTION")
+            {
+                cand.isContraction = true;
+                AZ::u32 baseLen = len - rule.patternLen;
+                cand.baseWord = text.substr(0, baseLen);
+                cand.secondWord = rule.secondWord;
+
+                if (cand.baseWord == "wo" && rule.pattern == "n't")
+                    cand.baseWord = "will";
+            }
+            else if (rule.isSuffix)
+            {
+                AZ::u32 stemLen = len - rule.patternLen;
+                AZStd::string stem = text.substr(0, stemLen);
+
+                if (!rule.addBase.empty() && rule.addBase != "__DOUBLING__")
+                    cand.baseWord = stem + rule.addBase;
+                else if (rule.addBase == "__DOUBLING__" && stem.size() >= 2
+                         && stem[stem.size()-1] == stem[stem.size()-2])
+                    cand.baseWord = stem.substr(0, stem.size() - 1);
+                else
+                    cand.baseWord = stem;
+            }
+            else
+            {
+                cand.baseWord = text.substr(rule.patternLen);
+            }
+
+            if (cand.baseWord.empty()) continue;
+            candidates.push_back(cand);
+            ++level1Count;
+
+            // ---- Recursive expansion: strip the base further ----
+            // Feed each new base back through all ~50 patterns.
+            // Each strip shortens the word → guaranteed termination.
+            // Morph bits accumulate (OR'd) through the chain.
+            // Dedup by (sourceRunIndex, baseWord) to avoid redundant candidates.
+
+            AZStd::unordered_set<AZStd::string> seen;
+            seen.insert(text);         // Original surface form — don't re-emit
+            seen.insert(cand.baseWord);
+
+            // Work queue: (baseWord, accumulatedMorphBits, morphemeChain)
+            struct RecurseEntry
+            {
+                AZStd::string word;
+                AZ::u16 morphBits;
+            };
+            AZStd::vector<RecurseEntry> queue;
+            queue.push_back({cand.baseWord, cand.morphBits});
+
+            while (!queue.empty())
+            {
+                RecurseEntry current = AZStd::move(queue.back());
+                queue.pop_back();
+
+                for (const auto& fr : allRules)
+                {
+                    AZStd::string deeper = applyRule(current.word, fr);
+                    if (deeper.empty() || deeper.size() < 2) continue;  // Min 2 chars for a valid base
+                    if (seen.count(deeper)) continue;
+                    seen.insert(deeper);
+
+                    AZ::u16 stackedBits = current.morphBits | fr.morphBits;
+
+                    StripCandidate rc;
+                    rc.sourceRunIndex = runIdx;
+                    rc.baseWord = deeper;
+                    rc.morpheme = fr.morpheme;  // Deepest morpheme name (for logging)
+                    rc.morphBits = stackedBits; // Accumulated through chain
+                    rc.isContraction = false;
+                    candidates.push_back(rc);
+                    ++recursiveCount;
+
+                    // Queue for further stripping
+                    queue.push_back({deeper, stackedBits});
+                }
+            }
+        }
+
+        fprintf(stderr, "[BedManager] GenerateStripCandidates: %u level-1 + %u recursive = %zu total candidates\n",
+            level1Count, recursiveCount, candidates.size());
+        fflush(stderr);
+
+        return candidates;
+    }
+
+
     // ---- SetInflectionRules: split by rule_type, compile conditions ----
     void BedManager::SetInflectionRules(AZStd::vector<InflectionRule> rules)
     {
@@ -1362,6 +1909,9 @@ namespace HCPEngine
         AZStd::string addPrefix;  // prefix to prepend for reconstruction
     };
 
+    // NOTE: Currently unused — interstitial strip disabled (2026-03-18).
+    // Retained for variant normalize path and future use.
+    [[maybe_unused]]
     static AZStd::vector<PrefixStripResult> TryPrefixStrip(
         const AZStd::string& word,
         const HCPVocabulary* vocab,
@@ -1432,7 +1982,10 @@ namespace HCPEngine
         if (!m_envelopeManager || m_envelopeId == 0) return false;
 
         int& cursor = m_lengthCursorByLen[wordLength];
-        cursor += LMDB_SLICE_SIZE;  // advance past the batch we just processed
+        // On first call for this length, cursor is 0 — start from beginning.
+        // On subsequent calls, advance past the batch we just processed.
+        if (cursor > 0 || !m_vocabByLength[wordLength].empty())
+            cursor += LMDB_SLICE_SIZE;
 
         auto batch = m_envelopeManager->QueryWarmBatch(
             m_envelopeId, static_cast<int>(wordLength), cursor, LMDB_SLICE_SIZE);
@@ -1451,6 +2004,30 @@ namespace HCPEngine
             entry.tierIndex = 0;
             entry.morphBits = MorphemeNameToBit(e.morpheme.c_str());
             vec.push_back(AZStd::move(entry));
+        }
+
+        // Also write this batch to LMDB w2t so LookupWordLocal (used by inflection
+        // stripping) can find these entries. LMDB fills incrementally as resolution
+        // progresses — only the current batch, not the whole working set.
+        if (m_lmdbEnv && m_vocabDbiOpen)
+        {
+            MDB_txn* txn = nullptr;
+            if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) == 0)
+            {
+                for (const auto& e : batch)
+                {
+                    MDB_val mKey = { e.word.size(), const_cast<char*>(e.word.c_str()) };
+                    std::string valStr(e.tokenId.c_str(), e.tokenId.size());
+                    if (!e.morpheme.empty())
+                    {
+                        valStr += '\x00';
+                        valStr.append(e.morpheme.c_str(), e.morpheme.size());
+                    }
+                    MDB_val mVal = { valStr.size(), const_cast<char*>(valStr.data()) };
+                    mdb_put(txn, m_vocabDbi, &mKey, &mVal, 0);
+                }
+                mdb_txn_commit(txn);
+            }
         }
 
         fprintf(stderr, "[BedManager] Length %u batch advance: offset=%d, %zu entries loaded\n",
@@ -1820,19 +2397,26 @@ namespace HCPEngine
     {
         if (runIndices.empty()) return;
 
+        // If no vocab loaded for this length, try fetching the first batch from Postgres.
+        // This is the normal path when LMDB is not pre-populated — the resolution loop
+        // drives loading on demand via per-length warm-set queries.
         auto vocabIt = m_vocabByLength.find(wordLength);
         if (vocabIt == m_vocabByLength.end() || vocabIt->second.empty())
         {
-            for (AZ::u32 idx : runIndices)
-                unresolvedIndices.push_back(idx);
-            return;
-        }
-
-        AZ::u32 labelCount = 0;
-        {
-            auto lIt = m_labelCountByLength.find(wordLength);
-            if (lIt != m_labelCountByLength.end())
-                labelCount = lIt->second;
+            if (!AdvanceEnvelopeLengthBatch(wordLength))
+            {
+                // No vocab available for this length at all
+                for (AZ::u32 idx : runIndices)
+                    unresolvedIndices.push_back(idx);
+                return;
+            }
+            vocabIt = m_vocabByLength.find(wordLength);
+            if (vocabIt == m_vocabByLength.end() || vocabIt->second.empty())
+            {
+                for (AZ::u32 idx : runIndices)
+                    unresolvedIndices.push_back(idx);
+                return;
+            }
         }
 
         // ---- Split runs: capitalized (eligible for Label match) vs plain ----
@@ -1849,21 +2433,67 @@ namespace HCPEngine
 
         AZ::u32 phaseIndex = 0;
 
-        // ---- Pass 1: Label vocab (entries 0..labelCount) — capitalized runs ONLY ----
-        if (!capRuns.empty() && labelCount > 0)
+        // ---- Pass 1: Label lookup — capitalized runs ONLY ----
+        // Labels are stored in original case (capitalized). CharRun text is lowercased.
+        // For each cap run, reconstruct the capitalized forms and try direct lookup
+        // in LMDB w2t. Order: all-caps → title-case → (skip lowercase,
+        // that's handled in the common vocab pass below).
+        // Ensure the batch for this length is loaded first so LMDB has the data.
+        if (!capRuns.empty())
         {
-            AZStd::unordered_set<char> capChars;
+            AZStd::vector<AZ::u32> resolvedCapRuns;
             for (AZ::u32 idx : capRuns)
-                if (!runs[idx].text.empty())
-                    capChars.insert(runs[idx].text[0]);
-
-            auto filteredLabels = ReadFilteredVocabSlice(wordLength, capChars, 0, labelCount);
-            if (!filteredLabels.empty())
             {
-                fprintf(stderr, "[BedManager] Length %u Label pass: %zu cap runs, %u labels → %zu filtered\n",
-                    wordLength, capRuns.size(), labelCount, filteredLabels.size());
+                const CharRun& run = runs[idx];
+                if (run.text.empty()) continue;
+
+                AZStd::string tokenId;
+
+                // Try 1: All-caps form (IRS, NASA, etc.)
+                if (run.allCaps)
+                {
+                    AZStd::string upper = run.text;
+                    for (auto& c : upper) c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
+                    tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(upper) : "";
+                }
+
+                // Try 2: Title-case form (John, London, etc.)
+                if (tokenId.empty())
+                {
+                    AZStd::string titled = run.text;
+                    titled[0] = static_cast<char>(toupper(static_cast<unsigned char>(titled[0])));
+                    tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(titled) : "";
+                }
+
+                if (!tokenId.empty())
+                {
+                    ResolutionResult r;
+                    r.runText = run.text;
+                    r.resolved = true;
+                    r.matchedWord = run.text;
+                    r.matchedTokenId = tokenId;
+                    r.tierResolved = 0;  // Label tier
+                    r.runIndex = idx;
+                    r.firstCap = run.firstCap;
+                    r.allCaps = run.allCaps;
+                    results.push_back(r);
+                    resolvedCapRuns.push_back(idx);
+                }
+            }
+
+            // Remove resolved cap runs from the candidate lists
+            if (!resolvedCapRuns.empty())
+            {
+                AZStd::unordered_set<AZ::u32> resolvedSet(resolvedCapRuns.begin(), resolvedCapRuns.end());
+                AZStd::vector<AZ::u32> remainingCaps;
+                for (AZ::u32 idx : capRuns)
+                    if (resolvedSet.find(idx) == resolvedSet.end())
+                        remainingCaps.push_back(idx);
+                capRuns = AZStd::move(remainingCaps);
+
+                fprintf(stderr, "[BedManager] Length %u Label direct: %zu resolved, %zu remaining caps\n",
+                    wordLength, resolvedCapRuns.size(), capRuns.size());
                 fflush(stderr);
-                RunPipelinedCascade(wordLength, runs, filteredLabels, capRuns, results, phaseIndex);
             }
         }
 
@@ -1886,20 +2516,16 @@ namespace HCPEngine
                 break;  // no vocab for this length in the current hot window
 
             AZ::u32 curTotal  = static_cast<AZ::u32>(curVocabIt->second.size());
-            AZ::u32 curLabels = 0;
-            {
-                auto lIt = m_labelCountByLength.find(wordLength);
-                if (lIt != m_labelCountByLength.end()) curLabels = lIt->second;
-            }
-
             AZStd::unordered_set<char> commonChars;
             for (AZ::u32 idx : commonRuns)
                 if (!runs[idx].text.empty())
                     commonChars.insert(runs[idx].text[0]);
 
-            auto filteredCommon = ReadFilteredVocabSlice(wordLength, commonChars, curLabels, curTotal);
+            // Start from 0 — Labels already handled by direct lookup above,
+            // common vocab pass processes ALL entries including any remaining Labels
+            auto filteredCommon = ReadFilteredVocabSlice(wordLength, commonChars, 0, curTotal);
             fprintf(stderr, "[BedManager] Length %u common pass (cursor=%d): %zu runs, %u vocab → %zu filtered\n",
-                wordLength, m_sliceCursor, commonRuns.size(), curTotal - curLabels, filteredCommon.size());
+                wordLength, m_sliceCursor, commonRuns.size(), curTotal, filteredCommon.size());
             fflush(stderr);
 
             if (!filteredCommon.empty())
@@ -2140,8 +2766,112 @@ namespace HCPEngine
             fflush(stderr);
         }
 
+        // ---- Broadphase strip pass: morphemes + contractions (3-stage pipeline) ----
+        //
+        // Stage 1: GPU partial-match — identifies which suffix/prefix/contraction patterns
+        //   match which words across all lengths in parallel. Fast broadphase filter.
+        // Stage 2: CPU candidate expansion — mechanically generates ALL possible base words
+        //   from GPU matches. No existence check. Multiple candidates per run expected.
+        // Stage 3: Ascending-length exact PBD (below) — bases injected into runsByLength.
+        //   Shortest valid base wins naturally. Failed bases don't resolve = original var.
+
+        AZStd::vector<StripCandidate> stripCandidates;
+        fprintf(stderr, "[BedManager] Broadphase entry: %zu suffix rules, %zu prefix rules\n",
+            m_inflectionRules.size(), m_prefixRules.size());
+        fflush(stderr);
+        if (!m_inflectionRules.empty() || !m_prefixRules.empty())
+        {
+            // Collect broadphase candidates: all word runs + unresolved apostrophe runs
+            AZStd::vector<AZ::u32> broadphaseCandidates;
+
+            // Plain word runs that could have suffix/prefix morphemes
+            for (const auto& [len, indices] : runsByLength)
+            {
+                for (AZ::u32 idx : indices)
+                    broadphaseCandidates.push_back(idx);
+            }
+
+            // Unresolved apostrophe runs (contraction candidates)
+            for (AZ::u32 idx : unresolvedApostrophe)
+                broadphaseCandidates.push_back(idx);
+
+            fprintf(stderr, "[BedManager] Broadphase candidates: %zu word + %zu apostrophe = %zu total\n",
+                broadphaseCandidates.size() - unresolvedApostrophe.size(),
+                unresolvedApostrophe.size(), broadphaseCandidates.size());
+            fflush(stderr);
+
+            if (!broadphaseCandidates.empty())
+            {
+                // Stage 1: GPU broadphase filter — partial matching
+                auto gpuMatches = RunBroadphaseFilter(runs, broadphaseCandidates);
+
+                // Build rule packs by length for candidate expansion lookup
+                AZStd::unordered_map<AZ::u32, RulePack> rulePacksByLength;
+                for (AZ::u32 idx : broadphaseCandidates)
+                {
+                    AZ::u32 len = static_cast<AZ::u32>(runs[idx].text.size());
+                    if (!rulePacksByLength.count(len))
+                        rulePacksByLength[len] = BuildRulePack(len);
+                }
+
+                // Stage 2: CPU mechanical expansion — generate ALL possible bases
+                stripCandidates = GenerateStripCandidates(runs, gpuMatches, rulePacksByLength);
+
+                // Stage 3 setup: inject ALL base words into runsByLength for ascending PBD
+                for (const auto& cand : stripCandidates)
+                {
+                    if (cand.baseWord.empty()) continue;
+
+                    // Create synthetic CharRun for the base word
+                    CharRun baseCr;
+                    baseCr.text = cand.baseWord;
+                    baseCr.startPos = 0;
+                    baseCr.length = static_cast<AZ::u32>(cand.baseWord.size());
+                    baseCr.tag = RunTag::Word;
+                    AZ::u32 baseIdx = static_cast<AZ::u32>(runs.size());
+                    runs.push_back(baseCr);
+
+                    AZ::u32 baseLen = baseCr.length;
+                    if (activeLenSet.count(baseLen))
+                        runsByLength[baseLen].push_back(baseIdx);
+
+                    // For contractions: also inject the second constituent word
+                    if (cand.isContraction && !cand.secondWord.empty())
+                    {
+                        CharRun secondCr;
+                        secondCr.text = cand.secondWord;
+                        secondCr.startPos = 0;
+                        secondCr.length = static_cast<AZ::u32>(cand.secondWord.size());
+                        secondCr.tag = RunTag::Word;
+                        AZ::u32 secondIdx = static_cast<AZ::u32>(runs.size());
+                        runs.push_back(secondCr);
+
+                        AZ::u32 secondLen = secondCr.length;
+                        if (activeLenSet.count(secondLen))
+                            runsByLength[secondLen].push_back(secondIdx);
+                    }
+                }
+
+                if (!stripCandidates.empty())
+                {
+                    fprintf(stderr, "[BedManager] Broadphase injected %zu base words + contractions into resolution queue\n",
+                        stripCandidates.size());
+                    fflush(stderr);
+                }
+            }
+        }
+
         // ---- Ascending length resolve loop with interstitial inflection stripping ----
         //
+        // DEPRECATED (2026-03-17): Interstitial stripping will be replaced by a
+        // broadphase PBD strip pass that runs BEFORE ascending-length resolution.
+        // The broadphase pass handles both morpheme stripping (~39 rules) and
+        // contraction decomposition (~7 patterns) in a single GPU pass, filtered
+        // by apostrophe presence and known suffix/prefix endings.
+        // Failed strips fall back to the ascending-length resolution below.
+        // See memory/morpheme_strip_redesign.md for full design.
+        //
+        // Current (soon-deprecated) flow:
         // Shortest-first order: "run" (3) processes before "running" (7).
         // Function words and short signal words resolve first, establishing context.
         //
@@ -2182,119 +2912,13 @@ namespace HCPEngine
             ResolveLengthCycle(len, runs, indices,
                                manifest.results, unresolvedFromCycle);
 
-            // ---- Interstitial: strip unresolved, feed bases to shorter queues ----
+            // ---- Interstitial strip: DISABLED (2026-03-18) ----
+            // Broadphase strip pass (above) now handles morpheme/contraction
+            // identification before the ascending loop. All unresolved runs
+            // go to allUnresolvedOriginal for broadphase dep-resolution.
+            // Original interstitial code preserved in git history for reference.
             for (AZ::u32 idx : unresolvedFromCycle)
-            {
-                const CharRun& run = runs[idx];
-
-                // Skip punctuation runs (handled by morpheme decomposition)
-                if (run.text.find('\'') != AZStd::string::npos ||
-                    run.text.find('-') != AZStd::string::npos)
-                {
-                    allUnresolvedOriginal.push_back(idx);
-                    continue;
-                }
-
-                // ---- Prefix strip (fires first — cheap startswith check) ----
-                auto prefixCands = TryPrefixStrip(run.text, m_vocabulary,
-                    m_prefixRules.empty() ? nullptr : &m_prefixRules,
-                    m_compiledPrefixConditions.empty() ? nullptr : &m_compiledPrefixConditions);
-                if (!prefixCands.empty())
-                {
-                    // Convert PrefixStripResult → InflectionStripResult (morphBit=0, morpheme in name)
-                    AZStd::vector<InflectionStripResult> pfxAsInflection;
-                    for (const auto& pc : prefixCands)
-                    {
-                        InflectionStripResult isr;
-                        isr.baseWord  = pc.baseWord;
-                        isr.morphBits = 0;  // prefix class goes to morphemePositions, not morphBit
-                        isr.stripped  = true;
-                        pfxAsInflection.push_back(AZStd::move(isr));
-                    }
-                    inflectionQueue.push_back({idx, AZStd::move(pfxAsInflection)});
-                    ++inflectionCount;
-                    // Fall through to synthetic injection below using the prefix candidates
-                    for (const auto& pc : prefixCands)
-                    {
-                        AZ::u32 baseLen = static_cast<AZ::u32>(pc.baseWord.size());
-                        if (!activeLenSet.count(baseLen)) continue;
-                        if (lookupDone.count(pc.baseWord)) continue;
-                        lookupDone.insert(pc.baseWord);
-                        bool alreadyResolved = false;
-                        for (const auto& r : manifest.results)
-                            if (r.resolved && r.matchedWord == pc.baseWord)
-                                { alreadyResolved = true; break; }
-                        if (!alreadyResolved && m_vocabulary)
-                        {
-                            AZStd::string tokenId = m_vocabulary->LookupWordLocal(pc.baseWord);
-                            if (!tokenId.empty())
-                            {
-                                ResolutionResult synthResult;
-                                synthResult.runText        = pc.baseWord;
-                                synthResult.resolved       = true;
-                                synthResult.matchedWord    = pc.baseWord;
-                                synthResult.matchedTokenId = tokenId;
-                                synthResult.tierResolved   = 99;
-                                synthResult.runIndex       = AZ::u32(-1);
-                                manifest.results.push_back(AZStd::move(synthResult));
-                                ++syntheticInjections;
-                            }
-                        }
-                    }
-                    continue;  // prefix handled — skip suffix strip for this run
-                }
-
-                // ---- Suffix strip (fallback when no prefix matched) ----
-                auto candidates = TryInflectionStrip(run.text, m_vocabulary,
-                    m_inflectionRules.empty() ? nullptr : &m_inflectionRules,
-                    m_compiledConditions.empty() ? nullptr : &m_compiledConditions);
-                if (candidates.empty())
-                {
-                    allUnresolvedOriginal.push_back(idx);
-                    continue;
-                }
-
-                inflectionQueue.push_back({idx, AZStd::move(candidates)});
-                ++inflectionCount;
-
-                // Ascending order: shorter bases have already been processed.
-                // For each candidate base: if not already in manifest (appeared in text),
-                // do a direct LMDB lookup and inject a synthetic manifest entry.
-                // The dep-resolution pass finds it and attaches morph bits.
-                for (const auto& cand : inflectionQueue.back().candidates)
-                {
-                    AZ::u32 baseLen = static_cast<AZ::u32>(cand.baseWord.size());
-                    if (!activeLenSet.count(baseLen)) continue;  // outside vocab range
-                    if (lookupDone.count(cand.baseWord)) continue;  // already handled
-                    lookupDone.insert(cand.baseWord);
-
-                    // If the base appeared in the text it's already in manifest.results
-                    // as a resolved entry — dep-resolution will find it. Only need to
-                    // act when it's NOT already there.
-                    bool alreadyResolved = false;
-                    for (const auto& r : manifest.results)
-                        if (r.resolved && r.matchedWord == cand.baseWord)
-                            { alreadyResolved = true; break; }
-
-                    if (!alreadyResolved && m_vocabulary)
-                    {
-                        AZStd::string tokenId = m_vocabulary->LookupWordLocal(cand.baseWord);
-                        if (!tokenId.empty())
-                        {
-                            // Synthetic manifest entry: dep-resolution pass picks it up
-                            ResolutionResult synthResult;
-                            synthResult.runText        = cand.baseWord;
-                            synthResult.resolved       = true;
-                            synthResult.matchedWord    = cand.baseWord;
-                            synthResult.matchedTokenId = tokenId;
-                            synthResult.tierResolved   = 99;       // sentinel: direct LMDB
-                            synthResult.runIndex       = AZ::u32(-1); // not a real run
-                            manifest.results.push_back(AZStd::move(synthResult));
-                            ++syntheticInjections;
-                        }
-                    }
-                }
-            }
+                allUnresolvedOriginal.push_back(idx);
 
             fprintf(stderr, "[BedManager] Length %u: %zu runs, %zu unresolved\n",
                 len, indices.size(), unresolvedFromCycle.size());
@@ -2333,13 +2957,14 @@ namespace HCPEngine
                     {
                         AZ::u32 eLen = static_cast<AZ::u32>(e.word.size());
                         if (eLen < 5 || eLen > 16) continue;  // only unprocessed lengths
-                        // Labels have tokenId starting "AD"; inject as tier 0, others as tier 1
-                        bool isLabel = (e.tokenId.size() >= 2
-                                        && e.tokenId[0] == 'A' && e.tokenId[1] == 'D');
+                        // FIXED (2026-03-17): AD namespace no longer exists — all tokens
+                        // are now AB. Label detection should use PoS/cap metadata, not
+                        // namespace prefix. For now, inject everything as tier 1.
+                        // TODO: Wire proper Label detection from token_pos PoS data.
                         VocabPack::Entry entry;
                         entry.word      = e.word;
                         entry.tokenId   = e.tokenId;
-                        entry.tierIndex = isLabel ? 0u : 1u;
+                        entry.tierIndex = 1u;
                         entry.morphBits = MorphemeNameToBit(e.morpheme.c_str());
                         m_vocabByLength[eLen].push_back(AZStd::move(entry));
                         ++injected;
@@ -2426,6 +3051,67 @@ namespace HCPEngine
             fprintf(stderr, "[BedManager] Inflection-stripped: %u runs (%u direct LMDB lookups)\n",
                 inflectionCount, syntheticInjections);
             fflush(stderr);
+        }
+
+        // ---- Broadphase dep-resolution: map resolved bases back to source runs ----
+        //
+        // The broadphase injected synthetic CharRuns for stripped bases into runsByLength.
+        // Ascending PBD resolved the valid ones. Now scan stripCandidates: for each whose
+        // baseWord resolved in the manifest, create a manifest entry for the ORIGINAL
+        // source run (the inflected/contracted surface form) with accumulated morph bits.
+        //
+        // For contractions: the source run resolves to the base word's token_id + the
+        // second word also resolves separately (already injected). Both get manifest entries.
+        if (!stripCandidates.empty())
+        {
+            // Build resolved-base lookup from manifest (copies, not pointers — manifest grows)
+            AZStd::unordered_map<AZStd::string, ResolutionResult> resolvedBases;
+            for (const auto& r : manifest.results)
+                if (r.resolved) resolvedBases[r.matchedWord] = r;
+
+            AZStd::unordered_set<AZ::u32> resolvedRunIndices;
+            for (const auto& r : manifest.results)
+                resolvedRunIndices.insert(r.runIndex);
+
+            AZ::u32 broadphaseResolved = 0;
+            for (const auto& cand : stripCandidates)
+            {
+                if (resolvedRunIndices.count(cand.sourceRunIndex)) continue;
+
+                auto it = resolvedBases.find(cand.baseWord);
+                if (it == resolvedBases.end()) continue;
+
+                const CharRun& srcRun = runs[cand.sourceRunIndex];
+                ResolutionResult r;
+                r.runText        = srcRun.text;
+                r.resolved       = true;
+                r.matchedWord    = it->second.matchedWord;
+                r.matchedTokenId = it->second.matchedTokenId;
+                r.morphBits      = cand.morphBits;
+                r.tierResolved   = it->second.tierResolved;
+                r.runIndex       = cand.sourceRunIndex;
+                r.firstCap       = srcRun.firstCap;
+                r.allCaps        = srcRun.allCaps;
+                manifest.results.push_back(r);
+                resolvedRunIndices.insert(cand.sourceRunIndex);
+                ++broadphaseResolved;
+            }
+
+            // Remove broadphase-resolved indices from allUnresolvedOriginal
+            if (broadphaseResolved > 0)
+            {
+                AZStd::vector<AZ::u32> stillUnresolved;
+                for (AZ::u32 idx : allUnresolvedOriginal)
+                {
+                    if (!resolvedRunIndices.count(idx))
+                        stillUnresolved.push_back(idx);
+                }
+                allUnresolvedOriginal = AZStd::move(stillUnresolved);
+
+                fprintf(stderr, "[BedManager] Broadphase dep-resolution: %u runs resolved via stripped bases\n",
+                    broadphaseResolved);
+                fflush(stderr);
+            }
         }
 
         // ---- Stage 2: TryVariantNormalize on still-unresolved runs ----
@@ -2553,6 +3239,14 @@ namespace HCPEngine
         }
 
         // ---- Morpheme decomposition for unresolved runs ----
+        //
+        // DEPRECATED (2026-03-17): Contractions are compound words, not morphemes.
+        // "don't" = "do" + "not" (two tokens), NOT "do" + NEG morph bit.
+        // MorphBit flags (NEG/WILL/HAVE/BE/AM/COND) are wrong for this purpose.
+        // TODO: Replace with broadphase PBD strip pass — apostrophe as broadphase
+        // signal, contraction decomposition into constituent word pairs.
+        // See memory/morpheme_strip_redesign.md for full design.
+        //
         struct MorphemeSuffix { const char* suffix; AZ::u32 len; AZ::u16 morphBits; };
         static const MorphemeSuffix suffixes[] = {
             {"n't", 3, MorphBit::NEG},

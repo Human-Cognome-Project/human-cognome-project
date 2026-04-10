@@ -882,7 +882,8 @@ namespace HCPEngine
 
             HCPEnvelopeManager& envMgr = m_engine->GetEnvelopeManager();
             EnvelopeActivation result = envMgr.ActivateEnvelope(name);
-            m_engine->GetBedManager().RebuildVocab();
+            int warmSize = envMgr.GetWorkingSetSize(result.envelopeId);
+            m_engine->GetBedManager().InitEnvelopeWindow(result.envelopeId, warmSize);
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> w(sb);
