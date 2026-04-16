@@ -163,20 +163,19 @@ Check whether your proposed functionality belongs in the engine (C++) or in tool
 
 ```
 human-cognome-project/
+├── hcp-engine/            # O3DE Gem: PhysX 5 PBD engine, socket API, workstation
+│   └── Gem/Source/        # C++ source files (~21K LOC, 35 modules)
 ├── docs/
 │   ├── spec/              # Canonical specifications
 │   ├── decisions/         # Design decision records
+│   ├── design/            # Architecture design documents
 │   ├── research/          # Literature surveys, references
+│   ├── foundations/       # Patrick's articles (do not modify)
 │   ├── status.md          # Current state snapshot
 │   └── roadmap.md         # Future direction
-├── src/hcp/               # Production Python code
-│   ├── core/              # Token IDs, pair bonds
-│   ├── db/                # Database connectors
-│   └── ingest/            # Data ingestion pipelines
-├── work/                  # Prototype & exploratory code
-├── db/                    # Database shards (SQL dumps)
-├── sources/               # Data source manifests
-├── tests/                 # Test suites
+├── db/                    # PostgreSQL dumps (LFS .gz), migrations (001-049), load scripts
+├── scripts/               # Python tooling (operational/convenience only, not engine pipeline)
+├── data/                  # Gutenberg texts, LMDB vocab (gitignored, rebuildable)
 ├── charter.md             # Contributor covenant
 ├── covenant.md            # Perpetual openness guarantee
 ├── CONTRIBUTING.md        # This file
@@ -184,20 +183,25 @@ human-cognome-project/
 └── MANIFESTO.md           # Vision & principles
 ```
 
-## Current Priorities (Mar 2026)
+## Current Priorities (Apr 2026)
 
-**Phase 2 Active 🚧**: O3DE + PhysX 5 PBD pipeline processing full texts at >97% resolution rate.
+**Transitioning to NSM concept modeling.** Document storage and higher-order tokenization are paused. The engine achieves >98% reconstruction accuracy on 9 ingested documents (~1.1M token positions).
 
-**In Progress:**
-1. **Envelope-based variant loading** — wire variant DB entries into resolve loop (env_archaic / env_dialect / env_casual, morph bits 12-15)
-2. **Entity LMDB recompile** — entity DB cleaned 2026-03-05; compiler needs variant/morph category support
-3. **Label propagation** — restore firstCap on all suppressed instances of Label tokens
+**Active:**
+1. **NSM concept modeling** -- establishing basic mechanics of concept space based on NSM modeling of the current English data
+
+**Deferred (resuming after concept space evaluation):**
+- Phrase/idiom resolution chambers
+- Proper entity resolution
+- Possessive handling
+- Label propagation
 
 **Help Needed:**
-- NSM primitive mappings — decompose dictionary to semantic floor (~65 core forces)
+- NSM primitive mappings -- decompose dictionary to semantic floor (~65 core forces)
 - Known initialisms handling (U.S., U.K., etc.)
 - Cross-platform build (Windows)
 - Test coverage for Python tooling
+- Format builders: PDF, EPUB, HTML, Markdown text extractors
 
 ## Communication Channels
 

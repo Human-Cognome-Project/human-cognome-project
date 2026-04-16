@@ -2,6 +2,8 @@
 
 Operational reference for the engine daemon, ingestion pipeline, and DB operations.
 
+_Last updated: 2026-04-16_
+
 ---
 
 ## Engine Daemon
@@ -153,6 +155,21 @@ COMMIT;
 
 **Note**: No cascade on foreign keys — must delete in the order above (bonds → starters → docvars → provenance → document).
 
+### Key tables
+
+**`pbm_starters`** — one row per (doc, token). Columns include decomposed 5-part token (`a_ns, a_p2, a_p3, a_p4, a_p5`) plus `positions INTEGER[]`. This is the primary position storage — no separate position table.
+
+**`pbm_documents`** — document metadata. `all_caps_positions INTEGER[]` is the only cap-related storage. `FIRST_CAP` is not stored — it is positional (derivable from punctuation context via `capitalizeNext` in TokenIdsToText). Label tokens carry intrinsic capitalization in `entries.word`.
+
+**`entries`** (in `hcp_english`) — the primary vocab table. Decomposed `ns/p2/p3/p4/p5` columns. Every form is its own token — no morph-bit reconstruction at read time.
+
+### Recording flow
+
+1. Engine resolves manifest items against LMDB candidates, producing `(manifest_position, lmdb_back_ref)` pairs.
+2. Writer collects unique back-refs and batch-fetches `entries.id, a_ns...a_p5` from `hcp_english.entries` via `WHERE id = ANY($1)`.
+3. Per token, upsert one row into `pbm_starters` with the 5 parts and an `INTEGER[]` of positions.
+4. ALL_CAPS positions go to `pbm_documents.all_caps_positions`.
+
 ---
 
 ## Socket API Actions
@@ -189,3 +206,8 @@ COMMIT;
 - **Workstation UI blocks ingestion** — the UI holds a DB write lock while connected. Close the
   Workstation before running `ingest_texts.py` or any `phys_ingest` calls, or ingestion will stall
   until the UI disconnects.
+- **No morph-bit reconstruction** — every form is its own token. The old `ApplyMorphBits` /
+  `variantMap` morph-bit reconstruction path was removed. The reader loads `pbm_starters.positions`
+  directly as `INTEGER[]` and pulls `pbm_documents.all_caps_positions` for the only meaningful cap flag.
+- **Old `tokens` table is gone** — all queries use the `entries` table with decomposed
+  ns/p2/p3/p4/p5 columns (commit 8d05d1f). If code references `tokens`, it is stale.

@@ -1,7 +1,7 @@
 # Tokenization & Migration Plan
 
 **Date:** 2026-04-02
-**Status:** Planning
+**Status:** Largely complete. Steps 1-6 implemented during Kaikki curation (2026-03-17 to 2026-04-07). Step 7 (self-tokenization of text fields) also complete -- zero raw text remaining in hcp_english. See `docs/status.md` for current state.
 
 ---
 

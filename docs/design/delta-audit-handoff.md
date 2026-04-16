@@ -1,7 +1,7 @@
 # Delta Audit — Handoff & Resume Guide
 
 **Date:** 2026-03-26
-**Status:** In progress — ~19% complete
+**Status:** Paused at ~19% complete. Note: references old `tokens` table (now `entries`) and old `token_variants` table. SQL queries in this doc need updating before resuming.
 
 ---
 

@@ -64,22 +64,21 @@ Extend the same structural primitives beyond text to other forms of expression.
 - Build covalent bonding tables for non-text formats
 - Cross-modal conceptual mapping via shared NSM primitives
 
-## Current Focus (2026-03-17)
+## Current Focus (2026-04-16)
 
-- **LMDB compiler update** -- Must read new `token_pos` + tree model schema. Envelope system populates LMDB from warm cache.
-- **Envelope-based variant loading** -- Wire variant DB entries with VARIANT morph bits (bits 12-15). Variant forms in DB; loading path not yet wired.
-- **Label propagation** -- Restore firstCap on all instances if word appears as Label anywhere.
-- **Source Workstation** -- Packaging: installer for multiple configs, viewer first.
+- **NSM concept modeling** -- Core development shifting to establishing basic mechanics of concept space based on NSM modeling of the current English data. Document storage and higher-order tokenization paused until story-level constructs are evaluated in concept space.
 
-## Recently Completed (2026-03-04 – 2026-03-17)
+## Recently Completed (2026-03-04 -- 2026-04-13)
 
+- **9-document stress test** (2026-04-13) -- Yellow Wallpaper + 8 Gutenberg top-12 ingested. ~1.1M total positions. Var rates 0.15--0.59%. Reconstruction verified end-to-end.
+- **Position storage rewrite** (2026-04-13) -- Migration 049: positions as `INTEGER[]` on `pbm_starters`, `all_caps_positions INTEGER[]` on `pbm_documents`. Migration 048 (row-per-position) attempted and reverted. Morph-bit reconstruction removed -- every form is its own token.
+- **Engine C++ migration** (2026-04-08) -- All C++ code updated from old `tokens` table to `entries` table (commit 8d05d1f).
+- **Full Kaikki re-ingestion** (2026-04-07) -- 1,493,964 entries across 5 namespaces. All text self-tokenized.
+- **Entity DB split** (2026-04-05) -- 2 entity DBs split to 6 (person/place/thing x fiction/nonfiction).
 - **Kaikki curation COMPLETE** (2026-03-17) -- 569K tokens, 619K PoS, 789K glosses, 89K variants. All AB namespace, tree model.
-- **LMDB sliding window** (2026-03-14) -- Hot cache holds 3 slices (~15K entries). ResolveLengthCycle exhausts all warm-set slices per length.
+- **LMDB sliding window** (2026-03-14) -- Hot cache holds 3 slices (~15K entries).
 - **Prefix stripping rules** (2026-03-14) -- Data-driven, DB-sourced prefix stripping.
-- **Variant morph bits + archaic reconstruction** (2026-03-14) -- Propagated through warm cache.
-- **Migrations 033-044** -- AD/AE collapse, envelope working set, inflection fixes, prefix rules, EWS morpheme propagation.
 - **V-1/V-3 variant normalization** (2026-03-04) -- 12/12 dialect g-drops resolved in Sign of Four.
-- **Entity data cleanup** (2026-03-05) -- 723 sequences verified.
 
 ## Performance Reality
 

@@ -4,7 +4,11 @@ This directory records significant design decisions for the HCP. Each decision g
 
 ## Index
 
-_(No decisions recorded yet.)_
+| ID | Title | Date | Status |
+|----|-------|------|--------|
+| 001 | Token ID decomposition | 2026-02-12 | Implemented. Note: references old `hcp_names` shard (retired). |
+| 002 | Names shard elimination | 2026-02-12 | Implemented. `hcp_names` merged into `hcp_english` as Labels (AD namespace). |
+| 005 | Decompose all token references | 2026-02-12 | Implemented. Note: references old `tokens` table (now `entries`). |
 
 ## Template
 
@@ -26,5 +30,5 @@ What was decided.
 
 ## Consequences
 
-What follows from this decision — both positive and negative.
+What follows from this decision -- both positive and negative.
 ```

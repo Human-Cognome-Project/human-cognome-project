@@ -1,10 +1,17 @@
 # HCP Data Pipeline Status — 2026-04-07
 
+**NOTE (2026-04-16):** This document is partially stale. Key changes since this was written:
+- Entity databases split from 2 to 6 (hcp_nf_entities -> hcp_nf_people/places/things; hcp_fic_entities -> hcp_fic_people/places/things)
+- Engine C++ code updated to use `entries` table (commit 8d05d1f) -- the "Engine Bridge" section below is resolved
+- Position storage changed: no longer base-50 packed TEXT -- now `INTEGER[]` on `pbm_starters` (migration 049)
+- Morph-bit reconstruction removed -- every form is its own token
+- See `docs/status.md` for current state.
+
 ## Overview
 
 Full Kaikki English dictionary ingested, tokenized, phrase-resolved, and entity-linked.
-The English shard (hcp_english) and entity databases (hcp_nf_entities, hcp_fic_entities)
-are populated and cross-referenced. Zero unminted entries remain.
+The English shard (hcp_english) and entity databases are populated and cross-referenced.
+Zero unminted entries remain.
 
 ## English Shard (hcp_english)
 

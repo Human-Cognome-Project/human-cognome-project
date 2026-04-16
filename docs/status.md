@@ -1,6 +1,8 @@
 # Project Status
 
-_Last updated: 2026-04-08_
+_Last updated: 2026-04-16_
+
+Core development is shifting to NSM concept modeling. Document storage and higher-order tokenization are paused until story-level constructs are evaluated in concept space.
 
 ## What Exists
 
@@ -11,7 +13,7 @@ _Last updated: 2026-04-08_
 
 ### Specifications (first draft)
 - **Data conventions** -- core definitions, PBM storage algorithm, atomization, NSM decomposition
-- **Token addressing** -- base-50 scheme, 5-pair dotted notation, reserved namespaces (v-z for entities/names/PBMs)
+- **Token addressing** -- base-50 scheme, 5-pair dotted notation, reserved namespaces
 - **Pair-bond maps** -- FPB/FBR structure, reconstruction, compression, error correction
 - **Architecture** -- two-engine model, conceptual forces, LoD stacking
 - **Identity structures** -- personality DB (seed + living layer), relationship DB, integration with core data model
@@ -24,6 +26,8 @@ The primary inference engine is an O3DE 25.10.2 C++ Gem using PhysX 5 GPU-accele
 
 **Headless daemon** (`HCPEngine.HeadlessServerLauncher`) listens on port 9720 with JSON socket API for health, ingest, retrieve, list, tokenize, and physics-based ingestion.
 
+All data enters the system as 4-byte codepoint streams, regardless of source content. Assembly through letter constructs and word hierarchies is managed via physics-based superposition resolution chambers. All languages and file formats can theoretically enter via the same mechanism.
+
 **Pipeline:**
 ```
 DecodeUtf8ToCodepoints
@@ -31,11 +35,33 @@ DecodeUtf8ToCodepoints
   -> ExtractRunsFromCollapses (with capitalization suppression)
   -> Phase 2: char->word via persistent VocabBeds (BedManager, 5 GPU workspaces: 3 primary + 2 extended, triple-pipelined via RunPipelinedCascade)
     -> TryInflectionStrip (PBD is the existence check, silent-e fallback)
-    -> TryVariantNormalize (V-1 g-drop: -in'→-ing; V-3 archaic: -eth→base; runs after inflection strip)
-    -> AnnotateManifest (multi-word entity recognition)
+    -> TryVariantNormalize (V-1 g-drop: -in'->-ing; V-3 archaic: -eth->base)
+    -> AnnotateManifest (multi-word entity recognition: 603 fic + 95 nf name sequences)
     -> ScanManifestToPBM
     -> StorePBM + StorePositions
 ```
+
+**Storage model:**
+- Every form or conjugation of every word is its own token -- no morph-bit reconstruction at read time.
+- Positions stored as `INTEGER[]` on `pbm_starters` (one row per doc x token).
+- Only `ALL_CAPS` positions stored on `pbm_documents`. `FIRST_CAP` is positional (derivable from punctuation context). Label tokens carry intrinsic capitalization in `entries.word`.
+- Recording flow: engine resolves manifest against LMDB, writer batch-fetches `entries` by id, upserts `pbm_starters` with 5-part token columns + `INTEGER[]` positions.
+
+**Stress-test results (2026-04-13, 9 documents):**
+
+| Doc | Slots | Starters | Vars | Var % |
+|-----|------:|---------:|-----:|------:|
+| Yellow Wallpaper | 11,577 | 2,216 | 34 | 0.29 |
+| Alice in Wonderland | 39,816 | 3,927 | 89 | 0.22 |
+| Jekyll & Hyde | 36,294 | 5,418 | 70 | 0.19 |
+| Frankenstein | 92,963 | 8,967 | 141 | 0.15 |
+| Wuthering Heights | 152,058 | 11,669 | 381 | 0.25 |
+| Pride & Prejudice | 162,166 | 8,717 | 315 | 0.19 |
+| Crime & Punishment | 264,092 | 12,025 | 394 | 0.15 |
+| Moby Dick | 268,162 | 22,437 | 1,573 | 0.59 |
+| The Great Gatsby | 67,764 | 7,817 | 209 | 0.31 |
+
+~1.1M total token positions. Var rates 0.15--0.59% (Moby Dick highest due to nautical vocabulary). Reconstruction verified end-to-end -- reported issues are nominal whitespace/cap nudges, no meaning drift. Above 98% accuracy with 99% of words stored at highest-level word construct token_IDs.
 
 **Benchmarks (2026-03-04, GTX 1070 headless, pipelined):**
 
@@ -43,10 +69,8 @@ DecodeUtf8ToCodepoints
 |------|------|--------|------|-----------|--------------------------|
 | Dracula | 890 KB | 199,368 | 110 | **28.6s** | 166.5s (2026-03-02) |
 | A Study in Scarlet | 269 KB | 56,061 | 54 | **12.2s** | 133.0s (2026-03-02) |
-| The Yellow Wallpaper | 47 KB | 10,856 | 37 | — | — |
-| The Sign of Four | — | — | 52 | — | — |
-
-V-1 variant normalization (2026-03-04): 12/12 dialect g-drops resolved in Sign of Four. Resolution rates >97% on test corpus.
+| The Yellow Wallpaper | 47 KB | 10,856 | 37 | -- | -- |
+| The Sign of Four | -- | -- | 52 | -- | -- |
 
 **Key engine modules** (`hcp-engine/Gem/Source/`):
 
@@ -56,22 +80,22 @@ V-1 variant normalization (2026-03-04): 12/12 dialect g-drops resolved in Sign o
 | `HCPVocabulary.h/cpp` | LMDB reader + affix loader. 48 max DBIs. |
 | `HCPSuperpositionTrial.h/cpp` | Phase 1 byte->char PBD |
 | `HCPWordSuperpositionTrial.h/cpp` | CharRun extraction with cap suppression |
-| `HCPEntityAnnotator.h/cpp` | Multi-word entity recognition from LMDB |
+| `HCPEntityAnnotator.h/cpp` | Multi-word entity recognition from LMDB (603 fic + 95 nf sequences) |
 | `HCPEngineSystemComponent.h/cpp` | Top-level orchestrator. Owns BedManager + all DB kernels. |
 | `HCPSocketServer.h/cpp` | TCP socket API on port 9720 |
 | `HCPParticlePipeline.h/cpp` | PBD particle system: Phase 1 + Phase 2 scenes |
 | `HCPEnvelopeManager.h/cpp` | Activity envelope cache lifecycle (LMDB hot cache) |
 | `HCPCacheMissResolver.h/cpp` | LMDB cache miss -> Postgres fill |
 | `HCPBondCompiler.h/cpp` | Sub-word PBM bond tables (char->word, byte->char) |
-| `HCPTokenizer.h/cpp` | 7-step resolution cascade |
+| `HCPTokenizer.h/cpp` | 7-step resolution cascade + TokenIdsToText reconstruction |
 
 **Decomposed DB kernel modules** (split from monolith 2026-03-01):
 
 | Module | Purpose |
 |--------|---------|
 | `HCPDbConnection.h/cpp` | Shared PGconn* wrapper |
-| `HCPPbmWriter.h/cpp` | StorePBM + StorePositions |
-| `HCPPbmReader.h/cpp` | LoadPBM + LoadPositions |
+| `HCPPbmWriter.h/cpp` | StorePBM + StorePositions (INTEGER[] per doc x token) |
+| `HCPPbmReader.h/cpp` | LoadPBM + LoadPositions (reads INTEGER[] directly) |
 | `HCPDocumentQuery.h/cpp` | Document listing, detail, provenance, metadata |
 | `HCPDocVarQuery.h/cpp` | Document-local var queries |
 | `HCPBondQuery.h/cpp` | Bond queries for tokens/starters |
@@ -87,54 +111,64 @@ Standalone Qt binary (`HCPWorkstation`, 14 MB) with dual-mode architecture:
 
 ### Pre-Compiled LMDB Vocab
 
-Offline-compiled LMDB vocabulary for zero-SQL runtime:
+LMDB is an ephemeral working surface for the engine. It holds only what makes lookups fast -- padded spelling + a 4-byte INT back-reference to `entries.id`. Not a mirror of Postgres structure.
+
 - Per-word-length sub-databases (`vbed_02`..`vbed_16`), frequency-ordered
 - Labels (tier 0) -> freq-ranked (tier 1) -> unranked remainder (tier 2)
-- Entity sub-databases: 723 sequences total (fic + nf), verified via dry-run. DB cleaned 2026-03-05; LMDB recompile pending.
+- Entity sub-databases: 698 sequences total (603 fic + 95 nf)
 - Frequency data: Wikipedia 2023 + OpenSubtitles merged. 176K tokens ranked.
 - LMDB population done via envelope system at runtime (EnvelopeManager::ExecuteQuery). No offline compilation script needed.
+- Broadphase makes inactive particles free -- load freely, activate selectively. Over-loading costs ephemeral disk; under-loading costs latency.
+
+### Envelope System
+
+Composable query plans that move data from Postgres to LMDB for engine consumption.
+
+- **Three-layer cache**: LMDB (hot, mmap'd) -> Postgres (warm, envelope working set) -> disk/LFS (cold).
+- Envelope activation runs chained prepared statements in a single Postgres transaction, streams results into LMDB.
+- Envelopes are first-class DB objects, composable -- overlapping queries share results, nesting = query union.
+- Schema in `hcp_envelope` database.
 
 ### Database Shards (11 databases)
 
 **Core shard (`hcp_core`)** -- AA namespace
 - ~5,470 tokens: byte codes, Unicode characters, structural markers, NSM primitives, URI elements
 - AA.AG: URI Elements (56 tokens -- protocols, file formats, programming tools, standards, TLDs)
-- Namespace allocations, shard registry (3 entries — stale/TBD, was intended as shard traffic manager but not maintained)
+- Namespace allocations, shard registry (3 entries -- stale/TBD)
 - Activity envelope schema (definitions, queries, composition, audit log)
 - Punctuation and single-character tokens live here, not in hcp_english
-- LMDB sub-db split: `env_vocab` (envelope-loaded, evicted on switch) vs `w2t` (cache-miss fills, persistent)
 
 **English shard (`hcp_english`)** -- AB/AC/AD namespaces
-- **Full Kaikki re-ingestion COMPLETE** (2026-04-07). Previous tree-model approach superseded.
-- **1,493,964 tokens** across 5 namespaces:
-  - AB.AA: 980,039 single words
-  - AB.AB: 279,873 multi-word phrases
+- Full Kaikki re-ingestion COMPLETE (2026-04-07).
+- **1,493,964 entries** across 5 namespaces:
+  - AB.AA: ~980K single words
+  - AB.AB: ~280K multi-word phrases (+ 338,599 phrase_components rows)
   - AC.AA: 4,123 morphemes
-  - AD.AA: 171,203 single-word Labels (proper nouns)
+  - AD.AA: ~170K single-word Labels (proper nouns)
   - AD.AB: 58,726 multi-word Labels (compound proper nouns)
-- **All text self-tokenized** — glosses, examples, etymologies, contexts consumed to token_id arrays. Zero raw text remaining.
-- **9.2M sense categories** for broadphase filtering (29,549 distinct names)
-- **1.84M relations** (synonym, derived, related, hyponym, etc.), 91% resolved to target token_ids
-- **1,249 english_characters** linked to 19,388 core Unicode tokens
-- **Schema tables** (`entries` is primary — decomposed ns/p2/p3/p4/p5 for B-tree indexed traversal):
-  - `entries` — word, pos, token_id (decomposed), spelling (char seq array), morphology (token_id array)
-  - `senses` — tokenized_gloss, tokenized definitions
-  - `sense_categories` — broadphase category tags (29,549 distinct)
-  - `sense_examples` — tokenized usage examples
-  - `relations` — word relationships with target_token_id resolution
-  - `forms` — inflected forms
-  - `phrase_components` — phrase → ordered component word token mapping
-  - `english_characters` — character → core Unicode token links
-  - `inflection_rules` — engine morphological stripping rules
-- Token_id decomposition: ns/p2/p3/p4/p5 columns enable Postgres B-tree index traversal for broadphase (same structure as entity DBs). p3 encodes first_letter + char_length (words) or first_letter + word_count (phrases).
-- Old `tokens`/`token_pos`/`token_variants` tables dropped. Engine C++ code needs updating to use `entries` table.
+- **6,498 misspelling entries** tagged via alt_of_tags, linked to canonical forms
+- All text self-tokenized -- glosses, examples, etymologies, contexts consumed to token_id arrays. Zero raw text remaining.
+- 9.2M sense categories for broadphase filtering (29,549 distinct names)
+- 1.84M relations (synonym, derived, related, hyponym, etc.), 91% resolved to target token_ids
+- 1,249 english_characters linked to 19,388 core Unicode tokens
+- **Primary table**: `entries` (decomposed ns/p2/p3/p4/p5 for B-tree indexed traversal, plus word, pos, spelling, morphology)
 
 **Fiction PBM shard (`hcp_fic_pbm`)** -- v* PBMs
-- PBM prefix tree storage: documents -> starters -> bond subtables
-- Positional token lists on starters, positional modifiers (morph bits + cap flags)
+- PBM prefix tree storage: documents -> starters -> bond subtables (word, char, marker, var)
+- Positional token lists as `INTEGER[]` on `pbm_starters`
+- `all_caps_positions INTEGER[]` on `pbm_documents`
 - Document-local vars, var staging pipeline
+- Word bonds exist in schema but are NOT yet computed; char and var bonds populated during ingest
 
-**Entity databases (6 language-independent DBs, split by literary/non-literary × person/place/thing)**
+**Envelope shard (`hcp_envelope`)** -- envelope management
+- Dedicated DB for envelope lifecycle and cache coordination
+
+**Var shard (`hcp_var`)** -- short-term memory for unresolved sequences
+- Var token dedup by surface form
+- var_sources with doc_token_id for cross-shard references
+- `envelope_working_set` table for warm cache assembly
+
+**Entity databases (6 language-independent DBs, split by literary/non-literary x person/place/thing)**
 
 | Database | Namespace | Tokens | Contents |
 |----------|-----------|--------|----------|
@@ -145,60 +179,45 @@ Offline-compiled LMDB vocabulary for zero-SQL runtime:
 | `hcp_fic_places` | tA | 10 | Fictional settings |
 | `hcp_fic_things` | sA | 1 | Fictional objects |
 
-- Entity tables: `tokens` (decomposed ns/p2-p5), `entity_names` (links to shard Labels), `entity_descriptions`, `entity_properties`, `entity_relationships`, `entity_appearances`, `entity_rights`
-- nf DBs also have source tables: `sources`, `source_editions`, `source_glossary`, `source_people/places/things`
-- Token_ids use sequential encoding; Dewey-derived classification deferred
-- Old consolidated `hcp_nf_entities` and `hcp_fic_entities` dropped
-
-**Var shard (`hcp_var`)** -- short-term memory for unresolved sequences
-- Var token dedup by surface form
-- var_sources with doc_token_id for cross-shard references
-- `envelope_working_set` table for warm cache assembly
-
-**Envelope shard (`hcp_envelope`)** -- envelope management
-- Dedicated DB for envelope lifecycle and cache coordination
-
 DB dumps: gzipped with SHA-256 checksums. `load.sh` handles all databases with auto-creation and checksum verification.
 
-### JSON Ingestion Pipeline (2026-03-07, commits 9797ed4, 125b998)
+### Token_ID Namespace
+
+Token_ID namespace is intentionally vast and easily expandable. The HCP adopts a see-it-and-mint-it philosophy for anything recognized as a surface form of a word or concept. Every form or conjugation of every word, including misspellings, is included as a distinct entry with links to core meanings and conceptual structures. Only strictly idiosyncratic use cases with no significant concept effect are excluded.
+
+### Ingestion
+
+- Codepoint-level recognition beds resolve all established Unicode and private endpoints.
+- All resolution mechanisms above codepoint level are focused on English-based, serial ingestion of md and txt files with an accompanying JSON metadata resolver.
+- Batch processing (compile full resolution candidate list from multiple manifests before invoking resolution) and stream processing (constant insertion into persistently rotating resolution chambers) are both architecturally supported.
+- All elements are modularized. Contributors adding other language shards can insert path discriminators at appropriate resolution levels. Latin Extended character sets insert at spelling level. Other space-delineated languages fork immediately following that operation. Non-space-delineated languages require a new resolution chamber feed mechanism.
+
+### JSON Ingestion Pipeline (2026-03-07)
 
 Batch JSON ingestion support wired into the `ingest`/`phys_ingest` socket API:
 - `.json` files dispatched to `DispatchJsonFile` (handles both single-object and array/batch JSON)
 - Array: iterates entries, creates stubs via `CreateDocumentStub`, returns batch summary
 - `phys_ingest` with `catalog`+`catalog_id`: looks up existing stub, calls `FillPBMData` to fill PBM bonds
-- 110 Gutenberg texts ingested: batch JSON creates stubs, TXT files fill bond data via `FillPBMData`
+- 110 Gutenberg texts cataloged: batch JSON creates stubs, TXT files fill bond data via `FillPBMData`
 
 ### Python Tooling (`scripts/`)
 
-Operational/convenience scripts only — not part of the engine pipeline.
+Operational/convenience scripts only -- not part of the engine pipeline.
 
 - `setup_kaikki_schema.py`, `load_kaikki_fast.py` -- Kaikki ingestion
-- `self_tokenize.py` -- Self-tokenization (text → token_id arrays)
+- `self_tokenize.py` -- Self-tokenization (text -> token_id arrays)
 - `mint_multiword_ids.py`, `mint_category_phrases.py` -- Phrase minting
 - `build_phrase_components.py`, `phrase_resolve_tokenized.py`, `resolve_partial_phrases.py` -- Phrase resolution
 - `create_nf_people_entities.py`, `create_nf_place_entities.py`, `create_nf_other_entities.py` -- NF entity creation
 - `create_multiword_entities.py`, `sweep_entity_glosses.py` -- Entity sweep
 - `resolve_relations.py`, `resolve_relations_pass2.py` -- Relation resolution
-- `split_entity_dbs.py` -- Entity DB split (2→6)
-- `migrate_to_proper_schema.py` -- Schema rename (kk_→proper names)
+- `split_entity_dbs.py` -- Entity DB split (2->6)
+- `migrate_to_proper_schema.py` -- Schema rename (kk_->proper names)
 - `merge_frequency_ranks.py` -- Frequency data merge
 - `ingest_texts.py` -- Text ingestion via socket API
 - `run_benchmark.py` -- Benchmark runner
 - `hcp_client.py` -- Socket API client library
 - Deprecated scripts moved to `scripts/deprecated/`
-
-### Schema & Kaikki Design Docs
-
-- `docs/hcp-english-schema-design.md` -- hcp_english schema design: tree model, PoS enum, characteristic bitmask layout.
-- `docs/kaikki-analysis.md` -- Full analysis of Kaikki English dump (1,454,988 entries). PoS distribution, form-of senses, Label/proper noun count.
-- `docs/kaikki-curation-standards.md` -- Curation rules, encoding spec, and phase documentation.
-- `docs/kaikki-tag-mapping.md` -- Kaikki tag → HCP characteristic bit mapping table.
-- `docs/kaikki-population-plan.md` -- 6-phase population plan (superseded by curation standards doc but retained for historical context).
-- `docs/language-shard-restructure-spec.md` -- Strategic spec: roots-only DB, regular inflections by rule, envelope-tense-awareness.
-- `docs/grammar-identifier-spec.md` -- Grammar identifier spec (SVO detection, PoS tagging, morpheme-first resolution).
-- `docs/envelope-vocab-spec.md` -- Envelope system: env_vocab sub-db, Label tier query, LMDB sub-db separation.
-- `docs/db-uri-elements-spec.md` -- AA.AG URI element namespace design.
-- `docs/prefix-predictive-pipeline-design.md` -- Prefix stripping pipeline design.
 
 ### Decision Records (`docs/decisions/`)
 - 001: Token ID decomposition
@@ -210,40 +229,32 @@ Operational/convenience scripts only — not part of the engine pipeline.
 - Sub-categorization patterns, concept mesh decomposition, force patterns
 - PhysX evaluation docs in `hcp-engine/docs/`
 
-## What's In Progress
+## What's Deferred
 
-- **Engine C++ migration** -- Update 6 C++ files that reference old `tokens` table to use `entries` table with decomposed ns/p2/p3/p4/p5 columns. Files: HCPEnvelopeManager.cpp, HCPVocabulary.cpp, HCPBondCompiler.cpp, HCPPbmReader.cpp, HCPCacheMissResolver.cpp, HCPStorage.cpp.
-- **LMDB recompilation** -- Recompile vocab LMDB from clean `entries` table data (1.49M tokens vs old 553K).
-- **98% surface reconstruction target** -- Engine testing against clean data with phrase/entity resolution. Goal: resolve and reconstruct majority of Gutenberg texts.
-- **Entity DB encoding** -- Dewey-derived classification for p2+p3 (deferred, using sequential). Fiction doc encoding: author_id (3 pairs) + work_number (1 pair).
-- **Remaining relation resolution** -- 169K unresolved: 40K character-level artifacts, 11K foreign language (deferred to shard creation), 117K references to entries not yet in DB.
-- **Possessive pipeline** -- See-it-once-and-record: mint possessive/plural-possessive forms on first encounter during ingestion.
-- **Phrase resolution in engine** -- 2-stage broadphase: p3 regex (letter + length per word in phrase), then content comparison. Currently batch Python only.
-- **Pipeline bugs (found 2026-03-10)** -- SingleChar runs ("I", "a") get empty matchedTokenId; Numeric runs use "NUM" pseudo-token. Fix pending.
-- **NSM modeling** -- Post-reconstruction goal. Physics-based concept decomposition using the clean token graph.
-- **Label propagation** -- If word appears as Label anywhere, restore firstCap on all suppressed instances.
+The following items are paused while core development moves to NSM concept modeling:
 
-## Recently Completed
-
-- **Kaikki curation COMPLETE** (2026-03-17) -- Full 6-phase curation of Kaikki English dump (1,454,988 Wiktionary entries). Final state: 569,471 tokens (all AB namespace), 619,433 PoS branches (15 types), 789,548 glosses, 89,075 variants. Tree model replaces old AD/AE namespace separation. Regular inflections (517,069 entries) skipped — engine handles at runtime. N_PROPER branches: 124,171 (proper nouns, abbreviations, initialisms). Curation scripts documented in `docs/kaikki-curation-standards.md`.
-- **Migrations 033-044** (2026-03-10–2026-03-17) -- AD/AE namespace collapse, envelope working set, inflection rule fixes, PBM morpheme positions, archaic filter fixes, prefix rules, EWS morpheme propagation.
-- **LMDB sliding window** (2026-03-14) -- Hot cache holds 3 slices (~15K entries) instead of full 535K. ResolveLengthCycle exhausts all warm-set slices per length.
-- **Prefix stripping rules** (2026-03-14) -- Data-driven, DB-sourced prefix stripping in engine resolve loop.
-- **Variant morph bits** (2026-03-14) -- Archaic reconstruction + delete_doc support. Variant morph bits propagated through warm cache.
-- **JSON ingestion pipeline** (2026-03-07) -- Batch JSON support: DispatchJsonFile, CreateDocumentStub, FillPBMData. 110 Gutenberg texts ingested.
-- **V-1/V-3 variant normalization** (2026-03-04, commit `d59c2fa`) -- `TryVariantNormalize`: V-1 g-drop (`-in'`→`-ing`) and V-3 archaic (`-eth`). 12/12 dialect g-drops resolved in Sign of Four.
-- **Entity data cleanup** (2026-03-05) -- `hcp_fic_entities` and `hcp_nf_entities` normalized in-place. 723 sequences verified.
+- **Phrase/idiom resolution chambers** -- 279,873 AB.AB entries + 338,599 phrase_components rows exist. Minted but not wired to resolution at ingest time.
+- **Proper entity resolution** -- Requires linking to dramatis or other reference lists for holistic constructs.
+- **Possessive handling** -- Needs a focused design pass. Should not be a morpheme bit on the base token.
+- **Label propagation** -- Restore firstCap on all suppressed instances of a Label token.
+- **Known initialisms** (U.S., U.K., etc.)
+- **LMDB shape simplification** -- Drop structured token_id parts from LMDB entries; keep spelling + INT back-ref only.
+- **SQLite distribution format** -- Needs to track the Postgres shape (currently diverged).
+- **Multi-doc batch resolve** -- Socket API accepts one doc per call; batch entry point deferred.
+- **Entity matching** -- Connecting PBM documents to author/work entities.
+- **Delta audit completion** -- ~19% complete (87K of 443K tokens assessed). Lengths 8-16 remain.
+- **Entity DB encoding** -- Dewey-derived classification for p2+p3 (deferred, using sequential).
+- **Remaining relation resolution** -- 169K unresolved (40K char-level, 11K foreign, 117K missing).
+- **Cross-platform build** (Windows planned)
 
 ## What Doesn't Exist Yet
 
-- Initialisms engine-side resolution (AE namespace populated, engine wiring pending)
-- Web address mini-language (language-independent, in hcp_core)
 - Concept force modeling (~65 core NSM forces -- categorization, axes, definitions TBD)
 - Full text inference (Phase 3 -- NAPIER)
 - Multi-modality support (audio, visual)
 - Identity structures implementation (personality DB, relationship DB)
 - Community infrastructure (issue templates, CI, discussion forums)
-- Cross-platform build (Windows planned)
+- GUI ingestion (workstation is view-only; ingestion via socket API)
 
 ## Data Sources
 
@@ -254,7 +265,7 @@ Operational/convenience scripts only — not part of the engine pipeline.
 
 ## Historical Docs (reference only)
 
-The following docs predate the Kaikki curation rebuild (2026-03-17) and tree model adoption. They document historical decisions and are retained for context but should not be treated as current specifications:
+The following docs predate recent passes and are retained for context. They should not be treated as current specifications:
 
 - `docs/variant-rules-proposal.md` -- pre-tree-model variant design (references `tokens.canonical_id`)
 - `docs/variant-forms-audit-2026-03-04.md` -- pre-tree-model variant analysis

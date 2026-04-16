@@ -2,7 +2,7 @@
 
 **Author:** Patrick + Claude Opus 4.6
 **Date:** 2026-03-23
-**Status:** Design
+**Status:** Design (~19% complete as of 2026-03-26, paused). Note: references old `tokens` table (now `entries`) and old `token_variants` table. The DB operations section needs updating to match current schema before resuming.
 
 ---
 

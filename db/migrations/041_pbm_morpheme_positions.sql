@@ -1,3 +1,7 @@
+-- Table dropped in 049_position_arrays.sql. Historical only.
+-- The pbm_morpheme_positions table is no longer used — every form is its own
+-- token, and only ALL_CAPS positions are stored (as INTEGER[] on pbm_documents).
+--
 -- Migration 041: Split positional modifiers out of pbm_starters
 --
 -- pbm_starters is the PBM meaning map — token positions only.

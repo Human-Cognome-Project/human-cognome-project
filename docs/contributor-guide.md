@@ -98,7 +98,7 @@ Tests marked with `@pytest.mark.db` require a running PostgreSQL instance. Curre
 DB connection details (dev environment):
 - Host: `localhost`, Port: `5432`
 - User: `hcp`, Password: `hcp_dev`
-- Databases: `hcp_core`, `hcp_english`, `hcp_en_pbm`
+- Databases: `hcp_core`, `hcp_english`, `hcp_var`, `hcp_envelope`, `hcp_fic_pbm`, `hcp_fic_people`, `hcp_fic_places`, `hcp_fic_things`, `hcp_nf_people`, `hcp_nf_places`, `hcp_nf_things`
 
 ## Lint
 
@@ -111,9 +111,10 @@ python -m py_compile src/hcp/core/token_id.py   # syntax check any file
 ## Key Concepts
 
 - **Token IDs** use base-50 pair encoding (alphabet: A-N, P-Z, a-n, p-z). Each pair encodes 0–2499. IDs are 1–5 dot-separated pairs.
-- **Namespaces**: `AA.*` = core, `AB.*` = English text, `zA.*` = source PBMs.
-- **PBM** (Pair-Bond Map): frequency-ranked token adjacency data.
-- Database schemas live in `db/dumps/` as SQL files. Migrations are in `db/migrations/`.
+- **Namespaces**: `AA.*` = core, `AB.*` = English words, `AC.*` = morphemes, `AD.*` = Labels, `v*` = fiction PBMs, entity DBs use sA/tA/uA/wA/xA/yA.
+- **PBM** (Pair-Bond Map): prefix tree storage with bond subtables.
+- **entries** (not `tokens`): primary table in hcp_english with decomposed ns/p2/p3/p4/p5 columns.
+- Database dumps in `db/` as `.gz` files (LFS). Migrations in `db/migrations/` (001-049).
 
 ## What NOT to Touch
 
