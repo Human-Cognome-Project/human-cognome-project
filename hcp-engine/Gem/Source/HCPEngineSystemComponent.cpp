@@ -160,7 +160,7 @@ namespace HCPEngine
                 fprintf(stderr, "[HCPEngine] No cached char->word bonds, compiling from hcp_english...\n");
                 fflush(stderr);
                 m_charWordBonds = CompileCharWordBondsFromPostgres(
-                    "host=localhost dbname=hcp_english user=hcp password=hcp_dev");
+                    "host=192.168.68.60 port=5435 dbname=hcp_english user=hcp password=hcp_dev");
                 t1 = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Char->word bonds compiled in %.1f ms\n",
                     std::chrono::duration<double, std::milli>(t1 - bondStart).count());
@@ -183,7 +183,7 @@ namespace HCPEngine
                 fprintf(stderr, "[HCPEngine] No cached byte->char bonds, compiling from hcp_core...\n");
                 fflush(stderr);
                 m_byteCharBonds = CompileByteCharBondsFromPostgres(
-                    "host=localhost dbname=hcp_core user=hcp password=hcp_dev");
+                    "host=192.168.68.60 port=5435 dbname=hcp_core user=hcp password=hcp_dev");
                 t2 = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Byte->char bonds compiled in %.1f ms\n",
                     std::chrono::duration<double, std::milli>(t2 - t1b).count());
@@ -286,7 +286,7 @@ namespace HCPEngine
 
         // Initialize envelope manager for LMDB cache lifecycle
         {
-            const char* coreConnStr = "host=localhost dbname=hcp_envelope user=hcp password=hcp_dev";
+            const char* coreConnStr = "host=192.168.68.60 port=5435 dbname=hcp_envelope user=hcp password=hcp_dev";
             if (m_envelopeManager.Initialize(m_vocabulary.GetLmdbEnv(), coreConnStr))
             {
                 fprintf(stderr, "[HCPEngine] Envelope manager initialized\n");
@@ -298,11 +298,11 @@ namespace HCPEngine
                 if (!rules.empty())
                     m_bedManager.SetInflectionRules(AZStd::move(rules));
 
-                // Activate the English resolution envelope: assembles cold→warm (Postgres).
-                // LMDB is NOT pre-populated — the resolution loop drives per-length
-                // batch loading via AdvanceEnvelopeLengthBatch, which queries Postgres
-                // directly for right-sized candidate sets. LMDB w2t is only used for
-                // single-word lookups during inflection stripping (populated on-demand).
+                // Activate the English resolution envelope: loads the query plan ONLY.
+                // No cold→warm assembly at startup — assembly is demand-driven per
+                // word length when the resolution loop first requests candidates.
+                // Existing working set rows from previous sessions are reused.
+                // LMDB is cleared (ephemeral hot cache) and rebuilt on demand.
                 auto t0 = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Activating envelope 'english_resolve'...\n");
                 fflush(stderr);
@@ -311,7 +311,7 @@ namespace HCPEngine
                 m_bedManager.InitEnvelopeWindow(act.envelopeId, warmSize);
                 auto t1 = std::chrono::high_resolution_clock::now();
                 double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
-                fprintf(stderr, "[HCPEngine] Envelope ready: %d warm rows, %.1f ms\n",
+                fprintf(stderr, "[HCPEngine] Envelope ready: %d existing warm rows, %.1f ms\n",
                     warmSize, ms);
                 fflush(stderr);
             }

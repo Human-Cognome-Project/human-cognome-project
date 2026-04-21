@@ -8,13 +8,13 @@
 namespace HCPEngine
 {
     static constexpr const char* DEFAULT_PBM_CONNINFO =
-        "dbname=hcp_fic_pbm user=hcp password=hcp_dev host=localhost port=5432";
+        "dbname=hcp_fic_pbm user=hcp password=hcp_dev host=192.168.68.60 port=5435";
 
     static constexpr const char* DEFAULT_FIC_ENT_CONNINFO =
-        "dbname=hcp_fic_entities user=hcp password=hcp_dev host=localhost port=5432";
+        "dbname=hcp_fic_entities user=hcp password=hcp_dev host=192.168.68.60 port=5435";
 
     static constexpr const char* DEFAULT_NF_ENT_CONNINFO =
-        "dbname=hcp_nf_entities user=hcp password=hcp_dev host=localhost port=5432";
+        "dbname=hcp_nf_entities user=hcp password=hcp_dev host=192.168.68.60 port=5435";
 
     static constexpr const char* DEFAULT_VOCAB_PATH =
         "/opt/project/repo/data/vocab.lmdb";

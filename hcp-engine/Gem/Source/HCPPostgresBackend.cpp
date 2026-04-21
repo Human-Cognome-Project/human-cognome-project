@@ -23,7 +23,7 @@ namespace HCPEngine
 
             const char* connStr = connectionString;
             if (!connStr || !connStr[0])
-                connStr = "host=localhost dbname=hcp_fic_pbm user=hcp password=hcp_dev";
+                connStr = "host=192.168.68.60 port=5435 dbname=hcp_fic_pbm user=hcp password=hcp_dev";
 
             m_conn = PQconnectdb(connStr);
             if (PQstatus(m_conn) != CONNECTION_OK)

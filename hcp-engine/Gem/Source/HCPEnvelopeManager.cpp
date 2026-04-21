@@ -147,14 +147,13 @@ namespace HCPEngine
         EnvelopeActivation activation;
         auto t0 = std::chrono::high_resolution_clock::now();
 
-        // Always evict current envelope from LMDB before re-assembling so stale
-        // entries never accumulate across activations of the same envelope.
+        // Evict LMDB hot cache from previous envelope (ephemeral, always safe to clear).
+        // Working set in Postgres is NOT cleared — rows persist for reuse across restarts
+        // and multiple envelopes coexist by envelope_id.
         if (!m_activeEnvelope.empty())
         {
             activation.evictedEntries = EvictManifest(m_activeEnvelope);
-            if (m_activeEnvelopeId != 0)
-                ClearWorkingSet(m_activeEnvelopeId);
-            fprintf(stderr, "[EnvelopeManager] Evicted '%s' (%d LMDB sub-dbs)\n",
+            fprintf(stderr, "[EnvelopeManager] Evicted LMDB for '%s' (%d sub-dbs)\n",
                 m_activeEnvelope.c_str(), activation.evictedEntries);
             fflush(stderr);
         }
@@ -169,11 +168,11 @@ namespace HCPEngine
         }
         activation.envelopeId = def.id;
 
-        // Clear warm working set for this envelope before re-assembly
-        ClearWorkingSet(def.id);
-
-        // Collect all queries: children first (depth-first), then own
-        AZStd::vector<EnvelopeQuery> allQueries;
+        // Collect all queries from children (cascade order) then own.
+        // Track query ranges per child for incremental assembly — each child
+        // envelope is one phase in the cascade (Labels, special chars, common, etc.).
+        m_activeQueries.clear();
+        m_childQueryRanges.clear();
         for (int childId : def.childEnvelopeIds)
         {
             AZStd::string childIdStr = AZStd::string::format("%d", childId);
@@ -186,28 +185,28 @@ namespace HCPEngine
                 AZStd::string childName = PQgetvalue(res, 0, 0);
                 PQclear(res);
                 EnvelopeDefinition childDef = LoadEnvelope(childName);
-                for (auto& q : childDef.queries) allQueries.push_back(q);
+                int startIdx = static_cast<int>(m_activeQueries.size());
+                for (auto& q : childDef.queries) m_activeQueries.push_back(q);
+                int count = static_cast<int>(m_activeQueries.size()) - startIdx;
+                m_childQueryRanges.push_back({startIdx, count});
             }
             else PQclear(res);
         }
-        for (auto& q : def.queries) allQueries.push_back(q);
-
-        // Step 1: Assemble cold → warm (one-shot)
-        // Each query's rows land in hcp_var.envelope_working_set, enriched and ordered.
-        int rowOffset = 0;
-        for (const auto& q : allQueries)
+        // Parent's own queries as final child range
         {
-            int assembled = AssembleQuery(q, def.id, rowOffset);
-            rowOffset += assembled;
-            fprintf(stderr, "[EnvelopeManager]   Assembled '%s': %d rows\n",
-                q.description.c_str(), assembled);
-            fflush(stderr);
+            int startIdx = static_cast<int>(m_activeQueries.size());
+            for (auto& q : def.queries) m_activeQueries.push_back(q);
+            int count = static_cast<int>(m_activeQueries.size()) - startIdx;
+            if (count > 0)
+                m_childQueryRanges.push_back({startIdx, count});
         }
-        fprintf(stderr, "[EnvelopeManager] Assembly complete: %d rows in warm db\n", rowOffset);
-        fflush(stderr);
 
-        // Clear hot cache — w2t and t2w are rebuilt from warm via FeedSlice().
-        // Caller feeds the initial 3-slice window after activation completes.
+        // Reset assembly state for incremental child-by-child assembly.
+        m_nextChildToAssemble = 0;
+        m_totalAssembled = 0;
+        m_assembledLengths.clear();
+
+        // Clear LMDB hot cache — ephemeral, rebuilt on demand by BedManager.
         {
             MDB_txn* dropTxn = nullptr;
             if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &dropTxn) == 0)
@@ -218,10 +217,6 @@ namespace HCPEngine
                 mdb_txn_commit(dropTxn);
             }
         }
-
-        // entriesLoaded reflects warm assembly count; LMDB is populated via FeedSlice().
-        activation.entriesLoaded = rowOffset;
-        RecordManifest(name, "w2t", rowOffset);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         activation.loadTimeMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
@@ -239,8 +234,8 @@ namespace HCPEngine
 
         LogActivation(activation, name);
 
-        fprintf(stderr, "[EnvelopeManager] Activated '%s': %d warm rows in %.1f ms\n",
-            name.c_str(), rowOffset, activation.loadTimeMs);
+        fprintf(stderr, "[EnvelopeManager] Activated '%s': %zu queries stored, assembly deferred (%.1f ms)\n",
+            name.c_str(), m_activeQueries.size(), activation.loadTimeMs);
         fflush(stderr);
 
         return activation;
@@ -307,7 +302,8 @@ namespace HCPEngine
     // Wraps stored query with a CTE to join back characteristics + category.
     // ---------------------------------------------------------------------------
     int HCPEnvelopeManager::AssembleQuery(
-        const EnvelopeQuery& query, int envelopeId, int startOffset)
+        const EnvelopeQuery& query, int envelopeId, int startOffset,
+        int targetLength)
     {
         PGconn* shardConn = GetShardConnection(query.shardDb);
         PGconn* varConn   = GetShardConnection("hcp_var");
@@ -343,6 +339,15 @@ namespace HCPEngine
         // Note: base queries from non-English shards (hcp_core) may still use 'tokens'
         // table — the LEFT JOIN handles mismatches gracefully (NULL broadphase → 0).
         std::string morphemeExpr = hasMorpheme ? "_b.morpheme" : "NULL::text";
+
+        // When targetLength is set, filter the base query results to that word length.
+        // This makes per-length assembly efficient: queries that don't match this length
+        // produce empty results quickly. The filter goes before the enrichment join so
+        // only matching rows are joined.
+        std::string lengthFilter;
+        if (targetLength > 0)
+            lengthFilter = " WHERE length(_b.word) = " + std::to_string(targetLength);
+
         std::string enrichedQuery =
             "WITH _base AS (" + baseQuery + ") "
             "SELECT _b.word, "
@@ -353,7 +358,8 @@ namespace HCPEngine
             "       CASE WHEN _e.ns = 'AD' THEN 'P' ELSE NULL END, "
             "       " + morphemeExpr + " "
             "FROM _base _b "
-            "LEFT JOIN entries _e ON _e.token_id = _b.token_id";
+            "LEFT JOIN entries _e ON _e.token_id = _b.token_id" +
+            lengthFilter;
 
         PGresult* res = PQexec(shardConn, enrichedQuery.c_str());
         if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -917,11 +923,73 @@ namespace HCPEngine
     }
 
     // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // Demand-driven per-length assembly. Called transparently from QueryWarmBatch.
+    // Checks if the working set already has rows for this envelope+length
+    // (from a previous session or earlier in this session). If not, runs all
+    // stored queries filtered to the target length and inserts the results.
+    // ---------------------------------------------------------------------------
+    void HCPEnvelopeManager::EnsureLengthAssembled(int wordLength)
+    {
+        if (m_activeEnvelopeId == 0 || m_activeQueries.empty()) return;
+
+        // In-memory cache: already confirmed this length is present
+        if (m_assembledLengths.count(wordLength)) return;
+
+        // Check Postgres: working set may have rows from a previous session
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn) return;
+
+        AZStd::string envIdStr = AZStd::string::format("%d", m_activeEnvelopeId);
+        AZStd::string lenStr   = AZStd::string::format("%d", wordLength);
+        const char* checkParams[] = { envIdStr.c_str(), lenStr.c_str() };
+
+        PGresult* checkRes = PQexecParams(varConn,
+            "SELECT COUNT(*) FROM envelope_working_set "
+            "WHERE envelope_id = $1 AND word_length = $2",
+            2, nullptr, checkParams, nullptr, nullptr, 0);
+
+        int existing = 0;
+        if (PQresultStatus(checkRes) == PGRES_TUPLES_OK && PQntuples(checkRes) > 0)
+            existing = atoi(PQgetvalue(checkRes, 0, 0));
+        PQclear(checkRes);
+
+        if (existing > 0)
+        {
+            // Reuse existing rows (from previous session or earlier assembly)
+            m_assembledLengths[wordLength] = true;
+            fprintf(stderr, "[EnvelopeManager] Length %d: %d rows already in working set (reused)\n",
+                wordLength, existing);
+            fflush(stderr);
+            return;
+        }
+
+        // Assemble: run all stored queries filtered to this word length
+        auto t0 = std::chrono::high_resolution_clock::now();
+        int rowOffset = 0;
+        for (const auto& q : m_activeQueries)
+        {
+            int assembled = AssembleQuery(q, m_activeEnvelopeId, rowOffset, wordLength);
+            rowOffset += assembled;
+        }
+
+        m_assembledLengths[wordLength] = true;
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        fprintf(stderr, "[EnvelopeManager] Length %d assembled: %d rows in %.1f ms\n",
+            wordLength, rowOffset, ms);
+        fflush(stderr);
+    }
+
+    // ---------------------------------------------------------------------------
     // Per-length warm batch query — small per-length OFFSET instead of global 535K scan.
     // Per-length offsets are max ~40K (length 8 = ~80K entries), so OFFSET scans are fast.
     AZStd::vector<VocabEntry> HCPEnvelopeManager::QueryWarmBatch(
         int envelopeId, int wordLength, int offset, int count)
     {
+        // Ensure this length has been assembled into the working set before querying.
+        EnsureLengthAssembled(wordLength);
         AZStd::vector<VocabEntry> out;
         PGconn* varConn = GetShardConnection("hcp_var");
         if (!varConn) return out;
@@ -958,7 +1026,209 @@ namespace HCPEngine
             out.push_back(AZStd::move(e));
         }
         PQclear(res);
+
         return out;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Phase-ordered warm batch — priority-ordered across ALL word lengths.
+    // Each call returns the next slice of the warm set. When exhausted,
+    // assembles the next child envelope's queries and retries.
+    // This is the main data feed for phase-based resolution.
+    // ---------------------------------------------------------------------------
+    AZStd::vector<VocabEntry> HCPEnvelopeManager::QueryWarmPhase(
+        int envelopeId, int offset, int count)
+    {
+        AZStd::vector<VocabEntry> out;
+        PGconn* varConn = GetShardConnection("hcp_var");
+        if (!varConn) return out;
+
+        AZStd::string envIdStr  = AZStd::string::format("%d", envelopeId);
+        AZStd::string offsetStr = AZStd::string::format("%d", offset);
+        AZStd::string countStr  = AZStd::string::format("%d", count);
+        const char* params[] = { envIdStr.c_str(), offsetStr.c_str(), countStr.c_str() };
+
+        PGresult* res = PQexecParams(varConn,
+            "SELECT word, token_id, morpheme "
+            "FROM envelope_working_set "
+            "WHERE envelope_id = $1 "
+            "ORDER BY effective_priority "
+            "OFFSET $2 LIMIT $3",
+            3, nullptr, params, nullptr, nullptr, 0);
+
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+            PQclear(res);
+            return out;
+        }
+
+        int rows = PQntuples(res);
+
+        // If empty and there are unassembled children, assemble next child and retry
+        if (rows == 0 &&
+            m_nextChildToAssemble < static_cast<int>(m_childQueryRanges.size()))
+        {
+            PQclear(res);
+
+            const auto& range = m_childQueryRanges[m_nextChildToAssemble];
+            auto t0 = std::chrono::high_resolution_clock::now();
+            int childRows = 0;
+            for (int i = range.startIdx; i < range.startIdx + range.count; ++i)
+            {
+                int assembled = AssembleQuery(
+                    m_activeQueries[i], envelopeId, m_totalAssembled);
+                m_totalAssembled += assembled;
+                childRows += assembled;
+            }
+            auto t1 = std::chrono::high_resolution_clock::now();
+            double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+            fprintf(stderr, "[EnvelopeManager] Assembled child %d/%zu: %d rows in %.1f ms\n",
+                m_nextChildToAssemble,
+                m_childQueryRanges.size(), childRows, ms);
+            fflush(stderr);
+
+            ++m_nextChildToAssemble;
+
+            // Retry the query now that new rows exist
+            res = PQexecParams(varConn,
+                "SELECT word, token_id, morpheme "
+                "FROM envelope_working_set "
+                "WHERE envelope_id = $1 "
+                "ORDER BY effective_priority "
+                "OFFSET $2 LIMIT $3",
+                3, nullptr, params, nullptr, nullptr, 0);
+
+            if (PQresultStatus(res) != PGRES_TUPLES_OK)
+            {
+                PQclear(res);
+                return out;
+            }
+            rows = PQntuples(res);
+        }
+
+        out.reserve(rows);
+        for (int i = 0; i < rows; ++i)
+        {
+            VocabEntry e;
+            e.word    = AZStd::string(PQgetvalue(res, i, 0));
+            e.tokenId = AZStd::string(PQgetvalue(res, i, 1));
+            if (PQgetlength(res, i, 2) > 0)
+                e.morpheme = AZStd::string(PQgetvalue(res, i, 2));
+            out.push_back(AZStd::move(e));
+        }
+        PQclear(res);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Targeted bucket load: shard → LMDB. Called after Phase 1 classification.
+    // The engine knows exactly which (first_letter, length) buckets the text needs.
+    // Queries the shard directly for those p3 buckets, writes to LMDB w2t + t2w.
+    // Labels first (ns=AD), then common vocab (ns=AB). No warm set involved.
+    // ---------------------------------------------------------------------------
+    int HCPEnvelopeManager::LoadBucketsToLmdb(
+        const AZStd::vector<AZStd::string>& neededP3,
+        const AZStd::vector<int>& neededLengths)
+    {
+        if (!m_lmdbEnv || neededP3.empty() || neededLengths.empty()) return 0;
+
+        PGconn* shardConn = GetShardConnection("hcp_english");
+        if (!shardConn) return 0;
+
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        // Build exact p3 IN clause — each value encodes letter+length.
+        // p3 first char = letter (A=a..Z=z), second char = length+1 (B=1, C=2, ...).
+        // Exact matching: no need for separate length filter since p3 encodes both.
+        std::string p3In = "(";
+        AZStd::unordered_set<AZStd::string> p3Dedup;
+        bool firstP3 = true;
+        for (size_t i = 0; i < neededP3.size(); ++i)
+        {
+            if (p3Dedup.count(neededP3[i])) continue;
+            p3Dedup.insert(neededP3[i]);
+            if (!firstP3) p3In += ",";
+            p3In += "'" + std::string(neededP3[i].c_str()) + "'";
+            firstP3 = false;
+        }
+        p3In += ")";
+
+        // Query Labels first (ns=AD, single-word p2=AA), then common vocab (ns=AB, p2=AA).
+        // Two queries, cascade order: Labels have priority in LMDB (first write wins for t2w).
+        const char* queries[] = {
+            "AD",  // Labels
+            "AB",  // Common vocab
+        };
+
+        int totalWritten = 0;
+
+        MDB_txn* txn = nullptr;
+        if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) != 0) return 0;
+
+        MDB_dbi dbiW2t = 0, dbiT2w = 0;
+        bool w2tOk = (mdb_dbi_open(txn, "w2t", MDB_CREATE, &dbiW2t) == 0);
+        bool t2wOk = (mdb_dbi_open(txn, "t2w", MDB_CREATE, &dbiT2w) == 0);
+
+        if (!w2tOk)
+        {
+            mdb_txn_abort(txn);
+            return 0;
+        }
+
+        for (const char* ns : queries)
+        {
+            std::string sql =
+                "SELECT word, token_id FROM entries "
+                "WHERE ns = '" + std::string(ns) + "' AND p2 = 'AA' "
+                "AND p3 IN " + p3In;
+
+            PGresult* res = PQexec(shardConn, sql.c_str());
+            if (PQresultStatus(res) != PGRES_TUPLES_OK)
+            {
+                fprintf(stderr, "[EnvelopeManager] LoadBuckets %s query failed: %s\n",
+                    ns, PQerrorMessage(shardConn));
+                fflush(stderr);
+                PQclear(res);
+                continue;
+            }
+
+            int nrows = PQntuples(res);
+            for (int i = 0; i < nrows; ++i)
+            {
+                const char* word    = PQgetvalue(res, i, 0);
+                const char* tokenId = PQgetvalue(res, i, 1);
+                int wordLen  = PQgetlength(res, i, 0);
+                int tokenLen = PQgetlength(res, i, 1);
+
+                MDB_val mKey = { static_cast<size_t>(wordLen), const_cast<char*>(word) };
+                MDB_val mVal = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+                if (mdb_put(txn, dbiW2t, &mKey, &mVal, 0) == 0)
+                {
+                    ++totalWritten;
+                    if (t2wOk)
+                    {
+                        MDB_val rKey = { static_cast<size_t>(tokenLen), const_cast<char*>(tokenId) };
+                        MDB_val rVal = { static_cast<size_t>(wordLen), const_cast<char*>(word) };
+                        mdb_put(txn, dbiT2w, &rKey, &rVal, MDB_NOOVERWRITE);
+                    }
+                }
+            }
+
+            fprintf(stderr, "[EnvelopeManager] LoadBuckets ns=%s: %d entries from %zu p3 × %zu lengths\n",
+                ns, nrows, neededP3.size(), neededLengths.size());
+            fflush(stderr);
+            PQclear(res);
+        }
+
+        mdb_txn_commit(txn);
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        fprintf(stderr, "[EnvelopeManager] LoadBuckets: %d entries → LMDB in %.1f ms\n",
+            totalWritten, ms);
+        fflush(stderr);
+
+        return totalWritten;
     }
 
     // ---------------------------------------------------------------------------
@@ -1064,7 +1334,7 @@ namespace HCPEngine
             return it->second;
 
         AZStd::string connStr =
-            "host=localhost dbname=" + dbName + " user=hcp password=hcp_dev";
+            "host=192.168.68.60 port=5435 dbname=" + dbName + " user=hcp password=hcp_dev";
 
         PGconn* conn = PQconnectdb(connStr.c_str());
         if (PQstatus(conn) != CONNECTION_OK)

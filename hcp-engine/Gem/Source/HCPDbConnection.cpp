@@ -7,7 +7,7 @@ namespace HCPEngine
 {
 namespace DbConn_Detail {
     constexpr const char* DEFAULT_CONNINFO =
-        "dbname=hcp_fic_pbm user=hcp password=hcp_dev host=localhost port=5432";
+        "dbname=hcp_fic_pbm user=hcp password=hcp_dev host=192.168.68.60 port=5435";
 } // DbConn_Detail
 
     HCPDbConnection::~HCPDbConnection()

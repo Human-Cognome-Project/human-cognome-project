@@ -74,10 +74,16 @@ namespace HCPEngine
     //!
     //!   Cold (hcp_english/hcp_core) → Warm (hcp_var.envelope_working_set) → Hot (LMDB)
     //!
-    //! Assembly (cold → warm) happens ONCE per activation. After that, the warm db
-    //! is the working layer — adjustments (feedback, priority_delta) happen there.
-    //! LMDB is populated from warm in ordered slices and evicted on envelope change.
+    //! Envelopes are composable query plans — each defines the set of queries needed
+    //! to assemble its working vocabulary. Multiple envelopes can be active simultaneously
+    //! (e.g. english_resolve + french_resolve). Working set rows are tagged by envelope_id.
     //!
+    //! Assembly is demand-driven: activating an envelope loads the DEFINITION only.
+    //! Actual cold→warm query execution happens per word-length when the resolution
+    //! loop first requests candidates at that length. Short lengths are cheap (small
+    //! candidate pools). Long lengths only assemble if the text needs them.
+    //!
+    //! LMDB is ephemeral hot cache — populated from warm on demand, always clearable.
     //! NAPIER decides policy (what goes in which envelope, when to activate).
     class HCPEnvelopeManager
     {
@@ -90,14 +96,17 @@ namespace HCPEngine
         //! Resolves composed children recursively.
         EnvelopeDefinition LoadEnvelope(const AZStd::string& name);
 
-        //! Activate an envelope:
-        //!   1. Evict previous envelope from LMDB + clear warm working set
-        //!   2. Clear hot cache (w2t/t2w) — caller feeds initial window via FeedSlice()
-        //!   3. Assemble cold → warm (one-shot: run queries against cold shard,
-        //!      write enriched rows into hcp_var.envelope_working_set)
-        //! Returns activation stats (entriesLoaded = warm assembly count, not LMDB).
-        //! After activation, call FeedSlice() to load the initial hot window.
+        //! Activate an envelope: load definition, store query plan, clear LMDB hot cache.
+        //! NO assembly — cold→warm queries are deferred to EnsureLengthAssembled().
+        //! Multiple envelopes can be active; working set rows coexist by envelope_id.
+        //! Returns activation stats (entriesLoaded = 0 for deferred assembly).
         EnvelopeActivation ActivateEnvelope(const AZStd::string& name);
+
+        //! Ensure the warm working set has been assembled for a given word length.
+        //! Checks for existing rows first (reuses data from previous sessions).
+        //! If missing, runs all stored queries filtered to targetLength, inserts results.
+        //! Called transparently from QueryWarmBatch — BedManager doesn't need to know.
+        void EnsureLengthAssembled(int wordLength);
 
         //! Feed rows [offset, offset+count) from warm set into LMDB w2t (and t2w).
         //! Used by BedManager to advance the sliding hot-cache window.
@@ -134,6 +143,24 @@ namespace HCPEngine
         //! Returns entries in effective_priority order (highest-priority first, offset=0).
         AZStd::vector<VocabEntry> QueryWarmBatch(int envelopeId, int wordLength, int offset, int count);
 
+        //! Query a priority-ordered phase from the warm set across ALL word lengths.
+        //! Returns entries in effective_priority order (Labels first, then special chars,
+        //! then common vocab ascending, etc.). Triggers incremental child-envelope
+        //! assembly when the current warm set is exhausted.
+        //! BedManager distributes results into m_vocabByLength by word length.
+        AZStd::vector<VocabEntry> QueryWarmPhase(int envelopeId, int offset, int count);
+
+        //! Load targeted p3 buckets from the shard directly into LMDB.
+        //! Called after Phase 1 classification — the engine knows exactly which
+        //! (first_letter, word_length) buckets it needs. Postgres queries only those
+        //! buckets, writes results to LMDB w2t + t2w. No warm set needed.
+        //! Labels (ns=AD) are loaded first, then common vocab (ns=AB).
+        //! @param neededP3 Set of p3 values (2-char encoded first letter)
+        //! @param neededLengths Set of word lengths present in the text
+        //! @return Total entries written to LMDB
+        int LoadBucketsToLmdb(const AZStd::vector<AZStd::string>& neededP3,
+                              const AZStd::vector<int>& neededLengths);
+
         //! Load inflection rules from the named Postgres database.
         //! Queries inflection_rules table ordered by (morpheme, priority).
         //! dbName defaults to "hcp_english" but is flaggable for other language shards.
@@ -148,8 +175,10 @@ namespace HCPEngine
         //! Cold → warm: execute stored query against cold shard, write enriched rows
         //! into hcp_var.envelope_working_set. Wraps query with characteristics/category
         //! enrichment join. startOffset drives base_priority ordering.
+        //! If targetLength > 0, filters base query results to that word length only.
         //! Returns number of rows assembled.
-        int AssembleQuery(const EnvelopeQuery& query, int envelopeId, int startOffset);
+        int AssembleQuery(const EnvelopeQuery& query, int envelopeId, int startOffset,
+                          int targetLength = 0);
 
         //! Warm → LMDB: read envelope_working_set for envelopeId ordered by
         //! effective_priority, write to LMDB sub-dbs. Also writes t2w reverse for w2t.
@@ -187,6 +216,22 @@ namespace HCPEngine
 
         AZStd::string m_activeEnvelope;
         int           m_activeEnvelopeId = 0;
+
+        // Stored query plan for the active envelope (all children + own, cascade order).
+        // Populated by ActivateEnvelope, consumed by incremental assembly.
+        AZStd::vector<EnvelopeQuery> m_activeQueries;
+
+        // Track which word lengths have been assembled into the working set.
+        // Avoids redundant DB checks once a length is confirmed present.
+        AZStd::unordered_map<int, bool> m_assembledLengths;
+
+        // Incremental child-envelope assembly state.
+        // Each AdvancePhase assembles the next child's queries into the warm set.
+        // m_childQueryRanges[i] = {startIdx, count} into m_activeQueries for child i.
+        struct ChildQueryRange { int startIdx; int count; };
+        AZStd::vector<ChildQueryRange> m_childQueryRanges;
+        int m_nextChildToAssemble = 0;   // Next child index to assemble on demand
+        int m_totalAssembled = 0;        // Total rows assembled so far (drives base_priority)
     };
 
 } // namespace HCPEngine

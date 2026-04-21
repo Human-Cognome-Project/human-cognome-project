@@ -60,7 +60,7 @@ namespace HCPEngine
 
         char conninfo[256];
         snprintf(conninfo, sizeof(conninfo),
-            "host=localhost dbname=%s user=hcp password=hcp_dev", dbname);
+            "host=192.168.68.60 port=5435 dbname=%s user=hcp password=hcp_dev", dbname);
 
         PGconn* conn = PQconnectdb(conninfo);
         if (PQstatus(conn) != CONNECTION_OK)
