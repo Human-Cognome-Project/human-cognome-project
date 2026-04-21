@@ -1964,17 +1964,151 @@ namespace HCPEngine
 
     void BedManager::ResetWindowToStart()
     {
-        // Reset per-length batch cursors so each new document starts from offset 0.
-        // LMDB hot window is NOT modified — the initial high-priority entries loaded at
-        // envelope activation remain valid for single-word lookups (TryInflectionStrip).
-        // The multi-slice loop uses QueryWarmBatch (direct Postgres per-length) rather
-        // than LMDB advances, so the LMDB window is stable across documents.
+        // Reset cursors for a new document. Vocab is cleared so each document
+        // starts fresh from the warm set. Per-length batch loading (via
+        // AdvanceEnvelopeLengthBatch) populates vocab on demand during resolution.
         m_lengthCursorByLen.clear();
+        m_phaseCursor = 0;
+        m_vocabByLength.clear();
+    }
 
-        // Also reset m_vocabByLength to the LMDB-resident entries (initial hot window).
-        // This ensures the first pass for each length uses what's already in LMDB,
-        // only going to Postgres when those entries are exhausted.
-        RebuildVocab();
+    // ---- AdvancePhase: load next priority-ordered batch across all lengths ----
+    //
+    // Each call loads a child-envelope-sized chunk from the warm set (Postgres).
+    // Entries are distributed into m_vocabByLength by word length.
+    // The first call loads Labels (highest priority), next loads special chars, etc.
+    // Returns false when the warm set is exhausted for this envelope.
+    bool BedManager::AdvancePhase()
+    {
+        if (!m_envelopeManager || m_envelopeId == 0) return false;
+
+        auto batch = m_envelopeManager->QueryWarmPhase(
+            m_envelopeId, m_phaseCursor, LMDB_SLICE_SIZE);
+
+        if (batch.empty()) return false;
+
+        int batchSize = static_cast<int>(batch.size());
+        m_phaseCursor += batchSize;
+
+        // Distribute entries into m_vocabByLength by word length (APPEND — accumulates)
+        AZStd::unordered_set<AZ::u32> newLengths;
+        for (const auto& e : batch)
+        {
+            AZ::u32 len = static_cast<AZ::u32>(e.word.size());
+            VocabPack::Entry entry;
+            entry.word      = e.word;
+            entry.tokenId   = e.tokenId;
+            entry.tierIndex = 0;
+            entry.morphBits = MorphemeNameToBit(e.morpheme.c_str());
+            m_vocabByLength[len].push_back(AZStd::move(entry));
+            newLengths.insert(len);
+        }
+
+        // Update active word lengths (sorted ascending for resolve order)
+        for (AZ::u32 len : newLengths)
+        {
+            bool found = false;
+            for (AZ::u32 existing : m_activeWordLengths)
+                if (existing == len) { found = true; break; }
+            if (!found)
+                m_activeWordLengths.push_back(len);
+        }
+        AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end());
+
+        fprintf(stderr, "[BedManager] Phase advance: %d entries loaded (cursor=%d), %zu active lengths\n",
+            batchSize, m_phaseCursor, m_activeWordLengths.size());
+        fflush(stderr);
+        return true;
+    }
+
+    // ---- CheckPossessives: broadphase prefix for possessive resolution ----
+    //
+    // Runs BEFORE Label and common vocab passes within ResolveLengthCycle.
+    // For runs ending in 's or s': try resolving as existing possessive form.
+    // On miss: strip possessive suffix, submit base to the current pass.
+    // If base resolves later, a MintRecommendation is generated.
+    void BedManager::CheckPossessives(
+        const AZStd::vector<CharRun>& runs,
+        const AZStd::vector<AZ::u32>& runIndices,
+        AZStd::vector<ResolutionResult>& results,
+        AZStd::vector<AZ::u32>& baseSubmissions,
+        AZStd::vector<MintRecommendation>& recommendations)
+    {
+        for (AZ::u32 idx : runIndices)
+        {
+            const CharRun& run = runs[idx];
+            if (run.text.size() < 3) continue;
+
+            // Check for 's ending (singular possessive)
+            bool isSingularPoss = (run.text.size() >= 3 &&
+                run.text[run.text.size() - 2] == '\'' &&
+                run.text[run.text.size() - 1] == 's');
+
+            // Check for s' ending (plural possessive)
+            bool isPluralPoss = (!isSingularPoss &&
+                run.text.size() >= 2 &&
+                run.text[run.text.size() - 2] == 's' &&
+                run.text[run.text.size() - 1] == '\'');
+
+            if (!isSingularPoss && !isPluralPoss) continue;
+
+            // Try resolving as existing possessive form (exact match in current vocab)
+            AZ::u32 wordLen = static_cast<AZ::u32>(run.text.size());
+            bool foundExact = false;
+            auto vocabIt = m_vocabByLength.find(wordLen);
+            if (vocabIt != m_vocabByLength.end())
+            {
+                for (const auto& entry : vocabIt->second)
+                {
+                    if (entry.word == run.text)
+                    {
+                        ResolutionResult r;
+                        r.runText = run.text;
+                        r.resolved = true;
+                        r.matchedWord = entry.word;
+                        r.matchedTokenId = entry.tokenId;
+                        r.morphBits = isSingularPoss ? MorphBit::POSS : MorphBit::POSS_PL;
+                        r.tierResolved = 0;
+                        r.runIndex = idx;
+                        r.firstCap = run.firstCap;
+                        r.allCaps = run.allCaps;
+                        results.push_back(r);
+                        foundExact = true;
+                        break;
+                    }
+                }
+            }
+
+            if (foundExact) continue;
+
+            // Miss — strip possessive suffix and submit base for candidate resolution
+            AZStd::string baseWord;
+            AZ::u16 morphBits;
+            if (isSingularPoss)
+            {
+                baseWord = run.text.substr(0, run.text.size() - 2);  // strip 's
+                morphBits = MorphBit::POSS;
+            }
+            else
+            {
+                baseWord = run.text.substr(0, run.text.size() - 1);  // strip trailing '
+                morphBits = MorphBit::POSS_PL;
+            }
+
+            if (!baseWord.empty())
+            {
+                // Record recommendation — will be completed if base resolves
+                MintRecommendation rec;
+                rec.surfaceForm = run.text;
+                rec.baseWord = baseWord;
+                rec.morphBits = morphBits;
+                // baseTokenId filled in later when/if base resolves
+                recommendations.push_back(rec);
+
+                // Submit base word index for resolution in current pass
+                baseSubmissions.push_back(idx);
+            }
+        }
     }
 
     bool BedManager::AdvanceEnvelopeLengthBatch(AZ::u32 wordLength)
@@ -2006,29 +2140,9 @@ namespace HCPEngine
             vec.push_back(AZStd::move(entry));
         }
 
-        // Also write this batch to LMDB w2t so LookupWordLocal (used by inflection
-        // stripping) can find these entries. LMDB fills incrementally as resolution
-        // progresses — only the current batch, not the whole working set.
-        if (m_lmdbEnv && m_vocabDbiOpen)
-        {
-            MDB_txn* txn = nullptr;
-            if (mdb_txn_begin(m_lmdbEnv, nullptr, 0, &txn) == 0)
-            {
-                for (const auto& e : batch)
-                {
-                    MDB_val mKey = { e.word.size(), const_cast<char*>(e.word.c_str()) };
-                    std::string valStr(e.tokenId.c_str(), e.tokenId.size());
-                    if (!e.morpheme.empty())
-                    {
-                        valStr += '\x00';
-                        valStr.append(e.morpheme.c_str(), e.morpheme.size());
-                    }
-                    MDB_val mVal = { valStr.size(), const_cast<char*>(valStr.data()) };
-                    mdb_put(txn, m_vocabDbi, &mKey, &mVal, 0);
-                }
-                mdb_txn_commit(txn);
-            }
-        }
+        // NOTE: No LMDB write here. LMDB is read-only from the engine's perspective.
+        // All LMDB population goes through EnvelopeManager::FeedSlice (Postgres→LMDB).
+        // Inflection stripping base-word checks use m_vocabByLength (in-memory).
 
         fprintf(stderr, "[BedManager] Length %u batch advance: offset=%d, %zu entries loaded\n",
             wordLength, cursor, batch.size());
@@ -2390,7 +2504,7 @@ namespace HCPEngine
 
     void BedManager::ResolveLengthCycle(
         AZ::u32 wordLength,
-        const AZStd::vector<CharRun>& runs,
+        AZStd::vector<CharRun>& runs,
         const AZStd::vector<AZ::u32>& runIndices,
         AZStd::vector<ResolutionResult>& results,
         AZStd::vector<AZ::u32>& unresolvedIndices)
@@ -2433,12 +2547,10 @@ namespace HCPEngine
 
         AZ::u32 phaseIndex = 0;
 
-        // ---- Pass 1: Label lookup — capitalized runs ONLY ----
-        // Labels are stored in original case (capitalized). CharRun text is lowercased.
-        // For each cap run, reconstruct the capitalized forms and try direct lookup
-        // in LMDB w2t. Order: all-caps → title-case → (skip lowercase,
-        // that's handled in the common vocab pass below).
-        // Ensure the batch for this length is loaded first so LMDB has the data.
+        // ---- Pass 1: Direct LMDB lookup for capitalized runs ----
+        // Words arrive with original case preserved. "John" is tried as "John" directly.
+        // Labels are stored with original caps in LMDB — no reconstruction needed.
+        // For allCaps runs, also try lowercase (could be a word not a Label).
         if (!capRuns.empty())
         {
             AZStd::vector<AZ::u32> resolvedCapRuns;
@@ -2447,23 +2559,8 @@ namespace HCPEngine
                 const CharRun& run = runs[idx];
                 if (run.text.empty()) continue;
 
-                AZStd::string tokenId;
-
-                // Try 1: All-caps form (IRS, NASA, etc.)
-                if (run.allCaps)
-                {
-                    AZStd::string upper = run.text;
-                    for (auto& c : upper) c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
-                    tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(upper) : "";
-                }
-
-                // Try 2: Title-case form (John, London, etc.)
-                if (tokenId.empty())
-                {
-                    AZStd::string titled = run.text;
-                    titled[0] = static_cast<char>(toupper(static_cast<unsigned char>(titled[0])));
-                    tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(titled) : "";
-                }
+                // Try as-is (original case — "John", "NASA", "Jennie")
+                AZStd::string tokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(run.text) : "";
 
                 if (!tokenId.empty())
                 {
@@ -2474,7 +2571,6 @@ namespace HCPEngine
                     r.matchedTokenId = tokenId;
                     r.tierResolved = 0;  // Label tier
                     r.runIndex = idx;
-                    r.firstCap = run.firstCap;
                     r.allCaps = run.allCaps;
                     results.push_back(r);
                     resolvedCapRuns.push_back(idx);
@@ -2497,13 +2593,21 @@ namespace HCPEngine
             }
         }
 
-        // ---- Pass 2: Common vocab — ALL remaining runs, loop through ALL warm-set slices ----
-        //
-        // Each iteration processes the current hot-cache window for this word length.
-        // When unresolved runs remain, advance to the next slice and try again.
-        // Stop only when all runs are resolved, or no more slices exist for this length.
-        // Since warm-set rows are ordered (word_length, effective_priority), once the
-        // sliding window moves past the last entry for this length the inner check breaks.
+        // ---- Lowercase fallback for unresolved caps ----
+        // Capitalized runs that didn't match as Labels get lowercased for common vocab PBD.
+        // Vocab is lowercase; PBD matches character-by-character.
+        for (AZ::u32 idx : capRuns)
+        {
+            AZStd::string& txt = runs[idx].text;
+            for (size_t ci = 0; ci < txt.size(); ++ci)
+            {
+                char c = txt[ci];
+                if (c >= 'A' && c <= 'Z')
+                    txt[ci] = static_cast<char>(c + 32);
+            }
+        }
+
+        // ---- Pass 2: Common vocab — ALL remaining runs ----
         AZStd::vector<AZ::u32> commonRuns;
         commonRuns.reserve(capRuns.size() + plainRuns.size());
         for (AZ::u32 idx : capRuns)   commonRuns.push_back(idx);
@@ -2657,11 +2761,10 @@ namespace HCPEngine
         AZStd::vector<AZ::u32> hyphenRuns;
         AZStd::vector<AZ::u32> noVocabRuns;
 
-        // Build a set of active word lengths for O(1) lookup
-        AZStd::unordered_set<AZ::u32> activeLenSet;
-        for (AZ::u32 len : m_activeWordLengths)
-            activeLenSet.insert(len);
-
+        // Classification is driven by the TEXT, not pre-loaded vocab.
+        // All word runs go into runsByLength by their own length.
+        // Vocab is loaded on demand during the ascending-length loop
+        // (AdvanceEnvelopeLengthBatch triggers warm-set assembly per length).
         for (AZ::u32 i = 0; i < originalRunCount; ++i)
         {
             const CharRun& run = runs[i];
@@ -2687,13 +2790,7 @@ namespace HCPEngine
             }
             else
             {
-                AZ::u32 len = run.length;
-                if (activeLenSet.count(len))
-                {
-                    runsByLength[len].push_back(i);
-                }
-                else
-                    noVocabRuns.push_back(i);
+                runsByLength[run.length].push_back(i);
             }
         }
 
@@ -2702,13 +2799,150 @@ namespace HCPEngine
         for (const auto& [_, stack] : runStacks)
             totalDuplicates += static_cast<AZ::u32>(stack.size());
 
+        // Build activeLenSet from supported workspace range (not pre-loaded vocab).
+        // Used by broadphase strip to check if synthetic base words can be resolved.
+        // Primary workspaces handle 2-10, extended handle 11-20+. Include 1 for
+        // single-char bases and a generous upper bound for long compounds.
+        AZStd::unordered_set<AZ::u32> activeLenSet;
+        for (AZ::u32 l = 1; l <= 30; ++l) activeLenSet.insert(l);
+
         fprintf(stderr, "[BedManager] Classification: %zu lengths with runs, %zu apostrophe, "
-            "%zu hyphen, %zu no-vocab | %u unique words (%u duplicates stacked)\n",
+            "%zu hyphen | %u unique words (%u duplicates stacked)\n",
             runsByLength.size(), apostropheRuns.size(), hyphenRuns.size(),
-            noVocabRuns.size(), uniqueWordRuns, totalDuplicates);
+            uniqueWordRuns, totalDuplicates);
         fflush(stderr);
 
+        // ---- Targeted bucket load: shard → LMDB ----
+        // After Phase 1 classification, we know exactly which p3 buckets (first letter
+        // × word length) the text needs. Tell the EnvelopeManager to query Postgres
+        // for JUST those buckets and write them to LMDB. This replaces the monolithic
+        // warm-set assembly — Postgres loads only what the text requires.
+        if (m_envelopeManager)
+        {
+            // Collect needed p3 values (first letter encoding) and lengths from classified runs
+            AZStd::unordered_set<char> firstLetters;
+            AZStd::unordered_set<int> lengths;
+            for (const auto& [len, indices] : runsByLength)
+            {
+                lengths.insert(static_cast<int>(len));
+                for (AZ::u32 idx : indices)
+                {
+                    if (!runs[idx].text.empty())
+                        firstLetters.insert(runs[idx].text[0]);
+                }
+            }
+            // Include apostrophe and hyphen run lengths/letters too
+            for (AZ::u32 idx : apostropheRuns)
+            {
+                if (!runs[idx].text.empty())
+                {
+                    firstLetters.insert(runs[idx].text[0]);
+                    lengths.insert(static_cast<int>(runs[idx].text.size()));
+                }
+            }
+            for (AZ::u32 idx : hyphenRuns)
+            {
+                if (!runs[idx].text.empty())
+                {
+                    firstLetters.insert(runs[idx].text[0]);
+                    lengths.insert(static_cast<int>(runs[idx].text.size()));
+                }
+            }
+
+            // Build exact p3 values from actual (letter, length) pairs in runs.
+            // p3 first char = letter (A=a..Z=z), second char = 'A'+length.
+            // Only generate p3 for pairs that exist in the text — no cross product.
+            AZStd::vector<AZStd::string> neededP3;
+            AZStd::vector<int> neededLengths(lengths.begin(), lengths.end());
+            AZStd::unordered_set<AZStd::string> p3Seen;
+            for (const auto& [len, indices] : runsByLength)
+            {
+                for (AZ::u32 idx : indices)
+                {
+                    if (runs[idx].text.empty()) continue;
+                    char fc = runs[idx].text[0];
+                    if (fc >= 'A' && fc <= 'Z') fc = static_cast<char>(fc + 32);
+                    if (fc < 'a' || fc > 'z') continue;
+                    char p3[3] = { static_cast<char>('A' + (fc - 'a')),
+                                   static_cast<char>('A' + len), '\0' };
+                    AZStd::string p3Str(p3);
+                    if (!p3Seen.count(p3Str))
+                    {
+                        p3Seen.insert(p3Str);
+                        neededP3.push_back(p3Str);
+                    }
+                }
+            }
+            // Also include apostrophe/hyphen run buckets
+            for (AZ::u32 idx : apostropheRuns)
+            {
+                if (runs[idx].text.empty()) continue;
+                char fc = runs[idx].text[0];
+                if (fc >= 'A' && fc <= 'Z') fc = static_cast<char>(fc + 32);
+                if (fc < 'a' || fc > 'z') continue;
+                char p3[3] = { static_cast<char>('A' + (fc - 'a')),
+                               static_cast<char>('A' + static_cast<int>(runs[idx].text.size())), '\0' };
+                AZStd::string p3Str(p3);
+                if (!p3Seen.count(p3Str)) { p3Seen.insert(p3Str); neededP3.push_back(p3Str); }
+            }
+            // Hyphen runs: include the run itself AND derived compound/component buckets.
+            // This pre-loads everything the hyphen split will need so no LMDB writes
+            // happen during the resolution loop (avoiding read/write deadlock).
+            auto addP3 = [&](char firstChar, int wordLen) {
+                char fc = firstChar;
+                if (fc >= 'A' && fc <= 'Z') fc = static_cast<char>(fc + 32);
+                if (fc < 'a' || fc > 'z') return;
+                char p3[3] = { static_cast<char>('A' + (fc - 'a')),
+                               static_cast<char>('A' + wordLen), '\0' };
+                AZStd::string p3Str(p3);
+                if (!p3Seen.count(p3Str)) { p3Seen.insert(p3Str); neededP3.push_back(p3Str); }
+            };
+            for (AZ::u32 idx : hyphenRuns)
+            {
+                const CharRun& hrun = runs[idx];
+                if (hrun.text.empty()) continue;
+                // The hyphenated form itself
+                addP3(hrun.text[0], static_cast<int>(hrun.text.size()));
+                // Split on hyphen → compound and components
+                AZStd::vector<AZStd::string> parts;
+                AZStd::string cur;
+                for (size_t ci = 0; ci < hrun.text.size(); ++ci)
+                {
+                    if (hrun.text[ci] == '-')
+                    { if (!cur.empty()) parts.push_back(cur); cur.clear(); }
+                    else cur += hrun.text[ci];
+                }
+                if (!cur.empty()) parts.push_back(cur);
+                if (parts.size() >= 2)
+                {
+                    // Compound form (no hyphens)
+                    AZStd::string compound;
+                    for (const auto& p : parts) compound += p;
+                    if (!compound.empty())
+                        addP3(compound[0], static_cast<int>(compound.size()));
+                    // Each component
+                    for (const auto& p : parts)
+                        if (!p.empty()) addP3(p[0], static_cast<int>(p.size()));
+                }
+            }
+
+            if (!neededP3.empty() && !neededLengths.empty())
+            {
+                m_envelopeManager->LoadBucketsToLmdb(neededP3, neededLengths);
+
+                // Rebuild in-memory vocab index from the freshly-loaded LMDB
+                RebuildVocab();
+
+                fprintf(stderr, "[BedManager] LMDB loaded: %zu lengths, %zu p3 buckets\n",
+                    m_activeWordLengths.size(),
+                    neededP3.size());
+                fflush(stderr);
+            }
+        }
+
         // ---- Apostrophe runs: vocabulary LMDB lookup ----
+        // Words arrive with original case preserved. Try as-is first.
+        // "John's" matches directly. No cap reconstruction needed.
         AZStd::vector<AZ::u32> unresolvedApostrophe;
         for (AZ::u32 idx : apostropheRuns)
         {
@@ -2723,7 +2957,6 @@ namespace HCPEngine
                 r.matchedTokenId = tokenId;
                 r.tierResolved = 0;
                 r.runIndex = idx;
-                r.firstCap = arun.firstCap;
                 r.allCaps = arun.allCaps;
                 manifest.results.push_back(r);
             }
@@ -2748,7 +2981,6 @@ namespace HCPEngine
                 r.matchedTokenId = tokenId;
                 r.tierResolved = 0;
                 r.runIndex = idx;
-                r.firstCap = hrun.firstCap;
                 r.allCaps = hrun.allCaps;
                 manifest.results.push_back(r);
             }
@@ -2764,6 +2996,161 @@ namespace HCPEngine
                 apostropheRuns.size() - unresolvedApostrophe.size(), apostropheRuns.size(),
                 hyphenRuns.size() - unresolvedHyphen.size(), hyphenRuns.size());
             fflush(stderr);
+        }
+
+        // ---- Hyphen split fallback ----
+        // For unresolved hyphenated runs: split on hyphen, check compound + components.
+        // Longest match wins: compound > individual parts.
+        //
+        // Phase 1: Collect ALL needed buckets from ALL unresolved hyphens upfront.
+        // Phase 2: Load them all in one LMDB write (no read/write deadlock).
+        // Phase 3: Do the lookups.
+        {
+            // Phase 1: Parse all hyphenated runs and collect needed buckets
+            struct HyphenCandidate {
+                AZ::u32 runIdx;
+                AZStd::vector<AZStd::string> parts;
+                AZStd::string compound;
+                AZStd::string compoundLower;
+            };
+            AZStd::vector<HyphenCandidate> candidates;
+            AZStd::unordered_set<AZStd::string> neededBucketKeys;  // "p3:len" dedup
+            AZStd::vector<AZStd::string> batchP3;
+            AZStd::vector<int> batchLens;
+
+            auto addBucket = [&](const AZStd::string& word) {
+                if (word.empty()) return;
+                char fc = word[0];
+                if (fc >= 'A' && fc <= 'Z') fc = static_cast<char>(fc + 32);
+                if (fc < 'a' || fc > 'z') return;
+                // Full p3: letter char + length char
+                char letterChar = static_cast<char>('A' + (fc - 'a'));
+                char lenChar = static_cast<char>('A' + static_cast<int>(word.size()));
+                char p3[3] = { letterChar, lenChar, '\0' };
+                AZStd::string p3Str(p3);
+                if (neededBucketKeys.count(p3Str)) return;
+                neededBucketKeys.insert(p3Str);
+                batchP3.push_back(p3Str);
+                batchLens.push_back(static_cast<int>(word.size()));
+            };
+
+            for (AZ::u32 idx : unresolvedHyphen)
+            {
+                HyphenCandidate cand;
+                cand.runIdx = idx;
+                const CharRun& hrun = runs[idx];
+
+                AZStd::string current;
+                for (size_t ci = 0; ci < hrun.text.size(); ++ci)
+                {
+                    if (hrun.text[ci] == '-')
+                    {
+                        if (!current.empty()) cand.parts.push_back(current);
+                        current.clear();
+                    }
+                    else
+                        current += hrun.text[ci];
+                }
+                if (!current.empty()) cand.parts.push_back(current);
+
+                if (cand.parts.size() < 2) continue;
+
+                for (const auto& p : cand.parts) cand.compound += p;
+                cand.compoundLower = cand.compound;
+                for (auto& c : cand.compoundLower)
+                    if (c >= 'A' && c <= 'Z') c = static_cast<char>(c + 32);
+
+                // Collect bucket for compound and each part
+                addBucket(cand.compoundLower);
+                for (const auto& p : cand.parts) addBucket(p);
+
+                candidates.push_back(AZStd::move(cand));
+            }
+
+            // Phase 2: Buckets already loaded upfront during classification.
+            // No LMDB writes during resolution — all bucket needs were collected
+            // before any LMDB reads started.
+
+            // Phase 3: Lookups — LMDB now has the needed entries
+            AZStd::vector<AZ::u32> stillUnresolvedHyphen;
+            AZ::u32 hyphenVariants = 0;
+            AZ::u32 hyphenDecomposed = 0;
+
+            for (const auto& cand : candidates)
+            {
+                const CharRun& hrun = runs[cand.runIdx];
+
+                // Try compound (longest match)
+                AZStd::string compoundTokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(cand.compound) : "";
+                if (compoundTokenId.empty())
+                    compoundTokenId = m_vocabulary ? m_vocabulary->LookupWordLocal(cand.compoundLower) : "";
+
+                if (!compoundTokenId.empty())
+                {
+                    // Compound exists — resolve to it, mint hyphenated as variant
+                    ResolutionResult r;
+                    r.runText = hrun.text;
+                    r.resolved = true;
+                    r.matchedWord = cand.compound;
+                    r.matchedTokenId = compoundTokenId;
+                    r.tierResolved = 0;
+                    r.runIndex = cand.runIdx;
+                    r.allCaps = hrun.allCaps;
+                    manifest.results.push_back(r);
+
+                    MintRecommendation rec;
+                    rec.surfaceForm = hrun.text;
+                    rec.baseWord = cand.compound;
+                    rec.baseTokenId = compoundTokenId;
+                    rec.morphBits = 0;
+                    manifest.mintRecommendations.push_back(rec);
+                    ++hyphenVariants;
+                    continue;
+                }
+
+                // No compound — check if components resolve individually
+                bool allPartsResolved = true;
+                for (const auto& p : cand.parts)
+                {
+                    AZStd::string pLower = p;
+                    for (auto& c : pLower)
+                        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c + 32);
+                    AZStd::string pid = m_vocabulary ? m_vocabulary->LookupWordLocal(p) : "";
+                    if (pid.empty())
+                        pid = m_vocabulary ? m_vocabulary->LookupWordLocal(pLower) : "";
+                    if (pid.empty()) { allPartsResolved = false; break; }
+                }
+
+                if (allPartsResolved)
+                {
+                    MintRecommendation rec;
+                    rec.surfaceForm = hrun.text;
+                    rec.baseWord = cand.compoundLower;
+                    rec.morphBits = 0;
+                    manifest.mintRecommendations.push_back(rec);
+                    ++hyphenDecomposed;
+                }
+
+                stillUnresolvedHyphen.push_back(cand.runIdx);
+            }
+
+            // Add back single-part runs (< 2 parts, never entered candidates)
+            {
+                AZStd::unordered_set<AZ::u32> candidateSet;
+                for (const auto& c : candidates) candidateSet.insert(c.runIdx);
+                for (AZ::u32 idx : unresolvedHyphen)
+                    if (!candidateSet.count(idx))
+                        stillUnresolvedHyphen.push_back(idx);
+            }
+
+            unresolvedHyphen = AZStd::move(stillUnresolvedHyphen);
+
+            if (hyphenVariants > 0 || hyphenDecomposed > 0)
+            {
+                fprintf(stderr, "[BedManager] Hyphen split: %u compound variants, %u decomposed suggestions, %zu still unresolved\n",
+                    hyphenVariants, hyphenDecomposed, unresolvedHyphen.size());
+                fflush(stderr);
+            }
         }
 
         // ---- Broadphase strip pass: morphemes + contractions (3-stage pipeline) ----
@@ -2900,7 +3287,14 @@ namespace HCPEngine
         AZStd::unordered_set<AZStd::string> lookupDone;  // dedup: base words already looked up
         bool shortPassSignalFired = false;  // pre-fetch fires once, after first length >= 4
 
-        for (AZ::u32 len : m_activeWordLengths)
+        // Build ascending length list from actual text runs (not pre-loaded vocab).
+        // Vocab is loaded on demand by ResolveLengthCycle → AdvanceEnvelopeLengthBatch.
+        AZStd::vector<AZ::u32> runLengths;
+        for (const auto& [len, indices] : runsByLength)
+            if (!indices.empty()) runLengths.push_back(len);
+        AZStd::sort(runLengths.begin(), runLengths.end());
+
+        for (AZ::u32 len : runLengths)
         {
             // Fetch indices for this length — may include synthetics injected by earlier (longer) cycles
             auto it = runsByLength.find(len);
@@ -3796,31 +4190,12 @@ namespace HCPEngine
 
             uniqueTokenSet.insert(tokenId);
 
-            // Record sparse morpheme/cap overlays — separate lists per morpheme.
-            // Cap flags
-            if (r.firstCap) out.morphemePositions["FIRST_CAP"].push_back(position);
-            if (r.allCaps)  out.morphemePositions["ALL_CAPS"].push_back(position);
-            // Morpheme bits — one entry per set bit
-            if (r.morphBits != 0)
-            {
-                static const struct { AZ::u16 bit; const char* name; } kBitNames[] = {
-                    { MorphBit::PLURAL,  "PLURAL"  },
-                    { MorphBit::POSS,    "POSS"    },
-                    { MorphBit::POSS_PL, "POSS_PL" },
-                    { MorphBit::PAST,    "PAST"    },
-                    { MorphBit::PROG,    "PROG"    },
-                    { MorphBit::THIRD,   "3RD"     },
-                    { MorphBit::NEG,     "NEG"     },
-                    { MorphBit::COND,    "COND"    },
-                    { MorphBit::WILL,    "WILL"    },
-                    { MorphBit::HAVE,    "HAVE"    },
-                    { MorphBit::BE,      "BE"      },
-                    { MorphBit::AM,      "AM"      },
-                };
-                for (const auto& bn : kBitNames)
-                    if (r.morphBits & bn.bit)
-                        out.morphemePositions[bn.name].push_back(position);
-            }
+            // Record only ALL_CAPS — author override, not derivable. FIRST_CAP is
+            // positional (capitalize-next after . ? ! \n) and Label tokens carry
+            // their intrinsic cap in entries.word, so the reader handles both.
+            // Other morpheme bits (PAST, PROG, etc.) are no longer written —
+            // every form is its own token. Possessives: future work.
+            if (r.allCaps) out.morphemePositions["ALL_CAPS"].push_back(position);
 
             out.tokenIds.push_back(tokenId);
             out.positions.push_back(position);

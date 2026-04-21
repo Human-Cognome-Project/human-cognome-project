@@ -541,15 +541,21 @@ namespace HCPEngine
         AZStd::string docPkStr = AZStd::to_string(docPk);
         size_t updated = 0;
 
+        // Helper: build "{1,2,3}" int-array literal for libpq text mode
+        auto buildIntArray = [](const AZStd::vector<int>& v) {
+            AZStd::string s = "{";
+            for (size_t k = 0; k < v.size(); ++k)
+            {
+                if (k) s += ',';
+                s += AZStd::to_string(v[k]);
+            }
+            s += '}';
+            return s;
+        };
+
         for (const auto& [tokenId, posList] : tokenPositions)
         {
-            // Encode positions as base-50
-            AZStd::string packed;
-            packed.resize(posList.size() * 4);
-            for (size_t j = 0; j < posList.size(); ++j)
-            {
-                EncodePosition(posList[j], packed.data() + j * 4);
-            }
+            if (posList.empty()) continue;
 
             // Resolve var tokens to decimal starter IDs
             AZStd::string starterTokenId;
@@ -578,68 +584,46 @@ namespace HCPEngine
                 starterTokenId = tokenId;
             }
 
-            // Split token into component parts for matching (avoids generated-column format mismatch)
             AZStd::string aParts[5];
             SplitTokenId(starterTokenId, aParts);
 
-            // UPDATE starter row with positions only
-            {
-                const char* params[] = { packed.c_str(), docPkStr.c_str(),
-                                          aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                                          aParts[3].c_str(), aParts[4].c_str() };
-                PGresult* res = PQexecParams(pg,
-                    "UPDATE pbm_starters SET positions = $1 "
-                    "WHERE doc_id = $2::integer AND a_ns = $3 AND a_p2 = $4 AND a_p3 = $5 AND a_p4 = $6 AND a_p5 = $7",
-                    7, nullptr, params, nullptr, nullptr, 0);
-
-                if (PQresultStatus(res) == PGRES_COMMAND_OK && atoi(PQcmdTuples(res)) > 0)
-                {
-                    ++updated;
-                    PQclear(res);
-                }
-                else
-                {
-                    PQclear(res);
-                    // No existing starter — INSERT position-only row
-                    const char* insParams[] = {
-                        docPkStr.c_str(),
-                        aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
-                        aParts[3].c_str(), aParts[4].c_str(),
-                        packed.c_str()
-                    };
-                    res = PQexecParams(pg,
-                        "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
-                        "VALUES ($1::integer, $2, $3, $4, $5, $6, $7)",
-                        7, nullptr, insParams, nullptr, nullptr, 0);
-                    if (PQresultStatus(res) == PGRES_COMMAND_OK)
-                        ++updated;
-                    else
-                        fprintf(stderr, "[HCPPbmWriter] StorePositions: INSERT failed for '%s': %s\n",
-                            starterTokenId.c_str(), PQerrorMessage(pg));
-                    PQclear(res);
-                }
-            }
+            // One row per (doc, token). Positions live as INTEGER[] on the row.
+            AZStd::string posArr = buildIntArray(posList);
+            const char* params[] = { docPkStr.c_str(),
+                                     aParts[0].c_str(), aParts[1].c_str(), aParts[2].c_str(),
+                                     aParts[3].c_str(), aParts[4].c_str(),
+                                     posArr.c_str() };
+            PGresult* res = PQexecParams(pg,
+                "INSERT INTO pbm_starters (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5, positions) "
+                "VALUES ($1::integer, $2, $3, $4, $5, $6, $7::integer[]) "
+                "ON CONFLICT (doc_id, a_ns, a_p2, a_p3, a_p4, a_p5) "
+                "DO UPDATE SET positions = EXCLUDED.positions",
+                7, nullptr, params, nullptr, nullptr, 0);
+            if (PQresultStatus(res) == PGRES_COMMAND_OK)
+                ++updated;
+            else
+                fprintf(stderr, "[HCPPbmWriter] StorePositions: starter upsert failed for '%s': %s\n",
+                    starterTokenId.c_str(), PQerrorMessage(pg));
+            PQclear(res);
         }
 
-        // Write morpheme/cap overlay lists to pbm_morpheme_positions
-        AZStd::string docPkStrM = AZStd::to_string(docPk);
-        for (const auto& [morpheme, posList] : morphemePositions)
+        // Caps: only ALL_CAPS needs storage (nominal — author override).
+        // FIRST_CAP is positional/derivable: capitalize-next after . ? ! \n + Label
+        // tokens carry intrinsic caps in entries.word. Other morpheme bits are no
+        // longer written — every form is its own token.
+        // Possessives: future work.
+        auto capIt = morphemePositions.find("ALL_CAPS");
+        if (capIt != morphemePositions.end() && !capIt->second.empty())
         {
-            if (posList.empty()) continue;
-            AZStd::string packed;
-            packed.resize(posList.size() * 4);
-            for (size_t j = 0; j < posList.size(); ++j)
-                EncodePosition(posList[j], packed.data() + j * 4);
-
-            const char* params[] = { docPkStrM.c_str(), morpheme.c_str(), packed.c_str() };
+            AZStd::string posArr = buildIntArray(capIt->second);
+            const char* params[] = { posArr.c_str(), docPkStr.c_str() };
             PGresult* res = PQexecParams(pg,
-                "INSERT INTO pbm_morpheme_positions (doc_id, morpheme, positions) "
-                "VALUES ($1::integer, $2, $3) "
-                "ON CONFLICT (doc_id, morpheme) DO UPDATE SET positions = EXCLUDED.positions",
-                3, nullptr, params, nullptr, nullptr, 0);
+                "UPDATE pbm_documents SET all_caps_positions = $1::integer[] "
+                "WHERE id = $2::integer",
+                2, nullptr, params, nullptr, nullptr, 0);
             if (PQresultStatus(res) != PGRES_COMMAND_OK)
-                fprintf(stderr, "[HCPPbmWriter] morpheme_positions INSERT failed ('%s'): %s\n",
-                    morpheme.c_str(), PQerrorMessage(pg));
+                fprintf(stderr, "[HCPPbmWriter] all_caps_positions UPDATE failed: %s\n",
+                    PQerrorMessage(pg));
             PQclear(res);
         }
 

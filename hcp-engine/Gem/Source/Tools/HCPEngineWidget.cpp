@@ -803,14 +803,23 @@ namespace HCPEngine
 
         AZStd::string azDocId(m_selectedDocId.toUtf8().constData());
 
-        auto tokenIds = engine->GetPbmReader().LoadPositions(azDocId);
-        if (tokenIds.empty())
+        AZStd::vector<AZStd::string> words;
+        AZStd::vector<AZ::u32> modifiers;
+        bool loaded = engine->GetPbmReader().LoadPositionsWithModifiers(
+            azDocId, engine->GetVocabulary(), words, modifiers);
+        if (!loaded || words.empty())
         {
             m_textView->setPlainText("(no positions stored)");
             return;
         }
 
-        AZStd::string text = TokenIdsToText(tokenIds, engine->GetVocabulary());
+        // Reconstruct text from words (modifiers applied later)
+        AZStd::string text;
+        for (size_t i = 0; i < words.size(); ++i)
+        {
+            if (i > 0) text += " ";
+            text += words[i];
+        }
         m_textView->setPlainText(
             QString::fromUtf8(text.c_str(), static_cast<int>(text.size())));
     }

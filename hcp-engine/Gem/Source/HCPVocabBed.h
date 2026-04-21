@@ -79,6 +79,59 @@ namespace HCPEngine
         AZStd::vector<AZStd::unordered_map<AZStd::string, AZ::u32>> tierLookup;
     };
 
+    // ---- RulePack: partial-match patterns for broadphase GPU filtering ----
+    //
+    // The GPU runs all candidate words against ~50 suffix/prefix/contraction patterns
+    // in parallel. Patterns are partially filled: suffix right-aligned, prefix left-aligned.
+    // \0 positions are inert (Z=0, no matching forces). CheckPartialSettlement only checks
+    // non-\0 positions. This is the fast broadphase — groups words by matched pattern.
+    //
+    // After GPU grouping, CPU mechanically generates ALL possible strip bases from each
+    // matched group (no existence check). Bases feed into ascending-length exact PBD
+    // which filters to valid words. Shortest valid base wins naturally.
+
+    struct RulePackEntry
+    {
+        AZStd::string pattern;       // The suffix/prefix text (e.g. "ing", "un", "n't")
+        AZStd::string morpheme;      // Morpheme name (e.g. "PROGRESSIVE", "PFX_NEG", "CONTRACTION")
+        AZ::u16 morphBits = 0;       // MorphBit value for this rule
+        AZ::u32 patternLen = 0;      // Length of the pattern text
+        bool isSuffix = true;        // True = right-aligned, false = left-aligned (prefix)
+        AZStd::string stripSuffix;   // For suffix rules: what was added to the base
+        AZStd::string addBase;       // For suffix rules: what to restore on base (e.g. "y" for -ies)
+        AZStd::string stripPrefix;   // For prefix rules: the prefix to remove
+        AZStd::string secondWord;    // For contractions: the second constituent word (e.g. "not")
+    };
+
+    struct RulePack
+    {
+        AZ::u32 cellLength = 0;               // Word length this pack targets
+        AZ::u32 totalPatternParticles = 0;     // Total static particles
+        AZ::u32 patternCount = 0;              // Number of rule patterns
+
+        std::vector<float> positions;          // Flat: [x,y,z,w] * totalPatternParticles
+        std::vector<AZ::u32> phases;           // All phase 0
+
+        AZStd::vector<RulePackEntry> rules;    // Pattern metadata (parallel to particle layout)
+        AZStd::vector<AZ::u32> activePositionCount;  // Non-\0 positions per pattern
+    };
+
+    // ---- Strip candidate: CPU-generated base from a GPU-matched group ----
+    //
+    // Multiple candidates per source run are expected (all applicable rules fire).
+    // Ascending-length PBD resolution is the existence check.
+    // Shortest valid base wins naturally (ascending order).
+
+    struct StripCandidate
+    {
+        AZ::u32 sourceRunIndex;      // Original inflected/contracted run
+        AZStd::string baseWord;      // Stripped base form (goes into ascending resolution)
+        AZStd::string secondWord;    // For contractions: the second word (e.g. "not")
+        AZStd::string morpheme;      // Morpheme name from the rule that generated this
+        AZ::u16 morphBits = 0;       // MorphBit for the rule (0 for contractions/prefixes)
+        bool isContraction = false;  // True = compound word split, false = morpheme strip
+    };
+
     // ---- Workspace: one reusable GPU particle system with its own PxScene ----
     //
     // Created once at startup. Vocab data overwritten per cycle via CUDA memcpy.
@@ -115,8 +168,18 @@ namespace HCPEngine
                                const AZStd::vector<AZ::u32>& indices,
                                AZ::u32 wordLength);
 
-        //! Check settlement against VocabPack's tier lookup.
+        //! Check settlement against VocabPack's tier lookup (exact match — all positions).
         void CheckSettlement(AZ::u32 tierIndex, const VocabPack& pack);
+
+        //! Load partial-match rule patterns into vocab region (same CUDA workflow as LoadVocabPack).
+        //! Patterns have \0 at inert positions — Z=0, no matching forces.
+        AZ::u32 LoadRulePack(const RulePack& pack);
+
+        //! Check partial settlement: only non-\0 pattern positions must settle.
+        //! Returns (slotIdx, patternIdx) pairs for matched runs.
+        //! Used by broadphase strip pass only — main resolution uses exact CheckSettlement.
+        void CheckPartialSettlement(const RulePack& pack,
+            AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>>& matches);
 
         //! Phase-only flip for unresolved stream particles to next tier.
         void FlipToTier(AZ::u32 nextTier);
@@ -203,10 +266,9 @@ namespace HCPEngine
         AZStd::vector<int> positions;            // Position number per slot
         AZStd::vector<AZStd::string> entityIds;  // Entity ID per slot (empty = not part of entity)
 
-        // Sparse morpheme/cap overlay lists — one entry per morpheme that has any occurrences.
-        // Keys: 'PAST','PLURAL','PROG','3RD','POSS','NEG','WILL','HAVE','BE','AM','COND',
-        //       'FIRST_CAP','ALL_CAPS'. Values: sorted position lists.
-        // Written to pbm_morpheme_positions; applied as independent passes during reconstruction.
+        // Sparse cap overlay lists. Only 'FIRST_CAP' and 'ALL_CAPS' are written today
+        // (every form is its own token, so morpheme bits like PAST/PROG/etc. are no longer needed).
+        // Possessive handling is future work. Written to pbm_cap_flags.
         AZStd::unordered_map<AZStd::string, AZStd::vector<int>> morphemePositions;
         int totalSlots = 0;                       // Total position slots in document
         size_t entityAnnotations = 0;             // Count of tokens with entity annotations
@@ -333,10 +395,29 @@ namespace HCPEngine
         //! Common vocab checked against all remaining unresolved runs.
         void ResolveLengthCycle(
             AZ::u32 wordLength,
-            const AZStd::vector<CharRun>& runs,
+            AZStd::vector<CharRun>& runs,
             const AZStd::vector<AZ::u32>& runIndices,
             AZStd::vector<ResolutionResult>& results,
             AZStd::vector<AZ::u32>& unresolvedIndices);
+
+        //! Build a RulePack for one cell length from loaded inflection/prefix rules.
+        //! Suffix patterns right-aligned, prefix patterns left-aligned. ~50 patterns.
+        RulePack BuildRulePack(AZ::u32 cellLength) const;
+
+        //! Run GPU broadphase: partial-match all candidate runs against rule patterns.
+        //! Returns (runIndex, patternIndex) matches grouped by pattern.
+        //! This is the fast parallel filter — GPU identifies which suffix/prefix matched.
+        AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>> RunBroadphaseFilter(
+            const AZStd::vector<CharRun>& runs,
+            const AZStd::vector<AZ::u32>& candidateIndices);
+
+        //! Generate ALL possible strip bases from GPU-matched groups (CPU, no existence check).
+        //! Takes GPU filter results + rules, mechanically strips to produce base words.
+        //! Multiple candidates per run expected; ascending PBD filters to valid bases.
+        AZStd::vector<StripCandidate> GenerateStripCandidates(
+            const AZStd::vector<CharRun>& runs,
+            const AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>>& gpuMatches,
+            const AZStd::unordered_map<AZ::u32, RulePack>& rulePacksByLength) const;
 
         bool m_initialized = false;
         physx::PxPhysics* m_physics = nullptr;
@@ -379,9 +460,8 @@ namespace HCPEngine
         // Reset at the start of each Resolve() call. Updated as multi-slice loop advances.
         std::unordered_map<AZ::u32, int> m_lengthCursorByLen;
 
-        //! Reset per-length batch cursors at the start of each Resolve() call.
-        //! LMDB hot window is not modified — it keeps its initial high-priority entries
-        //! for single-word lookups throughout the document.
+        //! Reset per-resolve state: clear phase cursor, per-length cursors, and vocab.
+        //! Each new document starts from the highest-priority phase.
         void ResetWindowToStart();
 
         //! Load the next batch of vocab for a specific word length directly from the
@@ -390,11 +470,31 @@ namespace HCPEngine
         //! Per-length OFFSET stays small (max ~80K) — no global 535K scan.
         bool AdvanceEnvelopeLengthBatch(AZ::u32 wordLength);
 
+        //! Load the next priority-ordered phase from the warm set across ALL word lengths.
+        //! Each phase corresponds to one child envelope's contribution (Labels, special
+        //! chars, common vocab, etc.). Entries are distributed into m_vocabByLength.
+        //! Returns true if entries were loaded, false if warm set exhausted.
+        bool AdvancePhase();
+
         //! Evict oldest slot, feed next slot, rebuild in-memory vocab.
         //! (Legacy global cursor — kept for envelope changes. Not used in resolution loop.)
         bool AdvanceEnvelopeSlice();
 
-        // Active word lengths (sorted descending)
+        //! Check possessive forms against current vocab. Integrated into resolution passes.
+        //! For runs ending in 's or s': try existing possessive → if miss, strip and
+        //! submit base to current pass. Generates MintRecommendations for unminted forms.
+        void CheckPossessives(
+            const AZStd::vector<CharRun>& runs,
+            const AZStd::vector<AZ::u32>& runIndices,
+            AZStd::vector<ResolutionResult>& results,
+            AZStd::vector<AZ::u32>& baseSubmissions,
+            AZStd::vector<MintRecommendation>& recommendations);
+
+        // Phase cursor for global priority-ordered warm set traversal.
+        // Reset at start of each Resolve(). Advances by child-envelope-sized batches.
+        int m_phaseCursor = 0;
+
+        // Active word lengths (sorted ascending for resolve order)
         AZStd::vector<AZ::u32> m_activeWordLengths;
     };
 

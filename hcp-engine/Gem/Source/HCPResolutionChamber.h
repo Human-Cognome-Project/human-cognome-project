@@ -25,22 +25,31 @@ namespace HCPEngine
     };
 
     // ---- Morphological bit field (16-bit) ----
-    // Each bit records one inflection/contraction applied during resolution.
+    // Each bit records one inflection applied during resolution.
     // Stored as positional modifiers alongside token_id — zero for bare tokens.
+    //
+    // Bits 0-5: True morphological inflections (stay)
+    // Bits 6-11: DEPRECATED (2026-03-17) — Contractions are compound words, not
+    //   morphemes. "don't" = "do" + "not" (two tokens), NOT "do" + NEG bit.
+    //   These bits will be repurposed when broadphase strip pass is implemented.
+    //   Possessive (bit 1) is the exception — it IS a true morpheme.
+    // Bits 12-15: Variant surface form flags (stay)
     namespace MorphBit
     {
+        // True morphological inflections
         static constexpr AZ::u16 PLURAL   = 1 << 0;   // -s (plural)
-        static constexpr AZ::u16 POSS     = 1 << 1;   // 's (possessive)
+        static constexpr AZ::u16 POSS     = 1 << 1;   // 's (possessive) — true morpheme
         static constexpr AZ::u16 POSS_PL  = 1 << 2;   // s' (plural possessive)
         static constexpr AZ::u16 PAST     = 1 << 3;   // -ed
         static constexpr AZ::u16 PROG     = 1 << 4;   // -ing
         static constexpr AZ::u16 THIRD    = 1 << 5;   // -s (3rd person singular)
-        static constexpr AZ::u16 NEG      = 1 << 6;   // n't
-        static constexpr AZ::u16 COND     = 1 << 7;   // 'd (would/had)
-        static constexpr AZ::u16 WILL     = 1 << 8;   // 'll
-        static constexpr AZ::u16 HAVE     = 1 << 9;   // 've
-        static constexpr AZ::u16 BE       = 1 << 10;  // 're
-        static constexpr AZ::u16 AM       = 1 << 11;  // 'm
+        // DEPRECATED — contractions are compound words, not morphemes
+        static constexpr AZ::u16 NEG      = 1 << 6;   // n't — DEPRECATED: compound word
+        static constexpr AZ::u16 COND     = 1 << 7;   // 'd  — DEPRECATED: compound word
+        static constexpr AZ::u16 WILL     = 1 << 8;   // 'll — DEPRECATED: compound word
+        static constexpr AZ::u16 HAVE     = 1 << 9;   // 've — DEPRECATED: compound word
+        static constexpr AZ::u16 BE       = 1 << 10;  // 're — DEPRECATED: compound word
+        static constexpr AZ::u16 AM       = 1 << 11;  // 'm  — DEPRECATED: compound word
         // Variant surface form flags (bits 12-15)
         static constexpr AZ::u16 VARIANT         = 1 << 12;  // Any variant surface form
         static constexpr AZ::u16 VARIANT_ARCHAIC = 1 << 13;  // Archaic/obsolete form
@@ -100,9 +109,21 @@ namespace HCPEngine
     };
 
     //! Full manifest from a resolution pass.
+    //! Recommendation to mint a new form (e.g., possessive not yet in DB).
+    //! Generated when a possessive fails resolution but its base resolves.
+    //! Stored in manifest for the minting system to process.
+    struct MintRecommendation
+    {
+        AZStd::string surfaceForm;   // "boys'", "Gilman's"
+        AZStd::string baseWord;      // "boys", "Gilman"
+        AZStd::string baseTokenId;   // token_id of the resolved base
+        AZ::u16 morphBits = 0;       // POSS or POSS_PL
+    };
+
     struct ResolutionManifest
     {
         AZStd::vector<ResolutionResult> results;
+        AZStd::vector<MintRecommendation> mintRecommendations;
         AZ::u32 totalRuns = 0;
         AZ::u32 resolvedRuns = 0;
         AZ::u32 unresolvedRuns = 0;

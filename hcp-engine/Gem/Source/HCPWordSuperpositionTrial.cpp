@@ -267,7 +267,10 @@ namespace HCPEngine
                 return;
             }
 
-            // Build stripped, lowercased core as UTF-8 string
+            // Build stripped core as UTF-8 string — PRESERVE ORIGINAL CASE.
+            // Words go through as presented. Resolution tries as-is first;
+            // lowercase fallback only when position allows positional caps.
+            // All-caps detection is tracked for the allCaps flag.
             AZStd::string core;
             AZStd::vector<AZ::u32> adjustedUpper;
             AZ::u32 charIdx = 0;
@@ -276,13 +279,11 @@ namespace HCPEngine
             {
                 AZ::u32 cp = currentCodepoints[j];
 
-                // Track uppercase before lowercasing (ASCII range only)
+                // Track uppercase positions (ASCII range only) — for allCaps detection
                 if (cp >= 'A' && cp <= 'Z')
-                {
                     adjustedUpper.push_back(charIdx);
-                    cp = cp + 32;  // ASCII lowercase
-                }
 
+                // Preserve original case — no lowercasing
                 AppendCodepointAsUtf8(core, cp);
                 ++charIdx;
             }
@@ -379,26 +380,14 @@ namespace HCPEngine
                     }
                 }
 
-                // Capitalization suppression: if preceded by sentence-ending punct
-                // or at stream start, caps are positional (not intrinsic Labels).
-                // Clear firstCap and allCaps — they're derivable from position.
-                bool suppressCap = IsCapitalizeNextCodepoint(lastPrecedingCodepoint);
-                if (suppressCap)
-                {
-                    run.firstCap = false;
-                    run.allCaps = false;
-                    // capMask cleared too — all caps were positional
-                    if (!run.capMask.empty())
-                    {
-                        // Only suppress if it was purely first-cap or all-caps pattern.
-                        // Mixed case like "McDonald's" after a period is unusual but
-                        // the firstCap was already false; keep capMask for unusual patterns.
-                        if (derivedAllCaps || (adjustedUpper.size() == 1 && adjustedUpper[0] == 0))
-                        {
-                            run.capMask.clear();
-                        }
-                    }
-                }
+                // Positional cap detection: if preceded by sentence-ending punct
+                // or at stream start, caps MAY be positional (not intrinsic Labels).
+                // Text is preserved as-is. The positionalCap flag tells the resolution
+                // loop: "if this doesn't resolve as-is, try lowercase fallback."
+                // allCaps is preserved regardless — it's meaningful for both Labels
+                // and reconstruction.
+                run.positionalCap = IsCapitalizeNextCodepoint(lastPrecedingCodepoint)
+                    && !adjustedUpper.empty();
 
                 runs.push_back(run);
             }

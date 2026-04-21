@@ -42,18 +42,13 @@ namespace HCPEngine
         // Pre-assigned token ID (for SingleChar, Numeric — resolved at transform layer)
         AZStd::string preAssignedTokenId;
 
-        // Normalization metadata — capitalization is positional, lowercase is canonical
-        bool firstCap = false;                   // First char was uppercase (Label pattern)
-        bool allCaps = false;                    // All chars were uppercase (e.g. "NASA")
+        // Capitalization metadata — text preserves original case.
+        // Resolution tries the word as-is first. Lowercase fallback only when
+        // positionalCap is set and the as-is lookup fails.
+        bool firstCap = false;                   // First char is uppercase
+        bool allCaps = false;                    // All chars uppercase (e.g. "NASA") — try both Label and lowercase
+        bool positionalCap = false;              // Caps may be positional (after ., ?, !, \n) — lowercase fallback
         AZStd::vector<AZ::u32> capMask;         // Run-relative positions that were uppercase
-        // Rules:
-        //   Normal lowercase  → firstCap=false, allCaps=false, capMask empty
-        //   Label ("The")     → firstCap=true,  allCaps=false, capMask empty
-        //   All caps ("NASA") → firstCap=false, allCaps=true,  capMask={0,1,2,3}
-        //   Unusual ("eBook") → firstCap=false, allCaps=false, capMask={1}
-        // Sentence-initial caps (after . ? ! \n or at stream pos 0) are suppressed:
-        //   firstCap and allCaps are cleared (positional, not intrinsic)
-        // Exception: I is always capitalized (intrinsic, never suppressed)
     };
 
     //! Result for a single vocabulary word candidate tested against a run.

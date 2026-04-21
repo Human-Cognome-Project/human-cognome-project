@@ -42,8 +42,8 @@ namespace HCPEngine
         int LastDocPk() const { return m_lastDocPk; }
 
         //! Store position data alongside PBM bonds.
-        //! Each unique token gets a base-50 encoded position list on its starter row.
-        //! Sparse morpheme/cap overlays written to pbm_morpheme_positions.
+        //! Each occurrence is one row in pbm_positions(starter_id, position).
+        //! Cap overlays (FIRST_CAP / ALL_CAPS) are written to pbm_cap_flags.
         //! @param morphemePositions Map of morpheme name → position list (from ScanManifestToPBM).
         bool StorePositions(
             int docPk,

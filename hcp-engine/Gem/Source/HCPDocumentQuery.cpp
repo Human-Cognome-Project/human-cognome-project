@@ -333,7 +333,7 @@ namespace HCPEngine
             PQclear(res);
         }
 
-        // Delete the document itself — ON DELETE CASCADE handles pbm_position_caps + pbm_morpheme_positions
+        // Delete the document itself — ON DELETE CASCADE handles pbm_positions (via pbm_starters) and pbm_cap_flags
         PGresult* res = PQexecParams(pg,
             "DELETE FROM pbm_documents WHERE id = $1::integer",
             1, nullptr, params, nullptr, nullptr, 0);
