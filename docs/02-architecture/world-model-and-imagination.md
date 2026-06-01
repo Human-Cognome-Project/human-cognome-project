@@ -17,7 +17,7 @@ grounding), 38 (imagination engine), 253 (Newtonian space for predictive percept
 
 It is emulatable at any level of detail; "what's relevant now" is an LoD-scoped emulation of
 it, not a second object. Cognition proceeds by *stepping* this model forward — each cognitive
-cycle (see [../04-engine/cognitive-cycle.md](../04-engine/cognitive-cycle.md)) advances the
+cycle (see [the engine overview](../04-engine/overview.md)) advances the
 world model.
 
 ---
@@ -38,7 +38,7 @@ is **constructibility**: understanding a word is being able to emulate what it r
 > distinct things. (1) This page's **3D Newtonian world-model space** — physics as an actual
 > simulation of physical reality. (2) The **physics-engine-as-db-substrate** — PBD resolution
 > as a join-evaluator over *concepts* (claims 42/192, see
-> [../04-engine/resolution-furnace.md](../04-engine/resolution-furnace.md)). Both are real and
+> [the engine overview](../04-engine/overview.md)). Both are real and
 > separate. Don't conflate the world-model simulation with the concept-resolution furnace.
 
 ---
@@ -102,7 +102,7 @@ world model to the intelligence equation — see [intelligence.md](intelligence.
 
 ## See also
 
-- [../04-engine/cognitive-cycle.md](../04-engine/cognitive-cycle.md) — how the world model is
-  stepped forward at ~90 Hz.
+- [../04-engine/overview.md](../04-engine/overview.md) — how the world model is stepped forward at
+  ~90 Hz (the cognitive cycle, light overview).
 - [interface-and-tom.md](interface-and-tom.md) — the world model as held through a bounded
   interface, and the discipline of never presuming the interface is the whole of reality.

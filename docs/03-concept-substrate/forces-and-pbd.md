@@ -22,8 +22,8 @@ is no separate orchestration layer deciding when a structure is "done."
 Nested explication sub-structures (deep molecule decomposition) ride on PhysX articulation trees
 (`PxArticulationReducedCoordinate`, claim 214): each articulation link is a sub-molecule carrying
 its own predicate, and the reduced-coordinate solver propagates force correctly through the tree
-to essentially unbounded depth. (Engine substrate detail is in
-[../04-engine/resolution-furnace.md](../04-engine/resolution-furnace.md).)
+to essentially unbounded depth. (The deep engine substrate detail is deferred — see
+[the engine overview](../04-engine/overview.md) and its deferral note, claim 292.)
 
 ---
 
@@ -74,9 +74,9 @@ current-state review.
 ## Where this connects
 
 - The **substrate channels** that actually carry force/relational parameters on the GPU
-  (velocity.w, 20-bit phase-group equality, the GPU-readable PBDMaterial subset) are documented as
-  engine detail in [../04-engine/resolution-furnace.md](../04-engine/resolution-furnace.md)
-  (claim 216).
+  (velocity.w, 20-bit phase-group equality, the GPU-readable PBDMaterial subset; claim 216) are
+  PhysX-specific engine detail. Deep engine documentation is deferred (claim 292) — see
+  [the engine overview](../04-engine/overview.md); the channel specifics live in the claim-graph.
 - Force evaluation feeds the **inference** (determination) side, not the resolution furnace — see
   [../04-engine/overview.md](../04-engine/overview.md) for the two-sides split.
 

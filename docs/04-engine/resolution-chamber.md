@@ -131,8 +131,7 @@ preserves the data and stops gracefully.
 ## Priority order is an envelope factor
 
 The order in which categories are tried is **not fixed** — it is part of what the active
-[envelope](cognitive-cycle.md#what-napier-works-on-each-moment-the-envelope) contributes (claim 178,
-envelopes as fluid Venn structures). A novel envelope prioritizes Labels; a technical-manual envelope
+[envelope](overview.md) contributes (claim 178, envelopes as fluid Venn structures). A novel envelope prioritizes Labels; a technical-manual envelope
 raises hyphenated compounds and possessives; a poetry/archaic envelope raises `'tis`/`'twas`; a
 census envelope escalates Label comparison to length-distinguished earlier. Envelope-driven priority
 shapes how resolution flows for the active context.

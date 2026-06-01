@@ -81,9 +81,9 @@ Read the engine pages with this triage in mind:
 
 > **Honesty flag (claims 201/239):** the **current GEM internals are deferred pending rework.** The
 > engine described here is real and running, but its internal structure is expected to change in the
-> review phase, and PhysX-specific substrate facts (see
-> [resolution-furnace.md](resolution-furnace.md)) are current-state, not locked. Do not treat engine
-> internals as a frozen spec. Tracked on
+> review phase, and PhysX-specific substrate facts are current-state, not locked. Do not treat engine
+> internals as a frozen spec. Deep engine documentation is itself deferred (claim 292, see
+> [overview.md](overview.md)). Tracked on
 > [../06-status/deferred-and-open.md](../06-status/deferred-and-open.md).
 
 ---

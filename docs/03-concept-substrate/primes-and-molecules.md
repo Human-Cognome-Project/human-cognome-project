@@ -69,8 +69,8 @@ groundedness metric tied to confidence dynamics (see [explication.md](explicatio
 
 ## Particles and rigid bodies (the engine mapping)
 
-In the [resolution furnace](../04-engine/resolution-furnace.md) the prime/molecule taxonomy maps
-onto physics primitives (claims 54/55):
+In the resolution furnace (the GPU side of the [engine](../04-engine/overview.md)) the prime/molecule
+taxonomy maps onto physics primitives (claims 54/55):
 
 - a **prime** ↔ a **particle**;
 - a **molecule** ↔ a **rigid body** (nested rigid bodies for nested molecules);

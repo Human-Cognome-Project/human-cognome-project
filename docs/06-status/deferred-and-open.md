@@ -33,8 +33,8 @@ of the primitive-functions work in progress.
 > are deferred to later. This is squarely the math layer.* — claim 286
 
 This is the **acknowledged math gap.** The mechanism and a pragmatic human-set policy are in place
-**now** (load-balancing + need-driven frequency, claims 276/277, see
-[../04-engine/cognitive-cycle.md](../04-engine/cognitive-cycle.md#who-decides-what-gets-a-tick-the-deeming-policy));
+**now** (load-balancing + need-driven frequency, claims 276/277, summarized in
+[../04-engine/overview.md](../04-engine/overview.md));
 the **principled weighting math** is the deferred deeper layer. It is the determination-engine
 optimization/weighting math (confidence-as-softmax-over-curated-candidates, claim 79).
 
@@ -79,9 +79,10 @@ The engine is real and running (claim 201, see
 **current GEM internals are deferred pending rework.** Internal engine structure is expected to
 change in the review phase. Two consequences:
 
-- PhysX-specific substrate facts (velocity.w channel, phase-group predicate, `onAdvance()` callback;
-  see [../04-engine/resolution-furnace.md](../04-engine/resolution-furnace.md)) are **current-state,
-  not locked.** PhysX is one option within O3DE, not a lock-in (claim 239).
+- PhysX-specific substrate facts (velocity.w channel, phase-group predicate, `onAdvance()` callback)
+  are **current-state, not locked.** PhysX is one option within O3DE, not a lock-in (claim 239). Deep
+  engine documentation is itself deferred (claim 292, see
+  [../04-engine/overview.md](../04-engine/overview.md)).
 - `HCPPrimePhases.h` is a **flat old snapshot**; the canonical class structure is the per-type bit
   trees, which the engine has not yet caught up to (claim 60).
 
@@ -123,8 +124,8 @@ Distinct from the deferrals above, these are **designed but not yet built** (so 
 describe them as planned):
 
 - **Two-LMDB input/output split + ring-buffer reconciliation + RAM-bus loop optimization** (claims
-  119/121/282/283) — "planned, not yet implemented as of 2026-05-28." See
-  [../04-engine/reconciliation-loop.md](../04-engine/reconciliation-loop.md).
+  119/121/282/283) — "planned, not yet implemented as of 2026-05-28." Summarized in
+  [../04-engine/overview.md](../04-engine/overview.md) (deep engine docs deferred, claim 292).
 - **Higher-order multi-word construct detection** in the chamber (claim 183) — planned offshoot of
   existing chamber machinery. See
   [../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md#planned-higher-order-multi-word-constructs).

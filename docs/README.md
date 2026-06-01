@@ -43,13 +43,13 @@ archaeology, the shape of a word.
 - [forces-and-pbd.md](03-concept-substrate/forces-and-pbd.md) — *rough English skin, flagged*.
 - [punctuation-nonverbal.md](03-concept-substrate/punctuation-nonverbal.md)
 
-### [04-engine/](04-engine/)
-- [overview.md](04-engine/overview.md) — the three-part meta-structure.
-- [cognitive-cycle.md](04-engine/cognitive-cycle.md) — the 11 ms reconciliation beat.
-- [resolution-furnace.md](04-engine/resolution-furnace.md) — the GPU side.
-- [reconciliation-loop.md](04-engine/reconciliation-loop.md) — the LMDB loop (*planned*).
-- [resolution-chamber.md](04-engine/resolution-chamber.md) — text → tokens.
-- [implementation-baseline.md](04-engine/implementation-baseline.md) — the verified current engine.
+### [04-engine/](04-engine/) — *light, by design (claim 292)*
+Engine docs are kept light: Gem internals are in rework and much of the mechanics is forward-looking
+design. Deep per-subsystem pages are deferred (parked in `_archive/04-engine-deep-deferred/`).
+- [overview.md](04-engine/overview.md) — the three-part meta-structure (marks current vs future).
+- [implementation-baseline.md](04-engine/implementation-baseline.md) — the verified current engine
+  (what's actually built).
+- [resolution-chamber.md](04-engine/resolution-chamber.md) — text → tokens (the built ingestion path).
 
 ### [05-data-layer/](05-data-layer/)
 - [shards-and-schema.md](05-data-layer/shards-and-schema.md) — 10 shards, 1.494M entries, the

@@ -59,8 +59,8 @@ pervasive principle. [../02-architecture/principles.md](../02-architecture/princ
 **LoD (Level of Detail)** — the active scale at which divergences are surfaced and queries truncated.
 
 **LMDB** — the hot tier. Two separate memory-mapped stores (input + output), each single-writer /
-source-locked, zero-contention (claim 119).
-[../04-engine/reconciliation-loop.md](../04-engine/reconciliation-loop.md).
+source-locked, zero-contention (claim 119). *(Design intent; the optimized loop is planned — see
+[../04-engine/overview.md](../04-engine/overview.md).)*
 
 **Molecule** — a compound concept; lexicalized topology of primes, not an arbitrary set (claim 220).
 A prime is a depth-0 molecule (claim 222).

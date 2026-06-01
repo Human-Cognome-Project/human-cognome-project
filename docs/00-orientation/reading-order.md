@@ -39,14 +39,17 @@ Then, before going deep on any subsystem, skim:
 
 ## Track: the engine (engine devs)
 
-1. [../04-engine/overview.md](../04-engine/overview.md) — the three-part meta-structure.
-2. [../04-engine/cognitive-cycle.md](../04-engine/cognitive-cycle.md) — the 11 ms reconciliation beat.
-3. [../04-engine/resolution-furnace.md](../04-engine/resolution-furnace.md) — the GPU side.
-4. [../04-engine/reconciliation-loop.md](../04-engine/reconciliation-loop.md) — the LMDB loop.
-5. [../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md) — text → tokens.
-6. [../04-engine/implementation-baseline.md](../04-engine/implementation-baseline.md) — the verified
-   current engine.
-7. [../07-operations/build-and-run.md](../07-operations/build-and-run.md) — build + run.
+> Engine docs are intentionally **light** right now (Gem internals are in rework; much of the
+> mechanics is forward-looking design — claim 292). Start with the overview and the *built* state;
+> the deep per-subsystem pages are deferred until the rework settles.
+
+1. [../04-engine/overview.md](../04-engine/overview.md) — the three-part meta-structure (light; marks
+   current vs future).
+2. [../04-engine/implementation-baseline.md](../04-engine/implementation-baseline.md) — the verified
+   current engine (what's actually built).
+3. [../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md) — text → tokens (the built
+   ingestion path).
+4. [../07-operations/build-and-run.md](../07-operations/build-and-run.md) — build + run.
 
 ---
 
