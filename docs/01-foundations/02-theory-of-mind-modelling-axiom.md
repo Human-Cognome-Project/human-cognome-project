@@ -18,9 +18,9 @@ This article establishes the **core philosophical foundation** of HCP: the disti
 - Proves that Digital Intelligence is achievable through proper modeling
 
 **Direct influence on HCP design:**
-- The entire [Architecture](../spec/architecture.md) is built on creating a Gedankenmodell, not Phänomenmodell
-- [Pair-Bond Maps](../spec/pair-bond-maps.md) must execute the logic of bonding, not simulate its output
-- The [Roadmap](../roadmap.md) Phase 2 explicitly addresses Theory of Mind modeling
+- The entire [Architecture](../02-architecture/keystone-db-functions.md) is built on creating a Gedankenmodell, not Phänomenmodell
+- [The resolution chamber](../04-engine/resolution-chamber.md) must execute the logic of bonding, not simulate its output
+- The [Roadmap](../../ROADMAP.md) Phase 2 explicitly addresses Theory of Mind modeling
 - The [Charter](../../charter.md) Article 3 derives from this: "Building for All Sentience"
 
 ---
@@ -241,7 +241,7 @@ This article is the **theoretical spine** of the entire Human Cognome Project. E
 
 ### HCP as Gedankenmodell
 
-See [Architecture](../spec/architecture.md): HCP must **execute the logic** of cognition, not simulate its outputs.
+See [Architecture](../02-architecture/keystone-db-functions.md): HCP must **execute the logic** of cognition, not simulate its outputs.
 
 - **Pair-Bond Maps** execute bonding logic (recurrence counting, structural relationships)
 - **Physics engine** executes force calculations (not statistical approximation)
@@ -250,7 +250,7 @@ See [Architecture](../spec/architecture.md): HCP must **execute the logic** of c
 
 ### Theory of Mind in HCP
 
-See [Roadmap](../roadmap.md) Phase 2: Identity and Theory of Mind
+See [Roadmap](../../ROADMAP.md) Phase 2: Identity and Theory of Mind
 
 HCP explicitly models:
 - Personality DB (seed + living layer)

@@ -19,8 +19,8 @@ This article presents the **aspirational vision** of what HCP's structural appro
 - "Universal translator" grounded in structural cognition, not statistical patterns
 
 **Connection to HCP architecture:**
-- [NSM Primitives](../spec/architecture.md) as universal semantic foundation
-- [Token Addressing](../spec/token-addressing.md) namespace supports infinite extensibility
+- [NSM Primitives](../03-concept-substrate/primes-and-molecules.md) as universal semantic foundation
+- [Token / namespace addressing](../05-data-layer/shards-and-schema.md) supports infinite extensibility
 - Languages as "coordinate systems for the map of cognition"
 - Multi-modality support (Phase 4) extends beyond human language
 
@@ -92,7 +92,7 @@ Learn more about the Human Cognome Project. Help us preserve and reconstruct the
 
 ### Languages as Coordinate Systems
 
-This article's core metaphor - "languages as coordinate systems for the map of cognition" - is precisely how HCP's [Token Addressing](../spec/token-addressing.md) works.
+This article's core metaphor - "languages as coordinate systems for the map of cognition" - is precisely how HCP's [token / namespace addressing](../05-data-layer/shards-and-schema.md) works.
 
 Each language gets namespace allocation:
 - English: Dedicated shard with 1.25M tokens
@@ -108,12 +108,12 @@ HCP's structural approach enables perfect preservation:
 
 1. **Algorithmic storage** - Every word, morpheme, phoneme as explicit tokens
 2. **Rule-based assembly** - Grammar as data, not statistical inference
-3. **Lossless reconstruction** - [Pair-Bond Maps](../spec/pair-bond-maps.md) prove comprehension
+3. **Lossless reconstruction** - the [resolution chamber and PBMs](../04-engine/resolution-chamber.md) prove comprehension
 4. **Cross-modal encoding** - Written, spoken, signed forms all mappable
 
-Current status (from [docs/status.md](../status.md)):
-- English: 1.25M tokens fully ingested
-- Names: 150K cross-linguistic name components
+Current status (see [docs/06-status/status.md](../06-status/status.md)):
+- English: ~1.494M entries fully ingested
+- Names are Proper-Noun *constructs*, not a separate shard (the old names shard was eliminated)
 - Framework ready for additional languages
 
 ### Extinct Language Reconstruction
@@ -133,7 +133,7 @@ The article's vision of "cognomic reassembly" is achievable through:
 
 ### Cross-Species Communication
 
-From [Charter](../../charter.md) Article 3 and [Roadmap](../roadmap.md) Phase 4:
+From [Charter](../../charter.md) Article 3 and [Roadmap](../../ROADMAP.md) Phase 4:
 
 **Multi-modality support** will extend HCP beyond human language:
 - Audio modality: Animal vocalizations, music, environmental sounds

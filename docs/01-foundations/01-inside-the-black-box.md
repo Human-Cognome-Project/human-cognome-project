@@ -104,7 +104,7 @@ The article reveals that LLM "dimensions" are:
 - Impossible to track or control precisely
 - Manipulated only through "vague nudges to probability"
 
-**HCP's response:** [Base-50 Token Addressing](../spec/token-addressing.md) with explicit namespace hierarchy. Every token has a definable address and traceable relationships.
+**HCP's response:** [Base-50 token / namespace addressing](../05-data-layer/shards-and-schema.md) with explicit namespace hierarchy. Every token has a definable address and traceable relationships.
 
 ### Why HCP Requires Lossless Reconstruction
 
@@ -113,7 +113,7 @@ The article shows that:
 - "Making sense" is statistical luck, not comprehension
 - Suppression never eliminates, only reduces probability
 
-**HCP's response:** [Pair-Bond Maps](../spec/pair-bond-maps.md) must enable lossless reconstruction. If you can't rebuild the original, you didn't understand it - you approximated it.
+**HCP's response:** [the resolution chamber and PBMs](../04-engine/resolution-chamber.md) must enable lossless reconstruction. If you can't rebuild the original, you didn't understand it - you approximated it.
 
 ### Why HCP Uses Explicit Rules, Not Training
 
