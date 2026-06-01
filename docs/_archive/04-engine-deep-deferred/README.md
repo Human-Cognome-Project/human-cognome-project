@@ -10,6 +10,12 @@ The active engine section keeps only a **light overview** plus the **built** sta
 are parked here until the engine rework settles, at which point they can be revised against the
 then-current implementation and promoted back.
 
+> **Sealed:** the three pages are compressed in
+> [`../deferred-deep-engine.tar.gz`](../deferred-deep-engine.tar.gz) (one level up) — kept out of the
+> live tree so they aren't read as current, same as the legacy archive. This README is the plaintext
+> pointer. To inspect: `tar -xzf ../deferred-deep-engine.tar.gz` in a scratch location. They remain in
+> git history as well.
+
 | Page | Covers | Claims |
 |------|--------|--------|
 | `cognitive-cycle.md` | the 11 ms reconciliation beat, modality streams, deeming policy | 265/267/268/269/270/274/275/276/277 |

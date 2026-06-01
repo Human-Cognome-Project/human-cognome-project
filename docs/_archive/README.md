@@ -4,11 +4,22 @@ These are the **pre-2026-06 documentation files**, retained for history. They we
 wholesale by the ground-up documentation rewrite (Patrick directive, claim 289) that built a fresh
 `docs/` tree (`00-orientation` … `07-operations`) sourced from the orchestrator claim-graph.
 
-> **Status: historical.** Nothing here is current. Where these files contain a fact, the current,
-> authoritative version is in the new tree (and ultimately in the `hcp_orchestrator` claim-graph).
-> They are kept rather than deleted so provenance is auditable — consistent with the project's
-> native-erasure / auditable-supersession ethos (claim 248). Several claims cite specific files here
-> in their `source_file` provenance.
+> **The legacy files are SEALED in [`legacy-docs-pre-2026-06.tar.gz`](legacy-docs-pre-2026-06.tar.gz)**
+> — deliberately compressed so that loose stale markdown is **not** sitting in the live tree where an
+> agent or reader could mistake it for current. This README is the plaintext pointer; the content is
+> in the tarball (and in git history). To inspect: `tar -xzf legacy-docs-pre-2026-06.tar.gz` in a
+> scratch location.
+
+> **Status: historical.** Nothing in that tarball is current. Where those files contain a fact, the
+> current, authoritative version is in the new tree (and ultimately in the `hcp_orchestrator`
+> claim-graph). They are kept rather than deleted so provenance is auditable — consistent with the
+> project's native-erasure / auditable-supersession ethos (claim 248). Several claims cite specific
+> files here in their `source_file` provenance.
+
+> **Also here:** [`deferred-deep-engine.tar.gz`](deferred-deep-engine.tar.gz) — the three deep engine
+> pages that were *deferred* (not superseded) per claim 292. See
+> [04-engine-deep-deferred/README.md](04-engine-deep-deferred/README.md) for why those are a separate,
+> promotable category rather than stale legacy.
 
 ---
 
