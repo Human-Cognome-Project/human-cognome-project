@@ -1,7 +1,21 @@
 # Decision 005: Decompose All Token ID References
 
+> ## ⚠ Partially superseded (claim 207)
+>
+> The **junction-table-for-every-array** approach below (the "zero TEXT[]" goal, ~18.4M junction
+> rows) was **abandoned/superseded**. Token-reference arrays are now stored as **native ARRAY
+> columns** directly on the row (`spelling`, `morphology`, `tokenized_etymology`, `form_of_tags`,
+> `alt_of_tags`); those junction tables are dropped. The migration-results tables below describe a
+> schema that **no longer exists** — read them as historical record.
+>
+> **What remains current:** the decomposition of a token's *own* address into `ns/p2/p3/p4/p5` +
+> generated `token_id` + compound B-tree index (that is **Decision 001**, still live). And the
+> *remaining debt* — array elements stored as full dotted strings — is real (claim 31). See
+> [../../05-data-layer/shards-and-schema.md](../../05-data-layer/shards-and-schema.md) for the
+> current live schema and [../deferred-and-open.md](../deferred-and-open.md) for the debt.
+
 **Date:** 2026-02-12
-**Status:** Implemented
+**Status:** Partially superseded — junction-table approach abandoned per claim 207 (see banner)
 **Shards affected:** hcp_core, hcp_english
 
 ## Context
