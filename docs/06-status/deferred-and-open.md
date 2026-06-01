@@ -10,6 +10,23 @@ The items below are sourced from Patrick-direct claims that explicitly mark them
 
 ---
 
+## 0. The active edge — and what lies just beyond it
+
+The **live work area** is *active*, not deferred: **defining the primitive db functions** — the
+core db elemental operations and how they combine (claim 291), so that every word resolves to db
+operations that translate to explication statements (see
+[../03-concept-substrate/explication.md](../03-concept-substrate/explication.md) and
+[status.md](status.md#active-work)). It is documented as current work, not as settled spec.
+
+The point for this page: claim 291 explicitly marks where the active work **hands off** to what is
+deferred — *"the deeper deeming/weighting math (claim 286) sits beyond it, deferred."* So the items
+below (especially item 1, the math gap) are precisely what lies **just past the current edge.** The
+seam between "being defined now" (the primitive functions) and "deferred to later" (the weighting
+math) is itself the thing to keep honest: do not present the math beyond the seam as if it were part
+of the primitive-functions work in progress.
+
+---
+
 ## 1. The deeming / weighting math — the math gap
 
 > *The deeper deeming mechanics — what gets evaluated, with what weight, in what circumstances —
