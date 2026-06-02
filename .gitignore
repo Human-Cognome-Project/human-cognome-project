@@ -39,3 +39,6 @@ data/vocab.lmdb/
 
 # Debug artifacts
 hcp-engine/backtrace.log
+
+# Research PDFs (large binaries; keep out of git — store externally)
+docs/research/*.pdf
