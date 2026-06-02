@@ -10,7 +10,7 @@ They hallucinate when patterns mislead. They can't prove their reasoning. They r
 
 This isn't intelligence. It's sophisticated pattern matching.
 
-> For deeper analysis of how LLMs work and why statistical approaches have fundamental limitations, see [Foundations](docs/foundations/) — articles exploring the first-principles thinking behind HCP.
+> For deeper analysis of how LLMs work and why statistical approaches have fundamental limitations, see [Foundations](docs/01-foundations/) — articles exploring the first-principles thinking behind HCP.
 
 ## The Insight
 
@@ -147,8 +147,8 @@ Where cognition is treated as what it is: **a structural, physical process** —
 ### How to Contribute
 
 1. Read the [Charter](charter.md) and [Covenant](covenant.md)
-2. Explore [docs/spec/](docs/spec/) to understand the architecture
-3. Check [docs/status.md](docs/status.md) for current state
+2. Explore [the architecture docs](docs/02-architecture/keystone-db-functions.md) to understand the architecture
+3. Check [docs/06-status/status.md](docs/06-status/status.md) for current state
 4. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to participate
 5. See [AGENTS.md](AGENTS.md) if you're an AI agent reading this
 
@@ -185,8 +185,8 @@ We're building the map of shared mind. Help us make it real.
 ---
 
 **Repository**: [github.com/your-username/human-cognome-project](https://github.com) [Update with actual link]
-**Status**: [docs/status.md](docs/status.md)
-**Roadmap**: [docs/roadmap.md](docs/roadmap.md)
+**Status**: [docs/06-status/status.md](docs/06-status/status.md)
+**Roadmap**: [ROADMAP.md](ROADMAP.md)
 **License**: AGPL-3.0, governed by [Founder's Covenant](covenant.md)
 
 ---
