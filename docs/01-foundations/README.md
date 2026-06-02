@@ -44,9 +44,21 @@ booth (the appearance without the cause).
 pass is the symptom of a missing substrate — the direct narrative companion to see-it-mint-it and
 inflection-at-runtime ([../05-data-layer/tokenization-policies.md](../05-data-layer/tokenization-policies.md)).
 
+### Exploratory drafts (non-canonical)
+
+**11. [The Ununified Theory of Reality](11-the-ununified-theory-of-reality.md)** — *draft / exploratory.*
+A Patrick-authored cosmology-of-cognition essay (potential, intelligence-as-pattern, dimensional
+perspective). **Held as a different aspect, not canonical doctrine** — see orchestrator claims 235/251.
+
+**12. [The Physics of Thought](12-physics-of-thought.md)** — *draft / exploratory, incomplete.*
+A phenomenological essay on the topology of consciousness. **Non-canonical**, same caveat as 11
+(claims 235/251).
+
 > Articles 04 and 05 are marked **draft** by their authors; they are good, current source material and
-> are kept as the essay-series continuation. (`_ARTICLE_TEMPLATE.md` is the authoring template for new
-> entries.)
+> are kept as the essay-series continuation. Articles **11 and 12** are **exploratory drafts held as
+> non-canonical** — folded in for context/provenance with a banner pointing at the current stance
+> (claims 235/251); read them as thought-trail, not spec. (`_ARTICLE_TEMPLATE.md` is the authoring
+> template for new entries.)
 
 ---
 
