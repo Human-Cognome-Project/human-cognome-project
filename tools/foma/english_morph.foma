@@ -1,0 +1,47 @@
+### english_morph.foma — HCP English morphological analyzer ###
+#
+# Root-list grammar (proof of concept). Roots are curated from known
+# clean sources, NOT from hcp_english. Root validation for the full
+# cleanup pass will use an external clean wordlist.
+#
+# Analysis direction (flookup default, apply up):
+#   surface form → base+tag
+# Generation direction (flookup -i, apply down):
+#   base+tag → surface form
+
+define V     [ a | e | i | o | u ] ;
+define DoubC [ b | d | f | g | m | n | p | r | t ] ;
+
+read lexc english_morph.lexc
+define Lexicon ;
+
+! ---- Alternation rules (match inflection_rules table) ----
+
+! Consonant doubling: CVC + ^V → double final consonant (run^ing → running)
+define ConsonantDoubling DoubC -> DoubC DoubC || V _ "^" V ;
+
+! Silent-e deletion before -ing / -ed (make^ing → making)
+define EDeletion e -> 0 || _ "^" [ i n g | e d ] ;
+
+! e-insertion after sibilants before -s (watch^s → watches)
+define EInsertion [..] -> e || [ s | z | x | c h | s h ] _ "^" s ;
+
+! y-replacement: -y → -ie before ^s, -y → -i before ^ed/^ing/^er/^est
+define YReplacement y -> i e || _ "^" s ,, y -> i || _ "^" [ e d | n g | e r | e s t ] ;
+
+! k-insertion: vowel+c + ^vowel (panic^ing → panicking)
+define KInsertion [..] -> k || V c _ "^" V ;
+
+! Remove morpheme boundary marker
+define Cleanup "^" -> 0 ;
+
+! Compose into final transducer
+regex Lexicon
+    .o. ConsonantDoubling
+    .o. EDeletion
+    .o. EInsertion
+    .o. YReplacement
+    .o. KInsertion
+    .o. Cleanup ;
+
+save stack english_morph.bin
