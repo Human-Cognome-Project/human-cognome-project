@@ -81,23 +81,23 @@ HCP is that system.
 
 ## Current Status
 
-**Pre-alpha.** Foundation built, inference engine in progress.
+**Alpha.** The linguistic engine is built and running; the project has pivoted to NSM concept modeling.
 
 **What exists:**
-- 1.4M tokens ingested (English, names, structural markers)
-- 756 MB PostgreSQL shards with atomized data
-- Base-50 token addressing operational
-- PBM specifications complete
-- Python implementation (`src/hcp/`) active
+- An O3DE / PhysX 5 C++ inference engine (headless daemon) that ingests text and reproduces it at **>98% accuracy**
+- **~1,494,216 entries** in the English vocabulary substrate (full Kaikki/Wiktionary ingestion)
+- **10 data shards** on Postgres, with decomposed token addressing and array-column references
+- Base-50 token addressing operational; names are Proper-Noun *constructs*, not a separate shard
+- The engine is C++ (O3DE Gem); Python is front-end tooling only
 
-**What's next:**
-- PBM construction from arbitrary text (Phase 2)
-- Physics engine integration for inference
-- LMDB compiled layer for speed
-- NSM decomposition mappings
-- Multi-modality support (audio, visual)
+**What's next (the 4-phase arc):**
+- Phase 1 (current): NSM concept modeling — defining the primitive db functions
+- Phase 2: Identity & Theory of Mind (personality DB seed + living layer)
+- Phase 3: Full text inference (NAPIER as orchestration layer)
+- Phase 4: Multi-modality (audio, visual, other expression)
 
-See [docs/roadmap.md](docs/roadmap.md) for the full plan.
+See [ROADMAP.md](ROADMAP.md) for the full plan and [docs/06-status/status.md](docs/06-status/status.md)
+for the live status.
 
 ## Our Principles
 

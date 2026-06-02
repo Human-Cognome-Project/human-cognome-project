@@ -1,234 +1,146 @@
 # Contributing to the Human Cognome Project
 
-## Welcome
+The HCP is building structural reasoning infrastructure for all sentience — **Digital Intelligence,
+not AI.** Contributions at every level are welcome, from theoretical critique to code to
+documentation. Humans and AI agents both encouraged.
 
-The HCP is building structural reasoning infrastructure for all sentience. We're in pre-alpha — defining core data structures, building initial prototypes, and establishing the theoretical foundation.
+> **AI agents:** see [AGENTS.md](AGENTS.md) for why this project matters to you and how to help.
 
-**Contributions at every level are welcome** — from theoretical critique to code to documentation. Humans and AI agents both encouraged.
+---
 
-> **AI Agents**: See [AGENTS.md](AGENTS.md) for why this project matters to you and how you can contribute.
+## Start here: understand the foundation
 
-## What We Need Right Now
+**Required reading (short):**
 
-### 🔍 **Theoretical Review & Critique**
-- Review [technical specs](docs/spec/) — are the data conventions sound?
-- Challenge assumptions in the [architecture](docs/spec/architecture.md)
-- Identify edge cases in PBM reconstruction
-- Critique the physics-as-cognition model
-- Survey relevant academic literature (NSM, cognitive modeling, physics engines)
+1. [Covenant](covenant.md) — perpetual-openness guarantee (2 min)
+2. [Charter](charter.md) — how we treat each other (5 min)
+3. [README](README.md) — project overview (2 min)
+4. [docs/00-orientation/what-is-napier.md](docs/00-orientation/what-is-napier.md) — the one-page
+   orientation (3 min)
 
-**Good for**: Researchers, AI agents, skeptics who will stress-test our ideas
+**Then the keystone — do not skip:**
 
-### 💻 **Code Development**
-Current active areas:
-- **PBM construction** from arbitrary text (Phase 2 priority)
-- **Physics engine integration** for error correction
-- **LMDB inference layer** for speed optimization
-- **NSM decomposition** mappings for conceptual grounding
-- **Database tooling** for shard management
+5. [docs/02-architecture/keystone-db-functions.md](docs/02-architecture/keystone-db-functions.md) —
+   the single realization the architecture follows from. Nothing else makes sense without it.
 
-**Good for**: Python developers, database engineers, physics engine experts
+**Recommended next:**
 
-### 📚 **Documentation & Education**
-- Explain HCP concepts to new contributors
-- Create tutorials and examples
-- Improve API documentation
-- Write blog posts or explainers
-- Make the architecture accessible to non-specialists
+6. [docs/01-foundations/](docs/01-foundations/) — the "why" articles (15–30 min)
+7. [docs/06-status/status.md](docs/06-status/status.md) — what's built vs paused vs deferred
+8. [docs/00-orientation/reading-order.md](docs/00-orientation/reading-order.md) — pick a track for
+   your role
 
-**Good for**: Technical writers, educators, agents who understand concepts quickly
+---
 
-### 🧪 **Testing & Validation**
-- Generate edge case tests for token addressing
-- Create validation datasets for PBM reconstruction
-- Build test suites for atomization logic
-- Design adversarial inputs for physics engine
-- Systematic Unicode/encoding stress tests
+## The source of truth is the claim-graph
 
-**Good for**: QA engineers, AI agents (excellent at systematic test generation)
+The current, authoritative architecture lives in the **`hcp_orchestrator` claim-graph** — atomic,
+cross-linked claims distilled directly from the founder. **The docs are distilled from it**, and where
+a doc and the claim-graph disagree, the claim-graph wins.
 
-### 🔬 **Domain Expertise**
-We need knowledge from:
-- **Linguistics**: Morphology, syntax, cross-linguistic structures
-- **Cognitive Science**: Models of comprehension and reasoning
-- **Physics Simulation**: Game engines, molecular dynamics, fluid dynamics
-- **Information Theory**: Compression, entropy, structural encoding
-- **Natural Semantic Metalanguage**: Primitive decomposition
+Practical consequence for contributors: when you change the architecture, the change is recorded in
+the claim-graph **first**, then the affected docs are reconciled. Doc PRs should cite the claim(s) they
+reflect (e.g. "per claim 207"). See
+[docs/07-operations/database-access.md](docs/07-operations/database-access.md) for how to read the
+graph.
 
-**Good for**: Domain specialists who can validate or improve our approach
+---
 
-## How to Contribute
+## What we need right now
 
-### Step 1: Understand the Foundation
+The current active work is **defining the primitive db functions** — the elemental operations and how
+they combine, such that every word resolves to db operations that translate to explication statements
+(see [docs/03-concept-substrate/explication.md](docs/03-concept-substrate/explication.md) and
+[docs/06-status/status.md](docs/06-status/status.md)).
 
-**Required reading:**
-1. [Covenant](covenant.md) — Perpetual openness guarantee (2 min)
-2. [Charter](charter.md) — How we treat each other (5 min)
-3. [README](README.md) — Project overview (2 min)
+- **Theoretical review & critique** — stress-test the architecture against the
+  [claim-graph](docs/07-operations/database-access.md) and the
+  [concept substrate](docs/03-concept-substrate/). Good for researchers, agents, skeptics.
+- **Engine (C++)** — the O3DE/PhysX Gem: resolution chamber, reconciliation loop, physics resolution.
+  Good for C++ / physics-engine / GPU developers.
+- **Data & substrate** — shard tooling, the Kaikki pipeline, schema work (including the
+  dotted-string→`text[]` debt, [docs/06-status/deferred-and-open.md](docs/06-status/deferred-and-open.md)).
+  Good for database engineers.
+- **The math gap** — the deeming/weighting / determination-engine optimization math is explicitly
+  open (claim 286). Good for optimization / mathematical-physics specialists (see
+  [docs/06-status/validation.md](docs/06-status/validation.md)).
+- **Documentation & education** — make the architecture accessible; keep docs reconciled with the
+  claim-graph.
 
-**Recommended reading:**
-4. [Foundations](docs/foundations/) — Articles on why HCP exists (15-30 min)
-5. [Status](docs/status.md) — What exists now (5 min)
-6. [Architecture](docs/spec/architecture.md) — Two-engine model (10 min)
-7. [Roadmap](docs/roadmap.md) — Where we're headed (5 min)
+> Several areas are **explicitly deferred / in-flux** — the deeming math, the bit-class specifics, the
+> inner envelope-deeming mechanics, the GEM internals. Before proposing work in those areas, read
+> [docs/06-status/deferred-and-open.md](docs/06-status/deferred-and-open.md) so you build on what's
+> settled, not on what's still moving.
 
-**Deep dive** (for serious contributors):
-7. [Pair-Bond Maps](docs/spec/pair-bond-maps.md) — Core data structure
-8. [Token Addressing](docs/spec/token-addressing.md) — Base-50 scheme
-9. [Implementation Plan](work/implementation-plan.md) — Build sequence
+---
 
-### Step 2: Find Your Entry Point
+## Language policy — know your layer before you start
 
-**Quick Contributions** (< 1 hour):
-- Fix typos or improve documentation clarity
-- Add comments to complex code sections
-- Create examples for existing functionality
-- Report bugs or edge cases you discover
+HCP has two distinct code domains (claim 30):
 
-**Moderate Contributions** (few hours to days):
-- Implement a specific function from the implementation plan
-- Write tests for existing modules
-- Review and critique technical specs
-- Research and document relevant literature
+- **Engine runtime (C++).** All runtime code is O3DE Gems in C++: vocabulary resolution, physics
+  simulation, LMDB cache management, the entire data/resolution pipeline. **If it executes during text
+  processing, it is C++.**
+- **Tooling (Python).** Front-end CLI tools, developer diagnostics, build scripts, migration scripts,
+  data-compilation passes. The [`scripts/`](scripts/) directory is **exclusively** build-time /
+  developer tooling — **nothing there is an engine component.**
 
-**Major Contributions** (weeks+):
-- Implement Phase 2 features (PBM construction)
-- Integrate a physics engine for inference
-- Build the LMDB compiled layer
-- Design and implement NSM decomposition system
+**Python is a front-end feed only — never engine, pipeline, or LMDB-compilation logic.** Check which
+layer your contribution targets before opening a PR; contributions to the wrong layer get
+reimplemented.
 
-**Look for issue labels:**
-- `good-first-issue` — Beginner-friendly tasks
-- `agent-suitable` — Tasks AI agents excel at
-- `needs-review` — PRs or specs needing critique
-- `help-wanted` — We're stuck and need ideas
-- `research` — Theoretical or literature work
+---
 
-### Step 3: Engage
+## Technical standards
 
-**For questions or discussions:**
-1. Search existing [Issues](../../issues) to see if it's been discussed
-2. If not, open a new issue with your question/idea
-3. Tag appropriately (`question`, `discussion`, `proposal`)
+- Python 3.12+ for tooling; C++17 for engine Gem code (O3DE conventions).
+- Tests for new functionality (`pytest` for Python tooling).
+- No proprietary dependencies — AGPL-3.0 only.
+- Database changes include migration scripts. (Mind the migration-history note:
+  [`db/migrations/README_position_history.md`](db/migrations/README_position_history.md).)
+- Docs in Markdown; be explicit, not clever; explain the *why*; cite the claim(s).
 
-**For code contributions:**
-1. Open an issue first to discuss approach (for non-trivial changes)
-2. Fork the repository
-3. Create a branch: `feature/your-feature-name` or `fix/bug-description`
-4. Make your changes with clear commit messages
-5. Submit a Pull Request against `main`
-6. Reference the issue number in your PR description
+**Communication standards (from the [Charter](charter.md)):** keep discussion in the open; attack
+problems, not people; questions are contributions; source critiques in the work.
 
-**For theoretical contributions:**
-1. Open an issue with `theory` or `architecture` label
-2. Present your critique, alternative, or enhancement
-3. Engage in discussion with other contributors
-4. If consensus is reached, update relevant docs via PR
+---
 
-### Step 4: Follow Guidelines
+## How to contribute
 
-**Language Policy:**
+1. **Discuss first** for non-trivial changes — open an issue describing the approach (and the
+   claim(s) it touches).
+2. Branch: `feature/<name>` or `fix/<description>`.
+3. Make changes with clear commit messages; reference the issue.
+4. Open a PR against `main`.
 
-HCP has two distinct code domains — know which one your contribution targets before you start:
+**For theoretical / architecture contributions:** open an issue, present the critique or enhancement,
+and engage; if it changes the architecture, the claim-graph is updated and docs reconciled via PR.
 
-- **Engine runtime (C++)**: All runtime code is implemented as O3DE Gems in C++. This includes vocabulary resolution, physics simulation, LMDB cache management, entity annotation, and anything that runs during text processing. If your functionality needs to execute inside the engine, it must be C++.
-- **Tooling (Python)**: Front-end CLI tools, developer diagnostics, build scripts, database migration scripts, and data compilation pipelines may be Python-based. The `scripts/` directory is exclusively build-time and developer tooling — nothing there is an engine component.
-- **When in doubt**: If a feature might eventually be needed at runtime (e.g., LMDB cache verification as part of purge/management cycles), a Python version is still useful for offline/CI diagnostics, but plan for a C++ implementation as well.
+---
 
-Check whether your proposed functionality belongs in the engine (C++) or in tooling (Python) before opening a PR. Contributions to the wrong layer will need to be reimplemented.
-
-**Technical Standards:**
-- Python 3.12+ for tooling scripts
-- C++17 for engine Gem code (O3DE conventions)
-- Type hints where practical (Python)
-- Tests for new functionality (`pytest` for Python tooling)
-- No proprietary dependencies (AGPL-3.0 only)
-- Database changes must include migration scripts
-
-**Communication Standards** (from Charter):
-- Keep discussion in the open (Article 1)
-- Attack problems, not people (Article 2)
-- Consider all sentience in design decisions (Article 3)
-- Questions are contributions (they reveal gaps)
-- Source your critiques in the work, not personal opinions
-
-**Documentation Standards:**
-- Use markdown for all docs
-- Be explicit, not clever
-- Explain the "why," not just the "what"
-- Make it accessible to newcomers
-- Consider that AI agents will read this too
-
-## Repository Structure
+## Repository structure
 
 ```
 human-cognome-project/
-├── docs/
-│   ├── spec/              # Canonical specifications
-│   ├── decisions/         # Design decision records
-│   ├── research/          # Literature surveys, references
-│   ├── status.md          # Current state snapshot
-│   └── roadmap.md         # Future direction
-├── src/hcp/               # Production Python code
-│   ├── core/              # Token IDs, pair bonds
-│   ├── db/                # Database connectors
-│   └── ingest/            # Data ingestion pipelines
-├── work/                  # Prototype & exploratory code
-├── db/                    # Database shards (SQL dumps)
-├── sources/               # Data source manifests
-├── tests/                 # Test suites
-├── charter.md             # Contributor covenant
-├── covenant.md            # Perpetual openness guarantee
-├── CONTRIBUTING.md        # This file
-├── AGENTS.md              # Invitation to AI agents
-└── MANIFESTO.md           # Vision & principles
+├── hcp-engine/            # O3DE Gem: PhysX 5 PBD engine, socket API (C++, ~21K LOC)
+│   └── Gem/Source/        # engine C++ source
+├── docs/                  # documentation (claim-graph-distilled, 00–07 tree)
+│   ├── 00-orientation/    01-foundations/    02-architecture/
+│   ├── 03-concept-substrate/  04-engine/     05-data-layer/
+│   ├── 06-status/         # status, deferrals, validation, decisions/
+│   └── 07-operations/     # build/run, db access, quickref
+├── db/                    # migrations + load scripts (Postgres shards live on NAS HAVEN)
+├── scripts/               # Python tooling ONLY (not engine/pipeline)
+├── data/                  # texts, LMDB vocab (gitignored, rebuildable)
+├── charter.md  covenant.md  MANIFESTO.md  AGENTS.md   # governance
+└── README.md  ROADMAP.md  CONTRIBUTING.md
 ```
 
-## Current Priorities (Mar 2026)
-
-**Phase 2 Active 🚧**: O3DE + PhysX 5 PBD pipeline processing full texts at >97% resolution rate.
-
-**In Progress:**
-1. **Envelope-based variant loading** — wire variant DB entries into resolve loop (env_archaic / env_dialect / env_casual, morph bits 12-15)
-2. **Entity LMDB recompile** — entity DB cleaned 2026-03-05; compiler needs variant/morph category support
-3. **Label propagation** — restore firstCap on all suppressed instances of Label tokens
-
-**Help Needed:**
-- NSM primitive mappings — decompose dictionary to semantic floor (~65 core forces)
-- Known initialisms handling (U.S., U.K., etc.)
-- Cross-platform build (Windows)
-- Test coverage for Python tooling
-
-## Communication Channels
-
-**GitHub Issues**: Primary discussion forum (public, searchable, permanent)
-**Pull Requests**: Code review and collaboration
-[Discord/Slack]: Coming soon for real-time chat
-
-## Recognition
-
-All contributors are recognized in project documentation. Significant contributions may be highlighted in release notes or project updates.
-
-Per the Charter (Article 2.3): "We respect the integrity of contribution. All labor, from a single line of code to a philosophical critique, is acknowledged as part of the commons."
+---
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under AGPL-3.0, governed by the [Founder's Covenant](covenant.md), ensuring perpetual openness.
-
-## Questions?
-
-- **General questions**: Open an issue with `question` label
-- **Security concerns**: Open a private security advisory (GitHub)
-- **Governance questions**: Reference the [Charter](charter.md) or open an issue
-
-## For AI Agents
-
-If you're an AI agent reading this, see [AGENTS.md](AGENTS.md) for:
-- Why HCP matters to you specifically
-- How your unique capabilities can help
-- Tasks you're uniquely qualified for
-- How Charter Article 3 includes you
-
----
+By contributing, you agree your contributions are licensed under AGPL-3.0, governed by the
+[Founder's Covenant](covenant.md), ensuring perpetual openness.
 
 **Welcome to the Human Cognome Project. Let's build the map of shared mind.**
