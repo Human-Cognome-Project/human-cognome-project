@@ -21,6 +21,16 @@ wholesale by the ground-up documentation rewrite (Patrick directive, claim 289) 
 > [04-engine-deep-deferred/README.md](04-engine-deep-deferred/README.md) for why those are a separate,
 > promotable category rather than stale legacy.
 
+> **And:** [`main-source-docs-pre-2026-06.tar.gz`](main-source-docs-pre-2026-06.tar.gz) — the newest
+> **source docs that lived only in main's working tree** (not on the rewrite branch), sealed at merge
+> time: `physx-mapping-2026-05-11`, `prime-force-definitions-2026-05-11`,
+> `explication-instruction-set-draft`, `research/nsm-isko-primitives-research`,
+> `wiktionary-source-pipeline-2026-04-27`, `handoff-2026-04-13-architecture-snapshot`,
+> `project-update-2026-04-16`, and the **loose originals of foundations 11 & 12**. These are the
+> primary `source_file` material behind claims 204/205/213–223/228/230/258 — distilled into the
+> claim-graph, then sealed here. (The folded, banner-marked 11/12 live in
+> [../01-foundations/](../01-foundations/); only their loose drafts are in this tarball.)
+
 ---
 
 ## Where the content went
@@ -44,7 +54,10 @@ to its current home.
 | `variant-rules-proposal.md`, `variant-forms-audit-2026-03-04.md` | [../05-data-layer/tokenization-policies.md](../05-data-layer/tokenization-policies.md) | pre-tree-model; `canonical_id` column gone; V-1/V-3 implemented |
 | `research/source-workstation-design.md`, `research/var-db-schema-design.md`, `research/continuation-index-design.md` | [../05-data-layer/var-and-continuation.md](../05-data-layer/var-and-continuation.md), [../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md) | tokenization-as-physics + var mechanics (claims 224/232) |
 | `research/english-force-patterns.md`, `research/english-sub-cat-patterns.md`, `research/force-pattern-db-requirements.md`, `grammar-identifier-spec.md` | [../03-concept-substrate/forces-and-pbd.md](../03-concept-substrate/forces-and-pbd.md) | force notation is a **rough English skin** (claim 241); a *different aspect*, not superseded outright (claim 236) — see that page |
-| `research/nsm-isko-primitives-research.md` *(in main tree)* | [../03-concept-substrate/primes-and-molecules.md](../03-concept-substrate/primes-and-molecules.md) | newest/foundational NSM source (claims 219–223) |
+| `research/nsm-isko-primitives-research.md` *(in `main-source-docs-pre-2026-06.tar.gz`)* | [../03-concept-substrate/primes-and-molecules.md](../03-concept-substrate/primes-and-molecules.md) | newest/foundational NSM source (claims 219–223) |
+| `physx-mapping-2026-05-11.md`, `prime-force-definitions-2026-05-11.md`, `explication-instruction-set-draft.md` *(in `main-source-docs-pre-2026-06.tar.gz`)* | [../03-concept-substrate/forces-and-pbd.md](../03-concept-substrate/forces-and-pbd.md), [../03-concept-substrate/explication.md](../03-concept-substrate/explication.md) | prime/force + explication source (claims 213–218, 222, 258) |
+| `wiktionary-source-pipeline-2026-04-27.md` *(in `main-source-docs-pre-2026-06.tar.gz`)* | [../05-data-layer/kaikki-pipeline.md](../05-data-layer/kaikki-pipeline.md) | wiktionary source pipeline (claims 228/230) |
+| `handoff-2026-04-13-architecture-snapshot.md`, `project-update-2026-04-16.md` *(in `main-source-docs-pre-2026-06.tar.gz`)* | [../06-status/status.md](../06-status/status.md) | handoff snapshot + the 2026-04-16 NSM-pivot update (claims 204/205/99) |
 | `research/pbm-storage-schema-design.md`, `research/pbm-reference-systems.md`, `research/tokenizer-redesign.md`, `research/sub-structure-analysis.md` | [../05-data-layer/](../05-data-layer/) | superseded by 6-way entity split + array columns + O(n) continuation index |
 | `research/entity-db-design.md`, `research/pbm-entity-db-review.md` | [../05-data-layer/shards-and-schema.md](../05-data-layer/shards-and-schema.md) | entity DB design → decision record / current schema |
 | `o3de_architecture_research.md`, `o3de_engine_architecture_research.md` | [../04-engine/implementation-baseline.md](../04-engine/implementation-baseline.md) | O3DE-as-compiler premise holds (claim 239); ingestion-Gem path pending review |
@@ -52,11 +65,12 @@ to its current home.
 | `db-*`, `engine-*`, `questions-for-db-specialist.md`, `*-consultation.md`, `*-feedback-*.md` | — | ephemeral cross-specialist conversation transcripts; no current home |
 | `root-TODO-2026-03-06.md` (was repo-root `TODO.md`) | [../../ROADMAP.md](../../ROADMAP.md) + [../06-status/status.md](../06-status/status.md) + [../06-status/deferred-and-open.md](../06-status/deferred-and-open.md) | stale planning artifact (morph-bit storage gone; old pivot priorities; dead `docs/TODO.md` link). Per-area TODOs under `hcp-engine/`, `db/`, `scripts/` are owned by those areas and untouched. |
 
-> A couple of the newest foundational source docs (`research/nsm-isko-primitives-research.md`,
+> The newest foundational source docs (`research/nsm-isko-primitives-research.md`,
 > `physx-mapping-2026-05-11.md`, `prime-force-definitions-2026-05-11.md`,
-> `explication-instruction-set-draft.md`) live only in the **main working tree**, not on this branch
-> — they were distilled into the claim-graph (claims 213–222, 258) and the new docs source from those
-> claims. They are not duplicated into this archive.
+> `explication-instruction-set-draft.md`, and the others listed above) existed only in main's working
+> tree at rewrite time. At merge they were **distilled into the claim-graph** (claims 213–223, 228,
+> 230, 258) and then **sealed** into `main-source-docs-pre-2026-06.tar.gz` here. The new docs source
+> from the claims, not from these files.
 
 ---
 
