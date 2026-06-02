@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>HCP Source Workstation</DisplayName>
+    <Description>The HCP Source Workstation UI. Browse documents, edit metadata, query bonds, vars, and entities. Works offline for data browsing without the engine daemon.</Description>
+    <Version>0.1.0-alpha</Version>
+    <ReleaseDate>2026-03-06</ReleaseDate>
+    <Name>com.hcp.workstation</Name>
+    <Default>true</Default>
+    <ForcedInstallation>true</ForcedInstallation>
+    <Script>installscript.qs</Script>
+    <Licenses>
+        <License name="HCP License" file="license.txt"/>
+    </Licenses>
+</Package>

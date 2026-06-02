@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>HCP Engine Daemon</DisplayName>
+    <Description>The HCP physics engine daemon. Required for document ingestion, tokenization, and physics-based resolution (phys_resolve). Works with any database backend. GPU acceleration is optional — CPU fallback is available but may be slower for large workloads.</Description>
+    <Version>0.1.0-alpha</Version>
+    <ReleaseDate>2026-03-06</ReleaseDate>
+    <Name>com.hcp.engine</Name>
+    <Dependencies>com.hcp.workstation, com.hcp.vocab.lmdb</Dependencies>
+    <Default>false</Default>
+    <Script>installscript.qs</Script>
+</Package>

@@ -1,0 +1,10 @@
+HCP Source Workstation — Alpha Release
+
+Copyright (c) 2026 Human Cognome Project
+
+This software is provided for research and evaluation purposes.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are not permitted without explicit written permission
+from the copyright holder.

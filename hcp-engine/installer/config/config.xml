@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>HCP Source Workstation</Name>
+    <Version>0.1.0-alpha</Version>
+    <Title>HCP Source Workstation Installer</Title>
+    <Publisher>Human Cognome Project</Publisher>
+    <ProductUrl>https://github.com/Human-Cognome-Project/human-cognome-project</ProductUrl>
+    <InstallerWindowIcon>hcp_icon</InstallerWindowIcon>
+    <StartMenuDir>HCP Source Workstation</StartMenuDir>
+    <TargetDir>@HomeDir@/HCPWorkstation</TargetDir>
+    <MaintenanceToolName>HCPWorkstationMaintenance</MaintenanceToolName>
+    <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
+    <RepositorySettingsPageVisible>false</RepositorySettingsPageVisible>
+    <WizardStyle>Modern</WizardStyle>
+    <StyleSheet>style.qss</StyleSheet>
+</Installer>

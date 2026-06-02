@@ -1333,8 +1333,11 @@ namespace HCPEngine
         if (it != m_shardConns.end() && PQstatus(it->second) == CONNECTION_OK)
             return it->second;
 
-        AZStd::string connStr =
-            "host=192.168.68.60 port=5435 dbname=" + dbName + " user=hcp password=hcp_dev";
+        // Warm/local tier stays on physics; cold/authoritative shards live on NAS.
+        const bool isLocal = (dbName == "hcp_var" || dbName == "hcp_temp");
+        AZStd::string connStr = isLocal
+            ? ("host=localhost port=5432 dbname=" + dbName + " user=hcp password=hcp_dev")
+            : ("host=192.168.68.60 port=5435 dbname=" + dbName + " user=hcp password=hcp_dev");
 
         PGconn* conn = PQconnectdb(connStr.c_str());
         if (PQstatus(conn) != CONNECTION_OK)

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>PostgreSQL Backend</DisplayName>
+    <Description>Configure the workstation to connect to an existing PostgreSQL server. Use this for multi-user environments, concurrent ingestion, or NAS-hosted databases. Requires a running PostgreSQL server (not bundled).</Description>
+    <Version>0.1.0-alpha</Version>
+    <ReleaseDate>2026-03-06</ReleaseDate>
+    <Name>com.hcp.db.postgres</Name>
+    <Dependencies>com.hcp.workstation</Dependencies>
+    <Default>false</Default>
+    <Script>installscript.qs</Script>
+</Package>

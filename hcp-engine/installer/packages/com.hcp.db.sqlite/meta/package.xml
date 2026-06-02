@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>SQLite Database (Bundled)</DisplayName>
+    <Description>Bundled SQLite database backend. Self-contained, no server required. Suitable for single-user browsing and standard data manipulation. Recommended for most users.</Description>
+    <Version>0.1.0-alpha</Version>
+    <ReleaseDate>2026-03-06</ReleaseDate>
+    <Name>com.hcp.db.sqlite</Name>
+    <Dependencies>com.hcp.workstation</Dependencies>
+    <Default>true</Default>
+    <Script>installscript.qs</Script>
+</Package>

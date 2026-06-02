@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Vocabulary Database (LMDB)</DisplayName>
+    <Description>Pre-compiled LMDB vocabulary used for word resolution. Required for ingestion, tokenization, and physics operations. Not needed for browsing pre-existing data.</Description>
+    <Version>0.1.0-alpha</Version>
+    <ReleaseDate>2026-03-06</ReleaseDate>
+    <Name>com.hcp.vocab.lmdb</Name>
+    <Dependencies>com.hcp.workstation</Dependencies>
+    <Default>false</Default>
+    <Script>installscript.qs</Script>
+</Package>
