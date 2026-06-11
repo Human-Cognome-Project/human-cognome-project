@@ -28,31 +28,22 @@ bool GlossKernel::Connect()
     return true;
 }
 
-// Single-word lowercase common lemmas only (interim ingestion rule, claim 536).
-static bool isCommonWord(const char* w)
-{
-    if (!w || !*w) return false;
-    if (w[0] < 'a' || w[0] > 'z') return false;
-    for (const char* p = w; *p; ++p) {
-        char c = *p;
-        if (!((c >= 'a' && c <= 'z') || c == '\'' || c == '-')) return false;
-    }
-    return true;
-}
-
 bool GlossKernel::LoadLemmaMap()
 {
-    // Resolution target must itself be a lowercase single word; entry word likewise
-    // (capitalized entries are label-ring, preflight-excluded per claim 536).
-    const char* q =
+    // Resolution target must match the language's common-word predicate; uncapitalized
+    // unless keepCase (capitalized = label-ring heuristic, claim 536 — English/Latin only).
+    // min() per token: token_id is NOT unique in entries — aggregation keeps the
+    // mapping order-independent (seqscan arrival order is nondeterministic across runs).
+    std::string q =
         "SELECT token_id,"
-        "       lower(coalesce(form_of_word, alt_of_word, word))"
+        "       min(lower(coalesce(form_of_word, alt_of_word, word)))"
         "  FROM entries"
         " WHERE token_id IS NOT NULL"
-        "   AND word = lower(word)"
-        "   AND word ~ '^[a-z][a-z''-]*$'"
-        "   AND coalesce(form_of_word, alt_of_word, word) ~ '^[a-z][a-z''-]*$'";
-    PGresult* r = PQexec(m_conn, q);
+        "   AND word ~ '" + m_cfg.wordRegex + "'"
+        "   AND coalesce(form_of_word, alt_of_word, word) ~ '" + m_cfg.wordRegex + "'";
+    if (!m_cfg.keepCase) q += " AND word = lower(word)";
+    q += " GROUP BY token_id";
+    PGresult* r = PQexec(m_conn, q.c_str());
     if (PQresultStatus(r) != PGRES_TUPLES_OK) {
         std::fprintf(stderr, "lemma map: %s\n", PQerrorMessage(m_conn));
         PQclear(r); return false;
@@ -61,7 +52,7 @@ bool GlossKernel::LoadLemmaMap()
     m_tokenLemma.reserve(n * 2);
     for (int i = 0; i < n; ++i) {
         const char* lem = PQgetvalue(r, i, 1);
-        if (!isCommonWord(lem)) continue;
+        if (!lem || !*lem) continue;            // predicate already applied SQL-side
         m_tokenLemma.emplace(PQgetvalue(r, i, 0), Intern(lem));
     }
     PQclear(r);
@@ -72,19 +63,21 @@ bool GlossKernel::LoadLemmaMap()
 
 bool GlossKernel::LoadMapTables()
 {
-    PGresult* r = PQexec(m_conn, "SELECT exponent, core_token_id FROM cx_coremap");
+    const std::string& sfx = m_cfg.tableSuffix;
+    PGresult* r = PQexec(m_conn,
+        ("SELECT exponent, core_token_id FROM cx_coremap" + sfx).c_str());
     if (PQresultStatus(r) != PGRES_TUPLES_OK) { PQclear(r); return false; }
     for (int i = 0; i < PQntuples(r); ++i)
         m_coreMap[Intern(PQgetvalue(r, i, 0))] = PQgetvalue(r, i, 1);
     PQclear(r);
 
-    r = PQexec(m_conn, "SELECT word FROM cx_scaffold");
+    r = PQexec(m_conn, ("SELECT word FROM cx_scaffold" + sfx).c_str());
     if (PQresultStatus(r) != PGRES_TUPLES_OK) { PQclear(r); return false; }
     for (int i = 0; i < PQntuples(r); ++i)
         m_scaffold.insert(Intern(PQgetvalue(r, i, 0)));
     PQclear(r);
 
-    r = PQexec(m_conn, "SELECT bad, good FROM cx_lemma_fix");
+    r = PQexec(m_conn, ("SELECT bad, good FROM cx_lemma_fix" + sfx).c_str());
     if (PQresultStatus(r) != PGRES_TUPLES_OK) { PQclear(r); return false; }
     for (int i = 0; i < PQntuples(r); ++i)
         m_lemmaFix[Intern(PQgetvalue(r, i, 0))] = Intern(PQgetvalue(r, i, 1));
@@ -99,6 +92,20 @@ void GlossKernel::BuildPatterns()
 {
     // Lexicographic multiword patterns -> structural markers (CEF-adjacent ops).
     // Folded over the lemma sequence BEFORE scaffold drop (patterns contain scaffold words).
+    // Per-language: loaded from cx_patterns<suffix>(marker, words) when present;
+    // the builtin list below is the English seed (also the generation templates read
+    // in reverse — fold on ingest, expand on backtrace).
+    struct Pat { std::string marker, words; };
+    std::vector<Pat> loaded;
+    {
+        PGresult* r = PQexec(m_conn,
+            ("SELECT marker, words FROM cx_patterns" + m_cfg.tableSuffix).c_str());
+        if (PQresultStatus(r) == PGRES_TUPLES_OK) {
+            for (int i = 0; i < PQntuples(r); ++i)
+                loaded.push_back({ PQgetvalue(r, i, 0), PQgetvalue(r, i, 1) });
+        }
+        PQclear(r);
+    }
     static const struct { const char* marker; const char* words; } pats[] = {
         { "#ACT_OF",    "the act of" },      { "#ACT_OF",    "an act of" },
         { "#ACT_OF",    "act of" },
@@ -121,16 +128,19 @@ void GlossKernel::BuildPatterns()
         { "#CAUSE",     "to cause to" },     { "#CAUSE",     "cause to" },
         { "#SLOT_ANY",  "someone or something" }, { "#SLOT_ANY", "something or someone" },
     };
+    if (loaded.empty())
+        for (auto& p : pats) loaded.push_back({ p.marker, p.words });
+
     m_patNodes.clear();
     m_patNodes.emplace_back(); // root
-    for (auto& p : pats) {
+    for (auto& p : loaded) {
         int markerId;
         auto it = std::find(m_markers.begin(), m_markers.end(), p.marker);
         if (it == m_markers.end()) { markerId = (int)m_markers.size(); m_markers.push_back(p.marker); }
         else markerId = (int)(it - m_markers.begin());
 
         int node = 0;
-        const char* s = p.words;
+        const char* s = p.words.c_str();
         while (*s) {
             const char* e = std::strchr(s, ' ');
             std::string w = e ? std::string(s, e - s) : std::string(s);
@@ -146,8 +156,8 @@ void GlossKernel::BuildPatterns()
         }
         m_patNodes[node].marker = markerId;
     }
-    std::fprintf(stderr, "patterns: %zu markers, %zu trie nodes\n",
-                 m_markers.size(), m_patNodes.size());
+    std::fprintf(stderr, "patterns: %zu entries, %zu markers, %zu trie nodes\n",
+                 loaded.size(), m_markers.size(), m_patNodes.size());
 }
 
 bool GlossKernel::LoadSenses()
@@ -157,10 +167,12 @@ bool GlossKernel::LoadSenses()
         "SELECT s.id, lower(e.word), array_to_string(s.tokenized_gloss, chr(31)) "
         "  FROM senses s JOIN entries e ON e.id = s.entry_id "
         " WHERE e.is_deprecated = false AND e.etymology_number <= 1 "
-        "   AND e.pos <> 'name' AND e.word = lower(e.word) "
-        "   AND e.word ~ '^[a-z][a-z''-]*$' "
+        "   AND e.pos <> 'name' "
+        "   AND e.word ~ '" + m_cfg.wordRegex + "' "
         "   AND s.tokenized_gloss IS NOT NULL "
         "   AND NOT (coalesce(s.tags,'{}') && ARRAY['form-of','alt-of'])";
+    if (!m_cfg.keepCase) q += " AND e.word = lower(e.word)";
+    q += " ORDER BY s.id"; // deterministic cursor order: first-sense-wins must not drift
     if (!m_cfg.includeDated)
         q += " AND NOT (coalesce(s.tags,'{}') && ARRAY['obsolete','archaic','dated'])";
     if (m_cfg.limitSenses > 0)

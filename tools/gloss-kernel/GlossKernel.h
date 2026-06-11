@@ -23,11 +23,22 @@ namespace hcp {
 
 struct KernelConfig
 {
-    std::string conninfo;        // libpq conninfo for hcp_english
+    std::string conninfo;        // libpq conninfo for the language shard
     bool includeDated = false;   // archaic/obsolete/dated senses (deferred per Patrick)
     int  maxPasses    = 50;      // fixpoint safety bound
     long limitSenses  = 0;       // 0 = all (smoke-test knob)
     int  maxResidue   = 0;       // mint threshold: 0 = complete explications only
+
+    // --- language parameter set (claim 553: language = data, engine = invariant) ---
+    // Per-language seed tables: coremap (primes+molecules tagged in this language),
+    // scaffold (grammar drops), lemma_fix (tokenizer repairs), patterns (lexicographic
+    // dialect folds). Suffix selects the set: '' = English, '_fr', '_archaic', ...
+    std::string tableSuffix;
+    // Common-word orthography predicate (PG regex). Default = English/Latin lowercase.
+    // German would relax casing (keepCase) since nouns capitalize; unicased scripts
+    // (CJK) set keepCase and an appropriate charset class.
+    std::string wordRegex = "^[a-z][a-z''-]*$";
+    bool keepCase = false;       // skip the word = lower(word) label-ring heuristic
 };
 
 struct KernelStats
