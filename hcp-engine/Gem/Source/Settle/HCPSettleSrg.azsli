@@ -1,0 +1,42 @@
+// HCPSettleSrg.azsli — Shader Resource Group for the HCP settle compute kernel.
+//
+// Mirrors the buffers/params of the CPU reference (SettleKernel.h). Per corpus
+// 01: all resources live in an SRG (no bare globals); loose fundamental members
+// are auto-gathered into one implicit constant buffer; atomic/structured targets
+// use RWStructuredBuffer (not RWBuffer) for Metal portability (corpus 04).
+//
+// Buffer frequency = SRG_PerPass: the settle scratch is shared across the
+// per-cycle dispatches of one resolution pass (TressFX shares its pooled buffer
+// the same way — corpus 03 §4.2).
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup HCPSettleSrg : SRG_PerPass
+{
+    // Particle state. positions.w encodes movability: w>0 run (movable),
+    // w<=0 bed (immovable). prevPositions holds Verlet history (velocity =
+    // (cur - prev)/dt). One pooled allocation, one entry per particle.
+    RWStructuredBuffer<float4> m_positions;       // cur (in/out)
+    RWStructuredBuffer<float4> m_prevPositions;   // prev (in/out)
+
+    // Per-particle contact floor (restY). NO_FLOOR sentinel = free-fall (no
+    // contact). Broad-phase (which bed particle a run lands on) is deferred to
+    // the host marshaller for slice 1 — see SettleKernel.h / claim 611.
+    StructuredBuffer<float> m_restY;
+
+    // Per-particle settled flag output (1 = L1 velocity below gate). The
+    // per-run gate reduction (all charCount settled) is a downstream pass /
+    // host step, mirroring HCPVocabBed.cpp:431-453.
+    RWStructuredBuffer<uint> m_settled;
+
+    // ---- Params (auto-gathered into one constant buffer) ----
+    uint  m_particleCount;
+    float m_dt;                    // RC_DT (1/60)
+    float m_gravity;               // 9.81, applied -Y
+    float m_damping;               // PBD material damping (0.5)
+    float m_friction;              // PBD material friction (0.2)
+    float m_velSettleThreshold;    // WS_VELOCITY_SETTLE_THRESHOLD (0.5, L1)
+    float m_noFloor;               // NO_FLOOR sentinel (-1e30)
+};

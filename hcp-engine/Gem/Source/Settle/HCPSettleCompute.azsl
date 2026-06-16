@@ -1,0 +1,76 @@
+// HCPSettleCompute.azsl — the HCP particle SETTLE as portable AZSL compute.
+//
+// AZSL-port slice 1. This is the GPU expression of SettleKernel.h; the two are
+// kept line-for-line so the CPU reference (built + tested by test_settle) is the
+// deterministic ORACLE for this kernel's logic. Blueprint = AtomTressFX
+// HairSimulationCompute (corpus 03): Verlet integrate + constraint, pure compute,
+// no PhysX/CUDA.
+//
+// One dispatch = one settle step over all particles (one thread per particle).
+// The CPU drives the per-cycle step budget (RC_SETTLE_STEPS) by re-dispatching,
+// exactly as TressFX CPU-loops its local-shape constraint (corpus 03 §2.4).
+//
+// Dispatch sizing (corpus 02): JSON/SetTargetThreadCounts supplies TOTAL threads
+// (= m_particleCount); [numthreads] below is the GROUP size; RHI ceil-divides.
+
+#include "HCPSettleSrg.azsli"
+
+#define THREAD_GROUP_SIZE 64
+
+// position.w > 0 -> movable (run); w <= 0 -> immovable (bed). (TressFX IsMovable)
+bool IsMovable(float4 p)
+{
+    return p.w > 0.0f;
+}
+
+[numthreads(THREAD_GROUP_SIZE, 1, 1)]
+void SettleStep(uint3 dtid : SV_DispatchThreadID)
+{
+    const uint i = dtid.x;
+    if (i >= HCPSettleSrg::m_particleCount)
+        return;
+
+    float4 cur  = HCPSettleSrg::m_positions[i];
+    float4 prev = HCPSettleSrg::m_prevPositions[i];
+    const float restY = HCPSettleSrg::m_restY[i];
+
+    const float dt = HCPSettleSrg::m_dt;
+
+    if (IsMovable(cur))
+    {
+        // Per-step velocity decay = exp(-damping*dt). See SettleKernel.h for why
+        // this is NOT TressFX's *60 frame-normalized form (it over-damps below
+        // the settle gate). Settle energy is bled mainly by CONTACT, below.
+        const float decay = exp(-HCPSettleSrg::m_damping * dt);
+        const float3 accel = float3(0.0f, -HCPSettleSrg::m_gravity, 0.0f);
+
+        float4 next;
+        next.xyz = cur.xyz + decay * (cur.xyz - prev.xyz) + accel * dt * dt;
+        next.w   = cur.w;
+
+        float4 newPrev = cur;                 // default Verlet history: prev <- old cur
+
+        if (restY > HCPSettleSrg::m_noFloor && next.y < restY)
+        {
+            next.y = restY;
+            newPrev.y = next.y;               // kill normal (Y) velocity on contact
+            // Friction on tangential (X,Z): move prev toward next.
+            const float keep = 1.0f - HCPSettleSrg::m_friction;
+            newPrev.x = next.x - (next.x - cur.x) * keep;
+            newPrev.z = next.z - (next.z - cur.z) * keep;
+        }
+
+        prev = newPrev;
+        cur  = next;
+
+        HCPSettleSrg::m_prevPositions[i] = prev;
+        HCPSettleSrg::m_positions[i]     = cur;
+    }
+    // (bed particles fall through: positions/prev left untouched = immovable)
+
+    // L1 velocity = (|vx| + |vy| + |vz|), velocity = (cur - prev)/dt — matches
+    // HCPVocabBed.cpp:436. Settled flag is the per-particle half of the gate.
+    const float3 vel = (cur.xyz - prev.xyz) / dt;
+    const float  l1  = abs(vel.x) + abs(vel.y) + abs(vel.z);
+    HCPSettleSrg::m_settled[i] = (l1 < HCPSettleSrg::m_velSettleThreshold) ? 1u : 0u;
+}
