@@ -61,6 +61,7 @@ Deterministic by construction (pure function, no ordering).
 
 ## Not built here (next stages)
 
-Word resolution (chambers), the positional map, the GPU/AZSL port of the hot passes, and the
-parallel-prefix boundary-finding the UTF-8 decode needs for a GPU dispatch (the CPU reference
-decodes sequentially).
+Word resolution (chambers), the GPU/AZSL port of the hot passes, and the parallel-prefix
+boundary-finding the UTF-8 decode needs for a GPU dispatch (the CPU reference decodes
+sequentially). The positional map and the paint-all fallback are now built (above); the
+atomized address *scheme* on top of the source spans (claim 577) is deferred to that workstream.
