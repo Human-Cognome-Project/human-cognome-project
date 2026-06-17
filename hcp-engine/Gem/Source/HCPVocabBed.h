@@ -3,6 +3,7 @@
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <vector>          // std::vector for bulk vocab data (off AZ pool)
 #include <unordered_map>   // std::unordered_map for m_vocabByLength (off AZ pool)
@@ -11,7 +12,7 @@
 #include "HCPParticlePipeline.h"   // Bond, PBMData
 #include "Settle/SettleKernel.h"   // hcp::settle::Float4 — host-resident particle storage (AZSL swap)
 
-struct MDB_env;  // LMDB environment (defined in lmdb.h)
+#include <lmdb.h>   // MDB_env, MDB_dbi (header uses MDB_dbi — not forward-declarable)
 
 namespace HCPEngine
 {

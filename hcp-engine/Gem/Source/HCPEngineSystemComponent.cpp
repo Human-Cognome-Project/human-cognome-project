@@ -5,8 +5,6 @@
 #include "HCPEngineSystemComponent.h"
 #include "HCPTokenizer.h"
 #include "HCPBondCompiler.h"
-#include "HCPSuperpositionTrial.h"
-#include "HCPWordSuperpositionTrial.h"
 #include "HCPResolutionChamber.h"
 #include "HCPVocabBed.h"
 #include "HCPByteIngest.h"
@@ -21,9 +19,6 @@
 #include <sys/stat.h>
 
 #include <HCPEngine/HCPEngineTypeIds.h>
-
-// PhysX access — we link against Gem::PhysX5.Static which exposes internal headers
-#include <System/PhysXSystem.h>
 
 // CVars — namespace scope (AZ_CVAR creates inline globals)
 AZ_CVAR(bool, hcp_listen_all, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -56,9 +51,7 @@ namespace HCPEngine
 
     void HCPEngineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        // NOTE: PhysXService dependency temporarily removed for headless testing.
-        // PhysX is initialized manually in Activate() via GetPhysXSystem().
-        // required.push_back(AZ_CRC_CE("PhysXService"));
+        // No PhysX dependency — the engine is AZSL/host-resident (PhysX swap complete).
     }
 
     void HCPEngineSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -224,51 +217,13 @@ namespace HCPEngine
             fflush(stderr);
         }
 
-        // Get PhysX physics and foundation from O3DE's PhysX system
-        PhysX::PhysXSystem* physxSystem = PhysX::GetPhysXSystem();
-        if (!physxSystem)
-        {
-            { FILE* df = fopen("/tmp/hcp_editor_diag.txt","a"); if(df){fprintf(df,"FAILED: PhysX system not available\n");fclose(df);} }
-            AZLOG_ERROR("HCPEngine: PhysX system not available");
-            return;
-        }
-
-        physx::PxPhysics* pxPhysics = physxSystem->GetPxPhysics();
-        if (!pxPhysics)
-        {
-            { FILE* df = fopen("/tmp/hcp_editor_diag.txt","a"); if(df){fprintf(df,"FAILED: PxPhysics not available\n");fclose(df);} }
-            AZLOG_ERROR("HCPEngine: PxPhysics not available");
-            return;
-        }
-
-        // Get foundation from physics tolerances (there's only one per process)
-        physx::PxFoundation& foundation = pxPhysics->getFoundation();
-
-        // Initialize PBD particle pipeline with CUDA + GPU scene
-        fprintf(stderr, "[HCPEngine] Initializing PBD particle pipeline (CUDA + GPU)...\n");
-        fflush(stderr);
-        if (!m_particlePipeline.Initialize(pxPhysics, &foundation))
-        {
-            { FILE* df = fopen("/tmp/hcp_editor_diag.txt","a"); if(df){fprintf(df,"FAILED: PBD particle pipeline init\n");fclose(df);} }
-            fprintf(stderr, "[HCPEngine] ERROR: Failed to initialize PBD particle pipeline\n");
-            fflush(stderr);
-            return;
-        }
-        fprintf(stderr, "[HCPEngine] PBD particle pipeline initialized\n");
-        fflush(stderr);
-
-        AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars; PBD particle system active",
+        AZLOG_INFO("HCPEngine: Ready — vocab: %zu words, %zu labels, %zu chars (AZSL engine, no PhysX)",
             m_vocabulary.WordCount(), m_vocabulary.LabelCount(), m_vocabulary.CharCount());
 
         // Initialize persistent vocab beds from pre-compiled LMDB (Phase 2)
         // Vocab data is pre-ordered at compile time — no Postgres, no TierAssembly
         {
             auto bedStart = std::chrono::high_resolution_clock::now();
-
-            if (!m_particlePipeline.GetCharWordScene())
-            {
-                m_particlePipeline.CreateCharWordScene();
-            }
 
             if (m_vocabulary.GetLmdbEnv())
             {
@@ -384,7 +339,6 @@ namespace HCPEngine
         m_resolver.Shutdown();
         m_dbConn.Disconnect();
         if (m_varConn) { PQfinish(m_varConn); m_varConn = nullptr; }
-        m_particlePipeline.Shutdown();
         HCPEngineRequestBus::Handler::BusDisconnect();
     }
 
@@ -413,7 +367,7 @@ namespace HCPEngine
 
     bool HCPEngineSystemComponent::IsReady() const
     {
-        return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized();
+        return m_vocabulary.IsLoaded() && m_bedManager.IsInitialized();
     }
 
     AZStd::string HCPEngineSystemComponent::ReassembleFromPBM(const AZStd::string& docId)
@@ -622,353 +576,6 @@ namespace HCPEngine
             fprintf(stderr, "  var: %s  (bond refs: %d)\n", form.c_str(), count);
         }
         fprintf(stderr, "[source_vars] %s: %zu unresolved vars\n", docId.c_str(), varCounts.size());
-        fflush(stderr);
-    }
-
-    void HCPEngineSystemComponent::SourcePhysTokenize(const AZ::ConsoleCommandContainer& arguments)
-    {
-        // Debug: print all arguments
-        fprintf(stderr, "[source_phys_tokenize] %zu arguments:\n", arguments.size());
-        for (size_t i = 0; i < arguments.size(); ++i)
-        {
-            fprintf(stderr, "  [%zu] '%.*s'\n", i,
-                static_cast<int>(arguments[i].size()), arguments[i].data());
-        }
-        fflush(stderr);
-
-        if (arguments.size() < 1)
-        {
-            fprintf(stderr, "[source_phys_tokenize] Usage: SourcePhysTokenize <filepath> [max_chars]\n");
-            fflush(stderr);
-            return;
-        }
-
-        // arguments[0] = filepath (command name is NOT in the container)
-        AZStd::string filePath(arguments[0].data(), arguments[0].size());
-        AZ::u32 maxChars = 200;
-        if (arguments.size() >= 2)
-        {
-            AZStd::string maxStr(arguments[1].data(), arguments[1].size());
-            maxChars = static_cast<AZ::u32>(atoi(maxStr.c_str()));
-            if (maxChars == 0) maxChars = 200;
-        }
-
-        // Read file
-        std::ifstream ifs(filePath.c_str());
-        if (!ifs.is_open())
-        {
-            fprintf(stderr, "[source_phys_tokenize] ERROR: Could not open '%s'\n", filePath.c_str());
-            fflush(stderr);
-            return;
-        }
-        std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-        ifs.close();
-        AZStd::string text(stdText.c_str(), stdText.size());
-
-        fprintf(stderr, "[source_phys_tokenize] File: %s (%zu bytes), max_chars: %u\n",
-            filePath.c_str(), text.size(), maxChars);
-        fflush(stderr);
-
-        if (!m_particlePipeline.IsInitialized())
-        {
-            fprintf(stderr, "[source_phys_tokenize] ERROR: Particle pipeline not initialized\n");
-            fflush(stderr);
-            return;
-        }
-
-        SuperpositionTrialResult result = RunSuperpositionTrial(
-            m_particlePipeline.GetPhysics(),
-            m_particlePipeline.GetScene(),
-            m_particlePipeline.GetCuda(),
-            text,
-            m_vocabulary,
-            maxChars);
-
-        fprintf(stderr, "\n[source_phys_tokenize] Trial complete: %u/%u settled (%.1f%%) [%u bytes → %u codepoints]\n",
-            result.settledCount, result.totalCodepoints,
-            result.totalCodepoints > 0 ? 100.0f * result.settledCount / result.totalCodepoints : 0.0f,
-            result.totalBytes, result.totalCodepoints);
-        fflush(stderr);
-    }
-
-    void HCPEngineSystemComponent::SourcePhysWordTrial(const AZ::ConsoleCommandContainer& arguments)
-    {
-        fprintf(stderr, "[source_phys_word_trial] %zu arguments:\n", arguments.size());
-        for (size_t i = 0; i < arguments.size(); ++i)
-        {
-            fprintf(stderr, "  [%zu] '%.*s'\n", i,
-                static_cast<int>(arguments[i].size()), arguments[i].data());
-        }
-        fflush(stderr);
-
-        if (arguments.size() < 1)
-        {
-            fprintf(stderr, "[source_phys_word_trial] Usage: SourcePhysWordTrial <filepath> [max_chars]\n");
-            fflush(stderr);
-            return;
-        }
-
-        AZStd::string filePath(arguments[0].data(), arguments[0].size());
-        AZ::u32 maxChars = 200;
-        if (arguments.size() >= 2)
-        {
-            AZStd::string maxStr(arguments[1].data(), arguments[1].size());
-            maxChars = static_cast<AZ::u32>(atoi(maxStr.c_str()));
-            if (maxChars == 0) maxChars = 200;
-        }
-
-        std::ifstream ifs(filePath.c_str());
-        if (!ifs.is_open())
-        {
-            fprintf(stderr, "[source_phys_word_trial] ERROR: Could not open '%s'\n", filePath.c_str());
-            fflush(stderr);
-            return;
-        }
-        std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-        ifs.close();
-        AZStd::string text(stdText.c_str(), stdText.size());
-
-        fprintf(stderr, "[source_phys_word_trial] File: %s (%zu bytes), max_chars: %u\n",
-            filePath.c_str(), text.size(), maxChars);
-        fflush(stderr);
-
-        if (!m_particlePipeline.IsInitialized())
-        {
-            fprintf(stderr, "[source_phys_word_trial] ERROR: Particle pipeline not initialized\n");
-            fflush(stderr);
-            return;
-        }
-
-        WordTrialResult result = RunWordSuperpositionTrial(
-            m_particlePipeline.GetPhysics(),
-            m_particlePipeline.GetScene(),
-            m_particlePipeline.GetCuda(),
-            text,
-            m_vocabulary,
-            maxChars);
-
-        fprintf(stderr, "\n[source_phys_word_trial] Trial complete: %u/%u runs resolved (%.1f%%)\n",
-            result.resolvedRuns, result.totalRuns,
-            result.totalRuns > 0 ? 100.0f * result.resolvedRuns / result.totalRuns : 0.0f);
-        fflush(stderr);
-    }
-
-    void HCPEngineSystemComponent::SourcePhysWordResolve(const AZ::ConsoleCommandContainer& arguments)
-    {
-        fprintf(stderr, "[source_phys_word_resolve] %zu arguments:\n", arguments.size());
-        for (size_t i = 0; i < arguments.size(); ++i)
-        {
-            fprintf(stderr, "  [%zu] '%.*s'\n", i,
-                static_cast<int>(arguments[i].size()), arguments[i].data());
-        }
-        fflush(stderr);
-
-        if (arguments.size() < 1)
-        {
-            fprintf(stderr, "[source_phys_word_resolve] Usage: SourcePhysWordResolve <filepath> [max_chars]\n");
-            fflush(stderr);
-            return;
-        }
-
-        AZStd::string filePath(arguments[0].data(), arguments[0].size());
-        AZ::u32 maxChars = 200;
-        if (arguments.size() >= 2)
-        {
-            AZStd::string maxStr(arguments[1].data(), arguments[1].size());
-            maxChars = static_cast<AZ::u32>(atoi(maxStr.c_str()));
-            if (maxChars == 0) maxChars = 200;
-        }
-
-        // Read file
-        std::ifstream ifs(filePath.c_str());
-        if (!ifs.is_open())
-        {
-            fprintf(stderr, "[source_phys_word_resolve] ERROR: Could not open '%s'\n", filePath.c_str());
-            fflush(stderr);
-            return;
-        }
-        std::string stdText((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-        ifs.close();
-        AZStd::string text(stdText.c_str(), stdText.size());
-
-        fprintf(stderr, "[source_phys_word_resolve] File: %s (%zu bytes), max_chars: %u\n",
-            filePath.c_str(), text.size(), maxChars);
-        fflush(stderr);
-
-        if (!m_particlePipeline.IsInitialized())
-        {
-            fprintf(stderr, "[source_phys_word_resolve] ERROR: Particle pipeline not initialized\n");
-            fflush(stderr);
-            return;
-        }
-
-        // Step 1: Run Phase 1 (byte→char settlement), then extract runs from settled chars
-        SuperpositionTrialResult phase1 = RunSuperpositionTrial(
-            m_particlePipeline.GetPhysics(),
-            m_particlePipeline.GetScene(),
-            m_particlePipeline.GetCuda(),
-            text, m_vocabulary, maxChars);
-
-        fprintf(stderr, "[source_phys_word_resolve] Phase 1: %u/%u settled (%.1f%%) in %.1f ms [%u bytes → %u codepoints]\n",
-            phase1.settledCount, phase1.totalCodepoints,
-            phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
-            phase1.simulationTimeMs, phase1.totalBytes, phase1.totalCodepoints);
-        fflush(stderr);
-
-        AZStd::vector<CharRun> runs = ExtractRunsFromCollapses(phase1);
-        fprintf(stderr, "[source_phys_word_resolve] Extracted %zu runs from Phase 1 output\n", runs.size());
-        fflush(stderr);
-
-        if (runs.empty())
-        {
-            fprintf(stderr, "[source_phys_word_resolve] No runs extracted\n");
-            fflush(stderr);
-            return;
-        }
-
-        // Step 2: Use persistent BedManager (initialized at Activate)
-        if (!m_bedManager.IsInitialized())
-        {
-            fprintf(stderr, "[source_phys_word_resolve] ERROR: BedManager not initialized\n");
-            fflush(stderr);
-            return;
-        }
-
-        fprintf(stderr, "[source_phys_word_resolve] BedManager ready (LMDB vocab beds)\n");
-        fflush(stderr);
-
-        ResolutionManifest manifest = m_bedManager.Resolve(runs);
-
-        // ---- Benchmark TSV output ----
-        {
-            // Get system resource usage
-            struct rusage usage;
-            getrusage(RUSAGE_SELF, &usage);
-            long rssKb = usage.ru_maxrss;  // Peak RSS in KB (Linux)
-
-            // Read GPU memory from /proc if available (nvidia-smi parsing is too slow)
-            long vramUsedMb = 0;
-            FILE* nvsmi = popen("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null", "r");
-            if (nvsmi)
-            {
-                char buf[64];
-                if (fgets(buf, sizeof(buf), nvsmi))
-                    vramUsedMb = atol(buf);
-                pclose(nvsmi);
-            }
-
-            // Ensure benchmarks/ directory exists
-            mkdir("benchmarks", 0755);
-
-            // Timestamp for filename
-            auto now = std::chrono::system_clock::now();
-            auto epochMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                now.time_since_epoch()).count();
-
-            char tsvPath[256];
-            snprintf(tsvPath, sizeof(tsvPath), "benchmarks/resolve_%lld.tsv", (long long)epochMs);
-
-            FILE* tsv = fopen(tsvPath, "w");
-            if (tsv)
-            {
-                // Header
-                fprintf(tsv, "timestamp\tfile\tbytes\tphase1_codepoints\tphase1_settled\t"
-                    "phase1_pct\tphase1_ms\ttotal_runs\tresolved\tunresolved\t"
-                    "resolved_pct\tresolve_ms\trss_kb\tvram_mb\n");
-                // Data row
-                fprintf(tsv, "%lld\t%s\t%zu\t%u\t%u\t%.1f\t%.1f\t%u\t%u\t%u\t%.1f\t%.1f\t%ld\t%ld\n",
-                    (long long)epochMs,
-                    filePath.c_str(),
-                    text.size(),
-                    phase1.totalCodepoints,
-                    phase1.settledCount,
-                    phase1.totalCodepoints > 0 ? 100.0f * phase1.settledCount / phase1.totalCodepoints : 0.0f,
-                    phase1.simulationTimeMs,
-                    manifest.totalRuns,
-                    manifest.resolvedRuns,
-                    manifest.unresolvedRuns,
-                    manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f,
-                    manifest.totalTimeMs,
-                    rssKb,
-                    vramUsedMb);
-                fclose(tsv);
-                fprintf(stderr, "[source_phys_word_resolve] Benchmark written: %s\n", tsvPath);
-                fflush(stderr);
-            }
-        }
-
-        // Step 5: Report results
-        fprintf(stderr, "\n[source_phys_word_resolve] === Resolution Manifest ===\n");
-        fprintf(stderr, "  Total runs:      %u\n", manifest.totalRuns);
-        fprintf(stderr, "  Resolved:        %u (%.1f%%)\n",
-            manifest.resolvedRuns,
-            manifest.totalRuns > 0 ? 100.0f * manifest.resolvedRuns / manifest.totalRuns : 0.0f);
-        fprintf(stderr, "  Unresolved:      %u\n", manifest.unresolvedRuns);
-        fprintf(stderr, "  Time:            %.1f ms\n", manifest.totalTimeMs);
-        fflush(stderr);
-
-        // Per-run detail
-        fprintf(stderr, "\n[source_phys_word_resolve] Per-run results:\n");
-        AZ::u32 printLimit = 50;
-        for (AZ::u32 i = 0; i < static_cast<AZ::u32>(manifest.results.size()) && i < printLimit; ++i)
-        {
-            const ResolutionResult& r = manifest.results[i];
-            if (r.resolved)
-            {
-                fprintf(stderr, "  [%u] \"%s\" -> \"%s\" (tier %u, token %s)\n",
-                    i, r.runText.c_str(), r.matchedWord.c_str(),
-                    r.tierResolved, r.matchedTokenId.c_str());
-            }
-            else
-            {
-                fprintf(stderr, "  [%u] \"%s\" -> UNRESOLVED (var candidate)\n",
-                    i, r.runText.c_str());
-            }
-        }
-        if (manifest.results.size() > printLimit)
-        {
-            fprintf(stderr, "  ... (%zu more results)\n",
-                manifest.results.size() - printLimit);
-        }
-        fflush(stderr);
-
-        // Step 6: Validate against computational tokenizer
-        fprintf(stderr, "\n[source_phys_word_resolve] === Validation vs Computational Tokenizer ===\n");
-        AZ::u32 matchCount = 0;
-        AZ::u32 mismatchCount = 0;
-        AZ::u32 compResolvedCount = 0;
-
-        for (const auto& r : manifest.results)
-        {
-            if (!r.resolved) continue;
-
-            // Look up the run text in the vocabulary via computational path
-            AZStd::string compTokenId = m_vocabulary.LookupWordLocal(r.runText);
-            if (compTokenId.empty())
-            {
-                // Try with original case — vocabulary might store differently
-                compTokenId = m_vocabulary.LookupWord(r.runText);
-            }
-
-            ++compResolvedCount;
-
-            if (!compTokenId.empty() && compTokenId == r.matchedTokenId)
-            {
-                ++matchCount;
-            }
-            else
-            {
-                ++mismatchCount;
-                fprintf(stderr, "  MISMATCH: \"%s\" physics=%s comp=%s\n",
-                    r.runText.c_str(), r.matchedTokenId.c_str(),
-                    compTokenId.empty() ? "(not found)" : compTokenId.c_str());
-            }
-        }
-
-        fprintf(stderr, "  Physics resolved: %u, Validated: %u/%u (%.1f%%), Mismatches: %u\n",
-            manifest.resolvedRuns, matchCount, compResolvedCount,
-            compResolvedCount > 0 ? 100.0f * matchCount / compResolvedCount : 0.0f,
-            mismatchCount);
         fflush(stderr);
     }
 

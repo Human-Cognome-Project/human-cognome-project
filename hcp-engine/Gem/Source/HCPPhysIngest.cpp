@@ -1,6 +1,5 @@
 #include "HCPPhysIngest.h"
 #include "HCPEngineSystemComponent.h"
-#include "HCPWordSuperpositionTrial.h"
 #include "HCPVocabBed.h"
 #include "HCPByteIngest.h"
 #include "HCPPbmWriter.h"
@@ -25,10 +24,6 @@ namespace HCPEngine
         PhysIngestResult result;
 
         // Prerequisites
-        HCPParticlePipeline& pipeline = engine->GetParticlePipeline();
-        if (!pipeline.IsInitialized())
-        { result.errorMessage = "Particle pipeline not initialized"; return result; }
-
         BedManager& bedManager = engine->GetBedManager();
         if (!bedManager.IsInitialized())
         { result.errorMessage = "BedManager not initialized"; return result; }

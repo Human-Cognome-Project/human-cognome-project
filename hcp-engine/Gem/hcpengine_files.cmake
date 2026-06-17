@@ -8,8 +8,8 @@ set(FILES
     Source/HCPVocabulary.h
     Source/HCPTokenizer.cpp
     Source/HCPTokenizer.h
-    Source/HCPParticlePipeline.cpp
     Source/HCPParticlePipeline.h
+    Source/HCPCharRun.h
     Source/HCPStorage.cpp
     Source/HCPStorage.h
     Source/HCPSocketServer.cpp
@@ -18,10 +18,6 @@ set(FILES
     Source/HCPBondCompiler.h
     Source/HCPCacheMissResolver.cpp
     Source/HCPCacheMissResolver.h
-    Source/HCPSuperpositionTrial.cpp
-    Source/HCPSuperpositionTrial.h
-    Source/HCPWordSuperpositionTrial.cpp
-    Source/HCPWordSuperpositionTrial.h
     Source/HCPResolutionChamber.h
     Source/HCPVocabBed.cpp
     Source/HCPVocabBed.h
