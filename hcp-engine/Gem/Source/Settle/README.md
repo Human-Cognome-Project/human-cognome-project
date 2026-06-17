@@ -14,14 +14,22 @@ PhysX) — training corpus `docs/azsl-training-corpus/03-tressfx-settle-blueprin
 | `HCPSettleCompute.azsl` | The **GPU kernel** — line-for-line mirror of `SettleKernel.h`. One dispatch = one settle step over all particles. |
 | `HCPSettleSrg.azsli` | The Shader Resource Group (buffers + params). |
 | `test_settle.cpp` | Deterministic, GPU-free tests of the port logic. |
-| `CMakeLists.txt` | Standalone test build (`ctest`). |
+| `build_spirv.sh` | Portable transpile chain: AZSL → azslc HLSL → dxc → `settle.spv`. |
+| `vk_settle_harness.cpp` | **GPU equivalence test** — runs `settle.spv` on real Vulkan hardware and asserts GPU output == CPU reference. Zero-dep (O3DE GLAD single-header + `libvulkan.so.1`). |
+| `validate_shader.sh` | Asserts the `.azsl` transpiles clean and `SettleStep` is `numthreads[64,1,1]`. |
+| `CMakeLists.txt` | Standalone build (`ctest`): CPU tests always; GPU harness when O3DE present. |
 
 ## Build & test
 
 ```bash
-cmake -S . -B build && cmake --build build --target test_settle && ./build/test_settle
-# or: ctest --test-dir build
+cmake -S . -B build && cmake --build build && ctest --test-dir build --output-on-failure
 ```
+
+`test_settle` (CPU reference) always runs. `vk_settle_harness` (GPU == CPU on
+real hardware) is built and run when the O3DE toolchain is found; it self-skips
+if there's no GPU or no `settle.spv`. **Result on a GTX 1070: GPU output is
+bit-identical to the CPU reference** (position error `0.0`), so the
+resolution-equivalence oracle holds on hardware through the full portable chain.
 
 ## The two port-units (slice 1)
 
@@ -62,9 +70,22 @@ cmake -S . -B build && cmake --build build --target test_settle && ./build/test_
   damping/contact tuning so the AZSL gate decision matches PhysX per run) is a
   later slice — it needs the golden corpus of run→gate decisions.
 
-## Next slices
+## Status & next slices
 
-1. Broad-phase contact (`LightCulling.azsl` blueprint) to replace host `restY`.
-2. Wire `HCPSettleCompute.azsl` into an `AZ::RPI::ComputePass` + windowless
-   `RenderPipeline` (corpus 02) and assert GPU output == CPU reference.
+Done: CPU reference + AZSL kernel + GPU-equivalence on hardware (the kernel runs
+correctly on Vulkan, bit-matching the oracle). The reusable Vulkan harness now
+validates any future AZSL kernel against its CPU reference.
+
+**Broad-phase contact is intentionally NOT next.** It builds on the spatial
+encoding (`X=charpos, Z=charByte·scale`), which is downstream of the **byte-code
+translation layer** that is being revisited — so encoding-dependent geometry is
+parked until that settles. Encoding-independent work goes first.
+
+Next:
+1. Wire `HCPSettleCompute.azsl` into an `AZ::RPI::ComputePass` + windowless
+   `RenderPipeline` (corpus 02) — the production dispatch path (the harness is
+   the validation path). Assert it still matches the reference.
+2. (after byte-code revisit) Broad-phase particle-vs-bed contact
+   (`LightCulling.azsl` grid-stride + group-shared compaction, corpus 04 /
+   claim 611) to replace host `restY`.
 3. Settle-gate equivalence vs the live engine over the golden corpus.
