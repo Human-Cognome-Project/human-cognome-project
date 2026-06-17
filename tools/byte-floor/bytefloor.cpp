@@ -151,14 +151,35 @@ void decodeUtf32(const uint8_t* d, size_t n, Endian e, Result& r) {
 
 Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
     Result r;
-    const size_t sample = len < sampleLimit ? len : sampleLimit;
-    const SizeEndian se = phaseA(data, sample);
+    const size_t cap = len < sampleLimit ? len : sampleLimit;
+
+    // Adaptive sample (claim 617): grow the discrimination window only until the structure
+    // is decisively resolved, then stop. The grow-vs-stop test is confidence:
+    //   - multibyte (nulls present)        -> resolved, stop (nulls are a hard signal)
+    //   - clean 1-byte table (UTF-8/Latin-1, no contradicting evidence) -> stop
+    //   - pure-ASCII (table still a 3-way superposition) or mixed/min-violation -> NOT yet
+    //     confident, keep growing; a representative prefix usually shows its hand fast, an
+    //     uninformative ASCII prefix is grown past, and at the cap we settle == full scan.
+    static const size_t kSteps[] = {256, 1024, 4096, 16384, 65536};
+    SizeEndian se{ Size::One, Endian::None, 0.0, "empty" };
+    TablePick  tp{ Table::Ascii, {}, 0.0, "" };
+    size_t window = 0;
+    for (size_t si = 0; ; ++si) {
+        const size_t want = (si < sizeof(kSteps)/sizeof(kSteps[0])) ? kSteps[si] : cap;
+        window = want < cap ? want : cap;
+        se = phaseA(data, window);
+        if (se.size != Size::One) break;                          // nulls decisive -> multibyte
+        tp = phaseB_1byte(data, window);
+        const bool cleanTable = tp.cands.empty() && tp.conf >= 0.9999;  // clean UTF-8/Latin-1
+        if (cleanTable || window >= cap) break;                   // confident, or grown to cap
+        // else: pure-ASCII superposition or mixed evidence -> grow the window
+    }
+    r.disc.sampledBytes = window;
     r.disc.size = se.size; r.disc.endian = se.endian;
     r.disc.confidence = se.conf; r.disc.evidence = se.ev;
 
     switch (se.size) {
     case Size::One: {
-        const TablePick tp = phaseB_1byte(data, sample);
         r.disc.table = tp.table; r.disc.candidates = tp.cands;
         r.disc.evidence += " | " + tp.ev;
         r.disc.confidence = (r.disc.confidence + tp.conf) / 2.0;

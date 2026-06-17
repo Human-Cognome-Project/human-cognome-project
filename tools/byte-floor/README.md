@@ -10,6 +10,13 @@ passes are AZSL-port candidates (claim 579) for the GPU compute path.
 
 ## What it does
 
+Discrimination runs on an **adaptive sample** (claim 617): the probe grows (256→1K→4K→…→cap)
+only until the structure is decisively resolved — multibyte nulls, or a clean 1-byte table. A
+pure-ASCII prefix (table still a 3-way superposition) or mixed/min-violation evidence isn't
+confident yet, so the probe keeps growing; at the cap it settles whatever it has (= a full scan).
+The decode always covers the whole buffer. This is the philosophy's resolved fork — narrow by
+structure on a growing sample, don't eagerly scan everything.
+
 Given a raw byte buffer, with **no trust in headers**:
 
 1. **Size + endianness** from the null histogram — 0x00 is the key discriminator (excluded
@@ -30,16 +37,19 @@ only in CPU-side result/evidence reporting, never in a hot pass.
 
 ```
 cmake -S . -B build && cmake --build build
-./build/test_bytefloor      # crafted streams, known answers (11/11)
+./build/test_bytefloor      # crafted streams, known answers (15/15)
 ./build/bf <file>           # resolve a real file, report discrimination + decode
 ```
 
 ## Vet status
 
-`test_bytefloor`: 11/11 — ASCII, UTF-8 (2/3-byte), UTF-16 LE/BE, UTF-32 LE/BE, Latin-1
+`test_bytefloor`: 15/15 — ASCII, UTF-8 (2/3-byte), UTF-16 LE/BE, UTF-32 LE/BE, Latin-1
 (mutual-exclusion vs UTF-8), UTF-8-with-residue, and two BOM cases reached from *content*
-(not trusted as authority). Verified on real markdown docs (UTF-8, multibyte decoded, zero
-residue) and a synthetic UTF-16LE file. Deterministic by construction (pure function, no ordering).
+(not trusted as authority); plus four adaptive-sample checks: clean type stops the probe early,
+an uninformative ASCII prefix is grown past to find a later multibyte, all-ASCII grows to the
+whole buffer, and the probe is deterministic. Verified on real markdown docs (UTF-8, multibyte
+decoded, zero residue) and a synthetic UTF-16LE file. Deterministic by construction (pure
+function, no ordering).
 
 ## Not built here (next stages)
 

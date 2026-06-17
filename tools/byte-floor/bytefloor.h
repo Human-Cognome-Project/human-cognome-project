@@ -44,6 +44,7 @@ struct Discrimination {
     // rather than a forced pick). Empty unless a superposition was held.
     std::vector<Table> candidates;
     double confidence = 0.0;   // 0..1, how decisively the evidence settled
+    size_t sampledBytes = 0;   // how many bytes the adaptive probe actually read to settle
     std::string evidence;      // human-readable trace of what the bytes argued
 };
 
@@ -54,8 +55,12 @@ struct Result {
     size_t residue    = 0;
 };
 
-// Resolve a raw byte buffer. sampleLimit bounds the bytes used for size/endian/table
-// discrimination (the decode always covers the whole buffer).
+// Resolve a raw byte buffer. Discrimination uses an ADAPTIVE sample: the probe grows
+// (256, 1K, 4K, 16K, ... up to sampleLimit) only until the structure is decisively
+// resolved — multibyte nulls, or a clean 1-byte table. Pure-ASCII (table superposition
+// unresolved) and mixed / min-violation evidence are not yet confident, so the probe keeps
+// growing; at sampleLimit it settles whatever it has (== a full-sample scan). The decode
+// always covers the whole buffer. (HCP claim 617: narrow by structure on an adaptive sample.)
 Result resolve(const uint8_t* data, size_t len, size_t sampleLimit = 65536);
 
 } // namespace hcp::bytefloor

@@ -71,6 +71,54 @@ int main() {
     // 11. UTF-16LE BOM as CONTENT (FF FE) — size/endian from null pattern, BOM decodes to U+FEFF
     check("UTF-16LE BOM=content", {0xFF,0xFE,0x48,0x00,0x69,0x00}, Size::Two, Endian::Little, Table::Utf16, {0xFEFF,0x48,0x69}, 0);
 
+    // ---- Adaptive sampling (claim 617): narrow by structure on a growing probe ----
+    auto checkb = [](const char* label, bool ok, const char* detail) {
+        printf("[%s] %s  (%s)\n", ok ? "PASS" : "FAIL", label, detail);
+        if (ok) ++g_pass; else ++g_fail;
+    };
+    auto hasCp = [](const Result& r, uint32_t cp) {
+        for (auto& e : r.elems) if (e.kind == Elem::Codepoint && e.value == cp) return true;
+        return false;
+    };
+
+    // 12. Type shows fast -> stop early. UTF-8 multibyte up front, then 1000 ASCII bytes.
+    {
+        std::vector<uint8_t> b = {0xC3,0xA9};          // é
+        b.insert(b.end(), 1000, 'a');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu of %zu", name(r.disc.table), r.disc.sampledBytes, b.size());
+        checkb("adaptive: clean UTF-8 stops early (<=256B)", r.disc.table == Table::Utf8 && r.disc.sampledBytes <= 256, d);
+    }
+
+    // 13. Uninformative ASCII prefix -> probe GROWS past the small window to find the multibyte.
+    {
+        std::vector<uint8_t> b(2000, 'a');
+        b.push_back(0xC3); b.push_back(0xA9);          // é at offset 2000
+        b.insert(b.end(), 10, 'b');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu, decoded e9=%d", name(r.disc.table), r.disc.sampledBytes, (int)hasCp(r, 0xE9));
+        checkb("adaptive: grows past ASCII prefix to resolve UTF-8", r.disc.table == Table::Utf8 && r.disc.sampledBytes > 1024 && hasCp(r, 0xE9), d);
+    }
+
+    // 14. All-ASCII -> grows to the whole buffer, settles the ASCII superposition.
+    {
+        std::vector<uint8_t> b(5000, 'x');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu of %zu", name(r.disc.table), r.disc.sampledBytes, b.size());
+        checkb("adaptive: all-ASCII grows to full buffer", r.disc.table == Table::Ascii && r.disc.sampledBytes == b.size(), d);
+    }
+
+    // 15. Determinism: same input, identical discrimination + decode (pure function).
+    {
+        std::vector<uint8_t> b(2000, 'a'); b.push_back(0xC3); b.push_back(0xA9);
+        Result a = resolve(b.data(), b.size());
+        Result c = resolve(b.data(), b.size());
+        bool same = a.disc.size == c.disc.size && a.disc.table == c.disc.table
+                 && a.disc.sampledBytes == c.disc.sampledBytes
+                 && a.codepoints == c.codepoints && a.residue == c.residue;
+        checkb("adaptive: deterministic across runs", same, same ? "identical" : "DIVERGED");
+    }
+
     printf("\n==== %d passed, %d failed ====\n", g_pass, g_fail);
     return g_fail == 0 ? 0 : 1;
 }
