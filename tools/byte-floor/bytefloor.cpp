@@ -93,26 +93,29 @@ TablePick phaseB_1byte(const uint8_t* d, size_t n) {
 }
 
 // ---- Phase C: decode to codepoints; undecodable => residue byte (resync & continue) ----
+// Each element records its SOURCE SPAN (offset, len) = the positional map. Spans tile the
+// source exactly (every byte covered once, in order) so the stream is reverse-walkable.
 void decodeUtf8(const uint8_t* d, size_t n, Result& r) {
     size_t i = 0;
     while (i < n) {
+        const uint32_t at = uint32_t(i);
         const uint8_t b = d[i];
-        if (b < 0x80) { r.elems.push_back({Elem::Codepoint, b}); ++r.codepoints; ++i; continue; }
+        if (b < 0x80) { r.elems.push_back({Elem::Codepoint, b, at, 1}); ++r.codepoints; ++i; continue; }
         int need; uint32_t cp;
         if      ((b & 0xE0) == 0xC0) { need = 1; cp = b & 0x1F; }
         else if ((b & 0xF0) == 0xE0) { need = 2; cp = b & 0x0F; }
         else if ((b & 0xF8) == 0xF0) { need = 3; cp = b & 0x07; }
-        else { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
-        if (i + size_t(need) >= n) { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
+        else { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
+        if (i + size_t(need) >= n) { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
         bool ok = true;
         for (int k = 1; k <= need; ++k) if ((d[i+k] & 0xC0) != 0x80) { ok = false; break; }
-        if (!ok) { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
+        if (!ok) { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
         for (int k = 1; k <= need; ++k) cp = (cp << 6) | (d[i+k] & 0x3F);
-        r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += need + 1;
+        r.elems.push_back({Elem::Codepoint, cp, at, uint32_t(need + 1)}); ++r.codepoints; i += need + 1;
     }
 }
 void decodeLatin1(const uint8_t* d, size_t n, Result& r) {
-    for (size_t i = 0; i < n; ++i) { r.elems.push_back({Elem::Codepoint, d[i]}); ++r.codepoints; }
+    for (size_t i = 0; i < n; ++i) { r.elems.push_back({Elem::Codepoint, d[i], uint32_t(i), 1}); ++r.codepoints; }
 }
 void decodeUtf16(const uint8_t* d, size_t n, Endian e, Result& r) {
     auto rd = [&](size_t o) -> uint16_t {
@@ -120,57 +123,131 @@ void decodeUtf16(const uint8_t* d, size_t n, Endian e, Result& r) {
     };
     size_t i = 0;
     while (i + 1 < n) {
+        const uint32_t at = uint32_t(i);
         const uint16_t u = rd(i);
         if (u >= 0xD800 && u <= 0xDBFF) {                 // high surrogate
             if (i + 3 < n) {
                 const uint16_t lo = rd(i+2);
                 if (lo >= 0xDC00 && lo <= 0xDFFF) {
                     const uint32_t cp = 0x10000 + ((uint32_t(u - 0xD800) << 10) | (lo - 0xDC00));
-                    r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += 4; continue;
+                    r.elems.push_back({Elem::Codepoint, cp, at, 4}); ++r.codepoints; i += 4; continue;
                 }
             }
-            r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; continue;   // lone surrogate
+            r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; continue;   // lone surrogate
         }
-        if (u >= 0xDC00 && u <= 0xDFFF) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; continue; }
-        r.elems.push_back({Elem::Codepoint, u}); ++r.codepoints; i += 2;
+        if (u >= 0xDC00 && u <= 0xDFFF) { r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; continue; }
+        r.elems.push_back({Elem::Codepoint, u, at, 2}); ++r.codepoints; i += 2;
     }
-    while (i < n) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }    // trailing odd byte
+    while (i < n) { r.elems.push_back({Elem::Residue, d[i], uint32_t(i), 1}); ++r.residue; ++i; }    // trailing odd byte
 }
 void decodeUtf32(const uint8_t* d, size_t n, Endian e, Result& r) {
     size_t i = 0;
     while (i + 3 < n) {
+        const uint32_t at = uint32_t(i);
         const uint32_t cp = e == Endian::Big
             ? (uint32_t(d[i]) << 24) | (uint32_t(d[i+1]) << 16) | (uint32_t(d[i+2]) << 8) | d[i+3]
             : (uint32_t(d[i+3]) << 24) | (uint32_t(d[i+2]) << 16) | (uint32_t(d[i+1]) << 8) | d[i];
-        if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }
-        else { r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += 4; }
+        if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) { r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; }
+        else { r.elems.push_back({Elem::Codepoint, cp, at, 4}); ++r.codepoints; i += 4; }
     }
-    while (i < n) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }
+    while (i < n) { r.elems.push_back({Elem::Residue, d[i], uint32_t(i), 1}); ++r.residue; ++i; }
+}
+
+// ---- Adaptive discrimination (shared by resolve + resolveManifests) --------------------
+struct Disc { SizeEndian se; TablePick tp; size_t window; };
+
+Disc discriminate(const uint8_t* data, size_t cap) {   // cap = min(len, sampleLimit), already bounded
+    static const size_t kSteps[] = {256, 1024, 4096, 16384, 65536};
+    SizeEndian se{ Size::One, Endian::None, 0.0, "empty" };
+    TablePick  tp{ Table::Ascii, {}, 0.0, "" };
+    size_t window = 0;
+    for (size_t si = 0; ; ++si) {
+        const size_t want = (si < sizeof(kSteps)/sizeof(kSteps[0])) ? kSteps[si] : cap;
+        window = want < cap ? want : cap;
+        se = phaseA(data, window);
+        if (se.size != Size::One) break;                          // nulls decisive -> multibyte
+        tp = phaseB_1byte(data, window);
+        const bool cleanTable = tp.cands.empty() && tp.conf >= 0.9999;  // clean UTF-8/Latin-1
+        if (cleanTable || window >= cap) break;                   // confident, or grown to cap
+    }
+    return { se, tp, window };
+}
+
+// Decode the whole buffer under a fixed (size, endian, table) interpretation.
+void decodeWith(const uint8_t* d, size_t len, Size size, Endian endian, Table table, Result& r) {
+    switch (size) {
+    case Size::Two:  decodeUtf16(d, len, endian, r); break;
+    case Size::Four: decodeUtf32(d, len, endian, r); break;
+    case Size::One:
+    default:         (table == Table::Latin1) ? decodeLatin1(d, len, r) : decodeUtf8(d, len, r); break;
+    }
 }
 } // anonymous namespace
 
-Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
-    Result r;
-    const size_t sample = len < sampleLimit ? len : sampleLimit;
-    const SizeEndian se = phaseA(data, sample);
-    r.disc.size = se.size; r.disc.endian = se.endian;
-    r.disc.confidence = se.conf; r.disc.evidence = se.ev;
-
-    switch (se.size) {
-    case Size::One: {
-        const TablePick tp = phaseB_1byte(data, sample);
-        r.disc.table = tp.table; r.disc.candidates = tp.cands;
-        r.disc.evidence += " | " + tp.ev;
-        r.disc.confidence = (r.disc.confidence + tp.conf) / 2.0;
-        if (tp.table == Table::Latin1) decodeLatin1(data, len, r);
-        else                           decodeUtf8(data, len, r);   // ASCII decodes via UTF-8 path
-        break;
+// Fill a Result's Discrimination for one fixed interpretation, mirroring how the
+// discrimination evidence maps to disc fields (so resolve() == a 1-element manifest set).
+static void fillDisc(Result& r, const Disc& d, Size size, Endian endian, Table table) {
+    r.disc.sampledBytes = d.window;
+    r.disc.size = size; r.disc.endian = endian; r.disc.table = table;
+    r.disc.evidence = d.se.ev;
+    if (size == Size::One) {
+        r.disc.confidence = (d.se.conf + d.tp.conf) / 2.0;
+        r.disc.evidence += " | " + d.tp.ev;
+    } else {
+        r.disc.confidence = d.se.conf;
     }
-    case Size::Two:  r.disc.table = Table::Utf16; decodeUtf16(data, len, se.endian, r); break;
-    case Size::Four: r.disc.table = Table::Utf32; decodeUtf32(data, len, se.endian, r); break;
-    default:         r.disc.size = Size::One; r.disc.table = Table::Utf8; decodeUtf8(data, len, r); break;
+}
+
+Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
+    const size_t cap = len < sampleLimit ? len : sampleLimit;
+    const Disc d = discriminate(data, cap);
+    Result r;
+    switch (d.se.size) {
+    case Size::One:
+        fillDisc(r, d, Size::One, Endian::None, d.tp.table);
+        r.disc.candidates = d.tp.cands;
+        decodeWith(data, len, Size::One, Endian::None, d.tp.table, r);
+        break;
+    case Size::Two:  fillDisc(r, d, Size::Two,  d.se.endian, Table::Utf16); decodeWith(data, len, Size::Two,  d.se.endian, Table::Utf16, r); break;
+    case Size::Four: fillDisc(r, d, Size::Four, d.se.endian, Table::Utf32); decodeWith(data, len, Size::Four, d.se.endian, Table::Utf32, r); break;
+    default:         fillDisc(r, d, Size::One,  Endian::None, Table::Utf8);  decodeWith(data, len, Size::One,  Endian::None, Table::Utf8,  r); break;
     }
     return r;
+}
+
+std::vector<Result> resolveManifests(const uint8_t* data, size_t len, size_t sampleLimit) {
+    const size_t cap = len < sampleLimit ? len : sampleLimit;
+    const Disc d = discriminate(data, cap);
+    const double TIE = 0.60;   // winner barely beat the alternative => genuine content-changing tie
+
+    struct Cand { Size size; Endian endian; Table table; };
+    std::vector<Cand> cands;
+    if (d.se.size == Size::Two && d.se.conf < TIE) {            // endianness genuinely ambiguous
+        cands = { {Size::Two, Endian::Little, Table::Utf16}, {Size::Two, Endian::Big, Table::Utf16} };
+    } else if (d.se.size == Size::Four && d.se.conf < TIE) {
+        cands = { {Size::Four, Endian::Little, Table::Utf32}, {Size::Four, Endian::Big, Table::Utf32} };
+    } else if (d.se.size == Size::One && d.tp.cands.empty() && d.tp.conf < TIE) {
+        cands = { {Size::One, Endian::None, Table::Utf8}, {Size::One, Endian::None, Table::Latin1} };  // UTF-8 vs Latin-1
+    } else if (d.se.size == Size::Two)  { cands = { {Size::Two,  d.se.endian, Table::Utf16} }; }
+    else if (d.se.size == Size::Four)   { cands = { {Size::Four, d.se.endian, Table::Utf32} }; }
+    else if (d.se.size == Size::One)    { cands = { {Size::One,  Endian::None, d.tp.table} }; }
+    else                                { cands = { {Size::One,  Endian::None, Table::Utf8} }; }
+
+    std::vector<Table> painted; for (auto& c : cands) painted.push_back(c.table);
+    std::vector<Result> out;
+    for (auto& c : cands) {
+        Result r;
+        fillDisc(r, d, c.size, c.endian, c.table);
+        if (cands.size() > 1) {
+            r.disc.candidates = painted;
+            r.disc.evidence += " | paint-all: content-changing tie, " + std::to_string(cands.size()) + " manifests";
+        } else if (c.size == Size::One) {
+            r.disc.candidates = d.tp.cands;   // decode-identical superposition (e.g. ASCII)
+        }
+        decodeWith(data, len, c.size, c.endian, c.table, r);
+        out.push_back(std::move(r));
+    }
+    return out;
 }
 
 } // namespace hcp::bytefloor

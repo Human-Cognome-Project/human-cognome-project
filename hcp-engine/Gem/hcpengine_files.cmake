@@ -25,6 +25,10 @@ set(FILES
     Source/HCPResolutionChamber.h
     Source/HCPVocabBed.cpp
     Source/HCPVocabBed.h
+    Source/HCPByteIngest.cpp
+    Source/HCPByteIngest.h
+    ../../tools/byte-floor/bytefloor.cpp
+    ../../tools/byte-floor/bytefloor.h
     Source/HCPEnvelopeManager.cpp
     Source/HCPEnvelopeManager.h
     Source/HCPEntityAnnotator.cpp

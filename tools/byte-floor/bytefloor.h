@@ -30,9 +30,17 @@ const char* name(Table);
 
 // One resolved element: a decoded codepoint, or a single raw residue byte (a byte the
 // chosen table could not decode — held at byte granularity, never dropped).
+//
+// Each element carries its SOURCE SPAN — the positional map (claim 569 dual output 2): the
+// byte offset + length it consumed in the original stream. Spans tile the source exactly
+// (contiguous, no gaps/overlaps), so the objects are addressable and the source is
+// reverse-walkable and lossless. This byte span is the highest-LoD ground truth the
+// atomized address namespace (claim 577) is later built on.
 struct Elem {
     enum Kind : uint8_t { Codepoint, Residue } kind;
-    uint32_t value;  // Unicode scalar, or the raw byte (0..255) when kind==Residue
+    uint32_t value;      // Unicode scalar, or the raw byte (0..255) when kind==Residue
+    uint32_t srcOffset;  // byte offset of this object in the source stream
+    uint32_t srcLen;     // number of source bytes this object consumed
 };
 
 struct Discrimination {
@@ -44,6 +52,7 @@ struct Discrimination {
     // rather than a forced pick). Empty unless a superposition was held.
     std::vector<Table> candidates;
     double confidence = 0.0;   // 0..1, how decisively the evidence settled
+    size_t sampledBytes = 0;   // how many bytes the adaptive probe actually read to settle
     std::string evidence;      // human-readable trace of what the bytes argued
 };
 
@@ -54,8 +63,22 @@ struct Result {
     size_t residue    = 0;
 };
 
-// Resolve a raw byte buffer. sampleLimit bounds the bytes used for size/endian/table
-// discrimination (the decode always covers the whole buffer).
+// Resolve a raw byte buffer. Discrimination uses an ADAPTIVE sample: the probe grows
+// (256, 1K, 4K, 16K, ... up to sampleLimit) only until the structure is decisively
+// resolved — multibyte nulls, or a clean 1-byte table. Pure-ASCII (table superposition
+// unresolved) and mixed / min-violation evidence are not yet confident, so the probe keeps
+// growing; at sampleLimit it settles whatever it has (== a full-sample scan). The decode
+// always covers the whole buffer. (HCP claim 617: narrow by structure on an adaptive sample.)
 Result resolve(const uint8_t* data, size_t len, size_t sampleLimit = 65536);
+
+// Paint-all fallback (claim 617): when structure genuinely cannot separate two
+// interpretations that DECODE DIFFERENTLY — a real endianness tie, or a balanced
+// UTF-8-vs-Latin-1 split — the floor must not force one. It emits the BOUNDED SET
+// of manifests (one full decode per surviving interpretation), to be collapsed
+// downstream by match. Returns a single Result when discrimination is confident;
+// 2+ (the superposition) only on a genuine content-changing tie. resolve() above is
+// the single-best (top) manifest. (decode-identical ties, e.g. pure ASCII, stay ONE
+// manifest carrying the candidate tags — they don't decode differently.)
+std::vector<Result> resolveManifests(const uint8_t* data, size_t len, size_t sampleLimit = 65536);
 
 } // namespace hcp::bytefloor

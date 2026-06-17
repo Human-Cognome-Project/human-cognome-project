@@ -9,6 +9,8 @@
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPResolutionChamber.h"
 #include "HCPVocabBed.h"
+#include "HCPByteIngest.h"
+#include <cstdlib>
 
 #include <AzCore/std/sort.h>
 #include <libpq-fe.h>
@@ -280,6 +282,25 @@ namespace HCPEngine
                 auto bedEnd = std::chrono::high_resolution_clock::now();
                 fprintf(stderr, "[HCPEngine] Persistent vocab beds initialized in %.1f ms\n",
                     std::chrono::duration<double, std::milli>(bedEnd - bedStart).count());
+                fflush(stderr);
+            }
+        }
+
+        // --- raw-bytes test hook: HCP_RESOLVE_FILE=<file> -> bytes straight into ResolveBytes -> word tokens ---
+        if (const char* rf = std::getenv("HCP_RESOLVE_FILE"))
+        {
+            std::ifstream rfs(rf, std::ios::binary);
+            std::string rbytes((std::istreambuf_iterator<char>(rfs)), std::istreambuf_iterator<char>());
+            if (m_bedManager.IsInitialized() && !rbytes.empty())
+            {
+                ResolutionManifest rm = ResolveBytes(m_bedManager,
+                    reinterpret_cast<const uint8_t*>(rbytes.data()), rbytes.size());
+                fprintf(stderr, "[byte_resolve] %zu bytes -> %u runs, %u resolved\n",
+                    rbytes.size(), rm.totalRuns, rm.resolvedRuns);
+                for (const auto& rr : rm.results)
+                    fprintf(stderr, "  %-24s -> %s %s\n", rr.runText.c_str(),
+                        rr.resolved ? rr.matchedTokenId.c_str() : "(unresolved)",
+                        rr.resolved ? rr.matchedWord.c_str() : "");
                 fflush(stderr);
             }
         }

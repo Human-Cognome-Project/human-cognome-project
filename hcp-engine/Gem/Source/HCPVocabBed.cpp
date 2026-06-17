@@ -11,6 +11,9 @@
 #include <cmath>
 #include <cstring>
 #include <regex>
+#include <vector>
+
+#include "Settle/SettleKernel.h"
 
 #include <PxPhysicsAPI.h>
 #include <PxParticleGpu.h>
@@ -715,58 +718,64 @@ namespace HCPEngine
 
     void Workspace::BeginSimulate(int steps, float dt)
     {
-        fprintf(stderr, "[WS] BeginSimulate: steps=%d dt=%.4f activeParticles=%u\n",
-            steps, dt, m_vocabParticleCount);
-        fflush(stderr);
-        if (!m_scene) return;
-        m_pendingSteps = steps;
+        if (!m_particleBuffer || !m_cuda || steps <= 0) return;
         m_simDt = dt;
+        m_pendingSteps = 0;   // AZSL settle runs synchronously here; no async PhysX steps pending
 
-        // Kick off the first step — simulate() dispatches to GPU and returns
-        if (m_pendingSteps > 0)
+        AZ::u32 count = m_vocabParticleCount +
+            static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
+        if (count > m_bufferCapacity) count = m_bufferCapacity;
+        if (count == 0) return;
+
+        physx::PxVec4* hostPos = nullptr;
+        physx::PxVec4* hostVel = nullptr;
         {
-            fprintf(stderr, "[WS] BeginSimulate: calling simulate()\n"); fflush(stderr);
-            m_scene->simulate(m_simDt);
-            fprintf(stderr, "[WS] BeginSimulate: simulate() returned\n"); fflush(stderr);
-            --m_pendingSteps;
+            physx::PxScopedCudaLock lock(*m_cuda);
+            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(count);
+            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(count);
+            m_cuda->copyDToH(hostPos, m_particleBuffer->getPositionInvMasses(), count);
+            m_cuda->copyDToH(hostVel, m_particleBuffer->getVelocities(), count);
+        }
+
+        // AZSL settle replaces the PhysX-PBD settle. SettleKernel is the validated host
+        // reference of the AZSL compute kernel; per-particle independent (the parallel form
+        // is HCPSettleCompute.azsl). position.w = invMass: >0 movable run, 0 immovable bed.
+        std::vector<hcp::settle::Float4> cur(count), prev(count);
+        for (AZ::u32 i = 0; i < count; ++i)
+        {
+            cur[i]  = { hostPos[i].x, hostPos[i].y, hostPos[i].z, hostPos[i].w };
+            prev[i] = { hostPos[i].x - hostVel[i].x * dt,
+                        hostPos[i].y - hostVel[i].y * dt,
+                        hostPos[i].z - hostVel[i].z * dt, hostPos[i].w };
+        }
+        std::vector<float> restY(count, hcp::settle::NO_FLOOR);
+        for (int s = 0; s < steps; ++s)
+            hcp::settle::SettleStepAll(cur, prev, restY);
+
+        for (AZ::u32 i = 0; i < count; ++i)
+        {
+            hostPos[i] = physx::PxVec4(cur[i].x, cur[i].y, cur[i].z, hostPos[i].w);
+            hostVel[i] = physx::PxVec4((cur[i].x - prev[i].x) / dt,
+                                       (cur[i].y - prev[i].y) / dt,
+                                       (cur[i].z - prev[i].z) / dt, 0.0f);
+        }
+        {
+            physx::PxScopedCudaLock lock(*m_cuda);
+            m_cuda->copyHToD(m_particleBuffer->getPositionInvMasses(), hostPos, count);
+            m_cuda->copyHToD(m_particleBuffer->getVelocities(), hostVel, count);
+            m_cuda->freePinnedHostBuffer(hostPos);
+            m_cuda->freePinnedHostBuffer(hostVel);
         }
     }
 
     bool Workspace::IsSimDone() const
     {
-        if (!m_scene) return true;
-        // Check if the in-flight GPU step (step 0) is done.
-        // Remaining steps (m_pendingSteps) are run synchronously inside FetchSimResults.
-        // The old `m_pendingSteps > 0` guard caused a deadlock: BeginSimulate dispatches
-        // step 0 and leaves pendingSteps=59, so IsSimDone always returned false and
-        // FetchSimResults was never called.
-        return m_scene->checkResults(false);
+        return true;   // AZSL settle is synchronous (completes in BeginSimulate)
     }
 
     void Workspace::FetchSimResults()
     {
-        fprintf(stderr, "[WS] FetchSimResults: start, pendingSteps=%d\n", m_pendingSteps);
-        fflush(stderr);
-        if (!m_scene) return;
-
-        // Complete the in-flight step
-        fprintf(stderr, "[WS] FetchSimResults: fetchResults(step0)\n"); fflush(stderr);
-        m_scene->fetchResults(true);
-        fprintf(stderr, "[WS] FetchSimResults: step0 done, %d steps remain\n", m_pendingSteps);
-        fflush(stderr);
-
-        // Run remaining steps synchronously (each step must complete before next)
-        while (m_pendingSteps > 0)
-        {
-            m_scene->simulate(m_simDt);
-            m_scene->fetchResults(true);
-            --m_pendingSteps;
-        }
-
-        fprintf(stderr, "[WS] FetchSimResults: all steps done, calling fetchResultsParticleSystem\n");
-        fflush(stderr);
-        m_scene->fetchResultsParticleSystem();
-        fprintf(stderr, "[WS] FetchSimResults: done\n"); fflush(stderr);
+        // AZSL settle completes synchronously in BeginSimulate; nothing async to fetch.
     }
 
     void Workspace::Shutdown()

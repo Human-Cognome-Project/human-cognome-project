@@ -49,6 +49,11 @@ namespace HCPEngine
         bool allCaps = false;                    // All chars uppercase (e.g. "NASA") — try both Label and lowercase
         bool positionalCap = false;              // Caps may be positional (after ., ?, !, \n) — lowercase fallback
         AZStd::vector<AZ::u32> capMask;         // Run-relative positions that were uppercase
+
+        // Source byte span (the byte-floor positional map) — carries the proprioceptive
+        // position from raw bytes up to the run, so a resolved word traces to source bytes.
+        AZ::u32 byteStart = 0;
+        AZ::u32 byteLen = 0;
     };
 
     //! Result for a single vocabulary word candidate tested against a run.

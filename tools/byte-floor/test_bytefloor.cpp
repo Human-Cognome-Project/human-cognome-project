@@ -71,6 +71,144 @@ int main() {
     // 11. UTF-16LE BOM as CONTENT (FF FE) — size/endian from null pattern, BOM decodes to U+FEFF
     check("UTF-16LE BOM=content", {0xFF,0xFE,0x48,0x00,0x69,0x00}, Size::Two, Endian::Little, Table::Utf16, {0xFEFF,0x48,0x69}, 0);
 
+    // ---- Adaptive sampling (claim 617): narrow by structure on a growing probe ----
+    auto checkb = [](const char* label, bool ok, const char* detail) {
+        printf("[%s] %s  (%s)\n", ok ? "PASS" : "FAIL", label, detail);
+        if (ok) ++g_pass; else ++g_fail;
+    };
+    auto hasCp = [](const Result& r, uint32_t cp) {
+        for (auto& e : r.elems) if (e.kind == Elem::Codepoint && e.value == cp) return true;
+        return false;
+    };
+
+    // 12. Type shows fast -> stop early. UTF-8 multibyte up front, then 1000 ASCII bytes.
+    {
+        std::vector<uint8_t> b = {0xC3,0xA9};          // é
+        b.insert(b.end(), 1000, 'a');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu of %zu", name(r.disc.table), r.disc.sampledBytes, b.size());
+        checkb("adaptive: clean UTF-8 stops early (<=256B)", r.disc.table == Table::Utf8 && r.disc.sampledBytes <= 256, d);
+    }
+
+    // 13. Uninformative ASCII prefix -> probe GROWS past the small window to find the multibyte.
+    {
+        std::vector<uint8_t> b(2000, 'a');
+        b.push_back(0xC3); b.push_back(0xA9);          // é at offset 2000
+        b.insert(b.end(), 10, 'b');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu, decoded e9=%d", name(r.disc.table), r.disc.sampledBytes, (int)hasCp(r, 0xE9));
+        checkb("adaptive: grows past ASCII prefix to resolve UTF-8", r.disc.table == Table::Utf8 && r.disc.sampledBytes > 1024 && hasCp(r, 0xE9), d);
+    }
+
+    // 14. All-ASCII -> grows to the whole buffer, settles the ASCII superposition.
+    {
+        std::vector<uint8_t> b(5000, 'x');
+        Result r = resolve(b.data(), b.size());
+        char d[128]; snprintf(d, sizeof d, "table=%s sampled=%zu of %zu", name(r.disc.table), r.disc.sampledBytes, b.size());
+        checkb("adaptive: all-ASCII grows to full buffer", r.disc.table == Table::Ascii && r.disc.sampledBytes == b.size(), d);
+    }
+
+    // 15. Determinism: same input, identical discrimination + decode (pure function).
+    {
+        std::vector<uint8_t> b(2000, 'a'); b.push_back(0xC3); b.push_back(0xA9);
+        Result a = resolve(b.data(), b.size());
+        Result c = resolve(b.data(), b.size());
+        bool same = a.disc.size == c.disc.size && a.disc.table == c.disc.table
+                 && a.disc.sampledBytes == c.disc.sampledBytes
+                 && a.codepoints == c.codepoints && a.residue == c.residue;
+        checkb("adaptive: deterministic across runs", same, same ? "identical" : "DIVERGED");
+    }
+
+    // ---- Positional map (claim 569 output 2): objects carry source spans that tile the
+    //      stream exactly and reverse-walk losslessly. ----
+    auto tiles = [](const Result& r, size_t len) {        // spans contiguous, ordered, full cover
+        uint32_t expect = 0;
+        for (auto& e : r.elems) { if (e.srcOffset != expect) return false; expect += e.srcLen; }
+        return expect == len;
+    };
+    auto reconstructs = [](const Result& r, const std::vector<uint8_t>& src) {  // reverse-walk == original
+        std::vector<uint8_t> out;
+        for (auto& e : r.elems) for (uint32_t k = 0; k < e.srcLen; ++k) out.push_back(src[e.srcOffset + k]);
+        return out == src;
+    };
+    auto posCheck = [&](const char* label, std::vector<uint8_t> b) {
+        Result r = resolve(b.data(), b.size());
+        bool ok = tiles(r, b.size()) && reconstructs(r, b);
+        printf("[%s] %s  (%s, %zu elems)\n", ok ? "PASS" : "FAIL", label,
+               name(r.disc.table), r.elems.size());
+        if (ok) ++g_pass; else ++g_fail;
+    };
+
+    // 16-20. spans tile + reverse-walk losslessly across every decode path.
+    posCheck("pos: UTF-8 mixed tiles+reconstructs", {0x63,0x61,0x66,0xC3,0xA9,0xE2,0x82,0xAC,0x21});
+    posCheck("pos: Latin-1 tiles+reconstructs",     {0x48,0xE9,0x69,0xFF});
+    posCheck("pos: UTF-16LE tiles+reconstructs",    {0x48,0x00,0x69,0x00,0x3D,0xD8,0x00,0xDE}); // incl surrogate pair
+    posCheck("pos: UTF-32BE tiles+reconstructs",    {0x00,0x00,0x00,0x48,0x00,0x00,0x00,0x69}); // "Hi" UTF-32BE (75% null -> 4-byte)
+    posCheck("pos: UTF-8 with residue tiles+reconstructs", {0xC3,0xA9,0xC3,0x48});
+
+    // 21. spot-check a specific span: the é in "caf"+é sits at byte 3, spans 2 bytes.
+    {
+        std::vector<uint8_t> b = {0x63,0x61,0x66,0xC3,0xA9};
+        Result r = resolve(b.data(), b.size());
+        bool ok = r.elems.size() == 4 && r.elems[3].kind == Elem::Codepoint
+                  && r.elems[3].value == 0xE9 && r.elems[3].srcOffset == 3 && r.elems[3].srcLen == 2;
+        printf("[%s] pos: é object maps to source bytes [3,2)\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // ---- Paint-all fallback (claim 617): genuine content-changing ties emit the bounded set ----
+    auto cpsOf = [&](const Result& r) { return codepointsOf(r); };
+
+    // 22. Confident input -> exactly ONE manifest (no spurious painting).
+    {
+        std::vector<Result> m = resolveManifests((const uint8_t*)"caf\xC3\xA9", 5);
+        bool ok = m.size() == 1 && m[0].disc.table == Table::Utf8;
+        printf("[%s] paint-all: confident UTF-8 -> 1 manifest\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 23. UTF-8 vs Latin-1 balanced (1 valid MB, 1 invalid high) -> TWO manifests, decoding differently.
+    {
+        std::vector<uint8_t> b = {0xC3,0xA9,0xC3,0x48};
+        std::vector<Result> m = resolveManifests(b.data(), b.size());
+        bool two = m.size() == 2;
+        bool hasUtf8 = false, hasLatin1 = false, differ = false;
+        if (two) {
+            hasUtf8   = (m[0].disc.table == Table::Utf8)   || (m[1].disc.table == Table::Utf8);
+            hasLatin1 = (m[0].disc.table == Table::Latin1) || (m[1].disc.table == Table::Latin1);
+            differ    = cpsOf(m[0]) != cpsOf(m[1]);   // UTF-8 (2cp+residue) vs Latin-1 (4cp) genuinely differ
+        }
+        bool ok = two && hasUtf8 && hasLatin1 && differ;
+        printf("[%s] paint-all: balanced UTF-8/Latin-1 -> 2 manifests, decode differs  (%zu manifests)\n",
+               ok ? "PASS" : "FAIL", m.size());
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 24. Endianness genuinely ambiguous (balanced null parity) -> TWO manifests, LE vs BE.
+    {
+        std::vector<uint8_t> b = {0x00,0x41,0x42,0x00};   // 1 even-null, 1 odd-null -> skew 0.5
+        std::vector<Result> m = resolveManifests(b.data(), b.size());
+        bool two = m.size() == 2;
+        bool le = false, be = false, differ = false;
+        if (two) {
+            le = (m[0].disc.endian == Endian::Little) || (m[1].disc.endian == Endian::Little);
+            be = (m[0].disc.endian == Endian::Big)    || (m[1].disc.endian == Endian::Big);
+            differ = cpsOf(m[0]) != cpsOf(m[1]);
+        }
+        bool ok = two && le && be && differ && m[0].disc.size == Size::Two;
+        printf("[%s] paint-all: ambiguous endianness -> 2 manifests, LE vs BE  (%zu manifests)\n",
+               ok ? "PASS" : "FAIL", m.size());
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 25. Pure ASCII is decode-IDENTICAL across tables -> ONE manifest carrying the candidate tags.
+    {
+        std::vector<Result> m = resolveManifests((const uint8_t*)"Hello", 5);
+        bool ok = m.size() == 1 && m[0].disc.table == Table::Ascii && m[0].disc.candidates.size() == 3;
+        printf("[%s] paint-all: pure ASCII -> 1 manifest (superposition tags, not duplicated)\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
     printf("\n==== %d passed, %d failed ====\n", g_pass, g_fail);
     return g_fail == 0 ? 0 : 1;
 }
