@@ -11,17 +11,6 @@
 #include "HCPParticlePipeline.h"   // Bond, PBMData
 #include "Settle/SettleKernel.h"   // hcp::settle::Float4 — host-resident particle storage (AZSL swap)
 
-// Forward declarations — full headers only in .cpp
-namespace physx
-{
-    class PxPhysics;
-    class PxScene;
-    class PxCudaContextManager;
-    class PxPBDParticleSystem;
-    class PxParticleBuffer;
-    class PxPBDMaterial;
-}
-
 struct MDB_env;  // LMDB environment (defined in lmdb.h)
 
 namespace HCPEngine
@@ -317,12 +306,10 @@ namespace HCPEngine
     public:
         //! Initialize from pre-compiled LMDB vocab beds.
         //! Opens vbed_02..vbed_16 sub-databases, reads frequency-ordered entries,
-        //! creates GPU workspaces (each with its own PxScene). No Postgres dependency.
+        //! creates host-resident workspaces (AZSL swap — no PhysX/CUDA). No Postgres dependency.
         //! @param lmdbEnv Shared LMDB environment (from HCPVocabulary::GetLmdbEnv())
         //! @param vocabulary For punctuation word lookups at resolve time
         bool Initialize(
-            physx::PxPhysics* physics,
-            physx::PxCudaContextManager* cuda,
             MDB_env* lmdbEnv,
             HCPVocabulary* vocabulary,
             HCPEnvelopeManager* envelopeManager = nullptr);
@@ -421,8 +408,6 @@ namespace HCPEngine
             const AZStd::unordered_map<AZ::u32, RulePack>& rulePacksByLength) const;
 
         bool m_initialized = false;
-        physx::PxPhysics* m_physics = nullptr;
-        physx::PxCudaContextManager* m_cuda = nullptr;
         HCPVocabulary* m_vocabulary = nullptr;       // For punctuation lookups
         HCPEnvelopeManager* m_envelopeManager = nullptr; // For pre-fetch (nullable)
 

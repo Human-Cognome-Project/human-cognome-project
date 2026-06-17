@@ -15,11 +15,6 @@
 
 #include "Settle/SettleKernel.h"
 
-#include <PxPhysicsAPI.h>
-#include <PxParticleGpu.h>
-#include <gpu/PxGpu.h>
-#include <System/PhysXSystem.h>
-
 namespace HCPEngine
 {
     // ========================================================================
@@ -840,16 +835,12 @@ namespace HCPEngine
     }
 
     bool BedManager::Initialize(
-        physx::PxPhysics* physics,
-        physx::PxCudaContextManager* cuda,
         MDB_env* lmdbEnv,
         HCPVocabulary* vocabulary,
         HCPEnvelopeManager* envelopeManager)
     {
-        if (!physics || !cuda || !lmdbEnv) return false;
+        if (!lmdbEnv) return false;
 
-        m_physics = physics;
-        m_cuda = cuda;
         m_vocabulary = vocabulary;
         m_envelopeManager = envelopeManager;
         m_lmdbEnv = lmdbEnv;

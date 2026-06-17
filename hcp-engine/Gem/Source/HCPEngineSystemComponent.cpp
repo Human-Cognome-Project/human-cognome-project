@@ -270,11 +270,9 @@ namespace HCPEngine
                 m_particlePipeline.CreateCharWordScene();
             }
 
-            if (m_particlePipeline.GetCuda() && m_vocabulary.GetLmdbEnv())
+            if (m_vocabulary.GetLmdbEnv())
             {
                 m_bedManager.Initialize(
-                    pxPhysics,
-                    m_particlePipeline.GetCuda(),
                     m_vocabulary.GetLmdbEnv(),
                     &m_vocabulary,
                     &m_envelopeManager);
