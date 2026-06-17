@@ -147,6 +147,13 @@ static void InitVulkan(Ctx& c)
                    (p.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU)            ? 0 : 1;
         if (rank > chosenRank) { chosenRank = rank; chosen = d; }
     }
+    // Optional override: HCP_VK_DEVICE=<name substring> pins a specific GPU (e.g. "750").
+    if (const char* want = std::getenv("HCP_VK_DEVICE")) {
+        for (auto d : devs) {
+            VkPhysicalDeviceProperties p; vkGetPhysicalDeviceProperties(d, &p);
+            if (std::strstr(p.deviceName, want)) { chosen = d; break; }
+        }
+    }
     c.phys = chosen;
     VkPhysicalDeviceProperties p; vkGetPhysicalDeviceProperties(c.phys, &p);
     std::printf("GPU: %s\n", p.deviceName);
