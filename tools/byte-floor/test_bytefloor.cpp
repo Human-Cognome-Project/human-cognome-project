@@ -156,6 +156,59 @@ int main() {
         if (ok) ++g_pass; else ++g_fail;
     }
 
+    // ---- Paint-all fallback (claim 617): genuine content-changing ties emit the bounded set ----
+    auto cpsOf = [&](const Result& r) { return codepointsOf(r); };
+
+    // 22. Confident input -> exactly ONE manifest (no spurious painting).
+    {
+        std::vector<Result> m = resolveManifests((const uint8_t*)"caf\xC3\xA9", 5);
+        bool ok = m.size() == 1 && m[0].disc.table == Table::Utf8;
+        printf("[%s] paint-all: confident UTF-8 -> 1 manifest\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 23. UTF-8 vs Latin-1 balanced (1 valid MB, 1 invalid high) -> TWO manifests, decoding differently.
+    {
+        std::vector<uint8_t> b = {0xC3,0xA9,0xC3,0x48};
+        std::vector<Result> m = resolveManifests(b.data(), b.size());
+        bool two = m.size() == 2;
+        bool hasUtf8 = false, hasLatin1 = false, differ = false;
+        if (two) {
+            hasUtf8   = (m[0].disc.table == Table::Utf8)   || (m[1].disc.table == Table::Utf8);
+            hasLatin1 = (m[0].disc.table == Table::Latin1) || (m[1].disc.table == Table::Latin1);
+            differ    = cpsOf(m[0]) != cpsOf(m[1]);   // UTF-8 (2cp+residue) vs Latin-1 (4cp) genuinely differ
+        }
+        bool ok = two && hasUtf8 && hasLatin1 && differ;
+        printf("[%s] paint-all: balanced UTF-8/Latin-1 -> 2 manifests, decode differs  (%zu manifests)\n",
+               ok ? "PASS" : "FAIL", m.size());
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 24. Endianness genuinely ambiguous (balanced null parity) -> TWO manifests, LE vs BE.
+    {
+        std::vector<uint8_t> b = {0x00,0x41,0x42,0x00};   // 1 even-null, 1 odd-null -> skew 0.5
+        std::vector<Result> m = resolveManifests(b.data(), b.size());
+        bool two = m.size() == 2;
+        bool le = false, be = false, differ = false;
+        if (two) {
+            le = (m[0].disc.endian == Endian::Little) || (m[1].disc.endian == Endian::Little);
+            be = (m[0].disc.endian == Endian::Big)    || (m[1].disc.endian == Endian::Big);
+            differ = cpsOf(m[0]) != cpsOf(m[1]);
+        }
+        bool ok = two && le && be && differ && m[0].disc.size == Size::Two;
+        printf("[%s] paint-all: ambiguous endianness -> 2 manifests, LE vs BE  (%zu manifests)\n",
+               ok ? "PASS" : "FAIL", m.size());
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
+    // 25. Pure ASCII is decode-IDENTICAL across tables -> ONE manifest carrying the candidate tags.
+    {
+        std::vector<Result> m = resolveManifests((const uint8_t*)"Hello", 5);
+        bool ok = m.size() == 1 && m[0].disc.table == Table::Ascii && m[0].disc.candidates.size() == 3;
+        printf("[%s] paint-all: pure ASCII -> 1 manifest (superposition tags, not duplicated)\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
     printf("\n==== %d passed, %d failed ====\n", g_pass, g_fail);
     return g_fail == 0 ? 0 : 1;
 }

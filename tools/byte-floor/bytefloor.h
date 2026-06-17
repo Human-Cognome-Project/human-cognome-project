@@ -71,4 +71,14 @@ struct Result {
 // always covers the whole buffer. (HCP claim 617: narrow by structure on an adaptive sample.)
 Result resolve(const uint8_t* data, size_t len, size_t sampleLimit = 65536);
 
+// Paint-all fallback (claim 617): when structure genuinely cannot separate two
+// interpretations that DECODE DIFFERENTLY — a real endianness tie, or a balanced
+// UTF-8-vs-Latin-1 split — the floor must not force one. It emits the BOUNDED SET
+// of manifests (one full decode per surviving interpretation), to be collapsed
+// downstream by match. Returns a single Result when discrimination is confident;
+// 2+ (the superposition) only on a genuine content-changing tie. resolve() above is
+// the single-best (top) manifest. (decode-identical ties, e.g. pure ASCII, stay ONE
+// manifest carrying the candidate tags — they don't decode differently.)
+std::vector<Result> resolveManifests(const uint8_t* data, size_t len, size_t sampleLimit = 65536);
+
 } // namespace hcp::bytefloor

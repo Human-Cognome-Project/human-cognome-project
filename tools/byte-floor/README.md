@@ -27,6 +27,14 @@ Given a raw byte buffer, with **no trust in headers**:
    4-byte → UTF-32. Min-violation settle when evidence is mixed.
 3. **Decode** to Unicode codepoints. Undecodable bytes are **not errors** — they are emitted
    as byte-granularity **residue** (the granularity gradient), resync-and-continue, never dropped.
+   Each object carries its **source span** (offset+len) — the positional map (claim 569 output 2):
+   spans tile the stream exactly, so objects are addressable and the source reverse-walks losslessly.
+
+`resolve()` returns the single best manifest. **`resolveManifests()`** is the paint-all fallback
+(claim 617): when structure genuinely can't separate interpretations that *decode differently* (a
+real endianness tie, or a balanced UTF-8-vs-Latin-1 split) it returns the **bounded set** of
+manifests — one full decode per surviving interpretation — to be collapsed downstream by match.
+Decode-identical ties (e.g. pure ASCII) stay one manifest carrying the candidate tags.
 
 Every discrimination is a uniform predicate over a flat array (null histogram, validity scan)
 — memory-bandwidth-bound reductions that map directly to AZSL ComputePasses. The CPU reference
@@ -37,19 +45,19 @@ only in CPU-side result/evidence reporting, never in a hot pass.
 
 ```
 cmake -S . -B build && cmake --build build
-./build/test_bytefloor      # crafted streams, known answers (15/15)
+./build/test_bytefloor      # crafted streams, known answers (25/25)
 ./build/bf <file>           # resolve a real file, report discrimination + decode
 ```
 
 ## Vet status
 
-`test_bytefloor`: 15/15 — ASCII, UTF-8 (2/3-byte), UTF-16 LE/BE, UTF-32 LE/BE, Latin-1
-(mutual-exclusion vs UTF-8), UTF-8-with-residue, and two BOM cases reached from *content*
-(not trusted as authority); plus four adaptive-sample checks: clean type stops the probe early,
-an uninformative ASCII prefix is grown past to find a later multibyte, all-ASCII grows to the
-whole buffer, and the probe is deterministic. Verified on real markdown docs (UTF-8, multibyte
-decoded, zero residue) and a synthetic UTF-16LE file. Deterministic by construction (pure
-function, no ordering).
+`test_bytefloor`: 25/25 — the 11 self-discrimination/decode cases (ASCII, UTF-8 2/3-byte, UTF-16
+LE/BE, UTF-32 LE/BE, Latin-1, residue, content-BOM); 4 adaptive-sample checks (stop early on clean
+type, grow past an uninformative ASCII prefix, all-ASCII to the cap, deterministic); 6 positional-map
+checks (spans tile + reverse-walk losslessly across every path, é→bytes[3,2)); and 4 paint-all
+checks (confident→1 manifest, balanced UTF-8/Latin-1 and ambiguous endianness each→2 differing
+manifests, pure ASCII→1 tagged). Verified on real markdown docs and a synthetic UTF-16LE file.
+Deterministic by construction (pure function, no ordering).
 
 ## Not built here (next stages)
 

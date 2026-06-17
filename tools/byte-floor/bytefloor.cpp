@@ -152,19 +152,11 @@ void decodeUtf32(const uint8_t* d, size_t n, Endian e, Result& r) {
     }
     while (i < n) { r.elems.push_back({Elem::Residue, d[i], uint32_t(i), 1}); ++r.residue; ++i; }
 }
-} // anonymous namespace
 
-Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
-    Result r;
-    const size_t cap = len < sampleLimit ? len : sampleLimit;
+// ---- Adaptive discrimination (shared by resolve + resolveManifests) --------------------
+struct Disc { SizeEndian se; TablePick tp; size_t window; };
 
-    // Adaptive sample (claim 617): grow the discrimination window only until the structure
-    // is decisively resolved, then stop. The grow-vs-stop test is confidence:
-    //   - multibyte (nulls present)        -> resolved, stop (nulls are a hard signal)
-    //   - clean 1-byte table (UTF-8/Latin-1, no contradicting evidence) -> stop
-    //   - pure-ASCII (table still a 3-way superposition) or mixed/min-violation -> NOT yet
-    //     confident, keep growing; a representative prefix usually shows its hand fast, an
-    //     uninformative ASCII prefix is grown past, and at the cap we settle == full scan.
+Disc discriminate(const uint8_t* data, size_t cap) {   // cap = min(len, sampleLimit), already bounded
     static const size_t kSteps[] = {256, 1024, 4096, 16384, 65536};
     SizeEndian se{ Size::One, Endian::None, 0.0, "empty" };
     TablePick  tp{ Table::Ascii, {}, 0.0, "" };
@@ -177,26 +169,85 @@ Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
         tp = phaseB_1byte(data, window);
         const bool cleanTable = tp.cands.empty() && tp.conf >= 0.9999;  // clean UTF-8/Latin-1
         if (cleanTable || window >= cap) break;                   // confident, or grown to cap
-        // else: pure-ASCII superposition or mixed evidence -> grow the window
     }
-    r.disc.sampledBytes = window;
-    r.disc.size = se.size; r.disc.endian = se.endian;
-    r.disc.confidence = se.conf; r.disc.evidence = se.ev;
+    return { se, tp, window };
+}
 
-    switch (se.size) {
-    case Size::One: {
-        r.disc.table = tp.table; r.disc.candidates = tp.cands;
-        r.disc.evidence += " | " + tp.ev;
-        r.disc.confidence = (r.disc.confidence + tp.conf) / 2.0;
-        if (tp.table == Table::Latin1) decodeLatin1(data, len, r);
-        else                           decodeUtf8(data, len, r);   // ASCII decodes via UTF-8 path
-        break;
+// Decode the whole buffer under a fixed (size, endian, table) interpretation.
+void decodeWith(const uint8_t* d, size_t len, Size size, Endian endian, Table table, Result& r) {
+    switch (size) {
+    case Size::Two:  decodeUtf16(d, len, endian, r); break;
+    case Size::Four: decodeUtf32(d, len, endian, r); break;
+    case Size::One:
+    default:         (table == Table::Latin1) ? decodeLatin1(d, len, r) : decodeUtf8(d, len, r); break;
     }
-    case Size::Two:  r.disc.table = Table::Utf16; decodeUtf16(data, len, se.endian, r); break;
-    case Size::Four: r.disc.table = Table::Utf32; decodeUtf32(data, len, se.endian, r); break;
-    default:         r.disc.size = Size::One; r.disc.table = Table::Utf8; decodeUtf8(data, len, r); break;
+}
+} // anonymous namespace
+
+// Fill a Result's Discrimination for one fixed interpretation, mirroring how the
+// discrimination evidence maps to disc fields (so resolve() == a 1-element manifest set).
+static void fillDisc(Result& r, const Disc& d, Size size, Endian endian, Table table) {
+    r.disc.sampledBytes = d.window;
+    r.disc.size = size; r.disc.endian = endian; r.disc.table = table;
+    r.disc.evidence = d.se.ev;
+    if (size == Size::One) {
+        r.disc.confidence = (d.se.conf + d.tp.conf) / 2.0;
+        r.disc.evidence += " | " + d.tp.ev;
+    } else {
+        r.disc.confidence = d.se.conf;
+    }
+}
+
+Result resolve(const uint8_t* data, size_t len, size_t sampleLimit) {
+    const size_t cap = len < sampleLimit ? len : sampleLimit;
+    const Disc d = discriminate(data, cap);
+    Result r;
+    switch (d.se.size) {
+    case Size::One:
+        fillDisc(r, d, Size::One, Endian::None, d.tp.table);
+        r.disc.candidates = d.tp.cands;
+        decodeWith(data, len, Size::One, Endian::None, d.tp.table, r);
+        break;
+    case Size::Two:  fillDisc(r, d, Size::Two,  d.se.endian, Table::Utf16); decodeWith(data, len, Size::Two,  d.se.endian, Table::Utf16, r); break;
+    case Size::Four: fillDisc(r, d, Size::Four, d.se.endian, Table::Utf32); decodeWith(data, len, Size::Four, d.se.endian, Table::Utf32, r); break;
+    default:         fillDisc(r, d, Size::One,  Endian::None, Table::Utf8);  decodeWith(data, len, Size::One,  Endian::None, Table::Utf8,  r); break;
     }
     return r;
+}
+
+std::vector<Result> resolveManifests(const uint8_t* data, size_t len, size_t sampleLimit) {
+    const size_t cap = len < sampleLimit ? len : sampleLimit;
+    const Disc d = discriminate(data, cap);
+    const double TIE = 0.60;   // winner barely beat the alternative => genuine content-changing tie
+
+    struct Cand { Size size; Endian endian; Table table; };
+    std::vector<Cand> cands;
+    if (d.se.size == Size::Two && d.se.conf < TIE) {            // endianness genuinely ambiguous
+        cands = { {Size::Two, Endian::Little, Table::Utf16}, {Size::Two, Endian::Big, Table::Utf16} };
+    } else if (d.se.size == Size::Four && d.se.conf < TIE) {
+        cands = { {Size::Four, Endian::Little, Table::Utf32}, {Size::Four, Endian::Big, Table::Utf32} };
+    } else if (d.se.size == Size::One && d.tp.cands.empty() && d.tp.conf < TIE) {
+        cands = { {Size::One, Endian::None, Table::Utf8}, {Size::One, Endian::None, Table::Latin1} };  // UTF-8 vs Latin-1
+    } else if (d.se.size == Size::Two)  { cands = { {Size::Two,  d.se.endian, Table::Utf16} }; }
+    else if (d.se.size == Size::Four)   { cands = { {Size::Four, d.se.endian, Table::Utf32} }; }
+    else if (d.se.size == Size::One)    { cands = { {Size::One,  Endian::None, d.tp.table} }; }
+    else                                { cands = { {Size::One,  Endian::None, Table::Utf8} }; }
+
+    std::vector<Table> painted; for (auto& c : cands) painted.push_back(c.table);
+    std::vector<Result> out;
+    for (auto& c : cands) {
+        Result r;
+        fillDisc(r, d, c.size, c.endian, c.table);
+        if (cands.size() > 1) {
+            r.disc.candidates = painted;
+            r.disc.evidence += " | paint-all: content-changing tie, " + std::to_string(cands.size()) + " manifests";
+        } else if (c.size == Size::One) {
+            r.disc.candidates = d.tp.cands;   // decode-identical superposition (e.g. ASCII)
+        }
+        decodeWith(data, len, c.size, c.endian, c.table, r);
+        out.push_back(std::move(r));
+    }
+    return out;
 }
 
 } // namespace hcp::bytefloor
