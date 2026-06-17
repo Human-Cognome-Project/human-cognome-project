@@ -1,8 +1,8 @@
 #include "HCPPhysIngest.h"
 #include "HCPEngineSystemComponent.h"
-#include "HCPSuperpositionTrial.h"
 #include "HCPWordSuperpositionTrial.h"
 #include "HCPVocabBed.h"
+#include "HCPByteIngest.h"
 #include "HCPPbmWriter.h"
 #include "HCPDocumentQuery.h"
 
@@ -42,30 +42,26 @@ namespace HCPEngine
             docName.c_str(), text.size());
         fflush(stderr);
 
-        // Normalize CRLF → LF before Phase 1.  Gutenberg texts use \r\n hard wraps;
-        // if \r has no c2t entry it may settle to a word char and merge adjacent lines.
+        // Normalize CRLF → LF (Gutenberg hard wraps).
         AZStd::string normalizedText;
         normalizedText.reserve(text.size());
         for (char c : text)
             if (c != '\r') normalizedText.push_back(c);
 
-        // Phase 1: byte→char settlement
-        SuperpositionTrialResult phase1 = RunSuperpositionTrial(
-            pipeline.GetPhysics(), pipeline.GetScene(), pipeline.GetCuda(),
-            normalizedText, engine->GetVocabulary(), 0);
+        // bytes → characters → runs, via the byte-floor (replaces the PhysX Phase-1 collapse).
+        AZStd::vector<CharRun> runs = IngestBytes(
+            reinterpret_cast<const uint8_t*>(normalizedText.data()), normalizedText.size());
 
-        result.phase1Settled = phase1.settledCount;
-        result.phase1Total   = phase1.totalCodepoints;
-        result.phase1TimeMs  = phase1.simulationTimeMs;
+        result.phase1Total   = static_cast<AZ::u32>(normalizedText.size());
+        result.phase1Settled = result.phase1Total;   // byte-floor decodes deterministically
+        result.phase1TimeMs  = 0.0f;
 
-        fprintf(stderr, "[PhysIngest] Phase 1: %u/%u settled in %.1f ms\n",
-            phase1.settledCount, phase1.totalCodepoints, phase1.simulationTimeMs);
+        fprintf(stderr, "[PhysIngest] byte-floor: %zu bytes → %zu runs\n",
+            normalizedText.size(), runs.size());
         fflush(stderr);
 
-        // Extract runs
-        AZStd::vector<CharRun> runs = ExtractRunsFromCollapses(phase1);
         if (runs.empty())
-        { result.errorMessage = "No runs from Phase 1"; return result; }
+        { result.errorMessage = "No runs from byte-floor"; return result; }
 
         // Phase 2: word resolution
         ResolutionManifest manifest = bedManager.Resolve(runs);
