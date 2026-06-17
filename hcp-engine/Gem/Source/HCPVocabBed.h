@@ -9,6 +9,7 @@
 #include <regex>           // std::regex for compiled rule conditions
 #include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
 #include "HCPParticlePipeline.h"   // Bond, PBMData
+#include "Settle/SettleKernel.h"   // hcp::settle::Float4 — host-resident particle storage (AZSL swap)
 
 // Forward declarations — full headers only in .cpp
 namespace physx
@@ -152,12 +153,11 @@ namespace HCPEngine
         Workspace(Workspace&& other) noexcept;
         Workspace& operator=(Workspace&& other) noexcept;
 
-        //! Create GPU resources: own PxScene + PxPBDParticleSystem + PxParticleBuffer.
-        //! Each workspace creates its own scene on the shared CUDA context.
-        //! maxTiers: number of tier phase groups to create (typically 3).
-        bool Create(physx::PxPhysics* physics,
-                    physx::PxCudaContextManager* cuda,
-                    AZ::u32 bufferCapacity, AZ::u32 maxTiers);
+        //! Allocate host-resident particle arrays (positions/velocities/phases).
+        //! AZSL swap — no PxScene/PxParticleBuffer/CUDA. The settle runs directly on
+        //! these host arrays (SettleKernel = host reference of HCPSettleCompute.azsl).
+        //! maxTiers: number of logical tier phase tags (typically 3).
+        bool Create(AZ::u32 bufferCapacity, AZ::u32 maxTiers);
 
         //! Overwrite vocab region with a VocabPack. Remaps logical tier→phase group IDs.
         //! Returns max stream slots available after vocab region.
@@ -218,13 +218,14 @@ namespace HCPEngine
         void Shutdown();
 
     private:
-        physx::PxPhysics* m_physics = nullptr;
-        physx::PxScene* m_scene = nullptr;            // OWNED — one scene per workspace
-        physx::PxCudaContextManager* m_cuda = nullptr;
-        physx::PxPBDParticleSystem* m_particleSystem = nullptr;
-        physx::PxParticleBuffer* m_particleBuffer = nullptr;
-        physx::PxPBDMaterial* m_material = nullptr;
-        bool m_ownsScene = false;                      // True when we created the scene
+        // Host-resident particle arrays — AZSL swap, replaces PxParticleBuffer/CUDA.
+        // Layout: [vocab region (static, w=0)] [stream region (dynamic, w=1)].
+        // position.w = invMass (>0 movable run, 0 immovable bed). Sized to m_bufferCapacity.
+        // std::vector (system heap) keeps bulk particle data off the AZ allocator pool.
+        std::vector<hcp::settle::Float4> m_pos;
+        std::vector<hcp::settle::Float4> m_vel;
+        std::vector<AZ::u32>             m_phase;
+        AZ::u32 m_activeParticles = 0;      // Replaces PxParticleBuffer::setNbActiveParticles
 
         AZ::u32 m_bufferCapacity = 0;       // Total buffer size
         AZ::u32 m_vocabParticleCount = 0;   // Current vocab region size (changes per cycle)
