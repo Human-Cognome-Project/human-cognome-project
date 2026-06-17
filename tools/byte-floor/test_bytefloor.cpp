@@ -119,6 +119,43 @@ int main() {
         checkb("adaptive: deterministic across runs", same, same ? "identical" : "DIVERGED");
     }
 
+    // ---- Positional map (claim 569 output 2): objects carry source spans that tile the
+    //      stream exactly and reverse-walk losslessly. ----
+    auto tiles = [](const Result& r, size_t len) {        // spans contiguous, ordered, full cover
+        uint32_t expect = 0;
+        for (auto& e : r.elems) { if (e.srcOffset != expect) return false; expect += e.srcLen; }
+        return expect == len;
+    };
+    auto reconstructs = [](const Result& r, const std::vector<uint8_t>& src) {  // reverse-walk == original
+        std::vector<uint8_t> out;
+        for (auto& e : r.elems) for (uint32_t k = 0; k < e.srcLen; ++k) out.push_back(src[e.srcOffset + k]);
+        return out == src;
+    };
+    auto posCheck = [&](const char* label, std::vector<uint8_t> b) {
+        Result r = resolve(b.data(), b.size());
+        bool ok = tiles(r, b.size()) && reconstructs(r, b);
+        printf("[%s] %s  (%s, %zu elems)\n", ok ? "PASS" : "FAIL", label,
+               name(r.disc.table), r.elems.size());
+        if (ok) ++g_pass; else ++g_fail;
+    };
+
+    // 16-20. spans tile + reverse-walk losslessly across every decode path.
+    posCheck("pos: UTF-8 mixed tiles+reconstructs", {0x63,0x61,0x66,0xC3,0xA9,0xE2,0x82,0xAC,0x21});
+    posCheck("pos: Latin-1 tiles+reconstructs",     {0x48,0xE9,0x69,0xFF});
+    posCheck("pos: UTF-16LE tiles+reconstructs",    {0x48,0x00,0x69,0x00,0x3D,0xD8,0x00,0xDE}); // incl surrogate pair
+    posCheck("pos: UTF-32BE tiles+reconstructs",    {0x00,0x00,0x00,0x48,0x00,0x00,0x00,0x69}); // "Hi" UTF-32BE (75% null -> 4-byte)
+    posCheck("pos: UTF-8 with residue tiles+reconstructs", {0xC3,0xA9,0xC3,0x48});
+
+    // 21. spot-check a specific span: the é in "caf"+é sits at byte 3, spans 2 bytes.
+    {
+        std::vector<uint8_t> b = {0x63,0x61,0x66,0xC3,0xA9};
+        Result r = resolve(b.data(), b.size());
+        bool ok = r.elems.size() == 4 && r.elems[3].kind == Elem::Codepoint
+                  && r.elems[3].value == 0xE9 && r.elems[3].srcOffset == 3 && r.elems[3].srcLen == 2;
+        printf("[%s] pos: é object maps to source bytes [3,2)\n", ok ? "PASS" : "FAIL");
+        if (ok) ++g_pass; else ++g_fail;
+    }
+
     printf("\n==== %d passed, %d failed ====\n", g_pass, g_fail);
     return g_fail == 0 ? 0 : 1;
 }

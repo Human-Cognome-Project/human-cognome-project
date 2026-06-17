@@ -30,9 +30,17 @@ const char* name(Table);
 
 // One resolved element: a decoded codepoint, or a single raw residue byte (a byte the
 // chosen table could not decode — held at byte granularity, never dropped).
+//
+// Each element carries its SOURCE SPAN — the positional map (claim 569 dual output 2): the
+// byte offset + length it consumed in the original stream. Spans tile the source exactly
+// (contiguous, no gaps/overlaps), so the objects are addressable and the source is
+// reverse-walkable and lossless. This byte span is the highest-LoD ground truth the
+// atomized address namespace (claim 577) is later built on.
 struct Elem {
     enum Kind : uint8_t { Codepoint, Residue } kind;
-    uint32_t value;  // Unicode scalar, or the raw byte (0..255) when kind==Residue
+    uint32_t value;      // Unicode scalar, or the raw byte (0..255) when kind==Residue
+    uint32_t srcOffset;  // byte offset of this object in the source stream
+    uint32_t srcLen;     // number of source bytes this object consumed
 };
 
 struct Discrimination {

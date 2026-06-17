@@ -93,26 +93,29 @@ TablePick phaseB_1byte(const uint8_t* d, size_t n) {
 }
 
 // ---- Phase C: decode to codepoints; undecodable => residue byte (resync & continue) ----
+// Each element records its SOURCE SPAN (offset, len) = the positional map. Spans tile the
+// source exactly (every byte covered once, in order) so the stream is reverse-walkable.
 void decodeUtf8(const uint8_t* d, size_t n, Result& r) {
     size_t i = 0;
     while (i < n) {
+        const uint32_t at = uint32_t(i);
         const uint8_t b = d[i];
-        if (b < 0x80) { r.elems.push_back({Elem::Codepoint, b}); ++r.codepoints; ++i; continue; }
+        if (b < 0x80) { r.elems.push_back({Elem::Codepoint, b, at, 1}); ++r.codepoints; ++i; continue; }
         int need; uint32_t cp;
         if      ((b & 0xE0) == 0xC0) { need = 1; cp = b & 0x1F; }
         else if ((b & 0xF0) == 0xE0) { need = 2; cp = b & 0x0F; }
         else if ((b & 0xF8) == 0xF0) { need = 3; cp = b & 0x07; }
-        else { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
-        if (i + size_t(need) >= n) { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
+        else { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
+        if (i + size_t(need) >= n) { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
         bool ok = true;
         for (int k = 1; k <= need; ++k) if ((d[i+k] & 0xC0) != 0x80) { ok = false; break; }
-        if (!ok) { r.elems.push_back({Elem::Residue, b}); ++r.residue; ++i; continue; }
+        if (!ok) { r.elems.push_back({Elem::Residue, b, at, 1}); ++r.residue; ++i; continue; }
         for (int k = 1; k <= need; ++k) cp = (cp << 6) | (d[i+k] & 0x3F);
-        r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += need + 1;
+        r.elems.push_back({Elem::Codepoint, cp, at, uint32_t(need + 1)}); ++r.codepoints; i += need + 1;
     }
 }
 void decodeLatin1(const uint8_t* d, size_t n, Result& r) {
-    for (size_t i = 0; i < n; ++i) { r.elems.push_back({Elem::Codepoint, d[i]}); ++r.codepoints; }
+    for (size_t i = 0; i < n; ++i) { r.elems.push_back({Elem::Codepoint, d[i], uint32_t(i), 1}); ++r.codepoints; }
 }
 void decodeUtf16(const uint8_t* d, size_t n, Endian e, Result& r) {
     auto rd = [&](size_t o) -> uint16_t {
@@ -120,32 +123,34 @@ void decodeUtf16(const uint8_t* d, size_t n, Endian e, Result& r) {
     };
     size_t i = 0;
     while (i + 1 < n) {
+        const uint32_t at = uint32_t(i);
         const uint16_t u = rd(i);
         if (u >= 0xD800 && u <= 0xDBFF) {                 // high surrogate
             if (i + 3 < n) {
                 const uint16_t lo = rd(i+2);
                 if (lo >= 0xDC00 && lo <= 0xDFFF) {
                     const uint32_t cp = 0x10000 + ((uint32_t(u - 0xD800) << 10) | (lo - 0xDC00));
-                    r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += 4; continue;
+                    r.elems.push_back({Elem::Codepoint, cp, at, 4}); ++r.codepoints; i += 4; continue;
                 }
             }
-            r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; continue;   // lone surrogate
+            r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; continue;   // lone surrogate
         }
-        if (u >= 0xDC00 && u <= 0xDFFF) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; continue; }
-        r.elems.push_back({Elem::Codepoint, u}); ++r.codepoints; i += 2;
+        if (u >= 0xDC00 && u <= 0xDFFF) { r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; continue; }
+        r.elems.push_back({Elem::Codepoint, u, at, 2}); ++r.codepoints; i += 2;
     }
-    while (i < n) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }    // trailing odd byte
+    while (i < n) { r.elems.push_back({Elem::Residue, d[i], uint32_t(i), 1}); ++r.residue; ++i; }    // trailing odd byte
 }
 void decodeUtf32(const uint8_t* d, size_t n, Endian e, Result& r) {
     size_t i = 0;
     while (i + 3 < n) {
+        const uint32_t at = uint32_t(i);
         const uint32_t cp = e == Endian::Big
             ? (uint32_t(d[i]) << 24) | (uint32_t(d[i+1]) << 16) | (uint32_t(d[i+2]) << 8) | d[i+3]
             : (uint32_t(d[i+3]) << 24) | (uint32_t(d[i+2]) << 16) | (uint32_t(d[i+1]) << 8) | d[i];
-        if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }
-        else { r.elems.push_back({Elem::Codepoint, cp}); ++r.codepoints; i += 4; }
+        if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) { r.elems.push_back({Elem::Residue, d[i], at, 1}); ++r.residue; ++i; }
+        else { r.elems.push_back({Elem::Codepoint, cp, at, 4}); ++r.codepoints; i += 4; }
     }
-    while (i < n) { r.elems.push_back({Elem::Residue, d[i]}); ++r.residue; ++i; }
+    while (i < n) { r.elems.push_back({Elem::Residue, d[i], uint32_t(i), 1}); ++r.residue; ++i; }
 }
 } // anonymous namespace
 
