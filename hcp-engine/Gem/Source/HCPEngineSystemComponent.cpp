@@ -239,24 +239,8 @@ namespace HCPEngine
             }
         }
 
-        // --- raw-bytes test hook: HCP_RESOLVE_FILE=<file> -> bytes straight into ResolveBytes -> word tokens ---
-        if (const char* rf = std::getenv("HCP_RESOLVE_FILE"))
-        {
-            std::ifstream rfs(rf, std::ios::binary);
-            std::string rbytes((std::istreambuf_iterator<char>(rfs)), std::istreambuf_iterator<char>());
-            if (m_bedManager.IsInitialized() && !rbytes.empty())
-            {
-                ResolutionManifest rm = ResolveBytes(m_bedManager,
-                    reinterpret_cast<const uint8_t*>(rbytes.data()), rbytes.size());
-                fprintf(stderr, "[byte_resolve] %zu bytes -> %u runs, %u resolved\n",
-                    rbytes.size(), rm.totalRuns, rm.resolvedRuns);
-                for (const auto& rr : rm.results)
-                    fprintf(stderr, "  %-24s -> %s %s\n", rr.runText.c_str(),
-                        rr.resolved ? rr.matchedTokenId.c_str() : "(unresolved)",
-                        rr.resolved ? rr.matchedWord.c_str() : "");
-                fflush(stderr);
-            }
-        }
+        // (raw-bytes test hook HCP_RESOLVE_FILE moved below — it MUST run after the
+        //  envelope window is up, or it resolves against an empty bed)
 
         // Initialize envelope manager for LMDB cache lifecycle
         {
@@ -287,6 +271,27 @@ namespace HCPEngine
                 double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
                 fprintf(stderr, "[HCPEngine] Envelope ready: %d existing warm rows, %.1f ms\n",
                     warmSize, ms);
+                fflush(stderr);
+            }
+        }
+
+        // --- raw-bytes test hook: HCP_RESOLVE_FILE=<file> -> bytes straight into
+        //     ResolveBytes -> word tokens. Placed AFTER the envelope window is up so the
+        //     bed demand-feeds its warm slice per word-length during Resolve. ---
+        if (const char* rf = std::getenv("HCP_RESOLVE_FILE"))
+        {
+            std::ifstream rfs(rf, std::ios::binary);
+            std::string rbytes((std::istreambuf_iterator<char>(rfs)), std::istreambuf_iterator<char>());
+            if (m_bedManager.IsInitialized() && !rbytes.empty())
+            {
+                ResolutionManifest rm = ResolveBytes(m_bedManager,
+                    reinterpret_cast<const uint8_t*>(rbytes.data()), rbytes.size());
+                fprintf(stderr, "[byte_resolve] %zu bytes -> %u runs, %u resolved\n",
+                    rbytes.size(), rm.totalRuns, rm.resolvedRuns);
+                for (const auto& rr : rm.results)
+                    fprintf(stderr, "  %-24s -> %s %s\n", rr.runText.c_str(),
+                        rr.resolved ? rr.matchedTokenId.c_str() : "(unresolved)",
+                        rr.resolved ? rr.matchedWord.c_str() : "");
                 fflush(stderr);
             }
         }

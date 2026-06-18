@@ -446,7 +446,27 @@ namespace HCPEngine
                         m_pos[i].y - m_vel[i].y * dt,
                         m_pos[i].z - m_vel[i].z * dt, m_pos[i].w };
         }
+        // Differential contact floor (the bed broad-phase): a movable run char rests on
+        // the bed surface (Y=0) ONLY if a bed char shares its (X, Z) — same letter at the
+        // same position. No match → NO_FLOOR → it falls through and never settles. So a run
+        // settles iff every char has bed support, i.e. its spelling is present in the bed.
+        // (Was a flat NO_FLOOR for every particle, so nothing ever settled — claim 626.)
         std::vector<float> restY(count, hcp::settle::NO_FLOOR);
+        {
+            auto cellKey = [](const hcp::settle::Float4& p) -> uint64_t {
+                uint32_t xi = static_cast<uint32_t>(lroundf(p.x));
+                uint32_t zi = static_cast<uint32_t>(lroundf(p.z / RC_Z_SCALE));
+                return (static_cast<uint64_t>(xi) << 32) | zi;
+            };
+            AZStd::unordered_set<uint64_t> bedCells;
+            AZ::u32 bedCount = (m_vocabParticleCount < count) ? m_vocabParticleCount : count;
+            bedCells.reserve(bedCount);
+            for (AZ::u32 i = 0; i < bedCount; ++i)
+                bedCells.insert(cellKey(cur[i]));                  // static bed region [0, vocab)
+            for (AZ::u32 i = m_vocabParticleCount; i < count; ++i) // movable run region [vocab, count)
+                if (bedCells.count(cellKey(cur[i])))
+                    restY[i] = 0.0f;                               // matching bed char → rest on the bed
+        }
         for (int s = 0; s < steps; ++s)
             hcp::settle::SettleStepAll(cur, prev, restY);
 
