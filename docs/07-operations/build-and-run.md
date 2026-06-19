@@ -13,8 +13,8 @@ How to build the engine Gem and talk to the running daemon.
 
 ## The engine
 
-The NAPIER inference engine is an **O3DE 25.10.2 C++ Gem** using **PhysX 5 GPU-accelerated PBD**
-(claim 201). It runs headless as a daemon.
+The NAPIER inference engine is an **AZSL/host-resident compute engine** — host C++ plus AZSL compute
+kernels, PhysX fully removed (claim 201). It runs headless as a daemon.
 
 ### Build
 

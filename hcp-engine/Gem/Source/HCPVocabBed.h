@@ -123,11 +123,11 @@ namespace HCPEngine
         bool isContraction = false;  // True = compound word split, false = morpheme strip
     };
 
-    // ---- Workspace: one reusable GPU particle system with its own PxScene ----
+    // ---- Workspace: one reusable host-resident particle workspace ----
     //
-    // Created once at startup. Vocab data overwritten per cycle via CUDA memcpy.
+    // Created once at startup. Vocab data is host-resident (host vectors); overwritten per cycle by host copy (no CUDA).
     // Buffer layout: [vocab region (static, invMass=0)] [stream region (dynamic, invMass=1)]
-    // Each workspace owns its own PxScene for pipelined GPU/CPU overlap:
+    // Each workspace is triple-buffered for pipelined GPU/CPU overlap:
     //   Scene A simulating (GPU) while Scene B is being read back (CPU)
     //   while Scene C is being loaded (CPU + LMDB prefetch).
 
@@ -204,7 +204,7 @@ namespace HCPEngine
         void CollectSplit(AZStd::vector<ResolutionResult>& resolved,
                           AZStd::vector<AZ::u32>& unresolvedRunIndices);
 
-        //! Release all GPU resources including owned PxScene.
+        //! Release all GPU/host workspace resources.
         void Shutdown();
 
     private:

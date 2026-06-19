@@ -3,12 +3,12 @@
 /// HCP Workstation Engine — lightweight kernel host for standalone operation.
 ///
 /// Embeds the read/write DB kernels + LMDB vocabulary so the workstation
-/// can browse and edit data without a running daemon. Physics operations
-/// (phys_resolve, tokenize, ingest with PBD) still require the daemon
+/// can browse and edit data without a running daemon. Resolution operations
+/// (tokenize, ingest, byte resolve) still require the daemon
 /// via HCPSocketClient.
 ///
 /// Kernel composition mirrors HCPEngineSystemComponent but excludes:
-///   - PhysX pipeline (PBD, VocabBed, DetectionScene)
+///   - Resolution pipeline (VocabBed, byte-floor, AZSL settle)
 ///   - SocketServer (we're a client, not a server)
 ///   - EnvelopeManager, EntityAnnotator (daemon-side lifecycle)
 ///

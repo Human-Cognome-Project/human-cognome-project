@@ -4,15 +4,16 @@ Current state of the Human Cognome Project, sourced from the orchestrator claim-
 against the live databases and engine. For the explicit deferrals and planned-but-unbuilt items,
 read [deferred-and-open.md](deferred-and-open.md) alongside this.
 
-**As of 2026-06-01.**
+**As of 2026-06-19.**
 
 ---
 
 ## One-paragraph summary
 
-The linguistic engine is real, running software: an O3DE/PhysX 5 C++ Gem that ingests text, resolves
-it through a physics-based resolution chamber, stores documents in an inference-conducive format, and
-reproduces them at >98% accuracy. The English vocabulary substrate is ~1.494M entries on NAS. In
+The linguistic engine is real, running software: an AZSL/host-resident settle (PhysX removed) that
+ingests text, resolves it through a physics-based resolution chamber, stores documents in an
+inference-conducive format, and reproduces them at >98% accuracy. The English vocabulary substrate is
+~1.494M entries on NAS. In
 2026-04 the project **pivoted** from document storage (done-enough) to **NSM concept modeling**, and
 the current active work is **defining the primitive db functions** — the elemental operations that
 let every word resolve to db operations that translate to explication statements. The deeper
@@ -22,9 +23,16 @@ deeming/weighting math and the bit-class specifics are explicitly deferred to a 
 
 ## Done / stable
 
-- **Linguistic engine baseline** (claim 201) — O3DE 25.10.2 C++ Gem, PhysX 5 GPU PBD, headless
-  daemon on port 9720, two-phase resolution pipeline, ~21,300 LOC / ~35 modules. See
+- **Linguistic engine baseline** (claim 201) — AZSL/host-resident settle (PhysX removed): host C++
+  plus AZSL compute kernels, headless daemon on port 9720, resolution-chamber pipeline. See
   [../04-engine/implementation-baseline.md](../04-engine/implementation-baseline.md).
+- **bytes→words resolves end-to-end** — a lossless byte-floor (raw bytes→codepoints) feeds the
+  resolution chambers, which settle and emit canonical ids. Verified via an `HCP_RESOLVE_FILE` hook
+  on the headless daemon: "the cat sat on the mat" → 6/6 canonical ids.
+- **Compact-ID packer slice** (`hcp-engine/Gem/Source/Pack/`) — a `{compact-id → chars}` store
+  (single `MDB_INTEGERKEY` sub-db) plus a CPU-side compact→canonical ledger. 13/13 ctest green.
+  **Standalone slice — landed, not yet wired** into the live engine (`EnvelopeManager` still writes
+  the old multi-sub-db format; `BedManager::RebuildVocab` still reads it).
 - **English vocabulary substrate** (claim 203) — `hcp_english` ≈ **1,494,216 entries** (verified
   live), full Kaikki re-ingestion. 10 data shards on NAS HAVEN. See
   [../05-data-layer/shards-and-schema.md](../05-data-layer/shards-and-schema.md).

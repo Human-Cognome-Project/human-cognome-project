@@ -20,7 +20,7 @@ namespace HCPEngine
     // ========================================================================
     // Workspace — one reusable GPU particle system
     //
-    // Created once at startup. Vocab overwritten per cycle via CUDA memcpy.
+    // Created once at startup. Vocab is host-resident (host vectors); overwritten per cycle by host copy (no CUDA).
     // Buffer: [vocab region (static)] [stream region (dynamic)]
     // ========================================================================
 
@@ -893,7 +893,7 @@ namespace HCPEngine
         AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
             [](AZ::u32 a, AZ::u32 b) { return a < b; });
 
-        // Create workspace pools — each workspace gets its own PxScene
+        // Create workspace pools — each workspace is triple-buffered
         // for pipelined GPU/CPU overlap (simulate A while reading B, loading C)
         AZ::u32 maxPhaseGroups = 2;  // 1 active phase + inert
         m_primaryWorkspaces.resize(WS_PRIMARY_COUNT);
@@ -1028,7 +1028,7 @@ namespace HCPEngine
             AZ::u32 offset = 0;
 
             // Pipeline: load each workspace, kick off simulate, overlap with next load.
-            // Each workspace owns its own PxScene — simulate() dispatches to GPU
+            // Each workspace runs its own settle — simulate() dispatches to GPU
             // and returns immediately, so we can load the next workspace on CPU
             // while the previous one's GPU work is in flight.
 

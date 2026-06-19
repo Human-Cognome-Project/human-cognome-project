@@ -36,14 +36,16 @@ The stack is built from appropriately licensed open source tools that cover our 
 - **EBus / AZ::Interface** — decoupled service communication between modules
 - **SDK distribution** — contributors install the SDK + build just the Gem, no full engine compilation
 
-### PhysX 5.1.1 — Physics Library
+### Physics layer — AZSL/host-resident settle (supersedes PhysX 5.1.1)
 
-**What**: NVIDIA PhysX 5, GPU-accelerated physics. BSD 3-Clause licensed. Built into O3DE natively.
-**Where**: `~/.o3de/3rdParty/packages/PhysX-5.1.1-rev4-linux/`
+> **Superseded.** This stack originally used NVIDIA PhysX 5 (GPU-accelerated PBD) as the physics
+> library. **PhysX has been fully removed.** The settle is now an AZSL/host-resident compute kernel:
+> a host `SettleKernel` (CPU reference plus an AZSL compute kernel, GPU-equivalence verified on a
+> GTX 750 Ti). Tokens are still particles, bonds still forces — but the solver is now our own host
+> code, not PhysX. The architecture was always designed so the physics layer could be replaced while
+> everything above and below it stays; this migration is exactly that.
 
-**Why PhysX**: Extensive library of physics functions — particle systems, constraint solvers, collision detection, force computation, GPU acceleration. Tokens are particles, bonds are constraints, linguistic rules are forces. PhysX has the breadth of functions to support this without writing everything from scratch.
-
-**Note**: PhysX proves the concept for early development. A custom physics engine with ~65 linguist-defined core forces is a future contributor project. The architecture is designed so the physics layer can be replaced while everything above and below it stays.
+**Note**: A custom force model with ~65 linguist-defined core forces remains a future contributor project (see Phase 6).
 
 ### C++ — Engine Language
 
@@ -71,11 +73,12 @@ The HCPEngine Gem (`Gem/Source/`) contains:
 
 | Module | File | Status |
 |--------|------|--------|
-| **Vocabulary** | HCPVocabulary.h/.cpp | Working — LMDB reader, 7 sub-DBs, affix loader (3696 entries, bucket-indexed) |
+| **Vocabulary** | HCPVocabulary.h/.cpp | Working — LMDB reader, affix loader, bucket-indexed |
 | **Tokenizer** | HCPTokenizer.h/.cpp | Working — 7-step resolution cascade with affix decomposition, dash splitting, var cache |
-| **Particle Pipeline** | HCPParticlePipeline.h/.cpp | Working — PBD disassembly/reassembly/PBM derivation |
-| **Bond Compiler** | HCPBondCompiler.h/.cpp | Working — compiles char→word (5,409 pairs) and byte→char (1,976 pairs) from Postgres |
-| **Detection Scene** | HCPDetectionScene.h/.cpp | Working — physics-based token detection with PBD particles + PBM forces |
+| **Byte-floor** | HCPByteIngest.h/.cpp | Working — raw bytes → Unicode codepoints, lossless round-trip (positional map + paint-all fallback); feeds the resolution chambers |
+| **Resolution chambers / settle** | HCPVocabBed.h/.cpp, Settle/SettleKernel.h | Working — char→word settle via persistent VocabBeds; host `SettleKernel` (CPU reference + AZSL compute kernel, GPU-equivalence verified on a GTX 750 Ti). A differential-contact-floor fix makes chambers settle and emit canonical ids. bytes→words verified end-to-end via `HCP_RESOLVE_FILE`: "the cat sat on the mat" → 6/6 canonical ids |
+| **Compact-ID packer** | Pack/ (PackKernel.h, PackStore.h, pack_vocab.cpp) | Landed, **not yet wired** — `{compact-id → chars}` store (single `MDB_INTEGERKEY` sub-db) + CPU-side compact→canonical ledger. 13/13 ctest green. EnvelopeManager still writes the old multi-sub-db format; BedManager::RebuildVocab still reads it |
+| **Bond Compiler** | HCPBondCompiler.h/.cpp | Working — compiles char→word and byte→char pairs from Postgres |
 | **Storage** | HCPStorage.h/.cpp | Working — Postgres write kernel, position storage + PBM storage (StorePBM) |
 | **Cache Miss Resolver** | HCPCacheMissResolver.h/.cpp | Working — LMDB miss → Postgres fill |
 | **System Component** | HCPEngineSystemComponent.h/.cpp | Working — orchestrates all modules, self-test on Activate() |
@@ -133,9 +136,9 @@ Remaining:
 
 ### Phase 3: Boilerplate / Comparison Tool
 
-First real PhysX particle pipeline use case beyond self-test.
+First real use of the settle path beyond self-test.
 
-Two documents laid side-by-side as parallel particle streams:
+Two documents laid side-by-side as parallel particle streams (resolved through the AZSL/host settle):
 - **Same tokens attract** (unidirectional magnetic force across the gap)
 - **Different tokens repel**
 - **Spaces are soft-constrained** — allow sliding placement so phrases align even with extra/missing words
@@ -173,7 +176,7 @@ This is where linguistics meets physics. The linguist specialist defines the tra
 
 ## Architecture Principles
 
-1. **Engine IS the tokenizer** — all processing in C++/PhysX, not Python
+1. **Engine IS the tokenizer** — all processing in C++ (host + AZSL compute), not Python
 2. **Disassembly AND reassembly are physics operations** — not sequential algorithms
 3. **PostgreSQL is the source of truth** — LMDB is runtime cache only
 4. **PBM is derived then stored** — position maps are the product, PBM bonds derived on the fly and stored to hcp_fic_pbm
@@ -188,22 +191,23 @@ Each module is a single-purpose operation. They can be stacked in different orde
 
 | Module | Input | Output | File |
 |--------|-------|--------|------|
+| **ByteFloor** | raw bytes | codepoints + PositionMap | HCPByteIngest.cpp |
 | **Tokenize** | text | TokenStream | HCPTokenizer.cpp |
-| **Detokenize** | TokenStream + vocab | text | HCPDetokenizer.cpp |
-| **DisassemblePositions** | TokenStream | PositionMap | HCPParticlePipeline.cpp |
-| **ReassemblePositions** | PositionMap | TokenStream | HCPParticlePipeline.cpp |
-| **DerivePBM** | TokenStream | PBMData (bonds) | HCPParticlePipeline.cpp |
+| **Settle (resolution chamber)** | char stream | resolved tokens (canonical ids) | HCPVocabBed.cpp, Settle/SettleKernel.h |
 | **StorePBM** | PBMData | DB writes | HCPStorage.cpp |
 | **StorePositionMap** | PositionMap | DB writes | HCPStorage.cpp |
 | **LoadPositionMap** | doc_id | PositionMap | HCPStorage.cpp |
 | **ProcessJsonMetadata** | JSON + doc_pk | DB metadata | HCPJsonInterpreter.cpp |
 | **StoreProvenance** | provenance fields | DB writes | HCPStorage.cpp |
 
+> **Note:** the earlier `Detokenize` (HCPDetokenizer.cpp) and the PBD `HCPParticlePipeline.cpp`
+> disassemble/reassemble/DerivePBM kernels are **removed** along with `HCPDetectionScene`. The
+> byte-floor → settle path above is the current resolution route.
+
 Example stacks:
-- **Ingest**: Tokenize → DisassemblePositions → StorePositionMap → DerivePBM → StorePBM
-- **Retrieve as text**: LoadPositionMap → ReassemblePositions → Detokenize
-- **Internal analysis**: LoadPositionMap → ReassemblePositions (stay in tokens)
-- **Round-trip test**: Tokenize → DisassemblePositions → ReassemblePositions → Detokenize → compare
+- **Resolve (bytes→words)**: ByteFloor → Settle (resolution chamber) → canonical ids
+- **Ingest**: ByteFloor → Tokenize → Settle → StorePositionMap → StorePBM
+- **Retrieve**: LoadPositionMap → reconstruct from positions
 
 ## Related Documentation
 

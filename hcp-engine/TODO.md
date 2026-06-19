@@ -1,6 +1,6 @@
 # HCP Engine — TODO
 
-Last updated: 2026-03-06
+Last updated: 2026-06-19
 
 ## Legend
 
@@ -9,6 +9,11 @@ Last updated: 2026-03-06
 - **[IN PROGRESS]** — someone is working on it
 
 ---
+
+## Active: AZSL settle / packer wiring
+
+- [ ] **[READY]** Remove the misplaced runText→tokenId relink in `CheckSettlement` (HCPVocabBed.cpp ~L225) — the settle should carry identity, not re-look-up the runText against the lookup map.
+- [ ] **[READY]** Wire the compact-ID packer (`Gem/Source/Pack/`) into the live engine path — `EnvelopeManager` still writes the old multi-sub-db format and `BedManager::RebuildVocab` still reads it; switch both to the `{compact-id → chars}` store + CPU-side compact→canonical ledger.
 
 ## Active: Source Workstation Packaging
 
@@ -63,6 +68,10 @@ Last updated: 2026-03-06
 
 ## Completed (recent)
 
+- [x] PhysX→AZSL migration — PhysX fully removed; settle is now a host `SettleKernel` (CPU reference + AZSL compute kernel, GPU-equivalence verified on a GTX 750 Ti)
+- [x] Workspace scene swap — PxParticleBuffer/CUDA → host vectors; BedManager PhysX plumbing dropped
+- [x] Byte-floor → chambers end-to-end — raw bytes→codepoints (lossless) feeding the resolution chambers; differential-contact-floor fix; bytes→words verified via HCP_RESOLVE_FILE (6/6 canonical ids)
+- [x] Compact-ID packer slice — `{compact-id → chars}` store + compact→canonical ledger, 13/13 ctest (standalone, not yet wired)
 - [x] V-1/V-3 variant normalization — TryVariantNormalize in resolve loop (d59c2fa)
 - [x] Scene pipeline refactor — RunPipelinedCascade, WS_PRIMARY_COUNT 3 (c7b9cb6)
 - [x] Boundary fixes — /, [, ], •, trailing ., numeric var tagging (8ecade1)
