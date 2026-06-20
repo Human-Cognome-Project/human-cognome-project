@@ -15,17 +15,12 @@
 
 #include "Settle/SettleKernel.h"
 
-#include <PxPhysicsAPI.h>
-#include <PxParticleGpu.h>
-#include <gpu/PxGpu.h>
-#include <System/PhysXSystem.h>
-
 namespace HCPEngine
 {
     // ========================================================================
     // Workspace — one reusable GPU particle system
     //
-    // Created once at startup. Vocab overwritten per cycle via CUDA memcpy.
+    // Created once at startup. Vocab is host-resident (host vectors); overwritten per cycle by host copy (no CUDA).
     // Buffer: [vocab region (static)] [stream region (dynamic)]
     // ========================================================================
 
@@ -34,192 +29,38 @@ namespace HCPEngine
         Shutdown();
     }
 
-    Workspace::Workspace(Workspace&& other) noexcept
-        : m_physics(other.m_physics)
-        , m_scene(other.m_scene)
-        , m_cuda(other.m_cuda)
-        , m_particleSystem(other.m_particleSystem)
-        , m_particleBuffer(other.m_particleBuffer)
-        , m_material(other.m_material)
-        , m_ownsScene(other.m_ownsScene)
-        , m_bufferCapacity(other.m_bufferCapacity)
-        , m_vocabParticleCount(other.m_vocabParticleCount)
-        , m_maxStreamSlots(other.m_maxStreamSlots)
-        , m_currentWordLength(other.m_currentWordLength)
-        , m_activeInScene(other.m_activeInScene)
-        , m_pendingSteps(other.m_pendingSteps)
-        , m_simDt(other.m_simDt)
-        , m_streamSlots(AZStd::move(other.m_streamSlots))
-        , m_tierPhases(AZStd::move(other.m_tierPhases))
-        , m_inertPhase(other.m_inertPhase)
-        , m_maxTierCount(other.m_maxTierCount)
-    {
-        other.m_physics = nullptr;
-        other.m_scene = nullptr;
-        other.m_cuda = nullptr;
-        other.m_particleSystem = nullptr;
-        other.m_particleBuffer = nullptr;
-        other.m_material = nullptr;
-        other.m_ownsScene = false;
-        other.m_bufferCapacity = 0;
-        other.m_vocabParticleCount = 0;
-        other.m_maxStreamSlots = 0;
-        other.m_currentWordLength = 0;
-        other.m_activeInScene = false;
-        other.m_pendingSteps = 0;
-        other.m_simDt = 0.0f;
-        other.m_inertPhase = 0;
-        other.m_maxTierCount = 0;
-    }
-
-    Workspace& Workspace::operator=(Workspace&& other) noexcept
-    {
-        if (this != &other)
-        {
-            Shutdown();
-            m_physics = other.m_physics;
-            m_scene = other.m_scene;
-            m_cuda = other.m_cuda;
-            m_particleSystem = other.m_particleSystem;
-            m_particleBuffer = other.m_particleBuffer;
-            m_material = other.m_material;
-            m_ownsScene = other.m_ownsScene;
-            m_bufferCapacity = other.m_bufferCapacity;
-            m_vocabParticleCount = other.m_vocabParticleCount;
-            m_maxStreamSlots = other.m_maxStreamSlots;
-            m_currentWordLength = other.m_currentWordLength;
-            m_activeInScene = other.m_activeInScene;
-            m_pendingSteps = other.m_pendingSteps;
-            m_simDt = other.m_simDt;
-            m_streamSlots = AZStd::move(other.m_streamSlots);
-            m_tierPhases = AZStd::move(other.m_tierPhases);
-            m_inertPhase = other.m_inertPhase;
-            m_maxTierCount = other.m_maxTierCount;
-
-            other.m_physics = nullptr;
-            other.m_scene = nullptr;
-            other.m_cuda = nullptr;
-            other.m_particleSystem = nullptr;
-            other.m_particleBuffer = nullptr;
-            other.m_material = nullptr;
-            other.m_ownsScene = false;
-            other.m_bufferCapacity = 0;
-            other.m_vocabParticleCount = 0;
-            other.m_maxStreamSlots = 0;
-            other.m_currentWordLength = 0;
-            other.m_activeInScene = false;
-            other.m_pendingSteps = 0;
-            other.m_simDt = 0.0f;
-            other.m_inertPhase = 0;
-            other.m_maxTierCount = 0;
-        }
-        return *this;
-    }
+    // Host-resident members (vectors + PODs) move cleanly — no GPU resources to
+    // hand off, so the compiler-generated moves are correct and leak-free.
+    Workspace::Workspace(Workspace&& other) noexcept = default;
+    Workspace& Workspace::operator=(Workspace&& other) noexcept = default;
 
     bool Workspace::Create(
-        physx::PxPhysics* physics,
-        physx::PxCudaContextManager* cuda,
         AZ::u32 bufferCapacity,
         AZ::u32 maxTiers)
     {
-        if (!physics || !cuda || bufferCapacity == 0) return false;
+        if (bufferCapacity == 0) return false;
 
-        m_physics = physics;
-        m_cuda = cuda;
         m_bufferCapacity = bufferCapacity;
         m_maxTierCount = maxTiers;
 
-        // Create dedicated PxScene for this workspace (pipelined: GPU simulates
-        // one scene while CPU reads/loads others)
-        {
-            PhysX::PhysXSystem* physxSystem = PhysX::GetPhysXSystem();
-            physx::PxCpuDispatcher* cpuDispatcher = physxSystem
-                ? physxSystem->GetPxCpuDispathcher() : nullptr;
-            if (!cpuDispatcher) return false;
-
-            physx::PxSceneDesc sceneDesc(physics->getTolerancesScale());
-            sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
-            sceneDesc.cpuDispatcher = cpuDispatcher;
-            sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-            sceneDesc.cudaContextManager = cuda;
-            sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
-            sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
-            sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
-
-            m_scene = physics->createScene(sceneDesc);
-            if (!m_scene) return false;
-            m_ownsScene = true;
-        }
-
-        // Create PBD particle system
-        m_particleSystem = physics->createPBDParticleSystem(*cuda, 96);
-        if (!m_particleSystem) return false;
-
-        m_particleSystem->setRestOffset(RC_REST_OFFSET);
-        m_particleSystem->setContactOffset(RC_CONTACT_OFFSET);
-        m_particleSystem->setParticleContactOffset(RC_CONTACT_OFFSET);
-        m_particleSystem->setSolidRestOffset(RC_REST_OFFSET);
-        m_particleSystem->setSolverIterationCounts(4, 1);
-        m_activeInScene = false;
-
-        // Create PBD material
-        m_material = physics->createPBDMaterial(
-            0.2f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-        if (!m_material) { Shutdown(); return false; }
-
-        // Phase groups: one per tier + inert (group 0)
+        // Phase tags: logical tier ids (host model — no PhysX phase groups).
+        // Inert = 0; tier t = t+1. Values are membership tags only; the settle
+        // reads position.w (invMass), not phase.
         m_inertPhase = 0;
         m_tierPhases.clear();
         for (AZ::u32 t = 0; t < maxTiers; ++t)
-        {
-            physx::PxU32 phase = m_particleSystem->createPhase(
-                m_material,
-                physx::PxParticlePhaseFlags(
-                    physx::PxParticlePhaseFlag::eParticlePhaseSelfCollide));
-            m_tierPhases.push_back(phase);
-        }
+            m_tierPhases.push_back(t + 1);
 
-        // Create particle buffer
-        m_particleBuffer = physics->createParticleBuffer(bufferCapacity, 1, cuda);
-        if (!m_particleBuffer) { Shutdown(); return false; }
-
-        // Park all particles initially
-        {
-            physx::PxScopedCudaLock lock(*cuda);
-
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
-
-            physx::PxVec4* hostPos = cuda->allocPinnedHostBuffer<physx::PxVec4>(bufferCapacity);
-            physx::PxVec4* hostVel = cuda->allocPinnedHostBuffer<physx::PxVec4>(bufferCapacity);
-            physx::PxU32* hostPhase = cuda->allocPinnedHostBuffer<physx::PxU32>(bufferCapacity);
-
-            for (AZ::u32 i = 0; i < bufferCapacity; ++i)
-            {
-                hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);
-                hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                hostPhase[i] = m_inertPhase;
-            }
-
-            cuda->copyHToD(devPos, hostPos, bufferCapacity);
-            cuda->copyHToD(devVel, hostVel, bufferCapacity);
-            cuda->copyHToD(devPhase, hostPhase, bufferCapacity);
-
-            cuda->freePinnedHostBuffer(hostPos);
-            cuda->freePinnedHostBuffer(hostVel);
-            cuda->freePinnedHostBuffer(hostPhase);
-        }
-
-        m_particleBuffer->setNbActiveParticles(0);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
-        m_particleSystem->addParticleBuffer(m_particleBuffer);
+        // Allocate host particle arrays, all parked (off-screen, zero velocity, inert).
+        m_pos.assign(bufferCapacity, hcp::settle::Float4{ 0.0f, -100.0f, 0.0f, 0.0f });
+        m_vel.assign(bufferCapacity, hcp::settle::Float4{ 0.0f, 0.0f, 0.0f, 0.0f });
+        m_phase.assign(bufferCapacity, m_inertPhase);
+        m_activeParticles = 0;
 
         m_vocabParticleCount = 0;
         m_maxStreamSlots = 0;
         m_currentWordLength = 0;
+        m_activeInScene = false;
 
         return true;
     }
@@ -229,7 +70,7 @@ namespace HCPEngine
         fprintf(stderr, "[WS] LoadVocabPack: len=%u vocabParticles=%u bufCap=%u\n",
             wordLength, pack.totalVocabParticles, m_bufferCapacity);
         fflush(stderr);
-        if (!m_particleBuffer || !m_cuda) return 0;
+        if (m_pos.empty()) return 0;
         if (pack.totalVocabParticles == 0 || pack.totalVocabParticles > m_bufferCapacity) return 0;
 
         m_vocabParticleCount = pack.totalVocabParticles;
@@ -244,50 +85,24 @@ namespace HCPEngine
             m_maxStreamSlots, remainingCapacity);
         fflush(stderr);
 
-        // Write vocab into buffer
+        // Write vocab into the host arrays (was a CUDA H->D copy; now a direct write).
+        for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
         {
-            physx::PxScopedCudaLock lock(*m_cuda);
-
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
-
-            physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
-            physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
-            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(m_vocabParticleCount);
-
-            // Copy from pre-built pack arrays
-            for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
-            {
-                AZ::u32 base = i * 4;
-                hostPos[i] = physx::PxVec4(
-                    pack.positions[base + 0],
-                    pack.positions[base + 1],
-                    pack.positions[base + 2],
-                    pack.positions[base + 3]);
-                hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                // Remap logical tier index to actual phase group ID
-                AZ::u32 logicalTier = pack.phases[i];
-                hostPhase[i] = (logicalTier < m_tierPhases.size())
-                    ? m_tierPhases[logicalTier]
-                    : m_inertPhase;
-            }
-
-            m_cuda->copyHToD(devPos, hostPos, m_vocabParticleCount);
-            m_cuda->copyHToD(devVel, hostVel, m_vocabParticleCount);
-            m_cuda->copyHToD(devPhase, hostPhase, m_vocabParticleCount);
-
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
-            m_cuda->freePinnedHostBuffer(hostPhase);
+            AZ::u32 base = i * 4;
+            m_pos[i] = { pack.positions[base + 0],
+                         pack.positions[base + 1],
+                         pack.positions[base + 2],
+                         pack.positions[base + 3] };
+            m_vel[i] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            // Remap logical tier index to phase tag
+            AZ::u32 logicalTier = pack.phases[i];
+            m_phase[i] = (logicalTier < m_tierPhases.size())
+                ? m_tierPhases[logicalTier]
+                : m_inertPhase;
         }
-        fprintf(stderr, "[WS] LoadVocabPack: CUDA copy done\n"); fflush(stderr);
 
         // Only vocab active, no stream yet
-        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
+        m_activeParticles = m_vocabParticleCount;
 
         m_streamSlots.clear();
 
@@ -304,33 +119,23 @@ namespace HCPEngine
         fprintf(stderr, "[WS] LoadStreamRuns: %zu indices, wordLen=%u, vocabCount=%u\n",
             indices.size(), wordLength, m_vocabParticleCount);
         fflush(stderr);
-        if (!m_particleBuffer || !m_cuda || indices.empty()) return 0;
+        if (m_pos.empty() || indices.empty()) return 0;
 
         m_streamSlots.clear();
         AZ::u32 overflowCount = 0;
         AZ::u32 streamPhase = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
         AZ::u32 maxDynParticles = m_maxStreamSlots * wordLength;
+        AZ::u32 dynBase = m_vocabParticleCount;   // absolute start of the dynamic region
         fprintf(stderr, "[WS] LoadStreamRuns: maxDynParticles=%u (slots=%u x len=%u)\n",
             maxDynParticles, m_maxStreamSlots, wordLength);
         fflush(stderr);
 
-        physx::PxVec4* hostPos = nullptr;
-        physx::PxVec4* hostVel = nullptr;
-        physx::PxU32* hostPhase = nullptr;
-
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(maxDynParticles);
-            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(maxDynParticles);
-            hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(maxDynParticles);
-        }
-
-        // Init dynamic region to parked state
+        // Init dynamic region to parked state (direct host write — was a pinned buffer)
         for (AZ::u32 i = 0; i < maxDynParticles; ++i)
         {
-            hostPos[i] = physx::PxVec4(0.0f, -100.0f, 0.0f, 0.0f);
-            hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-            hostPhase[i] = m_inertPhase;
+            m_pos[dynBase + i] = { 0.0f, -100.0f, 0.0f, 0.0f };
+            m_vel[dynBase + i] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            m_phase[dynBase + i] = m_inertPhase;
         }
 
         AZ::u32 slotIdx = 0;
@@ -362,42 +167,22 @@ namespace HCPEngine
                 char ch = (c < run.text.size()) ? run.text[c] : '\0';
                 float z = static_cast<float>(static_cast<unsigned char>(ch)) * RC_Z_SCALE;
 
-                hostPos[dynOffset + c] = physx::PxVec4(
-                    static_cast<float>(c), RC_Y_OFFSET, z, 1.0f);
-                hostVel[dynOffset + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                hostPhase[dynOffset + c] = streamPhase;
+                AZ::u32 p = dynBase + dynOffset + c;
+                m_pos[p] = { static_cast<float>(c), RC_Y_OFFSET, z, 1.0f };
+                m_vel[p] = { 0.0f, 0.0f, 0.0f, 0.0f };
+                m_phase[p] = streamPhase;
             }
 
             m_streamSlots.push_back(ss);
             ++slotIdx;
         }
 
-        // Upload dynamic region
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
-
-            m_cuda->copyHToD(devPos + m_vocabParticleCount, hostPos, maxDynParticles);
-            m_cuda->copyHToD(devVel + m_vocabParticleCount, hostVel, maxDynParticles);
-            m_cuda->copyHToD(devPhase + m_vocabParticleCount, hostPhase, maxDynParticles);
-
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
-            m_cuda->freePinnedHostBuffer(hostPhase);
-        }
-        fprintf(stderr, "[WS] LoadStreamRuns: CUDA copy done (offset=%u+%u)\n",
-            m_vocabParticleCount, maxDynParticles);
-        fflush(stderr);
+        // Dynamic region is already written into the host arrays — no device upload.
 
         // Only activate the particles we actually loaded, not the full stream capacity.
         // slotIdx = number of runs loaded; each run = wordLength particles.
         AZ::u32 actualDynParticles = slotIdx * wordLength;
-        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount + actualDynParticles);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
+        m_activeParticles = m_vocabParticleCount + actualDynParticles;
 
         fprintf(stderr, "[WS] LoadStreamRuns: done, activeParticles=%u (vocab=%u+dyn=%u), overflow=%u\n",
             m_vocabParticleCount + actualDynParticles, m_vocabParticleCount, actualDynParticles, overflowCount);
@@ -407,20 +192,14 @@ namespace HCPEngine
 
     void Workspace::CheckSettlement(AZ::u32 tierIndex, const VocabPack& pack)
     {
-        if (!m_particleBuffer || !m_cuda || m_streamSlots.empty()) return;
+        if (m_pos.empty() || m_streamSlots.empty()) return;
 
-        // Only read back actually-active particles (vocab + loaded stream runs)
+        // Velocities are host-resident — read directly (was a CUDA D->H readback).
         AZ::u32 readbackCount = m_vocabParticleCount +
             static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
         if (readbackCount > m_bufferCapacity) readbackCount = m_bufferCapacity;
 
-        physx::PxVec4* hostVel = nullptr;
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
-            m_cuda->copyDToH(hostVel, devVel, readbackCount);
-        }
+        const hcp::settle::Float4* hostVel = m_vel.data();
 
         // Get tier lookup (O(1) hash)
         const AZStd::unordered_map<AZStd::string, AZ::u32>* lookup = nullptr;
@@ -455,17 +234,12 @@ namespace HCPEngine
                 }
             }
         }
-
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            m_cuda->freePinnedHostBuffer(hostVel);
-        }
     }
 
     // ---- LoadRulePack: load partial-match patterns into vocab region ----
     AZ::u32 Workspace::LoadRulePack(const RulePack& pack)
     {
-        if (!m_particleBuffer || !m_cuda) return 0;
+        if (m_pos.empty()) return 0;
         if (pack.totalPatternParticles == 0 || pack.totalPatternParticles > m_bufferCapacity) return 0;
 
         m_vocabParticleCount = pack.totalPatternParticles;
@@ -475,37 +249,17 @@ namespace HCPEngine
         m_maxStreamSlots = remainingCapacity / pack.cellLength;
         if (m_maxStreamSlots < 1) m_maxStreamSlots = 1;
 
+        AZ::u32 patternPhase = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
+        for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
         {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
-
-            physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
-            physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(m_vocabParticleCount);
-            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(m_vocabParticleCount);
-
-            for (AZ::u32 i = 0; i < m_vocabParticleCount; ++i)
-            {
-                AZ::u32 base = i * 4;
-                hostPos[i] = physx::PxVec4(pack.positions[base], pack.positions[base+1],
-                                            pack.positions[base+2], pack.positions[base+3]);
-                hostVel[i] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                hostPhase[i] = m_tierPhases.empty() ? m_inertPhase : m_tierPhases[0];
-            }
-
-            m_cuda->copyHToD(devPos, hostPos, m_vocabParticleCount);
-            m_cuda->copyHToD(devVel, hostVel, m_vocabParticleCount);
-            m_cuda->copyHToD(devPhase, hostPhase, m_vocabParticleCount);
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
-            m_cuda->freePinnedHostBuffer(hostPhase);
+            AZ::u32 base = i * 4;
+            m_pos[i] = { pack.positions[base], pack.positions[base+1],
+                         pack.positions[base+2], pack.positions[base+3] };
+            m_vel[i] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            m_phase[i] = patternPhase;
         }
 
-        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
+        m_activeParticles = m_vocabParticleCount;
         m_streamSlots.clear();
         return m_maxStreamSlots;
     }
@@ -514,23 +268,15 @@ namespace HCPEngine
     void Workspace::CheckPartialSettlement(const RulePack& pack,
         AZStd::vector<AZStd::pair<AZ::u32, AZ::u32>>& matches)
     {
-        if (!m_particleBuffer || !m_cuda || m_streamSlots.empty()) return;
+        if (m_pos.empty() || m_streamSlots.empty()) return;
 
         AZ::u32 readbackCount = m_vocabParticleCount +
             static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
         if (readbackCount > m_bufferCapacity) readbackCount = m_bufferCapacity;
 
-        physx::PxVec4* hostPos = nullptr;
-        physx::PxVec4* hostVel = nullptr;
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
-            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(readbackCount);
-            m_cuda->copyDToH(hostPos, devPos, readbackCount);
-            m_cuda->copyDToH(hostVel, devVel, readbackCount);
-        }
+        // Positions + velocities are host-resident — read directly (was a CUDA readback).
+        const hcp::settle::Float4* hostPos = m_pos.data();
+        const hcp::settle::Float4* hostVel = m_vel.data();
 
         for (AZ::u32 si = 0; si < static_cast<AZ::u32>(m_streamSlots.size()); ++si)
         {
@@ -569,70 +315,37 @@ namespace HCPEngine
                 }
             }
         }
-
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
-        }
     }
 
     void Workspace::FlipToTier(AZ::u32 nextTier)
     {
-        if (!m_particleBuffer || !m_cuda) return;
+        if (m_pos.empty()) return;
         if (nextTier >= m_tierPhases.size()) return;
 
         AZ::u32 newPhase = m_tierPhases[nextTier];
-        AZ::u32 dynCount = m_maxStreamSlots * m_currentWordLength;
 
+        // Operate directly on the host dynamic region (was a CUDA D->H / H->D round-trip).
+        // Resolved slots go inert; unresolved slots flip to the next tier, reset to the
+        // launch height with movable invMass and zero velocity for the next settle.
+        for (const auto& slot : m_streamSlots)
         {
-            physx::PxScopedCudaLock lock(*m_cuda);
-
-            physx::PxU32* devPhase = m_particleBuffer->getPhases();
-            physx::PxVec4* devPos = m_particleBuffer->getPositionInvMasses();
-            physx::PxVec4* devVel = m_particleBuffer->getVelocities();
-
-            physx::PxU32* hostPhase = m_cuda->allocPinnedHostBuffer<physx::PxU32>(dynCount);
-            physx::PxVec4* hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(dynCount);
-            physx::PxVec4* hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(dynCount);
-
-            m_cuda->copyDToH(hostPhase, devPhase + m_vocabParticleCount, dynCount);
-            m_cuda->copyDToH(hostPos, devPos + m_vocabParticleCount, dynCount);
-            m_cuda->copyDToH(hostVel, devVel + m_vocabParticleCount, dynCount);
-
-            for (const auto& slot : m_streamSlots)
+            if (slot.resolved)
             {
-                AZ::u32 dynBase = slot.bufferStart - m_vocabParticleCount;
-
-                if (slot.resolved)
+                for (AZ::u32 c = 0; c < slot.charCount; ++c)
+                    m_phase[slot.bufferStart + c] = m_inertPhase;
+            }
+            else
+            {
+                for (AZ::u32 c = 0; c < slot.charCount; ++c)
                 {
-                    for (AZ::u32 c = 0; c < slot.charCount; ++c)
-                        hostPhase[dynBase + c] = m_inertPhase;
-                }
-                else
-                {
-                    for (AZ::u32 c = 0; c < slot.charCount; ++c)
-                    {
-                        hostPhase[dynBase + c] = newPhase;
-                        hostPos[dynBase + c].y = RC_Y_OFFSET;
-                        hostPos[dynBase + c].w = 1.0f;
-                        hostVel[dynBase + c] = physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f);
-                    }
+                    AZ::u32 p = slot.bufferStart + c;
+                    m_phase[p] = newPhase;
+                    m_pos[p].y = RC_Y_OFFSET;
+                    m_pos[p].w = 1.0f;
+                    m_vel[p] = { 0.0f, 0.0f, 0.0f, 0.0f };
                 }
             }
-
-            m_cuda->copyHToD(devPhase + m_vocabParticleCount, hostPhase, dynCount);
-            m_cuda->copyHToD(devPos + m_vocabParticleCount, hostPos, dynCount);
-            m_cuda->copyHToD(devVel + m_vocabParticleCount, hostVel, dynCount);
-
-            m_cuda->freePinnedHostBuffer(hostPhase);
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
         }
-
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_PHASE);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_POSITION);
-        m_particleBuffer->raiseFlags(physx::PxParticleBufferFlag::eUPDATE_VELOCITY);
     }
 
     void Workspace::CollectResults(AZStd::vector<ResolutionResult>& out)
@@ -691,80 +404,78 @@ namespace HCPEngine
 
     void Workspace::ResetDynamics()
     {
-        if (!m_particleBuffer) return;
-        m_particleBuffer->setNbActiveParticles(m_vocabParticleCount);
+        if (m_pos.empty()) return;
+        m_activeParticles = m_vocabParticleCount;
         m_streamSlots.clear();
     }
 
+    // ActivateInScene / DeactivateFromScene: in the host model there is no PxScene to
+    // add/remove the particle system to/from. These remain as cheap active-state toggles
+    // so the existing BedManager drive loop (Activate -> simulate -> Deactivate) is intact.
     void Workspace::ActivateInScene()
     {
-        fprintf(stderr, "[WS] ActivateInScene: activeInScene=%d\n", (int)m_activeInScene);
-        fflush(stderr);
-        if (m_activeInScene || !m_particleSystem || !m_scene) return;
-        m_scene->addActor(*m_particleSystem);
         m_activeInScene = true;
-        fprintf(stderr, "[WS] ActivateInScene: addActor done\n"); fflush(stderr);
     }
 
     void Workspace::DeactivateFromScene()
     {
-        fprintf(stderr, "[WS] DeactivateFromScene: activeInScene=%d\n", (int)m_activeInScene);
-        fflush(stderr);
-        if (!m_activeInScene || !m_particleSystem || !m_scene) return;
-        m_scene->removeActor(*m_particleSystem);
         m_activeInScene = false;
-        fprintf(stderr, "[WS] DeactivateFromScene: removeActor done\n"); fflush(stderr);
     }
 
     void Workspace::BeginSimulate(int steps, float dt)
     {
-        if (!m_particleBuffer || !m_cuda || steps <= 0) return;
+        if (m_pos.empty() || steps <= 0) return;
         m_simDt = dt;
-        m_pendingSteps = 0;   // AZSL settle runs synchronously here; no async PhysX steps pending
+        m_pendingSteps = 0;   // AZSL settle runs synchronously here; no async steps pending
 
         AZ::u32 count = m_vocabParticleCount +
             static_cast<AZ::u32>(m_streamSlots.size()) * m_currentWordLength;
         if (count > m_bufferCapacity) count = m_bufferCapacity;
         if (count == 0) return;
 
-        physx::PxVec4* hostPos = nullptr;
-        physx::PxVec4* hostVel = nullptr;
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            hostPos = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(count);
-            hostVel = m_cuda->allocPinnedHostBuffer<physx::PxVec4>(count);
-            m_cuda->copyDToH(hostPos, m_particleBuffer->getPositionInvMasses(), count);
-            m_cuda->copyDToH(hostVel, m_particleBuffer->getVelocities(), count);
-        }
-
         // AZSL settle replaces the PhysX-PBD settle. SettleKernel is the validated host
         // reference of the AZSL compute kernel; per-particle independent (the parallel form
         // is HCPSettleCompute.azsl). position.w = invMass: >0 movable run, 0 immovable bed.
-        std::vector<hcp::settle::Float4> cur(count), prev(count);
+        // Particle data is host-resident now — the settle reads/writes m_pos/m_vel directly
+        // (no CUDA round-trip). Verlet history is reconstructed from velocity each call.
+        std::vector<hcp::settle::Float4> cur(m_pos.begin(), m_pos.begin() + count);
+        std::vector<hcp::settle::Float4> prev(count);
         for (AZ::u32 i = 0; i < count; ++i)
         {
-            cur[i]  = { hostPos[i].x, hostPos[i].y, hostPos[i].z, hostPos[i].w };
-            prev[i] = { hostPos[i].x - hostVel[i].x * dt,
-                        hostPos[i].y - hostVel[i].y * dt,
-                        hostPos[i].z - hostVel[i].z * dt, hostPos[i].w };
+            prev[i] = { m_pos[i].x - m_vel[i].x * dt,
+                        m_pos[i].y - m_vel[i].y * dt,
+                        m_pos[i].z - m_vel[i].z * dt, m_pos[i].w };
         }
+        // Differential contact floor (the bed broad-phase): a movable run char rests on
+        // the bed surface (Y=0) ONLY if a bed char shares its (X, Z) — same letter at the
+        // same position. No match → NO_FLOOR → it falls through and never settles. So a run
+        // settles iff every char has bed support, i.e. its spelling is present in the bed.
+        // (Was a flat NO_FLOOR for every particle, so nothing ever settled — claim 626.)
         std::vector<float> restY(count, hcp::settle::NO_FLOOR);
+        {
+            auto cellKey = [](const hcp::settle::Float4& p) -> uint64_t {
+                uint32_t xi = static_cast<uint32_t>(lroundf(p.x));
+                uint32_t zi = static_cast<uint32_t>(lroundf(p.z / RC_Z_SCALE));
+                return (static_cast<uint64_t>(xi) << 32) | zi;
+            };
+            AZStd::unordered_set<uint64_t> bedCells;
+            AZ::u32 bedCount = (m_vocabParticleCount < count) ? m_vocabParticleCount : count;
+            bedCells.reserve(bedCount);
+            for (AZ::u32 i = 0; i < bedCount; ++i)
+                bedCells.insert(cellKey(cur[i]));                  // static bed region [0, vocab)
+            for (AZ::u32 i = m_vocabParticleCount; i < count; ++i) // movable run region [vocab, count)
+                if (bedCells.count(cellKey(cur[i])))
+                    restY[i] = 0.0f;                               // matching bed char → rest on the bed
+        }
         for (int s = 0; s < steps; ++s)
             hcp::settle::SettleStepAll(cur, prev, restY);
 
         for (AZ::u32 i = 0; i < count; ++i)
         {
-            hostPos[i] = physx::PxVec4(cur[i].x, cur[i].y, cur[i].z, hostPos[i].w);
-            hostVel[i] = physx::PxVec4((cur[i].x - prev[i].x) / dt,
-                                       (cur[i].y - prev[i].y) / dt,
-                                       (cur[i].z - prev[i].z) / dt, 0.0f);
-        }
-        {
-            physx::PxScopedCudaLock lock(*m_cuda);
-            m_cuda->copyHToD(m_particleBuffer->getPositionInvMasses(), hostPos, count);
-            m_cuda->copyHToD(m_particleBuffer->getVelocities(), hostVel, count);
-            m_cuda->freePinnedHostBuffer(hostPos);
-            m_cuda->freePinnedHostBuffer(hostVel);
+            m_pos[i] = { cur[i].x, cur[i].y, cur[i].z, m_pos[i].w };
+            m_vel[i] = { (cur[i].x - prev[i].x) / dt,
+                         (cur[i].y - prev[i].y) / dt,
+                         (cur[i].z - prev[i].z) / dt, 0.0f };
         }
     }
 
@@ -780,34 +491,12 @@ namespace HCPEngine
 
     void Workspace::Shutdown()
     {
-        if (m_particleBuffer && m_particleSystem)
-        {
-            m_particleSystem->removeParticleBuffer(m_particleBuffer);
-            m_particleBuffer->release();
-            m_particleBuffer = nullptr;
-        }
-
-        if (m_material)
-        {
-            m_material->release();
-            m_material = nullptr;
-        }
-
-        if (m_particleSystem && m_scene)
-        {
-            if (m_activeInScene)
-                m_scene->removeActor(*m_particleSystem);
-            m_particleSystem->release();
-            m_particleSystem = nullptr;
-            m_activeInScene = false;
-        }
-
-        if (m_ownsScene && m_scene)
-        {
-            m_scene->release();
-            m_scene = nullptr;
-            m_ownsScene = false;
-        }
+        // Host-resident arrays — free the system-heap storage (was GPU resource release).
+        m_pos.clear();   m_pos.shrink_to_fit();
+        m_vel.clear();   m_vel.shrink_to_fit();
+        m_phase.clear(); m_phase.shrink_to_fit();
+        m_activeParticles = 0;
+        m_activeInScene = false;
 
         m_streamSlots.clear();
         m_tierPhases.clear();
@@ -1166,16 +855,12 @@ namespace HCPEngine
     }
 
     bool BedManager::Initialize(
-        physx::PxPhysics* physics,
-        physx::PxCudaContextManager* cuda,
         MDB_env* lmdbEnv,
         HCPVocabulary* vocabulary,
         HCPEnvelopeManager* envelopeManager)
     {
-        if (!physics || !cuda || !lmdbEnv) return false;
+        if (!lmdbEnv) return false;
 
-        m_physics = physics;
-        m_cuda = cuda;
         m_vocabulary = vocabulary;
         m_envelopeManager = envelopeManager;
         m_lmdbEnv = lmdbEnv;
@@ -1208,7 +893,7 @@ namespace HCPEngine
         AZStd::sort(m_activeWordLengths.begin(), m_activeWordLengths.end(),
             [](AZ::u32 a, AZ::u32 b) { return a < b; });
 
-        // Create workspace pools — each workspace gets its own PxScene
+        // Create workspace pools — each workspace is triple-buffered
         // for pipelined GPU/CPU overlap (simulate A while reading B, loading C)
         AZ::u32 maxPhaseGroups = 2;  // 1 active phase + inert
         m_primaryWorkspaces.resize(WS_PRIMARY_COUNT);
@@ -1217,12 +902,12 @@ namespace HCPEngine
         AZ::u32 createdCount = 0;
         for (auto& ws : m_primaryWorkspaces)
         {
-            if (ws.Create(physics, cuda, WS_BUFFER_CAPACITY, maxPhaseGroups))
+            if (ws.Create(WS_BUFFER_CAPACITY, maxPhaseGroups))
                 ++createdCount;
         }
         for (auto& ws : m_extendedWorkspaces)
         {
-            if (ws.Create(physics, cuda, WS_BUFFER_CAPACITY, maxPhaseGroups))
+            if (ws.Create(WS_BUFFER_CAPACITY, maxPhaseGroups))
                 ++createdCount;
         }
 
@@ -1343,7 +1028,7 @@ namespace HCPEngine
             AZ::u32 offset = 0;
 
             // Pipeline: load each workspace, kick off simulate, overlap with next load.
-            // Each workspace owns its own PxScene — simulate() dispatches to GPU
+            // Each workspace runs its own settle — simulate() dispatches to GPU
             // and returns immediately, so we can load the next workspace on CPU
             // while the previous one's GPU work is in flight.
 

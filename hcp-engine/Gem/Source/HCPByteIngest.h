@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "HCPWordSuperpositionTrial.h"   // CharRun
+#include "HCPCharRun.h"   // CharRun, RunTag
 #include "HCPResolutionChamber.h"        // ResolutionManifest
 
 namespace HCPEngine

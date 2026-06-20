@@ -28,7 +28,7 @@ The project has specialist roles. Each owns specific areas:
 | Role | Owns | Does NOT touch |
 |------|------|----------------|
 | **Engine** | Tokenizer, particle pipeline, Asset Builders, runtime components | DB schema, LMDB format, linguistics |
-| **DB** | PostgreSQL schema, migrations, LMDB export, vocabulary data | Engine C++ code, physics |
+| **DB** | PostgreSQL schema, migrations, LMDB export, vocabulary data | Engine C++ code, the AZSL settle |
 | **PBM** | Pair Bond Map encoding/reconstruction, position storage pipeline | DB schema, tokenizer internals |
 | **Linguistics** | Force definitions, sub-categorization patterns, conceptual mesh | Engine code, DB schema |
 | **Infrastructure** | CI/CD, repo structure, deployment, contributor tooling | Domain-specific code |
@@ -150,7 +150,7 @@ This is the primary contribution path. The `.txt` builder is the reference imple
 
 These are non-negotiable. Violating them wastes everyone's time.
 
-1. **Engine IS the tokenizer** — all processing in C++/PhysX. Do not write Python that simulates engine work.
+1. **Engine IS the tokenizer** — all processing in C++. Do not write Python that simulates engine work.
 2. **Disassembly AND reassembly are physics operations** — do not write sequential algorithms and call them physics.
 3. **PostgreSQL is source of truth** — do not invent DB formats or modify LMDB structure. DB specialist owns that.
 4. **PBM is derived then stored** — position maps are the product. PBM bonds are derived on the fly and stored to hcp_fic_pbm via StorePBM.

@@ -21,7 +21,6 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [
-        "PhysX5"
     ],
     "compatible_engines": [
     ],

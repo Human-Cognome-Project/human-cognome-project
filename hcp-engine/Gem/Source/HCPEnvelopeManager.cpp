@@ -1,6 +1,7 @@
 #include "HCPEnvelopeManager.h"
 #include "HCPResolutionChamber.h"  // MorphBit namespace
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <lmdb.h>
 #include <libpq-fe.h>
 #include <chrono>

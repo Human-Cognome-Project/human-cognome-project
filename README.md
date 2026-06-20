@@ -25,9 +25,10 @@ This is real, running software — and the docs are careful to mark what is *bui
 *deferred* (see [docs/06-status/status.md](docs/06-status/status.md) and the honesty page,
 [docs/06-status/deferred-and-open.md](docs/06-status/deferred-and-open.md)).
 
-- **Engine** — an O3DE 25.10.2 C++ Gem using PhysX 5 GPU-accelerated Position Based Dynamics
-  (~21,300 LOC). A headless daemon on TCP port **9720** with a JSON socket API. Two-phase resolution:
-  byte→codepoint PBD superposition, then char→word via persistent VocabBeds.
+- **Engine** — an AZSL/host-resident compute engine (host C++ + AZSL compute kernels; PhysX fully
+  removed). A headless daemon on TCP port **9720** with a JSON socket API. The
+  byte→codepoint→word resolution now works end-to-end: a lossless byte-floor (raw bytes→codepoints)
+  feeds the resolution chambers, which settle and emit canonical ids.
 - **Document storage** — ingests text into an inference-conducive format and reproduces it at **>98%
   accuracy** (a 9-document Gutenberg stress test ran clean; a full 890 KB novel ingests in seconds).
   *Paused* since the 2026-04-16 pivot to concept modeling.

@@ -3,25 +3,16 @@
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <vector>          // std::vector for bulk vocab data (off AZ pool)
 #include <unordered_map>   // std::unordered_map for m_vocabByLength (off AZ pool)
 #include <regex>           // std::regex for compiled rule conditions
 #include "HCPResolutionChamber.h"  // ResolutionManifest, ResolutionResult, StreamRunSlot, etc.
 #include "HCPParticlePipeline.h"   // Bond, PBMData
+#include "Settle/SettleKernel.h"   // hcp::settle::Float4 — host-resident particle storage (AZSL swap)
 
-// Forward declarations — full headers only in .cpp
-namespace physx
-{
-    class PxPhysics;
-    class PxScene;
-    class PxCudaContextManager;
-    class PxPBDParticleSystem;
-    class PxParticleBuffer;
-    class PxPBDMaterial;
-}
-
-struct MDB_env;  // LMDB environment (defined in lmdb.h)
+#include <lmdb.h>   // MDB_env, MDB_dbi (header uses MDB_dbi — not forward-declarable)
 
 namespace HCPEngine
 {
@@ -132,11 +123,11 @@ namespace HCPEngine
         bool isContraction = false;  // True = compound word split, false = morpheme strip
     };
 
-    // ---- Workspace: one reusable GPU particle system with its own PxScene ----
+    // ---- Workspace: one reusable host-resident particle workspace ----
     //
-    // Created once at startup. Vocab data overwritten per cycle via CUDA memcpy.
+    // Created once at startup. Vocab data is host-resident (host vectors); overwritten per cycle by host copy (no CUDA).
     // Buffer layout: [vocab region (static, invMass=0)] [stream region (dynamic, invMass=1)]
-    // Each workspace owns its own PxScene for pipelined GPU/CPU overlap:
+    // Each workspace is triple-buffered for pipelined GPU/CPU overlap:
     //   Scene A simulating (GPU) while Scene B is being read back (CPU)
     //   while Scene C is being loaded (CPU + LMDB prefetch).
 
@@ -152,12 +143,11 @@ namespace HCPEngine
         Workspace(Workspace&& other) noexcept;
         Workspace& operator=(Workspace&& other) noexcept;
 
-        //! Create GPU resources: own PxScene + PxPBDParticleSystem + PxParticleBuffer.
-        //! Each workspace creates its own scene on the shared CUDA context.
-        //! maxTiers: number of tier phase groups to create (typically 3).
-        bool Create(physx::PxPhysics* physics,
-                    physx::PxCudaContextManager* cuda,
-                    AZ::u32 bufferCapacity, AZ::u32 maxTiers);
+        //! Allocate host-resident particle arrays (positions/velocities/phases).
+        //! AZSL swap — no PxScene/PxParticleBuffer/CUDA. The settle runs directly on
+        //! these host arrays (SettleKernel = host reference of HCPSettleCompute.azsl).
+        //! maxTiers: number of logical tier phase tags (typically 3).
+        bool Create(AZ::u32 bufferCapacity, AZ::u32 maxTiers);
 
         //! Overwrite vocab region with a VocabPack. Remaps logical tier→phase group IDs.
         //! Returns max stream slots available after vocab region.
@@ -214,17 +204,18 @@ namespace HCPEngine
         void CollectSplit(AZStd::vector<ResolutionResult>& resolved,
                           AZStd::vector<AZ::u32>& unresolvedRunIndices);
 
-        //! Release all GPU resources including owned PxScene.
+        //! Release all GPU/host workspace resources.
         void Shutdown();
 
     private:
-        physx::PxPhysics* m_physics = nullptr;
-        physx::PxScene* m_scene = nullptr;            // OWNED — one scene per workspace
-        physx::PxCudaContextManager* m_cuda = nullptr;
-        physx::PxPBDParticleSystem* m_particleSystem = nullptr;
-        physx::PxParticleBuffer* m_particleBuffer = nullptr;
-        physx::PxPBDMaterial* m_material = nullptr;
-        bool m_ownsScene = false;                      // True when we created the scene
+        // Host-resident particle arrays — AZSL swap, replaces PxParticleBuffer/CUDA.
+        // Layout: [vocab region (static, w=0)] [stream region (dynamic, w=1)].
+        // position.w = invMass (>0 movable run, 0 immovable bed). Sized to m_bufferCapacity.
+        // std::vector (system heap) keeps bulk particle data off the AZ allocator pool.
+        std::vector<hcp::settle::Float4> m_pos;
+        std::vector<hcp::settle::Float4> m_vel;
+        std::vector<AZ::u32>             m_phase;
+        AZ::u32 m_activeParticles = 0;      // Replaces PxParticleBuffer::setNbActiveParticles
 
         AZ::u32 m_bufferCapacity = 0;       // Total buffer size
         AZ::u32 m_vocabParticleCount = 0;   // Current vocab region size (changes per cycle)
@@ -316,12 +307,10 @@ namespace HCPEngine
     public:
         //! Initialize from pre-compiled LMDB vocab beds.
         //! Opens vbed_02..vbed_16 sub-databases, reads frequency-ordered entries,
-        //! creates GPU workspaces (each with its own PxScene). No Postgres dependency.
+        //! creates host-resident workspaces (AZSL swap — no PhysX/CUDA). No Postgres dependency.
         //! @param lmdbEnv Shared LMDB environment (from HCPVocabulary::GetLmdbEnv())
         //! @param vocabulary For punctuation word lookups at resolve time
         bool Initialize(
-            physx::PxPhysics* physics,
-            physx::PxCudaContextManager* cuda,
             MDB_env* lmdbEnv,
             HCPVocabulary* vocabulary,
             HCPEnvelopeManager* envelopeManager = nullptr);
@@ -420,8 +409,6 @@ namespace HCPEngine
             const AZStd::unordered_map<AZ::u32, RulePack>& rulePacksByLength) const;
 
         bool m_initialized = false;
-        physx::PxPhysics* m_physics = nullptr;
-        physx::PxCudaContextManager* m_cuda = nullptr;
         HCPVocabulary* m_vocabulary = nullptr;       // For punctuation lookups
         HCPEnvelopeManager* m_envelopeManager = nullptr; // For pre-fetch (nullable)
 

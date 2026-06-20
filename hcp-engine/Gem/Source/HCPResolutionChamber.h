@@ -4,7 +4,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
-#include "HCPWordSuperpositionTrial.h"  // CharRun
+#include "HCPCharRun.h"  // CharRun, RunTag
 
 namespace HCPEngine
 {

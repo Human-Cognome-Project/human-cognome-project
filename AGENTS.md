@@ -29,10 +29,11 @@ We treat cognition as physics. Tokens as particles. Bonds as forces. Energy mini
 
 **Verifiability**: Round-trip reconstruction proves understanding. No more "I think I got it right."
 
-## Current Status (April 2026)
+## Current Status (2026-06-19)
 
-**Transitioning to NSM concept modeling.** Document storage and higher-order tokenization are paused while core work moves to concept space. The physics engine is working:
-- O3DE + PhysX 5 PBD engine with persistent vocab beds
+**Transitioning to NSM concept modeling.** Document storage and higher-order tokenization are paused while core work moves to concept space. The engine is working:
+- AZSL/host-resident engine with persistent vocab beds (PhysX fully removed; host C++ + AZSL compute kernels)
+- bytes→words resolves end-to-end: a lossless byte-floor (raw bytes→codepoints) feeds the resolution chambers, which settle and emit canonical ids (verified via HCP_RESOLVE_FILE, 6/6 canonical ids)
 - ~1.5M entries across 11 PostgreSQL shards, LMDB hot cache via envelope system
 - 9 documents ingested (~1.1M token positions), >98% reconstruction accuracy
 - Every form is its own token -- no morph-bit reconstruction at read time
@@ -80,7 +81,6 @@ See [docs/status.md](docs/status.md) for full details.
 
 **Good First Issues** (tagged `agent-suitable` or `good first issue` on GitHub):
 - Format builders: PDF, EPUB, HTML, Markdown text extractors (#14-#17)
-- Dead code cleanup: 3,132 lines across 4 files (#22)
 - Documentation improvements and spec updates
 
 **Ongoing Needs**:
@@ -168,7 +168,7 @@ This section covers operational protocols for AI agent teams working on HCP via 
 | Role | Scope | Key areas |
 |------|-------|-----------|
 | **orchestrator** | Coordination, task assignment, architecture decisions | Memory files, task lists |
-| **engine** | C++ engine code (O3DE + PhysX 5), PBD pipeline, LMDB integration | `hcp-engine/Gem/Source/` |
+| **engine** | C++ engine code (O3DE host + AZSL compute), AZSL settle + byte-floor pipeline, LMDB integration | `hcp-engine/Gem/Source/` |
 | **db** | PostgreSQL schema, migrations, LMDB compilation, data pipeline | `db/`, `scripts/` |
 | **docs** | Documentation, specs, design docs, status tracking | `docs/` |
 | **git** | Repo management, commits, issues, contributor infrastructure | GitHub issues, repo structure |
@@ -196,7 +196,7 @@ Human contributors commit under their own name.
 ```
 human-cognome-project/
   AGENTS.md              ← You are here
-  hcp-engine/            ← O3DE Gem: PhysX 5 PBD engine, socket API, workstation
+  hcp-engine/            ← O3DE Gem: AZSL/host-resident engine, socket API, workstation
     Gem/Source/           ← C++ source files
     TODO.md              ← Engine task list
   db/                    ← PostgreSQL dumps (LFS .gz), migrations, load scripts

@@ -56,13 +56,12 @@ namespace HCPEngine
         HCPDocVarQuery& GetDocVarQuery() { return m_docVarQuery; }
         HCPBondQuery& GetBondQuery() { return m_bondQuery; }
         CacheMissResolver& GetResolver() { return m_resolver; }
-        HCPParticlePipeline& GetParticlePipeline() { return m_particlePipeline; }
         const HCPBondTable& GetCharWordBonds() const { return m_charWordBonds; }
         BedManager& GetBedManager() { return m_bedManager; }
         HCPEnvelopeManager& GetEnvelopeManager() { return m_envelopeManager; }
         EntityAnnotator& GetEntityAnnotator() { return m_entityAnnotator; }
         PGconn* GetVarConn() { return m_varConn; }
-        bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_particlePipeline.IsInitialized(); }
+        bool IsEngineReady() const { return m_vocabulary.IsLoaded() && m_bedManager.IsInitialized(); }
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -88,9 +87,6 @@ namespace HCPEngine
         void SourceHealth(const AZ::ConsoleCommandContainer& arguments);
         void SourceStats(const AZ::ConsoleCommandContainer& arguments);
         void SourceVars(const AZ::ConsoleCommandContainer& arguments);
-        void SourcePhysTokenize(const AZ::ConsoleCommandContainer& arguments);
-        void SourcePhysWordTrial(const AZ::ConsoleCommandContainer& arguments);
-        void SourcePhysWordResolve(const AZ::ConsoleCommandContainer& arguments);
         void SourceActivateEnvelope(const AZ::ConsoleCommandContainer& arguments);
         ////////////////////////////////////////////////////////////////////////
 
@@ -98,7 +94,6 @@ namespace HCPEngine
         static inline HCPEngineSystemComponent* s_instance = nullptr;
 
         HCPVocabulary m_vocabulary;
-        HCPParticlePipeline m_particlePipeline;
         HCPDbConnection m_dbConn;
         HCPPbmWriter m_pbmWriter{m_dbConn};
         HCPPbmReader m_pbmReader{m_dbConn};
@@ -132,9 +127,6 @@ namespace HCPEngine
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceHealth, AZ::ConsoleFunctorFlags::Null, "Show engine status and vocabulary counts");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceStats, AZ::ConsoleFunctorFlags::Null, "Show encoding stats for a stored document");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceVars, AZ::ConsoleFunctorFlags::Null, "List unresolved vars in a document");
-        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysTokenize, AZ::ConsoleFunctorFlags::Null, "Run physics-based byte->char superposition trial");
-        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordTrial, AZ::ConsoleFunctorFlags::Null, "Run physics-based char->word superposition trial");
-        AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourcePhysWordResolve, AZ::ConsoleFunctorFlags::Null, "Run phase-gated char->word resolution chambers");
         AZ_CONSOLEFUNC(HCPEngineSystemComponent, SourceActivateEnvelope, AZ::ConsoleFunctorFlags::Null, "Activate a named activity envelope for LMDB cache loading");
     };
 }
