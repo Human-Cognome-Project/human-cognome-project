@@ -45,32 +45,13 @@ piece-by-piece convergence on db operations is itself evidence the destination i
 
 ## Adjacent-worker register
 
-A lean register, each entry a validation signal (and a possible collaborator for a known gap).
-
-### The ontological-algebra mathematician (claim 250)
-
-- **Field:** ontological algebra (formal math).
-- **Converging on:** the same object as the running db-substrate, approached abstractly — his
-  ontological algebra *is* the addressable running db-substrate, formalized.
-- **Notable:** authored the *"no delete key for a neural network"* provable-erasure argument, which
-  independently prescribes what is actually a *description* of HCP's substrate (claim 248,
-  native right-to-erasure).
-- **Status:** "running beside Patrick's lane" — adjacent, not yet aligned to HCP's implementation.
-  Recruitment lever: the keystone demo (claims 192/200) — show his formalism resolved to running db
-  functions on addressable records ("jump the fence"). Name TBD (Patrick to supply).
-
-### John Bridges — TSI / optimization (claim 264)
-
-- **Field:** mathematical physics, **optimization**; coined "Technological Substrate Intelligence
-  (TSI)," an independent line directly adjacent to HCP's substrate-first paradigm.
-- **Converging on:** substrate-first intelligence from the optimization-physics side.
-- **Complementary fit for a stated gap:** Patrick has solved many of the **mechanics** but can only
-  approximate the **math** that drives them — an optimization physicist is the fill for the
-  determination-engine / weighting math (the math gap, claim 286; confidence-as-softmax, claim 79).
-  Unlike the ontological-algebra contact, this is a **two-way trade**: his math for Patrick's
-  mechanics.
-- **Status:** 1st-degree LinkedIn connection (2026-05-31); HCP intro sent, chat proposed. Recruitment
-  target for the math-that-drives-the-mechanics.
+**[REDACTED AT ARCHIVE TIME — 2026-08-30.]** This section held a register of two independent
+workers in adjacent theoretical space (their fields, the structures they were converging on, and
+contact status). It was removed from the public record per project policy: discussions with and
+records about specific people are private communications, not public records. The *validation
+discipline* the register served — tracking independent convergence as a guard against a solo
+coherent-wrong — is retained above and carries into the new paradigm's documentation. The redaction
+is declared in the archive ledger.
 
 ---
 
