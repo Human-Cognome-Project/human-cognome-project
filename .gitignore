@@ -26,7 +26,7 @@ resources/
 relay/
 
 # Entity catalogs (working files — real data is in entity DBs)
-docs/research/*-entities.md
+archive/2026-08-rebase/docs/research/*-entities.md
 
 # Benchmark output (local, per-machine)
 benchmarks/
@@ -38,7 +38,7 @@ db/*.sql
 data/vocab.lmdb/
 
 # Debug artifacts
-hcp-engine/backtrace.log
+archive/2026-08-rebase/hcp-engine/backtrace.log
 
 # Research PDFs (large binaries; keep out of git — store externally)
-docs/research/*.pdf
+archive/2026-08-rebase/docs/research/*.pdf
