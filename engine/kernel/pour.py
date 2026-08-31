@@ -34,6 +34,7 @@ Run:  .venv-kernel/bin/python pour.py [--ticks 200] [--twin-only]
 """
 import argparse
 import json
+import os
 import sys
 import time
 
@@ -46,7 +47,11 @@ import diffuse as dv
 
 # re-init before any kernel launch (lazy JIT makes this safe): cap threads —
 # Haven is a live NAS (4 cores total), leave one for services.
-ti.init(arch=ti.cpu, default_fp=ti.f64, random_seed=7, cpu_max_num_threads=3)
+# POUR_ARCH=cuda (env) targets GPU with no source edit; per-arch twin proofs
+# still run first — f32 GPU determinism gets its own tolerance read.
+_ARCH = os.environ.get("POUR_ARCH", "cpu")
+ti.init(arch=getattr(ti, _ARCH), default_fp=ti.f64, random_seed=7,
+        cpu_max_num_threads=int(os.environ.get("POUR_THREADS", "3")))
 
 # gate chain (all from the shipped halves — single source of truth)
 BIAS_CAP = binding.BIAS_CAP
