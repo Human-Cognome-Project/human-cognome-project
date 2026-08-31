@@ -49,8 +49,18 @@ import diffuse as dv
 # Haven is a live NAS (4 cores total), leave one for services.
 # POUR_ARCH=cuda (env) targets GPU with no source edit; per-arch twin proofs
 # still run first — f32 GPU determinism gets its own tolerance read.
+# POUR_FP=f32 runs the WHOLE kernel in f32 (scalars, locals, ti.random) — the
+# Pascal unlock (f64 throughput is 1:32 there). f32 twin proofs are
+# TOLERANCE-MODE: T1 gated at a measured bound vs the f64 reference; the
+# chained T2 is reported (branchy dynamics may flip discretely under fp
+# narrowing — trajectory-exactness is an f64 property); F9 and the
+# exact-integer instruments (fire-time counters, census, breaks==recompl)
+# remain the hard acceptance in every mode.
 _ARCH = os.environ.get("POUR_ARCH", "cpu")
-ti.init(arch=getattr(ti, _ARCH), default_fp=ti.f64, random_seed=7,
+_FP = os.environ.get("POUR_FP", "f64")
+F = getattr(ti, _FP)
+NPF = np.float32 if _FP == "f32" else np.float64
+ti.init(arch=getattr(ti, _ARCH), default_fp=F, random_seed=7,
         cpu_max_num_threads=int(os.environ.get("POUR_THREADS", "3")))
 
 # gate chain (all from the shipped halves — single source of truth)
@@ -81,7 +91,7 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
                 given: ti.types.ndarray(),
                 weight: ti.types.ndarray(), noise: ti.types.ndarray(),
                 counters: ti.types.ndarray(),
-                T: ti.f64, noise_mode: ti.i32, c0: ti.f64, eta: ti.f64):
+                T: F, noise_mode: ti.i32, c0: F, eta: F):
     n = amp.shape[0]
     nn = noise.shape[0]
     for p in range(n):
@@ -177,7 +187,7 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
             if noise_mode == 1:
                 v += T * noise[p % nn, k]
             if noise_mode == 2:
-                v += T * ti.random(ti.f64)
+                v += T * ti.random(F)
             out[p, k] = ti.max(v, 1e-12)
     for p in range(n):
         s = 0.0
@@ -207,7 +217,8 @@ def engine_state(amp):
         "comp": np.zeros(n, fdt), "code": np.zeros(n, np.int32),
         "tau": np.zeros(n, np.int64),
         "counters": np.zeros(4, np.int64),
-        "weight": dv.WEIGHT.copy(),
+        "weight": dv.WEIGHT.astype(fdt),   # fp-matched: f64 loads in an f32
+                                           # kernel would re-promote (Pascal)
         "dummy_noise": np.zeros((1, 16), fdt),
     }
 
@@ -245,7 +256,7 @@ def engine_run(amp, bonded, ticks, T0=0.02, floor=0.002, lam=0.995,
     t_start = time.time()
     for t in range(ticks):
         if noises is not None:
-            noise, mode = noises[t], 1
+            noise, mode = np.asarray(noises[t], amp.dtype), 1
         else:
             noise, mode = dummy, 2
         tick_v02_ti(amp, out, det, code, comp, bonded.astype(np.uint8), given,
@@ -358,15 +369,21 @@ def twin_tests():
     T = 0.02
     ref = binding.tick_v02(amp, comp, T, _FixedRng(noise),
                            np.repeat(bonded, 2), given)
-    out = np.empty_like(amp)
+    amp_k = amp.astype(NPF)
+    out = np.empty_like(amp_k)
     counters = np.zeros(4, np.int64)
-    tick_v02_ti(amp, out, det_in, code_in, comp, bonded.astype(np.uint8),
-                given, dv.WEIGHT.copy(), noise, counters, T, 1, dv.C0, dv.ETA)
-    err = np.abs(out - ref).max()
-    if err > 1e-10:
-        fail(f"T1: taichi tick_v02 twin diverges (max err {err:.2e})")
-    ok(f"T1 tick_v02 twin == numpy reference (max err {err:.2e}; "
-       f"radiation/node/valency/sustain/decay + sealed/frozen wall branches all present)")
+    tick_v02_ti(amp_k, out, det_in.astype(NPF), code_in, comp.astype(NPF),
+                bonded.astype(np.uint8), given, dv.WEIGHT.astype(NPF),
+                noise.astype(NPF), counters, T, 1, dv.C0, dv.ETA)
+    err = np.abs(out.astype(np.float64) - ref).max()
+    # f64 = exact-twin gate; f32 = tolerance-mode vs the f64 reference
+    # (MEASURED cpu 2026-08-31: 2.0e-07 single-tick; gate leaves ~500x margin
+    # to absorb GPU reduction-order variance — re-measure per arch)
+    tol = 1e-10 if _FP == "f64" else 1e-4
+    if err > tol:
+        fail(f"T1: taichi tick_v02 twin diverges (max err {err:.2e} > {tol:.0e} [{_FP}])")
+    ok(f"T1 tick_v02 twin vs f64 reference: max err {err:.2e} [{_FP}, gate {tol:.0e}] "
+       f"(radiation/node/valency/sustain/decay + sealed/frozen wall branches all present)")
 
     # T2 — 50-tick chained loop: full pour machinery (my twin + Planner's
     # phase_b_kernel + bonded_update + tau_pair rule) vs the shipped numpy
@@ -391,18 +408,24 @@ def twin_tests():
         T = max(0.002, T * 0.995)
 
     got_amp, got_b, got_tau_pair, _, _, _ = engine_run(
-        amp0.copy(), bonded0.copy(), ticks, noises=noises, sample_every=10**9,
-        given=given0)
-    err = np.abs(got_amp - ref_amp).max()
-    if err > 1e-9:
+        amp0.astype(NPF), bonded0.copy(), ticks, noises=noises,
+        sample_every=10**9, given=given0)
+    err = np.abs(got_amp.astype(np.float64) - ref_amp).max()
+    # f64 = exact; f32 = chained tolerance-mode (fp narrowing COULD flip
+    # det-threshold branches over 50 ticks — bond/tau equality stays the hard
+    # gate either way; MEASURED cpu 2026-08-31: amp err 1.5e-07, no flips;
+    # gate absorbs GPU variance — re-measure per arch)
+    tol2 = 1e-9 if _FP == "f64" else 5e-3
+    if err > tol2:
         fail(f"T2: chained loop diverges from shipped-halves reference "
-             f"(max amp err {err:.2e})")
+             f"(max amp err {err:.2e} > {tol2:.0e} [{_FP}])")
     if not (got_b == ref_b).all():
         fail(f"T2: bond state diverges ({int((got_b != ref_b).sum())} pairs)")
     if not (got_tau_pair == ref_tau_pair).all():
         fail("T2: tau_pair clock diverges")
-    ok(f"T2 chained 50-tick loop == shipped-halves reference (max amp err "
-       f"{err:.2e}; bonded + tau_pair exact; {int(ref_b.sum())} bonds held)")
+    ok(f"T2 chained 50-tick loop vs shipped-halves reference: max amp err "
+       f"{err:.2e} [{_FP}, gate {tol2:.0e}]; bonded + tau_pair exact; "
+       f"{int(ref_b.sum())} bonds held)")
 
     # F9 — the v1 wall failure, reproduced then healed: a sealed space pair
     # (both-light matter), both mates DEAD, bond BROKEN, letter flanks locked.
@@ -423,7 +446,8 @@ def twin_tests():
     given9[16], given9[17] = 2, 0
     bonded9[8] = False
     _, bonded9f, tau9, det9, code9, _ = engine_run(
-        amp9, bonded9, 300, sample_every=10**9, given=given9, true_code=given9)
+        amp9.astype(NPF), bonded9, 300, sample_every=10**9, given=given9,
+        true_code=given9)
     if not (bonded9f[8] and code9[16] == 2 and code9[17] == 0
             and det9[16] >= LOCK and det9[17] >= LOCK and tau9[8] >= 1):
         fail(f"F9: given anchor failed to resurrect the sealed space pair "
