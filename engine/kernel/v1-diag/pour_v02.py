@@ -73,7 +73,6 @@ NPZ = "instance-seed-v0.npz"
 def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
                 det: ti.types.ndarray(), code: ti.types.ndarray(),
                 comp: ti.types.ndarray(), bonded_pairs: ti.types.ndarray(),
-                given: ti.types.ndarray(),
                 weight: ti.types.ndarray(), noise: ti.types.ndarray(),
                 counters: ti.types.ndarray(),
                 T: ti.f64, noise_mode: ti.i32, c0: ti.f64, eta: ti.f64):
@@ -83,14 +82,6 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
         detp = det[p]
         codep = code[p]
         locked_p = 1 if detp >= LOCK else 0
-
-        # v0.3 two-class identity wall (seam §P-STEER): sealed cells answer only
-        # to their given value; emergent bonded cells are frozen to current code
-        sealed_p = 1 if given[p] >= 0 else 0
-        restricted = 1 if (sealed_p == 1 or bonded_pairs[p // 2] != 0) else 0
-        allowed_c = codep
-        if sealed_p == 1:
-            allowed_c = given[p]
 
         node_p = 0
         node_code = 0
@@ -104,8 +95,7 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
             if detp < BIAS_CAP or node_p == 1:
                 open_recv = 1
 
-        # radiation coefficients from the two lattice neighbours; a restricted
-        # receiver accepts only radiation carrying its allowed code
+        # radiation coefficients from the two lattice neighbours
         wl = 0.0
         cl = 0
         wr = 0.0
@@ -113,30 +103,20 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
         if open_recv == 1:
             if p - 1 >= 0:
                 if det[p - 1] >= D_GATE:
-                    if restricted == 0 or code[p - 1] == allowed_c:
-                        cl = code[p - 1]
-                        wl = RAD_TILT * weight[cl]
+                    cl = code[p - 1]
+                    wl = RAD_TILT * weight[cl]
             if p + 1 < n:
                 if det[p + 1] >= D_GATE:
-                    if restricted == 0 or code[p + 1] == allowed_c:
-                        cr = code[p + 1]
-                        wr = RAD_TILT * weight[cr]
+                    cr = code[p + 1]
+                    wr = RAD_TILT * weight[cr]
 
-        # node forcing at a restricted cell = revision, masked unless it
-        # proposes the allowed code; valency defers to node AUTHORITY, not
-        # node presence (v0.3.1 — first wall re-pour measured permanent death
-        # of sealed light nibbles at matching foreign nodes)
-        node_acts = 0
-        if node_p == 1:
-            if restricted == 0 or node_code == allowed_c:
-                node_acts = 1
         wnode = 0.0
-        if node_acts == 1 and locked_p == 0:
+        if node_p == 1 and locked_p == 0:
             wnode = 2.0
 
         partner = p ^ 1
         wval = 0.0
-        if det[partner] >= LOCK and locked_p == 0 and node_acts == 0:
+        if det[partner] >= LOCK and locked_p == 0 and node_p == 0:
             wval = V_PULL
             counters[1] += 1
             if detp < FEATURELESS_DET:
@@ -147,11 +127,9 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
             supported = 1
         if locked_p == 1 and node_p == 1:
             supported = 1
-        if sealed_p == 1:
-            supported = 1   # v0.3.2 given anchor: bedrock needs no living witness
         wsus = 0.0
         if supported == 1:
-            wsus = weight[allowed_c]
+            wsus = weight[codep]
         unsupported = 1 if (locked_p == 1 and supported == 0) else 0
 
         wtot = wl + wr + wnode + wval + wsus
@@ -164,8 +142,8 @@ def tick_v02_ti(amp: ti.types.ndarray(), out: ti.types.ndarray(),
                 pullk += wr
             if k == node_code:
                 pullk += wnode
-            if k == allowed_c:
-                pullk += wval + wsus   # valency = restoration target for sealed
+            if k == codep:
+                pullk += wval + wsus
             v = amp[p, k] + c_le * pullk
             if unsupported == 1:
                 v += DECAY * (UNIFORM - v)
@@ -208,16 +186,12 @@ def engine_state(amp):
 
 
 def engine_run(amp, bonded, ticks, T0=0.02, floor=0.002, lam=0.995,
-               noises=None, sample_every=20, on_sample=None, true_code=None,
-               given=None):
+               noises=None, sample_every=20, on_sample=None, true_code=None):
     """The pour loop: my tick_v02 twin x Planner's Phase B. Mutates amp in
     place conceptually (returns the live buffer). noises: list of host noise
     matrices (twin mode) or None (in-kernel ti.random)."""
     n = amp.shape[0]
     assert n % 2 == 0
-    if given is None:
-        given = np.full(n, -1, dtype=np.int32)   # all emergent
-    given = given.astype(np.int32)
     st = engine_state(amp)
     out, det, det2 = st["out"], st["det"], st["det2"]
     comp, code, tau = st["comp"], st["code"], st["tau"]
@@ -243,7 +217,7 @@ def engine_run(amp, bonded, ticks, T0=0.02, floor=0.002, lam=0.995,
             noise, mode = noises[t], 1
         else:
             noise, mode = dummy, 2
-        tick_v02_ti(amp, out, det, code, comp, bonded.astype(np.uint8), given,
+        tick_v02_ti(amp, out, det, code, comp, bonded.astype(np.uint8),
                     weight, noise, counters, T, mode, dv.C0, dv.ETA)
         amp, out = out, amp                                   # Phase A done
         ts.phase_b_kernel(amp, det, det2, code, comp, tau,    # Phase B readout
@@ -318,24 +292,7 @@ def _rich_state(n, rng):
     force(40, 12); force(42, 12)                     # standing node flanks 41
     amp[41] = 1.0 / 16.0                             # node target: pure uniform
     force(50, 0)                                     # code-0 locked (edge case)
-    # v0.3 wall branches (seam §P-STEER):
-    given = np.full(n, -1, dtype=np.int32)
-    given[10], given[11] = 4, 1                      # sealed bonded pair
-    force(60, 6); force(61, 1); bonded[30] = True    # emergent bonded 'a' pair…
-    force(62, 6); force(63, 12); bonded[31] = True   # …with heavy flank (freeze case)
-    force(70, 5)                                     # sealed valency: locked mate…
-    given[71] = 9                                    # …restores 71 to GIVEN 9 (chaos now)
-    given[70] = 5
-    force(80, 6); force(82, 6)                       # node vs SEALED unlocked victim
-    given[81] = 2                                    # (mask: node code 6 != given 2)
-    amp[81] = 1.0 / 16.0
-    # v0.3.2 given-anchor branch: sealed space pair, BOTH mates dead, bond
-    # broken, locked letter flanks (the v1 wall failure geometry)
-    force(101, 12); force(104, 6)                    # flanks (prev-lo, next-hi)
-    amp[102] = 1.0 / 16.0                            # dead space hi (given 2)
-    amp[103] = 1.0 / 16.0                            # dead space lo (given 0)
-    given[102], given[103] = 2, 0                    # bonded[51] stays False
-    return amp, bonded, given
+    return amp, bonded
 
 
 def twin_tests():
@@ -345,29 +302,29 @@ def twin_tests():
     # T1 — single tick, branch-rich field, identical det/code inputs, f64.
     rng = np.random.default_rng(11)
     n = 512
-    amp, bonded, given = _rich_state(n, rng)
+    amp, bonded = _rich_state(n, rng)
     det_in = dv.det_of(amp)
     code_in = amp.argmax(axis=1).astype(np.int32)
     comp = dv.f_knee(det_in)
     noise = rng.uniform(0.0, 1.0, size=(n, 16))
     T = 0.02
     ref = binding.tick_v02(amp, comp, T, _FixedRng(noise),
-                           np.repeat(bonded, 2), given)
+                           np.repeat(bonded, 2))
     out = np.empty_like(amp)
     counters = np.zeros(4, np.int64)
     tick_v02_ti(amp, out, det_in, code_in, comp, bonded.astype(np.uint8),
-                given, dv.WEIGHT.copy(), noise, counters, T, 1, dv.C0, dv.ETA)
+                dv.WEIGHT.copy(), noise, counters, T, 1, dv.C0, dv.ETA)
     err = np.abs(out - ref).max()
     if err > 1e-10:
         fail(f"T1: taichi tick_v02 twin diverges (max err {err:.2e})")
     ok(f"T1 tick_v02 twin == numpy reference (max err {err:.2e}; "
-       f"radiation/node/valency/sustain/decay + sealed/frozen wall branches all present)")
+       f"radiation/node/valency/sustain/decay branches all present)")
 
     # T2 — 50-tick chained loop: full pour machinery (my twin + Planner's
     # phase_b_kernel + bonded_update + tau_pair rule) vs the shipped numpy
     # halves composed exactly as binding.run composes them.
     rng = np.random.default_rng(23)
-    amp0, bonded0, given0 = _rich_state(n, rng)
+    amp0, bonded0 = _rich_state(n, rng)
     ticks = 50
     noises = [rng.uniform(0.0, 1.0, size=(n, 16)) for _ in range(ticks)]
 
@@ -379,15 +336,14 @@ def twin_tests():
         det = dv.det_of(ref_amp)
         compt = dv.f_knee(det)
         ref_amp = binding.tick_v02(ref_amp, compt, T, _FixedRng(noises[t]),
-                                   np.repeat(ref_b, 2), given0)
+                                   np.repeat(ref_b, 2))
         b_new = ts.bonded_update(dv.det_of(ref_amp), ref_b)
         ref_tau_pair[b_new & ~ref_b] += 1
         ref_b = b_new
         T = max(0.002, T * 0.995)
 
     got_amp, got_b, got_tau_pair, _, _, _ = engine_run(
-        amp0.copy(), bonded0.copy(), ticks, noises=noises, sample_every=10**9,
-        given=given0)
+        amp0.copy(), bonded0.copy(), ticks, noises=noises, sample_every=10**9)
     err = np.abs(got_amp - ref_amp).max()
     if err > 1e-9:
         fail(f"T2: chained loop diverges from shipped-halves reference "
@@ -398,39 +354,11 @@ def twin_tests():
         fail("T2: tau_pair clock diverges")
     ok(f"T2 chained 50-tick loop == shipped-halves reference (max amp err "
        f"{err:.2e}; bonded + tau_pair exact; {int(ref_b.sum())} bonds held)")
-
-    # F9 — the v1 wall failure, reproduced then healed: a sealed space pair
-    # (both-light matter), both mates DEAD, bond BROKEN, letter flanks locked.
-    # v0.3.1 left this corpse a corpse; the given anchor must bring it home
-    # CLOCKED: re-lock to given, re-complete the bond, tick tau_pair.
-    n9 = 32
-    amp9 = np.full((n9, 16), 1.0 / 16.0, dtype=np.float64)
-    given9 = np.full(n9, -1, dtype=np.int32)
-    for b9 in range(n9 // 2):
-        for cell, c in ((2 * b9, 6), (2 * b9 + 1, 1)):   # 'a' = (6,1) sealed+locked
-            amp9[cell] = 1e-9
-            amp9[cell, c] = 1.0
-            amp9[cell] /= amp9[cell].sum()
-            given9[cell] = c
-    bonded9 = np.ones(n9 // 2, dtype=bool)
-    amp9[16] = 1.0 / 16.0                     # byte 8 = space (2,0): both dead,
-    amp9[17] = 1.0 / 16.0                     # bond broken — the corpse case
-    given9[16], given9[17] = 2, 0
-    bonded9[8] = False
-    _, bonded9f, tau9, det9, code9, _ = engine_run(
-        amp9, bonded9, 300, sample_every=10**9, given=given9, true_code=given9)
-    if not (bonded9f[8] and code9[16] == 2 and code9[17] == 0
-            and det9[16] >= LOCK and det9[17] >= LOCK and tau9[8] >= 1):
-        fail(f"F9: given anchor failed to resurrect the sealed space pair "
-             f"(bonded={bool(bonded9f[8])}, codes=({int(code9[16])},{int(code9[17])}), "
-             f"det=({det9[16]:.3f},{det9[17]:.3f}), tau={int(tau9[8])})")
-    ok(f"F9 given-anchor resurrection: dead sealed space pair re-locked to given "
-       f"(det {det9[16]:.3f}/{det9[17]:.3f}), bond re-completed, tau_pair={int(tau9[8])} — clocked healing")
     print("TWIN PROOFS PASS — scale run is running the proven bytes.")
 
 
 # ── the pour ────────────────────────────────────────────────────────────────
-def pour(ticks, t0, sample_every, save_state, out_prefix="pour-v0"):
+def pour(ticks, t0, sample_every, save_state):
     z = np.load(NPZ)
     leaf_val = z["leaf_val"]
     n = len(leaf_val)
@@ -455,27 +383,12 @@ def pour(ticks, t0, sample_every, save_state, out_prefix="pour-v0"):
               f"cnt=({s['featureless_recruits']},{s['code0_foreign_locks']}) "
               f"{s['ticks_per_sec']:.2f} t/s", flush=True)
 
-    # v0.3: every poured cell is GIVEN — the wall is structural for this run
     amp, bonded, tau_pair, det, code, totals = engine_run(
         amp, bonded, ticks, T0=t0, sample_every=sample_every,
-        on_sample=on_sample, true_code=leaf_val.astype(np.int32),
-        given=leaf_val.astype(np.int32))
+        on_sample=on_sample, true_code=leaf_val.astype(np.int32))
 
-    # two-axis acceptance (seam §P-STEER + planner co-sign 2026-08-31 15:09Z):
-    # identity AND existence — v0.2 bought existence WITH identity (the drift);
-    # v0.3.0 bought identity WITH existence (the deaths); v0.3.1 must pay for
-    # neither with the other.
-    drift = int((code != leaf_val).sum())
-    perm_death = int((~bonded).sum())
-    balanced = totals["cum_breaks"] == totals["cum_completions"]
-    print(f"ACCEPTANCE: IDENTITY given-drift = {drift} "
-          f"({'PASS — structural zero' if drift == 0 else 'FAIL — WALL BREACHED'})", flush=True)
-    print(f"ACCEPTANCE: EXISTENCE permanent-death = {perm_death}, "
-          f"breaks {totals['cum_breaks']} vs re-completions {totals['cum_completions']} "
-          f"({'PASS — every break healed, clocked' if perm_death == 0 and balanced else 'FAIL — EXISTENCE LOST'})",
-          flush=True)
     report = {
-        "artifact": "corpus-pour-a-v0.3-wall",
+        "artifact": "corpus-pour-a-v0",
         "seed": NPZ,
         "n_leaves": n, "n_pairs": n // 2, "ticks": ticks, "T0": t0,
         "dtype": "float32",
@@ -495,15 +408,14 @@ def pour(ticks, t0, sample_every, save_state, out_prefix="pour-v0"):
         },
         "samples": samples,
     }
-    rp = f"{out_prefix}-report.json"
-    with open(rp, "w") as f:
+    with open("pour-report-v0.json", "w") as f:
         json.dump(report, f, indent=1)
     print(json.dumps(report["final"], indent=1))
     if save_state:
-        np.savez_compressed(f"{out_prefix}-state.npz", det=det, code=code,
+        np.savez_compressed("pour-state-v0.npz", det=det, code=code,
                             bonded=bonded, tau_pair=tau_pair)
-        print(f"state saved: {out_prefix}-state.npz")
-    print(f"POUR COMPLETE — report: {rp}", flush=True)
+        print("state saved: pour-state-v0.npz")
+    print("POUR COMPLETE — report: pour-report-v0.json", flush=True)
 
 
 def main():
@@ -513,13 +425,12 @@ def main():
     ap.add_argument("--sample-every", type=int, default=20)
     ap.add_argument("--twin-only", action="store_true")
     ap.add_argument("--save-state", action="store_true")
-    ap.add_argument("--out-prefix", default="pour-v0")
     args = ap.parse_args()
 
     twin_tests()
     if args.twin_only:
         return
-    pour(args.ticks, args.t0, args.sample_every, args.save_state, args.out_prefix)
+    pour(args.ticks, args.t0, args.sample_every, args.save_state)
 
 
 if __name__ == "__main__":

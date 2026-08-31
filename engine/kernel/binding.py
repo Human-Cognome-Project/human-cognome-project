@@ -165,7 +165,13 @@ def tick_v02(amp, compliance, T, rng, bonded=None, given=None, c0=dv.C0, eta=dv.
     # node-held labels consolidate while their flanks hold; a locked cell with
     # neither is a bare singleton and leaks. v0.3: consolidation targets the
     # allowed code, so a sealed cell whose argmax wobbled consolidates HOME.
-    supported = (bonded & formed) | (locked & node)
+    # v0.3.2 GIVEN ANCHOR: sealed cells are supported UNCONDITIONALLY — the
+    # given value is a standing completion SOURCE, not just the legal target.
+    # v0.3.1 healing was mate-anchored (valency needs a locked partner, sustain
+    # a live bond); the v1 running-text pour measured the hole: space=(2,0) is
+    # the one both-light matter class, 15 same-window double dips left no
+    # anchor and the pairs died permanently. Bedrock restores from what it IS.
+    supported = (bonded & formed) | (locked & node) | sealed
     if supported.any():
         pull[supported] += (dv.WEIGHT[allowed[supported]])[:, None] * (onehot_allowed[supported] - amp[supported])
     unsupported = locked & ~supported

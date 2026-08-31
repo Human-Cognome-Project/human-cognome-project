@@ -1,0 +1,356 @@
+{
+ "artifact": "pour-v1-diag-b-off (throwaway unmasked rig, v0.2 physics)",
+ "stream": "/home/silas/shared-brain/exchange/word-instance-stream-v1.npz",
+ "seed_decode": "../instance-seed-v0.npz",
+ "words": 50000,
+ "n_bytes": 263155,
+ "n_leaves": 526310,
+ "ticks": 200,
+ "T0": 0.02,
+ "dtype": "float32",
+ "separator": "0x20 between consecutive positions; gap_before splices get one too (counted below)",
+ "n_splice_separators": 1065,
+ "wall_seconds": 108.38450217247009,
+ "falsifier_verdicts": {
+  "F-A_wordfinal_suppressed": "PASS",
+  "F-B_internal_persists": "PASS",
+  "F-C_internal_nonode_suppressed": "PASS",
+  "F-D_capture_not_random": "PASS"
+ },
+ "lo_drift_buckets": [
+  {
+   "class": "A_word_final_lo",
+   "cells": 50000,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  {
+   "class": "B_internal_nodecapable_lo",
+   "cells": 91799,
+   "drifted": 29696,
+   "rate": 0.32348936262922257
+  },
+  {
+   "class": "C_internal_nonode_lo",
+   "cells": 71357,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  {
+   "class": "S_separator_lo",
+   "cells": 49999,
+   "drifted": 1019,
+   "rate": 0.020380407608152164
+  }
+ ],
+ "hi_leaf_drift_total": 962,
+ "separator_hi_drift": 962,
+ "fd_capture": {
+  "drifted_node_capable": 29696,
+  "landed_on_flank_code": 29696
+ },
+ "lo_drift_landing_code_hist": {
+  "6": 24860,
+  "7": 5855
+ },
+ "drift_by_lo_value": {
+  "0": {
+   "cells": 4155,
+   "drifted": 1234,
+   "rate": 0.29699157641395907
+  },
+  "1": {
+   "cells": 17863,
+   "drifted": 8565,
+   "rate": 0.47948272966467
+  },
+  "2": {
+   "cells": 15204,
+   "drifted": 4369,
+   "rate": 0.2873585898447777
+  },
+  "3": {
+   "cells": 19020,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "4": {
+   "cells": 28459,
+   "drifted": 4141,
+   "rate": 0.14550757229698866
+  },
+  "5": {
+   "cells": 31383,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "6": {
+   "cells": 6469,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "7": {
+   "cells": 10038,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "8": {
+   "cells": 14289,
+   "drifted": 11387,
+   "rate": 0.796906711456365
+  },
+  "9": {
+   "cells": 18523,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "10": {
+   "cells": 302,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "11": {
+   "cells": 1718,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "12": {
+   "cells": 9266,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "13": {
+   "cells": 5312,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "14": {
+   "cells": 14915,
+   "drifted": 0,
+   "rate": 0.0
+  },
+  "15": {
+   "cells": 16240,
+   "drifted": 0,
+   "rate": 0.0
+  }
+ },
+ "final": {
+  "bond_survival": 0.9961277574053314,
+  "mean_det": 0.7470574378967285,
+  "min_det": 0.023959103971719742,
+  "frac_locked": 0.9961277574053314,
+  "total_drift_cells": 31677,
+  "cum_breaks": 1021,
+  "cum_completions": 2,
+  "code0_locks": 1561151,
+  "code0_locks_deep": 0,
+  "crossings_total": 1787940,
+  "foreign_locks": 31210,
+  "code0_foreign_locks": 24,
+  "featureless_recruits": 0,
+  "valency_demand_events": 1722101
+ },
+ "samples": [
+  {
+   "tick": 20,
+   "T": 0.018092209605492352,
+   "n_bonded": 262185,
+   "bond_survival": 0.9963139594535539,
+   "cum_breaks": 971,
+   "cum_completions": 1,
+   "mean_det": 0.613941490650177,
+   "p01_det": 0.44905149936676025,
+   "min_det": 0.028818489983677864,
+   "frac_locked": 0.9508882597708574,
+   "featureless_recruits": 0,
+   "valency_demand_events": 410862,
+   "code0_locks": 295993,
+   "code0_locks_deep": 0,
+   "crossings_total": 464928,
+   "foreign_locks": 29206,
+   "code0_foreign_locks": 4,
+   "ticks_per_sec": 1.9765457479684383
+  },
+  {
+   "tick": 40,
+   "T": 0.016366402420453483,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.630612313747406,
+   "p01_det": 0.46561935544013977,
+   "min_det": 0.006853263825178146,
+   "frac_locked": 0.967760445364899,
+   "featureless_recruits": 0,
+   "valency_demand_events": 763865,
+   "code0_locks": 605167,
+   "code0_locks_deep": 0,
+   "crossings_total": 829215,
+   "foreign_locks": 31149,
+   "code0_foreign_locks": 6,
+   "ticks_per_sec": 1.9910151155465767
+  },
+  {
+   "tick": 60,
+   "T": 0.01480521915393408,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.649054765701294,
+   "p01_det": 0.47382286190986633,
+   "min_det": 0.006192828994244337,
+   "frac_locked": 0.9730786038646425,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1032248,
+   "code0_locks": 871288,
+   "code0_locks_deep": 0,
+   "crossings_total": 1098067,
+   "foreign_locks": 31192,
+   "code0_foreign_locks": 6,
+   "ticks_per_sec": 1.9650307810255532
+  },
+  {
+   "tick": 80,
+   "T": 0.013392956409411277,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.6666868329048157,
+   "p01_det": 0.4813638925552368,
+   "min_det": 0.009699894115328789,
+   "frac_locked": 0.9769147460622066,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1255524,
+   "code0_locks": 1094557,
+   "code0_locks_deep": 0,
+   "crossings_total": 1321346,
+   "foreign_locks": 31192,
+   "code0_foreign_locks": 6,
+   "ticks_per_sec": 2.0014367403701736
+  },
+  {
+   "tick": 100,
+   "T": 0.012115408729814548,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.6831259727478027,
+   "p01_det": 0.4879997670650482,
+   "min_det": 0.009700699709355831,
+   "frac_locked": 0.9808800896809865,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1437471,
+   "code0_locks": 1276504,
+   "code0_locks_deep": 0,
+   "crossings_total": 1503293,
+   "foreign_locks": 31192,
+   "code0_foreign_locks": 6,
+   "ticks_per_sec": 1.9547460069738176
+  },
+  {
+   "tick": 120,
+   "T": 0.010959725709800834,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.6980140209197998,
+   "p01_det": 0.49361294507980347,
+   "min_det": 0.011795572936534882,
+   "frac_locked": 0.9848644335087686,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1577490,
+   "code0_locks": 1416524,
+   "code0_locks_deep": 0,
+   "crossings_total": 1643313,
+   "foreign_locks": 31193,
+   "code0_foreign_locks": 7,
+   "ticks_per_sec": 1.9070277605462789
+  },
+  {
+   "tick": 140,
+   "T": 0.009914282738021007,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.7111184597015381,
+   "p01_det": 0.49948084354400635,
+   "min_det": 0.013949531130492687,
+   "frac_locked": 0.9895631851950372,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1672387,
+   "code0_locks": 1511434,
+   "code0_locks_deep": 0,
+   "crossings_total": 1738223,
+   "foreign_locks": 31207,
+   "code0_foreign_locks": 21,
+   "ticks_per_sec": 1.8859586038323457
+  },
+  {
+   "tick": 160,
+   "T": 0.008968564069219538,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.7223021984100342,
+   "p01_det": 0.5071547627449036,
+   "min_det": 0.016740508377552032,
+   "frac_locked": 0.9944747392221315,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1716131,
+   "code0_locks": 1555180,
+   "code0_locks_deep": 0,
+   "crossings_total": 1781969,
+   "foreign_locks": 31209,
+   "code0_foreign_locks": 23,
+   "ticks_per_sec": 1.879903559398948
+  },
+  {
+   "tick": 180,
+   "T": 0.008113057050030363,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.734220564365387,
+   "p01_det": 0.5243329405784607,
+   "min_det": 0.018400991335511208,
+   "frac_locked": 0.9961068571754289,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1722064,
+   "code0_locks": 1561114,
+   "code0_locks_deep": 0,
+   "crossings_total": 1787903,
+   "foreign_locks": 31210,
+   "code0_foreign_locks": 24,
+   "ticks_per_sec": 1.8648621494919306
+  },
+  {
+   "tick": 200,
+   "T": 0.007339156434523337,
+   "n_bonded": 262136,
+   "bond_survival": 0.9961277574053314,
+   "cum_breaks": 1021,
+   "cum_completions": 2,
+   "mean_det": 0.7470574378967285,
+   "p01_det": 0.5488824844360352,
+   "min_det": 0.023959103971719742,
+   "frac_locked": 0.9961277574053314,
+   "featureless_recruits": 0,
+   "valency_demand_events": 1722101,
+   "code0_locks": 1561151,
+   "code0_locks_deep": 0,
+   "crossings_total": 1787940,
+   "foreign_locks": 31210,
+   "code0_foreign_locks": 24,
+   "ticks_per_sec": 1.8463775260178998
+  }
+ ]
+}
