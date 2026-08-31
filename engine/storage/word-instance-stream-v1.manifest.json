@@ -1,0 +1,148 @@
+{
+  "kind": "word-instance-stream",
+  "version": "v1",
+  "source": {
+    "name": "gutenberg-2701-moby-dick",
+    "sha256": "3b2284d14993ee4fba06eb6bdb4d97f89e14ef09261bb9c2e81a3c2a6205f856",
+    "chars_stripped_lowered": 1218948
+  },
+  "id_space": "snode-chains-v0 word ids (row index of ORDER BY word query, 838971 rows); token -> lowest id whose label matches; homonym sense unresolved by design",
+  "normalization": "gutenberg markers stripped; text lowercased; tokens = [a-z]+ runs",
+  "adjacency": "given sequence = consecutive kept positions; gap_before[i]=1 means >=1 dropped (OOV) token between kept i-1 and i (or before first kept) \u2014 a break in given adjacency; punctuation/whitespace do NOT set gaps",
+  "counts": {
+    "positions": 215092,
+    "unique_types": 16029,
+    "oov_dropped": 3962,
+    "oov_unique": 927,
+    "gap_positions": 3827,
+    "coverage": 0.981913
+  },
+  "proofs": {
+    "decode_via_v0_artifact": "215092 positions byte-exact (all, memoized)",
+    "id_space_matched_v0_manifest": true
+  },
+  "oov_top": [
+    [
+      "ahab",
+      517
+    ],
+    [
+      "stubb",
+      261
+    ],
+    [
+      "queequeg",
+      253
+    ],
+    [
+      "starbuck",
+      199
+    ],
+    [
+      "pequod",
+      178
+    ],
+    [
+      "nantucket",
+      97
+    ],
+    [
+      "jonah",
+      86
+    ],
+    [
+      "bildad",
+      77
+    ],
+    [
+      "peleg",
+      73
+    ],
+    [
+      "tashtego",
+      57
+    ],
+    [
+      "steelkilt",
+      40
+    ],
+    [
+      "daggoo",
+      37
+    ],
+    [
+      "greenland",
+      36
+    ],
+    [
+      "american",
+      34
+    ],
+    [
+      "didn",
+      33
+    ],
+    [
+      "fedallah",
+      28
+    ],
+    [
+      "parsee",
+      28
+    ],
+    [
+      "lakeman",
+      24
+    ],
+    [
+      "nantucketer",
+      22
+    ],
+    [
+      "radney",
+      22
+    ]
+  ],
+  "frequency_shadow_top10_derived_not_fed": [
+    [
+      "the",
+      14535
+    ],
+    [
+      "of",
+      6624
+    ],
+    [
+      "and",
+      6447
+    ],
+    [
+      "a",
+      4747
+    ],
+    [
+      "to",
+      4627
+    ],
+    [
+      "in",
+      4184
+    ],
+    [
+      "that",
+      3085
+    ],
+    [
+      "his",
+      2532
+    ],
+    [
+      "it",
+      2522
+    ],
+    [
+      "i",
+      2127
+    ]
+  ]
+}
