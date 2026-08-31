@@ -1,0 +1,257 @@
+{
+ "artifact": "pos-carrier-count-v1",
+ "state": "pour-state-v031-acceptance.npz",
+ "global_mean_det": 0.7693849704446999,
+ "groups": [
+  {
+   "pos_id": 10,
+   "words": 513549,
+   "cells": 10302434,
+   "mean_det": 0.7694645033377443,
+   "mean_weight": 3.133927768913637,
+   "mean_lo_weight": 2.934702420806578,
+   "frac_eqflank": 0.29125243607481494,
+   "frac_selfnode": 0.005037159180053956,
+   "frac_foreignnode": 0.286215276894761
+  },
+  {
+   "pos_id": 0,
+   "words": 152301,
+   "cells": 3239262,
+   "mean_det": 0.768839169896368,
+   "mean_weight": 3.112186664740302,
+   "mean_lo_weight": 2.9190988564679237,
+   "frac_eqflank": 0.30333977307176757,
+   "frac_selfnode": 0.004705084059270291,
+   "frac_foreignnode": 0.2986346890124973
+  },
+  {
+   "pos_id": 21,
+   "words": 144037,
+   "cells": 2634022,
+   "mean_det": 0.7695153355779479,
+   "mean_weight": 3.1153206009668866,
+   "mean_lo_weight": 2.913939974685101,
+   "frac_eqflank": 0.2964804394192607,
+   "frac_selfnode": 0.006967671492493229,
+   "frac_foreignnode": 0.2895127679267675
+  },
+  {
+   "pos_id": 1,
+   "words": 23747,
+   "cells": 537860,
+   "mean_det": 0.7704197103050631,
+   "mean_weight": 3.125558695571338,
+   "mean_lo_weight": 2.9197486334733944,
+   "frac_eqflank": 0.2963949726694679,
+   "frac_selfnode": 0.004590413862343361,
+   "frac_foreignnode": 0.2918045588071245
+  },
+  {
+   "pos_id": 8,
+   "words": 2405,
+   "cells": 27308,
+   "mean_det": 0.768970531400692,
+   "mean_weight": 3.1245422586787757,
+   "mean_lo_weight": 2.941921781163029,
+   "frac_eqflank": 0.33836238464918705,
+   "frac_selfnode": 0.010729456569503443,
+   "frac_foreignnode": 0.3276329280796836
+  },
+  {
+   "pos_id": 18,
+   "words": 550,
+   "cells": 6428,
+   "mean_det": 0.7729602347417285,
+   "mean_weight": 3.183571873055383,
+   "mean_lo_weight": 2.9884878655880525,
+   "frac_eqflank": 0.27535780958307404,
+   "frac_selfnode": 0.01104542626011201,
+   "frac_foreignnode": 0.26431238332296203
+  },
+  {
+   "pos_id": 16,
+   "words": 469,
+   "cells": 5054,
+   "mean_det": 0.769802437134774,
+   "mean_weight": 3.140878512069648,
+   "mean_lo_weight": 2.9501385041551247,
+   "frac_eqflank": 0.29659675504550853,
+   "frac_selfnode": 0.01404827859121488,
+   "frac_foreignnode": 0.28254847645429365
+  },
+  {
+   "pos_id": 11,
+   "words": 360,
+   "cells": 6564,
+   "mean_det": 0.7738066146934562,
+   "mean_weight": 3.185862279098111,
+   "mean_lo_weight": 3.059719683120049,
+   "frac_eqflank": 0.3462827544180378,
+   "frac_selfnode": 0.010054844606946984,
+   "frac_foreignnode": 0.3362279098110908
+  },
+  {
+   "pos_id": 5,
+   "words": 357,
+   "cells": 4174,
+   "mean_det": 0.769263747552964,
+   "mean_weight": 3.0951126018207953,
+   "mean_lo_weight": 2.8682319118351702,
+   "frac_eqflank": 0.31744130330618114,
+   "frac_selfnode": 0.004551988500239578,
+   "frac_foreignnode": 0.31288931480594157
+  },
+  {
+   "pos_id": 9,
+   "words": 297,
+   "cells": 4394,
+   "mean_det": 0.7681172953907555,
+   "mean_weight": 3.082385070550751,
+   "mean_lo_weight": 2.8689121529358217,
+   "frac_eqflank": 0.32908511606736457,
+   "frac_selfnode": 0.011834319526627219,
+   "frac_foreignnode": 0.31725079654073735
+  },
+  {
+   "pos_id": 13,
+   "words": 244,
+   "cells": 2090,
+   "mean_det": 0.772205554811578,
+   "mean_weight": 3.1708133971291868,
+   "mean_lo_weight": 3.0191387559808613,
+   "frac_eqflank": 0.31483253588516746,
+   "frac_selfnode": 0.028708133971291867,
+   "frac_foreignnode": 0.2861244019138756
+  },
+  {
+   "pos_id": 4,
+   "words": 223,
+   "cells": 2596,
+   "mean_det": 0.7708696967510302,
+   "mean_weight": 3.1352080123266566,
+   "mean_lo_weight": 2.9121725731895225,
+   "frac_eqflank": 0.2657935285053929,
+   "frac_selfnode": 0.012326656394453005,
+   "frac_foreignnode": 0.2534668721109399
+  },
+  {
+   "pos_id": 6,
+   "words": 214,
+   "cells": 2058,
+   "mean_det": 0.7711352294110001,
+   "mean_weight": 3.141399416909621,
+   "mean_lo_weight": 2.9173955296404275,
+   "frac_eqflank": 0.2706511175898931,
+   "frac_selfnode": 0.008746355685131196,
+   "frac_foreignnode": 0.26190476190476186
+  },
+  {
+   "pos_id": 12,
+   "words": 86,
+   "cells": 572,
+   "mean_det": 0.7698457081626345,
+   "mean_weight": 3.145104895104895,
+   "mean_lo_weight": 2.9755244755244754,
+   "frac_eqflank": 0.3269230769230769,
+   "frac_selfnode": 0.0034965034965034965,
+   "frac_foreignnode": 0.32342657342657344
+  },
+  {
+   "pos_id": 20,
+   "words": 43,
+   "cells": 250,
+   "mean_det": 0.7634131014347076,
+   "mean_weight": 3.108,
+   "mean_lo_weight": 2.856,
+   "frac_eqflank": 0.288,
+   "frac_selfnode": 0.012,
+   "frac_foreignnode": 0.27599999999999997
+  },
+  {
+   "pos_id": 17,
+   "words": 34,
+   "cells": 316,
+   "mean_det": 0.770363834273966,
+   "mean_weight": 3.151898734177215,
+   "mean_lo_weight": 2.9556962025316458,
+   "frac_eqflank": 0.2879746835443038,
+   "frac_selfnode": 0.03164556962025317,
+   "frac_foreignnode": 0.2563291139240506
+  },
+  {
+   "pos_id": 3,
+   "words": 27,
+   "cells": 56,
+   "mean_det": 0.7706674028720174,
+   "mean_weight": 3.142857142857143,
+   "mean_lo_weight": 2.892857142857143,
+   "frac_eqflank": 0.8571428571428571,
+   "frac_selfnode": 0.125,
+   "frac_foreignnode": 0.7321428571428571
+  },
+  {
+   "pos_id": 2,
+   "words": 18,
+   "cells": 86,
+   "mean_det": 0.7624094999113749,
+   "mean_weight": 2.9069767441860463,
+   "mean_lo_weight": 2.5348837209302326,
+   "frac_eqflank": 0.313953488372093,
+   "frac_selfnode": 0.0,
+   "frac_foreignnode": 0.313953488372093
+  },
+  {
+   "pos_id": 14,
+   "words": 3,
+   "cells": 46,
+   "mean_det": 0.7641503512859344,
+   "mean_weight": 3.108695652173913,
+   "mean_lo_weight": 2.869565217391304,
+   "frac_eqflank": 0.2826086956521739,
+   "frac_selfnode": 0.0,
+   "frac_foreignnode": 0.2826086956521739
+  },
+  {
+   "pos_id": 7,
+   "words": 2,
+   "cells": 20,
+   "mean_det": 0.7813297152519226,
+   "mean_weight": 3.3,
+   "mean_lo_weight": 3.5,
+   "frac_eqflank": 0.4,
+   "frac_selfnode": 0.05,
+   "frac_foreignnode": 0.35000000000000003
+  },
+  {
+   "pos_id": 15,
+   "words": 2,
+   "cells": 18,
+   "mean_det": 0.7786699831485748,
+   "mean_weight": 3.2222222222222223,
+   "mean_lo_weight": 3.111111111111111,
+   "frac_eqflank": 0.3333333333333333,
+   "frac_selfnode": 0.0,
+   "frac_foreignnode": 0.3333333333333333
+  },
+  {
+   "pos_id": 19,
+   "words": 2,
+   "cells": 28,
+   "mean_det": 0.7688513823917934,
+   "mean_weight": 3.2142857142857144,
+   "mean_lo_weight": 3.0,
+   "frac_eqflank": 0.25,
+   "frac_selfnode": 0.0,
+   "frac_foreignnode": 0.25
+  }
+ ],
+ "class_level_r": {
+  "mean_weight": 0.5503190259135344,
+  "mean_lo_weight": 0.3633340200314763,
+  "frac_eqflank": -0.4311921792679113,
+  "frac_selfnode": 0.2612229179778756,
+  "frac_foreignnode": -0.5128012171151252
+ },
+ "note": "ids only \u2014 planner holds id->name; join against designation-read z table. If composition/geometry reproduce the det ordering, morphology-carrier confirmed w/ mechanism (WEIGHT + node geometry); residual classes = suffix-v2 candidates."
+}

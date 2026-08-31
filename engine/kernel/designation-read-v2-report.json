@@ -1,0 +1,211 @@
+{
+ "artifact": "designation-read-v2-suffixnull",
+ "version": "2.1-closedform",
+ "null": "shuffle within (final-trigram, len-bucket) strata",
+ "estimator": "closed-form SRSWOR moments per stratum (exact z); B=200 empirical cross-check",
+ "n_labeled": 838970,
+ "n_strata": 30032,
+ "B_emp": 200,
+ "emp_vs_exact_mu_maxdiff": 0.0010669370061262562,
+ "caveat": "beyond-final-trigram, not beyond-all-morphology; single-class strata cannot move (that immobility is the morphology answer)",
+ "per_pos": [
+  {
+   "pos": "adj",
+   "n_words": 152301,
+   "movable_frac": 0.98,
+   "delta": 0.00021,
+   "z": 20.0,
+   "pctile_normal": 1.0,
+   "pctile_emp200": 1.0
+  },
+  {
+   "pos": "noun",
+   "n_words": 513549,
+   "movable_frac": 0.849,
+   "delta": -4.6e-05,
+   "z": -11.67,
+   "pctile_normal": 0.0,
+   "pctile_emp200": 0.0
+  },
+  {
+   "pos": "num",
+   "n_words": 360,
+   "movable_frac": 0.914,
+   "delta": 0.002405,
+   "z": 7.57,
+   "pctile_normal": 1.0,
+   "pctile_emp200": 1.0
+  },
+  {
+   "pos": "verb",
+   "n_words": 144037,
+   "movable_frac": 0.983,
+   "delta": -8.8e-05,
+   "z": -7.02,
+   "pctile_normal": 0.0,
+   "pctile_emp200": 0.0
+  },
+  {
+   "pos": "pron",
+   "n_words": 550,
+   "movable_frac": 0.911,
+   "delta": 0.001184,
+   "z": 4.64,
+   "pctile_normal": 1.0,
+   "pctile_emp200": 1.0
+  },
+  {
+   "pos": "adv",
+   "n_words": 23747,
+   "movable_frac": 0.872,
+   "delta": 8.8e-05,
+   "z": 4.36,
+   "pctile_normal": 1.0,
+   "pctile_emp200": 1.0
+  },
+  {
+   "pos": "contraction",
+   "n_words": 357,
+   "movable_frac": 0.894,
+   "delta": 0.001361,
+   "z": 4.3,
+   "pctile_normal": 1.0,
+   "pctile_emp200": 1.0
+  },
+  {
+   "pos": "symbol",
+   "n_words": 43,
+   "movable_frac": 0.488,
+   "delta": 0.001246,
+   "z": 2.09,
+   "pctile_normal": 0.9816,
+   "pctile_emp200": 0.975
+  },
+  {
+   "pos": "postp",
+   "n_words": 3,
+   "movable_frac": 1.0,
+   "delta": -0.00738,
+   "z": -2.08,
+   "pctile_normal": 0.0186,
+   "pctile_emp200": 0.04
+  },
+  {
+   "pos": "particle",
+   "n_words": 86,
+   "movable_frac": 0.837,
+   "delta": 0.001124,
+   "z": 1.81,
+   "pctile_normal": 0.9648,
+   "pctile_emp200": 0.95
+  },
+  {
+   "pos": "prefix",
+   "n_words": 2,
+   "movable_frac": 1.0,
+   "delta": 0.008895,
+   "z": 1.57,
+   "pctile_normal": 0.9413,
+   "pctile_emp200": 0.965
+  },
+  {
+   "pos": "prep_phrase",
+   "n_words": 34,
+   "movable_frac": 0.588,
+   "delta": 0.001285,
+   "z": 1.48,
+   "pctile_normal": 0.9307,
+   "pctile_emp200": 0.935
+  },
+  {
+   "pos": "phrase",
+   "n_words": 244,
+   "movable_frac": 0.377,
+   "delta": 0.000306,
+   "z": 1.22,
+   "pctile_normal": 0.8884,
+   "pctile_emp200": 0.86
+  },
+  {
+   "pos": "intj",
+   "n_words": 2405,
+   "movable_frac": 0.859,
+   "delta": -0.000131,
+   "z": -1.07,
+   "pctile_normal": 0.1422,
+   "pctile_emp200": 0.125
+  },
+  {
+   "pos": "det",
+   "n_words": 214,
+   "movable_frac": 0.958,
+   "delta": 0.000469,
+   "z": 1.06,
+   "pctile_normal": 0.8562,
+   "pctile_emp200": 0.865
+  },
+  {
+   "pos": "article",
+   "n_words": 18,
+   "movable_frac": 0.944,
+   "delta": -0.000964,
+   "z": -0.73,
+   "pctile_normal": 0.2318,
+   "pctile_emp200": 0.29
+  },
+  {
+   "pos": "conj",
+   "n_words": 223,
+   "movable_frac": 0.901,
+   "delta": 0.000187,
+   "z": 0.46,
+   "pctile_normal": 0.6765,
+   "pctile_emp200": 0.73
+  },
+  {
+   "pos": "infix",
+   "n_words": 2,
+   "movable_frac": 1.0,
+   "delta": 0.002366,
+   "z": 0.4,
+   "pctile_normal": 0.654,
+   "pctile_emp200": 0.655
+  },
+  {
+   "pos": "prep",
+   "n_words": 469,
+   "movable_frac": 0.936,
+   "delta": -0.0001,
+   "z": -0.34,
+   "pctile_normal": 0.3687,
+   "pctile_emp200": 0.36
+  },
+  {
+   "pos": "character",
+   "n_words": 27,
+   "movable_frac": 0.963,
+   "delta": 0.000388,
+   "z": 0.28,
+   "pctile_normal": 0.6116,
+   "pctile_emp200": 0.62
+  },
+  {
+   "pos": "suffix",
+   "n_words": 2,
+   "movable_frac": 1.0,
+   "delta": -0.000305,
+   "z": -0.08,
+   "pctile_normal": 0.4677,
+   "pctile_emp200": 0.465
+  },
+  {
+   "pos": "name",
+   "n_words": 297,
+   "movable_frac": 0.886,
+   "delta": 1.7e-05,
+   "z": 0.05,
+   "pctile_normal": 0.5194,
+   "pctile_emp200": 0.53
+  }
+ ]
+}

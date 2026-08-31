@@ -1,0 +1,219 @@
+{
+ "artifact": "designation-read-v1",
+ "question": "field organization along POS designations beyond length-stratified recurrence",
+ "state": "pour-state-v031-acceptance.npz",
+ "n_words": 838971,
+ "n_labeled": 838970,
+ "n_leaves": 16775644,
+ "B": 1000,
+ "global": {
+  "between_group_var": 2.0879111359229575e-05,
+  "null_var_mean": 1.477225573744927e-05,
+  "var_pctile_vs_null": 0.803,
+  "reading": "no POS organization beyond length-null"
+ },
+ "per_pos": [
+  {
+   "pos": "adj",
+   "n_words": 152301,
+   "mean_det": 0.76893,
+   "null_mean": 0.769403,
+   "delta": -0.000473,
+   "z": -26.84,
+   "pctile_vs_null": 0.0
+  },
+  {
+   "pos": "adv",
+   "n_words": 23747,
+   "mean_det": 0.77053,
+   "null_mean": 0.769363,
+   "delta": 0.001167,
+   "z": 25.43,
+   "pctile_vs_null": 1.0
+  },
+  {
+   "pos": "noun",
+   "n_words": 513549,
+   "mean_det": 0.769469,
+   "null_mean": 0.769403,
+   "delta": 6.6e-05,
+   "z": 9.54,
+   "pctile_vs_null": 1.0
+  },
+  {
+   "pos": "pron",
+   "n_words": 550,
+   "mean_det": 0.773272,
+   "null_mean": 0.769168,
+   "delta": 0.004103,
+   "z": 8.28,
+   "pctile_vs_null": 1.0
+  },
+  {
+   "pos": "num",
+   "n_words": 360,
+   "mean_det": 0.773337,
+   "null_mean": 0.769189,
+   "delta": 0.004148,
+   "z": 7.58,
+   "pctile_vs_null": 1.0
+  },
+  {
+   "pos": "phrase",
+   "n_words": 244,
+   "mean_det": 0.772903,
+   "null_mean": 0.768839,
+   "delta": 0.004064,
+   "z": 4.57,
+   "pctile_vs_null": 1.0
+  },
+  {
+   "pos": "det",
+   "n_words": 214,
+   "mean_det": 0.771307,
+   "null_mean": 0.769112,
+   "delta": 0.002195,
+   "z": 2.49,
+   "pctile_vs_null": 0.995
+  },
+  {
+   "pos": "conj",
+   "n_words": 223,
+   "mean_det": 0.770971,
+   "null_mean": 0.769135,
+   "delta": 0.001837,
+   "z": 2.23,
+   "pctile_vs_null": 0.993
+  },
+  {
+   "pos": "verb",
+   "n_words": 144037,
+   "mean_det": 0.769468,
+   "null_mean": 0.769426,
+   "delta": 4.2e-05,
+   "z": 2.21,
+   "pctile_vs_null": 0.986
+  },
+  {
+   "pos": "name",
+   "n_words": 297,
+   "mean_det": 0.768124,
+   "null_mean": 0.76931,
+   "delta": -0.001186,
+   "z": -2.13,
+   "pctile_vs_null": 0.012
+  },
+  {
+   "pos": "intj",
+   "n_words": 2405,
+   "mean_det": 0.768863,
+   "null_mean": 0.76924,
+   "delta": -0.000377,
+   "z": -1.67,
+   "pctile_vs_null": 0.048
+  },
+  {
+   "pos": "symbol",
+   "n_words": 43,
+   "mean_det": 0.764717,
+   "null_mean": 0.768611,
+   "delta": -0.003894,
+   "z": -1.53,
+   "pctile_vs_null": 0.074
+  },
+  {
+   "pos": "infix",
+   "n_words": 2,
+   "mean_det": 0.781912,
+   "null_mean": 0.769112,
+   "delta": 0.012801,
+   "z": 1.51,
+   "pctile_vs_null": 0.954
+  },
+  {
+   "pos": "article",
+   "n_words": 18,
+   "mean_det": 0.761923,
+   "null_mean": 0.768457,
+   "delta": -0.006533,
+   "z": -1.5,
+   "pctile_vs_null": 0.076
+  },
+  {
+   "pos": "postp",
+   "n_words": 3,
+   "mean_det": 0.760814,
+   "null_mean": 0.769144,
+   "delta": -0.00833,
+   "z": -1.27,
+   "pctile_vs_null": 0.1
+  },
+  {
+   "pos": "prefix",
+   "n_words": 2,
+   "mean_det": 0.778809,
+   "null_mean": 0.769158,
+   "delta": 0.009651,
+   "z": 1.18,
+   "pctile_vs_null": 0.888
+  },
+  {
+   "pos": "character",
+   "n_words": 27,
+   "mean_det": 0.77065,
+   "null_mean": 0.766472,
+   "delta": 0.004178,
+   "z": 0.92,
+   "pctile_vs_null": 0.822
+  },
+  {
+   "pos": "suffix",
+   "n_words": 2,
+   "mean_det": 0.774711,
+   "null_mean": 0.768776,
+   "delta": 0.005935,
+   "z": 0.62,
+   "pctile_vs_null": 0.724
+  },
+  {
+   "pos": "particle",
+   "n_words": 86,
+   "mean_det": 0.769542,
+   "null_mean": 0.768658,
+   "delta": 0.000884,
+   "z": 0.53,
+   "pctile_vs_null": 0.695
+  },
+  {
+   "pos": "contraction",
+   "n_words": 357,
+   "mean_det": 0.769564,
+   "null_mean": 0.769347,
+   "delta": 0.000217,
+   "z": 0.39,
+   "pctile_vs_null": 0.646
+  },
+  {
+   "pos": "prep_phrase",
+   "n_words": 34,
+   "mean_det": 0.768709,
+   "null_mean": 0.768851,
+   "delta": -0.000142,
+   "z": -0.07,
+   "pctile_vs_null": 0.475
+  },
+  {
+   "pos": "prep",
+   "n_words": 469,
+   "mean_det": 0.769209,
+   "null_mean": 0.769218,
+   "delta": -9e-06,
+   "z": -0.02,
+   "pctile_vs_null": 0.487
+  }
+ ],
+ "word_det_global": {
+  "mean": 0.7694046545638453,
+  "min": 0.5139811635017395
+ }
+}
