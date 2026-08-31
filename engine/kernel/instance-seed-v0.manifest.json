@@ -1,0 +1,18 @@
+{
+  "artifact": "instance-seed-v0",
+  "leaf_grain": "nibble",
+  "counts": {
+    "words": 838971,
+    "char_instances": 8387822,
+    "byte_instances": 8387822,
+    "leaves": 16775644
+  },
+  "csr_members": "implicit-contiguous (depth-first in-order expansion; a parent's instance children are a contiguous range \u2014 offsets alone define each chain, members == arange)",
+  "byteinst_leaf": "implicit stride-2: byte instance b owns leaves [2b, 2b+1] = (hi, lo)",
+  "amp_seed_law": "amp[i] = one-hot(leaf_val[i]); unseen/background particles = uniform 1/16 (materialized in-kernel, never on disk)",
+  "cross_cutting": "pos + homonym chains pass through from producer npz UNCHANGED \u2014 word-type id == word-instance id in the v0 lexicon (seam \u00a7MAP GRAIN; breaks when a running-text corpus repeats words \u2192 needs producer word-instance stream, v1)",
+  "provenance": {
+    "source_npz": "/home/silas/shared-brain/exchange/snode-chains-v0.npz",
+    "source_sha256": "fb1c7570e6864c95af00517c8e37d69524c215707d1cccc9679aa45f2b328d54"
+  }
+}
