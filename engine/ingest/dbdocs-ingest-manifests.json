@@ -1,0 +1,596 @@
+[
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=1",
+  "doc": {
+   "token": "vA.AB.AS.AA.AA",
+   "name": "01952_The Yellow Wallpaper",
+   "total_slots": 11577,
+   "unique_tokens": 2216
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/01952_The Yellow Wallpaper.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "9aa4de3985523f1c079b85ae73d01544ae339431bf62e048af8b9d70fe513f67",
+   "n_bytes": 52610
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "f932583062cc9c0b05fdc248dd90496a"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 34,
+     "md5": "34758cbe0d9634f378ae9ad1f5db08b3"
+    },
+    "pbm_starters": {
+     "rows": 2216,
+     "md5": "cab10a3345527a98ea249ecf268d0a4a"
+    },
+    "pbm_char_bonds": {
+     "rows": 917,
+     "md5": "163c5b7e385a2c716a58c082c0678e62"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 53,
+     "md5": "a71fe61582c8f638f5d5522981bc45b8"
+    }
+   },
+   "record_md5": "aadf6fa353f878ac31f5bc23cf2eecdb"
+  },
+  "ledger_event_id": 3,
+  "observed_time": "2026-09-01T16:21:18.862268+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=2",
+  "doc": {
+   "token": "vA.AB.AS.AA.AB",
+   "name": "00011_Alices Adventures in Wonderland",
+   "total_slots": 39818,
+   "unique_tokens": 3929
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/00011_Alices Adventures in Wonderland.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "e6837847f1488fc571e8e358fd9ea48d3202664e28a4bebafc237b3b69407906",
+   "n_bytes": 174355
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "1fe2497edfa44eabe389fc778a6dd977"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 89,
+     "md5": "410b53f6b96dae5f0adc464a64aa0c36"
+    },
+    "pbm_starters": {
+     "rows": 3929,
+     "md5": "67b07003588aa8d79fcd2842ed2da0ca"
+    },
+    "pbm_char_bonds": {
+     "rows": 2823,
+     "md5": "55af049afe1dbcc8ccd1a07c1bb9d2f0"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 121,
+     "md5": "c4f4d5f4afdbf1cd045c9f192f182cfd"
+    }
+   },
+   "record_md5": "ba72971833099efd9290a1e59191e6e2"
+  },
+  "ledger_event_id": 4,
+  "observed_time": "2026-09-01T16:21:19.020830+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=3",
+  "doc": {
+   "token": "vA.AB.AS.AA.AC",
+   "name": "00043_The Strange Case of Dr Jekyll and Mr Hyde",
+   "total_slots": 36295,
+   "unique_tokens": 5419
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/00043_The Strange Case of Dr Jekyll and Mr Hyde.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "13bf9e81feddf26b22b2aad02310a7844169556d7580e42ab8be405567905b01",
+   "n_bytes": 163530
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "4adc0b84a8add651f22d57bfd23f6abc"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 70,
+     "md5": "ecd59b90fc4f35ae4572281f861ac57e"
+    },
+    "pbm_starters": {
+     "rows": 5419,
+     "md5": "4fec1dc1529b59edb7170106a5e18f06"
+    },
+    "pbm_char_bonds": {
+     "rows": 2658,
+     "md5": "a150e29536ca0c2cdd080b1676d05678"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 127,
+     "md5": "81b5a74fc951950faccb9f3662a95a5d"
+    }
+   },
+   "record_md5": "36af4576358ee48ba7b494e44ca1327a"
+  },
+  "ledger_event_id": 5,
+  "observed_time": "2026-09-01T16:21:19.173988+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=4",
+  "doc": {
+   "token": "vA.AB.AS.AA.AD",
+   "name": "00084_Frankenstein Or The Modern Prometheus",
+   "total_slots": 92964,
+   "unique_tokens": 8968
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/00084_Frankenstein Or The Modern Prometheus.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "41cd68ad0cb6d22e4a2b5bc1458cbd4248d13d7c691422065af7188d18a4e68f",
+   "n_bytes": 448929
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "58591f02c92435c8622e9a7e6f2e572e"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 141,
+     "md5": "c63410a2095320683f6f6d2aea541088"
+    },
+    "pbm_starters": {
+     "rows": 8968,
+     "md5": "0ec7f1e7b4eb3ee802cf4b18808d91b4"
+    },
+    "pbm_char_bonds": {
+     "rows": 5043,
+     "md5": "96b8538e0618834506b77e9d746f4562"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 234,
+     "md5": "2c495b7c99a5659a733a3c83f2f1f7aa"
+    }
+   },
+   "record_md5": "bce2d830a8e2bf9f64202951912b3ec7"
+  },
+  "ledger_event_id": 6,
+  "observed_time": "2026-09-01T16:21:19.376273+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=5",
+  "doc": {
+   "token": "vA.AB.AS.AA.AE",
+   "name": "00768_Wuthering Heights",
+   "total_slots": 152059,
+   "unique_tokens": 11670
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/00768_Wuthering Heights.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "dbe1c6019e3f89bb0ca9bee768e385a91522a717cbae8ef1d99d5c66de36de81",
+   "n_bytes": 693877
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "0aa432f996eaf0d42cd5d735723d284e"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 381,
+     "md5": "24db80358785d718f325d307311f618a"
+    },
+    "pbm_starters": {
+     "rows": 11670,
+     "md5": "1142c94950c9433d6d068245dae3c4b3"
+    },
+    "pbm_char_bonds": {
+     "rows": 8902,
+     "md5": "89d97199017b18b744c7bc5b99b1e9ba"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 722,
+     "md5": "66ca497a035f4ef493f6d692b3d7be5e"
+    }
+   },
+   "record_md5": "f87c58b01d63502f6f39aaf21e61ee08"
+  },
+  "ledger_event_id": 7,
+  "observed_time": "2026-09-01T16:21:19.598861+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=6",
+  "doc": {
+   "token": "vA.AB.AS.AA.AF",
+   "name": "01342_Pride and Prejudice",
+   "total_slots": 162167,
+   "unique_tokens": 8718
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/01342_Pride and Prejudice.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "ef709744904d85ba1f5d33944e7b8682ecefbcd0ec73269949d83bdfa03dd490",
+   "n_bytes": 772429
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "2966bc909918875600f5797ef0203798"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 315,
+     "md5": "99a590937372f1f0d130107764e42ea3"
+    },
+    "pbm_starters": {
+     "rows": 8718,
+     "md5": "fc2f43046fa4084e4d4df9727dd4d5a9"
+    },
+    "pbm_char_bonds": {
+     "rows": 7089,
+     "md5": "11138b2cee166749ef6134f20ce76802"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 560,
+     "md5": "97d167f203a9211b4ffbb5831957cf64"
+    }
+   },
+   "record_md5": "e73a5d68598c998a66c640bc6f719382"
+  },
+  "ledger_event_id": 8,
+  "observed_time": "2026-09-01T16:21:19.818372+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=7",
+  "doc": {
+   "token": "vA.AB.AS.AA.AG",
+   "name": "02554_Crime and Punishment",
+   "total_slots": 264093,
+   "unique_tokens": 12026
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/02554_Crime and Punishment.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "16e8048bfcd7c59b27ee87b318cc46c2ebe6acffa55e553c957fdd303402a08b",
+   "n_bytes": 1201767
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "e9435d53e82a510228b29654738868ad"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 394,
+     "md5": "7acb754300ff878b2f6d218960726659"
+    },
+    "pbm_starters": {
+     "rows": 12026,
+     "md5": "2d7d1fe97ff8288931747d0a7b8b6c56"
+    },
+    "pbm_char_bonds": {
+     "rows": 10464,
+     "md5": "9e950ccd7cacb2ac2e3548bed5272e7b"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 1461,
+     "md5": "8ca887845fd902384b9fef5d7abb8360"
+    }
+   },
+   "record_md5": "694f6910f7c78f10470c05518825339e"
+  },
+  "ledger_event_id": 9,
+  "observed_time": "2026-09-01T16:21:20.111386+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=8",
+  "doc": {
+   "token": "vA.AB.AS.AA.AH",
+   "name": "02701_Moby Dick Or The Whale",
+   "total_slots": 268163,
+   "unique_tokens": 22438
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/02701_Moby Dick Or The Whale.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "7cc6f1aac955b38c5a59306f48fe2d752d917549e8019c0f6ea65fb52d1d21cc",
+   "n_bytes": 1276306
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "df7da44dff85dbd6e0a9221f22e8457e"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 1573,
+     "md5": "f35f7ec328113dc035b39cbc22dc9baa"
+    },
+    "pbm_starters": {
+     "rows": 22438,
+     "md5": "805ee93ec606f376b6a3d200911dbe8e"
+    },
+    "pbm_char_bonds": {
+     "rows": 14836,
+     "md5": "084c4514dfd80e0126eaa2d1839f9005"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 2231,
+     "md5": "604fbb5ea54eabf4b1b3c9955082e9b9"
+    }
+   },
+   "record_md5": "dd9e667079e1769f0ef5288dc6835d18"
+  },
+  "ledger_event_id": 10,
+  "observed_time": "2026-09-01T16:21:20.477908+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ },
+ {
+  "artifact": "ingest-v0 handover manifest, db-resident doc (EMIT-ONLY; ledger row + live db are the store)",
+  "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+  "source": "db:hcp_fic_pbm:id=9",
+  "doc": {
+   "token": "vA.AB.AS.AA.AI",
+   "name": "64317_The Great Gatsby",
+   "total_slots": 67765,
+   "unique_tokens": 7818
+  },
+  "byte_stream": {
+   "path": "/home/planner/engine/hcp/data/gutenberg/texts/64317_The Great Gatsby.txt",
+   "exists": true,
+   "linkage": "hypothesized (matched by doc name; document_provenance.source_path is empty)",
+   "sha256": "e6b7897aa8498b8dac4df0664827f857bc01135c3d9311adb820979bbc44b763",
+   "n_bytes": 306594
+  },
+  "record": {
+   "tables": {
+    "pbm_documents": {
+     "rows": 1,
+     "md5": "bda37d805061c987467acb68f1bf3dca"
+    },
+    "document_provenance": {
+     "rows": 0,
+     "md5": null
+    },
+    "document_relationships": {
+     "rows": 0,
+     "md5": null
+    },
+    "docvar_groups": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_docvars": {
+     "rows": 209,
+     "md5": "eb2ba87cfeedab5c9e58012d243b3fa0"
+    },
+    "pbm_starters": {
+     "rows": 7818,
+     "md5": "aa0faea9f3c3de1d19a2a63c920c8be0"
+    },
+    "pbm_char_bonds": {
+     "rows": 3726,
+     "md5": "28adf497f4cbe9d479e12af1b8b56f0a"
+    },
+    "pbm_word_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_marker_bonds": {
+     "rows": 0,
+     "md5": null
+    },
+    "pbm_var_bonds": {
+     "rows": 344,
+     "md5": "7b81ad73a6825fa12bbdc46aeee02746"
+    }
+   },
+   "record_md5": "d554e525e2292c80f6b1a000714f1497"
+  },
+  "ledger_event_id": 11,
+  "observed_time": "2026-09-01T16:21:20.669671+00:00",
+  "kernel_contract": "byte stream = the file at byte_stream.path (verify sha256 before pouring); starters/positions = live rows per `record.tables` (verify counts+md5); the routine selected nothing \u2014 read what you need from the whole"
+ }
+]
