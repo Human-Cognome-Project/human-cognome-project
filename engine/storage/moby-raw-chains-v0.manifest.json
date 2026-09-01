@@ -1,0 +1,22 @@
+{
+ "artifact": "moby-raw-chains-v0",
+ "source_repo_relpath": "data/gutenberg/texts/02701_Moby Dick Or The Whale.txt",
+ "source_sha256": "7cc6f1aac955b38c5a59306f48fe2d752d917549e8019c0f6ea65fb52d1d21cc",
+ "source_bytes": 1276306,
+ "rules": {
+  "R-token": "maximal [A-Za-z]+ byte runs; offsets into raw blob",
+  "R-fold": "ASCII case-fold (byte|0x20 on A-Z) for type equivalence",
+  "R-line": "line starts at 0 and after every 0x0a"
+ },
+ "counts": {
+  "tokens": 222103,
+  "types": 17137,
+  "lines": 22311,
+  "letter_bytes": 970402,
+  "nonletter_bytes": 305904
+ },
+ "acceptance": "spans well-formed+maximal+byte-exact vs letter mask; negative control corrupted-span FAILED as required; line starts == 0x0a census; type table roundtrip 200-sample",
+ "spec": "raw-ingest-realignment-spec-draft-v0-2026-08-31.md \u00a7F5 OPEN-R1",
+ "author": "Planner",
+ "date": "2026-08-31"
+}

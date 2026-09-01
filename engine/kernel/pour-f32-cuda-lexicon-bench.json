@@ -1,0 +1,25 @@
+{
+ "artifact": "pour-f32-cuda-lexicon-bench",
+ "seat": "physics (FP), GTX 1070 8GB, POUR_ARCH=cuda POUR_FP=f32, taichi 1.7.4",
+ "date": "2026-08-31",
+ "twin_gates": {
+  "T1_max_err": 2.00e-07, "T1_gate": 1e-04,
+  "T2_max_amp_err": 1.21e-07, "T2_gate": 5e-03,
+  "bond_tau_exact": true, "F9_given_anchor": "pass",
+  "note": "GPU errors match silas cpu-measured bounds (2.0e-07/1.5e-07); ~500x margin holds on cuda"
+ },
+ "field": {"seed": "instance-seed-v0", "leaves": 16775644},
+ "timing": {
+  "method": "wall-clock delta of --ticks 20 vs --ticks 120 runs (overhead cancels)",
+  "wall_20_ticks_s": 59.84, "wall_120_ticks_s": 324.22,
+  "s_per_tick_f32_cuda": 2.644, "fixed_overhead_s": 7.0,
+  "haven_reference_s_per_tick": 15.6, "speedup_vs_haven_cpu": 5.9,
+  "anneal_200_ticks_projected_min": 8.8
+ },
+ "caveats": [
+  "card shared with an idle root ollama runner holding 3.1GB VRAM (0% util) — VRAM pressure only",
+  "planner ollama serve killed for the window per VRAM protocol, restored after (OLLAMA_HOST=0.0.0.0 required for LAN bind)"
+ ],
+ "wall_receipt_20_ticks": {"code_drift_cells": 0, "cum_breaks": 0, "cum_completions": 0, "frac_locked": 0.9873, "min_det": 0.4048},
+ "author": "Planner"
+}
