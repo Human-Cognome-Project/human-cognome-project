@@ -1,0 +1,30 @@
+{
+ "artifact": "write-back-v0 (resolve-before-mint)",
+ "plan_line": "data-plan \u00a72 two-way db; namespace-reference \u00a7Ingestion Rules",
+ "stable_pairs": 127633,
+ "det_threshold_p90": 0.7925,
+ "condensation_types": 50,
+ "minted_new_tokens": 0,
+ "resolved_to_existing": 50,
+ "rule_that_fired": "refs resolving to existing tokens REFERENCE them \u2014 no silent duplicate minting; nibble-pair condensations = AA.AA.AA.AA byte codes",
+ "written_to": "hcp_english engine.condensations_v0 (additive; DROP SCHEMA engine CASCADE removes)",
+ "readback_rows": 50,
+ "readback_matches": true,
+ "timings_s": {
+  "criterion+typing": 0.121,
+  "copy_insert": 0.085
+ },
+ "top": [
+  "AA.AA.AA.AA.CL|o|42742|0.8010",
+  "AA.AA.AA.AA.CT|w|17123|0.8035",
+  "AA.AA.AA.AA.CK|n|17077|0.7980",
+  "AA.AA.AA.AA.CP|s|16412|0.7981",
+  "AA.AA.AA.AA.CR|u|6978|0.7980",
+  "AA.AA.AA.AA.CJ|m|5952|0.7981"
+ ],
+ "next_mint_rung": "cross-byte fragment condensations (kernel bond data, next epoch) -> mint under AB.AB.B* per one-LoD-below-source",
+ "caveats": [
+  "stability = p90 det on one snapshot (v0 proxy; real = persistence across ticks)",
+  "base-50 alphabet A-Z,a-x assumed \u2014 flagged for doc correction"
+ ]
+}
