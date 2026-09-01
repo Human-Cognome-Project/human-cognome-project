@@ -14,12 +14,11 @@ The grid is not inventory — it is the test roster. The full linguistic set dra
 - Size tiers (listed languages): ≥1M senses: 2 · 100K–1M: 21 · 10K–100K: 68 · 1K–10K: 239 · <1K: 131.
 
 ## Current substrate state
-- Drained: **English only** — `source_wiktionary.wiktextract_raw` 1,454,988 rows (all `lang_code=en`) → `source_english` → `hcp_english`. NOTE: kaikki currently lists English at 1,780,480 senses; our extract is an earlier vintage (rows≠senses as units, and the site has grown). Refresh timing = P's call.
+- Drained: **English only** — `source_wiktionary.wiktextract_raw` 1,454,988 rows (all `lang_code=en`) → `source_english` → `hcp_english`, scoped at load to single-word blocks (see Loaded-extract condition above; the row-vs-senses delta is that scoping, not staleness).
 - Pipeline exists end-to-end (data-plan §3): raw drain → source db → atomized hcp_* riding the universal AA byte layer (all-Unicode by construction). Each new language = the same drain run on its extract.
 
-## Drain rules (P, 2026-09-01)
-- **Current data:** drains pull the CURRENT Kaikki extracts; English refresh queued as drain work.
-- **Single-word blocks only:** higher-order forms / multi-word phrases are EXCLUDED from the drain (data-plan §7.5) — added later on P's word, or watched for settling on their own.
+## Loaded-extract condition (P explaining state, 2026-09-01 — not a rule)
+The English extract's 1.45M rows vs kaikki's 1.78M listed senses = the original work's SINGLE-WORD-BLOCK scoping (higher-order/multi-word forms not drained), not vintage — the Kaikki data is likely identical today; no refresh implied. Higher-order forms stay open: add on P's word, or watch whether they settle on their own. Scoping of each future drain = P's call at drain time.
 
 ## Drain order — P decides; three orderings on offer
 1. **Size-descending** (Latin → Spanish → Italian → German → …): biggest mass first, patterns condense soonest.

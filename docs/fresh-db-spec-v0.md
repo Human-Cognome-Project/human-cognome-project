@@ -80,9 +80,10 @@ its source per the ingestion rules).
   `legacy_registry`, never in `tokens`.
 - Old dbs are READ-ONLY sources beside Kaikki — drained from, never extended, never
   repaired in place. Not-yet-pulled is not excluded.
-- Order: **Kaikki goes first** (data-protocol; current data, single-word blocks per
-  data-plan §7.5) — the fresh substrate's first mass is the language grid; the old dbs'
-  content pulls in against it on P's word.
+- Order: **Kaikki goes first** (data-protocol) — the fresh substrate's first mass is the
+  language grid; the old dbs' content pulls in against it on P's word. Scoping of each
+  drain (e.g. whether higher-order forms ride in) = P's call at drain time; the loaded
+  extract's single-word scoping is a condition of the original work, not a standing rule.
 - Every pull run = an `event_ledger` ingestion-initiation event (the one-door routine).
 
 ## 5. Flags for P (strike or confirm; the build waits on these)
