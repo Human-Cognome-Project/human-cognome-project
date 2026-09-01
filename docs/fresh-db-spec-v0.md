@@ -88,10 +88,18 @@ its source per the ingestion rules).
 
 ## 5. Flags for P (strike or confirm; the build waits on these)
 
-a. **AB.AB divergence:** live allocation table says `AB.AB` = Unicode Text Characters
-   (future); namespace-reference.md and the english db's content say `AB.AB` = English
-   Language Family. Which rules the fresh table? (Everything downstream — including
-   fragment addresses — follows the answer.)
+a. **AB.* three-way collision (sharpened by the live entries read, 2026-09-01):**
+   | view | AB.AA | AB.AB |
+   |---|---|---|
+   | live `namespace_allocations` (stated canonical) | ASCII Text Characters | Unicode (future) |
+   | namespace-reference.md | Unicode Characters | English Family, layers A–F |
+   | actual `entries` content | **single words** (e.g. `and` = AB.AA.AD.AA.JM) | **multi-word entries** |
+   Content also uses `AC.*`/`AD.*` for entries, and p3 does not follow the documented
+   layer scheme. Consequence: English addresses CANNOT carry verbatim onto the correct
+   base without importing the collision. Recommendation: **re-mint English per the
+   namespace-reference word scheme under a struck allocation row, with every legacy id
+   kept as an `address_forwarding` alias → new canonical** (the supersession machinery
+   is built for exactly this; no citation ever breaks). P strikes the scheme.
 b. **Database naming/sharding:** fresh names (e.g. `hcpf_core`, `hcpf_<lang>` …) and
    whether the bootstrap hosting split (token-addressing §Bootstrap) carries over as-is.
 c. **Ledger home:** one `event_ledger` in the fresh core db (proposed), or per-shard.
