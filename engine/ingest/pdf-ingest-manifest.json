@@ -1,0 +1,11 @@
+{
+ "artifact": "ingest-v0 handover manifest (EMIT-ONLY; the ledger row is the store)",
+ "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+ "source": "/home/planner/engine/hcp/sources/1780411991431.pdf",
+ "content_sha256": "af0765c2d482761ef077c19bdb8eeffb9c672ebe753a72b91cee54b55b3c3f4e",
+ "n_bytes": 549847,
+ "ledger_event_id": 2,
+ "observed_time": "2026-09-01T16:15:47.643256+00:00",
+ "emission_stamp": null,
+ "kernel_contract": "pour_raw.py consumes the FILE at `source`; verify content_sha256 before pouring (routine transforms nothing, so identity is checkable end-to-end)"
+}

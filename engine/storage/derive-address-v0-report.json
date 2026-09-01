@@ -1,0 +1,63 @@
+{
+ "artifact": "derive-address-v0 (same-method derivation + supersession edge)",
+ "plan_line": "data-plan \u00a76b same-method reconciliation + \u00a72 two-way db; namespace-reference \u00a7Ingestion Rules (AB.AB.B* fragments)",
+ "spec": "engine/storage/address-derivation-v0.md",
+ "source": {
+  "file": "02701_Moby Dick Or The Whale.txt",
+  "n_bytes": 1276306
+ },
+ "tests": {
+  "T0_archive_resolution_bytes": "PASS (256/256 -> AA.AA.AA.AA.{n})",
+  "T1_r1_order_independence": {
+   "distinct_bigrams": 2047,
+   "distinct_addresses": 2047,
+   "orders_compared": 2,
+   "identical": true,
+   "sample_emit": "[10, 13] -> AB.AB.BA.AB.BY"
+  },
+  "T2_one_op_agreement_union": {
+   "node_a": {
+    "minted": 2047,
+    "resolved": 0
+   },
+   "node_b": {
+    "minted": 0,
+    "resolved": 2047
+   },
+   "rows_after_merge": 2047,
+   "rows_with_both_provenances": 2047,
+   "verdict": "collision = agreement; merge = union"
+  },
+  "T3_r2_probe_and_supersession": {
+   "slot_space_test_mode": 65536,
+   "node_a": {
+    "structures": 3000,
+    "minted": 3000,
+    "probe_steps": 60
+   },
+   "node_b": {
+    "structures": 3000,
+    "minted": 3000,
+    "probe_steps": 70
+   },
+   "shared_structures": 2000,
+   "split_names": 43,
+   "forwarding_edges": 43,
+   "holes_after_forwarding": 0,
+   "verdict": "split names heal via alias->canonical; never a hole"
+  }
+ },
+ "durable": {
+  "tables": [
+   "hcp_english engine.fragments_v0 (empty)",
+   "hcp_english engine.address_forwarding_v0 (empty)"
+  ],
+  "note": "array columns from BIRTH (smallint[]); dotted form emit-only; first real rows = kernel cross-byte bond epoch condensations"
+ },
+ "wall_s": 5.26,
+ "caveats": [
+  "AB.AB scope: fragments minted under the English family; cross-language fragment namespace needs P's word",
+  "weight = n_evidence proxy in the self-test; real incorporated-function weight accrues from use across epochs",
+  "R2 probe k is order-free per structure only when the slot is free; occupancy-dependent k is the residual the forwarding edge exists for"
+ ]
+}
