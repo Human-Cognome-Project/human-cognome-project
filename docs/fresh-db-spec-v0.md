@@ -98,3 +98,11 @@ c. **Ledger home:** one `event_ledger` in the fresh core db (proposed), or per-s
 d. **Existing `engine.*` rows** (11 ledger events, condensation reads, empty fragment/
    forwarding tables in old hcp_english): fold their content into the fresh structure's
    tables at creation, then drop the side-schema — confirm.
+
+## 6. Candidate test (P suggestion ~1473 — noted, not queued)
+
+Addressing multi-word entries "might not be a bad test": MWEs are compositions of words,
+so deriving their addresses exercises the same-method one-op a rung above fragments
+(phrase address = deterministic fn of its word composition; resolve-don't-remint against
+the ~338K MWE entries already in hcp_english as the referee). Separate decision from any
+re-download; fires only on our call after the fresh core stands.
