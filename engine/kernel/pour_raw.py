@@ -19,8 +19,27 @@ and maps clocked healing onto matter classes — prediction: healing events
 concentrate in BOTH-LIGHT byte classes (both nibbles popcount<=1: space,
 !, ", $, (, @, A, B, D, H, ...), same physics as the space story.
 
-Run:  .venv-kernel/bin/python pour_raw.py <file> [--ticks 200] [--t0 0.02]
+ONE-DOOR ENTRANCE (data-plan §4): --manifest <handover.json> consumes an
+ingest_v0 handover manifest instead of a bare path — the file at the
+manifest's source is sha256-VERIFIED against the ledgered hash before a single
+byte pours (hard fail on mismatch), and the report carries the ledger_event_id
+so the pour is traceable to its ingestion-initiation event. For a --db-doc
+manifest, --verify-record additionally re-enumerates the doc's complete
+atomized record against the live db (counts + md5s, read-only) and gates on
+record_md5 equality — the independent-view check of the other half.
+
+TICK-STATE EMISSION (data-plan §6 checkpoint direction; feeds planner's
+persistence criterion): --state-every N snapshots the live field every N
+ticks to <state-dir>/state-tNNNNNN.npz (det, code, bonded, tau_pair
+copies; amp too under --state-amp) plus seed.npz (leaf_val) once and a
+states-index.json naming every snapshot with tick/T/sha256. Emission is
+observation-only — the run's physics and acceptance are byte-identical with
+it on or off.
+
+Run:  .venv-kernel/bin/python pour_raw.py <file|--manifest m.json>
+      [--ticks 200] [--t0 0.02]
       [--sample-every 20] [--out-prefix <name>] [--save-state]
+      [--state-every N] [--state-dir DIR] [--state-amp] [--verify-record]
 GPU:  identical invocation on a CUDA seat once pour.py's ti.init targets cuda
       (per-arch twin pass required first — f32 GPU determinism gets its own
       tolerance read; host-fed noise mode exists for exact comparison).
@@ -54,15 +73,95 @@ def byte_class(b):
     return "other"   # BOM bytes, high-bit chars — poured all the same
 
 
+def load_manifest(path):
+    """Resolve an ingest_v0 handover manifest (file or --db-doc form) to
+    (source_path, expected_sha, meta). The manifest is EMIT-ONLY; the ledger
+    row is the store — we carry ledger_event_id forward for traceability."""
+    m = json.load(open(path))
+    meta = {"ledger_event_id": m.get("ledger_event_id"),
+            "manifest_artifact": m.get("artifact"),
+            "manifest_plan_line": m.get("plan_line")}
+    if "byte_stream" in m:                       # --db-doc entrance
+        bs = m["byte_stream"]
+        if not bs.get("exists"):
+            raise SystemExit(f"manifest byte stream missing on this seat: "
+                             f"{bs.get('path')}")
+        meta["doc"] = m.get("doc")
+        meta["record_md5"] = m.get("record", {}).get("record_md5")
+        meta["byte_stream_linkage"] = bs.get("linkage")
+        return bs["path"], bs.get("sha256"), meta
+    return m["source"], m.get("content_sha256"), meta
+
+
+def verify_record(manifest_path):
+    """Independent-view check of the atomized half: re-enumerate every
+    hcp_fic_pbm table for the doc (read-only, same deterministic md5 method as
+    the ingest side) and gate on record_md5 equality. Lazy imports so the
+    kernel venv only needs psycopg2 when this flag is used."""
+    import importlib.util
+    m = json.load(open(manifest_path))
+    doc_pk = int(m["source"].split("id=")[1])
+    ing = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "..", "ingest", "ingest_v0.py")
+    spec = importlib.util.spec_from_file_location("ingest_v0", ing)
+    iv = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(iv)
+    conn = iv.connect("hcp_fic_pbm")
+    cur = conn.cursor()
+    cur.execute("SELECT ns||'.'||p2||'.'||p3||'.'||p4||'.'||p5 "
+                "FROM pbm_documents WHERE id = %s", (doc_pk,))
+    token = cur.fetchone()[0]
+    tables = {}
+    for tname, q in iv.DOC_TABLES.items():
+        cur.execute(f"SELECT count(*), md5(string_agg(t::text, E'\\n' "
+                    f"ORDER BY t::text)) FROM ({q}) s(t)",
+                    {"d": doc_pk, "tok": token})
+        n, h = cur.fetchone()
+        tables[tname] = {"rows": int(n), "md5": h}
+    conn.close()
+    got = hashlib.md5("".join(
+        f"{t}:{v['md5']}" for t, v in sorted(tables.items())
+        if v["md5"]).encode()).hexdigest()
+    want = m["record"]["record_md5"]
+    if got != want:
+        raise SystemExit(f"RECORD VERIFY FAIL doc id={doc_pk}: live db "
+                         f"record_md5 {got} != manifest {want}")
+    n_rows = sum(v["rows"] for v in tables.values())
+    print(f"  record verify PASS doc id={doc_pk}: record_md5 {got} matches "
+          f"manifest; {len(tables)} tables, {n_rows:,} rows live", flush=True)
+    return got
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("file")
+    ap.add_argument("file", nargs="?")
+    ap.add_argument("--manifest", default=None,
+                    help="ingest_v0 handover manifest json (the one door)")
     ap.add_argument("--ticks", type=int, default=200)
     ap.add_argument("--t0", type=float, default=0.02)
     ap.add_argument("--sample-every", type=int, default=20)
     ap.add_argument("--out-prefix", default=None)
     ap.add_argument("--save-state", action="store_true")
+    ap.add_argument("--state-every", type=int, default=0,
+                    help="emit live-field snapshots every N ticks (0 = off)")
+    ap.add_argument("--state-dir", default=None)
+    ap.add_argument("--state-amp", action="store_true",
+                    help="include amp (16 floats/leaf) in each snapshot")
+    ap.add_argument("--verify-record", action="store_true",
+                    help="--db-doc manifests: re-enumerate the atomized "
+                         "record against the live db before pouring")
     args = ap.parse_args()
+    if bool(args.file) == bool(args.manifest):
+        ap.error("exactly one of <file> or --manifest")
+
+    expected_sha, man_meta = None, {}
+    if args.manifest:
+        src, expected_sha, man_meta = load_manifest(args.manifest)
+        args.file = src
+        if args.verify_record:
+            if "record_md5" not in man_meta:
+                raise SystemExit("--verify-record needs a --db-doc manifest")
+            verify_record(args.manifest)
     prefix = args.out_prefix or ("pour-raw-" + os.path.basename(args.file).split(".")[0]
                                  .lower().replace(" ", "-")[:40])
 
@@ -70,6 +169,12 @@ def main():
 
     raw = open(args.file, "rb").read()
     sha = hashlib.sha256(raw).hexdigest()
+    if expected_sha is not None:
+        if sha != expected_sha:
+            raise SystemExit(f"SHA VERIFY FAIL: file {sha} != ledgered "
+                             f"{expected_sha} — refusing to pour")
+        print(f"  one-door sha verify PASS: {sha[:16]}… matches ledger event "
+              f"{man_meta.get('ledger_event_id')}", flush=True)
     byte_val = np.frombuffer(raw, dtype=np.uint8)
     n_bytes = len(byte_val)
     n = 2 * n_bytes
@@ -99,12 +204,56 @@ def main():
               f"det μ={s['mean_det']:.4f} min={s['min_det']:.3f} "
               f"{s['ticks_per_sec']:.2f} t/s", flush=True)
 
+    state_index = []
+    state_dir = None
+    if args.state_every:
+        state_dir = args.state_dir or f"{prefix}-states"
+        os.makedirs(state_dir, exist_ok=True)
+        seed_path = os.path.join(state_dir, "seed.npz")
+        np.savez_compressed(seed_path, leaf_val=leaf_val)
+        print(f"  tick-state emission ON: every {args.state_every} ticks -> "
+              f"{state_dir}/ (seed.npz written)", flush=True)
+
+    def on_state(tick, arr):
+        sp = os.path.join(state_dir, f"state-t{tick:06d}.npz")
+        payload = {"det": arr["det"].copy(), "code": arr["code"].copy(),
+                   "bonded": arr["bonded"].copy(),
+                   "tau_pair": arr["tau_pair"].copy()}
+        if args.state_amp:
+            payload["amp"] = arr["amp"].copy()
+        np.savez_compressed(sp, **payload)
+        fsha = hashlib.sha256(open(sp, "rb").read()).hexdigest()
+        state_index.append({"tick": tick, "T": arr["T"], "file": sp,
+                            "sha256": fsha,
+                            "n_bytes": os.path.getsize(sp)})
+        print(f"  state t={tick:>4} -> {sp} "
+              f"({os.path.getsize(sp) / 1e6:.1f} MB)", flush=True)
+
     t_start = time.time()
     amp, bonded, tau_pair, det, code, totals = pour.engine_run(
         amp, bonded, args.ticks, T0=args.t0, sample_every=args.sample_every,
         on_sample=on_sample, true_code=leaf_val.astype(np.int32),
-        given=leaf_val.astype(np.int32))
+        given=leaf_val.astype(np.int32),
+        on_state=on_state if args.state_every else None,
+        state_every=args.state_every)
     wall_s = time.time() - t_start
+
+    if state_dir:
+        idx = {
+            "artifact": f"{prefix} tick-state emission (observation-only)",
+            "plan_line": "data-plan §6 checkpoint-direction + §4 one-door "
+                         "consumption; feeds planner's persistence criterion",
+            "source_file": args.file, "source_sha256": sha,
+            "ledger_event_id": man_meta.get("ledger_event_id"),
+            "state_every": args.state_every, "ticks": args.ticks,
+            "includes_amp": bool(args.state_amp),
+            "seed": os.path.join(state_dir, "seed.npz"),
+            "arrays": ["det", "code", "bonded", "tau_pair"]
+                      + (["amp"] if args.state_amp else []),
+            "snapshots": state_index,
+        }
+        with open(os.path.join(state_dir, "states-index.json"), "w") as f:
+            json.dump(idx, f, indent=1)
 
     drift = int((code != leaf_val).sum())
     perm_death = int((~bonded).sum())
@@ -127,6 +276,12 @@ def main():
 
     report = {
         "artifact": f"{prefix} (VERBATIM raw-byte pour, zero curation, v0.3.2)",
+        "plan_line": "data-plan §1.4 seeding grain + §4 one-door full-file "
+                     "consumption + §6 tick-state emission",
+        "one_door": man_meta or None,
+        "sha_verified_against_ledger": expected_sha is not None,
+        "tick_states": (os.path.join(state_dir, "states-index.json")
+                        if state_dir else None),
         "source_file": args.file, "source_sha256": sha,
         "n_bytes": n_bytes, "n_leaves": n, "byte_classes": cl_counts,
         "n_both_light_bytes": int(both_light.sum()),

@@ -225,10 +225,14 @@ def engine_state(amp):
 
 def engine_run(amp, bonded, ticks, T0=0.02, floor=0.002, lam=0.995,
                noises=None, sample_every=20, on_sample=None, true_code=None,
-               given=None):
+               given=None, on_state=None, state_every=0):
     """The pour loop: my tick_v02 twin x Planner's Phase B. Mutates amp in
     place conceptually (returns the live buffer). noises: list of host noise
-    matrices (twin mode) or None (in-kernel ti.random)."""
+    matrices (twin mode) or None (in-kernel ti.random).
+    on_state(tick, arrays): live-array hook every state_every ticks (and at the
+    final tick) — arrays are the LIVE buffers (amp/det/code/bonded/tau_pair);
+    the callback must copy what it persists. Read-only by contract: no physics
+    change, twin proofs unaffected (default off)."""
     n = amp.shape[0]
     assert n % 2 == 0
     if given is None:
@@ -304,6 +308,10 @@ def engine_run(amp, bonded, ticks, T0=0.02, floor=0.002, lam=0.995,
                 "code0_foreign_locks": code0_foreign,
                 "ticks_per_sec": (t + 1) / elapsed,
             })
+        if on_state and state_every and ((t + 1) % state_every == 0
+                                         or t == ticks - 1):
+            on_state(t + 1, {"amp": amp, "det": det, "code": code,
+                             "bonded": bonded, "tau_pair": tau_pair, "T": T})
     return amp, bonded, tau_pair, det, code, {
         "cum_breaks": cum_breaks, "cum_completions": cum_completions,
         "code0_locks": code0_locks, "code0_locks_deep": code0_locks_deep,
