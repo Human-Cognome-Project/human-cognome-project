@@ -17,6 +17,10 @@ The grid is not inventory — it is the test roster. The full linguistic set dra
 - Drained: **English only** — `source_wiktionary.wiktextract_raw` 1,454,988 rows (all `lang_code=en`) → `source_english` → `hcp_english`. NOTE: kaikki currently lists English at 1,780,480 senses; our extract is an earlier vintage (rows≠senses as units, and the site has grown). Refresh timing = P's call.
 - Pipeline exists end-to-end (data-plan §3): raw drain → source db → atomized hcp_* riding the universal AA byte layer (all-Unicode by construction). Each new language = the same drain run on its extract.
 
+## Drain rules (P, 2026-09-01)
+- **Current data:** drains pull the CURRENT Kaikki extracts; English refresh queued as drain work.
+- **Single-word blocks only:** higher-order forms / multi-word phrases are EXCLUDED from the drain (data-plan §7.5) — added later on P's word, or watched for settling on their own.
+
 ## Drain order — P decides; three orderings on offer
 1. **Size-descending** (Latin → Spanish → Italian → German → …): biggest mass first, patterns condense soonest.
 2. **Bridge-density** (what English data already points at most): Spanish 9,771 · Finnish 9,764 · Russian 9,499 · German 9,488 · French 7,301 — links activate fastest.

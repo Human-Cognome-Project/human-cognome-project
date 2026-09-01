@@ -50,6 +50,8 @@ Single source today (us, one hcp-db); the back end will be **massively networked
 **When P excludes something, it is OFF the data path until he re-admits it — an exclusion is a constraint of the same rank as a ruling, and it gets recorded HERE the moment it is spoken.** Breach that prompted this rule: P said **Kaikki ONLY, NOT texts** for new data; the pre-flight nonetheless poured + reported on the 10 Gutenberg novels (fic_pbm docs). P's warning: "That might be fine, but if you persist we WILL suffer eventually."
 **Current exclusions (live):**
 - Text corpora (Gutenberg novels / fic_pbm docs): EXCLUDED from further data work. Kaikki is the ONLY admitted new-data lane. Everything already derived from the texts (ledger events 3–11, corpus-pour-v0 states, condensation rows, persistence-criterion numbers) is QUARANTINED — kept but nothing builds on it — pending P's disposition.
+- Higher-order forms / MULTI-WORD PHRASES: EXCLUDED from the Kaikki drains (P, 2026-09-01, ~msg 1463). The building matter is SINGLE-WORD BLOCKS ("the original work focused on single word blocks for building"). Multi-word forms are later either ADDED on P's word or WATCHED for settling on their own — withheld-not-fed, so an emergent phrase-condensation stays evidence, not echo. Referee set for that watch exists in the given data (Layer E, `phrase_components`) — scored outside the solve per §5, never fed.
+- DATA CURRENCY (same message): "We want current data" — drains pull CURRENT Kaikki extracts; the English refresh (our 1.45M-row vintage vs kaikki's current) is drain work, queued with the drain order.
 
 ## OPEN — P decides (nothing else pends on dha)
 a. Encode-ahead mainline for new languages — explicit strike/confirm (1372 critiqued wording, not the mainline).
