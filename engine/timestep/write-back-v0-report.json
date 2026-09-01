@@ -11,20 +11,20 @@
  "readback_rows": 50,
  "readback_matches": true,
  "timings_s": {
-  "criterion+typing": 0.121,
-  "copy_insert": 0.085
+  "criterion+typing": 0.115,
+  "copy_insert": 0.077
  },
  "top": [
   "AA.AA.AA.AA.CL|o|42742|0.8010",
-  "AA.AA.AA.AA.CT|w|17123|0.8035",
+  "AA.AA.AA.AA.CU|w|17123|0.8035",
   "AA.AA.AA.AA.CK|n|17077|0.7980",
-  "AA.AA.AA.AA.CP|s|16412|0.7981",
-  "AA.AA.AA.AA.CR|u|6978|0.7980",
+  "AA.AA.AA.AA.CQ|s|16412|0.7981",
+  "AA.AA.AA.AA.CS|u|6978|0.7980",
   "AA.AA.AA.AA.CJ|m|5952|0.7981"
  ],
  "next_mint_rung": "cross-byte fragment condensations (kernel bond data, next epoch) -> mint under AB.AB.B* per one-LoD-below-source",
  "caveats": [
   "stability = p90 det on one snapshot (v0 proxy; real = persistence across ticks)",
-  "base-50 alphabet A-Z,a-x assumed \u2014 flagged for doc correction"
+  "base-50 alphabet corrected to spec (token-addressing.md: A-Z+a-z minus O/o, ASCII order)"
  ]
 }

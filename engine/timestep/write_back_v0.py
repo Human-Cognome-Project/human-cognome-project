@@ -14,13 +14,17 @@ condensations -> AB.AB.B*, one-LoD-below-source), which needs kernel bond data
 across bytes (next epoch).
 
 v0 caveats: stability = p90 pair-det on ONE snapshot (real criterion =
-persistence across ticks); base-50 alphabet A-Z,a-x assumed (order not in docs,
-flagged). No frequency fed (n_instances = ledger metadata only).
+persistence across ticks). Base-50 alphabet per docs/spec/token-addressing.md
+(52 Latin letters minus O/o, ASCII order). No frequency fed (n_instances =
+ledger metadata only).
 """
 import json, os, subprocess, sys, time
 import numpy as np
 
-ALPHA = [chr(c) for c in range(65, 91)] + [chr(c) for c in range(97, 121)]  # A-Z a-x
+# base-50 alphabet per docs/spec/token-addressing.md: 52 Latin letters minus O/o
+# (zero-collision), ASCII order — uppercase block then lowercase block.
+ALPHA = [chr(c) for c in range(65, 91) if chr(c) != "O"] + \
+        [chr(c) for c in range(97, 123) if chr(c) != "o"]
 assert len(ALPHA) == 50
 pair = lambda n: ALPHA[n // 50] + ALPHA[n % 50]
 
@@ -94,7 +98,7 @@ report = {
     "next_mint_rung": "cross-byte fragment condensations (kernel bond data, next epoch) -> "
                       "mint under AB.AB.B* per one-LoD-below-source",
     "caveats": ["stability = p90 det on one snapshot (v0 proxy; real = persistence across ticks)",
-                "base-50 alphabet A-Z,a-x assumed — flagged for doc correction"],
+                "base-50 alphabet corrected to spec (token-addressing.md: A-Z+a-z minus O/o, ASCII order)"],
 }
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "write-back-v0-report.json")
 json.dump(report, open(out, "w"), indent=1)
