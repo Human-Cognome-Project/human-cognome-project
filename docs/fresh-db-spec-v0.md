@@ -63,6 +63,20 @@ per source as it is PULLED — typed columns, `addr` columns for references, pro
 inside — specified drain-by-drain, not invented ahead (pbm storage per
 `spec/pbm-storage-schema.md`, re-based on `addr`).
 
+## 2c. Schema vocabulary gets common token shape (P, 2026-09-01, ~1480)
+
+*"Every field name and contents of every field also exist in the db. If those are a
+common token shape, that is what should drive complex organization loops and settling."*
+The text columns above (`category`, `subcategory`, `status`, `provenance`, `kind`,
+enum-ish values) are BOOTSTRAP scaffolding: as schema-vocabulary tokens land they convert
+to `addr` references, so the organizing vocabulary is matter in the same field it
+organizes and the settling loop closes through its own terms. The plan already does this
+in places (AA.AC structural tokens, AA.AF classification tokens, force/relationship-type
+tokens). Measured in the live db 2026-09-01: 10/10 `relation_type` values and 25/28 `pos`
+values already have entries; field names atomize to word components. This is the
+productive self-reference — distinct from the forbidden circularity (the referee stays
+outside the solve; the vocabulary lives inside the field).
+
 ## 3. Minting = the item-3 one op, now plan-native
 
 Every new address is derived by the same method (archive-resolve → injective pack →
