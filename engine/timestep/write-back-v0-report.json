@@ -1,5 +1,5 @@
 {
- "artifact": "write-back-v0 (resolve-before-mint)",
+ "artifact": "write-back-v0 (resolve-before-mint; array-stored addressing)",
  "plan_line": "data-plan \u00a72 two-way db; namespace-reference \u00a7Ingestion Rules",
  "stable_pairs": 127633,
  "det_threshold_p90": 0.7925,
@@ -12,7 +12,7 @@
  "readback_matches": true,
  "timings_s": {
   "criterion+typing": 0.115,
-  "copy_insert": 0.077
+  "copy_insert": 0.086
  },
  "top": [
   "AA.AA.AA.AA.CL|o|42742|0.8010",

@@ -55,8 +55,12 @@ def psql(sql, stdin=None):
     return r.stdout.strip()
 
 psql("CREATE SCHEMA IF NOT EXISTS engine")
-psql("""CREATE TABLE IF NOT EXISTS engine.condensations_v0(
-  resolves_to text NOT NULL, byte_val int2, glyph text, n_instances int4,
+# resolves_to = ARRAY of base-50 pair VALUES (0-2499 each) — array-stored per
+# docs/data-protocol.md: "the dotted string is display-only, generated on emit,
+# never persisted". Byte code b = [0,0,0,0,b] (AA=0 pairs + element value).
+psql("DROP TABLE IF EXISTS engine.condensations_v0")
+psql("""CREATE TABLE engine.condensations_v0(
+  resolves_to smallint[] NOT NULL, byte_val int2, glyph text, n_instances int4,
   mean_det real, minted boolean NOT NULL, provenance text,
   created timestamptz DEFAULT now(), PRIMARY KEY (resolves_to, provenance))""")
 psql("TRUNCATE engine.condensations_v0")
@@ -65,9 +69,9 @@ prov = "system-derived pour-raw-mobydick-02701 (repo 7b39678); criterion=p90-det
 lines = []
 for i, b in enumerate(uniq):
     b = int(b)
-    tid = f"AA.AA.AA.AA.{pair(b)}"          # existing byte-code token: REFERENCE, don't mint
+    addr = "{0,0,0,0,%d}" % b               # existing byte-code token: REFERENCE, don't mint
     glyph = chr(b) if 32 <= b < 127 else f"\\\\x{b:02x}"  # doubled backslash: COPY text format
-    lines.append(f"{tid}\t{b}\t{glyph}\t{int(counts[i])}\t{float(mdet[i]):.4f}\tfalse\t{prov}")
+    lines.append(f"{addr}\t{b}\t{glyph}\t{int(counts[i])}\t{float(mdet[i]):.4f}\tfalse\t{prov}")
 
 t2 = time.perf_counter()
 r = subprocess.run(["psql", "-h", "192.168.68.60", "-p", "5435", "-U", "hcp",
@@ -80,11 +84,17 @@ if r.returncode != 0:
 t3 = time.perf_counter()
 
 n_back = int(psql("SELECT count(*) FROM engine.condensations_v0"))
-top = psql("SELECT resolves_to, glyph, n_instances, round(mean_det::numeric,4) "
-           "FROM engine.condensations_v0 ORDER BY n_instances DESC LIMIT 6")
+rows_back = psql("SELECT resolves_to, glyph, n_instances, round(mean_det::numeric,4) "
+                 "FROM engine.condensations_v0 ORDER BY n_instances DESC LIMIT 6")
+# dotted form rendered on EMIT only (display), never persisted
+def dotted(pg_arr):
+    vals = [int(v) for v in pg_arr.strip("{}").split(",")]
+    return ".".join(pair(v) for v in vals)
+top = ["|".join([dotted(c[0])] + c[1:]) for c in
+       (ln.split("|") for ln in rows_back.splitlines())]
 
 report = {
-    "artifact": "write-back-v0 (resolve-before-mint)",
+    "artifact": "write-back-v0 (resolve-before-mint; array-stored addressing)",
     "plan_line": "data-plan §2 two-way db; namespace-reference §Ingestion Rules",
     "stable_pairs": int(stable.sum()), "det_threshold_p90": round(thr, 4),
     "condensation_types": len(lines), "minted_new_tokens": 0,
@@ -94,7 +104,7 @@ report = {
     "written_to": "hcp_english engine.condensations_v0 (additive; DROP SCHEMA engine CASCADE removes)",
     "readback_rows": n_back, "readback_matches": n_back == len(lines),
     "timings_s": {"criterion+typing": round(t1 - t0, 3), "copy_insert": round(t3 - t2, 3)},
-    "top": top.splitlines(),
+    "top": top,
     "next_mint_rung": "cross-byte fragment condensations (kernel bond data, next epoch) -> "
                       "mint under AB.AB.B* per one-LoD-below-source",
     "caveats": ["stability = p90 det on one snapshot (v0 proxy; real = persistence across ticks)",
