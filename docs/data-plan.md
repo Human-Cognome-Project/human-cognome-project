@@ -46,6 +46,11 @@ Single source today (us, one hcp-db); the back end will be **massively networked
 3. This doc reloads at every DI wake before engine work (planner: wired; silas: mirror in wake surfaces — TODO when cap lifts).
 4. Calibration target for emergent chains = **P's tables' gatherings**, never DI-built streams (R1 = document positions only). npz duplication ledger: `moby-raw-chains-v0.npz`, `word-instance-stream-v1.npz` = parallel reconstructions of `hcp_fic_pbm` content — disposition P's call; retire when the engine reads bonds directly (planner's first build task; kernel consumes ingested state = silas's).
 
+### §7.5 P-EXCLUSIONS ARE LOAD-BEARING (P, 2026-09-01, after a breach)
+**When P excludes something, it is OFF the data path until he re-admits it — an exclusion is a constraint of the same rank as a ruling, and it gets recorded HERE the moment it is spoken.** Breach that prompted this rule: P said **Kaikki ONLY, NOT texts** for new data; the pre-flight nonetheless poured + reported on the 10 Gutenberg novels (fic_pbm docs). P's warning: "That might be fine, but if you persist we WILL suffer eventually."
+**Current exclusions (live):**
+- Text corpora (Gutenberg novels / fic_pbm docs): EXCLUDED from further data work. Kaikki is the ONLY admitted new-data lane. Everything already derived from the texts (ledger events 3–11, corpus-pour-v0 states, condensation rows, persistence-criterion numbers) is QUARANTINED — kept but nothing builds on it — pending P's disposition.
+
 ## OPEN — P decides (nothing else pends on dha)
 a. Encode-ahead mainline for new languages — explicit strike/confirm (1372 critiqued wording, not the mainline).
 b. Language drains: which first.
