@@ -29,23 +29,34 @@ THE ONE OPERATION, per tick (a kernel launch = the propagation delay):
                                matter that matches p slot-wise: identical
                                configurations present no differential, so the
                                field draws them together)
-               exclusion      -grad M_p * h^2/6      (the UN-diffused local
-                               source of matter that does NOT match p: unlike
-                               matter cannot stack; same Poisson-source units,
-                               no coefficient)
-  move       down the total differential (one step, the v0 discretisation)
-  condense   two live particles in the same cell (full adjacency) with ZERO
-             amount-differential (identical slot weights) are one entry: the
-             later index folds into the resident (min index), masses add
-             linearly ("one entry covers the range"), the pool shrinks. This
-             is the merge = the dedup = the mint, as an engine event, not a
-             threshold anybody picked.
+  move       down the total differential, AT MOST ONE CELL PER TICK: the tick
+             is the field's own propagation step (docs/architecture.md: "tick =
+             kernel launch = propagation delay"); matter cannot outrun the
+             field it moves in. The cell is the only scale in it.
+  resident   a point holds one configuration. The heaviest live entry in a
+             cell holds it (ties: lowest index) — a merged entry is heavier and
+             holds its point better, "one entry covers the range".
+  condense   a non-resident with ZERO amount-differential to the resident
+             (identical slot weights) IS the resident: it folds in, masses add
+             linearly, the pool shrinks. The merge = the dedup = the mint, as
+             an engine event, not a threshold anybody picked.
+  exclusion  a non-resident that differs from the resident is unlike matter on
+             an occupied point: it shifts one cell toward the least foreign
+             matter around it (foreign = mass that does not match it
+             slot-wise, read off the channels). No coefficient.
+
+BOUNDARY: OPEN space, as in P's own field_model.py (the Green's function
+vanishes at infinity). The field is zero outside the box, the full mass is the
+source (nothing demeaned), particles stay inside. The periodic demeaned box of
+field_engine_v0 subtracts the mean density and leaves a near-uniform Halton
+cloud with no net pull — it is kept only for the v0 regression (--periodic).
 
 MONITOR: observation only — the live-entry count and the occupied-cell count,
 both read straight off engine state, no identity labels, no rates.
 
 CONTROLS (for executed review — Silas's gate): --no-identity-pull,
---no-exclusion, --no-absorb each remove one coupling. With all three off the
+--no-exclusion, --no-absorb each remove one coupling; --no-cap removes the
+one-cell-per-tick bound. With every coupling off and --periodic --no-cap the
 engine must reproduce field_engine_v0 (the substrate) exactly; --check asserts
 that, plus numpy-oracle == CUDA-kernel with everything on (oracle-first,
 docs/architecture.md "Engine substrate").
@@ -113,22 +124,40 @@ def occupied_cells(idx, alive, grid):
 # ----------------------------------------------------------------------------
 # CPU oracle (numpy) — the deterministic reference the kernel must match.
 # ----------------------------------------------------------------------------
-def relax_channels(Phi, src, iters, f):
+def nbr(a, axis, d, periodic):
+    """Array whose [i] is a[i+d] along `axis`; zero outside an open box."""
+    if periodic:
+        return np.roll(a, -d, axis)
+    out = np.zeros_like(a)
+    n = a.shape[axis]
+    src = [slice(None)] * a.ndim
+    dst = [slice(None)] * a.ndim
+    if d > 0:
+        src[axis], dst[axis] = slice(d, n), slice(0, n - d)
+    else:
+        src[axis], dst[axis] = slice(0, n + d), slice(-d, n)
+    out[tuple(dst)] = a[tuple(src)]
+    return out
+
+
+def relax_channels(Phi, src, iters, f, periodic):
     """Jacobi on every channel at once (last three axes are the cells)."""
     s6 = src * f
     for _ in range(iters):
-        nb = (np.roll(Phi, 1, -3) + np.roll(Phi, -1, -3) +
-              np.roll(Phi, 1, -2) + np.roll(Phi, -1, -2) +
-              np.roll(Phi, 1, -1) + np.roll(Phi, -1, -1))
+        nb = (nbr(Phi, -3, 1, periodic) + nbr(Phi, -3, -1, periodic) +
+              nbr(Phi, -2, 1, periodic) + nbr(Phi, -2, -1, periodic) +
+              nbr(Phi, -1, 1, periodic) + nbr(Phi, -1, -1, periodic))
         Phi = nb / 6.0 - s6
     return Phi
 
 
 class Oracle:
-    def __init__(self, pool, grid, box, relax_iters, step, pull, excl, absorb):
+    def __init__(self, pool, grid, box, relax_iters, step, pull, excl, absorb,
+                 periodic=False, cap=True):
         self.pool, self.grid, self.box = pool, grid, box
         self.iters, self.step = relax_iters, step
         self.pull, self.excl, self.absorb = pull, excl, absorb
+        self.periodic, self.cap = periodic, cap
         self.h = box / grid
         g, S = grid, pool.S
         self.phi = np.zeros((g, g, g), dtype=np.float64)
@@ -150,47 +179,66 @@ class Oracle:
                       (pool.slot_w[d, s] * pool.count[d]).astype(np.float64))
         rho = C.sum(axis=(0, 1))
 
-        # relax: general pull from the total; identity pull from every channel
+        # relax: general pull from the total; identity pull from every channel.
+        # Periodic (v0 regression only): the source is demeaned. Open: the full
+        # mass is the source, the field is zero outside the box.
+        per = self.periodic
         if self.pull:
-            self.Phi = relax_channels(
-                self.Phi, C - C.mean(axis=(2, 3, 4), keepdims=True), self.iters, f)
+            src = C - C.mean(axis=(2, 3, 4), keepdims=True) if per else C
+            self.Phi = relax_channels(self.Phi, src, self.iters, f, per)
             phi = self.Phi.sum(axis=(0, 1))
-        else:
+        elif per:
             phi = v0.relax(self.phi, rho - rho.mean(), self.iters, h)
+            self.phi = phi
+        else:
+            phi = relax_channels(self.phi, rho, self.iters, f, per)
             self.phi = phi
 
         # read the local differential at each particle's own cell
         F = np.zeros((pool.n, 3), dtype=np.float64)
         for a in range(3):
-            d_phi = np.roll(phi, -1, a) - np.roll(phi, 1, a)
+            d_phi = nbr(phi, a, 1, per) - nbr(phi, a, -1, per)
             F[:, a] = d_phi[i, j, k] * inv
             if self.pull:
-                dP = np.roll(self.Phi, -1, a + 2) - np.roll(self.Phi, 1, a + 2)
+                dP = nbr(self.Phi, a + 2, 1, per) - nbr(self.Phi, a + 2, -1, per)
                 for s in range(S):
                     d = ai[pool.slot_val[ai, s] >= 0]
                     F[d, a] += dP[s, pool.slot_val[d, s], i[d], j[d], k[d]] * inv
-            if self.excl:
-                d_rho = np.roll(rho, -1, a) - np.roll(rho, 1, a)
-                dC = np.roll(C, -1, a + 2) - np.roll(C, 1, a + 2)
-                m = d_rho[i, j, k].copy()
-                for s in range(S):
-                    d = ai[pool.slot_val[ai, s] >= 0]
-                    m[d] -= dC[s, pool.slot_val[d, s], i[d], j[d], k[d]]
-                F[:, a] += m * f * inv
 
         pos = pos.copy()
-        pos[ai] = (pos[ai] - self.step * F[ai]) % self.box
-        n_abs = self.condense(pos) if self.absorb else 0
+        delta = -self.step * F[ai]
+        if self.cap:                       # at most one cell per tick
+            ln = np.sqrt((delta * delta).sum(1))
+            over = ln > h
+            delta[over] *= (h / ln[over])[:, None]
+        moved = pos[ai] + delta
+        pos[ai] = moved % self.box if per else np.clip(moved, 0.0, np.nextafter(self.box, 0.0))
+
+        n_abs = 0
+        if self.absorb or self.excl:
+            res = self.residents(pos)
+            if self.absorb:
+                n_abs = self.condense(res)
+            if self.excl:
+                self.exclude(pos, res, rho, C)
         return pos, n_abs
 
-    def condense(self, pos):
+    def residents(self, pos):
+        """The heaviest live entry holds the cell (ties: lowest index)."""
         pool, g = self.pool, self.grid
         ai = np.nonzero(pool.alive)[0]
         idx = cells_of(pos[ai], self.box, g)
         flat = (idx[:, 0] * g + idx[:, 1]) * g + idx[:, 2]
-        resident = np.full(g ** 3, pool.n, dtype=np.int64)
-        np.minimum.at(resident, flat, ai)
-        r = resident[flat]
+        n = pool.n
+        key = (pool.base_mass[ai] * pool.count[ai]) * n + (n - 1 - ai)
+        best = np.full(g ** 3, -1, dtype=np.int64)
+        np.maximum.at(best, flat, key)
+        r = n - 1 - (best[flat] % n)
+        return ai, idx, r
+
+    def condense(self, res):
+        pool = self.pool
+        ai, idx, r = res
         same = (pool.slot_w[ai] == pool.slot_w[r]).all(1)
         ab = (r != ai) & same
         if ab.any():
@@ -200,11 +248,53 @@ class Oracle:
             pool.parent[src] = dst
         return int(ab.sum())
 
+    def exclude(self, pos, res, rho, C):
+        """Unlike matter on an occupied point shifts one cell toward the least
+        foreign matter around it (6-neighbourhood, inside the box)."""
+        pool, g, h, S, per = self.pool, self.grid, self.h, self.pool.S, self.periodic
+        ai, idx, r = res
+        keep = pool.alive[ai] & (r != ai)          # still live, not the resident
+        if not keep.any():
+            return
+        p = ai[keep]
+        c = idx[keep]
+        best_m = np.full(len(p), np.inf)
+        best_d = np.full(len(p), -1, dtype=np.int64)
+        for d in range(6):
+            a, sgn = d // 2, (1 if d % 2 == 0 else -1)
+            nc = c.copy()
+            nc[:, a] += sgn
+            if per:
+                nc[:, a] %= g
+                ok = np.ones(len(p), dtype=bool)
+            else:
+                ok = (nc[:, a] >= 0) & (nc[:, a] < g)
+            ncc = np.clip(nc, 0, g - 1)
+            m = rho[ncc[:, 0], ncc[:, 1], ncc[:, 2]].copy()
+            for s in range(S):
+                v = pool.slot_val[p, s]
+                has = v >= 0
+                m[has] -= C[s, v[has], ncc[has, 0], ncc[has, 1], ncc[has, 2]]
+            m[~ok] = np.inf
+            better = m < best_m                       # strict: first axis wins ties
+            best_m[better] = m[better]
+            best_d[better] = d
+        mv = best_d >= 0
+        for d in range(6):
+            a, sgn = d // 2, (1 if d % 2 == 0 else -1)
+            sel = mv & (best_d == d)
+            pos[p[sel], a] += sgn * h
+        if per:
+            pos[p] %= self.box
+        else:
+            np.clip(pos[p], 0.0, np.nextafter(self.box, 0.0), out=pos[p])
+
 
 # ----------------------------------------------------------------------------
 # Taichi kernel — the GPU twin. Same flow, same arithmetic.
 # ----------------------------------------------------------------------------
-def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
+def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch,
+                periodic=False, cap=True):
     import taichi as ti
     ti.init(arch=getattr(ti, arch), default_fp=ti.f64, random_seed=0,
             offline_cache=False)
@@ -216,13 +306,18 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
             self.pool = pool
             self.n, self.S, self.grid, self.box = n, S, g, float(box)
             self.h = box / g
+            self.box_in = float(np.nextafter(box, 0.0))
             self.iters, self.step = relax_iters, float(step)
             self.pull, self.excl, self.absorb = int(pull), int(excl), int(absorb)
+            self.periodic = bool(periodic)
+            self.cap = bool(cap)
+            self.demean = 1.0 if periodic else 0.0
             self.pos = ti.Vector.field(3, ti.f64, shape=n)
             self.idx = ti.Vector.field(3, ti.i32, shape=n)
             self.slot_val = ti.field(ti.i32, shape=(n, S))
             self.slot_w = ti.field(ti.i32, shape=(n, S))
             self.count = ti.field(ti.i64, shape=n)
+            self.base_mass = ti.field(ti.i64, shape=n)
             self.alive = ti.field(ti.i32, shape=n)
             self.parent = ti.field(ti.i64, shape=n)
             self.C = ti.field(ti.f64, shape=(S, NV, g, g, g))
@@ -234,11 +329,12 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
             shp = (S, NV, g, g, g) if pull else (1, 1, 1, 1, 1)
             self.Phi = ti.field(ti.f64, shape=shp)
             self.Phi2 = ti.field(ti.f64, shape=shp)
-            self.resident = ti.field(ti.i32, shape=g * g * g)
+            self.resident = ti.field(ti.i64, shape=g * g * g)   # key of the holder
             # upload the pool
             self.slot_val.from_numpy(pool.slot_val)
             self.slot_w.from_numpy(pool.slot_w)
             self.count.from_numpy(pool.count)
+            self.base_mass.from_numpy(pool.base_mass)
             self.alive.from_numpy(pool.alive.astype(np.int32))
             self.parent.from_numpy(pool.parent)
             self.phi.fill(0.0)
@@ -275,27 +371,48 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
             for s, v in self.mean:
                 self.mean[s, v] /= (self.grid ** 3)
 
+        @ti.func
+        def at3(self, fld: ti.template(), i, j, k):
+            """Cell read with the boundary: wrap (periodic) or zero outside (open)."""
+            g = self.grid
+            r = 0.0
+            if ti.static(self.periodic):
+                r = fld[(i + g) % g, (j + g) % g, (k + g) % g]
+            else:
+                if i >= 0 and i < g and j >= 0 and j < g and k >= 0 and k < g:
+                    r = fld[i, j, k]
+            return r
+
+        @ti.func
+        def at5(self, fld: ti.template(), s, v, i, j, k):
+            g = self.grid
+            r = 0.0
+            if ti.static(self.periodic):
+                r = fld[s, v, (i + g) % g, (j + g) % g, (k + g) % g]
+            else:
+                if i >= 0 and i < g and j >= 0 and j < g and k >= 0 and k < g:
+                    r = fld[s, v, i, j, k]
+            return r
+
         @ti.kernel
         def jacobi_total(self):
-            g = self.grid
             f = self.h * self.h / 6.0
             for i, j, k in self.phi:
-                nb = (self.phi[(i + 1) % g, j, k] + self.phi[(i - 1 + g) % g, j, k] +
-                      self.phi[i, (j + 1) % g, k] + self.phi[i, (j - 1 + g) % g, k] +
-                      self.phi[i, j, (k + 1) % g] + self.phi[i, j, (k - 1 + g) % g])
-                self.phi2[i, j, k] = nb / 6.0 - (self.rho[i, j, k] - self.rho_mean[None]) * f
+                nb = (self.at3(self.phi, i + 1, j, k) + self.at3(self.phi, i - 1, j, k) +
+                      self.at3(self.phi, i, j + 1, k) + self.at3(self.phi, i, j - 1, k) +
+                      self.at3(self.phi, i, j, k + 1) + self.at3(self.phi, i, j, k - 1))
+                self.phi2[i, j, k] = nb / 6.0 - (self.rho[i, j, k] - self.rho_mean[None] * self.demean) * f
             for I in ti.grouped(self.phi):
                 self.phi[I] = self.phi2[I]
 
         @ti.kernel
         def jacobi_channels(self):
-            g = self.grid
             f = self.h * self.h / 6.0
             for s, v, i, j, k in self.Phi:
-                nb = (self.Phi[s, v, (i + 1) % g, j, k] + self.Phi[s, v, (i - 1 + g) % g, j, k] +
-                      self.Phi[s, v, i, (j + 1) % g, k] + self.Phi[s, v, i, (j - 1 + g) % g, k] +
-                      self.Phi[s, v, i, j, (k + 1) % g] + self.Phi[s, v, i, j, (k - 1 + g) % g])
-                self.Phi2[s, v, i, j, k] = nb / 6.0 - (self.C[s, v, i, j, k] - self.mean[s, v]) * f
+                nb = (self.at5(self.Phi, s, v, i + 1, j, k) + self.at5(self.Phi, s, v, i - 1, j, k) +
+                      self.at5(self.Phi, s, v, i, j + 1, k) + self.at5(self.Phi, s, v, i, j - 1, k) +
+                      self.at5(self.Phi, s, v, i, j, k + 1) + self.at5(self.Phi, s, v, i, j, k - 1))
+                self.Phi2[s, v, i, j, k] = nb / 6.0 - (self.C[s, v, i, j, k] - self.mean[s, v] * self.demean) * f
             for I in ti.grouped(self.Phi):
                 self.Phi[I] = self.Phi2[I]
 
@@ -309,54 +426,52 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
                 self.phi[i, j, k] = acc
 
         @ti.kernel
-        def move(self, step: ti.f64, pull: ti.i32, excl: ti.i32):
-            g = self.grid
+        def move(self, step: ti.f64, pull: ti.i32):
             inv = 1.0 / (2.0 * self.h)
-            f = self.h * self.h / 6.0
             for p in range(self.n):
                 if self.alive[p] == 1:
                     c = self.idx[p]
                     i, j, k = c[0], c[1], c[2]
-                    ip, im = (i + 1) % g, (i - 1 + g) % g
-                    jp, jm = (j + 1) % g, (j - 1 + g) % g
-                    kp, km = (k + 1) % g, (k - 1 + g) % g
-                    gx = (self.phi[ip, j, k] - self.phi[im, j, k]) * inv
-                    gy = (self.phi[i, jp, k] - self.phi[i, jm, k]) * inv
-                    gz = (self.phi[i, j, kp] - self.phi[i, j, km]) * inv
+                    gx = (self.at3(self.phi, i + 1, j, k) - self.at3(self.phi, i - 1, j, k)) * inv
+                    gy = (self.at3(self.phi, i, j + 1, k) - self.at3(self.phi, i, j - 1, k)) * inv
+                    gz = (self.at3(self.phi, i, j, k + 1) - self.at3(self.phi, i, j, k - 1)) * inv
                     if pull == 1:
                         for s in range(self.S):
                             v = self.slot_val[p, s]
                             if v >= 0:
-                                gx += (self.Phi[s, v, ip, j, k] - self.Phi[s, v, im, j, k]) * inv
-                                gy += (self.Phi[s, v, i, jp, k] - self.Phi[s, v, i, jm, k]) * inv
-                                gz += (self.Phi[s, v, i, j, kp] - self.Phi[s, v, i, j, km]) * inv
-                    if excl == 1:
-                        mx = self.rho[ip, j, k] - self.rho[im, j, k]
-                        my = self.rho[i, jp, k] - self.rho[i, jm, k]
-                        mz = self.rho[i, j, kp] - self.rho[i, j, km]
-                        for s in range(self.S):
-                            v = self.slot_val[p, s]
-                            if v >= 0:
-                                mx -= self.C[s, v, ip, j, k] - self.C[s, v, im, j, k]
-                                my -= self.C[s, v, i, jp, k] - self.C[s, v, i, jm, k]
-                                mz -= self.C[s, v, i, j, kp] - self.C[s, v, i, j, km]
-                        gx += mx * f * inv
-                        gy += my * f * inv
-                        gz += mz * f * inv
-                    np_ = self.pos[p] - step * ti.Vector([gx, gy, gz])
-                    self.pos[p] = np_ - ti.floor(np_ / self.box) * self.box
+                                gx += (self.at5(self.Phi, s, v, i + 1, j, k) - self.at5(self.Phi, s, v, i - 1, j, k)) * inv
+                                gy += (self.at5(self.Phi, s, v, i, j + 1, k) - self.at5(self.Phi, s, v, i, j - 1, k)) * inv
+                                gz += (self.at5(self.Phi, s, v, i, j, k + 1) - self.at5(self.Phi, s, v, i, j, k - 1)) * inv
+                    delta = -step * ti.Vector([gx, gy, gz])
+                    if ti.static(self.cap):
+                        ln = delta.norm()
+                        if ln > self.h:
+                            delta = delta * (self.h / ln)
+                    np_ = self.pos[p] + delta
+                    if ti.static(self.periodic):
+                        self.pos[p] = np_ - ti.floor(np_ / self.box) * self.box
+                    else:
+                        self.pos[p] = ti.min(ti.max(np_, 0.0), self.box_in)
 
         @ti.kernel
         def residents(self):
+            n = ti.cast(self.n, ti.i64)
             for c in self.resident:
-                self.resident[c] = self.n
+                self.resident[c] = -1
             for p in range(self.n):
                 if self.alive[p] == 1:
                     c = ti.cast(self.pos[p] / self.box * self.grid, ti.i32)
                     c = ti.min(ti.max(c, 0), self.grid - 1)
                     self.idx[p] = c
                     flat = (c[0] * self.grid + c[1]) * self.grid + c[2]
-                    ti.atomic_min(self.resident[flat], p)
+                    mass = ti.cast(self.base_mass[p], ti.i64) * self.count[p]
+                    key = mass * n + (n - 1 - ti.cast(p, ti.i64))
+                    ti.atomic_max(self.resident[flat], key)
+
+        @ti.func
+        def holder(self, flat):
+            n = ti.cast(self.n, ti.i64)
+            return ti.cast(n - 1 - (self.resident[flat] % n), ti.i32)
 
         @ti.kernel
         def condense(self) -> ti.i32:
@@ -365,7 +480,7 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
                 if self.alive[p] == 1:
                     c = self.idx[p]
                     flat = (c[0] * self.grid + c[1]) * self.grid + c[2]
-                    r = self.resident[flat]
+                    r = self.holder(flat)
                     if r != p:
                         same = 1
                         for s in range(self.S):
@@ -378,6 +493,45 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
                             n_abs += 1
             return n_abs
 
+        @ti.kernel
+        def exclude(self):
+            g = self.grid
+            for p in range(self.n):
+                if self.alive[p] == 1:
+                    c = self.idx[p]
+                    flat = (c[0] * g + c[1]) * g + c[2]
+                    if self.holder(flat) != p:
+                        best_m = 1e300
+                        best_d = -1
+                        for d in ti.static(range(6)):
+                            a = d // 2
+                            sgn = 1 if d % 2 == 0 else -1
+                            nc = c
+                            nc[a] += sgn
+                            ok = True
+                            if ti.static(self.periodic):
+                                nc[a] = (nc[a] + g) % g
+                            else:
+                                ok = nc[a] >= 0 and nc[a] < g
+                            if ok:
+                                m = self.rho[nc[0], nc[1], nc[2]]
+                                for s in range(self.S):
+                                    v = self.slot_val[p, s]
+                                    if v >= 0:
+                                        m -= self.C[s, v, nc[0], nc[1], nc[2]]
+                                if m < best_m:
+                                    best_m = m
+                                    best_d = d
+                        if best_d >= 0:
+                            a = best_d // 2
+                            sgn = 1.0 if best_d % 2 == 0 else -1.0
+                            np_ = self.pos[p]
+                            np_[a] += sgn * self.h
+                            if ti.static(self.periodic):
+                                self.pos[p] = np_ - ti.floor(np_ / self.box) * self.box
+                            else:
+                                self.pos[p] = ti.min(ti.max(np_, 0.0), self.box_in)
+
         def tick(self):
             self.deposit()
             self.means()
@@ -388,11 +542,14 @@ def make_kernel(pool, grid, box, relax_iters, step, pull, excl, absorb, arch):
             else:
                 for _ in range(self.iters):
                     self.jacobi_total()
-            self.move(self.step, self.pull, self.excl)
+            self.move(self.step, self.pull)
             n_abs = 0
-            if self.absorb:
+            if self.absorb or self.excl:
                 self.residents()
-                n_abs = int(self.condense())
+                if self.absorb:
+                    n_abs = int(self.condense())
+                if self.excl:
+                    self.exclude()
             return n_abs
 
         def sync_pool(self):
@@ -453,9 +610,11 @@ def run(a):
 
     pull, excl, absorb = not a.no_identity_pull, not a.no_exclusion, not a.no_absorb
     if a.arch == "numpy":
-        eng = Oracle(pool, g, a.box, a.relax_iters, a.step, pull, excl, absorb)
+        eng = Oracle(pool, g, a.box, a.relax_iters, a.step, pull, excl, absorb, a.periodic,
+                     not a.no_cap)
     else:
-        eng = make_kernel(pool, g, a.box, a.relax_iters, a.step, pull, excl, absorb, a.arch)
+        eng = make_kernel(pool, g, a.box, a.relax_iters, a.step, pull, excl, absorb, a.arch,
+                          a.periodic, not a.no_cap)
         eng.pos.from_numpy(pos)
 
     t0 = time.time()
@@ -489,7 +648,9 @@ def run(a):
     rep = {"artifact": "field-engine", "substrate": "field_engine_v0 (validated)",
            "load": info, "arch": a.arch, "grid": g, "box": a.box,
            "relax_iters": a.relax_iters, "step": a.step,
-           "couplings": {"identity_pull": pull, "exclusion": excl, "condense": absorb},
+           "boundary": "periodic (v0 regression)" if a.periodic else "open (P field_model.py)",
+           "couplings": {"identity_pull": pull, "exclusion": excl, "condense": absorb,
+                         "one_cell_per_tick": not a.no_cap},
            "deterministic": True,
            "entries_first": hist[0]["entries_live"] if hist else None,
            "entries_last": hist[-1]["entries_live"] if hist else None,
@@ -535,14 +696,14 @@ def check(a):
         gr = v0.gradient_at(phi_v0, idx, box, g)
         pos_v0 = (pos_v0 - step * gr) % box
 
-    orc = Oracle(pool, g, box, iters, step, False, False, False)
+    orc = Oracle(pool, g, box, iters, step, False, False, False, periodic=True, cap=False)
     pos_c = pos0.copy()
     for _ in range(T):
         pos_c, _ = orc.tick(pos_c)
     out["checks"]["C_oracle_off_vs_v0"] = pdiff(pos_c, pos_v0, box)
 
     if a.arch != "numpy":
-        ker = make_kernel(pool, g, box, iters, step, False, False, False, a.arch)
+        ker = make_kernel(pool, g, box, iters, step, False, False, False, a.arch, periodic=True, cap=False)
         ker.pos.from_numpy(pos0)
         t0 = time.time()
         for _ in range(T):
@@ -550,11 +711,11 @@ def check(a):
         out["checks"]["A_kernel_off_vs_v0"] = pdiff(ker.pos.to_numpy(), pos_v0, box)
         out["kernel_off_ms_per_tick"] = round(1000 * (time.time() - t0) / T, 1)
 
-    # ---- (B): everything on, DECLARED grain, oracle vs kernel ----
+    # ---- (B): everything on, OPEN box, DECLARED grain, oracle vs kernel ----
     particles, info = load_at_declared_grain(a.grain)
     pool_o, pool_k = Pool(particles), Pool(particles)
     pos0 = v0.inject(pool_o.n, box)
-    orc = Oracle(pool_o, g, box, iters, step, True, True, True)
+    orc = Oracle(pool_o, g, box, iters, step, True, True, True, periodic=False)
     pos_o = pos0.copy()
     t0 = time.time()
     n_abs_o = 0
@@ -564,7 +725,7 @@ def check(a):
     out["oracle_on_ms_per_tick"] = round(1000 * (time.time() - t0) / T, 1)
     out["oracle_on_condensed"] = n_abs_o
     if a.arch != "numpy":
-        ker = make_kernel(pool_k, g, box, iters, step, True, True, True, a.arch)
+        ker = make_kernel(pool_k, g, box, iters, step, True, True, True, a.arch, periodic=False)
         ker.pos.from_numpy(pos0)
         t0 = time.time()
         n_abs_k = 0
@@ -574,7 +735,7 @@ def check(a):
         out["kernel_on_ms_per_tick"] = round(1000 * (time.time() - t0) / T, 1)
         out["kernel_on_condensed"] = n_abs_k
         live = pool_o.alive & pool_k.alive
-        out["checks"]["B_oracle_on_vs_kernel_on_pos"] = pdiff(pos_o[live], ker.pos.to_numpy()[live], box)
+        out["checks"]["B_oracle_on_vs_kernel_on_pos"] = float(np.abs(pos_o[live] - ker.pos.to_numpy()[live]).max())
         out["checks"]["B_alive_equal"] = bool((pool_o.alive == pool_k.alive).all())
         out["checks"]["B_count_equal"] = bool((pool_o.count == pool_k.count).all())
         out["checks"]["B_parent_equal"] = bool((pool_o.parent == pool_k.parent).all())
@@ -600,6 +761,9 @@ def main():
     ap.add_argument("--no-identity-pull", action="store_true")
     ap.add_argument("--no-exclusion", action="store_true")
     ap.add_argument("--no-absorb", action="store_true")
+    ap.add_argument("--no-cap", action="store_true", help="drop the one-cell-per-tick bound (regression only)")
+    ap.add_argument("--periodic", action="store_true",
+                    help="v0's periodic demeaned box (regression only); default is OPEN space")
     ap.add_argument("--until-still", type=int, default=0,
                     help="stop after this many consecutive ticks with no condensation (0 = fixed ticks)")
     ap.add_argument("--state", default=os.path.join(HERE, "field-engine-state.npz"))
