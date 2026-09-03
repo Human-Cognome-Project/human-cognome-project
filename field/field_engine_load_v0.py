@@ -128,5 +128,102 @@ def main():
     return 0 if rep["verify_pass"] else 1
 
 
+
+# ---------------------------------------------------------------------------
+# Configuration at the DECLARED grain (added 2026-09-03).
+#
+# P (2026-09-02): "the step declarations are the granularity knobs and data
+# integrity rules" and "the total mass is a general pull with specific
+# configuration of mass forming identity." So the engine does not invent a
+# grain: it reads engine.declarations_v0 (P's ladder: Unicode -> table ->
+# endpoint) and takes the finest declared step as the grain. At the ENDPOINT
+# grain a particle's configuration is the hex digits of the value the endpoint
+# carries (its codepoint, or for the 128 no-codepoint ASCII rows the byte
+# value) -- ONE rule, cp else value, no controls branch. The mass at a grain is
+# the same value+1 law over the configuration's nibbles (Silas verified this
+# identity-grain law vs live hcp_core: 19,260 codepoints, mass 5..63, zero
+# mismatches). The sub-declared rung -- the encodings -- is the RESOLUTION
+# grain: configuration = the raw byte code (loader's original mass).
+#
+# Integrity rule: every particle's address must be a member of a declared step.
+# ---------------------------------------------------------------------------
+
+def load_declarations():
+    """P's step declarations, verbatim from engine.declarations_v0."""
+    conn = psycopg2.connect(**KW)
+    cur = conn.cursor()
+    cur.execute("SELECT declares, state, gathered, tag FROM engine.declarations_v0 "
+                "ORDER BY cardinality(declares), declares")
+    rows = [{"declares": list(d), "state": s, "gathered": g, "tag": t}
+            for d, s, g, t in cur.fetchall()]
+    conn.close()
+    return rows
+
+
+def grain_from_declarations(decls):
+    """The members of the deepest declared step are the finest grain: the
+    endpoints (depth = deepest declaration + 1). The engine runs there."""
+    deepest = max(len(d["declares"]) for d in decls)
+    endpoints = set()
+    for d in decls:
+        if len(d["declares"]) == deepest:
+            for m in (d["gathered"] or {}).get("members", []):
+                endpoints.add(tuple(m))
+    return {"depth": deepest + 1, "n_declared": len(decls),
+            "declared_steps": sum(1 for d in decls if len(d["declares"]) == deepest),
+            "declared_endpoints": endpoints}
+
+
+def hex_nibbles(value, width):
+    """Hex digits of a value as nibble ints, most significant first."""
+    return [int(ch, 16) for ch in f"{value:0{width}X}"]
+
+
+def attach_configuration(particles, grain="endpoint"):
+    """Set p['config'] (nibble list) and p['mass'] (value+1 sum over it).
+    endpoint  : hex of the value the endpoint carries (codepoint, U+ width>=4;
+                else the byte value, width 2). Encodings of one endpoint carry
+                the SAME configuration -- whether they merge is the physics.
+    resolution: the raw byte code of the particle's encoding (the loader's
+                original mass law)."""
+    for p in particles:
+        if grain == "endpoint":
+            if p["identity"][0] == "codepoint":
+                nib = hex_nibbles(p["identity"][1], 4)
+            else:
+                nib = hex_nibbles(p["raw"][0], 2)
+        elif grain == "resolution":
+            nib = [d for b in p["raw"] for d in ((b >> 4) & 0xF, b & 0xF)]
+        else:
+            raise ValueError(grain)
+        p["config"] = nib
+        p["mass_resolution"] = mass_of(p["raw"])
+        p["mass"] = sum(v + 1 for v in nib)
+    return particles
+
+
+def load_at_declared_grain(grain=None):
+    """Load particles, read the declarations, enforce the integrity rule, and
+    attach the configuration at the declared grain. Returns (particles, info)."""
+    decls = load_declarations()
+    g = grain_from_declarations(decls)
+    if grain is None:
+        grain = "endpoint" if g["depth"] == 5 else "resolution"
+    particles = load_particles()
+    bad = [p for p in particles if tuple(p["token"]) not in g["declared_endpoints"]]
+    if bad:
+        raise RuntimeError(f"{len(bad)} particles carry undeclared addresses")
+    attach_configuration(particles, grain)
+    S = max(len(p["config"]) for p in particles)
+    masses = [p["mass"] for p in particles if p["identity"][0] == "codepoint"]
+    info = {"grain": grain, "declared_depth": g["depth"],
+            "declarations": g["n_declared"], "declared_steps": g["declared_steps"],
+            "declared_endpoints": len(g["declared_endpoints"]),
+            "n_particles": len(particles), "slots": S,
+            "configs_distinct": len({tuple(p["config"]) for p in particles}),
+            "codepoint_mass_min": min(masses), "codepoint_mass_max": max(masses)}
+    return particles, info
+
+
 if __name__ == "__main__":
     sys.exit(main())
