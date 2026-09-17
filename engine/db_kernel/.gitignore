@@ -1,0 +1,5 @@
+# Compiled test binaries and built artifacts.
+# Source (*.cpp, *.h, *.sh, *.sql, *.md) stays tracked; these are build outputs.
+*_test
+ingestion/db_ingest
+ingestion/db_runtime
