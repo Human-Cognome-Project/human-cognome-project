@@ -221,3 +221,51 @@ axis scope) is a later-op-layer seam, not a defect of the schema/door module,
 which is complete, self-consistent, and ready.
 
 Decision rulings: **d1=FAITHFUL, d2=NEEDS-PATRICK, d3=CODE-STRUCTURE, d4=FAITHFUL.**
+
+---
+
+## Follow-up review — `add_membership` idempotency change (2026-09-17)
+
+build-1-rebase made `add_membership` idempotent (`ON CONFLICT DO NOTHING` on
+BOTH inserts, same one transaction), which also heals a one-sided membership row
+by filling only the missing side; the old "PK-collision forces partial rollback"
+advtest was replaced by idempotent-re-add + one-sided-healing tests. Diff
+confined to `controller/` (git: only `controller.{h,cpp,test,advtest}.cpp` +
+`README.md`).
+
+**Rebuilt + reran both suites, live Postgres 16, no warnings:**
+`PASS controller_test` (58 checks, exit 0), `PASS controller_advtest`
+(44 checks, exit 0).
+
+1. **Idempotency correct.** Re-adding an existing pair is a clean no-op: base
+   test asserts no throw + `member_of` stays 1 row + `members` unchanged (2, no
+   dup); advtest asserts `count(*)==1` on each side after re-add. Meaningful
+   (row-count assertions, not vacuous).
+
+2. **Dropped-coverage — NO GAP.** The removed test targeted a PK-collision
+   partial rollback, genuinely moot now (a PK conflict no longer throws under
+   `ON CONFLICT DO NOTHING`). The still-relevant **FK-violation rollback path is
+   retained** (advtest §7 first block: `add_membership(member, missing_group)` →
+   throws, `member_of` count 0, `members` count 0 — both sides rolled back). FK
+   violations are NOT suppressed by `ON CONFLICT DO NOTHING`, so this path is
+   real and exercised. No coverage lost.
+
+3. **One-sided healing — FAITHFUL-DERIVATION.** Idempotency is *required* by the
+   arraying/SEE contract (PLAN I.F: "Decompression is exact via frame broadcast +
+   SEE idempotency" — an arrayed ADD_CONNECTION broadcasting a shared group
+   re-adds the group per member) and mirrors `mint`'s SEE-idempotent
+   ensure-plus-link. Per-statement `ON CONFLICT DO NOTHING` is the minimal
+   realization; one-sided healing is a zero-cost consequence, adding no extra
+   path/scan/search. It *restores* the spec's stated invariant — NOTES firmed
+   section: "Membership stores both directions (write one side, the reciprocal is
+   maintained)" — and aligns with the deferred-reciprocal, eventually-consistent
+   runtime (NOTES Process runtime: "the members/member_of reciprocal being
+   eventually-consistent while deferred work drains"), where a transiently
+   one-sided row is an anticipated state a later reciprocal write must converge
+   without a duplicate-key error. Not invented complication.
+
+4. **No regression.** All mint / rekey / delete_token / delete_pair / reads /
+   schema-shape checks remain green; scope confined to `controller/`.
+
+**Follow-up verdict: PASS** — idempotency change clean and ready; healing =
+FAITHFUL; no dropped-coverage finding.

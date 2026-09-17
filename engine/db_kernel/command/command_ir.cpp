@@ -113,6 +113,18 @@ ValidationResult validate_declare(const DeclareRecord &node) {
           "PARENTS is present but empty -- it is the member array and "
           "must set N >= 1");
     }
+    if (has_members && node.parents->size() != 1) {
+      // Ruling #2 (Patrick, build-phase; default reject-until-ruled): a
+      // mixed PARENTS+MEMBERS node mints its naming literal as a SINGLE
+      // literal (N=1). N>1 here would mean N naming literals sharing one
+      // MEMBERS roster -- an unspecified broadcast case -- so this
+      // fails fast rather than guessing a semantic for it.
+      return Invalid(
+          "a mixed PARENTS+MEMBERS node must declare exactly one naming "
+          "literal (N=1) -- N=" +
+          std::to_string(node.parents->size()) +
+          " is unspecified for this combination");
+    }
     for (std::size_t i = 0; i < node.parents->size(); ++i) {
       const ConstituentList &list = (*node.parents)[i];
       if (list.size() < 2) {
@@ -137,35 +149,39 @@ ValidationResult validate_declare(const DeclareRecord &node) {
     }
   }
 
-  if (has_parents) {
-    // Structure node: ADDRESS is the span covering its N slots -- not
-    // optional (only a pure-grouping node forgoes its own placement).
-    if (!node.address.has_value()) {
-      return Invalid(
-          "a structure node (PARENTS present) requires an ADDRESS span "
-          "covering its N slots");
-    }
-  } else {
-    // Grouping-node identity (PLAN.md I.B): no independent placement of
-    // its own, and its only handle -- at this crude stage -- is the
-    // NOTATION prose naming it. No PARENTS means no surface to derive
-    // NOTATION from, so unlike a structure node's optional/derivable
-    // NOTATION, a grouping-only node's NOTATION must be present and
-    // non-blank.
-    if (node.address.has_value()) {
-      return Invalid(
-          "a grouping-only node (MEMBERS present, PARENTS absent) may not "
-          "also carry an own-address placement");
-    }
-    const bool has_naming_prose = !node.notation.empty() &&
-                                   node.notation[0].has_value() &&
-                                   !node.notation[0]->empty();
-    if (!has_naming_prose) {
-      return Invalid(
-          "a grouping-only node has no PARENTS to derive a surface from, "
-          "so its NOTATION (the naming-literal prose) must be present and "
-          "non-blank");
-    }
+  // Grouping-node naming literal (ruling #1, Patrick, build-phase --
+  // SUPERSEDES the earlier "ADDRESS forbidden on a grouping node" rule
+  // and drops any NOTATION-based identity requirement; the naming
+  // literal is referenced via an address, never via prose). A grouping
+  // node (MEMBERS present) establishes its naming literal one of two
+  // structurally distinguishable ways:
+  //   mint form:            PARENTS present -- the naming literal is
+  //                         minted from that composition; ADDRESS, if
+  //                         present, is the mint's placement target,
+  //                         else the manager places it (see the
+  //                         has_parents-only ADDRESS-required check
+  //                         below, which this does NOT apply to once
+  //                         MEMBERS is also present).
+  //   use-provided-ID form: PARENTS absent, ADDRESS present -- ADDRESS
+  //                         references the pre-existing naming literal.
+  // Neither PARENTS nor ADDRESS establishes no naming literal at all.
+  // Whether a provided ADDRESS actually exists in the store is an
+  // EXECUTION-time check for the declare core, not this IR -- only the
+  // form is validated here.
+  if (has_members && !has_parents && !node.address.has_value()) {
+    return Invalid(
+        "a grouping node (MEMBERS present) with neither PARENTS nor "
+        "ADDRESS establishes no naming literal -- it must either mint one "
+        "(PARENTS) or reference an existing one (ADDRESS)");
+  }
+
+  // A plain structure node (PARENTS present, MEMBERS absent) still
+  // requires its own ADDRESS; the relaxation above applies only once
+  // MEMBERS is also present (the mint form allows manager-placement).
+  if (has_parents && !has_members && !node.address.has_value()) {
+    return Invalid(
+        "a structure node (PARENTS present) requires an ADDRESS span "
+        "covering its N slots");
   }
 
   // NOTATION co-index: length must equal N exactly when present. Blank
@@ -202,6 +218,25 @@ ValidationResult validate_declare(const DeclareRecord &node) {
   // ADDRESS span: must cover exactly N slots, and any nested declare
   // occupying a slot recurses into full structural validation.
   if (node.address.has_value()) {
+    if (has_parents) {
+      // Ruling #3 (Patrick, build-phase; reject): when PARENTS is
+      // present, EVERY one of its N slots already has its own
+      // PARENTS[i] composition. A nested-declare ADDRESS segment mints
+      // an entirely separate token from ITS OWN PARENTS for that slot,
+      // so the two can never be reconciled -- PARENTS[i]'s constituents
+      // would simply be silently dropped, never consulted. Rejected as
+      // malformed regardless of the nested declare's own validity.
+      for (std::size_t i = 0; i < node.address->size(); ++i) {
+        if ((*node.address)[i].kind == AddressSegment::Kind::kNestedDeclare) {
+          return Invalid(
+              "ADDRESS segment " + std::to_string(i) +
+              " is a nested declare, which collides with this node's own "
+              "PARENTS composition for that slot (PARENTS[i] would be "
+              "silently dropped) -- not permitted when PARENTS is present");
+        }
+      }
+    }
+
     auto nested_result = validate_address_span_nested(*node.address);
     if (!nested_result.ok()) {
       return nested_result;

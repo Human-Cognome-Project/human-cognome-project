@@ -217,6 +217,24 @@ void run_controller_checks(const std::string &conninfo) {
     check(ctl.member_of(p3).empty(), "member_of: token joining nothing is empty");
   }
 
+  // --- add_membership is idempotent (SEE-style): re-adding an existing
+  //     pair is a clean no-op, no throw, no duplicate rows. ---
+  {
+    bool threw = false;
+    try {
+      ctl.add_membership(p1, grp);  // p1/grp already joined above
+    } catch (const std::exception &) {
+      threw = true;
+    }
+    check(!threw, "add_membership: re-adding an existing pair does not throw");
+    const auto g1_again = ctl.member_of(p1);
+    check(g1_again.size() == 1 && g1_again[0] == grp,
+          "add_membership: re-add leaves member_of at exactly one row");
+    const auto mem_again = ctl.members_of(grp);
+    check(mem_again.size() == 2 && mem_again[0] == p1 && mem_again[1] == p2,
+          "add_membership: re-add leaves members unchanged (no duplicate)");
+  }
+
   // --- Optional token attributes: notation/mass pass-through, no `type`. ---
   {
     // Base particles (step above) were minted without mass -> NULL.

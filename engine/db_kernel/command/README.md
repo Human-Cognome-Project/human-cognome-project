@@ -55,11 +55,33 @@ branch anywhere in this module.
 - **Grouping floor.** `MEMBERS`, when present, must be non-empty (`>= 1`
   -- the literal's `>= 2` floor does not transfer to grouping; NOTES.md's
   "label dual" locks it at `>= 1`).
-- **Grouping-node identity.** A pure-grouping node (`MEMBERS` present,
-  `PARENTS` absent) may not also carry its own `ADDRESS` placement, and
-  must carry a non-blank `NOTATION` -- with no `PARENTS` there is nothing
-  to derive a surface from, so the naming-literal prose is the only
-  handle it has (PLAN.md I.B).
+- **Grouping-node naming literal (ruling #1, Patrick, build-phase --
+  SUPERSEDES the earlier "ADDRESS forbidden on a grouping node" rule and
+  drops the old NOTATION-based identity requirement).** A grouping node
+  (`MEMBERS` present) establishes its naming literal one of two
+  structurally distinguishable ways:
+  - **mint form** -- `PARENTS` present: the naming literal is minted
+    from that composition; `ADDRESS`, if given, is the mint's placement
+    target, else the manager places it.
+  - **use-provided-ID form** -- `PARENTS` absent, `ADDRESS` present:
+    `ADDRESS` references the pre-existing naming literal.
+
+  Neither `PARENTS` nor `ADDRESS` establishes no naming literal and is
+  rejected. The naming literal is always referenced via an address
+  (mint target or existing ID), never via `NOTATION` prose. Whether a
+  *provided* `ADDRESS` actually exists in the store is an EXECUTION-time
+  check for the declare core, not this IR -- only the form is validated
+  here.
+- **Mixed-node N=1 (ruling #2, Patrick, build-phase; default
+  reject-until-ruled).** When both `PARENTS` and `MEMBERS` are present
+  (the mint form above), `PARENTS` must declare exactly one literal
+  (`N=1`) -- a naming-literal mint is a single literal; `N>1` broadcast
+  onto one `MEMBERS` roster is unspecified, so it fails fast rather than
+  guessing a semantic for it. A plain structure node (`PARENTS` present,
+  `MEMBERS` absent) is unaffected and may still declare `N>1` literals.
+- **A plain structure node** (`PARENTS` present, `MEMBERS` absent) still
+  requires its own `ADDRESS` -- the mint-form relaxation above applies
+  only once `MEMBERS` is also present.
 - **NOTATION co-index.** When present, `NOTATION`'s length must equal
   `N` exactly; individual blank entries ("successive commas") are legal
   and are a content rule, not a length exemption.
@@ -67,6 +89,15 @@ branch anywhere in this module.
   for in-range indices (`< N`); its size is never compared to `N` --
   unlike `NOTATION`, a short section 2 is not a violation.
 - **ADDRESS must cover N**, delegated to `span_planner::plan()`.
+- **No nested declare colliding with PARENTS (ruling #3, Patrick,
+  build-phase; reject).** When `PARENTS` is present, every one of its
+  `N` slots already has its own `PARENTS[i]` composition. A
+  nested-declare `ADDRESS` segment would mint an entirely separate token
+  (from *its own* `PARENTS`) for that slot instead, silently dropping
+  `PARENTS[i]`'s constituents -- rejected as malformed regardless of the
+  nested declare's own validity. Unrestricted where no `PARENTS` exists
+  to collide with (a grouping-only node's `ADDRESS`, or `MOVE_RECORD`'s
+  destination, which has no `PARENTS` concept at all).
 - **Recursion.** Every `Reference` (inside `PARENTS`, `MEMBERS`,
   `MEMBER_OF`) and every nested-declare `ADDRESS` segment is validated
   recursively via `validate_declare`, so a mixed nested statement is
@@ -191,10 +222,10 @@ reasoning:
   grouping-only node as declaring exactly one token (its naming literal),
   so `N = 1` there -- used only for `NOTATION` length and `MEMBER_OF`
   section-2 index-range checks.
-- **Grouping-only node requires non-blank NOTATION.** Not stated as a
-  reject rule in so many words, but implied by "no PARENTS to derive a
-  surface from" plus "its only handle is the naming-literal prose" --
-  enforced as a hard validation failure when absent/blank.
+- ~~**Grouping-only node requires non-blank NOTATION.**~~ SUPERSEDED by
+  ruling #1 (Patrick, build-phase): the naming literal is referenced via
+  an `ADDRESS` (mint target or existing ID), never via `NOTATION` prose,
+  so no NOTATION-based identity requirement applies to a grouping node.
 - **A `Reference` is exactly one of {address, nested}.** Both-or-neither
   is rejected as malformed IR, not left as an unspecified state.
 - **TO is folded into its preceding FROM/AFTER segment** rather than

@@ -304,16 +304,23 @@ void Controller::add_membership(const codec::Address &member,
   PGresult *begun = run(conn_, "BEGIN", {});
   PQclear(begun);
   try {
+    // Idempotent, SEE-style: ON CONFLICT DO NOTHING on each side, so
+    // re-adding an already-present pair is a clean no-op rather than a
+    // duplicate-key error, and either side can independently heal a
+    // one-sided/inconsistent row without disturbing the other.
+    //
     // member_of: member -> group (upward).
     PGresult *mo = run(conn_,
                        "INSERT INTO member_of (token_id, group_token_id) "
-                       "VALUES ($1::text[], $2::text[])",
+                       "VALUES ($1::text[], $2::text[]) "
+                       "ON CONFLICT DO NOTHING",
                        {member_arr.c_str(), group_arr.c_str()});
     PQclear(mo);
     // members: group -> member (downward), the reciprocal.
     PGresult *mm = run(conn_,
                        "INSERT INTO members (token_id, member_token_id) "
-                       "VALUES ($1::text[], $2::text[])",
+                       "VALUES ($1::text[], $2::text[]) "
+                       "ON CONFLICT DO NOTHING",
                        {group_arr.c_str(), member_arr.c_str()});
     PQclear(mm);
     PGresult *committed = run(conn_, "COMMIT", {});

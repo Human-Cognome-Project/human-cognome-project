@@ -140,6 +140,13 @@ class Controller {
   // reciprocal, both directions, in one atomic transaction. No mass operand,
   // no kind operand — replaces add_group_membership. Both `member` and
   // `group` must already be live token rows (FK; mints nothing).
+  //
+  // Idempotent, SEE-style: re-adding an already-present pair is a clean
+  // no-op (ON CONFLICT DO NOTHING on each side, like mint's no-op on an
+  // existing token_id) rather than a duplicate-key error. Each side is
+  // independently conflict-safe, so a one-sided/inconsistent row (only
+  // member_of or only members present) is healed on the missing side
+  // without disturbing the side already there.
   void add_membership(const codec::Address &member, const codec::Address &group);
 
   // ---- Mutation primitives (raw; op-layer gating is a later module). ----

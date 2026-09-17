@@ -21,8 +21,12 @@
 //      ordinals produces exactly one token_child row for that parent.
 //   6. Idempotent re-mint preserves the original notation/token_text (the
 //      re-mint's differing notation is ignored, nothing is rewritten).
-//   7. add_membership rollback: a membership write against a missing group
-//      rolls back BOTH directions (no orphan members/member_of row).
+//   7. add_membership: a write against a missing group rolls back BOTH
+//      directions (no orphan members/member_of row); a re-add of an
+//      existing pair is a clean idempotent no-op (ON CONFLICT DO NOTHING,
+//      no throw, no duplicate row); and a one-sided/inconsistent pair
+//      (only member_of OR only members pre-seeded) is healed on its
+//      missing side without disturbing the side already present.
 //   8. rekey is FK-safe end to end: the old token_id is fully gone from all
 //      four relationship stores (direct row counts), the new token_id's
 //      token_text is the codec dot-join (not carried over verbatim), and a
@@ -242,10 +246,9 @@ void run_adv_checks(const std::string &conninfo) {
           "idempotent: re-mint added no token_parent rows");
   }
 
-  // --- 7. add_membership rollback: missing group -> no orphan row on
-  //        either side; and a genuine partial-write rollback (first insert
-  //        succeeds, second fails on a pre-seeded PK collision, so the
-  //        already-inserted first row must be undone too). ---
+  // --- 7. add_membership: missing group -> no orphan row on either side;
+  //        idempotent re-add is a clean no-op; a one-sided/inconsistent
+  //        pair is healed on its missing side only. ---
   {
     const Address member = A("BF");
     const Address missing_group = A("DY");  // never minted
@@ -266,31 +269,58 @@ void run_adv_checks(const std::string &conninfo) {
     check(mm.has_value() && *mm == "0",
           "add_membership rollback: no orphan members row (both sides rolled back)");
 
-    // Genuine partial-write rollback: pre-seed the members (reciprocal) row
-    // directly, bypassing the controller, so add_membership's FIRST insert
-    // (member_of) succeeds but its SECOND (members) collides on the PK —
-    // the already-committed-within-the-transaction first insert must be
-    // rolled back too, not left behind.
+    // Idempotent re-add (ON CONFLICT DO NOTHING, SEE-style): calling
+    // add_membership twice for the same pair must not throw and must not
+    // leave a duplicate row on either side.
     const Address member2 = A("BN");
     const Address group2 = A("BP");
     ctl.mint(member2, "member-2", {});
     ctl.mint(group2, "group-2", {});
-    const bool preseeded =
-        exec_bare(v, "INSERT INTO members (token_id, member_token_id) VALUES ('" +
-                         pg_array(group2) + "'::text[], '" + pg_array(member2) + "'::text[])");
-    check(preseeded, "add_membership rollback setup: pre-seeded members row inserted");
-    bool threw2 = false;
+    ctl.add_membership(member2, group2);
+    bool rethrew = false;
     try {
-      ctl.add_membership(member2, group2);
+      ctl.add_membership(member2, group2);  // re-add, same pair
     } catch (const std::exception &) {
-      threw2 = true;
+      rethrew = true;
     }
-    check(threw2, "add_membership rollback: second insert's PK collision throws");
+    check(!rethrew, "add_membership idempotent: re-adding an existing pair does not throw");
     const auto mo2 = scalar(v, "SELECT count(*) FROM member_of WHERE token_id = '" +
+                                    pg_array(member2) + "'::text[] AND group_token_id = '" +
+                                    pg_array(group2) + "'::text[]");
+    check(mo2.has_value() && *mo2 == "1",
+          "add_membership idempotent: exactly one member_of row after re-add");
+    const auto mm2 = scalar(v, "SELECT count(*) FROM members WHERE token_id = '" +
+                                    pg_array(group2) + "'::text[] AND member_token_id = '" +
                                     pg_array(member2) + "'::text[]");
-    check(mo2.has_value() && *mo2 == "0",
-          "add_membership rollback: the already-succeeded first insert (member_of) "
-          "is undone when the second fails");
+    check(mm2.has_value() && *mm2 == "1",
+          "add_membership idempotent: exactly one members row after re-add");
+
+    // One-sided healing: pre-seed only member_of directly (bypassing the
+    // controller), leaving its members reciprocal absent. add_membership
+    // must fill in exactly the missing side, in one call, without
+    // duplicating (or erroring on) the side already present.
+    const Address member3 = A("BQ");
+    const Address group3 = A("BR");
+    ctl.mint(member3, "member-3", {});
+    ctl.mint(group3, "group-3", {});
+    const bool preseeded = exec_bare(
+        v, "INSERT INTO member_of (token_id, group_token_id) VALUES ('" +
+               pg_array(member3) + "'::text[], '" + pg_array(group3) + "'::text[])");
+    check(preseeded, "add_membership heal setup: pre-seeded a one-sided member_of row");
+    bool heal_threw = false;
+    try {
+      ctl.add_membership(member3, group3);
+    } catch (const std::exception &) {
+      heal_threw = true;
+    }
+    check(!heal_threw, "add_membership heal: does not throw on a pre-existing one-sided pair");
+    check(contains(ctl.members_of(group3), member3),
+          "add_membership heal: fills in the missing members reciprocal");
+    const auto mo3 = scalar(v, "SELECT count(*) FROM member_of WHERE token_id = '" +
+                                    pg_array(member3) + "'::text[] AND group_token_id = '" +
+                                    pg_array(group3) + "'::text[]");
+    check(mo3.has_value() && *mo3 == "1",
+          "add_membership heal: the pre-existing member_of side stays at exactly one row");
   }
 
   // --- 8. rekey end to end: old_id fully gone from every store; new_id's

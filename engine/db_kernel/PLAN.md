@@ -122,12 +122,19 @@ constraints (structure `>= 2`, grouping `>= 1`). A node may carry structure
 and/or grouping; the literal-vs-label reading is emergent, never asserted. Applies
 per node (a nested statement mixes structure and grouping nodes).
 
-**Grouping-node identity (no own address).** A pure-grouping node (`MEMBERS`
-present, `PARENTS` absent) carries **no independent `ADDRESS` span** — a label is
-not placed. Its handle is a **naming-literal token** (crude stage: a
-construction-post token bearing the `NOTATION` prose, matured later by the
-deferred prose→token_id swap). That naming literal must be a live or inline-nested
-`token` row, because `add_membership` FKs both endpoints to real tokens. What is placed is the naming
+**Grouping-node naming literal.** A grouping node (`MEMBERS` present) establishes
+its naming literal one of two ways, and **`ADDRESS` is permitted** on it (naming
+the naming literal's address — the label borrows that address; it has none
+independently). (1) **Use-provided-ID:** an existing address is given (`PARENTS`
+absent) → reference that pre-existing naming literal. (2) **Mint:** `PARENTS`
+present ⇒ mint a new naming literal from that composition (required constituents
+only, ≥2 floor, lean), placed at the target `ADDRESS` if given, else
+manager-placed. A grouping node with **neither** `PARENTS` nor `ADDRESS` is
+rejected. `NOTATION` is optional/human-facing, **never** the handle. The naming
+literal must resolve to a live `token` row (`add_membership` FKs both endpoints);
+the mixed `PARENTS`+`MEMBERS` node is the mint case. See NOTES *Build-phase
+rulings — firmed 2026-09-17*. (Reject-until-ruled edges: N>1 mixed node; an
+ADDRESS-span nested-declare colliding with a slot's own `PARENTS`.) What is placed is the naming
 literal (via the structure path); the grouping is realized as membership edges
 keyed on its members, referencing the group by the naming-literal token_id.
 
@@ -292,8 +299,12 @@ analyst-supplied-start form pending G4. *Spec:* The literal intake formula
 
 `PARENTS` sets N; per node, `mint` structure via the controller (SEE-dedup
 idempotent, ensure-plus-link). `MEMBERS` (grouping) and `MEMBER_OF` (membership)
-author the `members`/`member_of` reciprocal via `add_membership`. `NOTATION`
-stored positional-partial (blanks read blank until derivation lands). Mass blank
+author the `members`/`member_of` reciprocal via `add_membership` (idempotent in
+the door — no caller-side guard needed). A grouping node's naming literal is
+either **used by provided-ID** (an existing `ADDRESS`) or **minted from PARENTS**
+(placed at the target `ADDRESS`, else manager-placed); the label is keyed on that
+naming-literal token (see I.B). `NOTATION` stored positional-partial (blanks read
+blank until derivation lands); optional/human-facing, never the handle. Mass blank
 (pending work); seed floor is the exception. No TYPE — structural validation.
 *Spec:* The literal intake formula + firmed section; label dual (grounding rule,
 label-has-no-own-address — a group is realized as membership edges keyed on

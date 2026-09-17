@@ -84,6 +84,13 @@ member, downward), both directions, in **one atomic transaction**. No mass
 operand, no kind operand — both endpoints must already be live `token` rows
 (FK; mints nothing).
 
+**Idempotent, SEE-style.** Each side is written with `ON CONFLICT DO NOTHING`,
+so re-adding an already-present pair is a clean no-op — no throw, no duplicate
+rows — the same discipline as `mint`'s no-op on an existing `token_id`. This
+also means a one-sided/inconsistent membership row (only `member_of` or only
+`members` present, e.g. from manual repair) is healed on its missing side
+without disturbing the side already there.
+
 ### Mutation primitives (raw; op-layer gating is a later module)
 
 These back the UPDATE record-tier ops (`MOVE_RECORD`, `DELETE_RECORD`,

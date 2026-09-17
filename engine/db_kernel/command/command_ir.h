@@ -81,7 +81,11 @@ struct AddressSegment {
                     // (PLAN.md Part V, G5) and is NOT done here.
     kNestedDeclare, // a nested DECLARE_RECORD -- mints one item, one
                     // self-delimiting slot, legal anywhere (interior or
-                    // last).
+                    // last) EXCEPT in a DeclareRecord's own ADDRESS when
+                    // that node's PARENTS is present (ruling #3, Patrick,
+                    // build-phase; rejected -- it would collide with
+                    // that slot's own PARENTS composition). Unrestricted
+                    // elsewhere, e.g. MOVE_RECORD's destination.
     kUndeclared,    // the inert undeclared -> cross-connection hook: a
                     // left-undeclared slot. No address is assigned by
                     // this module; the hook is exact-method-TBD, per
@@ -160,9 +164,16 @@ using AddressSpan = std::vector<AddressSegment>;
 // ---------------------------------------------------------------------
 
 struct DeclareRecord {
-  // ADDRESS -- required for a structure node (PARENTS present); absent
-  // for a pure-grouping node (see "Grouping-node identity", PLAN.md I.B)
-  // -- a label carries no independent placement of its own.
+  // ADDRESS -- required for a plain structure node (PARENTS present,
+  // MEMBERS absent). For a grouping node (MEMBERS present), ADDRESS
+  // establishes/references its naming literal (ruling #1, Patrick,
+  // build-phase -- SUPERSEDES the earlier "ADDRESS forbidden on a
+  // grouping node" rule): PARENTS present => ADDRESS, if given, is the
+  // mint's placement target (else manager-placed); PARENTS absent =>
+  // ADDRESS is REQUIRED and references the pre-existing naming literal
+  // (the "use-provided-ID" form). A grouping node with neither PARENTS
+  // nor ADDRESS establishes no naming literal and is rejected. See
+  // validate_declare.
   std::optional<AddressSpan> address;
 
   // NOTATION -- positional-partial. When present its length must equal N
@@ -177,8 +188,13 @@ struct DeclareRecord {
 
   // MEMBERS -- grouping roster. Present <=> this node is a grouping
   // node. Must be non-empty (floor >= 1) when present. A node may carry
-  // both PARENTS and MEMBERS (structure and grouping at once); the
-  // literal-vs-label reading is emergent, never asserted here.
+  // both PARENTS and MEMBERS (structure and grouping at once -- the
+  // "mint form" of the naming literal, see ADDRESS above); the
+  // literal-vs-label reading is emergent, never asserted here. When both
+  // are present, PARENTS must declare exactly one literal (N=1) -- a
+  // naming-literal mint is a single literal; N>1 broadcasting one
+  // MEMBERS roster across several literals is unspecified and rejected
+  // (ruling #2, Patrick, build-phase; fail-fast default).
   std::optional<std::vector<Reference>> members;
 
   // MEMBER_OF -- membership, up. Section 1 (`shared`) broadcasts to all

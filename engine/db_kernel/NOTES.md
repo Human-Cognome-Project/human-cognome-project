@@ -688,9 +688,37 @@ recorded here so code traces to spec, not to chat.
 
 **Wildcards are TERMINAL ONLY — no inline wildcards.** A wildcard is a partial
 *trailing* address element (the codec's partial element, e.g. `A*`), naming a
-contiguous trunk/subtree region. A wildcard may only be the last element; an
-inline (non-terminal) wildcard is invalid. (Consistent with the codec: a partial
-element is valid only as an address's last element.)
+contiguous trunk/subtree region. **The terminal restriction is what makes a
+wildcard a GATHER, not a SEARCH:** fixing the entire prefix and freeing only the
+tail yields a single contiguous, address-ordered region (a trunk/subtree) that is
+*walked* (only-follow). An inline (non-terminal) wildcard would free an interior
+position while pinning later ones — a non-contiguous pattern match, i.e. a
+search — which is forbidden. A wildcard may therefore only be the last element.
+(Consistent with the codec: a partial element is valid only as an address's last
+element.)
+
+**Grouping-node naming literal (label DECLARE).** A label DECLARE (MEMBERS
+present) establishes its naming literal ONE of two ways, and ADDRESS is PERMITTED
+on a grouping node — it names the naming literal's address (this REFINES "a label
+has no own address": the label borrows the naming literal's address, it has none
+independently):
+- **Use-provided-ID:** an existing address is given (PARENTS absent) → reference
+  that pre-existing naming literal.
+- **Mint:** no address, or only a target address → mint a NEW naming literal from
+  PARENTS (its *required* constituents only — the ≥2 floor, lean; no "must be
+  complete" over-requirement; constituents may be existing-address references,
+  needing at most one nested declare to begin); placed at the target address if
+  given, else manager-placed.
+- A grouping node with NEITHER PARENTS nor ADDRESS is invalid → reject.
+
+The mixed PARENTS+MEMBERS node IS the mint case — one token that is both the
+literal (its composition) and the label (its members): the
+naming-literal-IS-the-particle duality. NOTATION is NOT the handle — it is
+optional and human-facing only (a reviewer aid; token_ids are hard to eyeball),
+never a functional identity/reference. Edge cases, reject-until-ruled: N>1 for a
+mixed node (a naming-literal mint is a single literal, N=1); an ADDRESS-span
+nested-declare colliding with a slot's own PARENTS composition (would silently
+drop that slot's constituents).
 
 **MOVE — "from→to" is the relocation RELATIONSHIP, not a command form.** The
 "range from→to relocation" wording conveys the source→destination relationship;

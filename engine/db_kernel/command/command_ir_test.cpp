@@ -104,33 +104,105 @@ void test_grouping_empty_rejected() {
 void test_grouping_single_member_accepted() {
   DeclareRecord node;
   node.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
-  node.notation = {std::string("single hex codes")};
+  node.address = direct_span({"BA"});  // use-provided-ID form: needs an ADDRESS.
   auto result = command::validate_declare(node);
   check(result.status == ValidationStatus::kValid,
         "a single-member MEMBERS list is accepted (grouping floor is >= 1, "
         "not >= 2)");
 }
 
-void test_grouping_only_node_rejects_own_address() {
+// Ruling #1 (Patrick, build-phase): SUPERSEDES the old "ADDRESS forbidden
+// on a grouping node" rule. PARENTS absent + ADDRESS present is the
+// "use-provided-ID" form -- ADDRESS references a pre-existing naming
+// literal. No NOTATION is set here at all, demonstrating the dropped
+// NOTATION-based identity requirement too (the naming literal is
+// referenced via the address, never via prose).
+void test_grouping_only_node_with_address_is_use_provided_id_form() {
   DeclareRecord node;
   node.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
-  node.notation = {std::string("single hex codes")};
-  node.address = direct_span({"BA"});  // a grouping-only node may not place itself.
+  node.address = direct_span({"BA"});
   auto result = command::validate_declare(node);
-  check(result.status == ValidationStatus::kInvalid,
-        "a grouping-only node (MEMBERS present, PARENTS absent) that also "
-        "carries an own-address placement is rejected");
+  check(result.status == ValidationStatus::kValid,
+        "a grouping-only node (MEMBERS present, PARENTS absent) with an "
+        "ADDRESS is accepted -- the use-provided-ID form, referencing a "
+        "pre-existing naming literal");
 }
 
-void test_grouping_only_node_requires_naming_prose() {
+// NOTATION is a human-reviewer aid only (Patrick: token_ids are hard to
+// eyeball), never a functional identity/reference field -- optional and
+// blank-legal on ANY node, including a grouping node, whose naming
+// literal comes from ADDRESS (use-provided-ID) or PARENTS (mint), never
+// from NOTATION prose. (This supersedes the earlier, now-removed
+// "grouping-only node requires non-blank NOTATION" rule.)
+void test_grouping_node_with_blank_notation_accepted() {
   DeclareRecord node;
   node.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
-  // NOTATION absent: no PARENTS to derive a surface from, and no naming
-  // prose either -- the label would be unaddressable and unnamed.
+  node.address = direct_span({"BA"});
+  node.notation = {std::nullopt};  // present but blank.
+  auto result = command::validate_declare(node);
+  check(result.status == ValidationStatus::kValid,
+        "a grouping node with a blank NOTATION entry is accepted -- "
+        "NOTATION is never required, for identity or otherwise");
+}
+
+// Ruling #1: a grouping node with NEITHER PARENTS (mint) nor ADDRESS
+// (use-provided-ID) establishes no naming literal at all.
+void test_grouping_node_without_parents_or_address_rejected() {
+  DeclareRecord node;
+  node.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
   auto result = command::validate_declare(node);
   check(result.status == ValidationStatus::kInvalid,
-        "a grouping-only node with no NOTATION prose is rejected -- it has "
-        "no PARENTS to derive a surface from and no naming literal");
+        "a grouping node with neither PARENTS nor ADDRESS establishes no "
+        "naming literal and is rejected");
+}
+
+// Ruling #1: the mint form (PARENTS present) may omit ADDRESS entirely
+// -- the manager places the minted naming literal -- or supply one as
+// the mint's placement target. Ruling #2 forces N=1 for this
+// combination; see test_mixed_node_n_greater_than_one_rejected.
+void test_grouping_mint_form_address_is_optional() {
+  DeclareRecord with_address = minimal_structure_declare();  // PARENTS, N=1, ADDRESS set.
+  with_address.members = std::vector<Reference>{Reference::ToAddress(addr("AC"))};
+  check(command::validate_declare(with_address).status == ValidationStatus::kValid,
+        "a mixed PARENTS+MEMBERS node with an ADDRESS is accepted -- the "
+        "ADDRESS is the mint's placement target");
+
+  DeclareRecord without_address = minimal_structure_declare();
+  without_address.address = std::nullopt;  // manager-placed.
+  without_address.members = std::vector<Reference>{Reference::ToAddress(addr("AC"))};
+  check(command::validate_declare(without_address).status == ValidationStatus::kValid,
+        "a mixed PARENTS+MEMBERS node with NO ADDRESS is also accepted -- "
+        "the manager places the minted naming literal");
+}
+
+// Ruling #2 (Patrick, build-phase; default reject-until-ruled): a mixed
+// PARENTS+MEMBERS node's PARENTS must declare exactly one literal.
+void test_mixed_node_n_greater_than_one_rejected() {
+  DeclareRecord node;
+  node.parents = std::vector<command::ConstituentList>{
+      {Reference::ToAddress(addr("AA")), Reference::ToAddress(addr("AB"))},
+      {Reference::ToAddress(addr("AC")), Reference::ToAddress(addr("AD"))}};  // N=2.
+  node.members = std::vector<Reference>{Reference::ToAddress(addr("AE"))};
+  node.address = direct_span({"BA", "BB"});
+  auto result = command::validate_declare(node);
+  check(result.status == ValidationStatus::kInvalid,
+        "a mixed PARENTS+MEMBERS node with N>1 is rejected -- a "
+        "naming-literal mint is a single literal; N>1 broadcast onto one "
+        "MEMBERS roster is unspecified (fail-fast)");
+}
+
+// Ruling #3 (Patrick, build-phase; reject): a nested-declare ADDRESS
+// segment collides with that slot's own PARENTS composition -- rejected
+// regardless of the nested declare's own validity.
+void test_address_nested_declare_colliding_with_parents_rejected() {
+  auto well_formed_nested = std::make_shared<DeclareRecord>(minimal_structure_declare());
+  auto node = minimal_structure_declare();  // PARENTS present, N=1.
+  node.address = AddressSpan{AddressSegment::Nested(well_formed_nested)};
+  auto result = command::validate_declare(node);
+  check(result.status == ValidationStatus::kInvalid,
+        "a structure node's ADDRESS may not use a nested-declare segment "
+        "-- it would silently drop that slot's own PARENTS composition, "
+        "even though the nested declare is itself perfectly valid");
 }
 
 void test_mixed_structure_and_grouping_node_accepted() {
@@ -210,8 +282,16 @@ void test_nested_declare_recurses_and_is_validated() {
 }
 
 void test_nested_declare_in_address_span_recurses() {
+  // Uses a grouping node (no PARENTS) rather than minimal_structure_declare():
+  // since ruling #3 forbids a nested-declare ADDRESS segment whenever
+  // PARENTS is present (regardless of the nested declare's own
+  // validity), a PARENTS-bearing node can no longer isolate "is the
+  // nested declare itself checked" -- see
+  // test_address_nested_declare_colliding_with_parents_rejected for that
+  // separate rule.
   auto bad_nested = std::make_shared<DeclareRecord>();  // invalid: no fields.
-  auto node = minimal_structure_declare();
+  DeclareRecord node;
+  node.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
   node.address = AddressSpan{AddressSegment::Nested(bad_nested)};
   auto result = command::validate_declare(node);
   check(result.status == ValidationStatus::kInvalid,
@@ -571,8 +651,11 @@ int main() {
   test_structure_floor_of_two_accepted();
   test_grouping_empty_rejected();
   test_grouping_single_member_accepted();
-  test_grouping_only_node_rejects_own_address();
-  test_grouping_only_node_requires_naming_prose();
+  test_grouping_only_node_with_address_is_use_provided_id_form();
+  test_grouping_node_with_blank_notation_accepted();
+  test_grouping_node_without_parents_or_address_rejected();
+  test_grouping_mint_form_address_is_optional();
+  test_mixed_node_n_greater_than_one_rejected();
   test_mixed_structure_and_grouping_node_accepted();
   test_notation_blanks_accepted();
   test_notation_length_mismatch_rejected();
@@ -581,6 +664,7 @@ int main() {
   test_span_must_cover_n();
   test_nested_declare_recurses_and_is_validated();
   test_nested_declare_in_address_span_recurses();
+  test_address_nested_declare_colliding_with_parents_rejected();
   test_malformed_reference_rejected();
   test_declare_with_open_after_tail_is_accepted_pending_seam();
   test_declare_with_closed_after_to_is_accepted_pending_seam();
