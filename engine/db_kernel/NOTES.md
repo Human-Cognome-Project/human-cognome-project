@@ -1,0 +1,819 @@
+# db_kernel — data protocol & address-layout notes
+
+Working notes for the hcp3_core db_kernel set. Prose/design record; the code
+and its tests are the source of truth for behaviour. Canadian English.
+
+## Governing principle
+
+The DB is the **strictest form of the data protocol** — any system built on it
+takes that protocol as its focus. The cost hierarchy that shapes every choice,
+in concrete terms:
+
+- **Declaration touches 1 data point.** Near free — give a point an address /
+  a group and you are done.
+- **Calculation touches a minimum of 3 data points, plus the resource to
+  calculate.** So the CPU **only follows stored lists, it never searches** (no
+  reverse-search indexes anywhere in the schema).
+- **Allocation costs a calculation plus the work that predicated it.** So
+  address space is spent deliberately, in whole units, and its layout is made
+  to carry meaning rather than be recomputed.
+
+Everything below is a consequence of that hierarchy.
+
+**Computational tax is paid exactly once.** Anything derivable — reverse edges,
+relative parents, masses, centroids — is computed once (at write/reconcile) by
+its owner and STORED, then read as a pure follow. "The cache manager owns X"
+means it is *who* computes X and *how* X is stored — NEVER that X is left
+unstored to be derived on demand, which would force a search on every
+non-downward action. Store the tax; never re-pay it.
+
+## Address space
+
+An address is an ordered sequence of base-50 couplets (alphabet `A–Z`,`a–z`
+minus `o`,`O`; see `codec/`). Treat each single character as a digit: freeing
+one more digit multiplies the reachable set ×50 — nested **rings** off a shared
+prefix.
+
+Off the `AA.AA.AA.AA.` prefix:
+
+| Freed | Reachable | Example |
+|---|---|---|
+| last char (`A*`) | 50 | `AA.AA.AA.AA.A*` |
+| whole 5th couplet | 2,500 | `AA.AA.AA.AA.` |
+| one digit deeper | 125,000 | `AA.AA.AA.A` |
+
+A **trunk** is a leading-character subtree at a given ring — `AA.AA.AA.AA.A*`,
+`…B*`, `…C*`, … A trunk is not a fixed width: it grows **deeper** (adds rings)
+to hold however many members its kind needs. ("**block**" is used
+interchangeably for a trunk in the DECLARE / addressing / `AFTER` sections — the
+same unit; `AFTER:b`'s `b` is a trunk.)
+
+## Per-kind trunk allocation
+
+Kinds are laid out **trunk-aligned**, one kind per trunk (a kind may span more
+than one), sized to demand:
+
+- A kind rounds **up to the next whole trunk letter**. It fills part of its
+  trunk(s); the unused tail is left empty as deliberate **sparse headroom**.
+- The next kind starts at the **next unoccupied trunk**, never butted against
+  the previous kind's last used slot. If a kind finishes anywhere in the `D*`
+  range, the next kind starts at `E*` — `D`'s remainder stays sparse.
+
+Running example (root namespace `AA.AA.AA.AA.*`):
+
+- **single hex codes + `0x`** — the `A` trunk (`AA.AA.AA.AA.A*`). Small; the
+  whole kind fits in one trunk. (`0x` = `AA.AA.AA.AA.AA`.)
+- **hex couplets (256-byte codes)** — start at `AA.AA.AA.AA.BA`, taking as much
+  of the `B` trunk as 256 requires (expanding into depth past B's first 50).
+- **next kind** (3- or 4-couplet set — **undecided**) — the next clean trunk
+  (`C`/…), leaving B's tail sparse.
+
+The assignment layer carries a **trunk → kind map**, extended one trunk at a
+time. Boundaries past "hex couplets" are deliberately unfixed, so nothing may
+hardcode them.
+
+## Division by sparsity — a property of the data, NOT code
+
+Because each kind sits in its own trunk(s) with an empty tail, the CPU runner
+can sweep a trunk range as one contiguous **spread**, and the sparse gap is
+itself the boundary between kinds. There is **no delimiter, no boundary check,
+no grouping logic to write** — the division falls out of where the points sit.
+The assignment side's only job is to place kinds in whole trunks and leave the
+gaps. **Do not implement the division; it is emergent from the layout.**
+
+## Analyst command semantics (the relative assignment rule)
+
+The normal ingestion command is group-level, not point-level:
+
+> "Enter these N points as **group G** at **level/trunk L**."
+
+The system lays the points into trunk L at sequential, contiguous addresses and
+records their membership in G (`members`/`member_of` — see *Relationship model &
+type — firmed 2026-09-17*). The analyst designates the trunk;
+the system does the sequential fill and the grouping. The fill is deterministic
+**from the analyst-designated trunk** — sequential placement, no search. (The next-free mechanism — analyst-supplied
+starting address vs a per-trunk cursor the controller advances — is an OPEN
+decision; see Open decisions. This section assumes the analyst-supplied-start
+form, which needs no cursor.) Per-point provisional addresses
+remain available for exceptions.
+
+## Hard constraints
+
+- **Only-follow, never search** — resolve a direct address, follow stored PK
+  lists; no reverse-search index exists.
+- **Address IS identity** — same construction ⇒ same address ⇒ one token
+  (deduped by `mint`'s SEE — the PK-existence probe: look up the token_id, and if
+  it already exists, no-op / link-only instead of a second insert); a different address is a different
+  token. **No aliasing/forwarding**; two distinct addresses are never bridged
+  to a common identity, and nothing "papers over" a duplicate.
+- **No invented complication** — compute with no definable direct purpose is
+  garbage. No imported machinery, no anticipatory abstraction.
+
+## Relationship model & type — firmed 2026-09-17 (governs on conflict)
+
+Firmed this session with Patrick. Where it conflicts with anything below, **this
+section governs**: it supersedes the `token_sibling_group` / `SIBLINGS`
+membership design, the declared-`TYPE` gating, the `token_child` "two write
+sources by type" front-door for membership, and the literal/label
+parents-children-siblings breakdown in **Type semantics**, **DECLARE format**,
+**The literal intake formula** (and its label-dual continuation),
+**Relationships stored BOTH directions**, and **In flight — next to lock**.
+
+**Two orthogonal relationship axes, each a reciprocal pair, each a one-level
+arrayed follow.**
+
+- **Structure — `parent` / `child`.** A token's ordered constituents (`parent`)
+  and, reciprocally, the tokens that use it in their composition (`child`).
+  Structure is literal composition ONLY; it no longer carries membership. This
+  de-overloads `token_parent` (it stopped meaning both constituents and a
+  sub-label's super-group).
+- **Membership — `members` / `member_of`.** What a grouping contains (`members`)
+  and, reciprocally, the groups a token joins (`member_of`). This REPLACES the
+  sibling-group in full: `token_sibling_group` is dropped.
+
+Both pairs return a single one-level list per follow (the same shape the old
+parent/child returned). Membership stores both directions (write one side, the
+reciprocal is maintained), exactly like structure — only-follow, never search.
+
+**Type is emergent and LoD-relative — `TYPE` is dropped.**
+
+- A token reads as a **label / grouping** when it has `members` in scope, and as
+  a **terminal literal** when it has **no members relevant to the current LoD and
+  scope**. Terminality is NOT absolute: the same token_id is a coarse-LoD
+  terminal and a finer-LoD label — the literal↔label ladder (LoD *k*'s labels are
+  LoD *k+1*'s literals), already described under the LoD rollup.
+- Because the reading flips with the read's LoD/scope, type CANNOT be a stored
+  branch. The declared `TYPE` field and the `token.type` column are both dropped.
+  Type is a pure read-lens over the members-in-scope reality. DECLARE is no
+  longer `TYPE`-gated: validation is **structural** — which downward field is
+  present (`PARENTS` ⇒ structure, `MEMBERS` ⇒ grouping); what is declared is
+  stored, the readings emergent.
+
+**DECLARE fields (revised):** `ADDRESS`, `NOTATION`, `PARENTS` (structure
+constituents), `MEMBERS` (grouping — replaces the old label `CHILDREN`),
+`MEMBER_OF` (membership, up). No `TYPE`. The structure `>=2` anti-alias floor and
+the membership `>=1` floor still hold, now selected by which field is present
+rather than by a declared type.
+
+**Pairwise is the substrate, not a constraint to reconcile against.** Every
+calculation the engine does is pairwise — that is the entire point of the DB. A
+pairwise base calc, once recorded (combined masses + connections), lets the model
+rebase by a **read and alignment over nominal ticks**: new data recomputes
+minimally off the established relationships, which is what permits the proper
+mathematical **exclusion of state space**. "All connections are pairwise" IS this
+substrate; the structure/membership split is storage detail beneath the one
+pairwise primitive, never a competing category.
+
+**"No connection-kind operand / nothing stored as a category"** was a guardrail
+against one specific error: a hidden **equivalence table** declaring distinct
+tokens equivalent through a hidden connection — forced equivalence / covert
+aliasing, which violates **address-IS-identity / no-forwarding** (the same reason
+`token_forwarding` was removed and MERGE is forbidden). It is NOT a ban on
+distinct relationship stores. The relationship "kind" is encoded in the
+memberships/structure themselves and read from the axis an edge sits on — never a
+stored kind label, never an equivalence bridge.
+
+**Schema consequence (to build):** `token` drops its `type` column;
+`token_sibling_group` is dropped; `members` and `member_of` are added as the
+membership reciprocal (mirroring `token_parent` / `token_child`). Net store:
+`token`, `token_parent`, `token_child`, `members`, `member_of`.
+
+## Process runtime — the cache manager is a complete runtime
+
+The cache manager (this whole db_kernel) is a **complete, standalone runtime
+process**, not library pieces called ad hoc: it owns the DB (only the process
+controls the DB) and its primary duty is serving input/output requests. It must
+be complete on its own and may be **detachable to ride with the swarm**;
+whether it is later bundled with other processes is a separate concern.
+
+Work balancing is **foundational, not deferred** — the temporary Python loader
+is real I/O and must be handled right from the base:
+
+- Under a fast bulk load (e.g. the Python loader dumping definitions), **filing
+  the incoming data takes precedence over cross-processing it.** Filing =
+  recording the token and its declared data; cross-processing = the deeper
+  cross-linking (the WIRE / `token_child` structure-reverse **and the
+  `members`/`member_of` membership reciprocal**) and feedback.
+- The process carries a **pending work list**: deferred cross-processing is
+  queued and done asynchronously, behind the primary input/output request
+  handling.
+- Postgres is the swarm DB partly because its **WAL records are p2p-networking
+  friendly** for the swarm.
+- The cross-processing workstream **may be detachable** — riding with the swarm
+  (picking up deferred work off the p2p-friendly WAL) rather than living in the
+  core process at all. The core process would then stay lean on primary I/O,
+  with cross-linking/feedback carried as a distributed swarm workstream.
+- Today `mint` does link+wire synchronously; the runtime splits this into
+  **file-now / wire-later-via-pending-list**, the reverse indexes (`token_child`,
+  and likewise the `members`/`member_of` reciprocal) being eventually-consistent
+  while deferred work drains.
+- **Multi-analyst.** The cache manager may serve more than one analyst and needs
+  a per-analyst input/response link. Maintained aggregates (own masses, label
+  centroids, reciprocal listings) therefore have a single owner — the manager —
+  so they stay consistent across async multi-analyst updates.
+
+## Type semantics — literal vs label
+
+> **PARTIALLY SUPERSEDED 2026-09-17** — see *Relationship model & type — firmed
+> 2026-09-17*. The literal↔label distinction and the LoD-rollup reasoning stand,
+> but membership is now the `members`/`member_of` pair (not siblings), structure
+> is `parent`/`child` (de-overloaded), and `TYPE` is dropped (emergent,
+> LoD-relative). Read the paragraphs below through that lens; where the "siblings"
+> / declared-type wording conflicts, the 2026-09-17 section governs.
+
+**Governing distinction (firmed 2026-09-15):** literal chains are *pure
+structural composition rules* — a literal is fully defined by its construction,
+closed and self-describing. Labels are *what those compositions mean outside of
+literal construction* — the interpretation the structure cannot yield on its
+own, assigned and anchored down onto a naming literal. Structure (literal) is
+the substrate the store computes on; meaning (label) is the semantic layer laid
+over it. This predicts the asymmetries below: notation derives for a literal but
+is assigned for a label; mass sums constituents for a literal but centroids
+members for a label; and TYPE is a read-lens on one uniform graph, not a storage
+branch — because structure and meaning are two readings of the same edges.
+
+**All connections are pairwise (firmed 2026-09-15).** Every connection in the
+store is a *pair*, full stop. Constituency, membership, child, grouping are not
+distinct edge classes — they are different *readings* of the one pairwise
+primitive through the type lens (endpoints' types + direction give the reading;
+nothing is stored as a category). The store holds one thing — pairs — and higher
+structure (groups, compositions, the LoD ladder) is emergent from accumulated
+pairs. Consequences: edge ops carry no connection-kind operand; pairwise is not a
+special class but the universal substrate — the lens defines the reading.
+
+**Why the label MUST exist as a literal — the LoD rollup (firmed 2026-09-15).**
+The computational/gaming reason grounding the naming-literal rule: when the
+level of detail changes, the label BECOMES the actual particle. The label's
+naming literal *is* the coarse-LoD particle — the same token_id, read as a label
+(members/meaning) at fine LoD and as a literal (structure/mass) when it
+participates in composition at coarse LoD. Consequences: (1) LoD rollup is O(1),
+a representation swap not a computation — the coarse particle already exists,
+its centroid mass already stored, so zoom-out is a single follow with no
+re-aggregation and no search; (2) this IS the no-explosion funnel — a coarse
+node lists a few sub-group tokens, each a label-as-particle for its whole set;
+(3) stored centroid mass is precisely the coarse particle's weight, pre-computed
+so it is live the instant LoD flips. And the deeper shape: the literal→label
+inversion is a **ladder, not a single flip** — a label rolled up becomes a
+literal, which is labelled again at the next-coarser scale; structure and
+meaning alternate up the rungs (LoD *k*'s labels are LoD *k+1*'s literals). That
+is why intake gates TYPE **per node** and mints several strata in one statement:
+it is building multiple rungs of that ladder at once.
+
+Each token carries a **type** that acts as a *read lens on the same edges* —
+storage is uniform; the engine does not branch on leaf-vs-group. Every distinct
+token_id is a self-contained grouping, so a leaf is a member/child exactly like
+a sub-group. "Exact token_ids always call each other" — a reference resolves to
+precisely itself (the address-is-identity rule).
+
+**Literal** (e.g. a hex digit, a composed string):
+- parents (`token_parent`) = the ordered tokens that constitute it.
+- mass = the sum of those parents' masses. Base atoms with no parent take the
+  one defined reading, 1 (the only explicitly-defined mass; everything above
+  aggregates).
+- children (`token_child`) = tokens that use it in *their* composition.
+- siblings (`token_sibling_group`) = groups it joins as a whole mass.
+
+**Label** (e.g. `single hex codes`):
+- represents a grouping other tokens are contained within.
+- parents (`token_parent`) = larger groups it is a sub-group of.
+- children (`token_child`) = the tokens it contains — sub-groups and leaf
+  members alike.
+- stored mass = the **aggregate (centroid) of its member masses** (e.g. 16 hex
+  digits x 1 = 16), NOT the label's own intrinsic mass (that comes from word
+  associations, later).
+
+Mass aggregates in the direction the type reads *down*: a literal sums over its
+parents (constituents); a label sums over its children (members).
+
+## Open concerns (this layer — not resolved)
+
+- **A token's own mass — FIXED: stored on `token`.** Decided: the token's own
+  mass is a stored value on `token` — one value per token, holding a literal's
+  sum-of-parents and a label's centroid-of-members alike — to avoid re-summing
+  on every touch. Maintained by the aggregation / pending-work workstream
+  (eventually-consistent while it drains). It stays derivable (every
+  `token_parent` row carries a mandatory mass; the sum grounds on the base atoms
+  whose mass-1 is the explicit seed), so for composites the stored value is a
+  maintained cache of that sum; for base atoms it *is* the seed. Schema: add a
+  mass column to `token`.
+- **Nested aggregation.** When a label's members include sub-group labels, does
+  the centroid recurse to leaf masses or sum the sub-groups' stored centroids?
+  Defines one-level vs transitive roll-up and avoids double-counting.
+- **`token_child` two write sources by type — SUPERSEDED 2026-09-17.** Membership
+  no longer rides `token_child`; it has its own `members`/`member_of` reciprocal
+  (see *Relationship model & type — firmed 2026-09-17*). `token_child` reverts to
+  pure structure-reverse (WIRE from `token_parent`). The old resolution
+  (label containment as a `token_child` front-door write) no longer applies.
+- **Pairwise / cross-field connections** — SETTLED, not an open concern: all
+  connections are pairwise; the type lens defines the reading. See "All
+  connections are pairwise" under Type semantics. (Do not resurface this as
+  open.)
+
+## API command vocabulary
+
+The cache-manager runtime (`db_runtime`) dispatches on a leading verb — the
+"formulaic calls" other routines (the analyst process, the swarm) issue.
+Commands can nest (a set contains sub-declares; modes compose) and can drive
+reconciliation patterns. Two tiers, record-level and cache-level:
+
+- **DECLARE_RECORD** — official addressing: commit a proven-useful particle
+  passed down from the analyst's virtual sim into the store. *Functional.* Two
+  forms differing by specificity of addressing — a single particle, and a
+  particle set (single is the degenerate one-member case, subsumed by the set
+  but understood on its own).
+- **UPDATE_RECORD** — change an existing token's relationships (params deferred).
+  *FIRMED (2026-09-15) into four sub-ops — MOVE_RECORD, ADD_CONNECTION
+  (arrayable), DELETE_RECORD, DELETE_CONNECTION (single, confirmed,
+  peer-validated); see UPDATE ops.* The old umbrella RELATE (group membership,
+  containment, cross-links) is now the ADD_CONNECTION / DELETE_CONNECTION writes;
+  the scalar param-change (notation prose→token_id, formerly SET_FIELD) is the
+  one deferred bookkeeping item, outside the firmed four.
+- **READ_RECORD** — direct exploratory read: probe potential connections without
+  a formal declaration. *Functional in the raw radial path; cache-shaping,
+  exclusions and depth firm alongside the cache tier.* Cache-FREE by default (the
+  explicit bypass — the cache is the normal data path), with an OPTIONAL
+  cache-shaped mode that scopes the read by the working set.
+- **RECONCILE** — settle deferred cross-processing to a consistent point. *Stub.*
+- **UPDATE_CACHE** — realign the working set to current scope. *Stub (deferred).*
+- **REBASE_CACHE** — shift the exploration root. *Stub (deferred).*
+
+### DECLARE format
+
+> **REVISED 2026-09-17** — `TYPE` is dropped (emergent, not gating). The fields
+> are `ADDRESS`, `NOTATION`, `PARENTS` (structure), `MEMBERS` (grouping — replaces
+> `CHILDREN`), `MEMBER_OF` (membership; no longer a *sibling-group* edge — the
+> membership pair is `members`/`member_of`). See *Relationship model & type —
+> firmed 2026-09-17*. The addressing / array / nesting mechanics below stand.
+
+Named fields, order-free ("position" is only a pointer, not a fixed slot):
+`ADDRESS` (a span expression — see the intake formula's alphabet: `@`/direct
+pin, `FROM`, `AFTER`, `TO`, and the undeclared→cross-connection hook), `TYPE`
+(non-optional; gates the rest), `NOTATION` (quoted; may contain spaces, e.g.
+`"single hex codes"`), `PARENTS`, `MEMBER_OF` (the member-side sibling-group
+edge — the firmed formula's name for what this list earlier called `SIBLINGS`),
+`CHILDREN`.
+
+- **TYPE gates validity** — parse everything, then validate against the type. A
+  `literal` expects ordered constituents (parents; mass sums from them); a
+  `label` expects members/containment (children; mass = centroid; parents =
+  super-groups). A literal cannot carry label-containment fields and vice versa.
+- **Mass is manager-owned, not declared.** DECLARE carries no mass: a literal's
+  own mass = sum of its parents (derived); its constituent masses = each
+  parent's own mass (also derived), so PARENTS holds references only, no
+  per-position mass; a label's centroid = maintained by the manager. Label mass
+  sits with the manager specifically because it is a maintained aggregate that
+  async updates from *multiple analysts* would churn — it needs one consistent
+  owner, not analyst-asserted values. The one exception is the **seed layer**:
+  the 16 mass-1 hex atoms (and `0x` at mass 0) carry their mass as a *declared
+  entry* — we put the value because everything needs a value to start, and there
+  is nothing for the manager to compute at the floor (no parents to sum). That
+  seed layer is the ONLY declared mass; every composite mass above is
+  manager-built from these 16.
+- **Single vs set = scalar vs array** (no separate span mechanism). The set/span
+  form is just whether any field carries an array. Scalar fields are the shared
+  frame and broadcast to every member; an array field is the per-member
+  differentiator, its length the member count — e.g. `NOTATION:["0"…"F"]` with
+  everything else scalar → 16 particles inheriting the frame, walked
+  sequentially by the `from` address. Scalar-only = the degenerate single.
+  Multiple arrays **co-index** (zipped, equal length, one member per index — not
+  a cartesian product), the index lining up with the `from` sequential slot.
+  Relationship fields may be arrays too (`CHILDREN:[…]` = a label's member
+  roster / an inline set of member declares).
+- **Recursion** — any relationship field (parents/siblings/children) may be a
+  reference OR a full nested DECLARE of the same shape, so one call builds a
+  whole connected sub-structure (e.g. hex `"1"` + inline `single hex codes`
+  sibling + inline `hex value tables` super-group). Nested declares of an
+  existing token are idempotent (SEE): ensure-plus-link — only the new edge is
+  added, so the same label can be nested by all 16 hex particles safely.
+- **Relationships stored BOTH directions** (denormalized) for follow speed (NOT
+  search — the reverse is stored so the CPU FOLLOWS it) —
+  children are spelled out/stored, same principle as stored summed masses:
+  store the reverse so the CPU follows it, never searches. Declarable from
+  whichever side is efficient; the reciprocal is maintained. For a label,
+  **CHILDREN are its group members** — the reciprocal of each member's own
+  membership edge: a literal member's SIBLING, or a sub-label member's PARENT.
+  (e.g. hex `"1"` SIBLINGS `single hex codes` ⟺ `single hex codes` CHILDREN
+  hex `"1"`; `single hex codes` PARENTS `hex value tables` ⟺ `hex value
+  tables` CHILDREN `single hex codes`.)
+- **No data explosion** — as aggregation deepens, direct listings per level
+  *decrease*: finer cross-connections amalgamate members into sub-group
+  token_ids, so a mature node lists a few sub-groups (each a single token_id
+  standing for its whole set), not thousands of leaves. Self-compressing with
+  depth — the funnel: sparse/direct at the rim, amalgamated toward the throat.
+
+### DECLARE addressing modes
+
+> Superseded framing (2026-09-15): these are no longer separate "modes" but
+> composable segments of one ADDRESS span expression — see **The literal
+> intake formula** below, which folds `from`/`after` in and adds `TO`. The
+> per-mode notes here (esp. `@`-override ↔ reconciliation) are retained.
+
+- **declare @** — pin to a defined address (single particle). A *request*, not a
+  guarantee: the cache manager may override the placement. Today's
+  provisional-accept path is this mode without the override.
+- **declare from** — number sequentially from a given point (single or many).
+  The group-at-trunk sequential fill. *To build.*
+- **declare after** — begin at the next defined block after a given reference
+  (trunk-aligned; honours the gap — finish in `D*`, next starts `E*`). **Firmed
+  as `AFTER:b`**: takes an EXPLICIT block `b` as its reference (see the intake
+  formula); it does NOT key off cache "current position". Leans on the block/trunk
+  map. *To build.*
+- **undeclared → address from cross-connections** — a particle with no address
+  is assigned one derived from its cross-connections. This is the extrapolate
+  hook (inert now); exact method TBD.
+
+Consequences:
+- **Placement authority ↔ reconciliation.** `@`-override and cross-connection
+  derivation both mean the address is not final at declare time; that
+  placement/relocation is what generates RECONCILE work.
+- **DECLARE returns the ACTUAL assigned address**, not an echo of the requested
+  one — caller proposes, manager disposes (`minted <address>` already returns
+  what landed).
+- **`@`-override couples DECLARE to cache state** — the current-position/override
+  that REBASE_CACHE sets. (`AFTER:b` does NOT — it takes an explicit block, per
+  the firmed formula, superseding the earlier "after leans on current position"
+  note.)
+- **Relocation is free because nothing holds addresses.** The analyst is its own
+  set of C++ kernels with NO attachment to any data point — it navigates by
+  connection, not by a held address. So the cache manager changing a record's
+  address is immaterial as long as the connection is correct: **connection
+  correctness is the invariant; the address is manager-assigned and fluid.**
+  This is what makes `@`-override, `from`/`after` reflow, and back-correction
+  safe — no stale handle exists to break.
+
+### The literal intake formula (firmed 2026-09-15 15:12 MDT)
+
+> **REVISED 2026-09-17 — read through *Relationship model & type — firmed
+> 2026-09-17*.** `TYPE` is dropped: the `TYPE literal` line in the template below,
+> and "TYPE gates them", no longer apply — validation is **structural** (which
+> downward field is present: `PARENTS` ⇒ structure, `MEMBERS` ⇒ grouping). In the
+> field descriptions, `MEMBER_OF` is the member-side of the **membership** pair
+> (`members`/`member_of`), NOT a "sibling-group edge"; its reciprocal is the
+> label's **`MEMBERS`** roster, NOT "label CHILDREN". The PARENTS / ADDRESS-span /
+> NOTATION / array / nesting mechanics, the grounding rule, label-has-no-address,
+> and the `>=2` / `>=1` floors all stand unchanged.
+
+The literal `DECLARE_RECORD`, set form (single = the degenerate N=1). Fields are
+order-free; TYPE gates them. Applies per node.
+
+    DECLARE_RECORD
+      TYPE      literal
+      PARENTS   [ p0, p1, ... p{N-1} ]        # THE member array — sets N
+      ADDRESS   <span covering the N slots, in member order>
+      [NOTATION n0,n1,...,n{N-1}]             # optional
+      [MEMBER_OF <shared> | s0,s1,...,s{N-1}]  # optional
+
+- **PARENTS is the member array and sets N.** Outer length = the number of
+  declared literals. *Consistent* — length-N exactly, no partial. Each member
+  `pi` is itself a list of constituent references, `|pi| >= 2`, unbounded above.
+  The >=2 floor is the anti-alias rule made structural: one constituent would
+  resolve to that constituent's own address, not a new token. References ONLY —
+  no per-position mass. Base-atom seed layer is the floor exception (literal, 0
+  parents, declared mass).
+- **ADDRESS covers the N slots.** A span expression; members in addressing order
+  (index = slot). Alphabet: `FROM:x` (start at x), `AFTER:b` (start at the next
+  block after defined block b — the trunk-shift, honours the sparse gap),
+  `TO:y` (terminal bound; a *condition on the preceding origin*, never
+  standalone), direct values, the `@`-pin (a *requested* address the manager may
+  override, not a guarantee), and — for a slot left undeclared — the inert
+  undeclared→cross-connection hook. Segments mix arbitrarily; valid iff, laid end
+  to end, they cover N. An open (un-`TO`'d) origin is elastic and may be the
+  *last* segment only (⇒ array may be partial); every interior segment is
+  self-delimiting (direct = 1 slot, origin+`TO` = fixed count). A nested declare
+  mints one item → one address → a direct value, so it is always a single
+  self-delimiting slot, legal anywhere incl. interior. Internal complexity
+  collapses to addresses — the span never sees the machinery. Purpose: gather
+  disconnected address sets under groups.
+- **Mass: none declared.** Absent from intake by construction. DB-derived (a
+  literal's mass = sum of its parent-list's own stored masses, grounding on the
+  mass-1 atoms) AND stored (storage cheap, calculation slow — store the tax;
+  keeps the DB fully traversable so runtime reads never search). Only the seed
+  floor writes a mass literal (`0x` = 0/undefined; 16 hex = 1). The earlier
+  per-parent `:mass` and analyst `--mass` are dropped from the literal intake.
+- **NOTATION: optional, positional-partial.** If present, comma-delimited over
+  the N slots; blanks (successive commas) are legal placeholders. A blank or an
+  absent field → surface derived by concatenating parent values down to
+  word/character level, derived AND stored by the cache manager (NOT
+  read-time). Derivation not in place yet — a blank reads blank until it lands.
+- **MEMBER_OF: optional (tentative — may become required; decide by practice).**
+  Two sections split by `|`. Section 1 broadcasts to all N — the common
+  group(s) every member joins. Section 2 (optional) is a *sparse* positional
+  array of *additional* per-member memberships; member i's total = shared ∪ its
+  sparse slot. Member-side of the sibling-group edge; the reciprocal (label
+  CHILDREN) is manager-maintained.
+
+**Grouping by nesting.** A full set = a flat literal enumeration (stratum 1:
+every used codepoint, once, each with its parents) plus nested label sub-declares
+over it (stratum 2: tables gather codepoints, endpoints/families gather tables —
+the whole Unicode-Tables lattice built in one statement). Membership authored
+from whichever side is cheap (member-side MEMBER_OF or group-side nested
+grouping — two directions onto one edge, reciprocal maintained). SEE dedups: a
+codepoint/couplet shared across many tables is enumerated once and re-referenced
+(ensure-plus-link, no explosion). The literal→label inversion happens per node,
+mid-statement: literal floor, label lattice, the sub-declare the hinge each time.
+[Example-domain note: the Unicode-Tables case (codepoints → tables →
+endpoints/families) is the SAME mechanism as the hex running example (hex digits
+→ single hex codes → hex value tables), generalized to a second, deeper domain —
+"endpoints/families" and "Unicode-Tables lattice" are that domain's
+sub-group/super-group tiers, not new primitives.]
+
+**Label intake is the dual — next to firm.** Grounding rule (firmed
+2026-09-15): a label CANNOT exist without a literal that represents what it is —
+its name-as-a-literal (its *identity*, distinct from its members). Labels bottom
+out on literals twice: once for membership (what they group, read down via
+children) and once for identity (the naming literal). No free-floating label. In
+the crude early stage the naming literal is stood in for by the temporary
+`notation` prose string; it is replaced by a proper literal reference (the
+composed-string token) as those terms are incorporated elsewhere — the
+`notation prose → token_id` SET_FIELD swap under UPDATE sub-ops.
+
+Bootstrap / construction posts (firmed 2026-09-15): to build anything you need
+labels; a label needs members AND a naming literal; the naming literal is itself
+a literal you must build (from char/word literals that may not exist yet) — a
+circular dependency at bootstrap. Temp labels (crude prose notation) break the
+cycle: they are deliberate **construction posts** — a placeholder identity you
+build the real structure against, then pull once the genuine naming literal
+exists. So the crude-storage stage is an intentional construction phase, NOT
+incompleteness or debt; pulling the posts is precisely the deferred prose→
+token_id swap. Scaffolding and its removal are both part of the design.
+
+Addressing rule (firmed 2026-09-15): **a label is not given an address of its
+own** — it exists *across* other token_ids (a distributed relation over its
+members), so there is no single point to place. Its only address is its naming
+literal's, borrowed by identity (the same token_id the LoD rollup rides). So the
+naming literal is the label's sole handle into address space; a label with no
+naming literal is unaddressable — unreferenceable, unable to roll up to a
+particle. Therefore label intake carries **no independent ADDRESS placement**
+like the literal set does: what gets placed is the naming literal (via the
+literal path); the label is realized as membership edges keyed on the members,
+referencing the group by the naming-literal token_id. The crude stage references
+a placeholder (prose notation); the prose-to-token_id swap is when the label
+acquires its real literal-derived address. Corollary: because a label is not
+addressed by composing its members, the literal >=2 anti-alias floor does NOT
+transfer. Minimum LOCKED at >=1 (non-empty, no higher floor): a single-member
+label is valid, its centroid being that one member's mass (sole-item centroid =
+the member's own mass). Rare in long-term practice but legitimate when building
+analytical systems — a grouping stood up with one member that later accretes.
+
+Label-vs-literal mirror (same machinery, opposite flow): required downward field
+— literal PARENTS (constituents, each >=2) vs label CHILDREN (members,
+non-empty); floor — literal bottoms at the 16 hex seed atoms (parentless) vs
+label bottoms on literal leaves (no label-side exception); identity —
+self-describing (derived notation) vs must carry a naming literal; mass — sum of
+parents vs centroid of members; flow — bottom-up (enumerate leaves, nest groups)
+vs top-down (declare group, nest members). Everything else (span arrays,
+consistent-vs-sparse, nesting collapses to a direct slot, membership declarable
+from whichever side is cheap) is identical.
+
+### Arraying is universal — a compressed serial command stream (firmed 2026-09-15)
+
+Any complete argument/command can be arrayed, because an array IS just a
+compressed **serial** (ordered, in-sequence) sequence of single commands sharing
+the scalar frame — NOT an unordered batch. Ordering is semantic: inter-dependent
+ops resolve because they execute in order (a MOVE targeting a slot an earlier
+MOVE placed works for the same reason intake fills in addressing order). The
+decompression is exact via (1) frame broadcast — scalar operands replay
+identically into each of the N; (2) SEE idempotency — a shared nested product
+collapses to declared-once + N links, never double-minted. The array form also
+enforces cross-checks the naive serial form would not (co-index equal length,
+span covers N), but the executed result is identical. Consequence: every **record-tier**
+command — DECLARE, READ, and the *additive* UPDATE sub-ops (MOVE_RECORD,
+ADD_CONNECTION) — inherits its set/batch form for free; there is no separate
+batch mechanism to design. The *destructive* UPDATE ops (DELETE_RECORD,
+DELETE_CONNECTION) are the exception — single-instruction only, never arrayed
+(see UPDATE ops). Arraying is also the
+**precondition for label-start (top-down) entry**: without it you would be
+forced to single-structure definitions begun at one point (bottom-up only); a
+group's members ARE an array, so the label-end flow exists only because arraying
+does. Scope: record tier
+ONLY. The **cache tier** (RECONCILE, UPDATE_CACHE, REBASE_CACHE) is excluded —
+those are global state transitions on the working set as a whole, not
+element-wise command streams, so there is nothing to compress into a serial
+array (a REBASE is not N little rebases).
+
+### UPDATE — record-tier ops (firming 2026-09-15)
+
+Record-tier, so arrayable (see arraying above). Only a few options are
+necessary. Firmed so far:
+
+- **MOVE_RECORD.** A range from->to relocation reusing the intake placement
+  variables (FROM/AFTER/TO/direct — the SAME span grammar as DECLARE ADDRESS).
+  Strictly BOOKKEEPING: triggered when a more correct structural alignment has
+  been derived, it re-places the record(s) at better-aligned addresses. Changes
+  NO relationships, only pointers — the graph topology is invariant (same
+  parents, children, memberships); MOVE rewrites the address-labels on the moved
+  nodes and cascade-repoints every edge that referenced the old token_id to the
+  new one. No edge added or removed, nothing wired or unwired. Safe because
+  nothing holds addresses — connection is the invariant, the address is
+  manager-assigned and fluid, so no stale handle breaks. This relocation IS the
+  reconciliation generator (the cascade repoint may drain via the
+  pending/RECONCILE path).
+- **ADD_CONNECTION `<label> <element...>`.** Assert membership: add one or more
+  elements to a label. MUST begin with a label — that is the anchor, because the
+  op is "add >=1 elements as members of this label." Label = scalar frame
+  (broadcast); elements = the arrayable side (>=1); each addition is a
+  pair(label, element). Declares/mints no terms (that is DECLARE's job); all
+  endpoints must pre-exist. No connection-kind operand — all connections are
+  pairwise, the reading is lens-derived. Reciprocal maintained (both-direction
+  store). This is the GROUP-SIDE membership-authoring op — the dual of MEMBER_OF
+  (member-side, at declare); same edge, authored from whichever side is cheaper,
+  ADD_CONNECTION being the post-mint from-the-label side.
+- **DELETE_RECORD / DELETE_CONNECTION — the destructive pair.** DO NOT ARRAY at
+  all: single instruction only, no batch form (the opposite of the compressed
+  serial stream — non-arrayability IS part of the friction). Two deliberate
+  gates: (1) **active confirmation before execution** — local, pre-execution,
+  the caller must deliberately confirm, not fire-and-forget; (2) **validation
+  tags for other instances** — the delete carries tags so peer instances confirm
+  before it is made SYSTEMIC (executes tentatively; becomes system-wide only
+  once peers validate). Rationale: a record is assumed well-vetted and
+  reasonably supported before it reaches the DB, so destruction contradicts the
+  base assumption and must be very deliberate — vetting lives on entry, deletion
+  is the rare gated exception. Scope: DELETE_RECORD removes a whole token;
+  DELETE_CONNECTION removes one specific pair (matches the specific edge).
+  **Specific IDs and connections ONLY — no wildcards.** You delete exactly what
+  you name; there is no pattern/wildcard match (consistent with only-follow /
+  never-search — there is no scan to select targets). This
+  settles the old RETIRE_RECORD / "do records only ever move?" question: records
+  CAN be removed, but only as a maximally-gated exception, never a normal path.
+  No MERGE (forced equivalence forbidden) — unchanged.
+
+That is the full UPDATE set: MOVE_RECORD, ADD_CONNECTION (both arrayable),
+DELETE_RECORD, DELETE_CONNECTION (both single, confirmed, peer-validated).
+
+### READ — record-tier exploratory read (firming 2026-09-15)
+
+The direct exploratory probe — **cache-FREE by default** (the explicit cache
+bypass; the cache is the normal data path), with an OPTIONAL cache-shaped mode
+(see below). Only-follow from the anchor; never searches. **Purpose:** the analyst's construction instrument —
+reading one rich node's structure informs the majority of the variables for a
+new prospective token; it is the front of the declare loop (READ → prove in sim
+→ DECLARE), not a separate utility. Parameters:
+
+- **Anchor** — a single token_ID to begin from.
+- **Direction — OPTIONAL; default RADIAL.** A token is both label and literal,
+  so it is a dense pairwise hub (dozens of lines: constituency, membership,
+  reverse-adjacency, super-groups). Unset, the read expands radially — all
+  directions outward. Direction is a *narrowing* applied when one axis is
+  wanted: data path parents / members / both (the per-axis downward reads —
+  parents = structure-down, members = membership-down), reverse orientation
+  likewise selectable.
+- **Depth (by factor)** — the LoD dial: depth 0 = the rolled-up node (coarse
+  particle), each rung expands one level down the ladder.
+- **Exclusions** — prune named branches (specific token_ids ONLY, NOT property
+  filters — a predicate would force a search). Exact mechanism TBD (later).
+- **Cache data shaped** — shape/scope the read by the current cache's data
+  shape. The scalable relevance tool: vast swaths of a hub's pairwise fan are
+  irrelevant at any moment and cannot be hand-pruned, so cache-shaping prunes
+  wholesale to the currently-relevant subset. Complements exclusions (automatic
+  relevance-by-working-set vs surgical named prune). Gives READ two poles: raw
+  radial (pure cache-free probe) vs cache-shaped (relevance-bounded). The
+  cache-shaped form couples READ to cache state, so its exact shape firms
+  alongside the cache tier (as after/override coupled DECLARE to it).
+- **Re-convergence — RULED (2026-09-15): once per path, NO dedup.** The READ
+  return is an arrayed (linearized) data return; a shared node recurring at
+  different points is NOT redundancy — the fact that it repeats, and where, IS
+  part of the data structure (it carries the convergence/sharing losslessly).
+  Because the read is a pure follow, linearization is deterministic — identical
+  values fall at predictable positions, so repeats are expected and legible, not
+  anomalies. Dedup would destroy the structural information the read exists to
+  surface. Same shape as arrayed intake: an ordered array where position AND
+  repetition encode the tree; consistent with only-follow (every referenced path
+  is followed) and address-is-identity (same token_id at many positions = one
+  identity at many structural points).
+
+### Cache tier — loosely defined, deferred (2026-09-15)
+
+Touched only enough to define and defer; mechanisms not built. Axis between the
+two view ops is continuity of basis:
+
+- **UPDATE_CACHE** — same basis, incremental: rebalance the working set around
+  the current exploration locus and progressively extend the telescoping view's
+  reach in a direction. Aim-and-extend in place; continuous.
+- **REBASE_CACHE** — new basis, wholesale: change the fundamental basis of the
+  analysis and fully rebuild the cache space around the new exploratory
+  location. Discontinuous — re-found, not re-aim. Sets the "current position"
+  that DECLARE after/override lean on.
+- **RECONCILE** — orthogonal to both, and demand-driven: an analyst request for
+  IMMEDIATE, prioritized cross-matching — forcing the deferred cross-processing
+  (WIRE / cross-links / feedback) to the foreground and FULLY into the cache,
+  generally because the result will impact current analysis and cannot wait for
+  the pending list to drain on its own. Temporarily inverts the normal
+  filing-over-cross-processing precedence, on request. Relevance-triggered, not
+  housekeeping.
+
+All cache-tier: global state transitions on the working set, non-arrayable.
+Deferred.
+
+## In flight — next to lock (design, not built)
+
+> **SUPERSEDED 2026-09-17** for the TYPE-gating bullet — `TYPE` is dropped;
+> validation is **structural** (which downward field is present: `PARENTS` ⇒
+> structure, `MEMBERS` ⇒ grouping), not type-gated. See *Relationship model &
+> type — firmed 2026-09-17*. The array-validation standards below stand.
+
+- **DECLARE format firming.** TYPE gates the REQUIRED downward field: literal ⟹
+  PARENTS (constituents), label ⟹ CHILDREN (members). The other/reciprocal side
+  is manager-computed-**and-stored** (tax paid once), never declared. Base atom
+  = floor exception (literal, no parents, declared seed mass). Plus array
+  validation standards for clean rejection: co-index equal-length arrays
+  (= member count, aligned to the `from` slot), required-by-type present,
+  forbidden-by-type absent, address mode well-formed, nested declares recurse.
+  TYPE-gating and validation apply PER NODE — a typical nested statement mixes
+  literal and label nodes, so both modes are active in most declarations; the
+  checks recurse node by node, not once per statement.
+- **UPDATE sub-ops — FIRMED (2026-09-15), see "UPDATE — record-tier ops"
+  above.** The necessary set is four: MOVE_RECORD and ADD_CONNECTION (arrayable),
+  DELETE_RECORD and DELETE_CONNECTION (single, confirmed, peer-validated,
+  specific-id-only, no wildcards). RETIRE_RECORD is resolved into DELETE_RECORD;
+  No MERGE (forbidden). DEFERRED (bookkeeping, handle later, per
+  Patrick): the notation prose→token_id swap for temporary labels when the
+  naming literal mints. Not a design gap — a bookkeeping item parked on purpose.
+
+## Current build state
+
+- `codec/` — pure address ↔ token_id transforms. Done, validated.
+- `schema/` — hcp3_core backing store, **4 tables** (`token`, `token_parent`,
+  `token_sibling_group`, `token_child`), PK-only indexes. Done, validated.
+  (`token_forwarding` and `address_classification` removed: forwarding is
+  forced equivalence; classification was LLM-manipulation scaffolding, not on
+  the code path.) **REBASE 2026-09-17 (to build):** drop `token_sibling_group`
+  and the `token.type` column; add `members` + `member_of` (the membership
+  reciprocal). New store = `token`, `token_parent`, `token_child`, `members`,
+  `member_of`. See *Relationship model & type — firmed 2026-09-17*.
+- `controller/` — the single door over libpq: only-follow reads,
+  see-mint-link-wire writes, `token_child` reverse wiring. `resolve`/`fold`
+  removed. Tests green.
+- `ingestion/` — path A entry (`dbk::Ingestor` over the controller): use a
+  valid+unoccupied provisional address, else an **inert** `extrapolate_address`
+  hook (assigns nothing, point reported un-ingested — never force-fit). Address
+  determination isolated behind one seam for the relative rules to slot into.
+  Tests green.
+- `ingestion/db_runtime` — the persistent verb-dispatch runtime (one
+  Controller/Ingestor on live hcp3_core; reads requests from stdin one-per-line;
+  dispatches on the leading VERB). DECLARE_RECORD and READ_RECORD are wired
+  through the door; UPDATE_RECORD / RECONCILE / UPDATE_CACHE / REBASE_CACHE are
+  non-fatal stubs. This is the dispatcher behind the "*Functional*" DECLARE/READ
+  verbs — "Functional" = the dispatch path exists and works today, while the
+  firmed intake formula, notation-derivation and cache-shaping are design ahead
+  of it.
+
+## Open decisions (Patrick's)
+
+- **Next-slot mechanism** (only-follow-safe): analyst supplies the trunk's
+  starting address (deterministic sequential fill) **or** each trunk carries a
+  next-free cursor the controller follows and advances.
+- **Block boundaries past "hex couplets"** — whether the next encoded set is 3
+  or 4 couplets (trunk map extends when decided).
+- **Input shape for ingestion** — keep the in-process `dbk::DataPoint` struct,
+  or add an external file/wire presentation (and what shape).
+- **Re-validate** the changed schema/controller pieces, and **commit** the set.
+
+## Handoff — staged implementation (for the next context)
+
+This document is the FULL reference; read it end to end. Mission of the next
+context: turn the firmed design into a **staged implementation plan for Sonnet
+agents, each stage under adversarial review** (the same completeness-gated
+adversarial discipline just applied to these notes — complete review required,
+no summarization accepted, completeness interrogated, partial/lumped returns
+refused).
+
+**Firmed and ready to build (the record tier):**
+
+> **REBASED 2026-09-17** — the type/membership model changed: `TYPE` dropped
+> (emergent, LoD-relative); membership is `members`/`member_of`, structure is
+> `parent`/`child`; schema restructures (drop `token_sibling_group` + `token.type`,
+> add `members`/`member_of`). Read this list through *Relationship model & type —
+> firmed 2026-09-17*: "label dual" ⇒ the grouping read; "MEMBER_OF" is the
+> membership pair; "label CHILDREN" ⇒ `MEMBERS`.
+
+- Address/codec + 4-table schema + controller door + path-A ingestion + the
+  `db_runtime` verb dispatcher already exist (see Current build state).
+- DECLARE — the literal intake formula (member array = PARENTS sets N; ADDRESS
+  span alphabet; NOTATION positional-partial; MEMBER_OF; grouping-by-nesting)
+  and its label dual (mirror; grounding rule; label has no own address).
+- READ — anchor, optional-direction/radial-default, depth (LoD), exclusions
+  (named-branch only), cache-shaped mode; linearized once-per-path return.
+- UPDATE — the four ops: MOVE_RECORD, ADD_CONNECTION (arrayable), DELETE_RECORD,
+  DELETE_CONNECTION (single, confirmed, peer-validated, specific-id, no wildcard).
+- Arraying is universal across the record tier (serial, ordered).
+
+**Deferred — do NOT block the staged build, do NOT invent resolutions.** Patrick
+indicates these are covered in prior contexts / the graph; validate there rather
+than guess. Flagged by the 2026-09-15 adversarial review of these notes:
+- **Mass model** — sum vs centroid for label mass (the notes use "centroid" for
+  what they example as a sum); which mass is stored when one token_id is both a
+  label and its naming literal (two values, one slot); nested aggregation
+  (recurse-to-leaf vs sum-stored, double-counting); `0x` = 0 vs undefined. The
+  record tier does not depend on these: the analyst declares NO mass; the stored
+  mass is a maintained aggregate column filled by the deferred workstream, so the
+  exact aggregation rule is a later stage.
+- **Identity vs relocation (#1/#2)** — one authored statement of what persists
+  across a MOVE and what "address IS identity" precisely means. MOVE is
+  implementable as a pointer/re-key regardless of the prose wording; the wording
+  is Patrick's to settle.
+- **Group/boundary senses (#23)** — emergent kind-partition (sparsity) vs stored
+  membership (`members`/`member_of`) vs the trunk-map boundary; distinguish in prose, not a
+  real contradiction. Confirm with Patrick before rewording.
+
+**Cache tier** (RECONCILE, UPDATE_CACHE, REBASE_CACHE) — defined, deferred; a
+late stage, after the record tier is solid.
