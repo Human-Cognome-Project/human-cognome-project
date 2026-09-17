@@ -138,14 +138,18 @@ seed floor is the only declared mass (`0x` = 0/undefined; the 16 hex atoms = 1).
 
 ### I.C `READ_RECORD` grammar
 
-- **Anchor** — a single token_id.
+- **Anchor** — a single token_id, or a **terminal wildcard** to read a range /
+  full construct (a nominal, tree-constrained read — see NOTES *Build-phase
+  rulings — firmed 2026-09-17*).
 - **Direction** — optional, default RADIAL; narrowing to the per-axis downward
   reads: **parents** (structure-down), **members** (membership-down), or both,
   with **reverse** selectable as an orientation on those axes (not a peer value).
 - **Depth (by factor)** — the LoD dial; depth 0 = the rolled-up node. Governs
   whether `members` are in scope (terminal/literal reading at coarse LoD,
   expands to the grouping reading deeper — the literal↔label ladder).
-- **Exclusions** — specific token_ids only; no property predicates.
+- **Exclusions** — specific token_ids **or a terminal-wildcard tree region** (a
+  nominal, tree-constrained selection); no property predicates (an unbounded
+  scan). Wildcards are terminal-only, never inline.
 - **Cache-shaped** — named, OPTIONAL; deferred with the cache tier. The face
   names it; the core function is raw-radial only.
 - **Return** — linearized, once-per-path, **no dedup** (repetition + position
@@ -153,22 +157,32 @@ seed floor is the only declared mass (`0x` = 0/undefined; the 16 hex atoms = 1).
 
 ### I.D UPDATE grammar (four ops)
 
-- **`MOVE_RECORD`** — a `from→to` relocation reusing the ADDRESS span grammar.
-  Bookkeeping only: topology invariant (same parents/children/members/member_of);
-  re-key the moved token(s) and cascade-repoint every edge that referenced the old
-  token_id. No edge added/removed. **Ranged / arrayable** — a proposed structural
-  reassignment, reversible (nothing holds addresses; connection is the invariant),
-  so unlike DELETE it is safe to array.
+- **`MOVE_RECORD`** — a `from→to` relocation. `from→to` is the relocation
+  *relationship*, not a command form: **source-selection** and
+  **destination-placement** are distinct ops (NOTES firmed 2026-09-17).
+  - *Source (selection):* explicit token(s), a `FROM..TO` range, or a
+    **terminal-wildcard prefix** selecting a whole trunk/branch — MOVE is the one
+    op whose source may be a wildcard/range (its primary use: bulk correction of a
+    misclassified branch). Only-follow over a contiguous region, not a search.
+  - *Destination (placement):* an ADDRESS span, cover-N with N = the source unit
+    count (all-explicit ⇒ N known ⇒ cover-N at IR; any range/prefix ⇒ deferred).
+  Bookkeeping only: topology invariant; re-key the moved token(s) and
+  cascade-repoint every referencing edge. No edge added/removed. **Ranged /
+  arrayable** — a reversible reassignment, so unlike DELETE it is safe to array.
 - **`ADD_CONNECTION <group> <element...>`** — assert membership: add `>= 1`
   elements as members of the group. Group is the scalar frame (must lead);
   elements are the arrayable side. Each addition is a pair; no connection-kind
   operand (the kind is read from the axis, not stored). Mints nothing (endpoints
-  must pre-exist). Writes the `members`/`member_of` reciprocal. Arrayable.
+  must pre-exist). Writes the `members`/`member_of` reciprocal. Group and/or
+  elements may be a **terminal wildcard/range**, applying either direction (add
+  wildcard-members to a group, or a member to wildcard-groups); the wildcard
+  resolves to its address range at execution (Agent 5). Arrayable.
 - **`DELETE_RECORD`** — remove a whole token. **Single instruction only, never
   arrayed.** Gates: (1) active pre-execution confirmation; (2) validation tags so
   peer instances confirm before it goes systemic. Specific id only, no wildcard.
 - **`DELETE_CONNECTION`** — remove one specific pair; single only; same gates;
-  specific, no wildcard. Removes the named edge **and its stored reciprocal**
+  specific, no wildcard. Targets the **membership axis only** (structure removal
+  is via DELETE_RECORD). Removes the named edge **and its stored reciprocal**
   (both-direction removal), so no reverse edge dangles.
 
 ### I.E `ADDRESS` span expression
@@ -297,12 +311,20 @@ Cache-shaped mode deferred. *Spec:* READ — record-tier exploratory read.
 ### II.5 UPDATE core (four ops)
 
 - **`MOVE_RECORD`** — `rekey` + cascade-repoint across all four relationship
-  stores (all reverses are stored follows, not searches). Ranged/arrayable.
+  stores (all reverses are stored follows, not searches). Ranged/arrayable. For a
+  **wildcard/range source**, resolve it to its occupied token set from the store,
+  then enforce cover-N (destination covers the resolved N) — execution-time. The
+  UPDATE core must **reject** a MOVE destination containing mint-bearing
+  nested-declare or undeclared-hook segments (a relocation mints nothing; the IR
+  shape-check permits them, Agent 5 rejects — the deferred half of adversary F-1).
 - **`ADD_CONNECTION`** — pairwise add via `add_membership` (writes both
-  directions). Arrayable.
+  directions). Arrayable. A **terminal-wildcard** group/elements resolves to its
+  definable address range from the store and enumerates the pairs (either
+  direction — wildcard members into a group, or a member into wildcard groups).
 - **`DELETE_RECORD` / `DELETE_CONNECTION`** — `delete_token` / `delete_pair`
   behind the local active-confirmation gate + tag-carrying shape; specific-id
-  only (no wildcard); non-arrayed; DELETE_CONNECTION removes the reciprocal too.
+  only (no wildcard); non-arrayed; DELETE_CONNECTION removes the reciprocal too
+  and targets the membership axis only (structure removal is via DELETE_RECORD).
 
 > **G7 (open).** The peer-validation / becomes-systemic-on-peer-confirm transport
 > is inherently swarm/multi-instance infra not present (`NOTES.md` UPDATE — DELETE

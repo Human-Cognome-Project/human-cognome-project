@@ -681,6 +681,61 @@ new prospective token; it is the front of the declare loop (READ → prove in si
   is followed) and address-is-identity (same token_id at many positions = one
   identity at many structural points).
 
+### Build-phase rulings — firmed 2026-09-17 (record-tier; wildcards, MOVE, mass)
+
+Rulings made with Patrick during the record-tier build. These GOVERN and are
+recorded here so code traces to spec, not to chat.
+
+**Wildcards are TERMINAL ONLY — no inline wildcards.** A wildcard is a partial
+*trailing* address element (the codec's partial element, e.g. `A*`), naming a
+contiguous trunk/subtree region. A wildcard may only be the last element; an
+inline (non-terminal) wildcard is invalid. (Consistent with the codec: a partial
+element is valid only as an address's last element.)
+
+**MOVE — "from→to" is the relocation RELATIONSHIP, not a command form.** The
+"range from→to relocation" wording conveys the source→destination relationship;
+**source-selection and destination-placement are DISTINCT operations** that read
+naturally as from→to:
+- **Source (a selection op):** explicit token(s), a `FROM..TO` range, or a
+  **terminal-wildcard prefix** selecting a whole trunk/branch (MOVE's primary use:
+  bulk correction of a misclassified branch). Only-follow — a prefix/range names a
+  contiguous addressed region, *walked*, not predicate-searched. A wildcard/range
+  source's unit count N is store-resolved (execution-time).
+- **Destination (a placement op):** an ADDRESS span; cover-N with N = the source
+  unit count. All-explicit source ⇒ N known ⇒ cover-N at IR; any range/prefix
+  source ⇒ N store-dependent ⇒ cover-N deferred to the UPDATE core.
+
+**READ — terminal wildcards permitted (nominal, tree-constrained).** The anchor
+and exclusions MAY be terminal wildcards: an analyst reading a range of tokens (a
+full construct) selects a contiguous tree region. This is a **nominal** search —
+constrained to walk connected factors, results computed *under a tree* — and is
+permitted, distinct from the forbidden arbitrary property-predicate (an unbounded
+scan). This refines the earlier "exclusions = specific token_ids only": specific
+token_ids OR a terminal-wildcard tree region; never a property predicate.
+
+**ADD_CONNECTION — terminal wildcards, either side.** The group and/or the
+elements may be a terminal wildcard/range, applying in either direction: "add all
+[wildcard-selected members] to this group," or "add this member to all
+[wildcard-selected groups]." Example: the `01` hex couplet and its translation
+across tables — the tables occupy a definable address range, so one statement with
+the right terminal wildcard sums them. Endpoints still must pre-exist; the wildcard
+resolves to the definable address range at execution (UPDATE core), which
+enumerates the pairs.
+
+**DELETE (RECORD / CONNECTION) — explicit only, no wildcards.** Unchanged stated
+hard rule: specific ids/pairs only (the destructive gate). DELETE_CONNECTION
+targets the **membership axis only**; structure removal is via DELETE_RECORD
+(whole-record deletion) — a constituent is not surgically removed from a
+composition. [d2]
+
+**Mass — why none is declared.** An analyst-asserted mass would have to be
+validated against the asserted parents anyway (i.e. recomputed), so passing it is
+redundant work on both sides of the transaction. The analyst computes mass in its
+model but transmits nothing; the store derives-and-stores it (blank at declare,
+filled by the pending-work workstream). The ONLY declared masses are the seed
+floor (16 hex atoms = 1, `0x` = 0/undefined), inserted manually via `mint`'s
+optional mass parameter — a bootstrap channel, NOT the DECLARE verb.
+
 ### Cache tier — loosely defined, deferred (2026-09-15)
 
 Touched only enough to define and defer; mechanisms not built. Axis between the
