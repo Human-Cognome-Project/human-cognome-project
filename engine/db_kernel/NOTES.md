@@ -720,6 +720,34 @@ mixed node (a naming-literal mint is a single literal, N=1); an ADDRESS-span
 nested-declare colliding with a slot's own PARENTS composition (would silently
 drop that slot's constituents).
 
+**Address column collation (firmed 2026-09-18) — `COLLATE "C"` on the `text[]`
+address columns.** `token_id` and the FK address columns (`parent_token_id`,
+`child_token_id`, `member_token_id`, `group_token_id`) are pinned `COLLATE "C"` so
+element comparison is **byte order = `codec::kAlphabet`'s order** (A–N,P–Z,a–n,
+p–z). Without the pin the columns inherit the DB default collation
+(case-interleaved, `aAbB…`), so the PK btree order does NOT match address order —
+a contiguous trunk is NOT a contiguous PK range, breaking gather / ranges /
+sequential fill (a bare range scan silently drops members; a query-side
+`COLLATE "C"` degrades to a full index walk, the forbidden search cost). This is a
+**pure collation pin, not an alphabet change** (byte order already equals the
+codec's documented order) and it **preserves the arrayed `text[]` storage** —
+chosen for address compression and to avoid re-parsing a dot-joined string on
+every action — changing only sort order. Equality / point reads are unaffected
+(collation-independent); ordered ranges now ride a genuine bounded PK `Index
+Cond`. Prerequisite for the gather primitive.
+
+**Gather primitive (firmed 2026-09-18) — the terminal-wildcard / range
+enumerator.** Resolving a terminal-wildcard prefix or a `FROM..TO` range to the
+*existing* tokens it covers (MOVE's bulk source, ADD_CONNECTION's wildcard
+expansion, READ's wildcard anchor) is a **GATHER**, realized as a **PK range scan
+on `token_id`**: the fixed prefix (or the range bounds) delimits a *contiguous*
+interval in the PK's btree order, which is walked on the PK index. This is
+only-follow — walking a contiguous key range on the existing PK — NOT a
+reverse-search: no new/secondary index, no sequence scan, no predicate on a
+non-key column. It is independent of G4/G5 (it *enumerates* existing tokens; it
+does not *place* new ones). It is a new door **read** primitive; the execution-time
+wildcard resolution in the UPDATE/READ cores runs over it.
+
 **MOVE — "from→to" is the relocation RELATIONSHIP, not a command form.** The
 "range from→to relocation" wording conveys the source→destination relationship;
 **source-selection and destination-placement are DISTINCT operations** that read
@@ -755,6 +783,19 @@ hard rule: specific ids/pairs only (the destructive gate). DELETE_CONNECTION
 targets the **membership axis only**; structure removal is via DELETE_RECORD
 (whole-record deletion) — a constituent is not surgically removed from a
 composition. [d2]
+
+**DELETE gates (firmed 2026-09-18): local FULL validation + local execution now;
+peer/cross-network validation deferred to WAL management.** The local active
+confirmation is a **full, specific-target validation** — the op echoes the exact
+thing to be deleted ("did you mean to delete this specific thing?") and requires
+explicit confirmation of THAT target before it executes; never a
+bare/fire-and-forget delete, never a blanket confirm flag. It then executes
+LOCALLY against the store. The peer / cross-network validation path
+(tentative→systemic across instances) is NOT built at the record tier — it is
+captured under **WAL management**, the project's work scheduler AND cross-network
+validation protocol: the delete commits to the WAL, and the WAL consumer runs the
+cross-network validation. (This resolves the old G7 delete-peer-validation seam.)
+No local validation-tag machinery is built now.
 
 **Mass — why none is declared.** An analyst-asserted mass would have to be
 validated against the asserted parents anyway (i.e. recomputed), so passing it is

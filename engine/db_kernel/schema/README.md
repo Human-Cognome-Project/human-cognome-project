@@ -53,6 +53,46 @@ A second column, `token.token_text`, holds a dot-joined rendering (e.g.
 by the loading layer, not a SQL-generated column — derivation logic stays
 out of the schema, per the "no clever triggers/functions" constraint.
 
+## Address column collation
+
+Firmed 2026-09-18. Every `text[]` **address** column — `token.token_id` (the
+PK) and the four FK columns that reference it (`token_parent.token_id`,
+`token_parent.parent_token_id`, `token_child.token_id`,
+`token_child.child_token_id`, `members.token_id`, `members.member_token_id`,
+`member_of.token_id`, `member_of.group_token_id`) — is declared
+`COLLATE "C"`.
+
+**Why.** `text[]` element comparison uses the array element type's
+collation. Left unpinned, these columns inherit the database's default
+collation (here `en_US.UTF-8`), which orders **case-interleaved**
+(`aAbB…`). `codec::kAlphabet`'s order (`A-Z` minus `O`, then `a-z` minus
+`o` — i.e. `A-N,P-Z,a-n,p-z`) IS plain byte order. So under the default
+collation the PK btree's sort order does **not** match address order: a
+contiguous trunk (a terminal-wildcard prefix, or a `FROM..TO` range) is
+**not** a contiguous PK range. That breaks every operation that depends on
+walking a trunk as one bounded key interval — the **gather** primitive
+(the terminal-wildcard / range enumerator backing `MOVE`'s bulk source,
+`ADD_CONNECTION`'s wildcard expansion, and `READ`'s wildcard anchor), and
+sequential fill. A bare range scan under the wrong collation silently
+drops members that sort out of the assumed contiguous window; a
+query-side `COLLATE "C"` override on an unpinned column still works but
+degrades planning to a full index walk — the reverse-search cost this
+schema forbids. Pinning the column itself is what turns the range into a
+genuine, planner-recognized **Index Cond** bounded scan on the PK.
+
+This is a **pure collation pin, not an alphabet change**: byte order
+already equals the codec's documented order, so no character or ordering
+semantics change, only which collation the comparison operators use.
+**Equality / point reads are unaffected** — collation only governs
+ordering (`<`, `<=`, `>`, `>=`, `ORDER BY`, btree range scans), never `=`.
+The arrayed `text[]` storage itself is unchanged (still chosen for address
+compression and to avoid re-parsing a dot-joined string on every action).
+
+`token.token_text` (the dot-joined human/debug rendering) is deliberately
+**left on the database default collation** — it is plain text, not an
+address column: nothing compares, ranges, or keys on it, so there is
+nothing for the pin to fix.
+
 ## Alphabet / couplet encoding
 
 Base-50 alphabet: `A-Z`, `a-z` (52 chars) minus `o` and `O` → 50 chars. Each

@@ -97,7 +97,7 @@ ORDER BY kcu.column_name;
 
 -- Expect 0 rows: no secondary index on parent_token_id. Reverse lookups
 -- go through the stored token_child table (section 6), never through a
--- reverse-search index on token_parent — see section 8 for the blanket
+-- reverse-search index on token_parent — see section 9 for the blanket
 -- "PK indexes only" assertion across all five tables.
 SELECT indexname, indexdef
 FROM pg_indexes
@@ -220,7 +220,52 @@ WHERE trigger_schema = 'public'
 
 
 -- ============================================================================
--- 8. PK indexes only — no reverse-search indexes anywhere in the schema.
+-- 8. Address columns carry COLLATE "C" (firmed 2026-09-18).
+-- ============================================================================
+-- Every text[] ADDRESS column (the PK and its four FK counterparts) must be
+-- pinned COLLATE "C" so element comparison is byte order = codec::kAlphabet's
+-- documented order (A-N,P-Z,a-n,p-z); PK btree order must equal address
+-- order for a contiguous trunk/range to be a contiguous PK range (the
+-- gather primitive's prerequisite). Expect exactly these 9 rows, all
+-- collname 'C':
+--   member_of    | token_id        | C
+--   member_of    | group_token_id  | C
+--   members      | token_id        | C
+--   members      | member_token_id | C
+--   token        | token_id        | C
+--   token_child  | token_id        | C
+--   token_child  | child_token_id  | C
+--   token_parent | token_id        | C
+--   token_parent | parent_token_id | C
+SELECT c.relname AS table_name, a.attname AS column_name, coll.collname
+FROM pg_attribute a
+JOIN pg_class c ON c.oid = a.attrelid
+JOIN pg_namespace n ON n.oid = c.relnamespace
+JOIN pg_collation coll ON coll.oid = a.attcollation
+WHERE n.nspname = 'public'
+  AND c.relname IN ('token', 'token_parent', 'token_child', 'members', 'member_of')
+  AND a.attnum > 0 AND NOT a.attisdropped
+  AND a.attname IN (
+      'token_id', 'parent_token_id', 'child_token_id',
+      'member_token_id', 'group_token_id'
+  )
+ORDER BY c.relname, a.attname;
+
+-- Expect 0 rows: token_text is plain debug text, never an address column
+-- (not compared/ranged/keyed on) — deliberately left on the database
+-- default collation, NOT pinned to "C". This query fails (returns a row)
+-- if token_text is ever mistakenly given a non-default collation.
+SELECT c.relname, a.attname, coll.collname
+FROM pg_attribute a
+JOIN pg_class c ON c.oid = a.attrelid
+JOIN pg_namespace n ON n.oid = c.relnamespace
+JOIN pg_collation coll ON coll.oid = a.attcollation
+WHERE n.nspname = 'public' AND c.relname = 'token' AND a.attname = 'token_text'
+  AND coll.collname <> 'default';
+
+
+-- ============================================================================
+-- 9. PK indexes only — no reverse-search indexes anywhere in the schema.
 -- ============================================================================
 -- The CPU only follows stored lists, it never searches; the only allowed
 -- indexes are the PK indexes needed to resolve a direct address. Expect

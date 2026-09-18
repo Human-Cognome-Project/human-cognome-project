@@ -41,7 +41,7 @@ Concrete checks to run after applying `schema.sql`, using `verify.sql`
    - PRIMARY KEY is `(token_id, member_token_id)`.
    - Exactly 2 FOREIGN KEYs, both to `token(token_id)`.
    - One-level arrayed follow keyed on the leading column (`token_id`); PK
-     index only, no secondary index (covered by check 8).
+     index only, no secondary index (covered by check 9).
 
 5. **`member_of` shape** (membership, upward: the groups a token joins).
    - 2 columns: `token_id`, `group_token_id` (arrays, NOT NULL). No mass
@@ -64,7 +64,21 @@ Concrete checks to run after applying `schema.sql`, using `verify.sql`
 7. **No triggers/functions.** Query 7 returns 0 rows across all five
    objects — confirms no logic snuck into the schema layer.
 
-8. **PK indexes only.** Query 8 lists every index across all five tables;
+8. **Address columns carry `COLLATE "C"` (firmed 2026-09-18).** Query 8's
+   first check returns exactly 9 rows, ALL `collname` = `C`:
+   `token.token_id`, `token_parent.token_id`, `token_parent.parent_token_id`,
+   `token_child.token_id`, `token_child.child_token_id`, `members.token_id`,
+   `members.member_token_id`, `member_of.token_id`,
+   `member_of.group_token_id`. This is the fix for the case-interleaved
+   default collation (e.g. `en_US.UTF-8`) not matching
+   `codec::kAlphabet`'s byte order — without it the PK btree order does not
+   equal address order, so a contiguous trunk is not a contiguous PK range
+   (gather/range queries silently drop members or degrade to a full index
+   walk). The second check (`token_text`, database default collation)
+   returns 0 rows — `token_text` is plain debug text, not an address
+   column, and must stay on the default collation, never pinned to `"C"`.
+
+9. **PK indexes only.** Query 9 lists every index across all five tables;
    every `indexname` must end in `_pkey`. In particular, confirm
    `token_parent_parent_token_id_idx` does NOT appear, and neither
    `members` nor `member_of` carries any index beyond its own PK — those

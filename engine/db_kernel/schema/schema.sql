@@ -52,6 +52,22 @@
 -- legibility and is populated by the loading layer, not derived in SQL
 -- (see README.md "token_id choice").
 --
+-- COLLATE "C" (firmed 2026-09-18): every text[] ADDRESS column below
+-- (token.token_id and the four FK address columns) is pinned COLLATE "C",
+-- so text[] element comparison is byte order -- which IS the alphabet's
+-- documented order above (A-N,P-Z,a-n,p-z). A pure collation pin, not an
+-- alphabet change: it changes sort/range order only, never equality. This
+-- is what makes the token_id PK's btree order equal address order, so a
+-- contiguous trunk (a terminal-wildcard prefix or a FROM..TO range) is a
+-- contiguous PK range -- the gather primitive's prerequisite. Without it
+-- the columns inherit the database's default collation (case-interleaved,
+-- e.g. en_US.UTF-8's aAbB...), and a bounded range query either silently
+-- drops members (bare range scan under the wrong order) or degrades to a
+-- full index walk (a query-side COLLATE "C" override) -- the forbidden
+-- search cost. `token.token_text` (plain debug text, not an address column,
+-- never compared/ranged/keyed on) is deliberately left on the database
+-- default collation. See README.md "Address column collation".
+--
 -- OPEN TEST SLOT: addresses are conceptually "recorded only as the delta,
 -- the shared prefix assumed by position" (prefix/delta compression against
 -- an implied parent path). This schema stores the FULL address array,
@@ -66,11 +82,24 @@
 CREATE TABLE token (
     -- Canonical identity: the token's address, one base-50 couplet per
     -- array element, outermost-to-innermost. This IS the token_id.
-    token_id        text[]  NOT NULL PRIMARY KEY,
+    --
+    -- COLLATE "C" (firmed 2026-09-18): pins element comparison to byte
+    -- order, which IS codec::kAlphabet's documented order (A-N,P-Z,a-n,
+    -- p-z). Without this pin the column inherits the database's default
+    -- collation (here en_US.UTF-8, case-interleaved: aAbB...), so the PK
+    -- btree order would NOT match address order and a contiguous trunk
+    -- would NOT be a contiguous PK range -- breaking gather / bounded
+    -- range scans / sequential fill. See README.md "Address column
+    -- collation" and NOTES.md "Address column collation (firmed
+    -- 2026-09-18)". Equality/point reads are unaffected (collation only
+    -- changes ORDER BY / range comparison, never equality).
+    token_id        text[] COLLATE "C" NOT NULL PRIMARY KEY,
 
     -- Human/debug rendering of token_id (e.g. 'AA.AA.AA.AA.AA'), dot-joined.
     -- Populated by the loading layer alongside token_id; not a generated
-    -- column, so no derivation logic lives in this schema.
+    -- column, so no derivation logic lives in this schema. Plain text, not
+    -- an address column (not compared/ranged/keyed on), so it is left on
+    -- the database default collation -- see README.md.
     token_text      text,
 
     -- TEMPORARY. Best-effort human-readable surface form of what this
@@ -113,7 +142,9 @@ COMMENT ON COLUMN token.mass IS
 -- ----------------------------------------------------------------------------
 CREATE TABLE token_parent (
     -- The composite/whole token this row is a constituent of.
-    token_id        text[]  NOT NULL REFERENCES token (token_id),
+    -- COLLATE "C" -- see token.token_id above; both FK columns here must
+    -- carry the same collation as their REFERENCES target.
+    token_id        text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     -- Position of this constituent in token_id's direct sequence.
     -- OPEN TEST SLOT: ordinal base is 0-indexed here as a documented
@@ -122,8 +153,8 @@ CREATE TABLE token_parent (
     -- to 1-based if that is what the producer emits.
     ordinal         integer NOT NULL,
 
-    -- The constituent token_id at this position.
-    parent_token_id text[]  NOT NULL REFERENCES token (token_id),
+    -- The constituent token_id at this position. COLLATE "C" -- see above.
+    parent_token_id text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     -- Mass carried by THIS element/parent at this position (per-element,
     -- not whole-token). Blank at declare time (DECLARE_RECORD carries no
@@ -166,11 +197,12 @@ COMMENT ON COLUMN token_parent.mass IS 'Per-element mass of this parent at this 
 -- ----------------------------------------------------------------------------
 CREATE TABLE token_child (
     -- The token being pointed back to (a parent, from token_parent's
-    -- point of view).
-    token_id       text[] NOT NULL REFERENCES token (token_id),
+    -- point of view). COLLATE "C" -- see token.token_id above.
+    token_id       text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     -- A token that directly lists token_id as one of its parents.
-    child_token_id text[] NOT NULL REFERENCES token (token_id),
+    -- COLLATE "C" -- see above.
+    child_token_id text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     PRIMARY KEY (token_id, child_token_id)
 );
@@ -198,10 +230,11 @@ COMMENT ON COLUMN token_child.child_token_id IS 'A token that directly lists tok
 CREATE TABLE members (
     -- The group token: a grouping's naming-literal token_id (a grouping
     -- has no address of its own — see NOTES.md label-has-no-own-address).
-    token_id        text[]  NOT NULL REFERENCES token (token_id),
+    -- COLLATE "C" -- see token.token_id above.
+    token_id        text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
-    -- A token this group directly contains.
-    member_token_id text[]  NOT NULL REFERENCES token (token_id),
+    -- A token this group directly contains. COLLATE "C" -- see above.
+    member_token_id text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     PRIMARY KEY (token_id, member_token_id)
 );
@@ -220,11 +253,12 @@ COMMENT ON COLUMN members.member_token_id IS 'A token this group directly contai
 -- either one directly, never searching either table.
 -- ----------------------------------------------------------------------------
 CREATE TABLE member_of (
-    -- The member token.
-    token_id       text[] NOT NULL REFERENCES token (token_id),
+    -- The member token. COLLATE "C" -- see token.token_id above.
+    token_id       text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
-    -- A group token_id this token directly belongs to.
-    group_token_id text[] NOT NULL REFERENCES token (token_id),
+    -- A group token_id this token directly belongs to. COLLATE "C" -- see
+    -- above.
+    group_token_id text[] COLLATE "C" NOT NULL REFERENCES token (token_id),
 
     PRIMARY KEY (token_id, group_token_id)
 );

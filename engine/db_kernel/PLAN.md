@@ -250,12 +250,22 @@ spec anchor, and **ships with tests** (project rule: tests on everything).
 
 - **Schema:** drop `token_sibling_group` and `token.type`; add `members` /
   `member_of` (PK-keyed reciprocal, PK-only indexes); `token_parent.mass` →
-  nullable. Net store per §1.
+  nullable. **`COLLATE "C"`** on the `text[]` address columns (`token_id` + the FK
+  columns) so PK/element order = codec byte order — prerequisite for gather/ranges
+  (a pure collation pin; arrayed storage unchanged; equality reads unaffected).
+  Net store per §1.
 - **Door reads:** replace `groups_of` with `members_of(id)` (follow `members`)
   and `member_of(id)` (follow `member_of`); `attributes_of` drops `type`, keeps
   `mass`. Structure reads (`parents_of` / `children_of`) unchanged. Both new reads
   return a **deterministic (sorted) order**, matching `children_of`, so READ
   linearization is stable.
+  - **gather** (new, firmed 2026-09-18) — the terminal-wildcard / `FROM..TO`-range
+    enumerator: a contiguous **PK range scan on `token_id`** returning the existing
+    tokens under a prefix or in a range, in PK order. Only-follow (walks a
+    contiguous key interval on the existing PK — no new index, no seq scan, no
+    reverse-search). Backs the wildcard/range resolution in the UPDATE and READ
+    cores; independent of G4/G5 (it enumerates existing tokens, does not place new
+    ones).
 - **Door writes:**
   - `mint` — structure only (see-mint-link-wire into `token_parent` /
     `token_child`); drops its `type` parameter and stops writing `token.type`
@@ -323,25 +333,31 @@ Cache-shaped mode deferred. *Spec:* READ — record-tier exploratory read.
 
 - **`MOVE_RECORD`** — `rekey` + cascade-repoint across all four relationship
   stores (all reverses are stored follows, not searches). Ranged/arrayable. For a
-  **wildcard/range source**, resolve it to its occupied token set from the store,
-  then enforce cover-N (destination covers the resolved N) — execution-time. The
-  UPDATE core must **reject** a MOVE destination containing mint-bearing
-  nested-declare or undeclared-hook segments (a relocation mints nothing; the IR
-  shape-check permits them, Agent 5 rejects — the deferred half of adversary F-1).
-- **`ADD_CONNECTION`** — pairwise add via `add_membership` (writes both
-  directions). Arrayable. A **terminal-wildcard** group/elements resolves to its
-  definable address range from the store and enumerates the pairs (either
+  **wildcard/range source**, resolve it via the **gather** primitive (the
+  contiguous PK-range walk, §II.0) to its occupied token set, then enforce cover-N
+  (destination covers the resolved N). The UPDATE core must **reject** a MOVE
+  destination containing mint-bearing nested-declare or undeclared-hook segments
+  (a relocation mints nothing; the IR shape-check permits them, Agent 5 rejects —
+  the deferred half of adversary F-1).
+- **`ADD_CONNECTION`** — pairwise add via `add_membership` (idempotent, both
+  directions). Arrayable. A **terminal-wildcard** group/elements resolves via the
+  **gather** primitive to its address range and enumerates the pairs (either
   direction — wildcard members into a group, or a member into wildcard groups).
 - **`DELETE_RECORD` / `DELETE_CONNECTION`** — `delete_token` / `delete_pair`
-  behind the local active-confirmation gate + tag-carrying shape; specific-id
-  only (no wildcard); non-arrayed; DELETE_CONNECTION removes the reciprocal too
-  and targets the membership axis only (structure removal is via DELETE_RECORD).
+  behind a **full specific-target confirmation**: the op echoes the exact target
+  ("did you mean to delete this specific thing?") and requires confirming THAT
+  target — no bare/fire-and-forget delete, no blanket flag — then executes
+  **locally**. Specific-id only (no wildcard); non-arrayed; DELETE_CONNECTION
+  removes the reciprocal too (door-idempotent) and targets the membership axis
+  only (structure removal is via DELETE_RECORD).
 
-> **G7 (open).** The peer-validation / becomes-systemic-on-peer-confirm transport
-> is inherently swarm/multi-instance infra not present (`NOTES.md` UPDATE — DELETE
-> ops); it is deferred to the swarm layer (Patrick, out-of-band: "verification
-> added to swarm factors later"). The local confirmation gate + tag shape are
-> built now.
+> **G7 — resolved into WAL management (firmed 2026-09-18).** The peer /
+> cross-network validation of a delete (tentative→systemic across instances) is
+> NOT built at the record tier; it is captured under **WAL management** — the
+> project's work scheduler AND cross-network validation protocol: the delete
+> commits to the WAL, and the WAL consumer runs the cross-network validation. The
+> record tier builds only the local full-validation + local execution. No local
+> validation-tag machinery.
 
 > **G10 (open).** `DELETE_RECORD`'s behaviour when the token is still referenced
 > by dependents (the four stores' FKs to `token`) — block / cascade / repoint —
@@ -390,10 +406,12 @@ parallel). No agent depends on an unbuilt capability: the schema/door rebase
 (Agent 1) is the foundation every core sits on, so it leads. **II.6 (synchronous
 reciprocal) is not a separate agent** — it is enforced by `add_membership` writing
 both directions (Agent 1) and by the DECLARE/UPDATE cores calling it synchronously
-(Agents 3, 5). Open seams
-(G4–G7, G10) are external and do not block any in-process core: G4/G5 use the
-analyst-supplied-start form; G6 leaves transport parked behind the IR; G7 builds
-the local gate now; G10 gates DELETE_RECORD to unreferenced tokens until decided.
+(Agents 3, 5). The **gather** primitive (§II.0, firmed 2026-09-18) is a build-1
+door follow-up that Agent 5 (and a READ wildcard-anchor follow-up) build on. Open
+seams: G4/G5 use the analyst-supplied-start form (G4 also gates manager-placed
+mint); G6 leaves transport parked behind the IR; **G7 is resolved into WAL
+management** (local full-validation + local execution now); G10 holds
+DELETE_RECORD to unreferenced tokens (reject-on-referenced) until decided.
 
 ---
 
@@ -422,11 +440,21 @@ the local gate now; G10 gates DELETE_RECORD to unreferenced tokens until decided
 - **G6 — External transport/framing.** Whether/what external wire/file
   presentation for the multi-field/nested/arrayed request. IR + parser designed
   regardless.
-- **G7 — DELETE peer-validation transport.** Swarm systemic-validation channel;
-  local gate + tags built now.
+- **G7 — RESOLVED into WAL management (2026-09-18).** The delete peer /
+  cross-network validation (tentative→systemic) is captured under WAL management
+  (the work scheduler + cross-network validation protocol): the delete commits to
+  the WAL; the WAL consumer validates cross-network. The record tier builds the
+  local full-target confirmation + local execution only — no local tag machinery.
 - **G10 — `DELETE_RECORD` FK-dependent policy.** Block/cascade/repoint on a still
-  referenced token — unspecified in NOTES; flagged, not resolved.
+  referenced token — unspecified in NOTES; flagged, not resolved (held as
+  reject-on-referenced, no invented cascade).
+
+**Resolved (2026-09-18):** the terminal-wildcard / range enumeration for MOVE's
+bulk source, ADD_CONNECTION's wildcard expansion, and READ's wildcard anchor is
+built via the **gather** primitive (§II.0) — a contiguous PK-range walk,
+only-follow. (READ's earlier wildcard-anchor deferral is now fillable over it.)
 
 **Deferred models (named, not designed):** mass aggregation (sum-vs-centroid,
 nested aggregation); notation derivation; prose→token_id swap; extrapolation /
-relative-placement rules.
+relative-placement rules. **Still open:** G4 (next-slot — also gates
+manager-placed mint), G5 (block boundaries), G6 (external transport).
