@@ -43,18 +43,9 @@ struct ReadNode {
 
 enum class ReadStatus {
   // The traversal ran (possibly to an empty result, e.g. a nonexistent
-  // or fully-excluded anchor -- see read_core.cpp).
+  // anchor, a wildcard anchor whose region is empty, or a fully-excluded
+  // anchor -- see read_core.cpp).
   kOk,
-
-  // op.anchor is a terminal wildcard (a partial/prefix address). Reading
-  // FROM a wildcard anchor means resolving it to the set of addresses
-  // actually populated under that prefix in the live store -- there is
-  // no single token row to begin an only-follow walk from, so this is
-  // not a stored-follow operation the way wildcard EXCLUSIONS are (see
-  // README.md). Deferred to the execution layer, consistent with
-  // ADD_CONNECTION/MOVE wildcard-region expansion being deferred to
-  // Agent 5 (PLAN.md II.4/II.5). No nodes are produced.
-  kAnchorWildcardDeferred,
 };
 
 struct ReadResult {
@@ -65,9 +56,15 @@ struct ReadResult {
 // Executes op's raw-radial read against ctl. The caller is responsible
 // for having already run op through command::validate_read(op) --
 // this function assumes a structurally valid ReadRecord and does not
-// re-check codec address well-formedness; it only decides, and acts on,
-// the one open case (a wildcard anchor) that validate_read deliberately
-// leaves unresolved (see command/README.md).
+// re-check codec address well-formedness.
+//
+// A terminal-wildcard anchor (op.anchor's last element partial) is
+// resolved via ctl.gather(op.anchor) -- the door's contiguous PK-range
+// walk -- to the existing tokens under that prefix (NOTES.md "Gather
+// primitive" / "READ -- terminal wildcards permitted"), and each
+// resolved token is then read exactly as a concrete anchor would be, in
+// gather's PK/address order, concatenated into one linearized,
+// once-per-path, no-dedup return (see read_core.cpp).
 ReadResult read(dbk::Controller &ctl, const command::ReadRecord &op);
 
 }  // namespace dbread

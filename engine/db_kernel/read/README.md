@@ -7,8 +7,9 @@ exploratory read"). Only-follow traversal from a validated
 Pure execution layer: standard library, the codec, `command/` (the IR)
 and `controller/` (the door) only. It adds no storage access of its own
 beyond what the controller already exposes (`parents_of` / `children_of`
-/ `members_of` / `member_of`, called once per node visited); it does not
-modify `command/` or `controller/`.
+/ `members_of` / `member_of`, and -- for a terminal-wildcard anchor --
+`gather`, each called once per node/region visited); it does not modify
+`command/` or `controller/`.
 
 Cache-shaped mode is out of scope regardless of `ReadRecord::cache_shaped`
 -- this module always executes the raw-radial (cache-free) core, per
@@ -33,7 +34,7 @@ struct ReadNode {
   ReachedVia via = ReachedVia::kAnchor;
 };
 
-enum class ReadStatus { kOk, kAnchorWildcardDeferred };
+enum class ReadStatus { kOk };
 
 struct ReadResult {
   ReadStatus status = ReadStatus::kOk;
@@ -44,9 +45,9 @@ ReadResult read(dbk::Controller &ctl, const command::ReadRecord &op);
 ```
 
 The caller runs `command::validate_read(op)` first (that step is not
-repeated here); `read()` assumes a structurally valid `ReadRecord` and
-handles the one case validation deliberately leaves open: a wildcard
-anchor (see "Terminal wildcards" below).
+repeated here); `read()` assumes a structurally valid `ReadRecord`,
+including the one case validation deliberately leaves open for this
+module to resolve: a wildcard anchor (see "Terminal wildcards" below).
 
 ## Direction, depth, exclusions, linearization
 
@@ -90,14 +91,14 @@ anchor (see "Terminal wildcards" below).
   walked, unindexed, until the budget ran out, consistent with "no dedup"
   extending to not collapsing a repeat visit either.
 
-## Terminal wildcards: exclusions implemented, anchor deferred
+## Terminal wildcards: anchor and exclusions, both implemented
 
 NOTES.md ("Build-phase rulings -- firmed 2026-09-17") permits READ's
 anchor AND its exclusions to be terminal wildcards, both described as a
 "nominal, tree-constrained" read/selection -- distinct from a forbidden
-arbitrary property-predicate scan. The two cases are NOT equally
-achievable by only-follow, though, and this module treats them
-differently on purpose:
+arbitrary property-predicate scan. The two cases reach that result by
+different mechanisms, because they start from different amounts of
+information:
 
 - **A wildcard exclusion** is checked against nodes the traversal has
   *already reached* by following a stored edge. Testing "does this
@@ -106,23 +107,31 @@ differently on purpose:
   that touches the store beyond the follow that produced the address in
   the first place. This module implements it in full
   (`address_under_prefix` in `read_core.cpp`).
-- **A wildcard anchor** has no node to start from. Resolving it to "the
+- **A wildcard anchor** has no node to start from: resolving it to "the
   contiguous tree region" it names means enumerating which addresses are
-  actually *populated* in the store under that prefix -- there is no
-  follow that does this (the controller's reads all key off an existing
-  token's PK; a partial/prefix address is not a PK any live token row
-  carries) and no edge to walk from nothing. This is the same shape of
-  problem as a `MOVE_RECORD` wildcard/range *source* or an
-  `ADD_CONNECTION` wildcard *group/element* -- both of which PLAN.md
-  explicitly defers to the execution layer (Agent 5), because resolving
-  them needs DB access beyond a single-token-PK follow. Consistent with
-  that precedent, a wildcard anchor here is **not** resolved: `read()`
-  returns `ReadStatus::kAnchorWildcardDeferred` and produces no nodes,
-  rather than inventing a range-scan primitive this module has no licence
-  to add (touching `controller/` is out of this module's scope; even if
-  it weren't, PLAN.md never designs the scan/range-query shape such a
-  primitive would need). This is a STOP-and-report point, not a guess --
-  flagged in the handoff, not resolved here.
+  actually *populated* in the store under that prefix. No plain
+  `parents_of`/`children_of`/`members_of`/`member_of` follow does this
+  (they all key off an existing token's PK, and a partial/prefix address
+  is not a PK any live token row carries), but the controller's **gather**
+  primitive (`Controller::gather(prefix)`, firmed 2026-09-18) does: a
+  contiguous PK-range scan over `token` returning every existing token
+  under that prefix, in PK/address order -- only-follow (a bounded key
+  range on the existing PK), not a reverse-search. `read()` resolves a
+  wildcard anchor by calling `ctl.gather(op.anchor)` once, then running
+  the ordinary raw-radial `visit()` from each resolved token in turn (own
+  depth 0, `ReachedVia::kAnchor`), appending each member's nodes in
+  gather's order. The result is exactly the linearized, once-per-path,
+  no-dedup return the concrete-anchor path already produces, just seeded
+  from several anchors instead of one; nothing is deduplicated across
+  members either, consistent with "no dedup" everywhere else in this
+  module. An empty gathered region (no existing token under the prefix)
+  is a well-formed read of nothing: `ReadStatus::kOk` with an empty
+  `nodes` vector, not a distinct status.
+
+  This was deferred until `gather` existed (there was previously no
+  only-follow way to enumerate an unpopulated prefix); it is filled here
+  now that `gather` is a committed door primitive. `ReadStatus` no longer
+  carries a wildcard-deferral member -- `kOk` is its only value.
 
 ## Decisions made where the spec was silent
 
@@ -164,6 +173,15 @@ Flagged here, not silently assumed:
   separate structure-down follows here too, matching the no-dedup return
   rule rather than collapsing to the parent's distinct-child count (that
   distinctness is a `token_child`/WIRE property, not a READ property).
+- **A wildcard anchor's resolved members are each their own depth-0 root,
+  concatenated in gather's order.** NOTES.md describes the wildcard
+  anchor as reading "a range / full construct," not a single tree with
+  one root; the plain reading is N independent raw-radial reads (one per
+  existing token gather() finds under the prefix), one after another in
+  the order gather returns them (PK/address order), rather than
+  synthesizing a single artificial super-root or renumbering depth across
+  members. Depth, direction and exclusions all apply per member exactly
+  as they would to a concrete single-token anchor.
 
 ## Build and run the tests
 
@@ -191,7 +209,10 @@ vs. a deeper level (the LoD dial); a specific-id exclusion pruning a named
 branch; a terminal-wildcard exclusion pruning the same branch by pure
 prefix comparison; the linearized once-per-path return with a shared node
 (`p1`, reachable through two different composites) recurring at two
-positions, not deduplicated; a nonexistent anchor; and a wildcard anchor
-(asserting the deferral, not a guessed resolution). If no local Postgres
-is reachable it prints a clear message and exits non-zero rather than
-claiming a pass.
+positions, not deduplicated; a nonexistent anchor; a wildcard anchor that
+gathers a trunk and reads each member radially (asserting the linearized
+result over the whole region, including a node shared across members
+recurring per path, not deduplicated); and a wildcard anchor over an
+empty region (asserting `kOk` with no nodes, not a deferred status). If
+no local Postgres is reachable it prints a clear message and exits
+non-zero rather than claiming a pass.

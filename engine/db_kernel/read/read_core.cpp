@@ -18,12 +18,12 @@ bool is_wildcard(const codec::Address &address) {
 // character (the only character a partial element carries).
 //
 // This is a pure comparison between two addresses already in hand -- no
-// store access. That is exactly why wildcard EXCLUSIONS are resolvable
-// here purely by only-follow (every node this predicate is ever run
-// against was already reached by a stored follow; the predicate just
-// decides whether to prune it), while a wildcard ANCHOR is not: there is
-// no node in hand yet to test, and no follow that enumerates "every
-// address stored under this prefix" from nothing (see README.md).
+// store access. Wildcard EXCLUSIONS are resolved this way: every node
+// this predicate is ever run against was already reached by a stored
+// follow, and the predicate just decides whether to prune it. A wildcard
+// ANCHOR is different in kind -- there is no node in hand yet to test --
+// so it is resolved separately, via the door's gather() primitive (see
+// read() below and README.md), not by this comparison.
 bool address_under_prefix(const codec::Address &address,
                            const codec::Address &prefix) {
   if (prefix.empty()) return false;  // malformed prefix; matches nothing.
@@ -138,14 +138,33 @@ void visit(dbk::Controller &ctl, const codec::Address &address, unsigned depth,
 }  // namespace
 
 ReadResult read(dbk::Controller &ctl, const command::ReadRecord &op) {
-  // A wildcard anchor cannot be only-followed (see read_core.h /
-  // README.md) -- deferred, not guessed at.
-  if (is_wildcard(op.anchor)) {
-    return ReadResult{ReadStatus::kAnchorWildcardDeferred, {}};
-  }
-
   ReadResult result;
   result.status = ReadStatus::kOk;
+
+  const std::vector<ReachedVia> follows = active_follows(op.direction);
+
+  // A terminal-wildcard anchor names a tree region, not a single token
+  // (NOTES.md "READ -- terminal wildcards permitted": "a nominal,
+  // tree-constrained read"). It is resolved via the door's gather
+  // primitive -- a contiguous PK-range walk over the EXISTING tokens
+  // under that prefix, in PK/address order (NOTES.md "Gather primitive")
+  // -- and each resolved token is then read exactly as a concrete anchor
+  // is below: its own raw-radial visit(), depth 0 at the resolved token
+  // itself. The overall return is the concatenation of those per-member
+  // reads, in gather's order. This stays linearized, once-per-path,
+  // no-dedup: nothing collapses a node reachable from two different
+  // gathered members, or from the same member via two paths, exactly as
+  // a concrete-anchor read never collapses a repeat (see visit() above).
+  // An empty gathered region (no existing token under the prefix)
+  // produces an empty, still-kOk result -- a well-formed read of nothing,
+  // not an error.
+  if (is_wildcard(op.anchor)) {
+    for (const codec::Address &member : ctl.gather(op.anchor)) {
+      visit(ctl, member, 0, ReachedVia::kAnchor, op.depth, op.exclusions, follows,
+            result.nodes);
+    }
+    return result;
+  }
 
   // A nonexistent anchor simply has nothing to read: the request is
   // well-formed, the traversal runs, and it produces no nodes. Not
@@ -156,7 +175,6 @@ ReadResult read(dbk::Controller &ctl, const command::ReadRecord &op) {
     return result;
   }
 
-  const std::vector<ReachedVia> follows = active_follows(op.direction);
   visit(ctl, op.anchor, 0, ReachedVia::kAnchor, op.depth, op.exclusions, follows,
         result.nodes);
   return result;

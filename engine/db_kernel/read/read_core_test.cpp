@@ -298,12 +298,39 @@ void run_read_core_checks(const std::string &conninfo) {
           "nonexistent anchor: ok status, empty result");
   }
 
-  // --- A wildcard anchor: deferred to the execution layer, not guessed. ---
+  // --- A wildcard anchor: resolved via gather() to the existing tokens
+  //     under the prefix, each then read radially at depth 1, in gather's
+  //     PK/address order. "A*" gathers the three atoms p1=AA, p2=AB,
+  //     p3=AC (AA < AB < AC in COLLATE "C" order). Radially at depth 1,
+  //     each atom's only active follow is children_of (its reverse
+  //     structure edge): children_of(p1) = [c1, c2] (both composites use
+  //     p1); children_of(p2) = [c1]; children_of(p3) = [c2]. c1 therefore
+  //     recurs -- once under p1's own read, again under p2's -- a shared
+  //     node reached via two DIFFERENT gathered anchors, not collapsed,
+  //     exactly as a shared node via two paths under one anchor is not
+  //     collapsed elsewhere in this file. ---
   {
-    const ReadResult r = dbread::read(ctl, make_read(A("A*"), std::nullopt, false, 2));
-    check(r.status == ReadStatus::kAnchorWildcardDeferred,
-          "wildcard anchor: flagged kAnchorWildcardDeferred, not resolved here");
-    check(r.nodes.empty(), "wildcard anchor: no nodes produced");
+    const ReadResult r = dbread::read(ctl, make_read(A("A*"), std::nullopt, false, 1));
+    check(r.status == ReadStatus::kOk, "wildcard anchor: status ok, not deferred");
+    const bool exact = same_sequence(
+        r.nodes,
+        {{p1, 0}, {c1, 1}, {c2, 1}, {p2, 0}, {c1, 1}, {p3, 0}, {c2, 1}},
+        {ReachedVia::kAnchor, ReachedVia::kChild, ReachedVia::kChild,
+         ReachedVia::kAnchor, ReachedVia::kChild, ReachedVia::kAnchor,
+         ReachedVia::kChild});
+    check(exact, "wildcard anchor: gathers the A* trunk (p1, p2, p3) and "
+                 "concatenates each member's own radial read in gather order; "
+                 "c1 recurs across p1's and p2's reads, not deduplicated");
+  }
+
+  // --- A wildcard anchor over an empty region: well-formed, no nodes --
+  //     NOT the removed deferred status. No fixture token starts with
+  //     'Z'. ---
+  {
+    const ReadResult r = dbread::read(ctl, make_read(A("Z*"), std::nullopt, false, 2));
+    check(r.status == ReadStatus::kOk,
+          "wildcard anchor, empty region: status ok (not a deferred/error status)");
+    check(r.nodes.empty(), "wildcard anchor, empty region: no nodes produced");
   }
 }
 
