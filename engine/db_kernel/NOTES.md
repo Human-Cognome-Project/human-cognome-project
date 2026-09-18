@@ -186,6 +186,12 @@ controls the DB) and its primary duty is serving input/output requests. It must
 be complete on its own and may be **detachable to ride with the swarm**;
 whether it is later bundled with other processes is a separate concern.
 
+> **Build status (2026-09-18):** the record tier writes **synchronously** — every
+> reciprocal is written inside the authoring op (`mint`'s WIRE, `add_membership`
+> both directions). The async **file-now / wire-later** split described below is
+> DEFERRED to WAL management (see *Current build state* → Deferred) — design, not
+> built.
+
 Work balancing is **foundational, not deferred** — the temporary Python loader
 is real I/O and must be handled right from the base:
 
@@ -316,6 +322,11 @@ The cache-manager runtime (`db_runtime`) dispatches on a leading verb — the
 Commands can nest (a set contains sub-declares; modes compose) and can drive
 reconciliation patterns. Two tiers, record-level and cache-level:
 
+> **Status note (2026-09-18):** the record-tier verbs (DECLARE_RECORD, READ_RECORD,
+> and the four UPDATE sub-ops) are now **BUILT** — the italic "*Functional*" /
+> "*FIRMED*" tags below predate the build; see *Current build state*. The
+> cache-tier `*Stub*` tags remain correct (dispatch stubs).
+
 - **DECLARE_RECORD** — official addressing: commit a proven-useful particle
   passed down from the analyst's virtual sim into the store. *Functional.* Two
   forms differing by specificity of addressing — a single particle, and a
@@ -412,12 +423,14 @@ edge — the firmed formula's name for what this list earlier called `SIBLINGS`)
   guarantee: the cache manager may override the placement. Today's
   provisional-accept path is this mode without the override.
 - **declare from** — number sequentially from a given point (single or many).
-  The group-at-trunk sequential fill. *To build.*
+  The group-at-trunk sequential fill. *Built (span planner `FROM` + successor);
+  analyst-supplied-start fill, per-trunk-cursor pending the G4 next-slot decision.*
 - **declare after** — begin at the next defined block after a given reference
   (trunk-aligned; honours the gap — finish in `D*`, next starts `E*`). **Firmed
   as `AFTER:b`**: takes an EXPLICIT block `b` as its reference (see the intake
   formula); it does NOT key off cache "current position". Leans on the block/trunk
-  map. *To build.*
+  map. *Built structurally; concrete `AFTER` origin pending G5 (trunk map) —
+  the span planner reports `kPendingSeam` for it.*
 - **undeclared → address from cross-connections** — a particle with no address
   is assigned one derived from its cross-connections. This is the extrapolate
   hook (inert now); exact method TBD.
@@ -841,8 +854,12 @@ two view ops is continuity of basis:
 All cache-tier: global state transitions on the working set, non-arrayable.
 Deferred.
 
-## In flight — next to lock (design, not built)
+## In flight — next to lock — BUILT 2026-09-18
 
+> **EXECUTED 2026-09-18.** DECLARE format and the four UPDATE sub-ops below are
+> BUILT (see *Current build state* — `command/` + `declare/`, `update/`). The text
+> is retained as historical design record; the array-validation standards stand.
+>
 > **SUPERSEDED 2026-09-17** for the TYPE-gating bullet — `TYPE` is dropped;
 > validation is **structural** (which downward field is present: `PARENTS` ⇒
 > structure, `MEMBERS` ⇒ grouping), not type-gated. See *Relationship model &
@@ -923,11 +940,18 @@ derivation; the prose→token_id swap; extrapolation / relative-placement rules.
   next-free cursor the controller follows and advances.
 - **Block boundaries past "hex couplets"** — whether the next encoded set is 3
   or 4 couplets (trunk map extends when decided).
-- **Input shape for ingestion** — keep the in-process `dbk::DataPoint` struct,
-  or add an external file/wire presentation (and what shape).
-- **Re-validate** the changed schema/controller pieces, and **commit** the set.
 
-## Handoff — staged implementation (for the next context)
+*(Resolved 2026-09-18, removed from this list: "Input shape for ingestion" — the
+record-tier surface is the in-process IR (`dispatch/`), external wire deferred to
+G6, and the old `dbk::DataPoint`/path-A is retired; "Re-validate + commit the set"
+— done, re-reviewed per stage and committed through `aefc9e6`.)*
+
+## Handoff — staged implementation (EXECUTED 2026-09-18)
+
+> **EXECUTED 2026-09-18.** This mission is DONE: the staged plan is `PLAN.md`, the
+> Sonnet agents built each stage under adversarial review, and the record tier is
+> COMPLETE and committed (see *Current build state*). The text below is retained
+> as the historical handoff record, not a pending instruction.
 
 This document is the FULL reference; read it end to end. Mission of the next
 context: turn the firmed design into a **staged implementation plan for Sonnet
@@ -945,8 +969,10 @@ refused).
 > firmed 2026-09-17*: "label dual" ⇒ the grouping read; "MEMBER_OF" is the
 > membership pair; "label CHILDREN" ⇒ `MEMBERS`.
 
-- Address/codec + 4-table schema + controller door + path-A ingestion + the
-  `db_runtime` verb dispatcher already exist (see Current build state).
+- Address/codec + schema + controller door existed at handoff. **(Now built out:
+  5-table schema (+`COLLATE "C"`), the full door incl. `gather`, and the
+  DECLARE/READ/UPDATE cores + `dispatch/`; path-A ingestion is RETIRED and the old
+  `db_runtime` flat form superseded by `dispatch/` — see Current build state.)**
 - DECLARE — the literal intake formula (member array = PARENTS sets N; ADDRESS
   span alphabet; NOTATION positional-partial; MEMBER_OF; grouping-by-nesting)
   and its label dual (mirror; grounding rule; label has no own address).
