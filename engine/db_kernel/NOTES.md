@@ -776,7 +776,11 @@ elements may be a terminal wildcard/range, applying in either direction: "add al
 across tables — the tables occupy a definable address range, so one statement with
 the right terminal wildcard sums them. Endpoints still must pre-exist; the wildcard
 resolves to the definable address range at execution (UPDATE core), which
-enumerates the pairs.
+enumerates the pairs. **Both sides wildcard (firmed 2026-09-18): full
+cross-product.** When BOTH the group side and the element side are wildcards, the
+result is the full cross-product — every gathered member joins every gathered group
+(M groups × N members = M×N edges). A legitimate bulk operation (may be helpful in
+some cases); endpoints still pre-exist; idempotent.
 
 **DELETE (RECORD / CONNECTION) — explicit only, no wildcards.** Unchanged stated
 hard rule: specific ids/pairs only (the destructive gate). DELETE_CONNECTION
@@ -804,6 +808,15 @@ model but transmits nothing; the store derives-and-stores it (blank at declare,
 filled by the pending-work workstream). The ONLY declared masses are the seed
 floor (16 hex atoms = 1, `0x` = 0/undefined), inserted manually via `mint`'s
 optional mass parameter — a bootstrap channel, NOT the DECLARE verb.
+
+**Request transport (firmed 2026-09-18) -- external wire deferred; nested/arrayed
+is the intent.** The request was NEVER one-request-per-line -- the nested and
+arrayed nature was intended from the start. The external wire/framing format
+stays deferred (G6). For the record-tier build the verbs are dispatched over the
+in-process IR + arraying executor with a **minimal testable surface**; a real
+external request encoding is a later, focused pass. Bar for this stage: the verbs
+are testable through the dispatch layer. The old `db_runtime` one-request-per-line
+flat form is superseded (it was never the intent).
 
 ### Cache tier — loosely defined, deferred (2026-09-15)
 
@@ -855,31 +868,53 @@ Deferred.
 
 ## Current build state
 
-- `codec/` — pure address ↔ token_id transforms. Done, validated.
-- `schema/` — hcp3_core backing store, **4 tables** (`token`, `token_parent`,
-  `token_sibling_group`, `token_child`), PK-only indexes. Done, validated.
-  (`token_forwarding` and `address_classification` removed: forwarding is
-  forced equivalence; classification was LLM-manipulation scaffolding, not on
-  the code path.) **REBASE 2026-09-17 (to build):** drop `token_sibling_group`
-  and the `token.type` column; add `members` + `member_of` (the membership
-  reciprocal). New store = `token`, `token_parent`, `token_child`, `members`,
-  `member_of`. See *Relationship model & type — firmed 2026-09-17*.
-- `controller/` — the single door over libpq: only-follow reads,
-  see-mint-link-wire writes, `token_child` reverse wiring. `resolve`/`fold`
-  removed. Tests green.
-- `ingestion/` — path A entry (`dbk::Ingestor` over the controller): use a
-  valid+unoccupied provisional address, else an **inert** `extrapolate_address`
-  hook (assigns nothing, point reported un-ingested — never force-fit). Address
-  determination isolated behind one seam for the relative rules to slot into.
-  Tests green.
-- `ingestion/db_runtime` — the persistent verb-dispatch runtime (one
-  Controller/Ingestor on live hcp3_core; reads requests from stdin one-per-line;
-  dispatches on the leading VERB). DECLARE_RECORD and READ_RECORD are wired
-  through the door; UPDATE_RECORD / RECONCILE / UPDATE_CACHE / REBASE_CACHE are
-  non-fatal stubs. This is the dispatcher behind the "*Functional*" DECLARE/READ
-  verbs — "Functional" = the dispatch path exists and works today, while the
-  firmed intake formula, notation-derivation and cache-shaping are design ahead
-  of it.
+**Record tier COMPLETE** (built 2026-09-17/18; each stage built by a Sonnet agent,
+adversary-reviewed to a clean PASS, and lead-confirmed; on branch
+`dbkernel-design-checkpoint`). All modules test green against a live disposable
+`hcp3_core`.
+
+- `codec/` — address ↔ token_id transforms. Done.
+- `schema/` — **5 tables**: `token` (no `type`; `mass` nullable), `token_parent`,
+  `token_child`, `members`, `member_of`. The `text[]` address columns are pinned
+  `COLLATE "C"` so PK order = codec byte order (required for gather/ranges).
+  PK-only indexes; no reverse-search index. Done.
+- `controller/` — the single door: only-follow reads (`token_exists`,
+  `parents_of`, `children_of`, `members_of`, `member_of`, `attributes_of`); writes
+  `mint` (no type; optional mass → SQL NULL), `add_membership` (idempotent, both
+  directions), `rekey` (FK-safe cascade + `token_text` re-derive), `delete_token`,
+  `delete_pair`; and `gather` (contiguous PK-range enumerator for
+  terminal-wildcard / range). Done.
+- `command/` — command IR + structural (no-TYPE) validation + ADDRESS span planner
+  (with a base-50 successor). Done.
+- `declare/` — DECLARE core: literal structure (mint ordered constituents) +
+  grouping (naming literal by use-provided-ID or mint-from-PARENTS), nesting, SEE
+  idempotency; mass blank (pending work); manager-placed mint rejected pending G4.
+  Done.
+- `read/` — READ core: only-follow raw-radial; per-axis (structure vs membership)
+  + reverse; depth/LoD; named + terminal-wildcard-region exclusions; terminal-
+  wildcard anchor via gather; linearized once-per-path, no dedup. Done.
+- `update/` — UPDATE core: MOVE (explicit + gather-resolved wildcard/range,
+  cover-N, rekey cascade, mint-bearing destination rejected), ADD_CONNECTION
+  (idempotent; wildcard either side + M×N cross-product), DELETE_RECORD /
+  DELETE_CONNECTION (full specific-target confirmation + local execution;
+  only-follow reject-on-referenced G10 probe). Done.
+- `dispatch/` — verb dispatch over the in-process IR (routes DECLARE/READ/UPDATE
+  to the cores; RECONCILE/UPDATE_CACHE/REBASE_CACHE stub) + arraying executor
+  (cross-command ordered stream over the four additive verbs; DELETE structurally
+  excluded). Minimal testable surface; external wire deferred (G6). Done.
+- `seed/` — `seed_0x` mints the seed floor (`0x` mass 0 + 16 hex atoms mass 1) via
+  `mint`'s optional-mass bootstrap channel. Done.
+- `ingestion/` — **RETIRED.** The pre-rebase path-A `Ingestor` + one-request-per-
+  line `db_runtime` are superseded by `command/`+`declare/` (intake), `dispatch/`
+  (routing), `seed/` (floor); `ingestion/README.md` is a supersession breadcrumb.
+
+**Deferred (not built; recorded seams):** G4 next-slot mechanism (also gates
+manager-placed mint), G5 block boundaries past hex couplets, G6 external
+transport/wire format; **WAL management** (the work scheduler + cross-network
+validation protocol — carries DELETE peer/cross-network validation and the
+file-now / wire-later pending-work drain); the **cache tier** (RECONCILE /
+UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
+derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 
 ## Open decisions (Patrick's)
 

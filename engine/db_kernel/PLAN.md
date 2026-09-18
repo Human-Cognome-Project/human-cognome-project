@@ -343,6 +343,8 @@ Cache-shaped mode deferred. *Spec:* READ — record-tier exploratory read.
   directions). Arrayable. A **terminal-wildcard** group/elements resolves via the
   **gather** primitive to its address range and enumerates the pairs (either
   direction — wildcard members into a group, or a member into wildcard groups).
+  **Both sides wildcard → full cross-product** (M gathered groups × N gathered
+  members = M×N edges), blessed 2026-09-18 as a legitimate bulk op.
 - **`DELETE_RECORD` / `DELETE_CONNECTION`** — `delete_token` / `delete_pair`
   behind a **full specific-target confirmation**: the op echoes the exact target
   ("did you mean to delete this specific thing?") and requires confirming THAT
@@ -380,9 +382,15 @@ collapse. Additive ops only. *Spec:* Arraying is universal.
 
 ### II.8 Dispatcher wiring
 
-Replace the old flat `DECLARE` arg parse in `db_runtime` with the IR-based
-grammar; wire the `READ` and `UPDATE` cores; cache verbs stay stubs. Preserve the
-one-result-per-request contract; transport framing parked (I.H / G6).
+Wire the record-tier cores behind a **verb dispatch over the in-process IR**
+(nested/arrayed — never one-request-per-line, which is superseded as never the
+intent): DECLARE→declare core, READ→read core, UPDATE ops→update core, all through
+the arraying executor for the additive verbs; cache verbs stay stubs. The external
+wire/framing format is DEFERRED (G6, firmed 2026-09-18) — build only a **minimal
+testable surface**; the bar for this stage is that the verbs are testable through
+the dispatch layer. Also reconcile the pre-rebase entry: rewire `seed/seed_0x.cpp`
+to the rebased door (`mint` optional-mass bootstrap channel) and supersede/rework
+the old flat-form `ingestion/` path that calls the removed door surface.
 
 ---
 
