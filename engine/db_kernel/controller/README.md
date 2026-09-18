@@ -51,6 +51,33 @@ distinct addresses are never bridged to a common token.
 All follows key on the **leading PK column** (`token_id`), so they ride the PK
 index — no secondary/reverse index is touched.
 
+### Gather — the terminal-wildcard / range enumerator (firmed 2026-09-18)
+
+`gather` resolves a terminal-wildcard prefix or a `FROM..TO` range to the
+**existing** tokens it covers (MOVE's bulk source, ADD_CONNECTION's wildcard
+expansion, READ's wildcard anchor — this primitive only enumerates; those
+callers are later modules). Two overloads of the one primitive, both a single
+**bounded `token_id` PK range scan**, riding the `token_pkey` btree (only
+possible because `token_id` is `COLLATE "C"`, pinning PK order to
+`codec::kAlphabet`'s byte order — see `../schema/schema.sql` and
+`../NOTES.md` "Address column collation").
+Only-follow, never search: no new/secondary index, no sequence scan, no
+predicate on a non-key column. Reads `token` only. Returns the matching
+token_ids in deterministic PK (address) order.
+
+| Overload | Form | Bounds |
+|---|---|---|
+| `gather(prefix)` | Terminal-wildcard prefix — `prefix` must end in a partial (`AddressElement::partial`) element | `token_id >= low AND token_id < high` — `low`/`high` are computed from the wildcard's fixed leading elements plus its free couplet's minimum, and the next couplet's minimum (carrying into the leading elements, base-50, when the wildcard's first character is already the alphabet maximum). `high` is open (no upper bound) only for the literal last trunk in the whole address space. |
+| `gather(from, to)` | A `FROM..TO` range — both must be valid, fully-specified (non-partial) addresses | `token_id >= from AND token_id <= to` — inclusive both ends. |
+
+The exclusive high bound in the prefix form also correctly covers addresses
+nested *deeper* under the trunk (a trunk grows deeper — see NOTES.md "Per-kind
+trunk allocation"): array comparison orders a shared prefix's longer extension
+strictly after the point the two arrays first diverge, so no separate handling
+is needed for depth. Both overloads throw `std::runtime_error` on a
+malformed/wrong-shaped argument (a prefix not ending in a partial element; a
+range endpoint that is empty or carries a partial element).
+
 ### Write side — "see-mint-link-wire"
 
 `mint(token_id, notation, constituents, mass)` runs as **one atomic
@@ -179,8 +206,10 @@ or uniquely-named database is used. It never fakes the store:
    idempotent re-mint, fold-and-wire consistency (`token_child` is the exact
    reverse of `token_parent`'s distinct parents), membership reads/writes
    (`add_membership`, `members_of`, `member_of`), the mutation primitives
-   (`rekey`, `delete_token`, `delete_pair`), and the FK-violation rollback
-   path.
+   (`rekey`, `delete_token`, `delete_pair`), `gather` (both overloads,
+   across its ordinary/carry/open-ended bound branches, byte-order
+   correctness, sibling-trunk exclusion, empty regions, and malformed-input
+   rejection), and the FK-violation rollback path.
 
 `controller_advtest.cpp` is a second, adversarial harness over the same
 disposable `hcp3_core`. It targets paths the base harness does not:

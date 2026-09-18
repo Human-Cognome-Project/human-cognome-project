@@ -109,6 +109,35 @@ class Controller {
   // nullopt. Read-back only. No `type`: dropped from the schema.
   std::optional<TokenAttributes> attributes_of(const codec::Address &token_id);
 
+  // ---- Gather: the terminal-wildcard / range enumerator (firmed
+  // 2026-09-18). Only-follow, NOT search: both overloads resolve to a
+  // single contiguous `token_id >= low [AND token_id < / <= high]` scan,
+  // riding the PK btree (COLLATE "C" pins its order to codec::kAlphabet's
+  // byte order, so a contiguous trunk/range IS a contiguous PK range — see
+  // NOTES.md "Address column collation" / "Gather primitive"). Reads
+  // `token` only; does not follow parents/children/members. Returns the
+  // matching EXISTING token_ids in PK (address) order, deterministic. ----
+
+  // Prefix form: `prefix` must be a valid, non-empty address whose LAST
+  // element is a terminal wildcard (codec::AddressElement::partial) —
+  // inline (non-terminal) wildcards are invalid addresses per the codec and
+  // are rejected upstream of this call. Returns every existing token under
+  // that trunk: the fixed leading elements, plus the wildcard's fixed first
+  // character at that position (any second character), plus anything
+  // nested deeper under it (a trunk grows deeper, per NOTES.md "Per-kind
+  // trunk allocation" — the bound accounts for this, it does not assume a
+  // fixed address length). Throws std::runtime_error if `prefix` does not
+  // end in a partial element.
+  std::vector<codec::Address> gather(const codec::Address &prefix);
+
+  // Range form: both `from` and `to` must be valid, fully-specified
+  // (non-partial) addresses. Returns every existing token_id in the
+  // INCLUSIVE interval [from, to] (PK order). Throws std::runtime_error if
+  // either address is empty or carries a partial element. `from > to`
+  // (in PK order) is not an error; it simply matches nothing.
+  std::vector<codec::Address> gather(const codec::Address &from,
+                                      const codec::Address &to);
+
   // ---- Write side: sole owner. ----
 
   // see-mint-link-wire, one atomic transaction (BEGIN/COMMIT, ROLLBACK on

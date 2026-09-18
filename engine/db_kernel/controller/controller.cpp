@@ -53,6 +53,82 @@ codec::Address text_to_address(const std::string &text) {
   return *addr;
 }
 
+// Increments `addr` in place as a base-50 counter over full couplets — the
+// second character increments fastest, carrying into the first character,
+// then carrying left into the preceding element — used only to compute
+// gather's exclusive upper bound (a private implementation detail of this
+// primitive, not a general span-arithmetic export; the span planner's own
+// address-successor helper, per PLAN.md II.2, is a separate later module).
+// Every element touched must already be full (non-partial); gather never
+// calls this on a wildcard element itself. Returns false if every element
+// was already at the alphabet's maximum, i.e. `addr` has no successor —
+// gather leaves its upper bound open in that case (there is nothing
+// addressable beyond it).
+bool increment_full_address(codec::Address &addr) {
+  for (std::size_t i = addr.size(); i-- > 0;) {
+    codec::AddressElement &e = addr[i];
+    if (e.second + 1 < codec::kAlphabetSize) {
+      ++e.second;
+      return true;
+    }
+    e.second = 0;
+    if (e.first + 1 < codec::kAlphabetSize) {
+      ++e.first;
+      return true;
+    }
+    e.first = 0;
+    // This element wrapped to its minimum; carry into the element to the
+    // left (the loop continues) or, if this was the leftmost, overflow.
+  }
+  return false;
+}
+
+// The [low, high) bounds for a gather() over a terminal-wildcard address.
+// `high` is nullopt when the wildcard's trunk is the last one reachable
+// (no successor exists) — gather then leaves the range open-ended.
+struct WildcardBounds {
+  codec::Address low;
+  std::optional<codec::Address> high;
+};
+
+// `w` must be a valid, non-empty address whose last element is partial
+// (checked by the caller). `low` is the smallest full address the trunk
+// contains: the fixed leading elements plus a full couplet built from the
+// wildcard's fixed first character and the alphabet's minimum second
+// character. `high`, when present, is the smallest full address of the
+// NEXT trunk at the same position — exclusive, and it also bounds every
+// address nested deeper under this trunk, because array comparison orders
+// a shared prefix's longer extension strictly after the point the two
+// arrays first diverge (see NOTES.md "Gather primitive"). When the
+// wildcard's first character is already the alphabet's last, the next
+// trunk carries into the fixed leading elements (incremented as a base-50
+// counter); if those are exhausted too (or the wildcard has no leading
+// elements at all), there is no trunk above this one and the range is left
+// open (`high` stays nullopt).
+WildcardBounds wildcard_bounds(const codec::Address &w) {
+  WildcardBounds b;
+  const codec::AddressElement &last = w.back();
+
+  b.low.assign(w.begin(), w.end() - 1);
+  b.low.push_back(codec::AddressElement{last.first, 0, false});
+
+  if (last.first + 1 < codec::kAlphabetSize) {
+    codec::Address high(w.begin(), w.end() - 1);
+    high.push_back(codec::AddressElement{static_cast<uint8_t>(last.first + 1), 0, false});
+    b.high = std::move(high);
+  } else if (w.size() > 1) {
+    codec::Address prefix(w.begin(), w.end() - 1);
+    if (increment_full_address(prefix)) {
+      b.high = std::move(prefix);
+    }
+    // else: the leading elements are also exhausted -> open-ended.
+  }
+  // else: no leading elements and the wildcard's first char is already the
+  // alphabet's last -> this is the very last trunk in the address space,
+  // open-ended.
+  return b;
+}
+
 }  // namespace
 
 Controller::Controller(const std::string &conninfo) : conn_(nullptr) {
@@ -201,6 +277,77 @@ std::optional<TokenAttributes> Controller::attributes_of(
       attrs.mass = std::stoi(PQgetvalue(res, 0, 1));
     }
     out = std::move(attrs);
+  }
+  PQclear(res);
+  return out;
+}
+
+std::vector<codec::Address> Controller::gather(const codec::Address &prefix) {
+  if (!codec::is_valid_address(prefix) || prefix.empty() || !prefix.back().partial) {
+    throw std::runtime_error(
+        "gather: prefix must be a valid, non-empty terminal-wildcard address");
+  }
+  const WildcardBounds bounds = wildcard_bounds(prefix);
+  const std::string low_arr = address_to_pg_array(bounds.low);
+
+  PGresult *res;
+  std::string high_arr;  // kept alive across the run() call below
+  if (bounds.high.has_value()) {
+    high_arr = address_to_pg_array(*bounds.high);
+    res = run(conn_,
+              "SELECT array_to_string(token_id, '.') FROM token "
+              "WHERE token_id >= $1::text[] AND token_id < $2::text[] "
+              "ORDER BY token_id",
+              {low_arr.c_str(), high_arr.c_str()});
+  } else {
+    res = run(conn_,
+              "SELECT array_to_string(token_id, '.') FROM token "
+              "WHERE token_id >= $1::text[] "
+              "ORDER BY token_id",
+              {low_arr.c_str()});
+  }
+  std::vector<codec::Address> out;
+  const int n = PQntuples(res);
+  out.reserve(static_cast<std::size_t>(n));
+  for (int i = 0; i < n; ++i) {
+    out.push_back(text_to_address(PQgetvalue(res, i, 0)));
+  }
+  PQclear(res);
+  return out;
+}
+
+std::vector<codec::Address> Controller::gather(const codec::Address &from,
+                                               const codec::Address &to) {
+  const auto is_full = [](const codec::Address &a) {
+    if (!codec::is_valid_address(a) || a.empty()) {
+      return false;
+    }
+    for (const codec::AddressElement &e : a) {
+      if (e.partial) {
+        return false;
+      }
+    }
+    return true;
+  };
+  if (!is_full(from)) {
+    throw std::runtime_error("gather: from must be a valid, fully-specified address");
+  }
+  if (!is_full(to)) {
+    throw std::runtime_error("gather: to must be a valid, fully-specified address");
+  }
+
+  const std::string from_arr = address_to_pg_array(from);
+  const std::string to_arr = address_to_pg_array(to);
+  PGresult *res = run(conn_,
+                      "SELECT array_to_string(token_id, '.') FROM token "
+                      "WHERE token_id >= $1::text[] AND token_id <= $2::text[] "
+                      "ORDER BY token_id",
+                      {from_arr.c_str(), to_arr.c_str()});
+  std::vector<codec::Address> out;
+  const int n = PQntuples(res);
+  out.reserve(static_cast<std::size_t>(n));
+  for (int i = 0; i < n; ++i) {
+    out.push_back(text_to_address(PQgetvalue(res, i, 0)));
   }
   PQclear(res);
   return out;

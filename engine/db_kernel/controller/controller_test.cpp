@@ -363,6 +363,150 @@ void run_controller_checks(const std::string &conninfo) {
     check(!ctl.token_exists(lonely), "delete_token: token removed");
   }
 
+  // --- gather: the terminal-wildcard / range enumerator (firmed
+  //     2026-09-18). Fresh, unused trunk (E) so results are exact and
+  //     unaffected by tokens minted earlier in this run. ---
+  {
+    const Address e_a = A("EA");
+    const Address e_z = A("EZ");         // uppercase-second couplet
+    const Address e_b = A("Eb");         // lowercase-second couplet
+    const Address e_c_deep = A("EC.AA"); // a deeper address nested under trunk E
+    const Address f_a = A("FA");         // sibling trunk — must never appear
+    ctl.mint(e_a, "e-a", {});
+    ctl.mint(e_z, "e-z", {});
+    ctl.mint(e_b, "e-b", {});
+    ctl.mint(e_c_deep, "e-c-deep", {});
+    ctl.mint(f_a, "f-a", {});
+
+    // Prefix form: gather("E*") == every token under trunk E, PK order,
+    // including the deeper EC.AA address (a trunk grows deeper — it is not
+    // bounded to one couplet), and correctly ordering EZ before Eb (the
+    // exact case the pre-collation-fix PK order got wrong: 'Z' < 'b' in
+    // byte order but NOT in the DB's prior case-interleaved default).
+    const Address e_star = A("E*");
+    const auto e_gathered = ctl.gather(e_star);
+    const std::vector<Address> e_expected = {e_a, e_c_deep, e_z, e_b};
+    check(e_gathered == e_expected,
+          "gather(prefix): trunk E returns exactly its 4 members, in byte "
+          "order (EA, EC.AA, EZ, Eb — EZ before Eb, deeper address included)");
+    check(!contains(e_gathered, f_a),
+          "gather(prefix): a sibling trunk (F) is excluded from trunk E's gather");
+
+    // Non-existent prefix: an entirely untouched trunk gathers empty.
+    const auto g_gathered = ctl.gather(A("G*"));
+    check(g_gathered.empty(), "gather(prefix): a trunk with no members returns empty");
+
+    // Range form: gather(from, to) == the inclusive [from, to] interval,
+    // picking up the same deeper address between two direct-couplet bounds.
+    const auto range_all = ctl.gather(e_a, e_b);
+    check(range_all == e_expected,
+          "gather(range): [EA, Eb] inclusive returns the same 4 members in "
+          "the same PK order as the prefix form");
+    const auto range_narrow = ctl.gather(A("EB"), A("ED"));
+    const std::vector<Address> narrow_expected = {e_c_deep};
+    check(range_narrow == narrow_expected,
+          "gather(range): [EB, ED] picks up only the deeper EC.AA address");
+    const auto range_point = ctl.gather(e_a, e_a);
+    const std::vector<Address> point_expected = {e_a};
+    check(range_point == point_expected,
+          "gather(range): a single-point [EA, EA] range is inclusive of EA itself");
+
+    // Empty region: a range over an untouched trunk gathers empty.
+    const auto range_empty = ctl.gather(A("GA"), A("GZ"));
+    check(range_empty.empty(), "gather(range): an empty region returns empty");
+
+    // Rejection: a non-terminal (inline) wildcard is not a valid codec
+    // address at all, so the codec itself refuses to decode it — confirming
+    // gather has no path to accept one.
+    check(!codec::decode_token_id("E*.AA").has_value(),
+          "gather precondition: an inline (non-terminal) wildcard does not "
+          "even decode as a valid address (codec-level guarantee)");
+
+    // Rejection: gather(range) refuses a wildcard endpoint.
+    {
+      bool threw = false;
+      try {
+        ctl.gather(e_star, e_z);
+      } catch (const std::exception &) {
+        threw = true;
+      }
+      check(threw, "gather(range): a partial/wildcard endpoint is rejected");
+    }
+
+    // Rejection: gather(prefix) refuses a non-wildcard address.
+    {
+      bool threw = false;
+      try {
+        ctl.gather(e_a);
+      } catch (const std::exception &) {
+        threw = true;
+      }
+      check(threw, "gather(prefix): a fully-specified (non-wildcard) address is rejected");
+    }
+  }
+
+  // --- gather(prefix): the CARRY branch. The wildcard's fixed first
+  //     character is the alphabet MAXIMUM ('z', index 49), so the
+  //     exclusive high bound cannot just bump that position — it must
+  //     carry into the fixed leading elements (base-50, second-char-
+  //     fastest, same as increment_full_address). Trunk here is "HA.z*":
+  //     leading element HA, wildcard element z*. High must come out as
+  //     HB (HA's own successor), one element shorter than low. ---
+  {
+    const Address low_exact = A("HA.zA");     // the trunk's own low bound
+    const Address near_top = A("HA.zZ");      // still first-char 'z', within trunk
+    const Address deep = A("HA.zA.AB");       // nested deeper under the trunk
+    const Address excl_below = A("HA.YA");    // same leading elem, below the z couplet
+    const Address excl_above = A("HB.AA");    // next leading elem — past the carry
+    ctl.mint(low_exact, "carry-low", {});
+    ctl.mint(near_top, "carry-near-top", {});
+    ctl.mint(deep, "carry-deep", {});
+    ctl.mint(excl_below, "carry-excl-below", {});
+    ctl.mint(excl_above, "carry-excl-above", {});
+
+    const Address wildcard = A("HA.z*");
+    const auto gathered = ctl.gather(wildcard);
+    const std::vector<Address> expected = {low_exact, deep, near_top};
+    check(gathered == expected,
+          "gather(prefix) carry branch: HA.z* returns exactly {HA.zA, "
+          "HA.zA.AB, HA.zZ} in byte order (high bound carried into the "
+          "leading element HA -> HB)");
+    check(!contains(gathered, excl_below),
+          "gather(prefix) carry branch: excludes HA.YA (below the z couplet, "
+          "same leading element)");
+    check(!contains(gathered, excl_above),
+          "gather(prefix) carry branch: excludes HB.AA (past the carried "
+          "high bound)");
+  }
+
+  // --- gather(prefix): the OPEN-ENDED branch. The wildcard has no leading
+  //     elements at all and its first character is already the alphabet
+  //     maximum ('z*' alone) — there is no trunk above it, so the high
+  //     bound is nullopt and the query is a lower-bound-only scan. Result
+  //     correctness is asserted directly (the Index-Cond/planner point for
+  //     the bounded branches is already settled; this branch is inherently
+  //     half-open on a real address space, not a fallback). ---
+  {
+    const Address top_low = A("zA");      // the trunk's own low bound
+    const Address top_max = A("zz");      // the absolute maximum single-couplet address
+    const Address top_deep = A("zC.AB");  // nested deeper under the open-ended trunk
+    const Address excl_sibling = A("yz"); // the sibling trunk just below 'z' — excluded
+    ctl.mint(top_low, "open-low", {});
+    ctl.mint(top_max, "open-max", {});
+    ctl.mint(top_deep, "open-deep", {});
+    ctl.mint(excl_sibling, "open-excl-sibling", {});
+
+    const Address wildcard = A("z*");
+    const auto gathered = ctl.gather(wildcard);
+    const std::vector<Address> expected = {top_low, top_deep, top_max};
+    check(gathered == expected,
+          "gather(prefix) open-ended branch: z* returns exactly {zA, zC.AB, "
+          "zz} in byte order, with no upper bound needed");
+    check(!contains(gathered, excl_sibling),
+          "gather(prefix) open-ended branch: excludes yz (the sibling trunk "
+          "just below z, correctly outside the low bound)");
+  }
+
   // --- Error path: mint referencing a missing constituent rolls back. ---
   {
     const Address bad = A("DA");
