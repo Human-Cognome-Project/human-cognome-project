@@ -1,13 +1,43 @@
 # HANDOFF — reload pointer for the next session
 
-**For:** the next db_kernel session, which develops the **cache manager**
-directly. **Branch:** `dbkernel-design-checkpoint`, through commit `90f37ff`.
+**For:** the next db_kernel session. **Incoming direction (Patrick, 2026-09-19):
+a design *discussion* of the core data flows, and possibly redefining the command
+structure of the system overall to a cleaner baseline — see "Incoming direction"
+below. Patrick drives it; it is NOT a build, and it supersedes "start on the cache
+manager" as the entry point.** **Branch:** `dbkernel-design-checkpoint`, through
+commit `90f37ff`.
 One read of this file should be the whole reload — pull individual docs by
 name below only as the work touches them.
 
 Verify any status/commit claim here against the live repo before building on
 it (`git log --oneline`, `git show -s --format=%B <hash>`) — this file is a
 snapshot, not a live query.
+
+---
+
+## Incoming direction — core data flows / command-structure baseline
+
+**(Patrick, 2026-09-19 — this is the entry point; it supersedes "start on the
+cache manager.")** The next context is a **design discussion, not a build**:
+examine the **core data flows**, and possibly **redefine the command structure of
+the system overall to a cleaner baseline.** Patrick drives it. It may reshape the
+record-tier command surface (the verbs + IR below), so it **precedes** committing
+further to the cache-manager build — the work streams further down remain
+available but are **downstream of / informed by** this discussion; do not start
+building them until the baseline settles.
+
+Current command-structure baseline to reconsider *from*:
+- **Verbs:** `DECLARE_RECORD`, `READ_RECORD`, `MOVE_RECORD`, `ADD_CONNECTION`,
+  `DELETE_RECORD`, `DELETE_CONNECTION` — a nested/arrayed **in-process IR**, run
+  via `dispatch/` (the arraying executor); external wire deferred (G6). Full
+  surface: `API.md` §2; IR in `command/command_ir.h`.
+- **Core data flow today:** analyst → command IR → `dispatch` → verb cores →
+  `hcp3_core` (synchronous record tier); the deferred cross-work (reciprocals,
+  mass) surfaces as the WAL manager's obligation topology → cache manager. Read is
+  only-follow; identity is the address.
+- **Scope of "system overall" is TBD with Patrick** — the db_kernel record-tier
+  command surface only, or wider (analyst-facing layer, cross-kernel commands, the
+  field engine, the whole HCP command vocabulary). Confirm scope first.
 
 ---
 
@@ -62,10 +92,13 @@ those are the WAL manager's own writes, not surface for anything else to use.
 
 ## Available work streams
 
-### Cache manager — READY TO START
+### Cache manager — available (but see "Incoming direction" first)
 
-The direct next stream: the record tier and the WAL manager are both in
-place under it. Scope (per `NOTES.md` "Process runtime — the cache manager
+> **2026-09-19:** the incoming context reconsiders the core data flows /
+> command structure *first*; this stream stays available but may be reshaped by
+> that discussion — don't start building it until the baseline settles.
+
+Once unblocked: the record tier and the WAL manager are both in place under it. Scope (per `NOTES.md` "Process runtime — the cache manager
 is a complete runtime"): a complete, standalone runtime process that owns
 the DB, serves analyst input/output, and carries the **warm working
 cache** fed from cold storage — with cross-processing (wiring, mass) as a
