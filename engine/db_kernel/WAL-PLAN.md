@@ -220,9 +220,16 @@ bookkeeping with a core mass-value table; they are different things.)
 NOTES relocates G7's cross-network validation into "WAL management"; under the
 bookkeeper scope that **validation act is swarm-side and not essential to the
 primary work list** (§2), so it is **not** designed here. This subsystem's part is
-only to ingest the delete's report and note the reciprocal **removals** it owes
-(door-idempotent, per the record tier). The tentative→systemic validation is
-deferred swarm-side work (§7), not cache-manager business.
+only to **ingest the delete's report into History** — the reciprocal **removals**
+are recorded there, not opened as monitored obligations. A DELETE **opens no
+obligation today**: its removal reciprocals are written *synchronously* by the
+record tier (`delete_pair` removes members+member_of atomically; `delete_token` is
+one row), so nothing is later-owed. An **async removal obligation is design-ahead
+for a specific reason (§7.6): the axis identity carries no INSERT/DELETE polarity
+bit** — a `member_of` INSERT and a `member_of` DELETE compute the *same* key, so a
+removal obligation keyed on the bare axis identity could be false-closed by a later
+ADD of that pair. The tentative→systemic validation is deferred swarm-side work
+(§7), not cache-manager business.
 
 ---
 
@@ -243,6 +250,11 @@ deferred swarm-side work (§7), not cache-manager business.
    open obligations key on. Today MOVE is atomic (nothing owed); design-ahead: the
    repoint's own completion, and **re-keying any open obligations** whose identity
    contains a moved `token_id`. Named, not designed.
+6. **Async removal obligation (DELETE)** — DELETE is History-only today (§6). If a
+   removal reciprocal ever becomes async, monitoring it needs an **INSERT/DELETE
+   polarity bit** in the obligation identity (the bare axis key is shared by an add
+   and a removal of the same pair), so it is **not** opened on the bare axis
+   identity. Named, not designed.
 
 Relevant open seam: **G10** (`DELETE_RECORD` FK policy). *(G6 is the external
 request/command transport — NOT the WAL feed, which is Postgres logical decoding,
