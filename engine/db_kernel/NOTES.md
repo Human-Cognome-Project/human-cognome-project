@@ -3,6 +3,11 @@
 Working notes for the hcp3_core db_kernel set. Prose/design record; the code
 and its tests are the source of truth for behaviour. Canadian English.
 
+> **Available work streams for the next session → see `HANDOFF.md`.** Record
+> tier and WAL manager are both COMPLETE; the cache manager is the direct
+> next stream (ready to start), with the swarm/p2p layer preliminary and
+> gated behind it. `HANDOFF.md` is the reload pointer — read it first.
+
 ## Governing principle
 
 The DB is the **strictest form of the data protocol** — any system built on it

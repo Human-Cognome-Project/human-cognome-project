@@ -345,4 +345,24 @@ never touches. None are WAL touch points.)*
 - The connection **mass-recompute signal** (§5) — part of the deferred aggregation
   model.
 - The §8 reservations (optional canonical NOTES section; cross-source basis).
+- **Ingest-atomicity ownership** — the observe→book transaction boundary
+  raised in package review (see this document's top status blockquote for
+  the full trace); ruled **dropped as a WAL-manager item** (Patrick,
+  2026-09-19) and reassigned to the cache-manager runtime, alongside F4.
+  Not this document's to resolve any further; carried here only so §10
+  stays a complete list of what the WAL-manager design left open.
 - The deferred set in §7, owned by Patrick.
+
+None of the above are this kernel set's to build. **F4**, the mass-recompute
+signal, and ingest-atomicity ownership are the **cache-manager runtime's**
+open items (see `HANDOFF.md`, "Available work streams"). The §8 cross-source
+basis and optional-NOTES-section reservations are swarm-side / Patrick's
+discretion. The §7 deferred set (the mass-aggregation model, the async reciprocal,
+MOVE/rekey of open obligations, and an async removal obligation's
+INSERT/DELETE polarity bit — plus, from `WAL-IMPL-PLAN.md` §1 bucket B, live
+logical-decoding ingest and the mass-fill write) is **named, not designed** —
+each item is contingent on something that doesn't exist yet (the async
+reciprocal, a live ingest), and is Patrick's to prioritize whenever that
+groundwork is laid; `HANDOFF.md` carries the MOVE/rekey and async-removal
+items as a forward-looking note under the cache-manager stream, not as work
+that stream owns outright today.
