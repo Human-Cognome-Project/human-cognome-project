@@ -940,8 +940,9 @@ manager-placed mint), G5 block boundaries past hex couplets, G6 external
 transport/wire format; **WAL management** (the WAL manager — a bookkeeper/observer
 over WAL reports; books the DELETE report, with the cross-network validation act
 deferred swarm-side; the file-now/wire-later runtime itself is the cache manager's,
-§Process runtime — not a WAL-manager drain; design in `WAL-PLAN.md`, rev.5,
-design-ready pending F4 + the NOTES charter entry); the **cache tier** (RECONCILE /
+§Process runtime — not a WAL-manager drain; design in `WAL-PLAN.md` (rev.6),
+design complete; F4 flagged to revisit when the cache-manager runtime is built);
+the **cache tier** (RECONCILE /
 UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
 derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 

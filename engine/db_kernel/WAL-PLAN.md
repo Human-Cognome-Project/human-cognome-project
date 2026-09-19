@@ -12,8 +12,8 @@ over `hcp3_core`. **Rev. 5** applies a cross-doc consistency validation (finding
 F1–F9): the retired WAL-management drift is shed from `NOTES.md`/`PLAN.md`/`API.md`
 (bookkeeper, not a scheduler or validation-runner; no drain attributed to it), §5
 splits the mass VALUE (rides the FIXED `token.mass`) from the mass calc-DEBT
-bookkeeping (booked as part of a change's followup obligations — a delegated call,
-made), and F5–F8 polish is applied. **Rev. 6** applies a fresh end-to-end
+bookkeeping (booked as part of a change's followup obligations — per Patrick's
+ruling), and F5–F8 polish is applied. **Rev. 6** applies a fresh end-to-end
 adversarial pass (W1–W9): the open→close mechanism is stated (§4), the mass
 NULL-signal is scoped to a new-token DECLARE (§5), false NOTES-anchoring is
 corrected (the drift was already shed), MOVE/rekey and `source`/scope are defined,
