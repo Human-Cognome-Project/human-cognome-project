@@ -73,6 +73,41 @@ What in the built data serves this (candidate structure, confirm at the exam):
   different jobs. The process likely needs both — *which unit for which path* is the
   concrete decision.
 
+## Symmetric node topology — every node tracker/server/client
+
+Every node is simultaneously **tracker + server + client** (there are lean ways to
+do it), so the network updates **asynchronously with minimal interference** — no
+privileged/central node. This is the **"kernel split is free" principle at network
+scale**: each node has its own ongoing work, coupled by a store/stream (pieces +
+manifest), not a synchronous handoff, staged by demand + availability.
+
+It can be lean because the three roles **reuse structures already placed**, not new
+infrastructure:
+- **Tracker** ← the **core distillation** (primary nodes across swarms = connection
+  indicators). A node's tracker knowledge *is* its local distillation — no
+  heavyweight tracker service.
+- **Server** ← **deterministic content-addressing + only-follow-servable chunks**.
+  Any holder serves and verifies a piece from its own store, no authority (the
+  identical-hashes property).
+- **Client** ← **pull-coverage-on-request**. Request the pieces you want, when you
+  want them.
+
+## Lean coupling mechanism — stdin/stdout with monitors (preliminary)
+
+The store/stream coupling can be realized **leanly via well-placed stdin/stdout
+monitoring** (Patrick, 2026-09-19). Each kernel/node is a process that reads its
+**stdin** (incoming reports/pieces/requests) and writes its **stdout** (emitted
+reports/pieces); **monitors are allocated at the stream junctions** (where kernels
+or nodes meet) to observe/route/compose — without any kernel needing to know about
+another. Pipes give async + backpressure natively: no RPC framework, no service
+mesh, no synchronous handoff. It's the Unix-pipe expression of "each part does its
+own thing, coupled by a stream," and it composes both the kernel set and the
+tracker/server/client roles.
+
+**Guardrail:** this is stdin/stdout as the **inter-process data/control channel**
+(the coupling) — distinct from the standing rule that **big result logs go to
+files, never dumped to stdout**. The pipe is not the log; don't conflate them.
+
 ## Parked (Patrick holds ideas — not designed)
 
 - **Conflict resolution.** Determinism makes conflicts **cheap to detect** —
