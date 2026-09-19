@@ -408,7 +408,8 @@ struct DeleteRecord { codec::Address token; };
   and raises no error, so this check is what keeps the `deleted` flag
   truthful).
 - Peer/cross-network validation (tentative → systemic across instances)
-  is **not** built here — it is deferred to WAL management (see §9).
+  is **not** built here — it is deferred to the WAL/swarm side (the delete report is
+  booked by the WAL bookkeeper; the validation act is not run by it; see §9).
 
 **Validator:** `command::validate_delete_record(const DeleteRecord &)`.
 
@@ -734,7 +735,7 @@ the call made there.
 | **G4 — next-slot mechanism** | Deferred. Analyst-supplied-start vs. per-trunk cursor — Patrick's open decision. Gates manager-placed mint. |
 | **G5 — block boundaries past "hex couplets"** | Deferred. The trunk→kind map's extent past the hex-couplet kind is unfixed. |
 | **G6 — external wire/transport format** | Deferred. The in-process IR (§5) is the current surface; no text/file/network framing exists. |
-| **WAL management** (work scheduler + cross-network validation, incl. DELETE peer-validation + pending-work drain) | Deferred. DELETE today is local-confirmation + local-execution only. |
+| **WAL management** (the WAL manager — a bookkeeper/observer over WAL reports: books the DELETE report; the cross-network validation act is deferred swarm-side; no drain — the file-now/wire-later runtime is the cache manager's) | Deferred. DELETE today is local-confirmation + local-execution only. |
 | **Cache tier** (`RECONCILE`/`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. |
 | **Mass aggregation** (sum-vs-centroid, nested aggregation) | Deferred. `DECLARE_RECORD` always writes mass blank. |
 | **Notation derivation** (surface-from-parents) | Deferred. `NOTATION` is stored exactly as given (or blank), never derived. |

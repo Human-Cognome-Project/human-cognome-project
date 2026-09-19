@@ -355,11 +355,11 @@ Cache-shaped mode deferred. *Spec:* READ — record-tier exploratory read.
 
 > **G7 — resolved into WAL management (firmed 2026-09-18).** The peer /
 > cross-network validation of a delete (tentative→systemic across instances) is
-> NOT built at the record tier; it is captured under **WAL management** — the
-> project's work scheduler AND cross-network validation protocol: the delete
-> commits to the WAL, and the WAL consumer runs the cross-network validation. The
-> record tier builds only the local full-validation + local execution. No local
-> validation-tag machinery.
+> NOT built at the record tier; the delete's report is **booked by the WAL manager**
+> (a bookkeeper/observer over WAL reports), while the cross-network validation
+> **act** is **deferred swarm-side**, not run by the WAL bookkeeper. The record tier
+> builds only the local full-validation + local execution. No local validation-tag
+> machinery. (WAL-manager-is-bookkeeper, reframed 2026-09-18.)
 
 > **G10 (open).** `DELETE_RECORD`'s behaviour when the token is still referenced
 > by dependents (the four stores' FKs to `token`) — block / cascade / repoint —
@@ -449,10 +449,11 @@ DELETE_RECORD to unreferenced tokens (reject-on-referenced) until decided.
   presentation for the multi-field/nested/arrayed request. IR + parser designed
   regardless.
 - **G7 — RESOLVED into WAL management (2026-09-18).** The delete peer /
-  cross-network validation (tentative→systemic) is captured under WAL management
-  (the work scheduler + cross-network validation protocol): the delete commits to
-  the WAL; the WAL consumer validates cross-network. The record tier builds the
-  local full-target confirmation + local execution only — no local tag machinery.
+  cross-network validation (tentative→systemic) is **booked by the WAL manager** (a
+  bookkeeper/observer over WAL reports); the delete's report is booked and the
+  cross-network validation **act** is **deferred swarm-side**, not run by the
+  bookkeeper. The record tier builds the local full-target confirmation + local
+  execution only — no local tag machinery.
 - **G10 — `DELETE_RECORD` FK-dependent policy.** Block/cascade/repoint on a still
   referenced token — unspecified in NOTES; flagged, not resolved (held as
   reject-on-referenced, no invented cascade).

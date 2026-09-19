@@ -1,4 +1,4 @@
-# WAL subsystem — plan (rev. 4)
+# WAL subsystem — plan (rev. 5)
 
 **Provenance.** Drawn from `NOTES.md` (the WAL-management topic; G7 delete; the
 mass ruling; the governing only-follow / no-reverse-search principle) and the
@@ -8,7 +8,12 @@ bookkeeper/observer**; recognition is by **return paths carried in the initial
 data**, not inference; there is **no drain**; the swarm side is non-essential to
 the primary work list; and mass is a **monitored followup**. Builds on the record
 tier (`codec/`, `command/`, `declare/`, `read/`, `update/`, `dispatch/`, `seed/`)
-over `hcp3_core`.
+over `hcp3_core`. **Rev. 5** applies a cross-doc consistency validation (findings
+F1–F9): the retired WAL-management drift is shed from `NOTES.md`/`PLAN.md`/`API.md`
+(bookkeeper, not a scheduler or validation-runner; no drain attributed to it), §5
+is corrected to ride the built `token.mass`, and F5–F8 polish is applied. F3
+(separate mass table) and F4 (cache-manager runtime model) are **referred to
+Patrick**, not built to.
 
 **Standing.** Design only. Wide latitude for code structure; choices touching the
 **fundamental data model** are Patrick's — where he has explicitly delegated one
@@ -101,10 +106,11 @@ monitors it lands.
 
 So recognition needs **no decomposition rule and no inference**: the return to
 expect is handed over in the change's own data. The obligation and the followup
-that settles it **share one identity** — the return write's `(parent_id, child_id)`
-pair — present in the initial data and again in the later return write. Matching
-them is a **direct equality on that shared pair**: only-follow, no reverse index,
-and (for a DECLARE) no store read.
+that settles it **share one identity** — the return write's own key, **axis-
+appropriate**: a `(parent, child)` pair for a structure return, a `(member, group)`
+pair for a membership return — present in the initial data and again in the later
+return write. Matching them is a **direct equality on that shared key**: only-
+follow, no reverse index, and (for a DECLARE) no store read.
 
 **Completion is self-accounting.** The cache manager **reads and does**; its return
 write **is** a WAL report; that report is the proof it was done. An obligation opens
@@ -124,24 +130,27 @@ discipline; it does not design or guarantee it — the cache manager is out of b
 
 **Substrate.** Its **own Postgres instance**, uniform with the other locals.
 
-**Ingest dependency (explicit).** Obligations are derived from a report's decoded
-data (Postgres logical-decoding output → §4 rows, footprint decoded via `codec`
-token_ids). The report/ingest wire form itself is the external-transport seam
-(**G6**, deferred); this plan assumes a decodable report and does not design that
-form.
+**Ingest (explicit).** Obligations are derived from a report's decoded data — the
+WAL feed is **Postgres logical-decoding output (Layer 1)**, footprint decoded via
+`codec` token_ids. This is distinct from **G6**, which is the external
+*request/command* transport — a different seam, not the WAL feed. This plan assumes
+a decodable report and does not design the decoding wire form.
 
 **Shape (only-follow, no reverse-search index).** Every access is a bounded PK
 follow — no predicate scan on a non-key column, no reverse index:
 
 - **Return-path obligations** — expected returns read from a change's initial data
   (`parent_id`s owe `token_child`; a `members` declaration owes `member_of`), keyed
-  by the return write's own `(parent_id, child_id)` identity; an obligation **closes
-  when a followup write of that exact identity is observed** (§3). No drain, no queue
-  consumption.
-- **Mass obligations** — §5; a separate connected obligation set keyed by
-  `token_id`.
+  by the return write's own **axis-appropriate identity** (structure `(parent,
+  child)`; membership `(member, group)`, §3); an obligation **closes when a followup
+  write of that exact identity is observed** (§3). No drain, no queue consumption.
+- **Mass obligations** — §5; keyed by `token_id`, riding the built `token.mass`
+  (NULL = open, non-NULL = closed) — no separate table.
 - **History** — append-only per source `lsn`; the durable record of reports seen and
   obligations settled.
+- **Outstanding-obligation read-out** — the observer lists still-open obligations by
+  a **bounded PK follow** (by `source`/`lsn`, or by identity to probe one specific
+  obligation), never a scan.
 
 Per-row: `source`, `lsn` (that source's native LSN — per-source progress/rebase),
 the footprint (full `codec` token_ids; Layer 1 handles wire compression), and the
@@ -155,21 +164,26 @@ only); the follow *discipline* is reused, not the function.
 
 ---
 
-## 5. Mass — a monitored followup (structure = my delegated call)
+## 5. Mass — a monitored followup (rides the built `token.mass`)
 
 Many operations require a **mass calculation and insertion by the cache manager**
-(Patrick, 2026-09-18). The WAL manager does **not** compute mass; it **monitors that
-the mass write lands** — the same self-accounting pattern as a return path, keyed by
-`token_id`. The **mass-aggregation model** (how mass is computed) stays deferred and
-is the cache manager's (§7).
+(Patrick, 2026-09-18). Mass is **not passed from the analyst**: the cache manager
+would have to validate any asserted mass anyway, so it is as easy to just compute
+and insert it (the NOTES mass ruling). The WAL manager does **not** compute mass; it
+**monitors that the mass write lands**, keyed by `token_id` — the same self-
+accounting pattern as a return path. The **mass-aggregation model** (how mass is
+computed) stays deferred and is the cache manager's (§7).
 
-**Structure (Patrick delegated this to me — flagged, core-schema-touching, vetoable):**
-store mass as a **separate connected table** keyed by `token_id`, not as a field of
-the token's original section. Reasoning: mass is *derived* while the original section
-is *declared*; separating them keeps the anchor record stable (fits "core changes
-least"), lets mass be (re)computed without churning the token record, and gives the
-WAL manager a clean, uniformly-keyed mass obligation and a clean followup write to
-observe. If you'd rather it live in the original section, that's a one-line reversal.
+**It rides the built `token.mass` — no new schema.** A token's own mass is a
+**FIXED, built** decision: stored on `token` (`NOTES.md` "own mass — FIXED: stored
+on `token`"; the `token.mass` column is nullable, **NULL = not-yet-computed**, kept
+distinct from a real 0). That NULL state is exactly the monitor signal: a mint
+report with `token.mass = NULL` **opens** a `token_id`-keyed mass obligation, and a
+later non-NULL `token.mass` write for that `token_id` **closes** it.
+
+**A separate mass table is NOT proposed.** An earlier rev. floated one; it would
+override the FIXED `token.mass` decision and churn built schema, so it is **referred
+to Patrick** (§8.2), not built to.
 
 ---
 
@@ -197,9 +211,10 @@ deferred swarm-side work (§7), not cache-manager business.
 4. **Async reciprocal** — the record tier writes returns synchronously today; the
    "later" return (§3) is design-ahead.
 
-Relevant open seams: **G6** (report/emit wire form, §4), **G10** (`DELETE_RECORD` FK
-policy). *(G4 next-slot and G5 block-boundaries are DECLARE-placement seams — the
-bookkeeper never places, so they are not touch points here.)*
+Relevant open seam: **G10** (`DELETE_RECORD` FK policy). *(G6 is the external
+request/command transport — NOT the WAL feed, which is Postgres logical decoding,
+§4. G4 next-slot and G5 block-boundaries are DECLARE-placement seams the bookkeeper
+never touches. None are WAL touch points.)*
 
 ---
 
@@ -207,8 +222,10 @@ bookkeeper never places, so they are not touch points here.)*
 
 1. **NOTES charter update** (§7.1) — his authority; the plan proceeds on the
    bookkeeper scope meanwhile.
-2. **Mass table** (§5) — taken as a separate connected table; vetoable, as it
-   touches core schema.
+2. **Mass table** (§5) — **referred, not decided.** The WAL manager rides the FIXED,
+   built `token.mass` (NULL = not-yet-computed) with no schema change. A move to a
+   *separate* mass table would override that FIXED decision and churn built schema —
+   Patrick's call; not built to meanwhile.
 3. **Cross-source global-order basis** (§4) — swarm-side; needed only if/when the
    swarm side is built.
 
@@ -220,9 +237,10 @@ bookkeeper never places, so they are not touch points here.)*
   owed `token_child` returns; a `members` declaration yields the owed `member_of`
   return — read from the data, never the command string.
 - **reconciliation** — an obligation settles when a followup write of its exact
-  `(parent_id, child_id)` identity appears; matched by equality, no reverse index.
-- **mass followup** — a mass-requiring operation opens a `token_id`-keyed mass
-  obligation that settles when the mass write lands.
+  axis-appropriate identity (`(parent, child)` structure, `(member, group)`
+  membership) appears; matched by equality, no reverse index.
+- **mass followup** — a report with `token.mass = NULL` opens a `token_id`-keyed
+  mass obligation that settles when a non-NULL `token.mass` write for it is observed.
 - **only-follow access** — every ledger access is a bounded PK follow; no non-key
   predicate scan, no reverse index.
 - **scope recording** — a report's local/global scope is booked; private content is
@@ -234,5 +252,5 @@ bookkeeper never places, so they are not touch points here.)*
 
 ## 10. Open decisions
 
-- The §8 reservations (NOTES charter update; mass-table veto; cross-source basis).
+- The §8 reservations (NOTES charter update; mass-table referral; cross-source basis).
 - The deferred set in §7, owned by Patrick.

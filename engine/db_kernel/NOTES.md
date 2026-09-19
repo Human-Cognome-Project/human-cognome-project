@@ -808,10 +808,11 @@ thing to be deleted ("did you mean to delete this specific thing?") and requires
 explicit confirmation of THAT target before it executes; never a
 bare/fire-and-forget delete, never a blanket confirm flag. It then executes
 LOCALLY against the store. The peer / cross-network validation path
-(tentative→systemic across instances) is NOT built at the record tier — it is
-captured under **WAL management**, the project's work scheduler AND cross-network
-validation protocol: the delete commits to the WAL, and the WAL consumer runs the
-cross-network validation. (This resolves the old G7 delete-peer-validation seam.)
+(tentative→systemic across instances) is NOT built at the record tier — the
+delete's report is **booked by the WAL manager** (a bookkeeper/observer over WAL
+reports; see `WAL-PLAN.md`), while the cross-network validation **act** is
+**deferred swarm-side**, not run by the WAL bookkeeper. (This resolves the old G7
+delete-peer-validation seam; WAL-manager-is-bookkeeper reframed 2026-09-18.)
 No local validation-tag machinery is built now.
 
 **Mass — why none is declared.** An analyst-asserted mass would have to be
@@ -927,9 +928,10 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
 
 **Deferred (not built; recorded seams):** G4 next-slot mechanism (also gates
 manager-placed mint), G5 block boundaries past hex couplets, G6 external
-transport/wire format; **WAL management** (the work scheduler + cross-network
-validation protocol — carries DELETE peer/cross-network validation and the
-file-now / wire-later pending-work drain); the **cache tier** (RECONCILE /
+transport/wire format; **WAL management** (the WAL manager — a bookkeeper/observer
+over WAL reports; books the DELETE report, with the cross-network validation act
+deferred swarm-side; the file-now/wire-later runtime itself is the cache manager's,
+§Process runtime — not a WAL-manager drain); the **cache tier** (RECONCILE /
 UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
 derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 
