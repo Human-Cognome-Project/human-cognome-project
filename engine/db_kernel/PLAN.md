@@ -185,8 +185,10 @@ seed floor is the only declared mass (`0x` = 0/undefined; the 16 hex atoms = 1).
   wildcard-members to a group, or a member to wildcard-groups); the wildcard
   resolves to its address range at execution (Agent 5). Arrayable.
 - **`DELETE_RECORD`** — remove a whole token. **Single instruction only, never
-  arrayed.** Gates: (1) active pre-execution confirmation; (2) validation tags so
-  peer instances confirm before it goes systemic. Specific id only, no wildcard.
+  arrayed.** Gates: (1) active pre-execution confirmation (full-target) + local
+  execution; peer/cross-network validation is **deferred swarm-side** — the delete's
+  report is booked by the WAL manager, and **no local validation-tag machinery** is
+  built (firmed G7, 2026-09-18; see §II.5). Specific id only, no wildcard.
 - **`DELETE_CONNECTION`** — remove one specific pair; single only; same gates;
   specific, no wildcard. Targets the **membership axis only** (structure removal
   is via DELETE_RECORD). Removes the named edge **and its stored reciprocal**

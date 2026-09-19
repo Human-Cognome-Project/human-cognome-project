@@ -1,4 +1,4 @@
-# WAL subsystem — plan (rev. 5)
+# WAL subsystem — plan (rev. 6)
 
 **Provenance.** Drawn from `NOTES.md` (the WAL-management topic; G7 delete; the
 mass ruling; the governing only-follow / no-reverse-search principle) and the
@@ -13,14 +13,19 @@ F1–F9): the retired WAL-management drift is shed from `NOTES.md`/`PLAN.md`/`AP
 (bookkeeper, not a scheduler or validation-runner; no drain attributed to it), §5
 splits the mass VALUE (rides the FIXED `token.mass`) from the mass calc-DEBT
 bookkeeping (booked as part of a change's followup obligations — a delegated call,
-made), and F5–F8 polish is applied. F4 (cache-manager runtime model) is **referred
-to Patrick**, not built to.
+made), and F5–F8 polish is applied. **Rev. 6** applies a fresh end-to-end
+adversarial pass (W1–W9): the open→close mechanism is stated (§4), the mass
+NULL-signal is scoped to a new-token DECLARE (§5), false NOTES-anchoring is
+corrected (the drift was already shed), MOVE/rekey and `source`/scope are defined,
+and two missed stale delete-gate sites are fixed in PLAN/NOTES. F4 (whether
+self-accounting replaces the cache-manager pending-list runtime) is **flagged in
+NOTES to revisit when the cache-manager runtime is built** (§10), and the connection
+mass-recompute signal is **referred to Patrick** (§5).
 
 **Standing.** Design only. Wide latitude for code structure; choices touching the
-**fundamental data model** are Patrick's — where he has explicitly delegated one
-(the mass table, §5) it is taken here and flagged for veto. **Patrick is
-authoritative when in doubt**; NOTES is kept from drift by *updating it to match
-his rulings*, not by letting stale NOTES text override them.
+**fundamental data model** are Patrick's (mass storage, §5, follows his ruling).
+**Patrick is authoritative when in doubt**; NOTES is kept from drift by *updating it
+to match his rulings*, not by letting stale NOTES text override them.
 
 **Form.** A separate bookkeeper, so its **own small kernel set** — standalone-
 buildable and self-testing like the record-tier modules ("builds, runs, tests on
@@ -29,10 +34,11 @@ structure.
 
 **Anchoring honesty.** The bookkeeper-only charter (§0), the multi-instance model
 (§1), the two-layer split (§2), and the recognition mechanism (§3) rest on the
-**2026-09-18 discussion, authoritative from Patrick** — NOTES currently states the
-"WAL management" *topic* more broadly (work scheduler + cross-network validation),
-so **NOTES is to be updated** to record this bookkeeper scope (§7.1). "Self-
-interpreting delta stream" is standing-memory phrasing, not NOTES text.
+**2026-09-18 discussion, authoritative from Patrick**. NOTES/PLAN/API **already
+record the bookkeeper scope** (the earlier scheduler / validation-runner / drain
+framing was shed 2026-09-18); a dedicated canonical WAL-management section in NOTES
+is **optional**, not outstanding. "Self-interpreting delta stream" is
+standing-memory phrasing, not NOTES text.
 
 ---
 
@@ -46,7 +52,7 @@ it **monitors the stream for those returns to arrive** (§3). It works from the
 **In scope (only this):** the **WAL DB** (its own Postgres instance, §4);
 ingesting WAL reports; deriving each change's owed return paths **from the data it
 carries**; **monitoring** for the followup writes that settle them; tracking mass
-followups (§5); per-source sequencing and replication state.
+followups (§5); per-source LSN progress (for rebase).
 
 **Out of bounds (the cache manager's, neither designed nor described):** the
 command string; all **primary execution** (filing, wiring, moving, deleting, and
@@ -115,9 +121,10 @@ follow, no reverse index, and (for a DECLARE) no store read.
 
 **Completion is self-accounting.** The cache manager **reads and does**; its return
 write **is** a WAL report; that report is the proof it was done. An obligation opens
-when a change is seen and closes when its return write of the same identity is seen.
-There is **no drain** and **no done-mark** — settlement is intrinsic to the stream,
-which is why no searched status flag is ever needed. (Deferred realization: today
+when a change is seen and closes when its return write of the same identity is seen —
+a **PK-delete of the open-obligation row** (§4). There is **no drain** and **no
+done-mark** — settlement is intrinsic to the stream, which is why no searched status
+flag is ever needed. (Deferred realization: today
 the record tier writes reciprocals *synchronously*, so the "later" return is design-
 ahead of the current cores — §7.)
 
@@ -137,27 +144,34 @@ WAL feed is **Postgres logical-decoding output (Layer 1)**, footprint decoded vi
 *request/command* transport — a different seam, not the WAL feed. This plan assumes
 a decodable report and does not design the decoding wire form.
 
-**Shape (only-follow, no reverse-search index).** Every access is a bounded PK
-follow — no predicate scan on a non-key column, no reverse index:
+**Shape (only-follow, no reverse-search index).** Open obligations are a **live
+relation**: an obligation is a **row inserted when it opens** and **DELETEd by its
+own identity PK when it closes** (its followup write observed). "Still-open" is
+therefore just *membership* of that relation — **no status column, no done-mark**;
+listing open obligations is reading the relation, settling one is a PK-delete, and
+neither is a scan. Per-source ordering (for progress/rebase) lives in the
+append-only **History**, not in a second index on the live set. Every access is a
+bounded PK follow — no predicate scan on a non-key column, no reverse index:
 
 - **Return-path obligations** — expected returns read from a change's initial data
-  (`parent_id`s owe `token_child`; a `members` declaration owes `member_of`), keyed
-  by the return write's own **axis-appropriate identity** (structure `(parent,
-  child)`; membership `(member, group)`, §3); an obligation **closes when a followup
+  (`parent_id`s owe `token_child`; a `members` declaration owes `member_of`), each a
+  live row keyed by the return write's own **axis-appropriate identity** (structure
+  `(parent, child)`; membership `(member, group)`, §3), **PK-deleted when a followup
   write of that exact identity is observed** (§3). No drain, no queue consumption.
 - **Mass obligations** — §5; part of a change's **followup obligations** (same bundle
-  as its return paths), keyed by `token_id`; opened at `token.mass = NULL`, closed
-  when a non-NULL `token.mass` write lands. Mass *value* stays in the FIXED core
-  `token.mass`.
+  as its return paths), keyed by `token_id`; for a **new-token DECLARE**, opened at
+  `token.mass = NULL` and PK-deleted when a non-NULL `token.mass` write lands. (A
+  connection's mass **recompute** signal is deferred — the aggregation model, §5/§7.)
+  Mass *value* stays in the FIXED core `token.mass`.
 - **History** — append-only per source `lsn`; the durable record of reports seen and
-  obligations settled.
-- **Outstanding-obligation read-out** — the observer lists still-open obligations by
-  a **bounded PK follow** (by `source`/`lsn`, or by identity to probe one specific
-  obligation), never a scan.
+  obligations settled (the audit trail behind the live set).
 
-Per-row: `source`, `lsn` (that source's native LSN — per-source progress/rebase),
-the footprint (full `codec` token_ids; Layer 1 handles wire compression), and the
-address scope (local/global).
+Per-row: `source` (which local instance the report came from — core / a language
+shard / the personality DB), `lsn` (that source's native LSN — per-source
+progress/rebase), the footprint (full `codec` token_ids; Layer 1 handles wire
+compression), and the **address scope** — local or global, **read from the report's
+address range** (the personality DB's private/local range vs the shared global range,
+§1).
 
 **No stored `seq`.** Per-source `lsn` orders each source. A *cross-source* global
 order is **not claimed** — native LSNs across sources are not mutually comparable —
@@ -180,11 +194,16 @@ manager's (§7).
 **The mass VALUE rides the built `token.mass` — no new core schema.** A token's own
 mass is a **FIXED, built** decision: stored on `token` (`NOTES.md` "own mass —
 FIXED: stored on `token`"; `token.mass` nullable, **NULL = not-yet-computed**,
-distinct from a real 0). That NULL state is the monitor signal: a declare/connection
-report with `token.mass = NULL` **opens** the debt; a later non-NULL `token.mass`
-write for that `token_id` **closes** it.
+distinct from a real 0). That NULL state is the monitor signal **for a newly declared
+token**: a DECLARE report with `token.mass = NULL` **opens** the debt; a later
+non-NULL `token.mass` write for that `token_id` **closes** it. A **connection**
+(ADD_CONNECTION) writes no `token.mass` and targets an existing token whose mass is
+already non-NULL, so the NULL signal does **not** cover a connection's mass
+**recompute**; how a dirtied mass is marked for recompute is part of the **deferred
+aggregation model** — the cache manager's, not designed here (**referred to
+Patrick**, §7/§10).
 
-**Booking the debt — part of the change's followup obligations (my delegated call).**
+**Booking the debt — part of the change's followup obligations (per Patrick's ruling).**
 The mass debt is one of the cache manager's **followup-work** items for a change,
 alongside the return paths — so the WAL manager books it **with** that change's
 followup obligations (the "original section"), not as a separate special table. Each
@@ -209,8 +228,9 @@ deferred swarm-side work (§7), not cache-manager business.
 
 ## 7. Deferred (named, not designed)
 
-1. **NOTES charter update** — record the bookkeeper scope of WAL management in NOTES
-   (Patrick authoritative; controls drift).
+1. **Optional canonical NOTES section** — the bookkeeper scope is **already recorded**
+   across NOTES/PLAN/API; a single canonical WAL-management section could consolidate
+   it, at Patrick's discretion (not outstanding).
 2. **Swarm side** — unspooling other instances' compressed WAL patterns for cache-
    manager/analyst incorporation; the cross-network validation act (§6); the
    cross-source global-order basis (§4); drift control. Non-essential to the primary
@@ -219,6 +239,10 @@ deferred swarm-side work (§7), not cache-manager business.
    models; the WAL manager monitors their writes, it does not compute them.
 4. **Async reciprocal** — the record tier writes returns synchronously today; the
    "later" return (§3) is design-ahead.
+5. **MOVE_RECORD / rekey** — a MOVE emits WAL reports and changes `token_id`s that
+   open obligations key on. Today MOVE is atomic (nothing owed); design-ahead: the
+   repoint's own completion, and **re-keying any open obligations** whose identity
+   contains a moved `token_id`. Named, not designed.
 
 Relevant open seam: **G10** (`DELETE_RECORD` FK policy). *(G6 is the external
 request/command transport — NOT the WAL feed, which is Postgres logical decoding,
@@ -229,11 +253,12 @@ never touches. None are WAL touch points.)*
 
 ## 8. Reserved for Patrick
 
-1. **NOTES charter update** (§7.1) — his authority; the plan proceeds on the
-   bookkeeper scope meanwhile.
-2. **Mass — decided (your delegation).** Value stays in FIXED `token.mass`; the calc
-   debt is booked as part of the change's followup obligations (§5) — not a separate
-   table, not a core-schema change. Flag if you'd rather it be a separate set.
+1. **Optional canonical NOTES section** (§7.1) — bookkeeper scope already recorded;
+   consolidating it into one section is at your discretion, not blocking.
+2. **Mass — per your ruling.** Value stays in FIXED `token.mass`; the calc debt is
+   booked as part of the change's followup obligations (§5) — not a separate table,
+   not a core-schema change. The **connection mass-recompute signal** is deferred
+   (§5) — your call. Flag if you'd rather the debt be a separate set.
 3. **Cross-source global-order basis** (§4) — swarm-side; needed only if/when the
    swarm side is built.
 
@@ -246,9 +271,11 @@ never touches. None are WAL touch points.)*
   return — read from the data, never the command string.
 - **reconciliation** — an obligation settles when a followup write of its exact
   axis-appropriate identity (`(parent, child)` structure, `(member, group)`
-  membership) appears; matched by equality, no reverse index.
-- **mass followup** — a report with `token.mass = NULL` opens a `token_id`-keyed
-  mass obligation that settles when a non-NULL `token.mass` write for it is observed.
+  membership) appears; matched by equality, then **PK-deleted** from the live
+  open-obligations relation (open = membership; no status column, no scan).
+- **mass followup** — a **new-token DECLARE** with `token.mass = NULL` opens a
+  `token_id`-keyed mass obligation that settles when a non-NULL `token.mass` write for
+  it is observed (connection recompute deferred, §5).
 - **only-follow access** — every ledger access is a bounded PK follow; no non-key
   predicate scan, no reverse index.
 - **scope recording** — a report's local/global scope is booked; private content is
@@ -260,5 +287,10 @@ never touches. None are WAL touch points.)*
 
 ## 10. Open decisions
 
-- The §8 reservations (NOTES charter update; cross-source basis).
+- **F4** — whether self-accounting replaces the cache manager's own pending-list /
+  wire-later runtime (NOTES §Process runtime) or only governs the WAL manager's view
+  — **flagged in NOTES to revisit when the cache-manager runtime is built**.
+- The connection **mass-recompute signal** (§5) — part of the deferred aggregation
+  model.
+- The §8 reservations (optional canonical NOTES section; cross-source basis).
 - The deferred set in §7, owned by Patrick.

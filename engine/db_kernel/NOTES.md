@@ -642,10 +642,12 @@ necessary. Firmed so far:
   all: single instruction only, no batch form (the opposite of the compressed
   serial stream — non-arrayability IS part of the friction). Two deliberate
   gates: (1) **active confirmation before execution** — local, pre-execution,
-  the caller must deliberately confirm, not fire-and-forget; (2) **validation
-  tags for other instances** — the delete carries tags so peer instances confirm
-  before it is made SYSTEMIC (executes tentatively; becomes system-wide only
-  once peers validate). Rationale: a record is assumed well-vetted and
+  the caller must deliberately confirm, not fire-and-forget; (2) **[SUPERSEDED
+  2026-09-18 — see DELETE gates ruling below]** originally "validation tags for
+  other instances," but **no local validation-tag machinery is built**: the delete
+  executes locally now, its report is **booked by the WAL manager**, and the
+  peer/cross-network tentative→systemic validation is **deferred swarm-side**.
+  Rationale: a record is assumed well-vetted and
   reasonably supported before it reaches the DB, so destruction contradicts the
   base assumption and must be very deliberate — vetting lives on entry, deletion
   is the rare gated exception. Scope: DELETE_RECORD removes a whole token;
