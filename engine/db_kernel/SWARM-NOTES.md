@@ -44,7 +44,43 @@ serve as **connection indicators** (what exists out there, and how to reach it),
 **not** the full data. **Expanded coverage is acquired only on request**
 (pull-on-demand, torrent-style: fetch the pieces you ask for).
 
+## Why the flow works — determinism is the enabling property
+
+The torrent property that makes decentralization work — **identical file + identical
+settings ⇒ identical piece hashes, so more than one generator produces the same
+manifest** — is something the data model **already guarantees**: address IS identity,
+dedup by SEE, no aliasing (the record tier is deterministic and content-addressed by
+construction). So identical-hash generation across holders is not something to
+engineer; it falls out. Consequence: **no minter, no authority** — any holder
+independently derives the same piece hash, so pieces are interchangeable,
+sourceable from wherever has them, and verifiable without trusting the source.
+
+What in the built data serves this (candidate structure, confirm at the exam):
+- **The WAL** — already the ordered, self-interpreting stream; a natural manifest /
+  piece list.
+- **Trunk / contiguous-address-range layout** (kinds in trunks, sparse boundaries,
+  PK order = address order via `COLLATE "C"`) — natural, deterministic chunk
+  boundaries; everyone ranges it the same way.
+- **Only-follow** — a chunk (a bounded address range + its stored lists) is
+  self-contained: servable and verifiable without the whole.
+
 ## To pin when we examine the data shape
+
+- **Is a piece a delta-span or a state-range?** A **delta-span** (a run of WAL
+  entries) is the natural unit for *sync/updates* ("what changed"); a **state-range**
+  (a trunk/address range of cold storage) is the natural unit for *bulk coverage*
+  ("a region to pull"). Both are deterministic + content-addressed; they serve
+  different jobs. The process likely needs both — *which unit for which path* is the
+  concrete decision.
+
+## Parked (Patrick holds ideas — not designed)
+
+- **Conflict resolution.** Determinism makes conflicts **cheap to detect** —
+  identical data ⇒ identical hashes (dedups; no conflict), so a conflict surfaces
+  exactly as *divergent hashes at the same identity* (drift, independent authoring,
+  or an incoming update racing a local one). Detection falls out; the **resolution
+  policy** (which wins / how to merge) is the open part. Patrick has ideas —
+  PARKED. Relates to drift control and the tentative→systemic validation path.
 
 - **Exactly what becomes a bit-stream hash key, and at what granularity** (per WAL
   entry? per piece? per shard?) — the hinge the whole torrent-mapping turns on.
