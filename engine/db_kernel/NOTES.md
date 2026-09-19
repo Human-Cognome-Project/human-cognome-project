@@ -186,11 +186,15 @@ controls the DB) and its primary duty is serving input/output requests. It must
 be complete on its own and may be **detachable to ride with the swarm**;
 whether it is later bundled with other processes is a separate concern.
 
-> **Build status (2026-09-18):** the record tier writes **synchronously** — every
+> **Build status (2026-09-19):** the record tier writes **synchronously** — every
 > reciprocal is written inside the authoring op (`mint`'s WIRE, `add_membership`
-> both directions). The async **file-now / wire-later** split described below is
-> DEFERRED to WAL management (see *Current build state* → Deferred) — design, not
-> built.
+> both directions). The async **file-now / wire-later** split described below
+> remains the **cache manager's own runtime to build** — it is NOT implemented by
+> the WAL manager, which is now BUILT (`wal/`, see *Current build state*) as a
+> pure bookkeeper: it books the return-path/mass obligations a change owes and
+> monitors for their followup writes (tolerating the same-batch-today /
+> later-batch-future gap via fixtures), but it does not perform, drive, or design
+> this file-now/wire-later split itself.
 
 Work balancing is **foundational, not deferred** — the temporary Python loader
 is real I/O and must be handled right from the base:
@@ -213,13 +217,14 @@ is real I/O and must be handled right from the base:
   **file-now / wire-later-via-pending-list**, the reverse indexes (`token_child`,
   and likewise the `members`/`member_of` reciprocal) being eventually-consistent
   while deferred work drains.
-- **⚠ Revisit (2026-09-18):** the WAL manager's **self-accounting** completion model
-  — followup obligations booked from a change's own data and closed by *observing*
-  the followup writes, with **no pending-list drain** (see `WAL-PLAN.md`) — bears
-  directly on this pending-list / wire-later runtime. Whether self-accounting
-  **replaces** the pending-list-that-drains here or only governs the WAL manager's
-  view is unresolved (F4) and **must be revisited when the cache-manager runtime is
-  designed/built**.
+- **⚠ Revisit (2026-09-19):** the WAL manager (now BUILT, `wal/`) implements a
+  **self-accounting** completion model — followup obligations booked from a
+  change's own data and closed by *observing* the followup writes, with **no
+  pending-list drain** (see `WAL-PLAN.md`, `wal/README.md`) — bears directly on
+  this pending-list / wire-later runtime. Whether self-accounting **replaces**
+  the pending-list-that-drains here or only governs the WAL manager's own view is
+  unresolved (**F4, NEEDS-PATRICK**) and **must be revisited when the
+  cache-manager runtime is designed/built**.
 - **Multi-analyst.** The cache manager may serve more than one analyst and needs
   a per-analyst input/response link. Maintained aggregates (own masses, label
   centroids, reciprocal listings) therefore have a single owner — the manager —
@@ -645,8 +650,9 @@ necessary. Firmed so far:
   the caller must deliberately confirm, not fire-and-forget; (2) **[SUPERSEDED
   2026-09-18 — see DELETE gates ruling below]** originally "validation tags for
   other instances," but **no local validation-tag machinery is built**: the delete
-  executes locally now, its report is **booked by the WAL manager**, and the
-  peer/cross-network tentative→systemic validation is **deferred swarm-side**.
+  executes locally now, its report is **booked by the WAL manager** (built —
+  `wal/`), and the peer/cross-network tentative→systemic validation is
+  **deferred swarm-side**.
   Rationale: a record is assumed well-vetted and
   reasonably supported before it reaches the DB, so destruction contradicts the
   base assumption and must be very deliberate — vetting lives on entry, deletion
@@ -819,8 +825,9 @@ bare/fire-and-forget delete, never a blanket confirm flag. It then executes
 LOCALLY against the store. The peer / cross-network validation path
 (tentative→systemic across instances) is NOT built at the record tier — the
 delete's report is **booked by the WAL manager** (a bookkeeper/observer over WAL
-reports; see `WAL-PLAN.md`), while the cross-network validation **act** is
-**deferred swarm-side**, not run by the WAL bookkeeper. (This resolves the old G7
+reports, now BUILT — `wal/`; see `WAL-PLAN.md`, `wal/README.md`), while the
+cross-network validation **act** is **deferred swarm-side**, not run by the WAL
+bookkeeper. (This resolves the old G7
 delete-peer-validation seam; WAL-manager-is-bookkeeper reframed 2026-09-18.)
 No local validation-tag machinery is built now.
 
@@ -935,14 +942,35 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
   line `db_runtime` are superseded by `command/`+`declare/` (intake), `dispatch/`
   (routing), `seed/` (floor); `ingestion/README.md` is a supersession breadcrumb.
 
+**WAL manager COMPLETE** (built 2026-09-19; `wal/` kernel set, tasks W-1…W-6,
+package-vetted primary↔adversary, committed through `a899970`; its own standalone
+Postgres DB `wal_manager`, always separate from `hcp3_core`). A pure
+bookkeeper/observer over WAL reports — it never writes `hcp3_core`, never reads
+the command string, and never drives the cache manager. What it maintains is the
+**active deferred-work topology**: the live open-obligation relation (open =
+membership, PK-delete on close, no status column) plus an append-only History —
+the topology the cache manager navigates to find what followup work (reciprocal
+returns, mass) is still owed. Door surface: `open` / `close` / `is_open` /
+`list_open` / `record_seen`, every access a bounded PK follow (only-follow, no
+reverse index). See `wal/README.md` (charter, file map, build/run) and
+`wal/USAGE.md` (how a consumer — chiefly the cache manager — navigates it and the
+door/scope contract). **RECONCILE** (an analyst-raised "this deferred cross-work
+is priority now" flag) is acted on by the **cache manager**, which navigates this
+topology to do the pending work sooner — the WAL manager itself does not act on,
+prioritize, or drain anything for a RECONCILE; its open→close bookkeeping is
+unchanged by the flag, driven only by the reciprocal write actually landing.
+Still deferred within/around this layer (bucket B/C, `WAL-IMPL-PLAN.md` §1): the
+async reciprocal split, live logical-decoding ingest, and the mass-fill write
+(the cache manager's own runtime, not built); MOVE/rekey of open obligations; and
+NEEDS-PATRICK — the connection mass-recompute signal, F4, the cross-source
+global-order basis, and the swarm side entirely.
+
 **Deferred (not built; recorded seams):** G4 next-slot mechanism (also gates
 manager-placed mint), G5 block boundaries past hex couplets, G6 external
-transport/wire format; **WAL management** (the WAL manager — a bookkeeper/observer
-over WAL reports; books the DELETE report, with the cross-network validation act
-deferred swarm-side; the file-now/wire-later runtime itself is the cache manager's,
-§Process runtime — not a WAL-manager drain; design in `WAL-PLAN.md` (rev.6),
-design complete; F4 flagged to revisit when the cache-manager runtime is built);
-the **cache tier** (RECONCILE /
+transport/wire format; the **cache-manager runtime** itself (the file-now /
+wire-later split, §Process runtime — the WAL manager above only books/monitors
+the obligations that split would create, never drains it) and the swarm-side
+cross-network DELETE validation act; the **cache tier** (RECONCILE /
 UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
 derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 

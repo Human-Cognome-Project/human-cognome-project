@@ -1,5 +1,13 @@
 # WAL manager — implementation plan (for coding agents)
 
+> **STATUS: IMPLEMENTED** as `wal/` (2026-09-19) — W-1…W-6 all built and green
+> (see acceptance criteria per task below, all met), package-vetted
+> primary↔adversary, committed through `a899970`. See `wal/README.md` (charter,
+> file map, build/run) and `wal/USAGE.md` (consumer contract for the cache
+> manager and anything else that reads this kernel set's obligation topology).
+> Bucket B/C below are unchanged by the build — still design-ahead / NEEDS-
+> PATRICK, not resolved.
+
 **Source.** `WAL-PLAN.md` (rev. 6, reconciled/spec-compliant) and the 7-point
 ruling set (Patrick, 2026-09-18). This plan turns that design into
 **Sonnet-sized build tasks**. It plans **only the WAL manager (bookkeeper)** and

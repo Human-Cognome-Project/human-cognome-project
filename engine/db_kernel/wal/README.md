@@ -5,6 +5,10 @@ The WAL manager's own standalone kernel set (`WAL-PLAN.md`, `WAL-IMPL-PLAN.md`
 record-tier modules (`codec/`, `declare/`, `read/`): each part builds, runs,
 and tests **on its own**.
 
+This file is for working **on** this kernel set (charter, file map,
+build/run). If you're working on something that **uses** it instead —
+chiefly the cache manager — see `wal/USAGE.md` for the consumer contract.
+
 ## Charter
 
 The WAL manager is a **bookkeeper/observer over WAL reports** — never a

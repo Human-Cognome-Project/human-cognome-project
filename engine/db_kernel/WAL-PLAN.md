@@ -1,5 +1,43 @@
 # WAL subsystem — plan (rev. 6)
 
+> **STATUS: IMPLEMENTED** as `wal/` (2026-09-19) — all tasks (W-1…W-6) built,
+> every test PASSes, package-vetted primary↔adversary, committed through
+> `a899970`. See `wal/README.md` (charter, file map, build/run) and
+> `wal/USAGE.md` (consumer contract). This document remains the design record;
+> the NEEDS-PATRICK items in §8/§10 are still open (F4, the connection
+> mass-recompute signal, the cross-source order basis, the optional canonical
+> NOTES section) — none were resolved by the build. Package review also
+> surfaced one more item, recorded in the `a899970` commit message:
+> `wal_ingest.cpp`'s `close()` + `record_seen()` are two separate writes, not
+> one transaction. **HELD, pending Patrick's explicit confirmation** — not
+> built, and not formally dropped. The team's leaning assessment is that
+> fixing it would be overreach: durability is Postgres's job, and adding
+> transaction-boundary surface to `WalBook` would be imported crash-recovery
+> machinery the design doesn't call for, especially since the live
+> crash/replay path isn't even built yet (bucket B — everything today is
+> fixture-driven), so there is no live consumer to hit this window.
+>
+> One technical caveat that should inform Patrick's confirmation, not a claim
+> settled here: "a dropped row is simply re-recorded on replay" understates
+> the actual gap. The only durable per-source resume point this design has is
+> History's own `max(lsn)` (`wal_monitor`'s high-water mark is in-memory
+> only); if a crash lands between `close()` and `record_seen()` for a
+> settling report, the obligation row is already gone but that `(source,
+> lsn)` never reached History, so a resume from `max(lsn)` redelivers the
+> same report — and re-running `ingest()` on it then computes
+> `is_open(identity) == false` (already deleted) and writes
+> `record_seen(report, nullopt)`: a **silent, permanent wrong-value** write of
+> "settled nothing" for a report that, on its first (crashed) pass, genuinely
+> did settle something. Postgres's durability guarantees the row that gets
+> written is safe; it does not guarantee the value written is correct, and
+> here it would not be. This doesn't argue against holding the fix — no live
+> consumer exercises this today, which is a legitimate reason not to build
+> it now — but the hold should be understood as "accepting this known gap
+> because nothing exercises it yet," not "replay makes this a non-issue."
+> Two candidate fix shapes remain on record if Patrick ever wants this
+> closed: expose `begin()`/`commit()` on `WalBook`, or add a combined
+> `close_and_record()` door method.
+
 **Provenance.** Drawn from `NOTES.md` (the WAL-management topic; G7 delete; the
 mass ruling; the governing only-follow / no-reverse-search principle) and the
 design discussion of 2026-09-18. **Rev. 4** resolves the adversarial review
