@@ -213,6 +213,13 @@ is real I/O and must be handled right from the base:
   **file-now / wire-later-via-pending-list**, the reverse indexes (`token_child`,
   and likewise the `members`/`member_of` reciprocal) being eventually-consistent
   while deferred work drains.
+- **⚠ Revisit (2026-09-18):** the WAL manager's **self-accounting** completion model
+  — followup obligations booked from a change's own data and closed by *observing*
+  the followup writes, with **no pending-list drain** (see `WAL-PLAN.md`) — bears
+  directly on this pending-list / wire-later runtime. Whether self-accounting
+  **replaces** the pending-list-that-drains here or only governs the WAL manager's
+  view is unresolved (F4) and **must be revisited when the cache-manager runtime is
+  designed/built**.
 - **Multi-analyst.** The cache manager may serve more than one analyst and needs
   a per-analyst input/response link. Maintained aggregates (own masses, label
   centroids, reciprocal listings) therefore have a single owner — the manager —
@@ -931,7 +938,8 @@ manager-placed mint), G5 block boundaries past hex couplets, G6 external
 transport/wire format; **WAL management** (the WAL manager — a bookkeeper/observer
 over WAL reports; books the DELETE report, with the cross-network validation act
 deferred swarm-side; the file-now/wire-later runtime itself is the cache manager's,
-§Process runtime — not a WAL-manager drain); the **cache tier** (RECONCILE /
+§Process runtime — not a WAL-manager drain; design in `WAL-PLAN.md`, rev.5,
+design-ready pending F4 + the NOTES charter entry); the **cache tier** (RECONCILE /
 UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
 derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 
