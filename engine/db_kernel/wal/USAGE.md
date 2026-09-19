@@ -90,6 +90,16 @@ One line, repeated from `wal/README.md` because it's the whole boundary:
 **the cache manager writes the primary change and builds its own return
 paths; the WAL manager books what returns are owed and watches them land.**
 
+**No transaction boundary is provided across that cycle.** `open`, `close`,
+and `record_seen` are each their own independent write — the WAL manager
+gives no atomicity guarantee spanning "observe a settling write, then book
+it" (a crash mid-step can leave History mis-recording what settled; see
+`WAL-PLAN.md`'s status blockquote for the trace, and `NOTES.md`'s
+Process-runtime section for the ruling). That gap was raised, and Patrick
+ruled it dropped as a WAL-manager item, not fixed here — a consumer/runtime
+that needs atomicity across its own observe→act cycle owns that at its own
+level; the WAL manager does not provide it and is not adding surface to.
+
 ## RECONCILE
 
 RECONCILE (`NOTES.md` "Cache tier") is an analyst-raised **"this deferred

@@ -6,7 +6,11 @@
 > file map, build/run) and `wal/USAGE.md` (consumer contract for the cache
 > manager and anything else that reads this kernel set's obligation topology).
 > Bucket B/C below are unchanged by the build — still design-ahead / NEEDS-
-> PATRICK, not resolved.
+> PATRICK, not resolved. One item package review raised (W-5 ingest's
+> `close()`+`record_seen()` are not one transaction) is **resolved, dropped as
+> a WAL-manager item** (Patrick, 2026-09-19) — no transaction surface is added
+> here; the real underlying gap becomes a cache-manager-runtime item instead.
+> See `WAL-PLAN.md`'s status blockquote for the full trace.
 
 **Source.** `WAL-PLAN.md` (rev. 6, reconciled/spec-compliant) and the 7-point
 ruling set (Patrick, 2026-09-18). This plan turns that design into

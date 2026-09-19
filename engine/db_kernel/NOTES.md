@@ -224,7 +224,15 @@ is real I/O and must be handled right from the base:
   this pending-list / wire-later runtime. Whether self-accounting **replaces**
   the pending-list-that-drains here or only governs the WAL manager's own view is
   unresolved (**F4, NEEDS-PATRICK**) and **must be revisited when the
-  cache-manager runtime is designed/built**.
+  cache-manager runtime is designed/built**. Sitting alongside F4 in that same
+  revisit: **ingest atomicity across the observe→book cycle** — dropped as a
+  WAL-manager item (Patrick, 2026-09-19; the WAL manager's door gets no
+  transaction surface), but the underlying gap (a crash between the WAL
+  manager's `close()` and `record_seen()` can silently mis-record a
+  settlement) is real and becomes this runtime's problem to solve, since
+  cross-kernel-cycle durability belongs to whichever runtime orchestrates the
+  cycle, not the bookkeeping door on one end of it. See `WAL-PLAN.md`'s status
+  blockquote for the full trace.
 - **Multi-analyst.** The cache manager may serve more than one analyst and needs
   a per-analyst input/response link. Maintained aggregates (own masses, label
   centroids, reciprocal listings) therefore have a single owner — the manager —
@@ -959,6 +967,18 @@ is priority now" flag) is acted on by the **cache manager**, which navigates thi
 topology to do the pending work sooner — the WAL manager itself does not act on,
 prioritize, or drain anything for a RECONCILE; its open→close bookkeeping is
 unchanged by the flag, driven only by the reciprocal write actually landing.
+**Ingest atomicity — resolved as out-of-scope here (Patrick, 2026-09-19):**
+package review found `close()` + `record_seen()` are two separate writes, not
+one transaction, so a crash between them makes a resume-from-History-`max(lsn)`
+redeliver the report, land `is_open() == false`, and silently write
+`settled = NULL` for a report that did settle something — a real gap, not
+healed by Postgres's own durability (which guarantees the row written, not
+its value). Patrick's ruling: **dropped from the WAL manager specifically** —
+no transaction surface is added to `WalBook`, `ingest()` stays as-is — because
+atomicity across the whole observe→book cycle is the job of whichever runtime
+orchestrates that cycle, not this bookkeeping door. It becomes a
+**cache-manager-runtime** open item, to revisit alongside F4 when that runtime
+is built (see `WAL-PLAN.md`'s status blockquote for the full trace).
 Still deferred within/around this layer (bucket B/C, `WAL-IMPL-PLAN.md` §1): the
 async reciprocal split, live logical-decoding ingest, and the mass-fill write
 (the cache manager's own runtime, not built); MOVE/rekey of open obligations; and
