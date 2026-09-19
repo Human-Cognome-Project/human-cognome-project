@@ -11,9 +11,10 @@ tier (`codec/`, `command/`, `declare/`, `read/`, `update/`, `dispatch/`, `seed/`
 over `hcp3_core`. **Rev. 5** applies a cross-doc consistency validation (findings
 F1–F9): the retired WAL-management drift is shed from `NOTES.md`/`PLAN.md`/`API.md`
 (bookkeeper, not a scheduler or validation-runner; no drain attributed to it), §5
-is corrected to ride the built `token.mass`, and F5–F8 polish is applied. F3
-(separate mass table) and F4 (cache-manager runtime model) are **referred to
-Patrick**, not built to.
+splits the mass VALUE (rides the FIXED `token.mass`) from the mass calc-DEBT
+bookkeeping (booked as part of a change's followup obligations — a delegated call,
+made), and F5–F8 polish is applied. F4 (cache-manager runtime model) is **referred
+to Patrick**, not built to.
 
 **Standing.** Design only. Wide latitude for code structure; choices touching the
 **fundamental data model** are Patrick's — where he has explicitly delegated one
@@ -144,8 +145,10 @@ follow — no predicate scan on a non-key column, no reverse index:
   by the return write's own **axis-appropriate identity** (structure `(parent,
   child)`; membership `(member, group)`, §3); an obligation **closes when a followup
   write of that exact identity is observed** (§3). No drain, no queue consumption.
-- **Mass obligations** — §5; keyed by `token_id`, riding the built `token.mass`
-  (NULL = open, non-NULL = closed) — no separate table.
+- **Mass obligations** — §5; part of a change's **followup obligations** (same bundle
+  as its return paths), keyed by `token_id`; opened at `token.mass = NULL`, closed
+  when a non-NULL `token.mass` write lands. Mass *value* stays in the FIXED core
+  `token.mass`.
 - **History** — append-only per source `lsn`; the durable record of reports seen and
   obligations settled.
 - **Outstanding-obligation read-out** — the observer lists still-open obligations by
@@ -164,26 +167,32 @@ only); the follow *discipline* is reused, not the function.
 
 ---
 
-## 5. Mass — a monitored followup (rides the built `token.mass`)
+## 5. Mass — a monitored calculation debt
 
-Many operations require a **mass calculation and insertion by the cache manager**
-(Patrick, 2026-09-18). Mass is **not passed from the analyst**: the cache manager
-would have to validate any asserted mass anyway, so it is as easy to just compute
-and insert it (the NOTES mass ruling). The WAL manager does **not** compute mass; it
-**monitors that the mass write lands**, keyed by `token_id` — the same self-
-accounting pattern as a return path. The **mass-aggregation model** (how mass is
-computed) stays deferred and is the cache manager's (§7).
+A **DECLARE or a connection** incurs a **mass calculation debt**: a mass the cache
+manager must compute and insert (Patrick, 2026-09-18). Mass is **not passed from the
+analyst** — the cache manager would have to validate any asserted mass anyway, so it
+just computes and inserts it (the NOTES mass ruling). The WAL manager does **not**
+compute mass; it **books the debt and monitors that the mass write lands**. The
+**mass-aggregation model** (how mass is computed) stays deferred and is the cache
+manager's (§7).
 
-**It rides the built `token.mass` — no new schema.** A token's own mass is a
-**FIXED, built** decision: stored on `token` (`NOTES.md` "own mass — FIXED: stored
-on `token`"; the `token.mass` column is nullable, **NULL = not-yet-computed**, kept
-distinct from a real 0). That NULL state is exactly the monitor signal: a mint
-report with `token.mass = NULL` **opens** a `token_id`-keyed mass obligation, and a
-later non-NULL `token.mass` write for that `token_id` **closes** it.
+**The mass VALUE rides the built `token.mass` — no new core schema.** A token's own
+mass is a **FIXED, built** decision: stored on `token` (`NOTES.md` "own mass —
+FIXED: stored on `token`"; `token.mass` nullable, **NULL = not-yet-computed**,
+distinct from a real 0). That NULL state is the monitor signal: a declare/connection
+report with `token.mass = NULL` **opens** the debt; a later non-NULL `token.mass`
+write for that `token_id` **closes** it.
 
-**A separate mass table is NOT proposed.** An earlier rev. floated one; it would
-override the FIXED `token.mass` decision and churn built schema, so it is **referred
-to Patrick** (§8.2), not built to.
+**Booking the debt — part of the change's followup obligations (my delegated call).**
+The mass debt is one of the cache manager's **followup-work** items for a change,
+alongside the return paths — so the WAL manager books it **with** that change's
+followup obligations (the "original section"), not as a separate special table. Each
+item closes on its own followup write's identity — a return write, or the
+`token.mass` fill — matched by equality (only-follow). This is the WAL-DB *debt*
+bookkeeping, **not** a second copy of the mass value: the value stays in the FIXED
+`token.mass`, so there is no core-schema change. (An earlier note conflated the debt
+bookkeeping with a core mass-value table; they are different things.)
 
 ---
 
@@ -222,10 +231,9 @@ never touches. None are WAL touch points.)*
 
 1. **NOTES charter update** (§7.1) — his authority; the plan proceeds on the
    bookkeeper scope meanwhile.
-2. **Mass table** (§5) — **referred, not decided.** The WAL manager rides the FIXED,
-   built `token.mass` (NULL = not-yet-computed) with no schema change. A move to a
-   *separate* mass table would override that FIXED decision and churn built schema —
-   Patrick's call; not built to meanwhile.
+2. **Mass — decided (your delegation).** Value stays in FIXED `token.mass`; the calc
+   debt is booked as part of the change's followup obligations (§5) — not a separate
+   table, not a core-schema change. Flag if you'd rather it be a separate set.
 3. **Cross-source global-order basis** (§4) — swarm-side; needed only if/when the
    swarm side is built.
 
@@ -252,5 +260,5 @@ never touches. None are WAL touch points.)*
 
 ## 10. Open decisions
 
-- The §8 reservations (NOTES charter update; mass-table referral; cross-source basis).
+- The §8 reservations (NOTES charter update; cross-source basis).
 - The deferred set in §7, owned by Patrick.
