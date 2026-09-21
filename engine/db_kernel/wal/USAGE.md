@@ -1,5 +1,14 @@
 # Using the WAL manager
 
+> **⚠ Forward flag (2026-09-21) — proposed rebase, NOT built.** The activation-substrate
+> design (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`) proposes a **PUSH** model: the
+> WAL manager emits owed reciprocal work to the originating cache manager's inbox and stages
+> RECONCILE into a pinned box — superseding this doc's "not to be told what to do next," "no
+> schedule/prioritize surface," and "The WAL manager's role is unchanged by RECONCILE." Close
+> stays self-accounting (the durable obligation remains in the open-obligation relation; the
+> outbox is volatile transport). Everything below still describes the **built** pull/observer
+> behaviour.
+
 This is the **consumer contract** for anything that reads the WAL manager's
 bookkeeping — chiefly the **cache manager**, which is the only real consumer
 today. If you are working *on* the WAL manager itself, see `wal/README.md`

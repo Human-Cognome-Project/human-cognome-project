@@ -1,5 +1,11 @@
 # db_kernel — record-tier API reference
 
+> **⚠ Forward flag (2026-09-21).** §9's "WAL manager — bookkeeper/observer … never drives"
+> characterization is under active design-discussion rebase
+> (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`): a push outbox to the cache manager plus a
+> swarm-manager coupling are proposed, still deferred/not-built. This reference still describes
+> the built state.
+
 **Status: record tier COMPLETE** (built 2026-09-17/18, on branch
 `dbkernel-design-checkpoint`; commit `912d681` and prior on this branch).
 Every module below — `codec/`, `schema/`, `controller/`, `command/`,

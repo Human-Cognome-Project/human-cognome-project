@@ -1,5 +1,13 @@
 # HANDOFF — reload pointer for the next session
 
+> **⚠ Forward flag (2026-09-21).** The core-data-flows discussion produced a cross-kernel
+> rebase to monitored-endpoint activation (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`;
+> local primitives BUILT — `engine/db_kernel/endpoint/`, commit `b97034a`). It proposes the
+> **push** inversion of "How to consume the WAL manager" below (WAL manager emits reciprocal
+> work; RECONCILE staged into a pinned box) and sketches swarm indexing — the swarm layer
+> stays **gated** on the WAL-data-shape exam. WAL-manager integration is the active
+> design-discussion; not built.
+
 **For:** the next db_kernel session. **Incoming direction (Patrick, 2026-09-19):
 a design *discussion* of the core data flows, and possibly redefining the command
 structure of the system overall to a cleaner baseline — see "Incoming direction"

@@ -1,5 +1,14 @@
 # db_kernel — data protocol & address-layout notes
 
+> **⚠ Forward flag (2026-09-21) — design-discussion, not built.** A cross-kernel rebase to
+> monitored-endpoint activation (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`) is in
+> progress. Bearing on this doc: the WAL manager gains a **push** outbox to the cache manager
+> (relevant to **F4** under "Process runtime" — the rebase argues F4-affirmative) and stages
+> RECONCILE, reconciling with "the WAL manager itself does not act on/prioritize/drain … for a
+> RECONCILE"; and the swarm "coarse token for a truncated area" = the **existing coarse label
+> token**, consistent with "own mass — FIXED, stored on token" / "centroid not stored — had by
+> having the label." Local activation primitives are BUILT (commit `b97034a`).
+
 Working notes for the hcp3_core db_kernel set. Prose/design record; the code
 and its tests are the source of truth for behaviour. Canadian English.
 

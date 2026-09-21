@@ -109,6 +109,13 @@ manager** (not the cache manager directly): on a reconcile request, the WAL mana
 **moves the relevant existing pending work into the reconcile box**, and it then
 executes first-priority.
 
+- **Scope flag — `local` vs `all` (tentative).** The reconcile request carries a scope.
+  `local` reconciles this instance's pending work (the WAL open-obligation topology only);
+  `all` broadens it to **swarm-sourced relevant work as well** — which, from the WAL manager's
+  side, simply arrives as new work in (Pair-2 inbox → cache-manager work via the extra box); the
+  coverage request itself is an analyst / cache-manager act (forward), not the WAL manager's. So
+  **`all` ⊇ `local`** — it necessarily incurs the local reconcile too. The flag rides on the
+  request (a field on the placement).
 - **Selection is only-follow, not a scan.** The pending work already lives as the WAL
   manager's open-obligation topology; on a reconcile the WAL manager navigates that
   topology (PK / PK-prefix follows — its existing surface) to move the relevant set
@@ -120,8 +127,11 @@ executes first-priority.
 - **"First priority" = do-next, not preempt** (per the Priority section): the reconcile
   box wins the next selection whenever it holds anything; nothing running is
   interrupted.
-- Termination / the "consistent point": the moved set is finite and only a reconcile
-  fills the box, so the consistent point *is* the moment it empties.
+- Termination / the "consistent point": for **`local`**, the moved set is finite and only a
+  reconcile fills the box, so the consistent point *is* the moment it empties. For **`all`**,
+  the swarm-sourced work arrives asynchronously as new work in, so its consistent point is when
+  those obligations **close** (self-accounting) — the async settlement, not the local box-empty
+  moment.
 - This is the clean form of "temporary promotion": priority is the box's fixed
   identity, "temporary" is only its occupancy. (Supersedes the earlier
   freeze-the-endpoint / drain-boundary framing — no freeze, marker, or relaxation
@@ -142,9 +152,10 @@ imported machinery / no invented complication; the cost hierarchy; SEE idempoten
 completion acks at a return endpoint; synchronous reciprocal writes → same-boundary
 vs cross-boundary activation (same-memory is immediate, cross-kernel is the same
 activation with latency), which makes the async reciprocal the natural shape. This
-bears on **F4** (self-accounting vs a drained pending-list): there is no pending list
-to drain, only occupied boxes — pointing toward F4 affirmative; confirm when the
-cache-manager runtime is designed.
+bears on **F4** (self-accounting vs a drained pending-list): the pending list being denied
+is the **cache manager's own drainable list** — the durable open-obligation relation still
+lives in the WAL manager and closes by observing the followup write. Points toward F4
+affirmative; confirm when the cache-manager runtime is designed.
 
 **Durability is not a box property:** boxes are volatile and a crash loses in-flight
 boxes, by design. Completion is an **explicit ack to the requester** (payload
@@ -271,6 +282,108 @@ needed:
 land in a mailbox slot since recycled to another request. The `generation` stamp on
 the local slot handles it (a reply carrying a stale generation is dropped). Purely
 local runtime plumbing.
+
+## WAL-manager comms wiring + swarm indexing (2026-09-21 — WAL-integration design, in progress)
+
+Patrick-driven, the first WAL-manager integration onto the activation substrate. The
+WAL manager's coupling is a set of boxes.
+
+**Pair 1 — internal (local db → cache manager).**
+- **Inbox: a per-source SET** of local WAL-record feeds (core, each language shard, the
+  personality DB). Per-source ordering is the box FIFO; cross-source independence is just
+  the boxes being separate — no global order needed. (The box FIFO is a *volatile view* of
+  the durable per-source order, which lives in the WAL manager's History.)
+- **Outbox: the reciprocal work list** → the cache manager that created the initiating
+  entry. Instead of the cache manager polling what's owed, the WAL manager recognises the
+  owed reciprocals from the record's own data and emits them to that originator's inbox
+  (which cache manager falls out of the initiating entry's own origin).
+  - **Volatile transport, durable relation.** The outbox is *notification/transport only* —
+    the durable obligation stays in the WAL open-obligation relation; a lost outbox entry is
+    re-driven on reload (durability ruling above). This does NOT re-locate pending work into
+    a box: the box notifies, the relation persists, and close is still by observing the
+    followup write come back around the WAL feed.
+  - **Deliberate rebase (carry into the change plan).** This PUSH supersedes the built
+    PULL/observer contract — `wal/USAGE.md`'s "not to be told what to do next," "no
+    schedule/prioritize surface," "never drives the cache manager." On the activation
+    substrate everything is push; polling `list_open` is the demoted idiom. Close semantics
+    are unchanged (still self-accounting). Flag `wal/USAGE.md` / `WAL-PLAN.md` / `NOTES.md` /
+    `HANDOFF.md` for supersession — same treatment the RECONCILE section gives its rebase.
+
+**Pair 2 — with the swarm manager (self-contained, both ways).**
+- The **swarm manager is the p2p component — NOT yet addressed** (a forward reference, like the
+  cache-manager boxes). This pass wires only the WAL manager's *coupling* to it, not its
+  internals; its design is the p2p / swarm section, still gated on the WAL-data-shape exam.
+- **Inbox:** incoming change data from the swarm manager, to **unpack**.
+- **Outbox:** composed **internal delta packets** passed back to the swarm manager — the
+  outbound prep (local change → manifest/packets for peers).
+- This **activates the WAL manager's swarm-side facet**, which `WAL-PLAN.md` §2 and
+  `SWARM-NOTES.md` mark deferred — a deliberate design-discussion rebase; cross-ref those.
+
+**Extra box — unpacked swarm change → cache-manager work list.** The unpacked inbound
+change (pair 2's inbox) becomes cache-manager work, its own outbox to the cache manager,
+separate from the swarm-manager pair. So **two outboxes point at the cache manager**
+(pair-1 reciprocals + this unpacked swarm work). Because a box is natively multi-connection,
+both can already feed the cache manager's one input box; the **shared-outbox extension**
+(deferred) is only the further question of whether they stay two priority-distinct boxes or
+collapse to one ordered box (priority is box-granular).
+
+**Fan:** the pair-1 local WAL feed drives **two** outputs — reciprocal work → cache
+manager, and composed delta packets → swarm manager. That fan is where composing sits.
+
+**Swarm indexing (under the trackers) — design-discussion; still GATED on examining the WAL
+data shape first (`SWARM-NOTES.md`, `HANDOFF.md`). The reconcile-vs-extend split *informs* the
+delta-span (sync) vs state-range (bulk-coverage) fork but does not resolve it — the fork stays
+formally parked pending the data-shape exam.**
+- The **address tree IS the index** the trackers carry (the manifest = the address tree; the
+  address is the manifest key — no hashing).
+- **Address is identity/key.** A packet's **content (connections + masses) + when it was
+  set** — the **set-time is the immutable timestamp carried in the package** (the same stamp
+  the dupe rule's oldest-wins uses; a local value comparison, no global clock) — are what
+  drive dedup / collision / versioning: content compared for same-vs-different, set-time the
+  oldest-wins tiebreak. Identity is the address; content + set-time are the version at it.
+- Each tracker holds **only its own current state** — full detail where it has coverage;
+  where truncated, it holds the **existing coarse label token** (its already-stored mass +
+  connection indicators = the core distillation / LoD rollup), **NOT a newly stored or
+  computed aggregate**. Consistent with NOTES' "centroid not stored — had by having the
+  label": the coarse node already exists, so a truncated area is that coarse token shown
+  instead of descended.
+- **Truncation is the LoD dial applied to coverage:** a truncated node is the tree seen at
+  coarse LoD (its coarse token); pulling coverage descends it into detail. A tracker is
+  coarse where it has not pulled, fine where it has — the existing rollup reused, nothing new
+  to build.
+- A tracker's partial coverage is a **coarse-LoD SUBSET of the ONE shared address tree** (the
+  address is the swarm-wide manifest key), never a replicated fork — one data space, not many.
+
+**Pull / reconcile vs extend, and the analyst's deviation signal (2026-09-21).**
+- The **swarm manager** keeps **semi-contemporaneous** records of what's available across the
+  swarm — the tracker catalogue **is the held core distillation** (SWARM-NOTES' connection
+  indicators), not a new store; roughly current, not perfectly live.
+- **For the WAL manager, swarm activity is just new work coming in** (Pair-2 inbox → composed
+  into cache-manager work via the extra box). It composes whatever arrives; it does not itself
+  distinguish extend- vs reconcile-prompted, nor originate swarm coverage requests — requesting
+  new coverage (extend) and raising reconcile-`all` are cache-manager / analyst-layer acts
+  (forward).
+- **Reconcile** settles changes to coverage the instance **already holds**: the WAL manager,
+  from the **locally-defined dataset**, determines which aspects to pull/reconcile, and a
+  change within the existing (locally-held) tree is **auto-captured** — no request needed.
+  (`local` vs `all` on the reconcile request scopes this to the instance or the swarm.)
+- **Extend** is the distinct operation — pulling **new granularity** the instance does NOT
+  hold (descending a truncated/coarse node into detail): an explicit **cache-manager →
+  swarm-manager** request, not automatic (the cache manager decides what to attach / at what
+  granularity — SWARM-NOTES division of labour). **This is a CACHE-MANAGER box — a forward
+  reference, NOT part of the WAL-manager wiring above; it gets defined when we address the
+  cache-manager boxes (this pass is scoped to the WAL manager).**
+- **Analyst deviation gauge — analyst-facing context; derived from work already tracked, NOT a
+  new stored statistic.** Two indicators, **both relevance-scoped to the current focus**:
+  - **Local deviation** = the cache manager's owed **cross-pollination (reciprocal) backlog**
+    that bears **directly on the current primary focus**. A "side" connection may matter to
+    others but is not counted if it's not relevant to the local working cache.
+  - **Global deviation** = how much **pending work from p2p swarm updates** is relevant to
+    what's being examined — **NOT a swarm-wide total**; it is swarm-sourced pending work filtered
+    by the active focus (derivable from incoming swarm work × relevance, no cross-node aggregate).
+  Both gauge how much relevant work is outstanding and how directly it touches the active set —
+  the relevance trigger RECONCILE leans on. (Analyst-layer indicator, grounded in the WAL/cache
+  work topology; wired with the analyst/cache-manager boxes later.)
 
 ## Open / to pin
 

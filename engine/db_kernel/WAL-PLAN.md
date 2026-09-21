@@ -1,5 +1,13 @@
 # WAL subsystem — plan (rev. 6)
 
+> **⚠ Forward flag (2026-09-21) — proposed rebase, NOT built.**
+> `engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` proposes, on the activation substrate:
+> (i) a **push** outbox (WAL manager → originating cache manager's inbox) rebasing §0's
+> observer/pull framing (close still self-accounting; durable obligation stays in the
+> relation); (ii) an **active swarm-manager coupling** — unpack inbound change, compose
+> outbound delta packets — activating §2's deferred swarm facet and its "moves no bytes."
+> Design-discussion; this plan still records the built bookkeeper.
+
 > **STATUS: IMPLEMENTED** as `wal/` (2026-09-19) — all tasks (W-1…W-6) built,
 > every test PASSes, package-vetted primary↔adversary, committed through
 > `a899970`. See `wal/README.md` (charter, file map, build/run) and
