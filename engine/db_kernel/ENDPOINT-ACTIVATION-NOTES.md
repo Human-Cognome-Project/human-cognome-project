@@ -389,11 +389,19 @@ formally parked pending the data-shape exam.**
 - **WAL-report → WAL-inbox translation** — how raw WAL records (Postgres logical-decoding
   output) become inbox messages. Its own focused discussion; relates to the live-feed /
   wire-form (G6) gate.
-- **Confirmation = an analyst `verify` function** (analyst-layer, forward), **linked to swarm
-  information that surfaces potential conflicts** — so confirmation is conflict-aware (ties in
-  the swarm's dupe/collision/deviation data) and lives with the analyst, not in the WAL core.
-  Likely where the old cross-network (G7-style) validation lands. The WAL core only books and
-  routes; it holds no confirmation logic.
+- **`verify` — the analyst's integrity gate** (analyst-layer, forward). **In essence it asks:
+  "does our model allow for this to be true?"** — a model-consistency check (is the claim
+  supported by the established connections/masses and the swarm's version?), not an authority
+  check. It guards **any delete action or significant connection assertion** (the destructive /
+  high-impact operations) and is
+  the system's **self-defence against attempted forced bias** — distorting the model by forcing
+  deletes or assertions. It is **swarm-informed**: the link to swarm conflict data is the
+  leverage — a genuinely well-supported change does not conflict, whereas a forced-bias attempt
+  **diverges from what the network holds** and surfaces as conflict for `verify` to catch and
+  resist (the content-addressed / oldest-wins consensus turned into a defence: bias shows up as
+  divergence). Realizes the base's delete-gating / no-forced-equivalence stance and the old
+  cross-network (G7) validation. The WAL core holds no confirmation logic — it only books and
+  routes.
 
 ## Open / to pin
 
