@@ -1,0 +1,320 @@
+# Endpoint-activation cross-kernel model — design notes
+
+**Status: DESIGN DISCUSSION IN PROGRESS (Patrick-driven, 2026-09-19 MDT). Draft /
+direction record — not built, not adversary-firmed, nothing superseded yet.**
+This captures the proposed rebase of the **cross-kernel command / coupling
+layer** (scope confirmed with Patrick: cross-kernel commands — not the analyst
+layer, cross-kernel field work, or the wider HCP vocabulary). It reshapes *how
+components are invoked and coupled*; it is largely **non-destructive to the built
+record-tier cores** — the six verbs survive as reaction bodies (see *Fit with the
+built base*).
+
+Canadian English. Prose/draft record. On any conflict with built behaviour, the
+code and the existing `API.md` / `NOTES.md` remain the source of truth for what is
+*built*; this file records a *direction* still under discussion.
+
+## The shift
+
+The current construct invokes a kernel by **active instruction** (a serialized
+command dispatched at it) and reads results by **polling**. Both pull the system
+toward API-style serialization as its native idiom — request/response is the shape
+of "instruct, then check." That is not optimal for actual data flow.
+
+Move the base to **monitored data-endpoint activation**: a component monitors an
+endpoint; **data arriving at the endpoint is the activation.** No instruction, no
+poll — presence fires the work. Serialization is not discarded; it is **demoted to
+a bridge**, used only where two components do not share a native memory
+representation.
+
+## Endpoints are memory boxes, not writes
+
+An endpoint is a **memory allocation box the process monitors** — a virtualized
+stdin/stdout location — NOT a physical store write. A box **may refer to a
+secondary location if need be**, but the physical write is the exception, not the
+substrate. The local path is box-to-box in native memory: no serialization and no
+physical write anywhere on it.
+
+- A box is an **ordered queue** (a region holding pending items in order), not a
+  single slot.
+- **The box queues its work by existing.** There is no enqueue call and no
+  separate queue object — an occupied box *is* the queued work; the monitor
+  watching it sees occupancy as the activation, handles the contents in order, and
+  clears them. Empty = settled. This is the same presence=pending / cleared=done
+  accounting the WAL manager runs, seated in memory rather than in DB rows.
+
+## One process shape
+
+Every component is the same shape: **monitor an occupied box → run its body →
+emit into an output box.** Nothing is privileged. A record-tier component's body
+is DECLARE / READ / UPDATE; a converter's body is serialize-and-hand-off; its
+counterpart's body is deserialize-and-place. The scheduler over a set of boxes
+does exactly one thing (see *Priority*).
+
+## Serialization as a bridge (the .json/API converter)
+
+For any two of *our own* internal components separated by a representation /
+system boundary:
+
+- A converter is **just another monitor-a-box process** — indistinguishable from
+  any kernel to everything around it. Its body: serialize whatever it finds in its
+  input box and hand it to its counterpart.
+- It is a **matched pair**: the counterpart on the other side deserializes and
+  places the result into the memory boxes (queues) on that side. From every other
+  component's view, the counterpart it talks to is just a local endpoint — no
+  component knows whether its counterpart is native or bridged.
+- The .json/API form is **internal interchange, not external integration** — the
+  neutral form between two of our own components across a boundary, never a surface
+  for foreign APIs. Serialization exists at exactly these seams and nowhere else.
+- **Conversion and transmission are separate, swappable stages.** The converter
+  translates representation; a separate transmission process monitors the
+  converter's output box and moves the bytes. Change the format without touching
+  the transmitter; change the transport without touching the converter.
+- **The return path is activation in reverse, not a poll.** A response flows back
+  through the same stage types and lands at the originating component's return
+  endpoint, which fires when it arrives. Nothing waits or checks.
+
+## The setup runner IS the command structure
+
+The setup runner wires the topology: **components + boxes, plus a converter-pair
+at each representation seam.** That is the cross-kernel command structure now —
+**no separate command protocol survives** — the only carried element is the
+return-endpoint reference in a request (below). There are only component bodies,
+boxes, and converter-pairs at the seams.
+
+## Priority — coarse, placed, never computed
+
+Priority lives at **box granularity, not per item.** Within a box, FIFO — no sort,
+no per-item priority field, nothing to search. The scheduler does one thing:
+**drain the highest-priority occupied box, take its head.** Which box a piece of
+work lands in *is* its priority, so routing/placement carries the priority meaning
+— the same instinct as meaning living in address layout instead of being
+recomputed.
+
+- Any priority class = a box pinned at that level, occupied on demand. **N tiers =
+  N pinned boxes** (purpose-pinned tier boxes, separate from a component's own input
+  box); you invoke a tier by routing work to it.
+- **High priority means "do this next," never "interrupt."** The scheduler picks the
+  highest-priority occupied box *at the point it selects the next unit* — it does not
+  preempt a unit already running. A unit runs to completion; priority only orders what
+  is chosen next. An **ordered/arrayed stream is one unit** (a compressed serial
+  command), drained in order to completion by its handler — so dependent ordering
+  (a MOVE after the DECLARE it depends on) is preserved intrinsically, with nothing to
+  cut in mid-stream. Nothing is interrupted mid-execution.
+
+## RECONCILE = a pinned, normally-empty endpoint, fed by the WAL manager
+
+RECONCILE is not a verb and not a freeze. There is a **dedicated reconcile box pinned
+at highest priority and normally unoccupied.** A RECONCILE **routes through the WAL
+manager** (not the cache manager directly): on a reconcile request, the WAL manager
+**moves the relevant existing pending work into the reconcile box**, and it then
+executes first-priority.
+
+- **Selection is only-follow, not a scan.** The pending work already lives as the WAL
+  manager's open-obligation topology; on a reconcile the WAL manager navigates that
+  topology (PK / PK-prefix follows — its existing surface) to move the relevant set
+  into the box. It moves what it already tracks — no predicate scan over pending work.
+- **Pending work's home stays the WAL topology; the box is transient execution
+  staging.** The reconcile box does not hold pending work in general — it is filled
+  only when a reconcile happens, drained first, then empty again. (Resolves the
+  earlier draft's mis-location of pending work into memory boxes.)
+- **"First priority" = do-next, not preempt** (per the Priority section): the reconcile
+  box wins the next selection whenever it holds anything; nothing running is
+  interrupted.
+- Termination / the "consistent point": the moved set is finite and only a reconcile
+  fills the box, so the consistent point *is* the moment it empties.
+- This is the clean form of "temporary promotion": priority is the box's fixed
+  identity, "temporary" is only its occupancy. (Supersedes the earlier
+  freeze-the-endpoint / drain-boundary framing — no freeze, marker, or relaxation
+  logic needed.)
+- **Role note (a deliberate rebase, carry into the change plan):** this extends the
+  WAL manager from the built "passive topology the cache manager *reads*"
+  (`wal/USAGE.md`: no schedule/prioritize surface) to **actively staging reconcile
+  work into a box**. That is a conscious revision of the built bookkeeper boundary,
+  not an oversight. The WAL manager still only *selects and places*; whoever drains
+  the box does the work.
+
+## What the rebase keeps and replaces
+
+**Still governs** (unchanged): only-follow / never-search; address IS identity; no
+imported machinery / no invented complication; the cost hierarchy; SEE idempotency.
+
+**Replaced:** active-instruction dispatch → monitored-endpoint activation; polling →
+completion acks at a return endpoint; synchronous reciprocal writes → same-boundary
+vs cross-boundary activation (same-memory is immediate, cross-kernel is the same
+activation with latency), which makes the async reciprocal the natural shape. This
+bears on **F4** (self-accounting vs a drained pending-list): there is no pending list
+to drain, only occupied boxes — pointing toward F4 affirmative; confirm when the
+cache-manager runtime is designed.
+
+**Durability is not a box property:** boxes are volatile and a crash loses in-flight
+boxes, by design. Completion is an **explicit ack to the requester** (payload
+optional); the durable source of truth stays the **store (Postgres/WAL)**, from which
+pending work is re-established on restart, lost in-flight work is **re-driven** (an
+unacked request is still owed), and idempotency (SEE) makes redo safe. At-least-once =
+ack + reload + idempotent redo, never persisted mailboxes.
+
+**Reused as-is:** the WAL manager's presence=pending obligation topology (the durable
+home of pending work); the six verbs, now the reaction bodies a monitor runs rather
+than dispatched commands.
+
+**Open (from `SWARM-NOTES.md`):** converter:transmission need not be 1:1 — a converter
+is per-remote-counterpart, but one transmission process may multiplex many converters
+onto shared peer machinery.
+
+## Cost model / implementation constraints
+
+Payloads are small (token_ids = a handful of base-50 couplets; notation = short
+text), and a box may hold a **reference** into a shared arena rather than the
+payload (the "secondary location if need be"), so per-message and per-box *memory*
+overhead is nominal. What governs whether **box proliferation** is cheap is two
+constraints the change plan must honour — the payload size is not the issue:
+
+1. **Monitoring is readiness/notify-driven, never per-box polling.** Producers
+   signal a readiness mechanism; the monitor services only occupied boxes (cost
+   O(occupied), not O(total)). This is "monitor, never poll" applied to the
+   substrate itself — idle boxes then cost essentially nothing and may exist in
+   large numbers.
+2. **OS-level resources stay at the bridge seams only.** Local boxes are
+   lightweight in-memory queues (tens of thousands are fine). A box becoming an OS
+   object each (pipe/socket/shm) would hit fd / kernel-memory ceilings — so OS
+   channels appear only at converter/transmission seams, where they are pooled and
+   **multiplexed** (many converters : one transmitter).
+
+The proliferating class is the **ephemeral per-request return endpoints**: their
+live count = **in-flight concurrency, not data volume** (allocated, filled once,
+drained, recycled from a freelist). That count is a **steady state** — roughly
+arrival rate × mean drain latency (Little's law) — so its RAM tracks *how long work
+waits to be serviced*, not throughput or total data. Given the tiny payloads it
+takes on the order of ~1M simultaneously-outstanding un-drained ops to reach ~1 GB
+(2–3 orders of magnitude past any realistic in-flight count on a 2–4 GB machine).
+Unbounded growth therefore only comes from a **monitor that stops draining** (a
+stall or a leak of un-recycled boxes) — a **liveness signal to detect, not a
+capacity ceiling**. Standing boxes (component inputs, the pinned
+reconcile box) are few and fixed. The one genuine per-op cost is **concurrent-append
+synchronization** on a shared input box under the multi-connection case (a CAS/lock
+per append) — cheap for small messages, but that is where the cycles go, not in box
+setup or existence.
+
+## Endpoint identity & the dupe-address rule (tentative, 2026-09-20)
+
+**Endpoint identity reuses the one address space — nothing new is invented.** A
+node / component is addressed in the **existing token_id space** (address IS
+identity; base-50 couplets; no parallel node namespace, no assignment authority).
+An endpoint reference is therefore just:
+
+- **the node/component's token_id-space address**, plus
+- **a transient local mailbox locator** — which in-memory box on that instance: a
+  runtime slot (`slot`, `generation`), discarded on drain, NOT a stored identity and
+  NOT part of DB addressing.
+
+Resolution: a **local** target → resolve the slot directly → append; a **remote**
+target → hand the payload (address and all) to the converter the setup runner wired
+at that seam → the far side resolves its own local slot. **No routing table, no
+multi-hop, no node namespace** — reaching an address across the swarm is the
+content-addressed pull the swarm design already provides, not a layer the endpoints
+supply. *(Earlier drafts of this raised a node-id assignment scheme and multi-hop
+routing — both RETRACTED as imported machinery; the base already answers node
+identity and reachability.)*
+
+**Why identity needs no authority — the dupe-address rule (Patrick, 2026-09-20).**
+Addresses are suggestions/derivations that self-resolve, so no central assignment is
+needed:
+
+- **Local (same store).** A DECLARE / MOVE address is the analyst's *suggestion*,
+  born of how the data connects; the analyst does not care what the final store
+  address is. The **cache manager disposes** — it uses the request as given, or the
+  **closest appropriate range** if that space is occupied. (This is the existing
+  `@`-override / caller-proposes-manager-disposes / relocation-is-free rule; the
+  "address range occupied" routines are **noted but currently incomplete** —
+  flagged.)
+- **Across the p2p network — two cases, one rule set, self-converging.**
+  - *Same data, same address:* the **winner is picked by the one rule below (least
+    conflicting, oldest if equal)**; a
+    tracker encountering the dupe incorporates the deprecated one as a **delete or
+    move**, **sanctioned by its replacement with the winning address**.
+  - *Different data, same address (a true collision):* systems encountering it
+    **separate the two** and issue a **combined ledger update** describing the
+    separation; the **same address rules then apply** to the separated particles
+    (re-addressed by the standard content derivation, and any further dupe that
+    creates resolves the same way — recursive).
+
+  Detection is a direct comparison of the token's actual content — its **connections
+  and masses** (all the DB holds): same content = the same token (dedup); different
+  content at one address = a collision. No address-hashing, no content-hash scheme.
+  This is the torrent mapping: the **address replaces the piece-hash** as the manifest
+  key, the **payload is the data packet** for that address, and **sections of the swarm
+  are a torrent file-selection tree** (a trunk/subtree is a selectable region to pull).
+  Nothing is hashed — the address already *is* the key. Individual packets are **tiny**
+  (a token's connections + mass) even when the receiver assembles many into a larger
+  local DB — the transferred pieces stay small as the assembled store grows. The rules
+  then make resolution automatic — no minter, no authority. **A given address may flux across the network at first
+  but normalizes rapidly:** the rules are deterministic and holders derive the same
+  resolution independently, so the combined ledger update propagates and every holder
+  converges — the transient disagreement damps as it spreads. Flux is **safe**, not
+  merely tolerated: nothing holds an address (the analyst navigates by connection;
+  relocation is free), so a momentarily-wrong address is corrected by a move with no
+  stale handle to break.
+  - **Convergence is by iteration of one rule, not first-time-identical separation
+    (Patrick, 2026-09-20).** The single rule — **least other conflicting change wins,
+    oldest if equal** — applies to *whatever conflicts exist*, including a conflict
+    created by two holders separating the same collision *differently*: that
+    divergence is itself just another conflict the same rule then settles, so the
+    system iterates to a fixpoint. **"Oldest" is a plain timestamp carried in each package** — a local
+    value comparison, no global clock. Everyone compares the same carried value and
+    picks the same winner; that determinism is what converges. There are therefore **not** two resolution modes: local disposition
+    ("closest appropriate range") merely *proposes* an address; any conflict that
+    proposal creates on the network reconciles by the very same rule, exactly as any
+    other conflict does. (Corrects an earlier draft here that posited a separate
+    content-deterministic network mode — unnecessary.)
+
+**Residual (small, local):** recycled-slot safety — a late/duplicate reply must not
+land in a mailbox slot since recycled to another request. The `generation` stamp on
+the local slot handles it (a reply carrying a stale generation is dropped). Purely
+local runtime plumbing.
+
+## Open / to pin
+
+- **READ / all functions move to activation — RESOLVED (Patrick, 2026-09-19): the
+  model is fully uniform, no synchronous carve-out.** The analyst is itself a
+  monitored-endpoint kernel: READ → prove-in-sim → DECLARE becomes
+  emit-read-request → result lands in a return box → sim → emit-declare,
+  event-driven, no blocking wait. READ mutates nothing, so it emits no WAL report
+  and opens no obligation — its completion is just its result landing in the return
+  box (the substrate's own presence=done signal). Clean split: **boxes = universal
+  activation/coupling for everything; WAL = the write-obligation accounting layered
+  on top only for deferred cross-work** — read-shaped / non-mutating calls never
+  involve the WAL manager.
+- **Request→return correlation — RESOLVED (Patrick, 2026-09-19): the request names
+  its own return endpoint.** The requester designates a return box and carries that
+  endpoint in the request; the serving component emits its result there; the box
+  *is* the correlation — no correlation token, no matching table, no search
+  (consistent with only-follow / placement-carries-meaning). Two consequences to
+  carry: (1) return destinations are **caller-supplied and dynamic**, so not every
+  edge is static setup-runner wiring — the runner wires the standing topology, the
+  return endpoint is supplied per request; (2) a return endpoint must be
+  **nameable** (a stable logical reference, not a raw memory pointer) so it survives
+  a converter crossing — the converter-pair resolves the named endpoint to boxes on
+  each side, same as any payload. **Endpoint naming/addressing is resolved below
+  (see *Endpoint identity*):** a token_id-space node address + a local mailbox slot;
+  only that name crosses a converter, never a raw pointer. (3) **Any point is natively multi-connection.** Because each
+  requester carries its own return endpoint, a component's input box can be fed by
+  many requesters at once and each answer routes back independently — no held
+  connections, no connection state to manage; a component monitors a box anyone can
+  fill rather than holding channels. This **subsumes the existing multi-analyst
+  "per-analyst input/response link" requirement** (`NOTES.md` "Process runtime"):
+  that link IS the caller-supplied return endpoint. (The other half of that NOTES
+  clause — consistency of "maintained aggregates" — is moot: the DB retains only
+  **connections and token masses**; a label's **centroid is not stored**, it is had by
+  having the label, derived from its member connections and those members' masses.
+  Nothing to keep consistent at the DB level; connected-dataset overlap is a
+  **cache-update** matter, out of scope here.) No-held-connection mirrors the
+  base's no-held-address rule — the return endpoint is the invariant, the connection
+  itself is fluid. Independent requests interleave FIFO in the shared input box and
+  are safe precisely because correlation is by return endpoint, not by position
+  (the same stance as WAL's per-source-order / no-cross-source-global-order).
+- **Converter:transmission topology** — per-remote vs shared multiplexer (above).
+- **UPDATE_CACHE / REBASE_CACHE** — plausibly follow RECONCILE into
+  box-priority / scope operations rather than distinct verbs; check when reached.
+- **Secondary-location referral** — box occupancy itself is resolved (ordered
+  queues, drained by the monitor). When/what triggers a box to refer out to a
+  physical/secondary location (persistence, oversize, cross-machine) is unpinned.
