@@ -385,6 +385,16 @@ formally parked pending the data-shape exam.**
   the relevance trigger RECONCILE leans on. (Analyst-layer indicator, grounded in the WAL/cache
   work topology; wired with the analyst/cache-manager boxes later.)
 
+**Forward (named focused discussions, not this WAL pass) (Patrick, 2026-09-21):**
+- **WAL-report → WAL-inbox translation** — how raw WAL records (Postgres logical-decoding
+  output) become inbox messages. Its own focused discussion; relates to the live-feed /
+  wire-form (G6) gate.
+- **Confirmation = an analyst `verify` function** (analyst-layer, forward), **linked to swarm
+  information that surfaces potential conflicts** — so confirmation is conflict-aware (ties in
+  the swarm's dupe/collision/deviation data) and lives with the analyst, not in the WAL core.
+  Likely where the old cross-network (G7-style) validation lands. The WAL core only books and
+  routes; it holds no confirmation logic.
+
 ## Open / to pin
 
 - **READ / all functions move to activation — RESOLVED (Patrick, 2026-09-19): the
