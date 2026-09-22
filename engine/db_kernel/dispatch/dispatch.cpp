@@ -23,9 +23,6 @@ Result dispatch_one(dbk::Controller &ctl, const Command &cmd) {
     return Result{Verb::kDeleteConnection,
                   update::delete_connection(ctl, req->op, req->confirm)};
   }
-  if (std::holds_alternative<Reconcile>(cmd)) {
-    return Result{Verb::kReconcile, std::string("RECONCILE: not yet implemented")};
-  }
   if (std::holds_alternative<UpdateCache>(cmd)) {
     return Result{Verb::kUpdateCache, std::string("UPDATE_CACHE: not yet implemented")};
   }

@@ -105,12 +105,16 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   consumer. This is the pattern the cache-manager realignment follows.
 - **Nothing else in `db_kernel` is a built mechanism.** The cache manager
   (as a runtime) and the swarm/p2p layer are design notes or less — zero
-  code exists for either. The cache tier (`RECONCILE`/`UPDATE_CACHE`/
-  `REBASE_CACHE`) is a partial exception worth being precise about: `dispatch/`
-  has named face entries and dispatch stubs for all three (empty IR structs,
+  code exists for either. The cache tier (`UPDATE_CACHE`/`REBASE_CACHE`) is a
+  partial exception worth being precise about: `dispatch/`
+  has named face entries and dispatch stubs for the **two** (empty IR structs,
   a branch that returns "not yet implemented") — that much *is* code, but
   it's scaffolding with **no mechanism designed**, exactly as `API.md` §9
-  states it. Don't assume otherwise from how firm the prose elsewhere reads;
+  states it. **`RECONCILE` was removed from the dispatch surface (2026-09-22,
+  adversary-vetted CLEAN, `dispatch_test` 31/31 green):** it is no longer a
+  db/cache-manager verb — the analyst messages the WAL manager directly and
+  the WAL manager promotes the relevant pending queue into a priority in-box
+  (`ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE"). Don't assume otherwise from how firm the prose elsewhere reads;
   `API.md` §9 is the ground truth for built-vs-deferred.
 
 ## How to consume the WAL manager

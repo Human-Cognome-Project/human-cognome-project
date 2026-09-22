@@ -208,12 +208,6 @@ void run_dispatch_checks(const std::string &conninfo) {
   // Cache-tier verbs: named stubs, ctl untouched.
   // ---------------------------------------------------------------
   {
-    dispatch::Result r = dispatch::dispatch_one(ctl, dispatch::Command(dispatch::Reconcile{}));
-    check(r.verb == dispatch::Verb::kReconcile &&
-              std::get<std::string>(r.value) == "RECONCILE: not yet implemented",
-          "RECONCILE dispatches to its non-fatal stub");
-  }
-  {
     dispatch::Result r =
         dispatch::dispatch_one(ctl, dispatch::Command(dispatch::UpdateCache{}));
     check(r.verb == dispatch::Verb::kUpdateCache &&

@@ -1,27 +1,60 @@
 # db_kernel — data protocol & address-layout notes
 
-> **⚠ Forward flag (2026-09-21; updated 2026-09-22) — activation rebase, Pair-1 push now
-> BUILT.** A cross-kernel rebase to monitored-endpoint activation
-> (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`) is under way. Bearing on this doc: the
-> WAL manager gains a **push** outbox to the cache manager (relevant to **F4** under "Process
-> runtime" — the rebase argues F4-affirmative) and stages RECONCILE, reconciling with "the WAL
-> manager itself does not act on/prioritize/drain … for a RECONCILE"; and the swarm "coarse
-> token for a truncated area" = the **existing coarse label token**, consistent with "own mass
-> — FIXED, stored on token" / "centroid not stored — had by having the label." Local activation
-> primitives are BUILT (commit `b97034a`). **The Pair-1 steady-state push is now BUILT** as
-> `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`): the WAL manager runs as a
-> monitored-endpoint kernel — source-blind (=location-blind, knows its counterpart), emitting owed
-> reciprocal work to the cache-manager out-box (= that counterpart's inbox), fixture-fed. **Still deferred:** reload repopulation (the WAL manager re-emitting from
-> `list_open`), the serialization/"API-pair" shuttle for split mode, the live report feed,
-> Pair-2/swarm coupling, and the cache-manager consumer.
+> **⚠ MESSAGING REALIGNMENT — governing (2026-09-22).** The **entire messaging of this
+> kernel is being realigned to the monitored-endpoint activation format**
+> (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
+> plan for that realignment, not a build history.** Where a thing is being redone it is
+> **SUPERSEDED here, not left marked DONE** — a stale "BUILT/COMPLETE" on a redone piece
+> drags the old precepts (synchronous verb-dispatch, "issue a command at the kernel,"
+> poll-for-result) back into current work.
+>
+> **Supersession boundary (scoped to the messaging/invocation layer):**
+> - **SUPERSEDED** — the invocation/coupling model: the synchronous `dispatch_one` /
+>   `dispatch_stream` call-and-return; "`db_runtime` dispatches on a leading verb"; the
+>   command-protocol / external-wire framing as the delivery model; polling for results.
+>   Replaced by: monitored-endpoint activation — every function is a **reaction body** on a
+>   box, data-arriving-is-the-activation, results returned to a **caller-supplied return
+>   endpoint**, "the setup runner IS the command structure; no separate command protocol
+>   survives."
+> - **SURVIVES (still BUILT)** — the six verb **cores' logic** (DECLARE / READ / MOVE /
+>   ADD_CONNECTION / DELETE_RECORD / DELETE_CONNECTION against the store), now run *as
+>   reaction bodies*; arraying-as-one-ordered-unit (maps directly to "an arrayed stream is
+>   one unit drained to completion"); the schema, `codec/`, `controller/` (the DB door),
+>   `seed/`; and the whole data model (address-is-identity, pairwise, literal/label, mass).
+>   The realignment reshapes *how these are invoked and coupled*, not what they compute.
+>
+> **Pinned so far (2026-09-22):**
+> - **The db/cache manager is one role.** Its *current* functions are the record-tier
+>   surface; the warm-cache shape is the same role's still-unfleshed aspect.
+> - **Two channels in.** *Current work* flows **direct with the agent process** (not via the
+>   WAL manager); *deferred + outside (swarm) work* is stored in the **WAL manager**, which is
+>   the db/cache manager's **persistent work store**. Consequence — **F4 resolves affirmative**:
+>   the manager keeps **no durable pending-list of its own**; the WAL open-obligation relation
+>   IS its pending work, and it repopulates outstanding work from `list_open` on reload.
+> - **RECONCILE is no longer a db/cache-manager verb** — the `dispatch::Reconcile` stub was
+>   **removed** (adversary-vetted CLEAN, `dispatch_test` 31/31 green). The analyst messages the
+>   **WAL manager directly**, which promotes the relevant pending queue into a **priority
+>   in-box** the manager drains.
+> - **WAL manager Pair-1 push is BUILT** (`wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`):
+>   source-blind (=location-blind, knows its counterpart), emitting owed reciprocal work to the
+>   cache-manager out-box, fixture-fed. Local activation primitives BUILT (commit `b97034a`).
+>
+> **Open / still being designed (the plan fills in as we pin it):** the agent-facing
+> reframe of the record-tier surface onto boxes + caller-supplied return endpoints; the warm
+> cache shape; ingest-atomicity ownership on the box model; the still-deferred WAL seams
+> (reload repopulation, the serialization/"API-pair" split-mode shuttle, the live report feed,
+> Pair-2/swarm coupling, the cache-manager consumer). **The wider project needs several doc
+> updates after this kernel is realigned.**
 
 Working notes for the hcp3_core db_kernel set. Prose/design record; the code
 and its tests are the source of truth for behaviour. Canadian English.
 
-> **Available work streams for the next session → see `HANDOFF.md`.** Record
-> tier and WAL manager are both COMPLETE; the cache manager is the direct
-> next stream (ready to start), with the swarm/p2p layer preliminary and
-> gated behind it. `HANDOFF.md` is the reload pointer — read it first.
+> **Available work streams for the next session → see `HANDOFF.md`.** The record-tier
+> **cores** and the WAL manager are built; the **kernel messaging around them is being
+> realigned** onto the activation format (governing banner above) — so the messaging/
+> invocation layer is SUPERSEDED, not DONE. The db/cache-manager realignment is the active
+> stream, with the swarm/p2p layer preliminary and gated behind it. `HANDOFF.md` is the
+> reload pointer — read it first.
 
 ## Governing principle
 
@@ -357,6 +390,14 @@ parents (constituents); a label sums over its children (members).
 
 ## API command vocabulary
 
+> **⚠ SUPERSEDED as a *delivery* model (2026-09-22) — see the governing messaging-realignment
+> banner at the top.** "Dispatches on a leading verb / formulaic calls issued at the kernel" is
+> the old synchronous invocation model, now replaced by monitored-endpoint activation: these
+> verbs become **reaction bodies** on boxes, invoked by data arriving, with results returned to
+> a caller-supplied return endpoint — not commands dispatched at a runtime and polled. **The
+> verb *vocabulary and semantics* below still stand** (what each verb means and validates is
+> unchanged); only the framing of them as dispatched-and-polled commands is superseded.
+
 The cache-manager runtime (`db_runtime`) dispatches on a leading verb — the
 "formulaic calls" other routines (the analyst process, the swarm) issue.
 Commands can nest (a set contains sub-declares; modes compose) and can drive
@@ -639,7 +680,7 @@ DELETE_CONNECTION) are the exception — single-instruction only, never arrayed
 forced to single-structure definitions begun at one point (bottom-up only); a
 group's members ARE an array, so the label-end flow exists only because arraying
 does. Scope: record tier
-ONLY. The **cache tier** (RECONCILE, UPDATE_CACHE, REBASE_CACHE) is excluded —
+ONLY. The **cache tier** (UPDATE_CACHE, REBASE_CACHE) is excluded —
 those are global state transitions on the working set as a whole, not
 element-wise command streams, so there is nothing to compress into a serial
 array (a REBASE is not N little rebases).
@@ -961,7 +1002,8 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
   DELETE_CONNECTION (full specific-target confirmation + local execution;
   only-follow reject-on-referenced G10 probe). Done.
 - `dispatch/` — verb dispatch over the in-process IR (routes DECLARE/READ/UPDATE
-  to the cores; RECONCILE/UPDATE_CACHE/REBASE_CACHE stub) + arraying executor
+  to the cores; UPDATE_CACHE/REBASE_CACHE stub — RECONCILE removed 2026-09-22,
+  now an analyst → WAL-manager message) + arraying executor
   (cross-command ordered stream over the four additive verbs; DELETE structurally
   excluded). Minimal testable surface; external wire deferred (G6). Done.
 - `seed/` — `seed_0x` mints the seed floor (`0x` mass 0 + 16 hex atoms mass 1) via
@@ -1010,8 +1052,9 @@ manager-placed mint), G5 block boundaries past hex couplets, G6 external
 transport/wire format; the **cache-manager runtime** itself (the file-now /
 wire-later split, §Process runtime — the WAL manager above only books/monitors
 the obligations that split would create, never drains it) and the swarm-side
-cross-network DELETE validation act; the **cache tier** (RECONCILE /
-UPDATE_CACHE / REBASE_CACHE — stubs); the mass aggregation model; notation
+cross-network DELETE validation act; the **cache tier** (UPDATE_CACHE /
+REBASE_CACHE — stubs; RECONCILE removed 2026-09-22, now analyst →
+WAL-manager); the mass aggregation model; notation
 derivation; the prose→token_id swap; extrapolation / relative-placement rules.
 
 ## Open decisions (Patrick's)
@@ -1081,5 +1124,9 @@ than guess. Flagged by the 2026-09-15 adversarial review of these notes:
   membership (`members`/`member_of`) vs the trunk-map boundary; distinguish in prose, not a
   real contradiction. Confirm with Patrick before rewording.
 
-**Cache tier** (RECONCILE, UPDATE_CACHE, REBASE_CACHE) — defined, deferred; a
-late stage, after the record tier is solid.
+**Cache tier** (UPDATE_CACHE, REBASE_CACHE) — defined, deferred; a
+late stage, after the record tier is solid. (**RECONCILE removed from the
+dispatch surface 2026-09-22** — it is no longer a db/cache-manager verb but
+an analyst → WAL-manager message; the WAL manager promotes the relevant
+pending queue into a priority in-box. See `ENDPOINT-ACTIVATION-NOTES.md`
+"RECONCILE".)

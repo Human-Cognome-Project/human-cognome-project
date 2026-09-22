@@ -20,8 +20,12 @@ green against a live, disposable `hcp3_core` Postgres database.
 `MOVE_RECORD`, `ADD_CONNECTION`, `DELETE_RECORD`, `DELETE_CONNECTION` — are
 fully designed, implemented, and adversary-reviewed, end to end from the
 in-process request IR down to the Postgres store. The **cache tier**
-(`RECONCILE`, `UPDATE_CACHE`, `REBASE_CACHE`) is named in the dispatch
-surface but not built — it returns a stub result. Several other seams are
+(`UPDATE_CACHE`, `REBASE_CACHE`) is named in the dispatch surface but not
+built — it returns a stub result. (`RECONCILE` is no longer a
+db/cache-manager verb — removed from the dispatch surface 2026-09-22; it is
+an analyst → WAL-manager message, the WAL manager promoting the relevant
+pending queue into a priority in-box. See
+`ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE".) Several other seams are
 deliberately deferred. See [§9 Built vs deferred](#9-built-vs-deferred) for
 the full list, and each core's own `README.md` for the reasoning behind
 every point where the spec was silent and a call had to be made.
@@ -480,14 +484,20 @@ DeleteResult delete_connection(dbk::Controller &ctl, const command::DeleteConnec
 `confirm` must equal `op` exactly (`confirm.a == op.a && confirm.b ==
 op.b`).
 
-### Cache-tier stubs: RECONCILE / UPDATE_CACHE / REBASE_CACHE
+### Cache-tier stubs: UPDATE_CACHE / REBASE_CACHE
 
-Named face entries only — `dispatch::Reconcile`, `dispatch::UpdateCache`,
-`dispatch::RebaseCache` are empty marker structs (`dispatch/dispatch.h`).
-`dispatch_one` routes them to a non-fatal stub `Result` carrying the
-string `"<VERB>: not yet implemented"` — the controller is never touched.
-No IR fields, no validator, no core exists behind any of the three. See
-§9.
+Named face entries only — `dispatch::UpdateCache`, `dispatch::RebaseCache`
+are empty marker structs (`dispatch/dispatch.h`). `dispatch_one` routes
+them to a non-fatal stub `Result` carrying the string `"<VERB>: not yet
+implemented"` — the controller is never touched. No IR fields, no
+validator, no core exists behind either. See §9.
+
+**RECONCILE is not a db/cache-manager verb** (removed 2026-09-22). It is an
+analyst → WAL-manager message: the analyst messages the WAL manager
+directly, which promotes the relevant pending queue (its open-obligation
+topology) into a priority in-box the db/cache manager drains. There is no
+`dispatch::Reconcile` struct and no reconcile dispatch branch. See
+`ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE".
 
 ---
 
@@ -595,14 +605,13 @@ for (const auto &outcome : declared.outcomes) {
 ```cpp
 struct DeleteRecordRequest { command::DeleteRecord op; command::DeleteRecord confirm; };
 struct DeleteConnectionRequest { command::DeleteConnection op; command::DeleteConnection confirm; };
-struct Reconcile {};
-struct UpdateCache {};
+struct UpdateCache {};  // RECONCILE removed 2026-09-22 (analyst -> WAL manager)
 struct RebaseCache {};
 
 using Command =
     std::variant<command::DeclareRecord, command::ReadRecord, command::MoveRecord,
                  command::AddConnection, DeleteRecordRequest, DeleteConnectionRequest,
-                 Reconcile, UpdateCache, RebaseCache>;
+                 UpdateCache, RebaseCache>;
 
 struct Result {
   Verb verb;
@@ -747,7 +756,7 @@ the call made there.
 | **G5 — block boundaries past "hex couplets"** | Deferred. The trunk→kind map's extent past the hex-couplet kind is unfixed. |
 | **G6 — external wire/transport format** | Deferred. The in-process IR (§5) is the current surface; no text/file/network framing exists. |
 | **WAL manager** (`wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp3_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `wal/README.md`, `wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
-| **Cache tier** (`RECONCILE`/`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. |
+| **Cache tier** (`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. **`RECONCILE` removed from the dispatch surface (2026-09-22)** — now an analyst → WAL-manager message (priority-inbox promotion), not a db/cache-manager verb. |
 | **Mass aggregation** (sum-vs-centroid, nested aggregation) | Deferred. `DECLARE_RECORD` always writes mass blank. |
 | **Notation derivation** (surface-from-parents) | Deferred. `NOTATION` is stored exactly as given (or blank), never derived. |
 | **Prose → token_id swap** (temporary label handles) | Deferred bookkeeping item, parked on purpose. |

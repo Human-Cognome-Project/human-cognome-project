@@ -106,11 +106,15 @@ recomputed.
 
 ## RECONCILE = a pinned, normally-empty endpoint, fed by the WAL manager
 
-RECONCILE is not a verb and not a freeze. There is a **dedicated reconcile box pinned
-at highest priority and normally unoccupied.** A RECONCILE **routes through the WAL
-manager** (not the cache manager directly): on a reconcile request, the WAL manager
-**moves the relevant existing pending work into the reconcile box**, and it then
-executes first-priority.
+RECONCILE is not a verb and not a freeze. **It is not a db/cache-manager verb at all**
+— the `dispatch::Reconcile` stub was removed from the dispatch surface (2026-09-22,
+adversary-vetted CLEAN). Instead **the analyst messages the WAL manager directly**, and
+there is a **dedicated reconcile box pinned at highest priority and normally
+unoccupied.** A RECONCILE **routes through the WAL manager** (not the cache manager
+directly): on a reconcile request, the WAL manager **moves the relevant existing pending
+work into the reconcile box**, and it then executes first-priority. The db/cache manager
+never receives or interprets a reconcile verb — it only *drains* the priority box the WAL
+manager fills.
 
 - **Scope flag — `local` vs `all` (tentative).** The reconcile request carries a scope.
   `local` reconciles this instance's pending work (the WAL open-obligation topology only);

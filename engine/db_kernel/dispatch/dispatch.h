@@ -37,7 +37,6 @@ enum class Verb {
   kAddConnection,
   kDeleteRecord,
   kDeleteConnection,
-  kReconcile,
   kUpdateCache,
   kRebaseCache,
 };
@@ -59,10 +58,12 @@ struct DeleteConnectionRequest {
 };
 
 // Cache-tier verbs (PLAN.md I.A, II.8): named face entries only, no data
-// -- RECONCILE / UPDATE_CACHE / REBASE_CACHE carry no fields because
-// nothing behind them is built yet (the cache tier is out of scope; see
-// PLAN.md Part I "Out of scope").
-struct Reconcile {};
+// -- UPDATE_CACHE / REBASE_CACHE carry no fields because nothing behind
+// them is built yet (the cache tier is out of scope; see PLAN.md Part I
+// "Out of scope"). RECONCILE is no longer a db/cache-manager verb: it is
+// an analyst -> WAL-manager message (the WAL manager promotes the relevant
+// pending queue into a priority in-box); see ENDPOINT-ACTIVATION-NOTES.md
+// "RECONCILE".
 struct UpdateCache {};
 struct RebaseCache {};
 
@@ -81,7 +82,7 @@ using AdditiveCommand = std::variant<command::DeclareRecord, command::ReadRecord
 using Command =
     std::variant<command::DeclareRecord, command::ReadRecord, command::MoveRecord,
                  command::AddConnection, DeleteRecordRequest, DeleteConnectionRequest,
-                 Reconcile, UpdateCache, RebaseCache>;
+                 UpdateCache, RebaseCache>;
 
 // One dispatch outcome: which verb ran, and that verb's own result type
 // (PLAN.md I.G "Return contract" -- UNCHANGED per-verb shape; dispatch
@@ -102,8 +103,8 @@ struct Result {
 //   AddConnection          -> update::add_connection
 //   DeleteRecordRequest    -> update::delete_record
 //   DeleteConnectionRequest-> update::delete_connection
-//   Reconcile/UpdateCache/RebaseCache -> a non-fatal stub result; `ctl`
-//     is not touched.
+//   UpdateCache/RebaseCache -> a non-fatal stub result; `ctl` is not
+//     touched.
 // Every core re-validates its own IR defensively (same discipline as
 // declare_core.cpp/update_core.cpp calling their command:: validators);
 // this function performs no validation of its own and adds no new
