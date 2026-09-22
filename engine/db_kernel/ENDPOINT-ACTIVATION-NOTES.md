@@ -290,13 +290,19 @@ WAL manager's coupling is a set of boxes.
 
 > **⚠ Update (2026-09-22) — Pair 1 BUILT, and narrowed by the source-blind reframe.**
 > Pair-1's steady-state push is now built as `wal/wal_kernel.{h,cpp}`
-> (`WAL-INTEGRATION-PLAN.md`, adversary-vetted plan + build). Two clarifications from Patrick
-> (2026-09-22) narrow the wording below: (1) **every kernel is source-blind** — the WAL kernel
-> reads its in-box(es), books, and fills **one** out-box; it does **not** resolve
-> `Report.source` to a destination. The "emits them to *that originator's inbox*" phrasing
-> below is **reload/system-wide** thinking, not steady-state routing: on reload every thread
-> (the WAL manager included) repopulates the outbound work it holds for others from its own
-> durable state — the WAL manager re-emits owed work from `list_open` (a deferred pass).
+> (`WAL-INTEGRATION-PLAN.md`, adversary-vetted plan + build). Clarifications from Patrick
+> (2026-09-22) sharpen the wording below: (1) **source-blind = LOCATION-blind, not
+> identity-blind.** A kernel does not know or care *where* a counterpart physically sits
+> (local vs remote); it **is** aware of *who* it receives from and *who* it assigns work to.
+> **Every outbox is a specific counterpart's inbox** — the box IS the addressing; **each
+> kernel has multiple in/out boxes** (an interactive internal-state mail system). So "emits
+> them to *that originator's inbox*" is right — the WAL manager assigns reciprocal work to a
+> known counterpart (the cache manager) by choosing its out-box. It is special only in that
+> its **primary stream is internally-generated reports** for **internal** work (→ cache
+> manager); **external** work is fed by/to the **swarm manager** (Pair 2). This pass has one
+> cache-manager counterpart, so one reciprocal out-box and no selection yet; selection-by-who
+> (several counterparts) and **reload repopulation** (each thread re-derives the work it holds
+> for its counterparts from durable state — WAL re-emits from `list_open`) are deferred.
 > (2) Serialization / the **"API pair"** is a **separate matched-pair bridge**, built
 > separately, that shuttles content between a local and a remote box in **split mode** — not
 > part of this Pair-1 wiring. Still deferred: reload repopulation, that shuttle, the live feed,

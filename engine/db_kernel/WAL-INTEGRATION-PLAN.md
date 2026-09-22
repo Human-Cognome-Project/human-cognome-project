@@ -24,15 +24,29 @@ standalone-buildable.
 
 Two corrections to `WAL-INTEGRATION-HANDOFF.md`, both **simplifying**:
 
-1. **Every kernel is source-blind and interacts only with its in/out boxes.** The
-   WAL kernel does **not** inspect where input came from to route output, and does
-   **not** resolve a `Report.source` → a destination endpoint. It reads its in-box,
-   runs its body, fills its out-box. Full stop.
-   - **Consequence — the handoff's one "GENUINE OPEN POINT" (originator routing)
-     dissolves.** There is no source→destination lookup to build, and no
-     reload-originator recoverability question here: on restart/crash, **work
-     originators repopulate their own work lists from current state as part of
-     reload** (Patrick, 2026-09-22 — handled in a separate pass, not here).
+1. **Every kernel is source-blind = LOCATION-blind, not identity-blind, and couples
+   only through in/out boxes (Patrick, 2026-09-22).** The kernel does **not** know or
+   care *where* a counterpart physically sits (local vs remote — the separate API-pair
+   shuttle makes remote transparent). It **is** aware of *who* it receives from and
+   *who* it assigns work to. **Every outbox is a specific counterpart's inbox** — the
+   box *is* the addressing; choosing the outbox chooses the recipient (directed
+   point-to-point edges). **Each kernel has multiple in/out boxes** — an interactive
+   internal-state mail system.
+   - The WAL manager is special only in that its **primary stream is
+     internally-generated reports** driving **internal** work → the **cache manager**;
+     **external** work is fed by/to the **swarm manager** (Pair 2, deferred). So the WAL
+     manager's out-boxes are counterpart-specific: cache-manager reciprocals (this
+     pass), and later swarm-manager deltas.
+   - **What this narrows in the handoff's "GENUINE OPEN POINT":** the WAL manager DOES
+     assign reciprocal work to a known counterpart — it is not identity-blind. In this
+     single-local-instance pass there is exactly **one** cache-manager counterpart, so
+     one reciprocal out-box and **no selection is exercised yet**. Selection-by-*who*
+     (which of several cache managers, or cache-vs-swarm) becomes real with multiple
+     counterparts — deferred. What is genuinely deferred to a later pass is **reload
+     repopulation**: on restart/crash each thread (the WAL manager included)
+     repopulates the work it holds for its counterparts from durable state (Patrick,
+     2026-09-22). The kernel never needs a counterpart's *location* — only *who* — and
+     "who" is carried by which out-box.
 
 2. **Serialization / "API" is a separate matched-pair bridge, built separately.**
    Where the system runs **split** (across a process/machine boundary), an **API
@@ -65,12 +79,17 @@ registered as a `scheduler::Handler` on the WAL manager's in-box(es).
   integrity check that a source's own stream arrived in order), never as a routing
   or behaviour decision. Source-blindness is preserved: the coupling does not depend
   on which source fed which box.
-- **Out-box: one standing reciprocal-work box.** The kernel pushes one owed-work item
-  per obligation `owed(report)` returns. It does **not** pick a per-originator
-  destination — it fills its one out-box; topology (setup-runner wiring, or the
-  separate shuttle in split mode) connects that out-box to the consumer. In the
-  single local instance, the consumer is the local cache manager; that is wiring,
-  not kernel logic.
+- **Out-box: one standing reciprocal-work box = the cache-manager counterpart's
+  inbox.** The kernel pushes one owed-work item per obligation `owed(report)` returns
+  into this out-box, which **is** the cache manager's inbox (every outbox is a
+  counterpart's inbox). This pass has exactly one counterpart (one cache manager), so
+  there is one reciprocal out-box and no destination *selection* to make yet — but the
+  out-box IS the counterpart addressing, not a location-agnostic drop. With multiple
+  counterparts (several cache managers, or the swarm manager for external work),
+  the kernel would select the counterpart's out-box by *who* the work is for; that
+  selection is deferred with the multi-counterpart / reload passes. The counterpart's
+  physical location (local, or remote via the API-pair shuttle) is never the kernel's
+  concern.
   - **Reconciliation with `ENDPOINT-ACTIVATION-NOTES.md`'s Pair-1 "originator"
     wording (Patrick, 2026-09-22).** The note (2026-09-21) says the outbox "emits them
     to *that originator's inbox* (which cache manager falls out of the initiating
@@ -81,9 +100,11 @@ registered as a `scheduler::Handler` on the WAL manager's in-box(es).
     reload. The WAL manager is itself an originator: on reload it re-derives the
     reciprocal work it owes cache managers **from its own durable open-obligation
     relation** (`list_open`) and re-emits it to the out-box. So:
-    - **Steady state (this pass): source-blind.** The kernel fills its one out-box;
-      topology (local wiring, or the split-mode shuttle) delivers. No per-item routing
-      decision is computed by the kernel.
+    - **Steady state (this pass): one known counterpart.** The kernel fills the
+      cache-manager out-box (= that counterpart's inbox). Source-blind means
+      location-blind: the counterpart is known (who), only its location is abstracted.
+      With one cache manager there is no selection to make; with several, the kernel
+      selects the counterpart's out-box by *who*.
     - **Reload (separate pass, deferred): the WAL manager repopulates.** This is how
       "a lost out-box entry is re-driven on reload" actually happens — the WAL manager
       re-emits from `list_open`, not an external actor. This design **does not
