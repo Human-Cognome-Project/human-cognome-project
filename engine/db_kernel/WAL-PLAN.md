@@ -1,12 +1,16 @@
 # WAL subsystem — plan (rev. 6)
 
-> **⚠ Forward flag (2026-09-21) — proposed rebase, NOT built.**
-> `engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` proposes, on the activation substrate:
-> (i) a **push** outbox (WAL manager → originating cache manager's inbox) rebasing §0's
-> observer/pull framing (close still self-accounting; durable obligation stays in the
-> relation); (ii) an **active swarm-manager coupling** — unpack inbound change, compose
-> outbound delta packets — activating §2's deferred swarm facet and its "moves no bytes."
-> Design-discussion; this plan still records the built bookkeeper.
+> **⚠ Forward flag (2026-09-21; updated 2026-09-22) — Pair-1 push now BUILT.**
+> `engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` rebases, on the activation substrate:
+> (i) a **push** outbox (WAL manager → cache manager's inbox) rebasing §0's observer/pull
+> framing (close still self-accounting; durable obligation stays in the relation);
+> (ii) an **active swarm-manager coupling** — unpack inbound change, compose outbound delta
+> packets — activating §2's deferred swarm facet and its "moves no bytes." **(i) is now BUILT**
+> as `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`): the WAL manager as a source-blind
+> monitored-endpoint kernel, `report → book → push owed work to one out-box`, fixture-fed,
+> tested. **Still deferred:** reload repopulation (re-emit from `list_open`), the
+> serialization/"API-pair" shuttle for split mode, the live report feed, and (ii) the swarm
+> coupling. This plan still records the built bookkeeper the kernel wires in unchanged.
 
 > **STATUS: IMPLEMENTED** as `wal/` (2026-09-19) — all tasks (W-1…W-6) built,
 > every test PASSes, package-vetted primary↔adversary, committed through

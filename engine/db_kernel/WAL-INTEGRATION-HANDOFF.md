@@ -1,5 +1,16 @@
 # Handoff — WAL-manager activation integration (draft + execute)
 
+> **✅ EXECUTED (2026-09-22).** Pair-1 built as `wal/wal_kernel.{h,cpp}` +
+> `wal_kernel_test.cpp` under the coder+adversary discipline (plan
+> `WAL-INTEGRATION-PLAN.md` adversary-vetted; build adversary-vetted SAFE-TO-COMMIT;
+> verified green — `PASS wal_kernel_test`, ASan/UBSan clean). **Two Patrick corrections
+> narrowed this handoff:** (1) every kernel is **source-blind** — so the "GENUINE OPEN
+> POINT" (originator routing) below dissolves: the kernel fills one out-box, topology
+> routes; "originator" was reload thinking (each thread repopulates its own owed work
+> from durable state — a deferred pass). (2) Serialization / the **"API pair"** is a
+> **separate bridge** (a split-mode shuttle between remote boxes), built separately —
+> not this pass. Everything else below stood.
+
 **For: a clean context.** You have no prior history with this work; this doc is
 self-contained. Your mission: **draft a plan, get it vetted, build it under review,
 and commit** — the same coder+adversary discipline the endpoint primitives were built
