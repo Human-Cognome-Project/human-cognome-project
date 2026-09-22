@@ -6,8 +6,9 @@
 > (and stages RECONCILE into a pinned box) — superseding this doc's "not to be told what to do
 > next," "no schedule/prioritize surface," and "The WAL manager's role is unchanged by
 > RECONCILE." The **push half is now BUILT** as `wal/wal_kernel.{h,cpp}`
-> (`WAL-INTEGRATION-PLAN.md`): a source-blind monitored-endpoint kernel that books via the
-> unchanged door below and emits owed work to one out-box. Close stays self-accounting (the
+> (`WAL-INTEGRATION-PLAN.md`): a monitored-endpoint kernel (source-blind = location-blind, but
+> aware of its counterpart) that books via the unchanged door below and emits owed work to the
+> cache-manager out-box (= that counterpart's inbox). Close stays self-accounting (the
 > durable obligation remains in the open-obligation relation; the out-box is volatile
 > transport, re-driven on reload from `list_open` — a deferred pass). `list_open`/`is_open`
 > below remain the **read** surface (used for reload re-emit and by any reader), no longer the

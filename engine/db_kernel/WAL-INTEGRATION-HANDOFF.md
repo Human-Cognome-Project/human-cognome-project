@@ -4,12 +4,20 @@
 > `wal_kernel_test.cpp` under the coder+adversary discipline (plan
 > `WAL-INTEGRATION-PLAN.md` adversary-vetted; build adversary-vetted SAFE-TO-COMMIT;
 > verified green — `PASS wal_kernel_test`, ASan/UBSan clean). **Two Patrick corrections
-> narrowed this handoff:** (1) every kernel is **source-blind** — so the "GENUINE OPEN
-> POINT" (originator routing) below dissolves: the kernel fills one out-box, topology
-> routes; "originator" was reload thinking (each thread repopulates its own owed work
-> from durable state — a deferred pass). (2) Serialization / the **"API pair"** is a
-> **separate bridge** (a split-mode shuttle between remote boxes), built separately —
-> not this pass. Everything else below stood.
+> sharpened this handoff:** (1) **source-blind = LOCATION-blind, not identity-blind** —
+> a kernel doesn't know/care WHERE a counterpart sits (local vs remote), but IS aware
+> of WHO it receives from and assigns to; every outbox is a specific counterpart's
+> inbox, and each kernel has multiple in/out boxes (a mail system). So the "originator"
+> wording below is right — the WAL manager assigns reciprocal work to a known
+> counterpart (the cache manager) by choosing its out-box. This pass has one
+> cache-manager counterpart ⇒ one reciprocal out-box, no selection exercised yet;
+> selection-by-who (multiple counterparts) and **reload repopulation** (each thread
+> re-derives work-for-counterparts from durable state — WAL re-emits from `list_open`)
+> are deferred. (2) Serialization / the **"API pair"** is a **separate bridge** (a
+> split-mode shuttle between remote boxes), built separately — not this pass.
+> **Everything else below stood EXCEPT the "In scope" §2 "Originator routing," which the
+> build superseded** (the kernel never routes on `Report.source`; one fixed
+> cache-manager out-box) — §2 carries its own struck-through flag.
 
 **For: a clean context.** You have no prior history with this work; this doc is
 self-contained. Your mission: **draft a plan, get it vetted, build it under review,
@@ -62,25 +70,32 @@ tests, standalone-buildable. This is the "Pair 1" wiring from the design note.
    **and emit that owed reciprocal work to the originating cache manager's inbox.**
    *(Plan decision: with one box per source, keep `wal_monitor`'s single interleaved
    per-source-lsn loop, or drive `wal_ingest` per box.)*
-2. **Originator routing.** Route reciprocal work to the cache manager that created the
-   initiating entry. Ground truth in the built structs: **`wal::Report` carries
-   `Source source`** (an opaque WAL-feed label — core / a shard / the personality DB —
-   present at ingest); **`Obligation` is PK-only `(kind, addr_a, addr_b)` and CANNOT and
-   MUST NOT carry a source** (the design forbids a source column — per-source order only,
-   no source filter). So the routing **key is `Report.source`, resolved at ingest time to
-   a standing outbox `EndpointId`** (setup-runner standing wiring: source-label → the
-   originating cache manager's inbox endpoint); `Report.source` is an opaque label,
-   distinct from the note's endpoint-identity (address + slot), and the resolution is that
-   bridge — a direct lookup, never a scan.
-   - **GENUINE OPEN POINT — do NOT silently resolve; flag for Patrick.** The push's
-     originator identity lives only on the **volatile `Report`**. Re-drive-on-reload
-     re-establishes pending work from the **durable open-obligation relation, which has no
-     source**, so the originator is not recoverable per open obligation without walking
-     History (a scan — forbidden). The ingest-time fixture happy path (route by
-     `Report.source`) is buildable now; "re-drive the push to the right originator after a
-     reload" is an **unresolved design point**, not a settled guarantee. Build the happy
-     path; **raise the reload-originator question** rather than inventing a scan or a
-     source column on the obligation.
+2. **Originator routing.** ⛔ **SUPERSEDED BY THE BUILD (2026-09-22) — this item was NOT
+   built as written; see `WAL-INTEGRATION-PLAN.md`'s *Out-box* section for what was built.**
+   The mechanism below (a `Report.source` → outbox-`EndpointId` routing key, resolved
+   per report at ingest) is exactly what the source-blind correction rules out: **the
+   built kernel never reads `Report.source` to route or branch** (`wal_kernel.h:19-22`,
+   `wal_kernel.cpp`) — `source` is only per-source ordering data inside the unchanged
+   `WalMonitor`. This pass has **one** cache-manager counterpart, so there is **one**
+   fixed reciprocal out-box (that counterpart's inbox), chosen once at construction, with
+   no per-report source lookup and no setup-runner source-label→endpoint table. Kept below
+   only as the mission's original framing, struck. The paragraph and its "GENUINE OPEN
+   POINT" are retained verbatim for provenance:
+   > ~~Route reciprocal work to the cache manager that created the
+   > initiating entry. … the routing **key is `Report.source`, resolved at ingest time to
+   > a standing outbox `EndpointId`** (setup-runner standing wiring: source-label → the
+   > originating cache manager's inbox endpoint) … a direct lookup, never a scan.~~
+   > - ~~**GENUINE OPEN POINT.** The push's originator identity lives only on the volatile
+   >   `Report` … build the happy path; raise the reload-originator question.~~
+
+   **How it actually resolved:** "originator" was reload/system-wide thinking, not
+   steady-state routing (Patrick, 2026-09-22). Steady state: the WAL manager knows its
+   counterpart (the cache manager) and fills that counterpart's out-box — source-blind =
+   location-blind, not identity-blind. Selection-by-*who* only arises with multiple
+   counterparts (deferred). The reload question is also deferred and answered the same way
+   the note now records it: on reload each kernel **repopulates the work it holds for its
+   counterparts from its own durable state** — the WAL manager re-emits owed work from
+   `list_open` (a bounded PK read, no History scan, no source column).
 3. **Runnable process / driver.** A `main`/driver wiring `WalBook` (+ the `wal_manager`
    DB) + the ingest step + the box coupling into a process. **Fixture-fed**, and note the
    **payload decision you hit first:** the built box carries an **opaque `std::string`

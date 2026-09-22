@@ -10,8 +10,8 @@
 > — FIXED, stored on token" / "centroid not stored — had by having the label." Local activation
 > primitives are BUILT (commit `b97034a`). **The Pair-1 steady-state push is now BUILT** as
 > `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`): the WAL manager runs as a
-> monitored-endpoint kernel, source-blind, emitting owed reciprocal work to one out-box,
-> fixture-fed. **Still deferred:** reload repopulation (the WAL manager re-emitting from
+> monitored-endpoint kernel — source-blind (=location-blind, knows its counterpart), emitting owed
+> reciprocal work to the cache-manager out-box (= that counterpart's inbox), fixture-fed. **Still deferred:** reload repopulation (the WAL manager re-emitting from
 > `list_open`), the serialization/"API-pair" shuttle for split mode, the live report feed,
 > Pair-2/swarm coupling, and the cache-manager consumer.
 

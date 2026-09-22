@@ -6,9 +6,10 @@
 > framing (close still self-accounting; durable obligation stays in the relation);
 > (ii) an **active swarm-manager coupling** — unpack inbound change, compose outbound delta
 > packets — activating §2's deferred swarm facet and its "moves no bytes." **(i) is now BUILT**
-> as `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`): the WAL manager as a source-blind
-> monitored-endpoint kernel, `report → book → push owed work to one out-box`, fixture-fed,
-> tested. **Still deferred:** reload repopulation (re-emit from `list_open`), the
+> as `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`): the WAL manager as a
+> monitored-endpoint kernel — source-blind (=location-blind, not identity-blind): it knows its
+> counterpart, `report → book → push owed work to the cache-manager out-box` (= that
+> counterpart's inbox), fixture-fed, tested. **Still deferred:** reload repopulation (re-emit from `list_open`), the
 > serialization/"API-pair" shuttle for split mode, the live report feed, and (ii) the swarm
 > coupling. This plan still records the built bookkeeper the kernel wires in unchanged.
 

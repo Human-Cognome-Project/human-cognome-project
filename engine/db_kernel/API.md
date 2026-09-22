@@ -1,10 +1,14 @@
 # db_kernel — record-tier API reference
 
-> **⚠ Forward flag (2026-09-21).** §9's "WAL manager — bookkeeper/observer … never drives"
-> characterization is under active design-discussion rebase
-> (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`): a push outbox to the cache manager plus a
-> swarm-manager coupling are proposed, still deferred/not-built. This reference still describes
-> the built state.
+> **⚠ Forward flag (2026-09-21; updated 2026-09-22).** §9's "WAL manager —
+> bookkeeper/observer … never drives" characterization has been rebased onto the
+> monitored-endpoint activation substrate (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`):
+> the **push** half is now **BUILT** as `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`) —
+> the WAL manager runs as a monitored-endpoint kernel that emits owed reciprocal work to the
+> cache-manager out-box (source-blind = location-blind, but aware of its counterpart). The
+> swarm-manager coupling, reload repopulation, the API-pair transport bridge, and the live feed
+> stay deferred. This reference still describes the built record-tier state; the WAL row in §9
+> is updated.
 
 **Status: record tier COMPLETE** (built 2026-09-17/18, on branch
 `dbkernel-design-checkpoint`; commit `912d681` and prior on this branch).
@@ -742,7 +746,7 @@ the call made there.
 | **G4 — next-slot mechanism** | Deferred. Analyst-supplied-start vs. per-trunk cursor — Patrick's open decision. Gates manager-placed mint. |
 | **G5 — block boundaries past "hex couplets"** | Deferred. The trunk→kind map's extent past the hex-couplet kind is unfixed. |
 | **G6 — external wire/transport format** | Deferred. The in-process IR (§5) is the current surface; no text/file/network framing exists. |
-| **WAL manager** (`wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp3_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `wal/README.md`, `wal/USAGE.md`. The cross-network DELETE validation act, the cache manager's file-now/wire-later runtime, and the swarm side remain deferred. |
+| **WAL manager** (`wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp3_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `wal/README.md`, `wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
 | **Cache tier** (`RECONCILE`/`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. |
 | **Mass aggregation** (sum-vs-centroid, nested aggregation) | Deferred. `DECLARE_RECORD` always writes mass blank. |
 | **Notation derivation** (surface-from-parents) | Deferred. `NOTATION` is stored exactly as given (or blank), never derived. |

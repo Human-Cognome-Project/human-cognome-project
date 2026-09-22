@@ -1,13 +1,16 @@
 # Endpoint-activation cross-kernel model — design notes
 
-**Status: DESIGN DISCUSSION IN PROGRESS (Patrick-driven, 2026-09-19 MDT). Draft /
-direction record — not built, not adversary-firmed, nothing superseded yet.**
-This captures the proposed rebase of the **cross-kernel command / coupling
-layer** (scope confirmed with Patrick: cross-kernel commands — not the analyst
-layer, cross-kernel field work, or the wider HCP vocabulary). It reshapes *how
-components are invoked and coupled*; it is largely **non-destructive to the built
-record-tier cores** — the six verbs survive as reaction bodies (see *Fit with the
-built base*).
+**Status: PARTLY BUILT (2026-09-22). Governing model for the cross-kernel command /
+coupling layer.** The local activation substrate (`endpoint/`, commit `b97034a`) and the
+WAL manager as a monitored-endpoint kernel (Pair 1 — `wal/wal_kernel.{h,cpp}`, commits
+`3aca2ac`/`cf7e0c6`) are **BUILT**; the remaining coupling (cache-manager kernel, Pair-2
+swarm, the API-pair transport bridge, reload repopulation, the live feed) is still
+**direction record — not built.** Its **resolved decisions govern** the ongoing
+realignment (they are no longer merely proposed). Scope confirmed with Patrick:
+cross-kernel commands — not the analyst layer, cross-kernel field work, or the wider HCP
+vocabulary. It reshapes *how components are invoked and coupled*; largely
+**non-destructive to the built record-tier cores** — the six verbs survive as reaction
+bodies (see *Fit with the built base*).
 
 Canadian English. Prose/draft record. On any conflict with built behaviour, the
 code and the existing `API.md` / `NOTES.md` remain the source of truth for what is

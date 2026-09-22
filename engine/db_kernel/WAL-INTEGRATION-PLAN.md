@@ -1,16 +1,16 @@
 # WAL-manager activation integration — plan (draft, for adversary vetting)
 
-**Status: BUILT + VERIFIED (2026-09-22).** Drafted 2026-09-22 MDT; reconciled the same
-day against a fresh-adversary plan review (SHOULD-FIX 1–4 + CONSIDER 5–8 all folded in:
+**Status: BUILT + VERIFIED (2026-09-22).** Built against the built `endpoint/` substrate
+(commit `b97034a`) and the built `wal/` bookkeeper, as `wal/wal_kernel.{h,cpp}` +
+`wal_kernel_test.cpp`. Drafted 2026-09-22 MDT and reconciled the same day against a
+fresh-adversary plan review (SHOULD-FIX 1–4 + CONSIDER 5–8 all folded in:
 exception/failure decision, originator reconciliation, inline-DB runtime property,
-owned-shape + priority pinned, tests #6/#7 added). **Built** as
-`wal/wal_kernel.{h,cpp}` + `wal_kernel_test.cpp`; a fresh build-adversary returned
+owned-shape + priority pinned, tests #6/#7 added). A fresh build-adversary returned
 SAFE-TO-COMMIT (ASan/UBSan clean, tests value-based not proxies); verified green
-independently — `PASS wal_kernel_test`, 29 checks, exit 0.
-against the built `endpoint/` substrate (commit `b97034a`) and the built `wal/`
-bookkeeper. Governed by `ENDPOINT-ACTIVATION-NOTES.md` (resolved decisions) and
-`WAL-INTEGRATION-HANDOFF.md` (the mission). Canadian English. Prose/draft record;
-code + `API.md`/`NOTES.md` remain the source of truth for what is *built*.
+independently — `PASS wal_kernel_test`, 30 checks, exit 0. Governed by
+`ENDPOINT-ACTIVATION-NOTES.md` (resolved decisions) and `WAL-INTEGRATION-HANDOFF.md`
+(the mission). Canadian English. Prose/draft record; code + `API.md`/`NOTES.md` remain
+the source of truth for what is *built*.
 
 ## Mission (one line)
 
