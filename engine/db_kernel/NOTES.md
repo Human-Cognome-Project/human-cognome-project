@@ -12,6 +12,9 @@
 > - **SUPERSEDED** — the invocation/coupling model: the synchronous `dispatch_one` /
 >   `dispatch_stream` call-and-return; "`db_runtime` dispatches on a leading verb"; the
 >   command-protocol / external-wire framing as the delivery model; polling for results.
+>   (The `dispatch/` *logic is unchanged and reused verbatim* as the reaction-body core —
+>   see tier 2 / `dbmanager/`; only its role as the external call-and-return entry point is
+>   superseded.)
 >   Replaced by: monitored-endpoint activation — every function is a **reaction body** on a
 >   box, data-arriving-is-the-activation, results returned to a **caller-supplied return
 >   endpoint**, "the setup runner IS the command structure; no separate command protocol
@@ -1018,16 +1021,22 @@ two view ops is continuity of basis:
   analysis and fully rebuild the cache space around the new exploratory
   location. Discontinuous — re-found, not re-aim. Sets the "current position"
   that DECLARE after/override lean on.
-- **RECONCILE** — orthogonal to both, and demand-driven: an analyst request for
-  IMMEDIATE, prioritized cross-matching — forcing the deferred cross-processing
-  (WIRE / cross-links / feedback) to the foreground and FULLY into the cache,
-  generally because the result will impact current analysis and cannot wait for
-  the pending list to drain on its own. Temporarily inverts the normal
-  filing-over-cross-processing precedence, on request. Relevance-triggered, not
-  housekeeping.
+- **RECONCILE** — **SUPERSEDED as a cache-tier verb (2026-09-22): RECONCILE is
+  not a db/cache-manager verb at all** — it was removed from the dispatch surface;
+  the analyst messages the **WAL manager directly**, which promotes the relevant
+  pending work into a pinned priority box the cache manager drains. See the
+  messaging-realignment banner at the top of this file and
+  `ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE". Only `UPDATE_CACHE`/`REBASE_CACHE`
+  remain named-but-unbuilt cache-tier stubs. *(The original characterization,
+  retained for provenance:)* orthogonal to both, and demand-driven: an analyst
+  request for IMMEDIATE, prioritized cross-matching — forcing the deferred
+  cross-processing (WIRE / cross-links / feedback) to the foreground, generally
+  because the result will impact current analysis and cannot wait for the pending
+  work to drain on its own. Relevance-triggered, not housekeeping.
 
-All cache-tier: global state transitions on the working set, non-arrayable.
-Deferred.
+Both view ops (`UPDATE_CACHE` / `REBASE_CACHE`): global state transitions on the
+working set, non-arrayable. Deferred. (RECONCILE is no longer among them — see its
+bullet above.)
 
 ### Cache manager — view composer (design forming, 2026-09-23)
 
@@ -1178,10 +1187,16 @@ returns, mass) is still owed. Door surface: `open` / `close` / `is_open` /
 reverse index). See `wal/README.md` (charter, file map, build/run) and
 `wal/USAGE.md` (how a consumer — chiefly the cache manager — navigates it and the
 door/scope contract). **RECONCILE** (an analyst-raised "this deferred cross-work
-is priority now" flag) is acted on by the **cache manager**, which navigates this
-topology to do the pending work sooner — the WAL manager itself does not act on,
-prioritize, or drain anything for a RECONCILE; its open→close bookkeeping is
-unchanged by the flag, driven only by the reciprocal write actually landing.
+is priority now" flag) **routes through the WAL manager, not the cache manager
+directly** (revised 2026-09-22 — supersedes the earlier framing here that had the
+cache manager navigate the topology and the WAL manager do nothing): the analyst
+messages the **WAL manager directly**, which navigates its own open-obligation
+topology (only-follow) to **move the relevant pending work into a pinned priority
+box**; the cache manager only *drains* that box. This is a conscious revision of the
+built bookkeeper boundary — the WAL manager now *selects and places* reconcile work
+(it does not do the work). Its open→close obligation ledger is otherwise unchanged,
+still driven by the reciprocal write landing. See `ENDPOINT-ACTIVATION-NOTES.md`
+"RECONCILE" and the messaging-realignment banner at the top of this file.
 **Ingest atomicity — resolved as out-of-scope here (Patrick, 2026-09-19):**
 package review found `close()` + `record_seen()` are two separate writes, not
 one transaction, so a crash between them makes a resume-from-History-`max(lsn)`

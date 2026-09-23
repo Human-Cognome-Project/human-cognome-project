@@ -103,10 +103,19 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   only in the kernel test's driver). Deferred: reload repopulation, the API-pair
   transport bridge, the live feed, Pair-2/swarm coupling, and the cache-manager
   consumer. This is the pattern the cache-manager realignment follows.
-- **Nothing else in `db_kernel` is a built mechanism.** The cache manager
-  (as a runtime) and the swarm/p2p layer are design notes or less — zero
-  code exists for either. The cache tier (`UPDATE_CACHE`/`REBASE_CACHE`) is a
-  partial exception worth being precise about: `dispatch/`
+- **Tier 2 of the db/cache manager IS now built (2026-09-23).** `dbmanager/`
+  (`db_manager_kernel.{h,cpp}` + test + README) — the analyst reaction body: the
+  record-tier verbs run as reaction bodies over the shared `Controller`, reusing
+  `dispatch/` verbatim, each `Result` returned to the request's caller-supplied
+  `reply_to`. Built to `TIER2-PLAN.md` under the coder+adversary discipline;
+  `PASS db_manager_kernel_test`, 38/38, ASan/UBSan clean; commit `8614b43`. So the
+  db/cache-manager runtime is **no longer zero-code** — tier 2 exists.
+- **The rest of the db/cache manager runtime and the swarm/p2p layer are still
+  design notes or less.** Tiers 1 (reconcile box), 3 (pending-work consumer /
+  file-now-wire-later), 4 (standing maintenance), the config/advertising routine,
+  and the cache structure itself (view-composer design captured **forming** in
+  `NOTES.md`, not built) remain unbuilt. The cache tier (`UPDATE_CACHE`/`REBASE_CACHE`)
+  is a partial exception worth being precise about: `dispatch/`
   has named face entries and dispatch stubs for the **two** (empty IR structs,
   a branch that returns "not yet implemented") — that much *is* code, but
   it's scaffolding with **no mechanism designed**, exactly as `API.md` §9
@@ -151,6 +160,14 @@ this out-box feeds.
 > the WAL manager's reciprocal-work out-box), not a poller of `list_open`. The open items
 > below all still stand; they are now worked through *on the box model*. This is a
 > **design** step first (realign), then build under the coder+adversary discipline.
+>
+> **Progress (2026-09-23):** the four-tier box-priority structure is pinned (reconcile ▸
+> analyst ▸ pending ▸ standing-maintenance), and **tier 2 (the analyst reaction body) is
+> BUILT** as `dbmanager/` (commit `8614b43`; `NOTES.md` "Tier 2 — analyst reaction body").
+> RECONCILE was removed from the dispatch surface (analyst → WAL manager). The cache
+> **structure** itself is captured **forming** in `NOTES.md` ("Cache manager — view
+> composer") — not built. Remaining: tiers 1/3/4, the config/advertising routine, the
+> cache structure build-out.
 
 Scope (per `NOTES.md` "Process runtime — the cache manager
 is a complete runtime"): a complete, standalone runtime process that owns
@@ -186,10 +203,14 @@ stream, not before it:
   manager's own view of it. `NOTES.md` "Process runtime", the "⚠ Revisit"
   bullet.
 - **RECONCILE** — the analyst-raised "this deferred cross-work is priority
-  now" flag. A momentary priority boost on already-known deferred work
-  (found by navigating the WAL manager's topology), not new work; the WAL
-  manager's own bookkeeping is unaffected by it. `NOTES.md` "Cache tier",
-  `wal/USAGE.md`'s RECONCILE section.
+  now" flag. **No longer a db/cache-manager verb (removed 2026-09-22):** the
+  analyst messages the **WAL manager directly**, which navigates its own
+  open-obligation topology (only-follow) to **move** the relevant already-known
+  deferred work into a pinned priority box; the cache manager only *drains* it.
+  A momentary priority boost on existing work, not new work. The WAL manager's
+  open→close obligation ledger is unaffected, but it does take the action of
+  selecting/placing the reconcile work. `ENDPOINT-ACTIVATION-NOTES.md`
+  "RECONCILE"; `wal/USAGE.md`'s RECONCILE section.
 - **Ingest-atomicity ownership** — the transaction boundary around the
   observe (WAL report) → book (act on it) cycle. Raised during WAL-manager
   package review, traced, and **ruled dropped from the WAL manager**

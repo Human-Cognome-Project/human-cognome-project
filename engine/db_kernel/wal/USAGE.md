@@ -117,6 +117,19 @@ level; the WAL manager does not provide it and is not adding surface to.
 
 ## RECONCILE
 
+> **⚠ Forward flag (2026-09-22) — RECONCILE routing was revised; the section below
+> describes the BUILT bookkeeper, which does not yet do reconcile-staging.** Under the
+> messaging realignment, **RECONCILE routes through the WAL manager, not the cache
+> manager**: the analyst messages the WAL manager directly, which navigates its own
+> open-obligation topology to **move** the relevant pending work into a pinned priority
+> box the cache manager drains — a conscious revision of the built bookkeeper boundary
+> (the WAL manager gains a *select-and-place* action; it still does not do the work). It
+> was also removed from the dispatch surface entirely (no longer a db/cache-manager verb).
+> The prose below ("acted on entirely by the cache manager"; "the WAL manager's role is
+> unchanged") reflects the **currently-built** library, which has no reconcile-staging yet;
+> it is superseded as *design*. See `ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE" and
+> `NOTES.md`'s messaging-realignment banner.
+
 RECONCILE (`NOTES.md` "Cache tier") is an analyst-raised **"this deferred
 cross-work is priority now"** flag — the analyst expects the pending
 cross-processing results (reciprocal returns, derived masses/centroids)
