@@ -38,6 +38,11 @@
 > - **WAL manager Pair-1 push is BUILT** (`wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`):
 >   source-blind (=location-blind, knows its counterpart), emitting owed reciprocal work to the
 >   cache-manager out-box, fixture-fed. Local activation primitives BUILT (commit `b97034a`).
+> - **Tier 2 (analyst reaction body) is BUILT** as `dbmanager/` (`db_manager_kernel.{h,cpp}`
+>   + test + README; `TIER2-PLAN.md`, adversary-vetted plan + build): `DbManagerKernel` runs
+>   the record-tier verbs as reaction bodies over the shared `Controller`, reusing `dispatch/`
+>   verbatim, returning each `Result` to the request's caller-supplied `reply_to`. Fixture-fed;
+>   endpoint advertising + tiers 1/3/4 deferred. `PASS`, 38/38, ASan/UBSan clean.
 >
 > **Open / still being designed (the plan fills in as we pin it):** the agent-facing
 > reframe of the record-tier surface onto boxes + caller-supplied return endpoints; the warm
@@ -290,6 +295,86 @@ is real I/O and must be handled right from the base:
   a per-analyst input/response link. Maintained aggregates (own masses, label
   centroids, reciprocal listings) therefore have a single owner — the manager —
   so they stay consistent across async multi-analyst updates.
+
+## db/cache-manager kernel — box & priority structure (messaging realignment, 2026-09-22)
+
+The db/cache manager is **one monitored-endpoint kernel**. Its scheduler drains the
+**highest-priority occupied box, head-first** — do-next, never preempt (activation model);
+priority is box-granular, placement carries the priority meaning. The tiers, highest →
+lowest:
+
+1. **High-priority reconcile box** — pinned top, normally empty. Filled *only* by the WAL
+   manager promoting already-tracked pending work into it on an analyst reconcile (the
+   analyst messages the **WAL manager directly**; not a db/cache-manager verb). Drained
+   first; empty = nothing to reconcile. (Substrate reconcile-box pattern, not a verb.)
+2. **Analyst-command box(es)** — current work. **All analyst requests are one stream** — the
+   verbs are NOT split into priority-distinct boxes (READ / DECLARE / MOVE / ADD_CONNECTION /
+   DELETE share the stream; an arrayed stream is one ordered unit drained to completion).
+   **Possibly multiple analysts**, each its own box **at this same tier** — the per-analyst
+   input/return link IS the caller-supplied return endpoint. Each result returns to its
+   request's return endpoint.
+3. **Pending-work box** — deferred cross-work. Fed by the WAL manager's **Pair-1 push** (owed
+   reciprocal work: the WIRE / `token_child` structure-reverse, the `members`/`member_of`
+   reciprocal, mass). Drains **behind** analyst current work — the **filing-over-cross-processing
+   precedence, now expressed as tier-2 > tier-3**, not a runtime pending-list discipline. Each
+   write here becomes the next WAL report; the WAL manager closes the obligation by observing it
+   (self-accounting). Reconcile is the mechanism that lifts items from this tier up to tier 1.
+4. **Standing maintenance commands** — background upkeep (background cache updates, etc.).
+   Lowest priority; standing box(es) that run only when nothing above is occupied. The
+   cache-tier ops (`UPDATE_CACHE` / `REBASE_CACHE`) plausibly live here as standing
+   box-priority operations rather than dispatched verbs (consistent with
+   `ENDPOINT-ACTIVATION-NOTES.md`'s "UPDATE_CACHE / REBASE_CACHE plausibly follow RECONCILE
+   into box-priority operations").
+
+**Consequences:** filing > cross-processing is the tier-2 > tier-3 ordering; reconcile =
+moving relevant tier-3 work into tier-1 (do-next), the WAL relation staying the durable home
+(F4-affirmative — the manager keeps no durable pending-list of its own); the six verb cores
+run as **reaction bodies** on tier-2 (analyst) and tier-3 (deferred owed-work); the `dispatch/`
+synchronous router is **superseded** by the scheduler + handlers.
+
+**Open (minor):** fairness/ordering *among equal-tier analyst boxes* when several analysts are
+occupied at tier 2 (the scheduler's within-tier selection rule) — not yet pinned; a scheduling
+detail, not a structural one.
+
+### Tier 2 — analyst reaction body (design pinned 2026-09-23; build plan `TIER2-PLAN.md`)
+
+The analyst-facing current-work surface, re-expressed on the activation substrate. A rehome
+following the `WalKernel` precedent — **the six verb cores and the `dispatch/` logic do not
+change**; only invocation and result-return do.
+
+- **The analyst is a peer kernel composing per its own ruleset, NOT a human at a command
+  line.** Requests are therefore **well-formed by construction** (the return endpoint and the
+  arena handle are part of what it emits). The manager does **not** validate or reject
+  peer-kernel requests; a malformed envelope is a programming/wiring bug that fails loud like
+  any other (as `WalKernel` lets a bad handle throw), not an analyst-facing rejection path. The
+  only "rejection" tier 2 has is the **core's own semantic `Result`** on a well-formed request.
+- **One `DbManagerKernel` instance, one handler, registered on each analyst box** (tier 2),
+  all sharing the one `Controller` (the DB has a single owner — the manager). Multiple analysts
+  = multiple boxes at this tier.
+- **Message = `{ payload = command-arena handle, reply_to = return endpoint }`.** A
+  `command::Command` is not serialized into the opaque box payload (serialization is the
+  deferred G6 wire seam); the payload is an **arena handle** into a side arena of request
+  values (the `WalKernel`/`Report` pattern), fixture-fed by the driver first. `reply_to` is the
+  **caller-supplied return endpoint** — the manager is **advertising-agnostic**: it sends the
+  result to whatever `reply_to` the request carries and never resolves, discovers, or allocates
+  an endpoint. **Endpoint advertising / cross-connection is the (not-yet-built) system
+  configuration routine** (the setup runner establishing + cross-connecting advertised
+  endpoints); until it exists the fixture-fed driver stands in for it, supplying return
+  endpoints directly. That caller-supplied link IS the multi-analyst per-analyst I/O link.
+- **Handler body reuses `dispatch/` verbatim:** resolve handle → request → run `dispatch_one`
+  (a single `Command`, any verb incl. DELETE) or `dispatch_stream` (an ordered `AdditiveCommand`
+  stream, one unit to completion) over the `Controller` → append `Result`(s) to a result-arena →
+  `sender.send` that handle to `reply_to`. **Both request forms kept** (DELETE cannot ride a
+  stream structurally, so the single-`Command` form stays regardless).
+- **Core-non-destructive — no WAL emission here.** Reports reach the WAL manager from the
+  Postgres logical-decoding feed (deferred seam), NOT from this handler; READ mutates nothing,
+  emits nothing, opens no obligation — its result just lands at `reply_to`. The file-now/wire-
+  later split is the forward tier-3 consumer's concern, not tier 2.
+- **Deferred seams (named, not built):** the analyst-side converter / live feed (fixture-fed
+  first cut); **endpoint advertising / cross-connection = the system configuration routine**
+  (above); component-originated sub-requests (the analyst's READ→sim→DECLARE loop is the
+  analyst kernel's business, modelled as the external driver, per the substrate's deferred
+  sub-request seam).
 
 ## Type semantics — literal vs label
 
