@@ -7,6 +7,13 @@
 > **Next entry point (Patrick, 2026-09-22): realign the main db_kernel / cache-manager
 > design with this new messaging system** — see "Incoming direction" below. Branch
 > `dbkernel-design-checkpoint`.
+>
+> **Progress since (2026-09-23):** the four-tier box-priority structure is pinned and
+> **tier 2 — the analyst reaction body — is BUILT** (`dbmanager/`, commit `8614b43`);
+> RECONCILE was removed from the dispatch surface (analyst → WAL manager); the cache
+> structure is captured **forming** in `NOTES.md`. Remaining: tiers 1/3/4, the
+> config/advertising routine, the cache structure build-out. See "Current state" and the
+> "Progress" note under the Cache-manager work stream below.
 
 **For:** the next db_kernel session. **Incoming direction (Patrick, 2026-09-22):
 realign the cache-manager design with the new messaging system** — the core-data-flows
@@ -29,7 +36,8 @@ snapshot, not a live query.
 command-structure discussion (Patrick, 2026-09-19) HAPPENED and settled into the
 **monitored-endpoint activation model** — the "new messaging system." The next context
 **realigns the main db_kernel / cache-manager design with it.** Read the messaging
-model first, then rework the cache-manager design (still a design, not yet built) so it
+model first, then rework the cache-manager design (mostly still design; **tier 2 —
+the analyst reaction body — is now built**, `dbmanager/`, 2026-09-23) so it
 sits natively on boxes rather than on the old active-instruction / polling shape.
 
 **The messaging model to realign onto (read these first):**
