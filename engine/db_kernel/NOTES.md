@@ -1004,6 +1004,10 @@ flat form is superseded (it was never the intent).
 
 ### Cache tier — loosely defined, deferred (2026-09-15)
 
+> **Elaborated by "Cache manager — view composer (design forming, 2026-09-23)" below**
+> — the two view ops are now framed on the n-dimensional / view-composer model. The
+> continuity-of-basis axis below still holds; read it through that section.
+
 Touched only enough to define and defer; mechanisms not built. Axis between the
 two view ops is continuity of basis:
 
@@ -1024,6 +1028,70 @@ two view ops is continuity of basis:
 
 All cache-tier: global state transitions on the working set, non-arrayable.
 Deferred.
+
+### Cache manager — view composer (design forming, 2026-09-23)
+
+> **DESIGN FORMING, not pinned, not built.** Captured from the cache-operations
+> discussion so it is not lost; will firm before any build. Game mechanics are the
+> operative frame; the Taichi SNode-tree resemblance is **structural, not functional**.
+
+The store is **n-dimensional** — all connections across all axes; it is not itself a
+tree. A tree / composition appears only when an analysis **projects onto chosen relevant
+dimensions**. The cache manager is the **view composer** that does that projection.
+
+- **View spec = system configuration + analyst request, combined.** Together they define
+  *which axes of study* (the relevant-dimension projection) and *what levels of rollup*
+  (LoD depth, **per area, not one global level**) are appropriate. Neither input alone
+  sets the view.
+- **Structural, not functional, SNode resemblance.** A token is an SNode-composable
+  element (defined-by-parts = literal; nesting = LoD). But a Taichi SNode tree is a
+  *fixed* field layout for compute, whereas the cache is **re-composed per study** — a
+  projection, not a cutout of cold storage.
+- **Rollup is dimension-parametric** — along the studied axis. Rolling up *word
+  structures* is relevant only when words are the object of study; along another axis the
+  rollup composes entirely different coarse particles. (Corrects the earlier word/hex
+  examples being read as the general case.)
+- **The walk (all modes):** only-follow (address IS identity; PK / PK-prefix follows — no
+  predicate scan), **LoD-bounded per area** — take the coarse **label-as-particle** (its
+  centroid already stored, the O(1) swap; the truncation / LoD dial) wherever the view's
+  rollup level says stop; descend only where detail is wanted. Output = the **compound
+  structures** for that view (the warm working cache content).
+- **Three update behaviours:**
+  1. **Passive background update** — the manager keeps the current view current as it
+     processes other work; not analyst-driven. This is the **tier-4 standing maintenance**
+     ("background cache updates") of the box-priority structure. **This stream drives the
+     local deviation monitor** (minor, later): local deviation = how much the manager has
+     passively updated that is relevant to the current projection + how much pending work
+     touches the area of study. Sharpens the activation-notes "Analyst deviation gauge"
+     (local-deviation) — it is grounded in this passive-update stream, relevance-scoped to
+     the projection.
+  2. **`UPDATE_CACHE` — active refocus, edge-driven** — same basis (same axes/rollup
+     projection); as the analyst's focus moves **toward the edge of the study area**,
+     aim-and-extend the view's reach in that direction. The telescoping reach, triggered by
+     edge-approach.
+  3. **`REBASE_CACHE` — new basis, wholesale** — a new (config+request) view spec →
+     re-walk, re-compose from scratch.
+- **Provisional analyst addresses** — an address the analyst proposes is a position *within
+  this composed view*, not an absolute store coordinate; the manager disposes the actual
+  cold-store placement (caller-proposes / manager-disposes).
+
+**Open (to pin):** the **combination rule** — how system configuration and the analyst
+request merge into one view spec (the part that reaches back into the controller/analyst
+layer); the **edge-approach trigger** for `UPDATE_CACHE` — analyst-requested vs
+manager-detected/anticipatory.
+
+**Parked — storage granularity (for the cache-structure build-out, 2026-09-23):** a great
+deal of the store will **never be used at the granularity it contains** — coarse-by-default
+is the norm, fine descent rare and local (why the walk is LoD-bounded). Two-part granularity
+strategy to design when the cache structure is built:
+- **Explicit base:** the **UTF table + character sets get an explicit mapping** (the base
+  atoms / seed floor / codec alphabet ground — must be exact; everything composes up from it).
+- **Batch-rolled middle:** many of the **detailed intermediate composition steps** between
+  the explicit base and the meaningful coarse tokens can be **rolled up in batches** rather
+  than each fully materialized — coarse-by-default storage, fine on demand (the local echo of
+  the swarm's "distillation + pull-coverage-on-request"). *(Reading to confirm later: "batch
+  rollup" as a storage/build representation of the detailed middle, not a per-request compose
+  economy.)*
 
 ## In flight — next to lock — BUILT 2026-09-18
 
