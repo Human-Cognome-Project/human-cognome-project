@@ -13,7 +13,7 @@ They were merged with both parent histories preserved. No force-push or history 
 
 ## Current architectural boundaries
 
-- **Taichi runtime** executes the accelerated implementation.
+- **Modified Taichi fork** supplies the portable runtime/compiler/device substrate.
 - **Physics engine** implements field dynamics.
 - **Engine harness** is the physics-engine control panel the future analyst will use to add/remove/adjust elements and control analytical runs.
 - **Analyst functions** have not yet been designed or implemented.
@@ -23,7 +23,10 @@ They were merged with both parent histories preserved. No force-push or history 
 
 ## Current tree decisions
 
-- `engine/field/`: active September field-engine implementation, now split into physics, harness/control lifecycle, validation, and a stable facade.
+- `engine/src/engine/`: recovered native C++ runtime/compiler wrapper.
+- `engine/src/field/`: recovered native C++ field/tick implementation.
+- `engine/taichi/`: intended location of the modified Taichi fork, curated separately because the recovered local folder contains source, vendored externals, build products and machine-local environment files.
+- `archive/2026-09-planner-field-python/`: planner-generated Python field prototype, retained only as historical/experimental evidence.
 - `archive/2026-09-taichi-v0-staging/`: the earlier v0-staging generation, preserved intact after reconciliation confirmed the later field engine does not depend on it.
 - `kernels/database/`: PostgreSQL record operations + database/cache-manager family.
 - `kernels/wal/`: WAL manager family, promoted to a peer kernel set with its design/build records.
@@ -36,11 +39,11 @@ They were merged with both parent histories preserved. No force-push or history 
 
 ## Next review passes
 
-1. Keep the archived Taichi v0-staging generation available as an experimental/predecessor reference while current field-engine work proceeds from `engine/field/`.
-2. Preserve the new physics/harness/validation boundary and expand behaviour checks without coupling validation into engine operation.
+1. Vet the recovered native C++ engine/field workspace against its settled design and operational record.
+2. Curate the modified Taichi fork: preserve HCP changes and exact dependency revisions while excluding machine-local `.venv` and reproducible build products from canonical source.
 3. Continue stabilizing the separated `kernels/database/`, `kernels/wal/`, and `network/` interfaces with coordinated include/build/test updates.
 4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
 5. Keep root README, contributor and agent guidance synchronized as the implementation tree stabilizes.
-6. Keep the smoke suite green as the reorganized tree evolves. The promotion gate includes field syntax + no-DB physics smoke, endpoint substrate tests, database codec tests, pure WAL tests, and disposable-PostgreSQL database/WAL kernel integration tests.
+6. Keep the smoke suite green as the reorganized tree evolves. The kernel/network/database tests remain active; native engine build/runtime CI will be restored once the curated Taichi fork and its reproducible dependency/build boundary are in place.
 
 The initial structural reconciliation reached its promotion gate with the full smoke suite green. Historical material remains recoverable through Git even after files are moved or later removed from the current tree.
