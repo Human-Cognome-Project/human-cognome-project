@@ -33,10 +33,6 @@ jobs:
             echo "Project Python found in active engine tree outside vendor Taichi fork"
             exit 1
           fi
-      - name: Note native build gate
-        run: |
-          echo "Full engine compile/runtime CI is gated on curated engine/taichi source + dependencies."
-
   taichi-fork-integrity:
     runs-on: ubuntu-latest
     steps:
