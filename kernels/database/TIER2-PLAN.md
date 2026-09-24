@@ -59,10 +59,10 @@ endpoint** — fixture-fed, with tests, standalone-buildable. This is the tier-2
 - **One kernel, one handler, N analyst boxes, one `Controller`.** `NOTES.md` tier-2
   pin; mirrors `WalKernel` on N per-source in-boxes sharing one `WalMonitor`.
 - **Message = `{ payload = decimal arena handle, reply_to = return endpoint }`.**
-  Handle-in-payload, never serialization — `WAL-INTEGRATION-PLAN.md` §3 /
+  Handle-in-payload, never serialization — `kernels/wal/WAL-INTEGRATION-PLAN.md` §3 /
   `wal_kernel.cpp::parse_handle`. Serialization is the deferred G6 wire seam.
 - **`reply_to` is the caller-supplied return endpoint; the box IS the correlation.**
-  `ENDPOINT-ACTIVATION-NOTES.md` "Request→return correlation — RESOLVED": the
+  `network/ENDPOINT-ACTIVATION-NOTES.md` "Request→return correlation — RESOLVED": the
   request names its own return endpoint; no correlation token, no matching table.
 - **Both request forms kept:** a single `dispatch::Command` (any verb, incl. the
   non-arrayable DELETEs) and an ordered `std::vector<dispatch::AdditiveCommand>`
@@ -77,7 +77,7 @@ endpoint** — fixture-fed, with tests, standalone-buildable. This is the tier-2
 
 ## In scope — buildable now
 
-New module `dbmanager/` (sibling of `wal/`, `dispatch/`):
+New module `dbmanager/` inside `kernels/database/`; WAL is now the peer family `kernels/wal/`:
 
 1. **`DbManagerKernel`** (`dbmanager/db_manager_kernel.{h,cpp}`). Owns nothing —
    holds references to the request arena, the response arena, and the `Controller`
@@ -116,7 +116,7 @@ New module `dbmanager/` (sibling of `wal/`, `dispatch/`):
    arenas, seeding fixture `Request`s and asserting the right `Response` lands at the
    right return endpoint. DB-backed (disposable `hcp3_core`, the `dispatch_test`
    harness shape).
-   - **Priority levels (pinned, per `WAL-INTEGRATION-PLAN.md` §4's precedent of
+   - **Priority levels (pinned, per `kernels/wal/WAL-INTEGRATION-PLAN.md` §4's precedent of
      pinning them for the isolated cut):** `Scheduler` constructed with `num_levels = 4`,
      reflecting the pinned tier map (0 = reconcile, **1 = analyst**, 2 = pending,
      3 = maintenance). Analyst boxes `register_box` at **level 1**. Only level 1 is
@@ -148,7 +148,7 @@ New module `dbmanager/` (sibling of `wal/`, `dispatch/`):
 - **Endpoint advertising / cross-connection** — how kernels advertise their endpoints
   and get cross-connected is part of the (not-yet-built) **system configuration
   routine** (the setup runner extended to establish + cross-connect advertised
-  endpoints — `ENDPOINT-ACTIVATION-NOTES.md` "The setup runner IS the command
+  endpoints — `network/ENDPOINT-ACTIVATION-NOTES.md` "The setup runner IS the command
   structure"). The manager is **advertising-agnostic** at runtime; the **fixture-fed
   test driver stands in for the configuration routine**, wiring the boxes and supplying
   return endpoints directly, exactly as that routine will.
