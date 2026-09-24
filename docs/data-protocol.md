@@ -60,8 +60,7 @@ clean and content is *pulled* into it; not-yet-pulled is not excluded. The live-
 - The `source_*` databases (raw JSONB kept beside the indexed form) are the internal precedent for
   the path-through discipline — the raw face of the Kaikki singularity is intact and stays that way.
 
-Toolkit: [`extraction/`](../extraction/) — the address codec and its tests, the shard connectors,
-the Kaikki loader chain, and the Gutenberg fetcher. Legacy schema maps persist in
+Legacy migration toolkit: [`tools/legacy-extraction/`](../tools/legacy-extraction/) — the old address codec and tests, shard connectors, Kaikki loader chain, and Gutenberg fetcher. It is retained for read-only migration/reference use; active database code lives under [`kernels/database/`](../kernels/database/). Legacy schema maps persist in
 [legacy-data-maps/](legacy-data-maps/) until the new schema documentation replaces them.
 
 ## Honesty rules carried forward
