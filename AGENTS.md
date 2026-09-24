@@ -18,7 +18,7 @@ During the current repository migration, do not infer architecture from historic
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
 - Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
 - The future configuration routine resolves endpoint paths; the future thread manager handles lower-frequency/system-facing bridge activation.
-- `kernels/db_kernel/` is still a preserved DB/cache/WAL development bundle. The shared endpoint substrate has been promoted to `network/endpoint/`; do not move it back under a database-specific hierarchy.
+- `kernels/database/`, `kernels/wal/`, and `network/endpoint/` are peers. Do not collapse WAL or shared endpoint infrastructure back under the database/cache hierarchy.
 
 ## Current development state
 
@@ -30,7 +30,7 @@ If you are contributing to paths affected by the reorganization, branch from the
 
 - Code and executable tests determine what is built. Design notes determine intent only where they explicitly say a decision is settled.
 - Preserve distinctions such as **BUILT**, **planned**, **deferred**, and **experimental**. Do not promote a plan to implementation by paraphrase.
-- Do not split `kernels/db_kernel/` merely to improve appearance. Its C++ relative includes/build instructions must be migrated together with tests.
+- When moving kernel families, migrate their include paths, build instructions and tests together. Preserve working interfaces before refactoring behaviour.
 - Do not refactor `engine/field/` into physics/harness modules in the same commit as structural moves. Establish behaviour-preserving boundaries first.
 - Never force-push or rewrite shared history for cleanup. Normal commits, merges and moves keep prior versions recoverable.
 - Avoid destructive database operations outside disposable test databases. Never point reset/drop-schema tests at data that must be kept.
