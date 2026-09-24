@@ -43,7 +43,7 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 ## Current implementation
 
 - **[engine/field/](engine/field/)** — later September Taichi field-engine development. The current files still mix physics, harness, CPU-oracle and validation concerns; that split is a planned refactor, not something to infer from filenames.
-- **[engine/kernel/](engine/kernel/), [engine/timestep/](engine/timestep/), [engine/storage/](engine/storage/), [engine/ingest/](engine/ingest/)** — the parallel August 31–September 1 Taichi development line, retained pending component-by-component reconciliation.
+- **[archive/2026-09-taichi-v0-staging/](archive/2026-09-taichi-v0-staging/)** — the parallel August 31–September 1 Taichi generation, now archived intact as a predecessor/experimental record after reconciliation showed no runtime dependency from the later field engine.
 - **[kernels/db_kernel/](kernels/db_kernel/)** — the preserved PostgreSQL/cache/WAL/endpoint development bundle. Its present internal co-location reflects controlled development and existing build relationships, not final architecture.
 - **[research/](research/)** — field/ledger research and convenience packages. Research informs the implementation but is not runtime code.
 - **[data/postgres/snapshots/](data/postgres/snapshots/)** — reserved for reproducibility snapshots exported from development PostgreSQL systems.
