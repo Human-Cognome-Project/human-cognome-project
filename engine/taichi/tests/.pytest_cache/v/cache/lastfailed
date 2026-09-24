@@ -1,0 +1,3 @@
+{
+  "python/test_snode_capacity.py::test_sparse_tree_above_old_snode_capacity[arch=cuda-1]": true
+}

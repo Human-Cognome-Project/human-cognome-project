@@ -1,0 +1,610 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineSystem.cmake:233 (message)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      The system is: Linux - 6.17.0-40-generic - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /usr/lib/llvm-15/bin/clang 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is Clang, found in:
+        /opt/project/taichi/build-review/CMakeFiles/3.28.3/CompilerIdC/a.out
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /usr/lib/llvm-15/bin/clang++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is Clang, found in:
+        /opt/project/taichi/build-review/CMakeFiles/3.28.3/CompilerIdCXX/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_dcb04
+        [1/2] /usr/lib/llvm-15/bin/clang   -v -MD -MT CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c
+        Ubuntu clang version 15.0.7
+        Target: x86_64-pc-linux-gnu
+        Thread model: posix
+        InstalledDir: /usr/lib/llvm-15/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Candidate multilib: .;@m64
+        Selected multilib: .;@m64
+         (in-process)
+         "/usr/lib/llvm-15/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte -resource-dir /usr/lib/llvm-15/lib/clang/15.0.7 -dependency-file CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /usr/lib/llvm-15/lib/clang/15.0.7/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte -ferror-limit 19 -fgnuc-version=4.2.1 -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c
+        clang -cc1 version 15.0.7 based upon LLVM 15.0.7 default target x86_64-pc-linux-gnu
+        ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /usr/lib/llvm-15/lib/clang/15.0.7/include
+         /usr/local/include
+         /usr/include/x86_64-linux-gnu
+         /usr/include
+        End of search list.
+        [2/2] : && /usr/lib/llvm-15/bin/clang  -v CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -o cmTC_dcb04   && :
+        Ubuntu clang version 15.0.7
+        Target: x86_64-pc-linux-gnu
+        Thread model: posix
+        InstalledDir: /usr/lib/llvm-15/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Candidate multilib: .;@m64
+        Selected multilib: .;@m64
+         "/usr/bin/ld" -pie --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_dcb04 /lib/x86_64-linux-gnu/Scrt1.o /lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/lib -L/usr/lib CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /lib/x86_64-linux-gnu/crtn.o
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/usr/lib/llvm-15/lib/clang/15.0.7/include]
+          add: [/usr/local/include]
+          add: [/usr/include/x86_64-linux-gnu]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/usr/lib/llvm-15/lib/clang/15.0.7/include] ==> [/usr/lib/llvm-15/lib/clang/15.0.7/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/usr/lib/llvm-15/lib/clang/15.0.7/include;/usr/local/include;/usr/include/x86_64-linux-gnu;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/ninja -v cmTC_dcb04]
+        ignore line: [[1/2] /usr/lib/llvm-15/bin/clang   -v -MD -MT CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
+        ignore line: [Ubuntu clang version 15.0.7]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /usr/lib/llvm-15/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/usr/lib/llvm-15/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte -resource-dir /usr/lib/llvm-15/lib/clang/15.0.7 -dependency-file CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /usr/lib/llvm-15/lib/clang/15.0.7/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-ZuyOte -ferror-limit 19 -fgnuc-version=4.2.1 -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang -cc1 version 15.0.7 based upon LLVM 15.0.7 default target x86_64-pc-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /usr/lib/llvm-15/lib/clang/15.0.7/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include/x86_64-linux-gnu]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [[2/2] : && /usr/lib/llvm-15/bin/clang  -v CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -o cmTC_dcb04   && :]
+        ignore line: [Ubuntu clang version 15.0.7]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /usr/lib/llvm-15/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" -pie --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_dcb04 /lib/x86_64-linux-gnu/Scrt1.o /lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/lib -L/usr/lib CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /lib/x86_64-linux-gnu/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [-pie] ==> ignore
+          arg [--build-id] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_dcb04] ==> ignore
+          arg [/lib/x86_64-linux-gnu/Scrt1.o] ==> obj [/lib/x86_64-linux-gnu/Scrt1.o]
+          arg [/lib/x86_64-linux-gnu/crti.o] ==> obj [/lib/x86_64-linux-gnu/crti.o]
+          arg [/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o]
+          arg [-L/usr/lib/gcc/x86_64-linux-gnu/13] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/13]
+          arg [-L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64]
+          arg [-L/lib/x86_64-linux-gnu] ==> dir [/lib/x86_64-linux-gnu]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [CMakeFiles/cmTC_dcb04.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [-lc] ==> lib [c]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o]
+          arg [/lib/x86_64-linux-gnu/crtn.o] ==> obj [/lib/x86_64-linux-gnu/crtn.o]
+        collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/13] ==> [/usr/lib/gcc/x86_64-linux-gnu/13]
+        collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/x86_64-linux-gnu] ==> [/lib/x86_64-linux-gnu]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+        implicit objs: [/lib/x86_64-linux-gnu/Scrt1.o;/lib/x86_64-linux-gnu/crti.o;/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o;/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o;/lib/x86_64-linux-gnu/crtn.o]
+        implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/13;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib/x86_64-linux-gnu;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_662f0
+        [1/2] /usr/lib/llvm-15/bin/clang++   -v -MD -MT CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
+        Ubuntu clang version 15.0.7
+        Target: x86_64-pc-linux-gnu
+        Thread model: posix
+        InstalledDir: /usr/lib/llvm-15/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Candidate multilib: .;@m64
+        Selected multilib: .;@m64
+         (in-process)
+         "/usr/lib/llvm-15/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM -resource-dir /usr/lib/llvm-15/lib/clang/15.0.7 -dependency-file CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward -internal-isystem /usr/lib/llvm-15/lib/clang/15.0.7/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM -ferror-limit 19 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 15.0.7 based upon LLVM 15.0.7 default target x86_64-pc-linux-gnu
+        ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13
+         /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13
+         /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward
+         /usr/lib/llvm-15/lib/clang/15.0.7/include
+         /usr/local/include
+         /usr/include/x86_64-linux-gnu
+         /usr/include
+        End of search list.
+        [2/2] : && /usr/lib/llvm-15/bin/clang++  -v CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_662f0   && :
+        Ubuntu clang version 15.0.7
+        Target: x86_64-pc-linux-gnu
+        Thread model: posix
+        InstalledDir: /usr/lib/llvm-15/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+        Candidate multilib: .;@m64
+        Selected multilib: .;@m64
+         "/usr/bin/ld" -pie --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_662f0 /lib/x86_64-linux-gnu/Scrt1.o /lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/lib -L/usr/lib CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /lib/x86_64-linux-gnu/crtn.o
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13]
+          add: [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13]
+          add: [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward]
+          add: [/usr/lib/llvm-15/lib/clang/15.0.7/include]
+          add: [/usr/local/include]
+          add: [/usr/include/x86_64-linux-gnu]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13] ==> [/usr/include/c++/13]
+        collapse include dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13] ==> [/usr/include/x86_64-linux-gnu/c++/13]
+        collapse include dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward] ==> [/usr/include/c++/13/backward]
+        collapse include dir [/usr/lib/llvm-15/lib/clang/15.0.7/include] ==> [/usr/lib/llvm-15/lib/clang/15.0.7/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/usr/include/c++/13;/usr/include/x86_64-linux-gnu/c++/13;/usr/include/c++/13/backward;/usr/lib/llvm-15/lib/clang/15.0.7/include;/usr/local/include;/usr/include/x86_64-linux-gnu;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
+      - "/usr/share/cmake-3.28/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/ninja -v cmTC_662f0]
+        ignore line: [[1/2] /usr/lib/llvm-15/bin/clang++   -v -MD -MT CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Ubuntu clang version 15.0.7]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /usr/lib/llvm-15/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/usr/lib/llvm-15/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -v -fcoverage-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM -resource-dir /usr/lib/llvm-15/lib/clang/15.0.7 -dependency-file CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward -internal-isystem /usr/lib/llvm-15/lib/clang/15.0.7/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir=/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-THqMIM -ferror-limit 19 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 15.0.7 based upon LLVM 15.0.7 default target x86_64-pc-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13]
+        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13]
+        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward]
+        ignore line: [ /usr/lib/llvm-15/lib/clang/15.0.7/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include/x86_64-linux-gnu]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [[2/2] : && /usr/lib/llvm-15/bin/clang++  -v CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_662f0   && :]
+        ignore line: [Ubuntu clang version 15.0.7]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /usr/lib/llvm-15/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/12]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" -pie --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_662f0 /lib/x86_64-linux-gnu/Scrt1.o /lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/lib -L/usr/lib CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /lib/x86_64-linux-gnu/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [-pie] ==> ignore
+          arg [--build-id] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_662f0] ==> ignore
+          arg [/lib/x86_64-linux-gnu/Scrt1.o] ==> obj [/lib/x86_64-linux-gnu/Scrt1.o]
+          arg [/lib/x86_64-linux-gnu/crti.o] ==> obj [/lib/x86_64-linux-gnu/crti.o]
+          arg [/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o]
+          arg [-L/usr/lib/gcc/x86_64-linux-gnu/13] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/13]
+          arg [-L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64]
+          arg [-L/lib/x86_64-linux-gnu] ==> dir [/lib/x86_64-linux-gnu]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [CMakeFiles/cmTC_662f0.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o]
+          arg [/lib/x86_64-linux-gnu/crtn.o] ==> obj [/lib/x86_64-linux-gnu/crtn.o]
+        collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/13] ==> [/usr/lib/gcc/x86_64-linux-gnu/13]
+        collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/x86_64-linux-gnu] ==> [/lib/x86_64-linux-gnu]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+        implicit objs: [/lib/x86_64-linux-gnu/Scrt1.o;/lib/x86_64-linux-gnu/crti.o;/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o;/usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o;/lib/x86_64-linux-gnu/crtn.o]
+        implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/13;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib/x86_64-linux-gnu;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/usr/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - ".venv/lib/python3.12/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:323 (check_cxx_compiler_flag)"
+      - ".venv/lib/python3.12/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:363 (_pybind11_return_if_cxx_and_linker_flags_work)"
+      - ".venv/lib/python3.12/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:435 (_pybind11_generate_lto)"
+      - ".venv/lib/python3.12/site-packages/pybind11/share/cmake/pybind11/pybind11Config.cmake:250 (include)"
+      - "cmake/PythonNumpyPybind11.cmake:15 (find_package)"
+      - "CMakeLists.txt:118 (include)"
+    checks:
+      - "Performing Test HAS_FLTO_THIN"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-NfHMZk"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-NfHMZk"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_FLAGS: " -ffunction-sections -fdata-sections"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "HAS_FLTO_THIN"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-NfHMZk'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_dfe50
+        [1/2] /usr/lib/llvm-15/bin/clang++ -DHAS_FLTO_THIN  -ffunction-sections -fdata-sections  -std=gnu++17 -fPIE   -flto -MD -MT CMakeFiles/cmTC_dfe50.dir/src.cxx.o -MF CMakeFiles/cmTC_dfe50.dir/src.cxx.o.d -o CMakeFiles/cmTC_dfe50.dir/src.cxx.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-NfHMZk/src.cxx
+        [2/2] : && /usr/lib/llvm-15/bin/clang++ -ffunction-sections -fdata-sections  CMakeFiles/cmTC_dfe50.dir/src.cxx.o -o cmTC_dfe50  -flto && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/usr/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "cmake/TaichiCXXFlags.cmake:104 (check_cxx_compiler_flag)"
+      - "CMakeLists.txt:129 (include)"
+    checks:
+      - "Performing Test CXX_HAS_Wno_unqualified_std_cast_call"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-rjGdmz"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-rjGdmz"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_FLAGS: " -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration "
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CXX_HAS_Wno_unqualified_std_cast_call"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-rjGdmz'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_c5646
+        [1/2] /usr/lib/llvm-15/bin/clang++ -DCXX_HAS_Wno_unqualified_std_cast_call  -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration   -std=gnu++17 -fPIE   -Wno-unqualified-std-cast-call -MD -MT CMakeFiles/cmTC_c5646.dir/src.cxx.o -MF CMakeFiles/cmTC_c5646.dir/src.cxx.o.d -o CMakeFiles/cmTC_c5646.dir/src.cxx.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-rjGdmz/src.cxx
+        [2/2] : && /usr/lib/llvm-15/bin/clang++ -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  CMakeFiles/cmTC_c5646.dir/src.cxx.o -o cmTC_c5646   && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/usr/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "cmake/TaichiCXXFlags.cmake:109 (check_cxx_compiler_flag)"
+      - "CMakeLists.txt:129 (include)"
+    checks:
+      - "Performing Test CXX_HAS_Wno_unused_but_set_variable"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-0CQRy4"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-0CQRy4"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_CXX_FLAGS: " -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call "
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CXX_HAS_Wno_unused_but_set_variable"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-0CQRy4'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_776db
+        [1/2] /usr/lib/llvm-15/bin/clang++ -DCXX_HAS_Wno_unused_but_set_variable  -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call   -std=gnu++17 -fPIE   -Wno-unused-but-set-variable -MD -MT CMakeFiles/cmTC_776db.dir/src.cxx.o -MF CMakeFiles/cmTC_776db.dir/src.cxx.o.d -o CMakeFiles/cmTC_776db.dir/src.cxx.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-0CQRy4/src.cxx
+        [2/2] : && /usr/lib/llvm-15/bin/clang++ -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call  CMakeFiles/cmTC_776db.dir/src.cxx.o -o cmTC_776db   && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "/usr/lib/llvm-15/lib/cmake/llvm/FindFFI.cmake:44 (check_c_source_compiles)"
+      - "/usr/lib/llvm-15/lib/cmake/llvm/LLVMConfig.cmake:253 (find_package)"
+      - "cmake/TaichiCore.cmake:155 (find_package)"
+      - "CMakeLists.txt:130 (include)"
+    checks:
+      - "Performing Test HAVE_FFI_CALL"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-mARdE4"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-mARdE4"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/;/usr/lib/llvm-15/lib/cmake/llvm"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "HAVE_FFI_CALL"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-mARdE4'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_f633d
+        [1/2] /usr/lib/llvm-15/bin/clang -DHAVE_FFI_CALL  -fPIE -MD -MT CMakeFiles/cmTC_f633d.dir/src.c.o -MF CMakeFiles/cmTC_f633d.dir/src.c.o.d -o CMakeFiles/cmTC_f633d.dir/src.c.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-mARdE4/src.c
+        [2/2] : && /usr/lib/llvm-15/bin/clang   CMakeFiles/cmTC_f633d.dir/src.c.o -o cmTC_f633d  /usr/lib/x86_64-linux-gnu/libffi.so && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "/usr/lib/llvm-15/lib/cmake/llvm/FindTerminfo.cmake:21 (check_c_source_compiles)"
+      - "/usr/lib/llvm-15/lib/cmake/llvm/LLVMConfig.cmake:260 (find_package)"
+      - "cmake/TaichiCore.cmake:155 (find_package)"
+      - "CMakeLists.txt:130 (include)"
+    checks:
+      - "Performing Test Terminfo_LINKABLE"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-kyO0De"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-kyO0De"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/;/usr/lib/llvm-15/lib/cmake/llvm"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "Terminfo_LINKABLE"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-kyO0De'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_b40e3
+        [1/2] /usr/lib/llvm-15/bin/clang -DTerminfo_LINKABLE  -fPIE -MD -MT CMakeFiles/cmTC_b40e3.dir/src.c.o -MF CMakeFiles/cmTC_b40e3.dir/src.c.o.d -o CMakeFiles/cmTC_b40e3.dir/src.c.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-kyO0De/src.c
+        [2/2] : && /usr/lib/llvm-15/bin/clang   CMakeFiles/cmTC_b40e3.dir/src.c.o -o cmTC_b40e3  /usr/lib/x86_64-linux-gnu/libtinfo.so && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake-3.28/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
+      - "/usr/share/cmake-3.28/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "/usr/share/cmake-3.28/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "external/googletest/googletest/cmake/internal_utils.cmake:65 (find_package)"
+      - "external/googletest/googletest/CMakeLists.txt:93 (config_compiler_and_linker)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-iqHPsb"
+      binary: "/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-iqHPsb"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND"
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/share/cmake-3.28/Modules;/opt/project/taichi/cmake/;/usr/lib/llvm-15/lib/cmake/llvm"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-iqHPsb'
+        
+        Run Build Command(s): /usr/bin/ninja -v cmTC_4b902
+        [1/2] /usr/lib/llvm-15/bin/clang -DCMAKE_HAVE_LIBC_PTHREAD  -fPIE -MD -MT CMakeFiles/cmTC_4b902.dir/src.c.o -MF CMakeFiles/cmTC_4b902.dir/src.c.o.d -o CMakeFiles/cmTC_4b902.dir/src.c.o -c /opt/project/taichi/build-review/CMakeFiles/CMakeScratch/TryCompile-iqHPsb/src.c
+        [2/2] : && /usr/lib/llvm-15/bin/clang   CMakeFiles/cmTC_4b902.dir/src.c.o -o cmTC_4b902   && :
+        
+      exitCode: 0
+...
