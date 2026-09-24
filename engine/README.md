@@ -55,10 +55,12 @@ After cloning:
 git submodule update --init --recursive
 ```
 
-Build the fork first. The recovered modernization was validated with LLVM 15,
-Clang and CUDA; exact historical configuration is recorded in
-`taichi/modernization/IMPLEMENTATION-STATUS.md`. A representative native build
-is:
+Build the fork first. The HCP model is backend-independent: Taichi compiles the
+same native model for the hardware enabled in its build.
+
+The reproducibility baseline is CPU-only because it is universally available
+in CI and proves the source/build/runtime path without requiring accelerator
+hardware:
 
 ```sh
 cmake -S engine/taichi -B engine/taichi/build-review -G Ninja \
@@ -67,16 +69,23 @@ cmake -S engine/taichi -B engine/taichi/build-review -G Ninja \
       -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \
       -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm \
       -DCLANG_EXECUTABLE=/usr/lib/llvm-15/bin/clang \
-      -DTI_WITH_CUDA=ON -DTI_WITH_OPENGL=OFF -DTI_WITH_VULKAN=OFF \
-      -DTI_WITH_METAL=OFF -DTI_WITH_GGUI=OFF -DTI_BUILD_TESTS=ON \
-      -DTI_BUILD_EXAMPLES=OFF
-cmake --build engine/taichi/build-review -j 4
+      -DTI_WITH_PYTHON=OFF -DTI_WITH_C_API=ON \
+      -DTI_WITH_CUDA=OFF -DTI_WITH_AMDGPU=OFF \
+      -DTI_WITH_OPENGL=OFF -DTI_WITH_VULKAN=OFF \
+      -DTI_WITH_METAL=OFF -DTI_WITH_GGUI=OFF \
+      -DTI_BUILD_TESTS=OFF -DTI_BUILD_EXAMPLES=OFF
+cmake --build engine/taichi/build-review --target taichi_c_api -j 2
 ```
 
-Taichi's build generates `runtime_x64.bc` and `runtime_cuda.bc` from native
-runtime source. The HCP wrapper stages those plus `slim_libdevice.10.bc` into
-its own build directory for `TI_LIB_DIR`; it does not depend on Taichi's
-Python-package staging path.
+A development-machine GPU build enables the desired Taichi backend instead
+(e.g. `-DTI_WITH_CUDA=ON`). The HCP wrapper detects whether the matched Taichi
+build contains CUDA components; `ENGINE_TAICHI_CUDA=AUTO` is the default, with
+`ON` and `OFF` available as explicit checks.
+
+Taichi generates native LLVM runtime bitcode from source. The HCP wrapper stages
+the artifacts required by the backends present in the matched build into its
+own build directory for `TI_LIB_DIR`; it does not depend on Taichi's Python
+package staging path.
 
 Then build the HCP wrapper:
 
@@ -91,6 +100,9 @@ ctest --test-dir engine/build --output-on-failure
 
 A different fork/build can still be supplied with
 `ENGINE_TAICHI_ROOT` / `ENGINE_TAICHI_BUILD`.
+
+See [docs/BUILD-VETTING.md](docs/BUILD-VETTING.md) for the CPU/GPU/load
+qualification ladder.
 
 ## Current status
 
