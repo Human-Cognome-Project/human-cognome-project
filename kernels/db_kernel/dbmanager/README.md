@@ -109,13 +109,13 @@ auth, no password) — same harness convention as `dispatch/dispatch_test.cpp`.
 # from db_kernel/dbmanager/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I../command -I../controller -I../declare -I../read \
-    -I../update -I../dispatch -I../endpoint -I"$(pg_config --includedir)" \
+    -I../update -I../dispatch -I../../../network/endpoint -I"$(pg_config --includedir)" \
     db_manager_kernel.cpp db_manager_kernel_test.cpp \
     ../dispatch/dispatch.cpp \
     ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
     ../controller/controller.cpp \
     ../declare/declare_core.cpp ../read/read_core.cpp ../update/update_core.cpp \
-    ../endpoint/endpoint.cpp ../endpoint/scheduler.cpp \
+    ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o db_manager_kernel_test
 
