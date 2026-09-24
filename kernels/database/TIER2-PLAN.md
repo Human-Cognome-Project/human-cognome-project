@@ -1,4 +1,6 @@
-# TIER2-PLAN — the analyst reaction body on the activation substrate
+# TIER2-PLAN — the analyst-facing current-work body on the activation substrate
+
+> **Terminology.** This is a database/cache-manager reaction handler, not analyst cognition or an implementation of analyst functions. It is the analyst-facing current-work endpoint of the DB/cache kernel.
 
 **Status: BUILT + adversary-vetted (2026-09-23).** Realigns the
 db/cache manager's **tier-2 analyst-command surface** onto the monitored-endpoint
@@ -6,7 +8,7 @@ substrate. Built as `dbmanager/` (`db_manager_kernel.{h,cpp}` + test + README);
 plan adversary-vetted, build adversary-vetted (one UB blocker found on an unchecked
 `reply_to` deref and fixed to an explicit fail-loud throw + regression test), verified
 green — `PASS db_manager_kernel_test`, 38/38, ASan/UBSan clean. Design pinned in `NOTES.md` "db/cache-manager kernel — box & priority
-structure" → "Tier 2 — analyst reaction body". Canadian English.
+structure" → "Tier 2 — analyst-facing current-work body". Canadian English.
 
 Discipline: draft plan → fresh adversary vets → reconcile → **Sonnet** builds →
 fresh adversary vets build → verify green → commit. This file is the plan half.
