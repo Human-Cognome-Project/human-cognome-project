@@ -23,7 +23,7 @@ They were merged with both parent histories preserved. No force-push or history 
 
 ## Current tree decisions
 
-- `engine/field/`: later September field-engine implementation, moved intact; internal physics/harness split deferred.
+- `engine/field/`: active September field-engine implementation, now split into physics, harness/control lifecycle, validation, and a stable facade.
 - `archive/2026-09-taichi-v0-staging/`: the earlier v0-staging generation, preserved intact after reconciliation confirmed the later field engine does not depend on it.
 - `kernels/database/`: PostgreSQL record operations + database/cache-manager family.
 - `kernels/wal/`: WAL manager family, promoted to a peer kernel set with its design/build records.
@@ -37,7 +37,7 @@ They were merged with both parent histories preserved. No force-push or history 
 ## Next review passes
 
 1. Keep the archived Taichi v0-staging generation available as an experimental/predecessor reference while current field-engine work proceeds from `engine/field/`.
-2. Separate physics-engine code from engine-harness control code without changing behaviour.
+2. Preserve the new physics/harness/validation boundary and expand behaviour checks without coupling validation into engine operation.
 3. Continue stabilizing the separated `kernels/database/`, `kernels/wal/`, and `network/` interfaces with coordinated include/build/test updates.
 4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
 5. Keep root README, contributor and agent guidance synchronized as the implementation tree stabilizes.
