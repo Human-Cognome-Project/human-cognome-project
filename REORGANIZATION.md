@@ -24,14 +24,14 @@ They were merged with both parent histories preserved. No force-push or history 
 ## Current tree decisions
 
 - `engine/field/`: later September field-engine implementation, moved intact; internal physics/harness split deferred.
-- `engine/{kernel,timestep,storage,ingest}/` + `engine/SEAM.md`: earlier v0-staging material retained pending reconciliation.
+- `archive/2026-09-taichi-v0-staging/`: the earlier v0-staging generation, preserved intact after reconciliation confirmed the later field engine does not depend on it.
 - `kernels/db_kernel/`: DB/cache/WAL/endpoint development bundle kept intact so current relative C++ build relationships are not broken.
 - `research/{field,ledger,packages}/`: research basis and shareable packages, not runtime modules.
 - `data/postgres/snapshots/`: landing area for reproducibility dumps from development PostgreSQL systems.
 
 ## Next review passes
 
-1. Reconcile the earlier Taichi v0-staging components against the later field implementation by responsibility, not merely by date.
+1. Keep the archived Taichi v0-staging generation available as an experimental/predecessor reference while current field-engine work proceeds from `engine/field/`.
 2. Separate physics-engine code from engine-harness control code without changing behaviour.
 3. Decompose the preserved DB-kernel development bundle only with coordinated include/build/test updates.
 4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
