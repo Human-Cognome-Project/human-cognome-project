@@ -34,7 +34,7 @@ def main():
 
     assert condensed == 1
     assert int(pool.alive.sum()) == 1
-    assert int(pool.count.sum()) == 2
+    assert int(pool.count[pool.alive].sum()) == 2
     assert pool.parent[1] == 0
     assert np.array_equal(out, pos)
 
