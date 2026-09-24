@@ -1,17 +1,17 @@
-# Shards and Schema
+# Legacy shards and schema
 
-The data substrate: which databases exist, the live English shard's scale, and the schema
-decomposition pattern that keeps token addresses traversable.
+> **Historical migration map.** This records the older database layout observed in 2026. Private deployment details are intentionally omitted, and the named stores are not current architectural authority.
+
+The older data substrate: which databases were observed, the English shard's measured scale at the time, and the schema decomposition pattern used by that generation.
 
 Sources: claims 203 (scale + shard layout), 207 (decomposition pattern), 208 (names as
-constructs), 209 (AA/AB namespaces), 210 (classification policies). Counts and schema verified
-live against NAS HAVEN on 2026-05-30 and reconfirmed during this rewrite.
+constructs), 209 (AA/AB namespaces), 210 (classification policies). Counts and schema were observed on the development deployment on 2026-05-30 and reconfirmed during the historical rewrite.
 
 ---
 
-## Live shard layout
+## Historical shard layout
 
-All databases live on **NAS HAVEN, `192.168.68.60:5435`** (claim 203). Verified live:
+At that point the following databases were present on a private PostgreSQL deployment. Host/port and credentials are intentionally not retained in current documentation:
 
 **10 data shards:**
 
@@ -25,8 +25,7 @@ All databases live on **NAS HAVEN, `192.168.68.60:5435`** (claim 203). Verified 
 | `hcp_nf_people` / `hcp_nf_places` / `hcp_nf_things` | non-fiction entities (6-way split) |
 
 Plus **`source_english`** and **`source_wiktionary`** (upstream prep — see
-[kaikki-pipeline.md](kaikki-pipeline.md)) and **`hcp_orchestrator`** (the claim-graph memory layer
-that sources these docs).
+[kaikki-pipeline.md](kaikki-pipeline.md)) and **`hcp_orchestrator`** (the old claim-graph memory layer that historically sourced these docs).
 
 Entity DBs are the **6-way split** (fiction/non-fiction × people/places/things). Entity tokens are
 **language-independent** — language shards link *to* shared entity tokens, not the reverse, so the
@@ -36,10 +35,9 @@ entity DBs are reusable across future language shards (claim 210).
 
 ## hcp_english scale
 
-> *`hcp_english` holds ~**1,494,216 entries** (verified live).* — claim 203
+> *`hcp_english` held ~**1,494,216 entries** in the recorded 2026 observation.* — historical claim 203
 
-This **supersedes** the earlier 569,471-token tree-model curation (the 2026-03-17 figure). **Do not
-cite 569K as current** — any doc that does is stale. The 1.494M came from the full Kaikki Wiktionary
+This **supersedes** the earlier 569,471-token tree-model curation (the 2026-03-17 figure). **Do not treat either historical count as current** — any doc that does is stale. The 1.494M came from the full Kaikki Wiktionary
 re-ingestion completed 2026-04-07.
 
 The 11 live tables in `hcp_english`: `entries`, `senses`, `sense_categories`, `sense_examples`,

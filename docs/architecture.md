@@ -43,8 +43,7 @@ Properly arrayed, the address system *is* the rooted tree the runtime needs:
   pass reads two pairs where a fine pass reads five — and anything b-treeable or octree-able
   benefits directly, because each level is a typed sort key and address depth = tree depth.
 
-The executable statement of this convention is [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py),
-retained from the previous era with its tests as migration/reference tooling; the active database codec is under `kernels/database/codec/`.
+The previous-era executable statement of this convention is retained in [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py) for migration/reference. The current compiled address/token codec is under [`kernels/database/codec/`](../kernels/database/codec/), and current code—not the legacy Python helper—is authoritative for active storage behaviour.
 
 ## Storage: one flat pool, many logical chains
 
@@ -98,11 +97,7 @@ flux between them, and treat an unresolvable differential as the detection of an
 
 ## Engine substrate
 
-The foundation is **Taichi** — specifically for its wave-field machinery and sparse spatial
-hierarchies (SNode LoD stacking). `taichi_core` is pure C++ with Python as a tooling front end;
-the work here is primitive enough that direct C++ against the core is the probable path (evaluated
-as we go; the Python-in-the-hot-path ban stands meanwhile). One kernel — the balancing op —
-compounded as appropriate; the exponent ladder is the API, not a zoo of forces.
+The foundation is the project's **modified Taichi fork**, retained for its mathematical/particle execution machinery and portable backend compiler/device layer. The HCP runtime path is now explicitly native C++: the recovered `engine_support` layer links directly against the fork, while Taichi's upstream Python frontend remains vendor/build/test material rather than an HCP engine interface. Project Python is limited to bootstrap, migration, import/export and comparable offline I/O. The active native engine boundary is documented under [`engine/`](../engine/).
 
 Engineering practice carried from the previous era, mandated for every kernel: **oracle-first
 validation** — a portable CPU reference as deterministic oracle, the GPU kernel as its mirror, an

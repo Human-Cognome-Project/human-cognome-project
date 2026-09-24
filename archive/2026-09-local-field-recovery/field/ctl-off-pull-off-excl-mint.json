@@ -1,0 +1,3521 @@
+{
+ "artifact": "field-engine-mint",
+ "grain": "endpoint",
+ "entries_live": 24167,
+ "n_particles": 24321,
+ "entries_covering_more_than_one": 152,
+ "entries": [
+  {
+   "entry": 12915,
+   "config": "0021",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AB",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      33
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AB",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 12937,
+   "config": "0022",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AC",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      34
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AC",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 12944,
+   "config": "0022",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AC",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      34
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AC",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 12970,
+   "config": "0023",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AD",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      35
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AD",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 12985,
+   "config": "0024",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AE",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      36
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AE",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13016,
+   "config": "0025",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AF",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      37
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AF",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      37
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13021,
+   "config": "0025",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AF",
+     "encoding": "8859-5",
+     "identity": [
+      "codepoint",
+      37
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AF",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      37
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13044,
+   "config": "0026",
+   "count": 3,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AG",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      38
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AG",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      38
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AG",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      38
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13054,
+   "config": "0026",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AG",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      38
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AG",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      38
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13072,
+   "config": "0027",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AH",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      39
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AH",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13081,
+   "config": "0027",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AH",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      39
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AH",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13100,
+   "config": "0028",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AI",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      40
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AI",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      40
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13106,
+   "config": "0028",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AI",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      40
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AI",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      40
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13129,
+   "config": "0029",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AJ",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      41
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AJ",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      41
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13140,
+   "config": "0029",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AJ",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      41
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AJ",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      41
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13159,
+   "config": "002A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AK",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      42
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AK",
+     "encoding": "8859-5",
+     "identity": [
+      "codepoint",
+      42
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13190,
+   "config": "002B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AL",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      43
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AL",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      43
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13217,
+   "config": "002C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AM",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      44
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AM",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      44
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13250,
+   "config": "002D",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AN",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      45
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AN",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      45
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13314,
+   "config": "002F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AQ",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      47
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AQ",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      47
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13362,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13366,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13373,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13374,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13378,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13381,
+   "config": "003B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AS",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13395,
+   "config": "003C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AT",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      60
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AT",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      60
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13396,
+   "config": "003C",
+   "count": 3,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AT",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      60
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AT",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      60
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AT",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      60
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13461,
+   "config": "003E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AV",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      62
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AV",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      62
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13489,
+   "config": "003F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AW",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      63
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AW",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      63
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13498,
+   "config": "003F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AW",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      63
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AW",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      63
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13518,
+   "config": "0040",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AX",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      64
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AX",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13539,
+   "config": "005B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AY",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      91
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AY",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      91
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13567,
+   "config": "005C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.AZ",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      92
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.AZ",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      92
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13597,
+   "config": "005D",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Aa",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      93
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Aa",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      93
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13602,
+   "config": "005D",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Aa",
+     "encoding": "8859-5",
+     "identity": [
+      "codepoint",
+      93
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Aa",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      93
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13636,
+   "config": "005E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ab",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      94
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ab",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      94
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13639,
+   "config": "005E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ab",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      94
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ab",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      94
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13657,
+   "config": "005F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ac",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      95
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ac",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      95
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13659,
+   "config": "005F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ac",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      95
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ac",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      95
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13688,
+   "config": "0060",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ad",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      96
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ad",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      96
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13690,
+   "config": "0060",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ad",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      96
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ad",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      96
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13720,
+   "config": "007B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ae",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      123
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ae",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      123
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13741,
+   "config": "007C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Af",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      124
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Af",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      124
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13757,
+   "config": "007C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Af",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      124
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Af",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      124
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13797,
+   "config": "007E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ah",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      126
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ah",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      126
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 13801,
+   "config": "007E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AG.Ah",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      126
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AG.Ah",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      126
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16296,
+   "config": "0030",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AA",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      48
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AA",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16309,
+   "config": "0030",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AA",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      48
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AA",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16325,
+   "config": "0031",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AB",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      49
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AB",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      49
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16327,
+   "config": "0031",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AB",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      49
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AB",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      49
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16400,
+   "config": "0033",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AD",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      51
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AD",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      51
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16404,
+   "config": "0033",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AD",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      51
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AD",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      51
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16438,
+   "config": "0035",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AF",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      53
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AF",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16450,
+   "config": "0035",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AF",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      53
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AF",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 16529,
+   "config": "0038",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AH.AI",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      56
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AH.AI",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      56
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18609,
+   "config": "0041",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AA",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      65
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AA",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      65
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18637,
+   "config": "0042",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AB",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      66
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AB",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      66
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18648,
+   "config": "0042",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AB",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      66
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AB",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      66
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18656,
+   "config": "0043",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AC",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      67
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AC",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      67
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18747,
+   "config": "0046",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AF",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      70
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AF",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      70
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18750,
+   "config": "0046",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AF",
+     "encoding": "8859-5",
+     "identity": [
+      "codepoint",
+      70
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AF",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      70
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18771,
+   "config": "0047",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AG",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      71
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AG",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      71
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18822,
+   "config": "0048",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AH",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      72
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AH",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      72
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18843,
+   "config": "0049",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AI",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      73
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AI",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      73
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18848,
+   "config": "0049",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AI",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      73
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AI",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      73
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18858,
+   "config": "004A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AJ",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      74
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AJ",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      74
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18894,
+   "config": "004B",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AK",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      75
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AK",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      75
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18955,
+   "config": "004D",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AM",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      77
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AM",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      77
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18974,
+   "config": "004E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18976,
+   "config": "004E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 18987,
+   "config": "004E",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AN",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19003,
+   "config": "004F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AP",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      79
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AP",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      79
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19051,
+   "config": "0050",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AQ",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      80
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AQ",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      80
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19073,
+   "config": "0051",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AR",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      81
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AR",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      81
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19096,
+   "config": "0052",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AS",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      82
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AS",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19163,
+   "config": "0054",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AU",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      84
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AU",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      84
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19185,
+   "config": "0055",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AV",
+     "encoding": "8859-5",
+     "identity": [
+      "codepoint",
+      85
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AV",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      85
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19187,
+   "config": "0055",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AV",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      85
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AV",
+     "encoding": "CP1251",
+     "identity": [
+      "codepoint",
+      85
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19209,
+   "config": "0056",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AW",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      86
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AW",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      86
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19219,
+   "config": "0056",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AW",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      86
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AW",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      86
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19264,
+   "config": "0058",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.AY",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      88
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.AY",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      88
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19324,
+   "config": "005A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.Aa",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      90
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.Aa",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      90
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19345,
+   "config": "005A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AI.Aa",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      90
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AI.Aa",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      90
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19409,
+   "config": "0063",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19413,
+   "config": "0063",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19425,
+   "config": "0063",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19435,
+   "config": "0063",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AC",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      99
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19469,
+   "config": "0065",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AE",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      101
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AE",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      101
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19486,
+   "config": "0065",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AE",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      101
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AE",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      101
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19529,
+   "config": "0067",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AG",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      103
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AG",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      103
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19530,
+   "config": "0067",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AG",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      103
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AG",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      103
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19564,
+   "config": "0068",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AH",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      104
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AH",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      104
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19584,
+   "config": "0069",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AI",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      105
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AI",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      105
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19621,
+   "config": "006A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AJ",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      106
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AJ",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      106
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19687,
+   "config": "006C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AL",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      108
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AL",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      108
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19758,
+   "config": "006F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19759,
+   "config": "006F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19764,
+   "config": "006F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AP",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      111
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19825,
+   "config": "0071",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AR",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      113
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AR",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      113
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19826,
+   "config": "0071",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AR",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      113
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AR",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      113
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19848,
+   "config": "0072",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19851,
+   "config": "0072",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19856,
+   "config": "0072",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AS",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      114
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19875,
+   "config": "0073",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AT",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      115
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AT",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      115
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19925,
+   "config": "0074",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AU",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      116
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AU",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      116
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19931,
+   "config": "0075",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AV",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      117
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AV",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      117
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19952,
+   "config": "0075",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AV",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      117
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AV",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      117
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 19967,
+   "config": "0076",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AW",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      118
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AW",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      118
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20019,
+   "config": "0078",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AY",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      120
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AY",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      120
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20028,
+   "config": "0078",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AY",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      120
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AY",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      120
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20056,
+   "config": "0079",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.AZ",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      121
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.AZ",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      121
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20078,
+   "config": "007A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.Aa",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      122
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.Aa",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      122
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20085,
+   "config": "007A",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AJ.Aa",
+     "encoding": "8859-6",
+     "identity": [
+      "codepoint",
+      122
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AJ.Aa",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      122
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20106,
+   "config": "007F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AK.AA",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      127
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AK.AA",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      127
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20115,
+   "config": "007F",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AK.AA",
+     "encoding": "8859-7",
+     "identity": [
+      "codepoint",
+      127
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AK.AA",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      127
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20168,
+   "config": "00A1",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AB",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      161
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AB",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      161
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20191,
+   "config": "00A3",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AD",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      163
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AD",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      163
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20192,
+   "config": "00A3",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AD",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      163
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AD",
+     "encoding": "8859-1",
+     "identity": [
+      "codepoint",
+      163
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20254,
+   "config": "00A6",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AG",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      166
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AG",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      166
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20274,
+   "config": "00A7",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AH",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      167
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AH",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      167
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20280,
+   "config": "00A7",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AH",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      167
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AH",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      167
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20320,
+   "config": "00A9",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AJ",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      169
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AJ",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      169
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20321,
+   "config": "00A9",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AJ",
+     "encoding": "CP1253",
+     "identity": [
+      "codepoint",
+      169
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AJ",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      169
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20342,
+   "config": "00AB",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AL",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      171
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AL",
+     "encoding": "CP875",
+     "identity": [
+      "codepoint",
+      171
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20431,
+   "config": "00AF",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AQ",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      175
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AQ",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      175
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20462,
+   "config": "00B0",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AR",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      176
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AR",
+     "encoding": "KOI8-R",
+     "identity": [
+      "codepoint",
+      176
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20477,
+   "config": "00B1",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AS",
+     "encoding": "8859-8",
+     "identity": [
+      "codepoint",
+      177
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AS",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      177
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20492,
+   "config": "00B2",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AT",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      178
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AT",
+     "encoding": "8859-3",
+     "identity": [
+      "codepoint",
+      178
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20542,
+   "config": "00B4",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.AV",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      180
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.AV",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      180
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20713,
+   "config": "00BE",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.Af",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      190
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.Af",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      190
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20726,
+   "config": "00BF",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AL.Ag",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      191
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AL.Ag",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      191
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20753,
+   "config": "00C1",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.AB",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      193
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.AB",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      193
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20757,
+   "config": "00C1",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.AB",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      193
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.AB",
+     "encoding": "8859-14",
+     "identity": [
+      "codepoint",
+      193
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 20844,
+   "config": "00C7",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.AH",
+     "encoding": "8859-2",
+     "identity": [
+      "codepoint",
+      199
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.AH",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      199
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21002,
+   "config": "00D2",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.AT",
+     "encoding": "CP1026",
+     "identity": [
+      "codepoint",
+      210
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.AT",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      210
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21059,
+   "config": "00D6",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.AX",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      214
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.AX",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      214
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21126,
+   "config": "00DB",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Ab",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      219
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Ab",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      219
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21191,
+   "config": "00E0",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Ag",
+     "encoding": "CP037",
+     "identity": [
+      "codepoint",
+      224
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Ag",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      224
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21333,
+   "config": "00E9",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Aq",
+     "encoding": "CP500",
+     "identity": [
+      "codepoint",
+      233
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Aq",
+     "encoding": "CP1256",
+     "identity": [
+      "codepoint",
+      233
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21334,
+   "config": "00E9",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Aq",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      233
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Aq",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      233
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21357,
+   "config": "00EA",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Ar",
+     "encoding": "8859-9",
+     "identity": [
+      "codepoint",
+      234
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Ar",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      234
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21372,
+   "config": "00EB",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.As",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      235
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.As",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      235
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21398,
+   "config": "00ED",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.Au",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      237
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.Au",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      237
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21537,
+   "config": "00F6",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.BD",
+     "encoding": "CP1252",
+     "identity": [
+      "codepoint",
+      246
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.BD",
+     "encoding": "8859-13",
+     "identity": [
+      "codepoint",
+      246
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21594,
+   "config": "00FB",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AM.BH",
+     "encoding": "UTF-8",
+     "identity": [
+      "codepoint",
+      251
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AM.BH",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      251
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21878,
+   "config": "00F7",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AN.AB",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      247
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AN.AB",
+     "encoding": "CP1254",
+     "identity": [
+      "codepoint",
+      247
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 21885,
+   "config": "00F7",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AN.AB",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      247
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AN.AB",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      247
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 22039,
+   "config": "0161",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AP.Ag",
+     "encoding": "CP1257",
+     "identity": [
+      "codepoint",
+      353
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AP.Ag",
+     "encoding": "8859-15",
+     "identity": [
+      "codepoint",
+      353
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 22060,
+   "config": "0167",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AP.Am",
+     "encoding": "8859-4",
+     "identity": [
+      "codepoint",
+      359
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AP.Am",
+     "encoding": "8859-10",
+     "identity": [
+      "codepoint",
+      359
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 22133,
+   "config": "017C",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AP.BG",
+     "encoding": "CP1250",
+     "identity": [
+      "codepoint",
+      380
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AP.BG",
+     "encoding": "8859-16",
+     "identity": [
+      "codepoint",
+      380
+     ]
+    }
+   ]
+  },
+  {
+   "entry": 22556,
+   "config": "2021",
+   "count": 2,
+   "covers": [
+    {
+     "token": "AA.AB.AA.AX.AD",
+     "encoding": "CP1255",
+     "identity": [
+      "codepoint",
+      8225
+     ]
+    },
+    {
+     "token": "AA.AB.AA.AX.AD",
+     "encoding": "CP1258",
+     "identity": [
+      "codepoint",
+      8225
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 # Contributing to the Human Cognome Project
 
-HCP accepts code, research, testing, documentation and architecture critique. The repository is in an active structural migration, so current contribution guidance differs from the older August 2026 layout.
+HCP accepts code, research, testing, documentation and architecture critique. The initial structural migration is complete; current guidance reflects the recovered native C++ engine and separated kernel/network architecture.
 
 ## Start here
 
@@ -33,7 +33,7 @@ Database/cache/record/WAL kernels are separate autonomous components whose syste
 
 ## Where work is currently useful
 
-- **Field-engine validation and harness evolution.** Preserve the current physics/harness/validation separation while expanding deterministic/oracle checks and developing the harness as the future analyst's engine control surface. The earlier Taichi v0-staging generation remains under `archive/2026-09-taichi-v0-staging/` for reference.
+- **Native engine validation and harness evolution.** Preserve the C++ `engine_support` / `field_core` boundary, vet the recovered native field implementation against the settled design record, and continue developing the wider harness as the future analyst's engine control surface. The planner Python prototype is archived and must not become runtime code.
 - **Kernel-network build/test work.** Keep `kernels/database/`, `kernels/wal/`, and `network/endpoint/` independently buildable while their interfaces stabilize.
 - **Analyst-supporting data surfaces.** Database/cache/WAL work should improve the surfaces the future analyst will consume; it should not invent analyst reasoning.
 - **Topology/bridge design.** Configuration, local-memory endpoint mapping, serialization/transmission bridges and lower-frequency activation remain future implementation areas.
@@ -43,29 +43,30 @@ Database/cache/record/WAL kernels are separate autonomous components whose syste
 
 - **Preserve history.** No force-push/history rewrite for cleanup. Normal Git history is the recovery path for moved or removed current-tree files.
 - **Separate structure from behaviour.** Prefer pure moves first, then refactor in a later commit with tests.
-- **Tests on behavioural changes.** Field-engine changes should retain deterministic/oracle comparisons where applicable. C++ kernel modules should remain independently testable where their existing contracts require it.
+- **Tests on behavioural changes.** Native engine changes should retain CPU/backend equivalence and model-anchored regression checks where applicable. C++ kernel modules should remain independently testable where their existing contracts require it.
 - **Location blindness.** Kernel logic should not branch on whether a counterpart is local or remote; that belongs to topology/bridge infrastructure.
 - **No speculative analyst implementation.** Interfaces may expose future analyst-facing seams, but the analyst layer itself is not yet defined.
+- **Compiled runtime path.** HCP engine/data/network hot paths are C++. Python is permitted only for bootstrap, migration, import/export, build/test assistance, or comparable offline convenience.
 - **Database safety.** Existing disposable test-database conventions must stay explicit. Do not run reset/drop operations against persistent project data.
 - **Secrets stay out of Git.** Snapshot manifests may describe provenance/version context but not credentials or private data.
 - **Generated data is not automatically source.** Keep reproducibility artifacts, test fixtures and authored code distinguishable.
 
 ## Branch and PR workflow
 
-While draft PR #63 is the active integration surface:
-
-1. branch from `integration/kernel-network-reorg` for changes touching the reorganized runtime/kernel paths;
+1. branch from current `main`;
 2. make focused commits;
-3. open the PR back against `integration/kernel-network-reorg` unless specifically coordinating promotion to `main`.
-
-Once the reorganization is promoted, normal work returns to branches from `main`.
+3. open the PR back against `main`, unless a named recovery/integration branch is explicitly coordinating a larger import.
 
 ## Current repository map
 
 ```text
 human-cognome-project/
 ├── engine/
-│   └── field/              # active later Taichi field-engine work
+│   ├── src/engine/         # native Taichi runtime/compiler wrapper
+│   ├── src/field/          # native field/tick mechanics
+│   ├── tests/              # native engine/field/index-cap regression tests
+│   ├── docs/               # recovered engine/harness design + vetting record
+│   └── taichi/             # modified Taichi fork (curated separately)
 ├── kernels/
 │   ├── database/           # PostgreSQL record + database/cache-manager family
 │   └── wal/                # WAL manager family
