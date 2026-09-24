@@ -4,7 +4,7 @@ The analyst-command surface of the db/cache manager, realigned onto the
 monitored-endpoint substrate (`TIER2-PLAN.md`, adversary-vetted before
 build; design pinned in `NOTES.md` "db/cache-manager kernel — box &
 priority structure" → "Tier 2 — analyst reaction body"). Same discipline as
-`wal/`: reuses the built record-tier cores unmodified, adds only the box
+`kernels/wal/`: reuses the built record-tier cores unmodified, adds only the box
 coupling around them.
 
 ## Charter
@@ -16,7 +16,7 @@ coupling around them.
   directly — `dispatch/` is consumed verbatim, unmodified, and this module
   adds no verb logic, no validation, and no new rejection path.
 - Each request carries its own return endpoint (`box::Message::reply_to`)
-  — the box IS the correlation, per `ENDPOINT-ACTIVATION-NOTES.md`
+  — the box IS the correlation, per `network/ENDPOINT-ACTIVATION-NOTES.md`
   "Request→return correlation — RESOLVED". There is no correlation token,
   no matching table, and (unlike `wal::WalKernel`'s single fixed out-box)
   no shared destination: every request answers at its own caller-supplied
@@ -106,7 +106,7 @@ Requires libpq and a local Postgres reachable as the current OS user (peer
 auth, no password) — same harness convention as `dispatch/dispatch_test.cpp`.
 
 ```sh
-# from db_kernel/dbmanager/
+# from kernels/database/dbmanager/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I../command -I../controller -I../declare -I../read \
     -I../update -I../dispatch -I../../../network/endpoint -I"$(pg_config --includedir)" \
