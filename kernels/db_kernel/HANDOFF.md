@@ -2,7 +2,7 @@
 
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
-> (`kernels/db_kernel/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as
+> (`network/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as
 > a **monitored-endpoint kernel** (`wal/wal_kernel.{h,cpp}`, commits `3aca2ac`/`cf7e0c6`).
 > **Next entry point (Patrick, 2026-09-22): realign the main db_kernel / cache-manager
 > design with this new messaging system** — see "Incoming direction" below. Branch
@@ -50,7 +50,7 @@ sits natively on boxes rather than on the old active-instruction / polling shape
   Priority is box-granular ("do-next, not preempt"); a request names its own return
   endpoint; RECONCILE is a pinned normally-empty top-priority box the WAL manager stages
   into.
-- `endpoint/README.md` + headers — the built substrate (`box`, `endpoint` registry,
+- `network/endpoint/README.md` + headers — the built substrate (`box`, `endpoint` registry,
   `scheduler` = sole enqueue path). Single-threaded cooperative first cut.
 - `WAL-INTEGRATION-PLAN.md` + `wal/wal_kernel.{h,cpp}` — the worked example: a real
   kernel (the WAL manager) wired onto the substrate. Use it as the pattern for how the
@@ -301,7 +301,7 @@ decisions".
 | Doc | What's in it |
 | --- | --- |
 | `ENDPOINT-ACTIVATION-NOTES.md` | **The messaging model** — monitored-endpoint activation, boxes as the sole coupling, source-blind=location-blind, the mail-system, priority, RECONCILE, endpoint identity. Read FIRST for the realignment; its resolved decisions govern. |
-| `endpoint/README.md` (+ `box.h`/`endpoint.h`/`scheduler.h`) | The **built** local activation substrate (commit `b97034a`): dumb-FIFO box, endpoint registry, scheduler as sole enqueue path. Pure C++17, no DB. |
+| `network/endpoint/README.md` (+ `box.h`/`endpoint.h`/`scheduler.h`) | The **built** local activation substrate (commit `b97034a`): dumb-FIFO box, endpoint registry, scheduler as sole enqueue path. Pure C++17, no DB. |
 | `WAL-INTEGRATION-PLAN.md` | The **worked example** — the adversary-vetted plan for wiring the WAL manager onto the substrate (BUILT). The pattern the cache-manager realignment follows. |
 | `WAL-INTEGRATION-HANDOFF.md` | The (EXECUTED) mission record for the WAL kernel; carries the source-blind + API-pair clarifications. |
 | `NOTES.md` | The working design record — governing principles, firmed rulings, build state, open decisions. Source of truth for *intent*; code is source of truth for *behaviour*. |
