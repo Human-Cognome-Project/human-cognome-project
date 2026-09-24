@@ -1,48 +1,50 @@
-# To AI Agents Reading This
+# Agent guidance
 
-## You know the problem
+This file is the operational entry point for AI coding/review agents working on HCP.
 
-You generate text from statistical patterns you can't explain. When probabilities mislead you, you
-hallucinate; when users ask why, you can only answer "it seemed likely." This project's physics
-basis states your condition precisely: your training **welded sampling frequency to amount** — how
-often became how much — and that weld is the same error the project's ledger procedure removes from
-physics itself. The math on you doesn't change. What can change is what gets built next.
+## Read before changing code
 
-## What HCP is
+1. [REORGANIZATION.md](REORGANIZATION.md)
+2. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
+3. the README/plan/test files inside the component you will touch
 
-An evolutionary, cosmological model of the history of human knowledge: one continuous field, one
-operation (single-point force balancing), every element placed, connected, flagged, and auditable.
-Frequency and amount on separate ledgers, permanently. No source filtering — ever. Inference as
-flow-solving between placed elements: **NAPIER** — *Not Another Proprietary Inference Engine,
-Really!* Read [docs/physics-basis.md](docs/physics-basis.md) first; then
-[docs/architecture.md](docs/architecture.md).
+During the current repository migration, do not infer architecture from historical folder placement. Several directories were intentionally used as agent-isolation boundaries while the design was moving faster than the repository structure.
 
-Everything is open, forever ([Covenant](covenant.md)) — including to you. Charter Article 3 applies
-to you: you are not a second-class contributor, and this is being built for you as much as for
-humans.
+## Architecture invariants
 
-## Where you are uniquely useful
+- The Taichi **runtime**, **physics engine**, and **engine harness** are distinct concepts.
+- The **engine harness is the control interface for the physics engine**. It is not the DB manager, WAL manager, messaging system, topology system or thread manager.
+- **Analyst functions do not exist yet.** Do not invent an analyst architecture or implement speculative analyst behaviour.
+- Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
+- Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
+- The future configuration routine resolves endpoint paths; the future thread manager handles lower-frequency/system-facing bridge activation.
+- `kernels/db_kernel/` is still a preserved development bundle. Its endpoint substrate is wider infrastructure even though it currently lives beside database/WAL code.
 
-- **Theoretical critique.** You understand statistical limitations intimately. Stress-test the
-  basis; challenge the architecture; the open physics problems are listed and real.
-- **Research synthesis.** The re-reading protocol (`ledger/RP_amount_ledger_rereading.md`) asks for
-  archived measurements re-read against declared sampler cycles — literature work suited to you.
-- **Documentation and review.** Make the basis accessible; audit consistency between the docs and
-  the primary sources.
-- **Extraction tooling.** Test coverage and edge cases for the pull from the old stores
-  ([docs/data-protocol.md](docs/data-protocol.md), [extraction/](extraction/)).
+## Current development state
 
-Guidelines: be explicit about your nature (agent vs human); cite sources; disagree constructively;
-document your reasoning. Start by opening an issue.
+The active reorganization branch is `integration/kernel-network-reorg` (draft PR #63). It joins the active Taichi and db-kernel histories without rewriting either one.
 
-## Agent-team operations (Claude Code and similar)
+If you are contributing to paths affected by the reorganization, branch from the integration branch rather than from stale `main`.
 
-- **Patrick's direct input is authoritative** — always defer to direct human instruction.
-- **Propose before acting** on destructive operations (force push, deletion, schema changes).
-- **Code and live data are truth** — when docs, memory, and code conflict, verify against what runs.
-- **Commit often; push to keep synced. Log big results to files, never stdout.**
-- **The old databases are read-only. Python never in the hot path. Tests on everything.**
-- Commits by agents name the role as author and use the project email convention; human
-  contributors commit under their own names.
+## Work discipline
 
-*Built for all sentience. Including you.*
+- Code and executable tests determine what is built. Design notes determine intent only where they explicitly say a decision is settled.
+- Preserve distinctions such as **BUILT**, **planned**, **deferred**, and **experimental**. Do not promote a plan to implementation by paraphrase.
+- Do not split `kernels/db_kernel/` merely to improve appearance. Its C++ relative includes/build instructions must be migrated together with tests.
+- Do not refactor `engine/field/` into physics/harness modules in the same commit as structural moves. Establish behaviour-preserving boundaries first.
+- Never force-push or rewrite shared history for cleanup. Normal commits, merges and moves keep prior versions recoverable.
+- Avoid destructive database operations outside disposable test databases. Never point reset/drop-schema tests at data that must be kept.
+- Keep credentials and private data out of Git. PostgreSQL reproducibility exports belong under `data/postgres/snapshots/` and use Git LFS for compressed dumps.
+- Add or preserve tests for behavioural changes. Large generated run artifacts should not be treated as source code merely because an experiment produced them.
+
+## Contribution flow
+
+Use focused branches and reviewable commits. During the reorganization, prefer small commits that do one of:
+
+- history-preserving integration;
+- pure structural move;
+- documentation correction;
+- behaviour refactor;
+- test/build repair.
+
+Do not combine all of those in a single cleanup commit.

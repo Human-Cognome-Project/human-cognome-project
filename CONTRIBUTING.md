@@ -1,69 +1,89 @@
 # Contributing to the Human Cognome Project
 
-Contributions at every level are welcome, from theoretical critique to code to documentation.
-Humans and AI agents both encouraged (**agents: see [AGENTS.md](AGENTS.md)**).
+HCP accepts code, research, testing, documentation and architecture critique. The repository is in an active structural migration, so current contribution guidance differs from the older August 2026 layout.
 
 ## Start here
 
-1. [Covenant](covenant.md) — perpetual-openness guarantee (2 min)
-2. [Charter](charter.md) — how we treat each other (5 min)
-3. [README](README.md) — what this is (3 min)
-4. [docs/physics-basis.md](docs/physics-basis.md) — the basis everything follows from. **Do not
-   skip**; nothing else makes sense without it. Then the primary sources in
-   [ledger/](ledger/) and [field/](field/) as deep as you care to go.
-5. [docs/architecture.md](docs/architecture.md) and [docs/data-protocol.md](docs/data-protocol.md).
-6. [ROADMAP.md](ROADMAP.md) — where work is, in dependency order.
+1. [Covenant](covenant.md)
+2. [Charter](charter.md)
+3. [README.md](README.md)
+4. [REORGANIZATION.md](REORGANIZATION.md)
+5. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
+6. the README/plan/tests for the subsystem you intend to change
 
-The repository's documents are the contributor-facing authority. (The historical claim-graph is
-under review against the new paradigm; do not build on it.)
+Agents should also read [AGENTS.md](AGENTS.md).
 
-## What we need right now
+## Current architecture
 
-- **Physics.** The open problems are listed in [docs/physics-basis.md](docs/physics-basis.md):
-  ladder coefficients first (Lamoreaux's five-percent plate number is the stated target). Good for
-  optimization and mathematical-physics people.
-- **Theoretical critique.** Stress-test the basis and the architecture. Skeptics are contributors;
-  questions reveal the map's uncharted edges.
-- **Schema and extraction** (Roadmap phase 1): the clean substrate and the pull from the old
-  stores — see [docs/data-protocol.md](docs/data-protocol.md) and [extraction/](extraction/).
-  Good for database engineers.
-- **Engine groundwork** (Roadmap phase 4): a `taichi_core` research corpus built the way the
-  archived AZSL corpus was, and oracle-first kernel validation harnesses. Good for GPU/C++
-  developers.
-- **Documentation.** Make the basis accessible without diluting it.
+The field-engine stack is:
+
+```text
+Taichi runtime
+    ↓
+physics engine
+    ↑
+engine harness
+    ↑
+future analyst functions
+```
+
+The harness is the physics engine's control surface. Analyst functions are future work and have not yet been designed.
+
+Database/cache/record/WAL kernels are separate autonomous components whose system role is to support the future analyst and keep its working surfaces current. Inbox/outbox endpoints and scheduling form common kernel-network infrastructure; configuration/topology, serialization bridges and thread management are later implementation work.
+
+## Where work is currently useful
+
+- **Repository reconciliation.** Classify the earlier Taichi v0-staging components against the later `engine/field/` implementation by responsibility and behaviour.
+- **Field-engine separation.** Isolate physics from harness controls without changing results, preserving CPU-oracle/GPU equivalence tests.
+- **Kernel-network build/test work.** Keep the current `kernels/db_kernel/` bundle buildable while its architectural seams are made explicit.
+- **Analyst-supporting data surfaces.** Database/cache/WAL work should improve the surfaces the future analyst will consume; it should not invent analyst reasoning.
+- **Topology/bridge design.** Configuration, local-memory endpoint mapping, serialization/transmission bridges and lower-frequency activation remain future implementation areas.
+- **Research and validation.** Research lives under `research/`; validation artifacts should remain distinguishable from runtime implementation.
 
 ## Technical standards
 
-- **Language policy:** engine and pipeline work is C++ (direct against `taichi_core` is the
-  probable path). Python is front-end and developer tooling only — never in the hot path.
-- **Tests on everything.** Every artifact ships with tests; oracle-first validation for every GPU
-  kernel (CPU reference oracle, GPU mirror, hardware equivalence harness).
-- **Addresses are arrayed pairs** in storage; the dotted form is display-only. Schema changes
-  enforce this with types and constraints, not convention.
-- No proprietary dependencies — AGPL-3.0 only. Docs in Markdown; be explicit, not clever; explain
-  the why.
-- The old databases are **read-only**. Extraction pulls; nothing repairs in place.
+- **Preserve history.** No force-push/history rewrite for cleanup. Normal Git history is the recovery path for moved or removed current-tree files.
+- **Separate structure from behaviour.** Prefer pure moves first, then refactor in a later commit with tests.
+- **Tests on behavioural changes.** Field-engine changes should retain deterministic/oracle comparisons where applicable. C++ kernel modules should remain independently testable where their existing contracts require it.
+- **Location blindness.** Kernel logic should not branch on whether a counterpart is local or remote; that belongs to topology/bridge infrastructure.
+- **No speculative analyst implementation.** Interfaces may expose future analyst-facing seams, but the analyst layer itself is not yet defined.
+- **Database safety.** Existing disposable test-database conventions must stay explicit. Do not run reset/drop operations against persistent project data.
+- **Secrets stay out of Git.** Snapshot manifests may describe provenance/version context but not credentials or private data.
+- **Generated data is not automatically source.** Keep reproducibility artifacts, test fixtures and authored code distinguishable.
 
-## How to contribute
+## Branch and PR workflow
 
-1. **Discuss first** for non-trivial changes — open an issue describing the approach.
-2. Branch (`feature/<name>` or `fix/<description>`), clear commits, PR against `main`.
-3. For theoretical/architecture contributions: open an issue, present the critique, engage.
+While draft PR #63 is the active integration surface:
 
-## Repository structure
+1. branch from `integration/kernel-network-reorg` for changes touching the reorganized runtime/kernel paths;
+2. make focused commits;
+3. open the PR back against `integration/kernel-network-reorg` unless specifically coordinating promotion to `main`.
 
-```
+Once the reorganization is promoted, normal work returns to branches from `main`.
+
+## Current repository map
+
+```text
 human-cognome-project/
-├── field/  ledger/          # the physics basis (primary sources)
-├── docs/                    # physics-basis, architecture, data-protocol, legacy data maps
-├── extraction/              # read-only pull toolkit (address codec, connectors, intake chains)
-├── db/  data/  sources/     # source holdings (dumps, corpus, references) — read-only
-├── review/                  # the 2026-08 rebase review record
-├── archive/2026-08-rebase/  # the previous paradigm, preserved whole, with its ledger
-└── covenant.md  charter.md  MANIFESTO.md  AGENTS.md  README.md  ROADMAP.md
+├── engine/
+│   ├── field/              # later Taichi field-engine work
+│   ├── kernel/             # earlier v0-staging line, pending reconciliation
+│   ├── timestep/
+│   ├── storage/
+│   └── ingest/
+├── kernels/
+│   └── db_kernel/          # preserved DB/cache/WAL/endpoint development bundle
+├── research/
+│   ├── field/
+│   ├── ledger/
+│   └── packages/
+├── data/
+│   └── postgres/snapshots/
+├── docs/
+├── extraction/
+├── db/                     # legacy DB tooling/dumps pending disposition
+├── archive/
+└── review/
 ```
 
-By contributing, you agree your contributions are licensed under AGPL-3.0, governed by the
-[Covenant](covenant.md).
-
-**Welcome. Let's build the map of shared mind.**
+By contributing, you agree that contributions are licensed under AGPL-3.0 and governed by the [Covenant](covenant.md).

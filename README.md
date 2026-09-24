@@ -1,66 +1,81 @@
 # Human Cognome Project (HCP)
 
-**An evolutionary, cosmological model of the history of human knowledge — movable, zoomable,
-and solved as physics.**
+The Human Cognome Project is an open-source experimental architecture for digital intelligence built around explicit structure, field dynamics, and auditable data rather than a monolithic statistical model.
 
-HCP builds **Digital Intelligence (DI), not AI**. The project models all of human knowledge as a
-single continuous field: every element — a word, a work, a creator, an idea — is a density imbalance
-placed on temporal coordinates, connected across time, and governed by exactly one operation:
+The repository is currently being reorganized so its filesystem matches the system that has actually been developed. See [REORGANIZATION.md](REORGANIZATION.md) for the live migration map.
 
-> **Single-point force balancing.** Every element adapts toward balance with its surroundings;
-> time and distance across dimensions are the only confounders. Everything else — attraction,
-> association, structure, meaning — is that one operation, compounded.
+## Current system shape
 
-Creators enter the model as solar-class phenomena with lifespans, their works both in the core and
-as orbital bodies. Knowledge aggregators (Wiktionary, Gutenberg, arXiv, Wikipedia) enter as
-black-hole/white-hole pairs that draw in unstructured material and emit refined structure. HCP
-itself is the big one at the end: it takes in *all* of knowledge — no source filtering, ever — and
-emits it as a single navigable field. The inference layer that lives on the far side of that
-compression is **NAPIER** — *Not Another Proprietary Inference Engine, Really!*
+```text
+Taichi runtime
+    ↓
+physics engine
+    ↑
+engine harness
+    ↑
+future analyst functions
+```
 
-The physics this rests on was worked out first, as physics. Start there:
+The **physics engine** implements the field dynamics. The **engine harness** is its control interface: the surface used to add, remove and adjust elements, control runs, and inspect engine state for analysis.
 
-- **[docs/physics-basis.md](docs/physics-basis.md)** — the basis in brief, and why it forces
-  everything else.
-- **[ledger/](ledger/)** and **[field/](field/)** — the primary sources: the Mann ledger
-  (separating frequency from amount) and the field model (attraction from two imbalances,
-  no frequency term).
+The **analyst functions have not yet been designed or implemented**.
 
-## Where the project is right now
+Alongside the field-engine stack is a loosely coupled kernel network:
 
-**Rebase in progress (August 2026).** The physics basis was determined and the entire project was
-reviewed and re-founded on it. The prior paradigm — a structural-linguistics engine with a working
-byte→word resolution pipeline and a 1.49M-entry vocabulary substrate — is preserved whole in
-[archive/2026-08-rebase/](archive/2026-08-rebase/), with every artifact's disposition recorded in
-[review/](review/). Notably, the old work converged on the new basis independently more than once;
-the archive documents that lineage honestly.
+```text
+future analyst
+    ├── engine harness → physics engine
+    └── analyst-supporting work surfaces
+          ├── database/cache kernels
+          ├── record operations
+          └── WAL manager
 
-What exists and is current:
+kernel-network infrastructure
+    ├── inbox/outbox endpoints
+    ├── scheduler/activation
+    ├── future topology/configuration
+    ├── future serialization/transmission bridges
+    └── future thread manager
+```
 
-- **The physics packages** (`field/`, `ledger/`) — the basis, with measurements, derivations, and
-  runnable models.
-- **The data holdings** — 14 live PostgreSQL databases including the full Kaikki/Wiktionary
-  ingestion (1.49M English entries with raw source preserved) and a first Gutenberg corpus. Verified
-  extractable: the address convention held everywhere it was checked
-  ([review/pass-04-data.md](review/pass-04-data.md)).
-- **The extraction toolkit** (`extraction/`) — the arrayed-pair address codec and the read-only
-  pull tooling for building the new substrate from the old stores.
-- **The plan** — [ROADMAP.md](ROADMAP.md).
+Each kernel is intended to operate at its own cadence. Counterparts communicate through active inbox/outbox endpoints; local versus remote placement is meant to be resolved beneath the kernel by direct-memory paths or serialization bridges.
 
-## Reading order
+## Current implementation
 
-1. [docs/physics-basis.md](docs/physics-basis.md) — what was determined and why it changes everything.
-2. [docs/architecture.md](docs/architecture.md) — the space, the one operation, the addressing, the singularity.
-3. [docs/data-protocol.md](docs/data-protocol.md) — how knowledge enters: no filtering, declared provenance, flags not gates.
-4. [ROADMAP.md](ROADMAP.md) — what happens next, in order.
-5. [MANIFESTO.md](MANIFESTO.md) — why this and not statistical AI.
+- **[engine/field/](engine/field/)** — later September Taichi field-engine development. The current files still mix physics, harness, CPU-oracle and validation concerns; that split is a planned refactor, not something to infer from filenames.
+- **[engine/kernel/](engine/kernel/), [engine/timestep/](engine/timestep/), [engine/storage/](engine/storage/), [engine/ingest/](engine/ingest/)** — the parallel August 31–September 1 Taichi development line, retained pending component-by-component reconciliation.
+- **[kernels/db_kernel/](kernels/db_kernel/)** — the preserved PostgreSQL/cache/WAL/endpoint development bundle. Its present internal co-location reflects controlled development and existing build relationships, not final architecture.
+- **[research/](research/)** — field/ledger research and convenience packages. Research informs the implementation but is not runtime code.
+- **[data/postgres/snapshots/](data/postgres/snapshots/)** — reserved for reproducibility snapshots exported from development PostgreSQL systems.
+- **[archive/](archive/)** and **[review/](review/)** — preserved prior generations and the August 2026 rebase record.
+
+## Read first
+
+For current development:
+
+1. [REORGANIZATION.md](REORGANIZATION.md)
+2. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
+3. [engine/field/README.md](engine/field/README.md) or [kernels/README.md](kernels/README.md), depending on the work
+4. the local module README/plan/test files for the component being changed
+
+For the research basis and project context:
+
+- [docs/physics-basis.md](docs/physics-basis.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/data-protocol.md](docs/data-protocol.md)
+- [research/](research/)
+- [MANIFESTO.md](MANIFESTO.md)
+
+## Repository status
+
+The active reorganization is staged on `integration/kernel-network-reorg` and tracked in draft PR #63. It preserves both active development lineages with a normal merge; no history rewrite or force-push is part of the migration.
+
+Until that work is promoted, `main` does not contain the complete current development state.
 
 ## Governance
 
-- **[Covenant](covenant.md)** — perpetual-openness guarantee. Everything here stays free, forever.
-- **[Charter](charter.md)** — how contributors treat each other.
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — how to participate; **[AGENTS.md](AGENTS.md)** — an
-  invitation to AI agents.
-- **[LICENSE](LICENSE)** — AGPL-3.0, governed by the Covenant.
-
-*Built in the open. Free forever. For every mind.*
+- [Covenant](covenant.md) — perpetual-openness commitment.
+- [Charter](charter.md) — contributor governance.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow.
+- [AGENTS.md](AGENTS.md) — operational guidance for contributing agents.
+- [LICENSE](LICENSE) — AGPL-3.0.
