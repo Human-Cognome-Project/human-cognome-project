@@ -43,8 +43,8 @@ Properly arrayed, the address system *is* the rooted tree the runtime needs:
   pass reads two pairs where a fine pass reads five — and anything b-treeable or octree-able
   benefits directly, because each level is a typed sort key and address depth = tree depth.
 
-The executable statement of this convention is [`extraction/token_id.py`](../extraction/token_id.py),
-carried forward from the previous era with its tests.
+The executable statement of this convention is [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py),
+retained from the previous era with its tests as migration/reference tooling; the active database codec is under `kernels/database/codec/`.
 
 ## Storage: one flat pool, many logical chains
 
