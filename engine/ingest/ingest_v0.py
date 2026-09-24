@@ -65,9 +65,15 @@ LEDGER_DDL = """CREATE TABLE IF NOT EXISTS engine.event_ledger_v0(
 
 
 def connect(dbname="hcp_english"):
-    return psycopg2.connect(host="192.168.68.60", port=5435, user="hcp",
-                            password=os.environ.get("HCP_PW", "hcp_dev"),
-                            dbname=dbname)
+    kwargs = {
+        "host": os.environ.get("HCP_HOST", "localhost"),
+        "port": int(os.environ.get("HCP_PORT", "5435")),
+        "user": os.environ.get("HCP_USER", "hcp"),
+        "dbname": dbname,
+    }
+    if os.environ.get("HCP_PW"):
+        kwargs["password"] = os.environ["HCP_PW"]
+    return psycopg2.connect(**kwargs)
 
 
 # every hcp_fic_pbm table and how a doc's rows are keyed in it — the COMPLETE
