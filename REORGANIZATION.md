@@ -30,14 +30,17 @@ They were merged with both parent histories preserved. No force-push or history 
 - `network/endpoint/`: shared endpoint/box/scheduler substrate promoted intact from the DB development bundle; CI follows the new path.
 - `research/{field,ledger,packages}/`: research basis and shareable packages, not runtime modules.
 - `data/postgres/snapshots/`: landing area for reproducibility dumps from development PostgreSQL systems.
+- `archive/2026-03-database-generation/`: pre-rebase database schemas, migrations, dumps and roadmap preserved as historical implementation.
+- `archive/2026-02-source-doc-pbm/`: earlier PBM/public-query architecture preserved as historical design.
+- `tools/legacy-extraction/`: retained read-only extraction/migration utilities from prior storage generations.
 
 ## Next review passes
 
 1. Keep the archived Taichi v0-staging generation available as an experimental/predecessor reference while current field-engine work proceeds from `engine/field/`.
 2. Separate physics-engine code from engine-harness control code without changing behaviour.
-3. Decompose the preserved DB-kernel development bundle only with coordinated include/build/test updates.
+3. Continue stabilizing the separated `kernels/database/`, `kernels/wal/`, and `network/` interfaces with coordinated include/build/test updates.
 4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
-5. Refresh root README, contributor and agent guidance after the implementation tree has stabilized.
+5. Keep root README, contributor and agent guidance synchronized as the implementation tree stabilizes.
 6. Run tests/CI and only then promote the reorganization to `main`.
 
 Historical material remains recoverable through Git even after files are moved or later removed from the current tree.
