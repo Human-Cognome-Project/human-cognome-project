@@ -69,7 +69,9 @@ human-cognome-project/
 │   ├── field/              # later Taichi field-engine work
 │   └── field/              # active later Taichi field-engine work
 ├── kernels/
-│   └── db_kernel/          # preserved DB/cache/WAL/endpoint development bundle
+│   └── db_kernel/          # preserved DB/cache/WAL development bundle
+├── network/
+│   └── endpoint/           # shared local box/endpoint/scheduler substrate
 ├── research/
 │   ├── field/
 │   ├── ledger/
