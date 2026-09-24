@@ -23,3 +23,12 @@ The following architecture is established but not yet implemented here:
 - **thread manager** — own lower-frequency/system-facing bridge activity and activate less-frequently-needed kernels when relevant inboxes become occupied.
 
 Kernels should remain location-blind. Local versus remote transport is resolved beneath their endpoint contract.
+
+
+## Design records
+
+- `ENDPOINT-ACTIVATION-NOTES.md` — governing cross-kernel activation model and resolved messaging decisions.
+- `ENDPOINT-PRIMITIVES-PLAN.md` — implementation record for the built local endpoint substrate.
+- `SWARM-NOTES.md` — preliminary p2p/swarm direction; not yet built.
+
+The WAL manager implementation is under `../kernels/wal/`; database/cache support is under `../kernels/database/`.
