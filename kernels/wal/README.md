@@ -2,12 +2,12 @@
 
 The WAL manager's own standalone kernel set (`WAL-PLAN.md`, `WAL-IMPL-PLAN.md`
 — rev. 6 / 7-point ruling set, Patrick 2026-09-18). Same discipline as the
-record-tier modules (`codec/`, `declare/`, `read/`): each part builds, runs,
+record-tier modules (`kernels/database/codec/`, `kernels/database/declare/`, `kernels/database/read/`): each part builds, runs,
 and tests **on its own**.
 
 This file is for working **on** this kernel set (charter, file map,
 build/run). If you're working on something that **uses** it instead —
-chiefly the cache manager — see `wal/USAGE.md` for the consumer contract.
+chiefly the cache manager — see `USAGE.md` for the consumer contract.
 
 ## Charter
 
@@ -65,42 +65,42 @@ land.**
 
 Every part is standalone-buildable, C++17 + libpq, its own tiny in-file
 check harness (`ok`/`FAIL` lines, `PASS <part>_test` on success, non-zero
-exit on any failure) — same convention as `codec/README.md`. **DB-backed
+exit on any failure) — same convention as `kernels/database/codec/README.md`. **DB-backed
 tests must be run from inside this directory** (`wal/`): they load
 `wal_schema.sql` relative to the current working directory (optionally
 overridable as `argv[1]`).
 
 ```sh
-# from db_kernel/wal/ — pure, no DB:
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec \
-    wal_recognize.cpp wal_recognize_test.cpp ../codec/codec.cpp \
+# from kernels/wal/ — pure, no DB:
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec \
+    wal_recognize.cpp wal_recognize_test.cpp ../database/codec/codec.cpp \
     -o /tmp/wal_recognize_test && /tmp/wal_recognize_test
 
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec \
-    wal_report_test.cpp ../codec/codec.cpp \
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec \
+    wal_report_test.cpp ../database/codec/codec.cpp \
     -o /tmp/wal_report_test && /tmp/wal_report_test
 
-# from db_kernel/wal/ — DB-backed (see "Disposable wal_manager DB" below):
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I"$(pg_config --includedir)" \
-    wal_book.cpp wal_book_test.cpp ../codec/codec.cpp \
+# from kernels/wal/ — DB-backed (see "Disposable wal_manager DB" below):
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
+    wal_book.cpp wal_book_test.cpp ../database/codec/codec.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_book_test && /tmp/wal_book_test
 
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I"$(pg_config --includedir)" \
-    wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_ingest_test.cpp ../codec/codec.cpp \
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
+    wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_ingest_test.cpp ../database/codec/codec.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_ingest_test && /tmp/wal_ingest_test
 
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I"$(pg_config --includedir)" \
-    wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_monitor_test.cpp ../codec/codec.cpp \
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
+    wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_monitor_test.cpp ../database/codec/codec.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_monitor_test && /tmp/wal_monitor_test
 
-# from kernels/db_kernel/wal/ — DB-backed AND links the shared endpoint substrate:
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I../../../network/endpoint -I"$(pg_config --includedir)" \
+# from kernels/wal/ — DB-backed AND links the shared endpoint substrate:
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I../../network/endpoint -I"$(pg_config --includedir)" \
     wal_kernel.cpp wal_kernel_test.cpp \
     wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp \
-    ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp ../codec/codec.cpp \
+    ../../network/endpoint/endpoint.cpp ../../network/endpoint/scheduler.cpp ../database/codec/codec.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_kernel_test && /tmp/wal_kernel_test
 ```
@@ -108,7 +108,7 @@ g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I../../../network/endpoint -I"$
 Schema-only check (no C++ build):
 
 ```sh
-# from db_kernel/wal/
+# from kernels/wal/
 createdb wal_manager 2>/dev/null || true
 psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_schema.sql
 psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_verify.sql
