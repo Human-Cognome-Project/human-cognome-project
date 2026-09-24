@@ -2,7 +2,7 @@
 
 > **⚠ MESSAGING REALIGNMENT — governing (2026-09-22).** The **entire messaging of this
 > kernel is being realigned to the monitored-endpoint activation format**
-> (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
+> (`kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
 > plan for that realignment, not a build history.** Where a thing is being redone it is
 > **SUPERSEDED here, not left marked DONE** — a stale "BUILT/COMPLETE" on a redone piece
 > drags the old precepts (synchronous verb-dispatch, "issue a command at the kernel,"
