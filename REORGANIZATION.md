@@ -41,6 +41,6 @@ They were merged with both parent histories preserved. No force-push or history 
 3. Continue stabilizing the separated `kernels/database/`, `kernels/wal/`, and `network/` interfaces with coordinated include/build/test updates.
 4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
 5. Keep root README, contributor and agent guidance synchronized as the implementation tree stabilizes.
-6. Run tests/CI and only then promote the reorganization to `main`.
+6. Keep the smoke suite green as the reorganized tree evolves. The promotion gate includes field syntax + no-DB physics smoke, endpoint substrate tests, database codec tests, pure WAL tests, and disposable-PostgreSQL database/WAL kernel integration tests.
 
-Historical material remains recoverable through Git even after files are moved or later removed from the current tree.
+The initial structural reconciliation reached its promotion gate with the full smoke suite green. Historical material remains recoverable through Git even after files are moved or later removed from the current tree.
