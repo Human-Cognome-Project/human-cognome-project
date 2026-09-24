@@ -45,10 +45,17 @@ np.add.at(mdet, inv, pair_det[stable])
 mdet /= counts
 t1 = time.perf_counter()
 
-env = dict(os.environ, PGPASSWORD=os.environ.get("HCP_PW", "hcp_dev"))
+DB_HOST = os.environ.get("HCP_HOST", "localhost")
+DB_PORT = os.environ.get("HCP_PORT", "5435")
+DB_USER = os.environ.get("HCP_USER", "hcp")
+DB_NAME = os.environ.get("HCP_ENGLISH_DB", "hcp_english")
+env = dict(os.environ)
+if os.environ.get("HCP_PW"):
+    env["PGPASSWORD"] = os.environ["HCP_PW"]
+
 def psql(sql, stdin=None):
-    r = subprocess.run(["psql", "-h", "192.168.68.60", "-p", "5435", "-U", "hcp",
-                        "-d", "hcp_english", "-tA", "-c", sql],
+    r = subprocess.run(["psql", "-h", DB_HOST, "-p", DB_PORT, "-U", DB_USER,
+                        "-d", DB_NAME, "-tA", "-c", sql],
                        input=stdin, capture_output=True, text=True, env=env, timeout=120)
     if r.returncode != 0:
         sys.exit(f"psql failed: {r.stderr[:400]}")
@@ -74,8 +81,8 @@ for i, b in enumerate(uniq):
     lines.append(f"{addr}\t{b}\t{glyph}\t{int(counts[i])}\t{float(mdet[i]):.4f}\tfalse\t{prov}")
 
 t2 = time.perf_counter()
-r = subprocess.run(["psql", "-h", "192.168.68.60", "-p", "5435", "-U", "hcp",
-                    "-d", "hcp_english", "-c",
+r = subprocess.run(["psql", "-h", DB_HOST, "-p", DB_PORT, "-U", DB_USER,
+                    "-d", DB_NAME, "-c",
                     "COPY engine.condensations_v0(resolves_to,byte_val,glyph,n_instances,"
                     "mean_det,minted,provenance) FROM STDIN"],
                    input="\n".join(lines), capture_output=True, text=True, env=env, timeout=120)
