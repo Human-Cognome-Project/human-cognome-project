@@ -188,7 +188,7 @@ Flagged here, not silently assumed:
 Requires libpq and a local Postgres (same as `controller/`):
 
 ```sh
-# from db_kernel/read/
+# from kernels/database/read/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
     read_core.cpp read_core_test.cpp \
