@@ -33,8 +33,7 @@ Database/cache/record/WAL kernels are separate autonomous components whose syste
 
 ## Where work is currently useful
 
-- **Field-engine cleanup.** Continue separating the active `engine/field/` implementation into physics, harness, oracle, and validation responsibilities without changing behaviour. The earlier Taichi v0-staging generation is preserved under `archive/2026-09-taichi-v0-staging/` for reference.
-- **Field-engine separation.** Isolate physics from harness controls without changing results, preserving CPU-oracle/GPU equivalence tests.
+- **Field-engine validation and harness evolution.** Preserve the current physics/harness/validation separation while expanding deterministic/oracle checks and developing the harness as the future analyst's engine control surface. The earlier Taichi v0-staging generation remains under `archive/2026-09-taichi-v0-staging/` for reference.
 - **Kernel-network build/test work.** Keep `kernels/database/`, `kernels/wal/`, and `network/endpoint/` independently buildable while their interfaces stabilize.
 - **Analyst-supporting data surfaces.** Database/cache/WAL work should improve the surfaces the future analyst will consume; it should not invent analyst reasoning.
 - **Topology/bridge design.** Configuration, local-memory endpoint mapping, serialization/transmission bridges and lower-frequency activation remain future implementation areas.
