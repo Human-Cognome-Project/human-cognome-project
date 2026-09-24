@@ -18,7 +18,7 @@ During the current repository migration, do not infer architecture from historic
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
 - Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
 - The future configuration routine resolves endpoint paths; the future thread manager handles lower-frequency/system-facing bridge activation.
-- `kernels/db_kernel/` is still a preserved development bundle. Its endpoint substrate is wider infrastructure even though it currently lives beside database/WAL code.
+- `kernels/db_kernel/` is still a preserved DB/cache/WAL development bundle. The shared endpoint substrate has been promoted to `network/endpoint/`; do not move it back under a database-specific hierarchy.
 
 ## Current development state
 
