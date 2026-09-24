@@ -2,7 +2,7 @@
 
 > **⚠ Forward flag (2026-09-21; updated 2026-09-22).** §9's "WAL manager —
 > bookkeeper/observer … never drives" characterization has been rebased onto the
-> monitored-endpoint activation substrate (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`):
+> monitored-endpoint activation substrate (`kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`):
 > the **push** half is now **BUILT** as `wal/wal_kernel.{h,cpp}` (`WAL-INTEGRATION-PLAN.md`) —
 > the WAL manager runs as a monitored-endpoint kernel that emits owed reciprocal work to the
 > cache-manager out-box (source-blind = location-blind, but aware of its counterpart). The
