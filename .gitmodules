@@ -1,0 +1,63 @@
+[submodule "taichi/external/spdlog"]
+	path = engine/taichi/external/spdlog
+	url = https://github.com/gabime/spdlog
+	shallow = true
+[submodule "taichi/external/glfw"]
+	path = engine/taichi/external/glfw
+	url = https://github.com/taichi-dev/glfw
+	shallow = true
+[submodule "taichi/external/glad"]
+	path = engine/taichi/external/glad
+	url = https://github.com/taichi-dev/taichi_glad_ready
+	shallow = true
+[submodule "taichi/external/assets"]
+	path = engine/taichi/external/assets
+	url = https://github.com/taichi-dev/taichi_assets
+	shallow = true
+[submodule "taichi/external/googletest"]
+	path = engine/taichi/external/googletest
+	url = https://github.com/google/googletest
+	shallow = true
+[submodule "taichi/external/SPIRV-Headers"]
+	path = engine/taichi/external/SPIRV-Headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers
+[submodule "taichi/external/volk"]
+	path = engine/taichi/external/volk
+	url = https://github.com/zeux/volk.git
+[submodule "taichi/external/VulkanMemoryAllocator"]
+	path = engine/taichi/external/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "taichi/external/imgui"]
+	path = engine/taichi/external/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "taichi/external/glm"]
+	path = engine/taichi/external/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "taichi/external/eigen"]
+	path = engine/taichi/external/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.3
+[submodule "taichi/external/SPIRV-Reflect"]
+	path = engine/taichi/external/SPIRV-Reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect
+[submodule "taichi/external/SPIRV-Tools"]
+	path = engine/taichi/external/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools
+[submodule "taichi/external/SPIRV-Cross"]
+	path = engine/taichi/external/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "taichi/external/Vulkan-Headers"]
+	path = engine/taichi/external/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "taichi/external/FP16"]
+	path = engine/taichi/external/FP16
+	url = https://github.com/Maratyszcza/FP16
+[submodule "taichi/external/PicoSHA2"]
+	path = engine/taichi/external/PicoSHA2
+	url = https://github.com/okdshin/PicoSHA2.git
+[submodule "taichi/external/DirectX-Headers"]
+	path = engine/taichi/external/DirectX-Headers
+	url = https://github.com/microsoft/DirectX-Headers.git
+[submodule "taichi/external/backward_cpp"]
+	path = engine/taichi/external/backward_cpp
+	url = https://github.com/bombela/backward-cpp.git
