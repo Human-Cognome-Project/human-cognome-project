@@ -25,7 +25,8 @@ They were merged with both parent histories preserved. No force-push or history 
 
 - `engine/field/`: later September field-engine implementation, moved intact; internal physics/harness split deferred.
 - `archive/2026-09-taichi-v0-staging/`: the earlier v0-staging generation, preserved intact after reconciliation confirmed the later field engine does not depend on it.
-- `kernels/db_kernel/`: DB/cache/WAL development bundle retained while its remaining relative C++ build relationships are reconciled.
+- `kernels/database/`: PostgreSQL record operations + database/cache-manager family.
+- `kernels/wal/`: WAL manager family, promoted to a peer kernel set with its design/build records.
 - `network/endpoint/`: shared endpoint/box/scheduler substrate promoted intact from the DB development bundle; CI follows the new path.
 - `research/{field,ledger,packages}/`: research basis and shareable packages, not runtime modules.
 - `data/postgres/snapshots/`: landing area for reproducibility dumps from development PostgreSQL systems.
