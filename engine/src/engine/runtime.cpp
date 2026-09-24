@@ -2,11 +2,19 @@
 
 #include "taichi/program/compile_config.h"
 
+#include <stdexcept>
+
 namespace engine {
 
 using namespace taichi::lang;
 
 Runtime::Runtime(const InstanceSettings &settings) : settings_(settings) {
+#if !defined(TI_WITH_CUDA)
+  if (settings_.cuda) {
+    throw std::runtime_error(
+        "CUDA requested, but the matched Taichi build was compiled without CUDA");
+  }
+#endif
   // A Program copies the global default configuration when it is constructed,
   // so any setting has to be in place before that call. The global is saved
   // and restored around it, so one instance settings do not leak into the
