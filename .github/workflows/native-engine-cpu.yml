@@ -1,0 +1,57 @@
+name: Native engine CPU reproducibility
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - ".gitmodules"
+      - ".github/workflows/native-engine-cpu.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "engine/**"
+      - ".gitmodules"
+      - ".github/workflows/native-engine-cpu.yml"
+  workflow_dispatch:
+
+jobs:
+  native-cpu:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install recovered native toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y             clang-15 llvm-15-dev ninja-build libx11-dev
+
+      - name: Configure CPU-only Taichi fork
+        run: |
+          cmake -S engine/taichi -B engine/taichi/build-review -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_C_COMPILER=/usr/lib/llvm-15/bin/clang             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm             -DCLANG_EXECUTABLE=/usr/lib/llvm-15/bin/clang             -DTI_WITH_PYTHON=OFF             -DTI_WITH_C_API=ON             -DTI_WITH_CUDA=OFF             -DTI_WITH_AMDGPU=OFF             -DTI_WITH_OPENGL=OFF             -DTI_WITH_VULKAN=OFF             -DTI_WITH_METAL=OFF             -DTI_WITH_DX11=OFF             -DTI_WITH_DX12=OFF             -DTI_WITH_GGUI=OFF             -DTI_WITH_BACKTRACE=OFF             -DTI_BUILD_TESTS=OFF             -DTI_BUILD_EXAMPLES=OFF             -DTI_BUILD_RHI_EXAMPLES=OFF
+
+      - name: Build native Taichi CPU core
+        run: |
+          cmake --build engine/taichi/build-review             --target taichi_c_api -j 2
+          test -f engine/taichi/build-review/libtaichi_core_static.a
+          test -f engine/taichi/taichi/runtime/llvm/runtime_module/runtime_x64.bc
+
+      - name: Configure HCP native engine against CPU Taichi
+        run: |
+          cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF
+
+      - name: Build HCP native engine
+        run: |
+          cmake --build engine/build -j 2
+
+      - name: Run native CPU functional suite
+        run: |
+          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test)$'
+
+      - name: Verify CPU-only runtime reports no CUDA requirement
+        run: |
+          . ./engine/build/engine-env.sh
+          ./engine/build/engine_devices --cpu-only
