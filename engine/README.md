@@ -4,7 +4,7 @@ The field-engine development area.
 
 ## Current later field implementation
 
-`field/` contains the September field-engine work moved intact from the former root `field/` directory. It currently mixes physics-engine, control-harness, CPU-oracle and validation concerns. See `field/README.md` and `ARCHITECTURE.md`.
+`field/` contains the active September field engine. Physics, harness/control lifecycle, and validation are now separated into explicit modules while `field_engine.py` remains the stable facade. See `field/README.md` and `ARCHITECTURE.md`.
 
 The intended stack is:
 
@@ -26,6 +26,6 @@ The parallel August 31–September 1 Taichi v0-staging generation has been moved
 
 ## Not under engine
 
-Database/cache/WAL and endpoint-network development now lives under `/kernels/db_kernel/`. Those kernels support the future analyst's working surfaces or the wider kernel network; they are not parts of the physics-engine harness.
+Database/cache work lives under `/kernels/database/`, WAL under `/kernels/wal/`, and shared endpoint-network infrastructure under `/network/`. These support the future analyst's working surfaces or the wider kernel network; they are not parts of the physics-engine harness.
 
 Research material that informed the field work lives under `/research/`.
