@@ -26,14 +26,16 @@ Review by responsibility rather than age:
 
 No component is discarded merely because it is earlier.
 
-## 2. Establish the engine boundary cleanly
+## 2. Establish the engine boundary cleanly — initial split complete
 
-Separate the current mixed field-engine implementation into:
+The active field engine is now separated into:
 
-- **physics engine** — field dynamics only;
-- **engine harness** — control interface used to add/remove/adjust elements, configure and advance runs, and inspect/manipulate engine state;
-- deterministic CPU oracle and accelerated Taichi implementation;
-- validation tools that observe results without becoming engine behaviour.
+- **physics engine** — `engine/field/field_engine_physics.py`;
+- **engine harness** — `engine/field/field_engine_harness.py`, the control interface used to add/remove/adjust elements, configure and advance runs, and inspect/manipulate engine state;
+- **stable facade** — `engine/field/field_engine.py` preserves the CLI and existing imports;
+- **validation** — `engine/field/field_engine_validation.py` plus the no-DB physics smoke test, kept outside engine behaviour.
+
+Next work in this phase is deeper behavioural coverage and harness evolution, not recombining these responsibilities.
 
 The Taichi runtime remains the execution substrate rather than an HCP architectural layer of its own making.
 
