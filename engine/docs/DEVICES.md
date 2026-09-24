@@ -1,3 +1,5 @@
+> **Recovered September 2026 record.** This document preserves the native-engine development/vetting context in which it was written. Absolute `/opt/project/...` paths, agent-routing instructions, and statements about branch/commit status are historical. Current paths/status are indexed in [README.md](README.md); current repository policy is in the root `AGENTS.md` and `CONTRIBUTING.md`.
+
 # Devices on this host
 
 Measured with `build/engine_devices` on 2026-09-12, not quoted from
