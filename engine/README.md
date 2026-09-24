@@ -77,10 +77,11 @@ cmake -S engine/taichi -B engine/taichi/build-review -G Ninja \
 cmake --build engine/taichi/build-review --target taichi_c_api -j 2
 ```
 
-A development-machine GPU build enables the desired Taichi backend instead
-(e.g. `-DTI_WITH_CUDA=ON`). The HCP wrapper detects whether the matched Taichi
-build contains CUDA components; `ENGINE_TAICHI_CUDA=AUTO` is the default, with
-`ON` and `OFF` available as explicit checks.
+A development-machine CUDA build enables `-DTI_WITH_CUDA=ON` in a separate
+Taichi build tree. The HCP wrapper reads that build's CUDA setting;
+`ENGINE_TAICHI_CUDA=AUTO` is the default, with `ON` and `OFF` available as
+consistency checks. The native wrapper currently selects LLVM/x64 or CUDA;
+other Taichi backends require HCP linkage and functional qualification.
 
 Taichi generates native LLVM runtime bitcode from source. The HCP wrapper stages
 the artifacts required by the backends present in the matched build into its

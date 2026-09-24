@@ -47,6 +47,25 @@ jobs:
         run: |
           cmake --build engine/build -j 2
 
+      - name: Ignore stale CUDA archives in a CPU Taichi build
+        run: |
+          for archive in \
+            taichi/codegen/cuda/libcuda_codegen.a \
+            taichi/runtime/cuda/libcuda_runtime.a \
+            taichi/rhi/cuda/libcuda_rhi.a; do
+            mkdir -p "engine/taichi/build-review/$(dirname "$archive")"
+            touch "engine/taichi/build-review/$archive"
+          done
+          mkdir -p "$RUNNER_TEMP/taichi-runtime-probe"
+          cp engine/taichi/taichi/runtime/llvm/runtime_module/runtime_x64.bc \
+            "$RUNNER_TEMP/taichi-runtime-probe/runtime_x64.bc"
+          touch "$RUNNER_TEMP/taichi-runtime-probe/runtime_cuda.bc"
+          cmake -S engine -B engine/build-stale-probe -G Ninja \
+            -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \
+            -DENGINE_TAICHI_RUNTIME_SOURCE="$RUNNER_TEMP/taichi-runtime-probe" \
+            -DENGINE_TAICHI_CUDA=AUTO > "$RUNNER_TEMP/backend-probe.log"
+          grep -q 'Engine CUDA     : FALSE' "$RUNNER_TEMP/backend-probe.log"
+
       - name: Run native CPU functional suite
         run: |
           ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test)$'
