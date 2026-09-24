@@ -1,0 +1,47 @@
+name: Reorganization smoke tests
+
+on:
+  pull_request:
+    paths:
+      - "engine/field/**"
+      - "kernels/db_kernel/endpoint/**"
+      - ".github/workflows/reorg-smoke.yml"
+  push:
+    branches:
+      - "integration/kernel-network-reorg"
+    paths:
+      - "engine/field/**"
+      - "kernels/db_kernel/endpoint/**"
+      - ".github/workflows/reorg-smoke.yml"
+
+jobs:
+  field-python-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile field-engine Python sources
+        run: python3 -m py_compile engine/field/*.py
+
+  endpoint-substrate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kernels/db_kernel/endpoint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run box test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/box_test box_test.cpp
+          /tmp/box_test
+      - name: Build and run endpoint registry test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/endpoint_test endpoint.cpp endpoint_test.cpp
+          /tmp/endpoint_test
+      - name: Build and run scheduler test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/scheduler_test endpoint.cpp scheduler.cpp scheduler_test.cpp
+          /tmp/scheduler_test
+      - name: Build and run dataflow test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/dataflow_test endpoint.cpp scheduler.cpp dataflow_test.cpp
+          /tmp/dataflow_test
