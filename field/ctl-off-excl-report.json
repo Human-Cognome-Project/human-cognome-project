@@ -1,0 +1,123 @@
+{
+ "artifact": "field-engine",
+ "substrate": "field_engine_v0 (validated)",
+ "load": {
+  "grain": "endpoint",
+  "declared_depth": 5,
+  "declarations": 73,
+  "declared_steps": 72,
+  "declared_endpoints": 19388,
+  "n_particles": 24321,
+  "slots": 5,
+  "configs_distinct": 19388,
+  "codepoint_mass_min": 5,
+  "codepoint_mass_max": 63
+ },
+ "arch": "cuda",
+ "grid": 48,
+ "box": 100.0,
+ "relax_iters": 40,
+ "step": 0.5,
+ "couplings": {
+  "identity_pull": true,
+  "exclusion": false,
+  "condense": true
+ },
+ "deterministic": true,
+ "entries_first": 24316,
+ "entries_last": 24114,
+ "occupied_cells_last": 18441,
+ "entries_covering_more_than_one": 197,
+ "history": [
+  {
+   "tick": 20,
+   "entries_live": 24316,
+   "occupied_cells": 18833,
+   "elapsed_s": 5.9
+  },
+  {
+   "tick": 40,
+   "entries_live": 24304,
+   "occupied_cells": 18573,
+   "elapsed_s": 10.2
+  },
+  {
+   "tick": 60,
+   "entries_live": 24295,
+   "occupied_cells": 18847,
+   "elapsed_s": 14.4
+  },
+  {
+   "tick": 80,
+   "entries_live": 24284,
+   "occupied_cells": 18889,
+   "elapsed_s": 18.7
+  },
+  {
+   "tick": 100,
+   "entries_live": 24265,
+   "occupied_cells": 18923,
+   "elapsed_s": 23.0
+  },
+  {
+   "tick": 120,
+   "entries_live": 24246,
+   "occupied_cells": 18630,
+   "elapsed_s": 27.3
+  },
+  {
+   "tick": 140,
+   "entries_live": 24235,
+   "occupied_cells": 18695,
+   "elapsed_s": 31.6
+  },
+  {
+   "tick": 160,
+   "entries_live": 24217,
+   "occupied_cells": 18816,
+   "elapsed_s": 35.9
+  },
+  {
+   "tick": 180,
+   "entries_live": 24204,
+   "occupied_cells": 18600,
+   "elapsed_s": 40.2
+  },
+  {
+   "tick": 200,
+   "entries_live": 24191,
+   "occupied_cells": 18759,
+   "elapsed_s": 44.5
+  },
+  {
+   "tick": 220,
+   "entries_live": 24174,
+   "occupied_cells": 18920,
+   "elapsed_s": 48.7
+  },
+  {
+   "tick": 240,
+   "entries_live": 24160,
+   "occupied_cells": 18619,
+   "elapsed_s": 53.0
+  },
+  {
+   "tick": 260,
+   "entries_live": 24146,
+   "occupied_cells": 18854,
+   "elapsed_s": 57.3
+  },
+  {
+   "tick": 280,
+   "entries_live": 24131,
+   "occupied_cells": 18909,
+   "elapsed_s": 61.6
+  },
+  {
+   "tick": 300,
+   "entries_live": 24114,
+   "occupied_cells": 18441,
+   "elapsed_s": 65.8
+  }
+ ]
+}
