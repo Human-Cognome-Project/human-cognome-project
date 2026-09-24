@@ -71,9 +71,9 @@ For the research basis and project context:
 
 ## Repository status
 
-The active reorganization is staged on `integration/kernel-network-reorg` and tracked in draft PR #63. It preserves both active development lineages with a normal merge; no history rewrite or force-push is part of the migration.
+The September 2026 repository reconciliation was carried through `integration/kernel-network-reorg` and PR #63. It preserves both active development lineages through normal merge history; no history rewrite or force-push was used.
 
-Until that work is promoted, `main` does not contain the complete current development state.
+The current tree is the canonical starting point for new work. Earlier development generations remain available under `archive/` and through Git history.
 
 ## Governance
 
