@@ -22,7 +22,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+
+      - name: Fetch pinned Taichi dependencies
+        run: |
+          if ! git submodule update --init --recursive; then
+            # The pinned Eigen commit also exists in this mirror. Git still
+            # checks out the exact gitlink SHA recorded by the repository.
+            git -c 'url.https://github.com/eigen-mirror/eigen.git.insteadOf=https://gitlab.com/libeigen/eigen.git' \
+              submodule update --init --recursive
+          fi
 
       - name: Install recovered native toolchain
         run: |
