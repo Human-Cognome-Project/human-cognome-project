@@ -17,7 +17,7 @@ The current `engine/field/` implementation still mixes physics, harness, oracle,
 
 The PostgreSQL, cache, record-operation, and WAL functions exist to support the future analyst and keep its working surfaces current. They are autonomous kernels in the wider kernel network, but their system role is analyst support rather than part of the field-engine harness.
 
-During the first structural pass, the existing `engine/db_kernel/` development unit remains intact because its C++ modules have deliberate relative build relationships. Its current nesting reflects development isolation and is not the final logical structure.
+The preserved development bundle currently lives at `/kernels/db_kernel/`. Its internal co-location reflects development isolation and existing relative build relationships, not the final logical structure.
 
 ## Kernel network
 
