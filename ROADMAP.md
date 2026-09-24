@@ -2,7 +2,7 @@
 
 This roadmap reflects the repository and implementation state after the September 2026 development split. It replaces the August roadmap that still described the field engine as future work.
 
-## 0. Repository reconciliation — active
+## 0. Repository reconciliation — initial structural pass complete
 
 - Preserve both active development histories.
 - Align the filesystem with actual architectural roles.
@@ -10,11 +10,11 @@ This roadmap reflects the repository and implementation state after the Septembe
 - Refresh contributor/agent entry points.
 - Keep structural moves and behavioural refactors in separate commits.
 
-Working record: [REORGANIZATION.md](REORGANIZATION.md), draft PR #63.
+Working record: [REORGANIZATION.md](REORGANIZATION.md), PR #63.
 
 ## 1. Reconcile the Taichi development lines
 
-The August 31–September 1 `engine/{kernel,timestep,storage,ingest}` work and the later September `engine/field/` implementation developed on parallel branches.
+The August 31–September 1 Taichi generation and the later September `engine/field/` implementation developed on parallel branches. The earlier generation is now preserved intact under `archive/2026-09-taichi-v0-staging/`; the later field engine is active.
 
 Review by responsibility rather than age:
 
