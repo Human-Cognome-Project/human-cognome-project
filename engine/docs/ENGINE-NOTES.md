@@ -1,6 +1,8 @@
+> **Current build note.** This file was recovered from the September native workspace and has been adjusted to the monorepo paths. Historical measurements still refer to the development host. See [README.md](README.md) for document status.
+
 # Building against this engine
 
-Mechanics of calling the engine in `/opt/project/taichi` from native C++.
+Mechanics of calling the modified fork in `engine/taichi/` from native C++.
 Every item was established from the engine's own source and tests, or by
 running it on this host on LLVM CPU and on the GTX 1070. Nothing here is a
 statement about what should be computed.
@@ -15,7 +17,7 @@ three, so they cannot drift apart:
 |---|---|
 | Headers | the root itself, plus `external/include`, `external/spdlog/include`, `external/eigen`, `external/FP16/include`, `external/PicoSHA2`, `external/SPIRV-Tools/include` |
 | Archives | `build-review/libtaichi_core_static.a` plus sixteen per-component archives under `build-review/taichi/` |
-| Runtime bitcode | `python/taichi/_lib/runtime` |
+| Runtime bitcode | generated under `taichi/runtime/llvm/runtime_module`; the HCP CMake wrapper stages it with `slim_libdevice.10.bc` into the HCP build directory for `TI_LIB_DIR` |
 
 `libtaichi_core_static.a` is not self-contained: the component archives hold
 the codegen, runtime and device-interface objects, so all of them are linked
