@@ -1,7 +1,7 @@
 # Swarm / p2p layer — preliminary notes
 
 > **⚠ Forward flag (2026-09-21).** The swarm-side facet and tracker indexing are now being
-> designed on the activation substrate — `kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`
+> designed on the activation substrate — `network/ENDPOINT-ACTIVATION-NOTES.md`
 > ("WAL-manager comms wiring + swarm indexing"): Pair-2 boxes (unpack inbound / compose
 > outbound delta packets); the **address tree IS the tracker index**; a truncated area = the
 > existing **coarse label token** (this doc's distillation / connection indicators) reused via
@@ -12,7 +12,7 @@
 designed, not built, not adversary-firmed.** The actual design waits on examining
 the **WAL data shape** first. This file just captures Patrick's framing so it
 isn't lost; nothing here is a committed mechanism. Distinct from the built WAL
-manager (`wal/`), which is the *local* bookkeeper and stays untouched by this.
+manager (`kernels/wal/`), which is the *local* bookkeeper and stays untouched by this.
 
 ## Storage tiers
 
@@ -34,7 +34,7 @@ content itself.
 
 ## The WAL_db manager's swarm-side facet (distinct from the built local bookkeeper)
 
-The built WAL manager (`wal/`) is the *local* bookkeeper — per-source deferred-work
+The built WAL manager (`kernels/wal/`) is the *local* bookkeeper — per-source deferred-work
 topology, no cross-source/swarm surface. Its **swarm-side facet** (deferred; these
 notes) does two things:
 
