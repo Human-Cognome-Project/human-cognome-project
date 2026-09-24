@@ -2,7 +2,7 @@
 
 **Status: PARTLY BUILT (2026-09-22). Governing model for the cross-kernel command /
 coupling layer.** The local activation substrate (`network/endpoint/`, commit `b97034a`) and the
-WAL manager as a monitored-endpoint kernel (Pair 1 — `wal/wal_kernel.{h,cpp}`, commits
+WAL manager as a monitored-endpoint kernel (Pair 1 — `kernels/wal/wal_kernel.{h,cpp}`, commits
 `3aca2ac`/`cf7e0c6`) are **BUILT**; the remaining coupling (cache-manager kernel, Pair-2
 swarm, the API-pair transport bridge, reload repopulation, the live feed) is still
 **direction record — not built.** Its **resolved decisions govern** the ongoing
@@ -13,7 +13,7 @@ vocabulary. It reshapes *how components are invoked and coupled*; largely
 bodies (see *Fit with the built base*).
 
 Canadian English. Prose/draft record. On any conflict with built behaviour, the
-code and the existing `API.md` / `NOTES.md` remain the source of truth for what is
+code and the existing `API.md` / `kernels/database/NOTES.md` remain the source of truth for what is
 *built*; this file records a *direction* still under discussion.
 
 ## The shift
@@ -145,7 +145,7 @@ manager fills.
   logic needed.)
 - **Role note (a deliberate rebase, carry into the change plan):** this extends the
   WAL manager from the built "passive topology the cache manager *reads*"
-  (`wal/USAGE.md`: no schedule/prioritize surface) to **actively staging reconcile
+  (`kernels/wal/USAGE.md`: no schedule/prioritize surface) to **actively staging reconcile
   work into a box**. That is a conscious revision of the built bookkeeper boundary,
   not an oversight. The WAL manager still only *selects and places*; whoever drains
   the box does the work.
@@ -175,7 +175,7 @@ ack + reload + idempotent redo, never persisted mailboxes.
 home of pending work); the six verbs, now the reaction bodies a monitor runs rather
 than dispatched commands.
 
-**Open (from `SWARM-NOTES.md`):** converter:transmission need not be 1:1 — a converter
+**Open (from `network/SWARM-NOTES.md`):** converter:transmission need not be 1:1 — a converter
 is per-remote-counterpart, but one transmission process may multiplex many converters
 onto shared peer machinery.
 
@@ -296,8 +296,8 @@ Patrick-driven, the first WAL-manager integration onto the activation substrate.
 WAL manager's coupling is a set of boxes.
 
 > **⚠ Update (2026-09-22) — Pair 1 BUILT, and narrowed by the source-blind reframe.**
-> Pair-1's steady-state push is now built as `wal/wal_kernel.{h,cpp}`
-> (`WAL-INTEGRATION-PLAN.md`, adversary-vetted plan + build). Clarifications from Patrick
+> Pair-1's steady-state push is now built as `kernels/wal/wal_kernel.{h,cpp}`
+> (`kernels/wal/WAL-INTEGRATION-PLAN.md`, adversary-vetted plan + build). Clarifications from Patrick
 > (2026-09-22) sharpen the wording below: (1) **source-blind = LOCATION-blind, not
 > identity-blind.** A kernel does not know or care *where* a counterpart physically sits
 > (local vs remote); it **is** aware of *who* it receives from and *who* it assigns work to.
@@ -330,11 +330,11 @@ WAL manager's coupling is a set of boxes.
     a box: the box notifies, the relation persists, and close is still by observing the
     followup write come back around the WAL feed.
   - **Deliberate rebase (carry into the change plan).** This PUSH supersedes the built
-    PULL/observer contract — `wal/USAGE.md`'s "not to be told what to do next," "no
+    PULL/observer contract — `kernels/wal/USAGE.md`'s "not to be told what to do next," "no
     schedule/prioritize surface," "never drives the cache manager." On the activation
     substrate everything is push; polling `list_open` is the demoted idiom. Close semantics
-    are unchanged (still self-accounting). Flag `wal/USAGE.md` / `WAL-PLAN.md` / `NOTES.md` /
-    `HANDOFF.md` for supersession — same treatment the RECONCILE section gives its rebase.
+    are unchanged (still self-accounting). Flag `kernels/wal/USAGE.md` / `kernels/wal/WAL-PLAN.md` / `kernels/database/NOTES.md` /
+    `kernels/database/HANDOFF.md` for supersession — same treatment the RECONCILE section gives its rebase.
 
 **Pair 2 — with the swarm manager (self-contained, both ways).**
 - The **swarm manager is the p2p component — NOT yet addressed** (a forward reference, like the
@@ -343,8 +343,8 @@ WAL manager's coupling is a set of boxes.
 - **Inbox:** incoming change data from the swarm manager, to **unpack**.
 - **Outbox:** composed **internal delta packets** passed back to the swarm manager — the
   outbound prep (local change → manifest/packets for peers).
-- This **activates the WAL manager's swarm-side facet**, which `WAL-PLAN.md` §2 and
-  `SWARM-NOTES.md` mark deferred — a deliberate design-discussion rebase; cross-ref those.
+- This **activates the WAL manager's swarm-side facet**, which `kernels/wal/WAL-PLAN.md` §2 and
+  `network/SWARM-NOTES.md` mark deferred — a deliberate design-discussion rebase; cross-ref those.
 
 **Extra box — unpacked swarm change → cache-manager work list.** The unpacked inbound
 change (pair 2's inbox) becomes cache-manager work, its own outbox to the cache manager,
@@ -358,7 +358,7 @@ collapse to one ordered box (priority is box-granular).
 manager, and composed delta packets → swarm manager. That fan is where composing sits.
 
 **Swarm indexing (under the trackers) — design-discussion; still GATED on examining the WAL
-data shape first (`SWARM-NOTES.md`, `HANDOFF.md`). The reconcile-vs-extend split *informs* the
+data shape first (`network/SWARM-NOTES.md`, `kernels/database/HANDOFF.md`). The reconcile-vs-extend split *informs* the
 delta-span (sync) vs state-range (bulk-coverage) fork but does not resolve it — the fork stays
 formally parked pending the data-shape exam.**
 - The **address tree IS the index** the trackers carry (the manifest = the address tree; the
@@ -459,7 +459,7 @@ formally parked pending the data-shape exam.**
   many requesters at once and each answer routes back independently — no held
   connections, no connection state to manage; a component monitors a box anyone can
   fill rather than holding channels. This **subsumes the existing multi-analyst
-  "per-analyst input/response link" requirement** (`NOTES.md` "Process runtime"):
+  "per-analyst input/response link" requirement** (`kernels/database/NOTES.md` "Process runtime"):
   that link IS the caller-supplied return endpoint. (The other half of that NOTES
   clause — consistency of "maintained aggregates" — is moot: the DB retains only
   **connections and token masses**; a label's **centroid is not stored**, it is had by
