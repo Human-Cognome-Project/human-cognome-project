@@ -24,7 +24,7 @@ Do not infer architecture from historical folder placement. Several directories 
 
 ## Current development state
 
-The initial repository reconciliation is on `main`. Native engine recovery restored the C++ workspace that had remained local during that reconciliation.
+The structural repository reconciliation is complete on `main`. Native engine recovery restored the C++ workspace and curated Taichi fork; hosted CI builds and tests the native CPU path from source. Further architecture and performance work is tracked separately from the reorganization.
 
 Branch new work from current `main` unless a specific recovery/integration branch is explicitly named for the task.
 
@@ -41,7 +41,7 @@ Branch new work from current `main` unless a specific recovery/integration branc
 
 ## Contribution flow
 
-Use focused branches and reviewable commits. During the reorganization, prefer small commits that do one of:
+Use focused branches and reviewable commits. For structural changes, prefer small commits that do one of:
 
 - history-preserving integration;
 - pure structural move;

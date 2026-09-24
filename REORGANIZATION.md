@@ -1,6 +1,6 @@
-# Repository reorganization status
+# Repository reorganization — structural pass complete
 
-This file is the working map for the 2026-09 repository reorganization. The goal is to make the repository describe the actual system without rewriting development history or mixing structural moves with behavioural refactors.
+This file records the 2026-09 repository reorganization. The current tree describes the recovered system without rewriting development history or mixing structural moves with behavioural refactors.
 
 ## Preserved active lineages
 
@@ -25,7 +25,7 @@ They were merged with both parent histories preserved. No force-push or history 
 
 - `engine/src/engine/`: recovered native C++ runtime/compiler wrapper.
 - `engine/src/field/`: recovered native C++ field/tick implementation.
-- `engine/taichi/`: intended location of the modified Taichi fork, curated separately because the recovered local folder contains source, vendored externals, build products and machine-local environment files.
+- `engine/taichi/`: curated modified Taichi fork with pinned external submodules; machine-local environments and build products are excluded from source control.
 - `archive/2026-09-planner-field-python/`: planner-generated Python field prototype, retained only as historical/experimental evidence.
 - `archive/2026-09-taichi-v0-staging/`: the earlier v0-staging generation, preserved intact after reconciliation confirmed the later field engine does not depend on it.
 - `kernels/database/`: PostgreSQL record operations + database/cache-manager family.
@@ -37,13 +37,11 @@ They were merged with both parent histories preserved. No force-push or history 
 - `archive/2026-02-source-doc-pbm/`: earlier PBM/public-query architecture preserved as historical design.
 - `tools/legacy-extraction/`: retained read-only extraction/migration utilities from prior storage generations.
 
-## Next review passes
+## Closeout state
 
-1. Vet the recovered native C++ engine/field workspace against its settled design and operational record.
-2. Curate the modified Taichi fork: preserve HCP changes and exact dependency revisions while excluding machine-local `.venv` and reproducible build products from canonical source.
-3. Continue stabilizing the separated `kernels/database/`, `kernels/wal/`, and `network/` interfaces with coordinated include/build/test updates.
-4. Establish the future configuration/topology and thread/bridge module locations when implementation begins.
-5. Keep root README, contributor and agent guidance synchronized as the implementation tree stabilizes.
-6. Keep the smoke suite green as the reorganized tree evolves. The kernel/network/database tests remain active; native engine build/runtime CI will be restored once the curated Taichi fork and its reproducible dependency/build boundary are in place.
+- PR #63 reconciled the active histories and separated engine, kernel, network, research and archive material.
+- PR #66 restored the native C++ engine; PR #67 curated the modified Taichi fork with pinned dependencies.
+- PRs #68 and #69 established a from-source native CPU build, functional tests and matched-backend build checks in CI. The native engine has also run on development hardware. The high-resource index-cap regression remains outside hosted CI.
+- Repository smoke tests cover the separated endpoint, database and WAL modules.
 
-The initial structural reconciliation reached its promotion gate with the full smoke suite green. Historical material remains recoverable through Git even after files are moved or later removed from the current tree.
+The structural reorganization is complete. Further field-model vetting, realistic load measurements, kernel interface work and future network modules are development work described in [ROADMAP.md](ROADMAP.md), not conditions for accepting the repository layout. Historical material remains recoverable through Git even after files are moved or later removed from the current tree.

@@ -43,7 +43,7 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 ## Current implementation
 
 - **[engine/](engine/)** — canonical native C++ engine workspace: thin Taichi runtime support, native field physics, tests, build integration and harness design record.
-- **[engine/taichi/](engine/taichi/)** — expected location of the modified Taichi fork; recovered and curated separately from the HCP wrapper.
+- **[engine/taichi/](engine/taichi/)** — curated modified Taichi fork with pinned dependencies, separate from the HCP C++ wrapper.
 - **[archive/2026-09-planner-field-python/](archive/2026-09-planner-field-python/)** — off-direction Python field prototype retained as historical/experimental evidence, not runtime code.
 - **[archive/2026-09-taichi-v0-staging/](archive/2026-09-taichi-v0-staging/)** — the parallel August 31–September 1 Taichi generation, now archived intact as a predecessor/experimental record after reconciliation showed no runtime dependency from the later field engine.
 - **[kernels/database/](kernels/database/)** — PostgreSQL record operations and database/cache-manager kernel family supporting the analyst's working surfaces.
@@ -75,7 +75,7 @@ For the research basis and project context:
 
 The September 2026 repository reconciliation was carried through `integration/kernel-network-reorg` and PR #63. It preserves both active development lineages through normal merge history; no history rewrite or force-push was used.
 
-The current tree is the canonical starting point for new work. The native C++ engine recovery is layered onto that reconciled history; earlier and off-direction generations remain under `archive/` and through Git history.
+The current tree is the canonical starting point for new work. The native C++ engine recovery and curated Taichi fork are layered onto that reconciled history. CI builds and tests the native CPU engine from source; the engine has also run on development hardware. Earlier and off-direction generations remain under `archive/` and through Git history.
 
 ## Governance
 

@@ -12,15 +12,13 @@ This roadmap reflects the repository and implementation state after the Septembe
 
 Working record: [REORGANIZATION.md](REORGANIZATION.md), PR #63.
 
-## 1. Reconcile and vet the recovered native engine
+## 1. Recovered native engine — source and build baseline established
 
 The September native C++ engine/harness workspace remained local while repository reconciliation proceeded around an off-direction Python prototype. The native workspace has now been recovered; the Python prototype is preserved under `archive/2026-09-planner-field-python/` and is not canonical runtime.
 
-Current work:
-- vet the recovered native C++ field implementation against the settled model/design record;
-- curate the modified Taichi fork and make its HCP delta reproducible;
-- preserve the >2^31 dense-index regression and capacity/allocation modernization tests;
-- establish realistic load/performance characterization later, without treating existing measurements as guarantees.
+The native workspace and modified Taichi fork are now in `engine/` with pinned dependencies and an HCP delta record. Hosted CI builds Taichi and the HCP C++ workspace from source, then runs native CPU smoke/field tests. The engine has also run on development hardware. The >2^31 dense-index regression remains a targeted high-resource test rather than a hosted CI gate.
+
+Further field-model vetting against the design record and realistic load/performance characterization remain development work. Existing measurements are evidence, not guarantees.
 
 ## 2. Establish the native engine boundary cleanly — recovered, partially vetted
 

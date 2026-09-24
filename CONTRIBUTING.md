@@ -1,6 +1,6 @@
 # Contributing to the Human Cognome Project
 
-HCP accepts code, research, testing, documentation and architecture critique. The initial structural migration is complete; current guidance reflects the recovered native C++ engine and separated kernel/network architecture.
+HCP accepts code, research, testing, documentation and architecture critique. The structural migration is complete; current guidance reflects the recovered native C++ engine, curated Taichi fork and separated kernel/network architecture.
 
 ## Start here
 
@@ -66,7 +66,7 @@ human-cognome-project/
 │   ├── src/field/          # native field/tick mechanics
 │   ├── tests/              # native engine/field/index-cap regression tests
 │   ├── docs/               # recovered engine/harness design + vetting record
-│   └── taichi/             # modified Taichi fork (curated separately)
+│   └── taichi/             # curated modified Taichi fork
 ├── kernels/
 │   ├── database/           # PostgreSQL record + database/cache-manager family
 │   └── wal/                # WAL manager family
