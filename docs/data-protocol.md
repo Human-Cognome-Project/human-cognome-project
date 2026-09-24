@@ -19,7 +19,7 @@ used. Prerequisites: [physics-basis.md](physics-basis.md), [architecture.md](arc
 4. **Every entry carries flags, not judgements**: read-status (measured / assigned /
    model-produced / declared-derived / unread), and where an amount was read, the sampler's cycle
    and a continuity flag (continuous vs patterned), per the re-reading protocol
-   (`ledger/RP_amount_ledger_rereading.md`).
+   (`research/ledger/RP_amount_ledger_rereading.md`).
 5. **Provenance is a physical path.** Every element records the chain of singularities it came
    through. For every aggregator we ingest, we ingest its raw face too where recoverable — the pair
    is what makes its transformation solvable. Where the raw side is lost, that is a *declared*
