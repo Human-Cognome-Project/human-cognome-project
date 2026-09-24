@@ -9,7 +9,7 @@
 > `dbkernel-design-checkpoint`.
 >
 > **Progress since (2026-09-23):** the four-tier box-priority structure is pinned and
-> **tier 2 — the analyst reaction body — is BUILT** (`dbmanager/`, commit `8614b43`);
+> **tier 2 — the analyst-facing current-work body — is BUILT** (`dbmanager/`, commit `8614b43`);
 > RECONCILE was removed from the dispatch surface (analyst → WAL manager); the cache
 > structure is captured **forming** in `NOTES.md`. Remaining: tiers 1/3/4, the
 > config/advertising routine, the cache structure build-out. See "Current state" and the
@@ -37,7 +37,7 @@ command-structure discussion (Patrick, 2026-09-19) HAPPENED and settled into the
 **monitored-endpoint activation model** — the "new messaging system." The next context
 **realigns the main database/cache / cache-manager design with it.** Read the messaging
 model first, then rework the cache-manager design (mostly still design; **tier 2 —
-the analyst reaction body — is now built**, `dbmanager/`, 2026-09-23) so it
+the analyst-facing current-work body — is now built**, `dbmanager/`, 2026-09-23) so it
 sits natively on boxes rather than on the old active-instruction / polling shape.
 
 **The messaging model to realign onto (read these first):**
@@ -112,7 +112,7 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   transport bridge, the live feed, Pair-2/swarm coupling, and the cache-manager
   consumer. This is the pattern the cache-manager realignment follows.
 - **Tier 2 of the db/cache manager IS now built (2026-09-23).** `dbmanager/`
-  (`db_manager_kernel.{h,cpp}` + test + README) — the analyst reaction body: the
+  (`db_manager_kernel.{h,cpp}` + test + README) — the analyst-facing current-work body: the
   record-tier verbs run as reaction bodies over the shared `Controller`, reusing
   `dispatch/` verbatim, each `Result` returned to the request's caller-supplied
   `reply_to`. Built to `TIER2-PLAN.md` under the coder+adversary discipline;
@@ -170,8 +170,8 @@ this out-box feeds.
 > **design** step first (realign), then build under the coder+adversary discipline.
 >
 > **Progress (2026-09-23):** the four-tier box-priority structure is pinned (reconcile ▸
-> analyst ▸ pending ▸ standing-maintenance), and **tier 2 (the analyst reaction body) is
-> BUILT** as `dbmanager/` (commit `8614b43`; `NOTES.md` "Tier 2 — analyst reaction body").
+> analyst ▸ pending ▸ standing-maintenance), and **tier 2 (the analyst-facing current-work body) is
+> BUILT** as `dbmanager/` (commit `8614b43`; `NOTES.md` "Tier 2 — analyst-facing current-work body").
 > RECONCILE was removed from the dispatch surface (analyst → WAL manager). The cache
 > **structure** itself is captured **forming** in `NOTES.md` ("Cache manager — view
 > composer") — not built. Remaining: tiers 1/3/4, the config/advertising routine, the
