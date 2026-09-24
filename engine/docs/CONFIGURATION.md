@@ -1,7 +1,9 @@
+> **Current configuration reference.** Recovered from the September native workspace and adjusted to current repository paths. Hardware measurements/default observations remain dated evidence, not performance guarantees.
+
 # Configuring the engine
 
-Every statement here cites the engine source it came from, in
-`/opt/project/taichi`. Nothing in this file recommends a value: the numbers
+Every statement here cites the modified engine source now recovered under
+`engine/taichi/`. Nothing in this file recommends a value: the numbers
 below are the engine's own defaults, not a policy for this workspace.
 
 ## Where the surface is

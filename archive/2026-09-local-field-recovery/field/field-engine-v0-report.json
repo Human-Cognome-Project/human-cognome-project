@@ -1,0 +1,85 @@
+{
+ "artifact": "field-engine-v0-oracle",
+ "n_particles": 24321,
+ "ticks": 150,
+ "grid": 48,
+ "deterministic": true,
+ "conc_first": 0.11179790460519325,
+ "conc_last": 0.11496209648773942,
+ "settling": {
+  "last_rel_change": 0.020150856492091352,
+  "stabilising": false
+ },
+ "history": [
+  {
+   "occupancy": 0.355072021484375,
+   "top1pct_mass_fraction": 0.11179790460519325,
+   "n_occupied_cells": 11635,
+   "tick": 15,
+   "elapsed_s": 3.3
+  },
+  {
+   "occupancy": 0.313140869140625,
+   "top1pct_mass_fraction": 0.11938240196242134,
+   "n_occupied_cells": 10261,
+   "tick": 30,
+   "elapsed_s": 6.8
+  },
+  {
+   "occupancy": 0.3052978515625,
+   "top1pct_mass_fraction": 0.12045408316610451,
+   "n_occupied_cells": 10004,
+   "tick": 45,
+   "elapsed_s": 10.3
+  },
+  {
+   "occupancy": 0.31292724609375,
+   "top1pct_mass_fraction": 0.11355570465316085,
+   "n_occupied_cells": 10254,
+   "tick": 60,
+   "elapsed_s": 13.9
+  },
+  {
+   "occupancy": 0.287109375,
+   "top1pct_mass_fraction": 0.12422090598046687,
+   "n_occupied_cells": 9408,
+   "tick": 75,
+   "elapsed_s": 17.4
+  },
+  {
+   "occupancy": 0.340118408203125,
+   "top1pct_mass_fraction": 0.11478677187155613,
+   "n_occupied_cells": 11145,
+   "tick": 90,
+   "elapsed_s": 21.0
+  },
+  {
+   "occupancy": 0.305938720703125,
+   "top1pct_mass_fraction": 0.118997598584045,
+   "n_occupied_cells": 10025,
+   "tick": 105,
+   "elapsed_s": 24.5
+  },
+  {
+   "occupancy": 0.3170166015625,
+   "top1pct_mass_fraction": 0.12963699455658811,
+   "n_occupied_cells": 10388,
+   "tick": 120,
+   "elapsed_s": 28.0
+  },
+  {
+   "occupancy": 0.316192626953125,
+   "top1pct_mass_fraction": 0.11732632237263539,
+   "n_occupied_cells": 10361,
+   "tick": 135,
+   "elapsed_s": 31.6
+  },
+  {
+   "occupancy": 0.323974609375,
+   "top1pct_mass_fraction": 0.11496209648773942,
+   "n_occupied_cells": 10616,
+   "tick": 150,
+   "elapsed_s": 35.2
+  }
+ ]
+}

@@ -1,102 +1,76 @@
-# Database Access
+# Legacy database access map
 
-How to connect to the HCP databases and the orchestrator claim-graph. All authoritative data lives
-on **NAS HAVEN**.
+> **Historical migration reference.** This document describes database holdings
+> observed during the June 2026 architecture and is retained only to help read or
+> migrate older stores. It is not current HCP architecture, configuration, or an
+> authority hierarchy.
 
-> Connection details verified live during the 2026-06-01 docs rewrite. Counts and the shard list
-> match claim 203.
+The original version of this file contained a private LAN address, a development
+password, a workstation credential-file path, and language describing the old
+`hcp_orchestrator` claim graph as the project's source of truth. Those details
+have been deliberately removed from the current tree.
 
----
+Current code and documentation must obtain database connection details from the
+environment or another local secret/configuration mechanism. Do not embed hosts,
+passwords, private paths, or credentials in Git.
 
-## NAS HAVEN
+A conventional PostgreSQL invocation is:
 
-**Host:** `192.168.68.60`  **Port:** `5435`  (Postgres)
-
-The data shards (read/dev access):
-
-```bash
-PGPASSWORD=hcp_dev psql -h 192.168.68.60 -p 5435 -U hcp -d <database>
-# e.g.
-PGPASSWORD=hcp_dev psql -h 192.168.68.60 -p 5435 -U hcp -d hcp_english
+```sh
+PGHOST=... PGPORT=... PGUSER=... PGDATABASE=... psql
 ```
 
-> Credentials shown are the dev role. Treat them as environment configuration, not secrets to
-> embed in committed code. Production/role separation is an operational concern outside these docs.
+Use `PGPASSWORD` only as a local process environment value when appropriate,
+or preferably a local `PGPASSFILE`/credential mechanism. No value in this
+document is a credential.
 
 ---
 
-## The databases
+## Historical database inventory
 
-**10 data shards + 2 upstream-prep + 1 memory layer** (claim 203, verified live):
+The following names were observed in the June 2026 store and are preserved as
+migration/provenance information, not as a statement that these databases still
+exist or remain canonical:
 
-| Database | Role |
-|----------|------|
-| `hcp_core` | universal concepts (AA namespace); cold-resident, always loaded |
-| `hcp_english` | English text forms (AB namespace) — **~1,494,216 entries** |
-| `hcp_envelope` | envelope (query+filter workspace) definitions |
+| Database | Historical role |
+|---|---|
+| `hcp_core` | universal concepts / cold-resident core |
+| `hcp_english` | English text forms |
+| `hcp_envelope` | older query/filter workspace definitions |
 | `hcp_fic_pbm` | fiction pair-bond maps |
-| `hcp_fic_people` / `hcp_fic_places` / `hcp_fic_things` | fiction entities (6-way split) |
-| `hcp_nf_people` / `hcp_nf_places` / `hcp_nf_things` | non-fiction entities (6-way split) |
-| `source_english` | drained, delta-dedup queryable substrate (~1,454,988 entries) |
-| `source_wiktionary` | raw Wiktextract source (authoritative upstream) |
-| `hcp_orchestrator` | the claim-graph memory layer (source of truth for these docs) |
+| `hcp_fic_people`, `hcp_fic_places`, `hcp_fic_things` | fiction entity stores |
+| `hcp_nf_people`, `hcp_nf_places`, `hcp_nf_things` | non-fiction entity stores |
+| `source_english` | older drained/deduplicated English substrate |
+| `source_wiktionary` | raw Wiktextract source |
+| `hcp_orchestrator` | old cross-linked claim graph used by the previous documentation process |
 
-Quick sanity checks:
+Historical counts and connection tests from the earlier document should be
+treated as dated observations, not current measurements.
 
-```bash
-# Live entry count for the English shard
-PGPASSWORD=hcp_dev psql -h 192.168.68.60 -p 5435 -U hcp -d hcp_english -tA -c "SELECT count(*) FROM entries;"
-
-# List all databases
-PGPASSWORD=hcp_dev psql -h 192.168.68.60 -p 5435 -U hcp -d hcp_english -tA \
-  -c "SELECT datname FROM pg_database WHERE datistemplate=false ORDER BY datname;"
-```
-
-See [../05-data-layer/shards-and-schema.md](../05-data-layer/shards-and-schema.md) for the schema.
+See [shards-and-schema.md](shards-and-schema.md) for the corresponding legacy
+schema map.
 
 ---
 
-## The orchestrator claim-graph
+## Historical orchestrator claim graph
 
-The architecture's current source of truth is the `hcp_orchestrator` database — a graph of atomic,
-cross-linked claims distilled directly from Patrick. **These docs are sourced from it.** Query the
-**graph** (follow the edges); don't read it linearly.
+The old documentation workflow used `hcp_orchestrator` as a cross-session
+claim graph with helpers such as `get_current(...)`,
+`find_claims(...)`, and a `claim_edges` table.
 
-```bash
-PGPASSFILE=/home/patrick/.creds-hcp-orchestrator \
-  psql -h 192.168.68.60 -p 5435 -U hcp_orchestrator_rw -d hcp_orchestrator
-```
+That graph is **not current architectural authority**. It is part of the
+previous documentation/memory system and may be useful only when reconstructing
+provenance from older material.
 
-Key query helpers:
+Current architecture and implementation authority comes from the current
+repository code plus explicitly current design records. In particular, start
+with:
 
-```sql
--- Current claim(s) on a topic
-SELECT * FROM get_current('topic-substring');
+- [../README.md](../README.md)
+- [../architecture.md](../architecture.md)
+- [../../engine/ARCHITECTURE.md](../../engine/ARCHITECTURE.md)
+- [../../engine/docs/README.md](../../engine/docs/README.md)
+- [../../AGENTS.md](../../AGENTS.md)
 
--- Full-text-ish search
-SELECT * FROM find_claims('search terms');
-
--- All current claims
-SELECT id, topic, claim, tags, source_file FROM claims WHERE status='current' ORDER BY id;
-
--- THE WEB: the edges are the architecture's connective tissue
-SELECT from_claim, relation, to_claim FROM claim_edges;
-
--- Supersession history for a claim
-SELECT * FROM get_supersession_chain(<id>);
-```
-
-`source_file` tags give provenance back to the docs a claim was distilled from. High in-degree claims
-are the spine (e.g. 192 db-functions keystone, 240 conceptual hub, 16 greedy-LoD, 255 intelligence =
-data × traversal, 265 cognitive cycle, 281 GPU furnace).
-
-> The orchestrator is a **shared cross-DI memory layer**; the authoring discipline is to keep it lean
-> for agent consumption (claim 211). When updating architecture, the claim-graph is updated first; the
-> docs follow it.
-
----
-
-## See also
-
-- [build-and-run.md](build-and-run.md) — the engine daemon.
-- [quickref.md](quickref.md) — the consolidated cheat-sheet.
+Do not restore old connection details merely to make this historical map
+executable.

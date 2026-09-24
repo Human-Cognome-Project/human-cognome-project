@@ -1,9 +1,11 @@
-# dbmanager — the db/cache manager's tier-2 analyst reaction body
+# dbmanager — the db/cache manager's tier-2 analyst-facing current-work body
+
+> **Boundary:** this is the DB/cache manager's analyst-facing request/reaction surface, not analyst cognition and not the future analyst implementation.
 
 The analyst-command surface of the db/cache manager, realigned onto the
 monitored-endpoint substrate (`TIER2-PLAN.md`, adversary-vetted before
 build; design pinned in `NOTES.md` "db/cache-manager kernel — box &
-priority structure" → "Tier 2 — analyst reaction body"). Same discipline as
+priority structure" → "Tier 2 — analyst-facing current-work body"). Same discipline as
 `kernels/wal/`: reuses the built record-tier cores unmodified, adds only the box
 coupling around them.
 

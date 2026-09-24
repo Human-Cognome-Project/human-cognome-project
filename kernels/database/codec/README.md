@@ -1,6 +1,6 @@
 # codec
 
-The address / token_id codec: the primitive every higher db_kernel routine
+The address / token_id codec: the primitive every higher database-kernel routine
 uses to convert between a token's address and its canonical string
 token_id, and to handle prefix-delta (context-relative) addressing.
 

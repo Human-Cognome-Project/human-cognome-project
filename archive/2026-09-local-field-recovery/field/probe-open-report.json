@@ -1,0 +1,70 @@
+{
+ "artifact": "field-engine",
+ "substrate": "field_engine_v0 (validated)",
+ "load": {
+  "grain": "endpoint",
+  "declared_depth": 5,
+  "declarations": 73,
+  "declared_steps": 72,
+  "declared_endpoints": 19388,
+  "n_particles": 24321,
+  "slots": 5,
+  "configs_distinct": 19388,
+  "codepoint_mass_min": 5,
+  "codepoint_mass_max": 63
+ },
+ "arch": "cuda",
+ "grid": 48,
+ "box": 100.0,
+ "relax_iters": 40,
+ "step": 0.5,
+ "boundary": "open (P field_model.py)",
+ "couplings": {
+  "identity_pull": true,
+  "exclusion": true,
+  "condense": true
+ },
+ "deterministic": true,
+ "entries_first": 24313,
+ "entries_last": 24264,
+ "occupied_cells_last": 16667,
+ "entries_covering_more_than_one": 57,
+ "history": [
+  {
+   "tick": 10,
+   "entries_live": 24313,
+   "occupied_cells": 17093,
+   "elapsed_s": 7.2
+  },
+  {
+   "tick": 20,
+   "entries_live": 24299,
+   "occupied_cells": 17370,
+   "elapsed_s": 10.6
+  },
+  {
+   "tick": 30,
+   "entries_live": 24293,
+   "occupied_cells": 18093,
+   "elapsed_s": 14.0
+  },
+  {
+   "tick": 40,
+   "entries_live": 24287,
+   "occupied_cells": 16867,
+   "elapsed_s": 17.4
+  },
+  {
+   "tick": 50,
+   "entries_live": 24277,
+   "occupied_cells": 16670,
+   "elapsed_s": 20.8
+  },
+  {
+   "tick": 60,
+   "entries_live": 24264,
+   "occupied_cells": 16667,
+   "elapsed_s": 24.1
+  }
+ ]
+}
