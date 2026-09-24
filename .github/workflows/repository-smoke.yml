@@ -1,0 +1,136 @@
+name: Repository smoke tests
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "network/endpoint/**"
+      - "kernels/database/**"
+      - "kernels/wal/**"
+      - ".github/workflows/repository-smoke.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "engine/**"
+      - "network/endpoint/**"
+      - "kernels/database/**"
+      - "kernels/wal/**"
+      - ".github/workflows/repository-smoke.yml"
+
+jobs:
+  native-engine-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify canonical HCP engine is native C++
+        run: |
+          test -f engine/CMakeLists.txt
+          test -f engine/src/engine/runtime.cpp
+          test -f engine/src/field/field.cpp
+          test -f engine/tests/field_test.cpp
+          if find engine -path 'engine/taichi' -prune -o -name '*.py' -print | grep -q .; then
+            echo "Project Python found in active engine tree outside vendor Taichi fork"
+            exit 1
+          fi
+      - name: Note native build gate
+        run: |
+          echo "Full engine compile/runtime CI is gated on curated engine/taichi source + dependencies."
+
+  taichi-fork-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify curated Taichi fork boundary
+        run: |
+          test -f engine/taichi/HCP-FORK.md
+          test -f engine/taichi/HCP-DELTA.md
+          test -f engine/taichi/modernization/IMPLEMENTATION-STATUS.md
+          grep -q 'ba0e81dce559fb63a5958bf82feb1d00c55c02fe' engine/taichi/HCP-FORK.md
+          if git ls-files 'engine/taichi/.venv/**' 'engine/taichi/build/**' 'engine/taichi/build-review/**' | grep -q .; then
+            echo "Machine-local Taichi environment/build products are tracked"
+            exit 1
+          fi
+          if git ls-files 'engine/taichi/**/*.pyc' 'engine/taichi/**/*.so' | grep -q .; then
+            echo "Generated Python cache/extension artifacts are tracked in curated Taichi source"
+            exit 1
+          fi
+          for dep in spdlog eigen SPIRV-Tools; do
+            mode="$(git ls-files -s "engine/taichi/external/$dep" | awk '{print $1}')"
+            test "$mode" = "160000" || {
+              echo "engine/taichi/external/$dep is not a gitlink"
+              exit 1
+            }
+          done
+
+  endpoint-substrate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: network/endpoint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run box test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/box_test box_test.cpp
+          /tmp/box_test
+      - name: Build and run endpoint registry test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/endpoint_test endpoint.cpp endpoint_test.cpp
+          /tmp/endpoint_test
+      - name: Build and run scheduler test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/scheduler_test endpoint.cpp scheduler.cpp scheduler_test.cpp
+          /tmp/scheduler_test
+      - name: Build and run dataflow test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/dataflow_test endpoint.cpp scheduler.cpp dataflow_test.cpp
+          /tmp/dataflow_test
+
+  database-codec:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kernels/database/codec
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run codec unit tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/codec_test codec.cpp codec_test.cpp
+          /tmp/codec_test
+
+  wal-pure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kernels/wal
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run WAL recognition tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec             wal_recognize.cpp wal_recognize_test.cpp ../database/codec/codec.cpp             -o /tmp/wal_recognize_test
+          /tmp/wal_recognize_test
+      - name: Build and run WAL report tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec             wal_report_test.cpp ../database/codec/codec.cpp             -o /tmp/wal_report_test
+          /tmp/wal_report_test
+
+  db-backed-kernels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start disposable local PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres createuser --superuser "$USER" 2>/dev/null || true
+          pg_isready
+      - name: Build and run database-manager kernel tests
+        working-directory: kernels/database/dbmanager
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra             -I. -I../codec -I../command -I../controller -I../declare -I../read             -I../update -I../dispatch -I../../../network/endpoint             -I"$(pg_config --includedir)"             db_manager_kernel.cpp db_manager_kernel_test.cpp             ../dispatch/dispatch.cpp             ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp             ../controller/controller.cpp             ../declare/declare_core.cpp ../read/read_core.cpp ../update/update_core.cpp             ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp             -L"$(pg_config --libdir)" -lpq             -o /tmp/db_manager_kernel_test
+          /tmp/db_manager_kernel_test
+      - name: Build and run WAL-manager kernel tests
+        working-directory: kernels/wal
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra             -I. -I../database/codec -I../../network/endpoint             -I"$(pg_config --includedir)"             wal_kernel.cpp wal_kernel_test.cpp             wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp             ../../network/endpoint/endpoint.cpp ../../network/endpoint/scheduler.cpp             ../database/codec/codec.cpp             -L"$(pg_config --libdir)" -lpq             -o /tmp/wal_kernel_test
+          /tmp/wal_kernel_test
