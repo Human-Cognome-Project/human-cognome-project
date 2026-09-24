@@ -12,32 +12,27 @@ This roadmap reflects the repository and implementation state after the Septembe
 
 Working record: [REORGANIZATION.md](REORGANIZATION.md), PR #63.
 
-## 1. Reconcile the Taichi development lines
+## 1. Reconcile and vet the recovered native engine
 
-The August 31–September 1 Taichi generation and the later September `engine/field/` implementation developed on parallel branches. The earlier generation is now preserved intact under `archive/2026-09-taichi-v0-staging/`; the later field engine is active.
+The September native C++ engine/harness workspace remained local while repository reconciliation proceeded around an off-direction Python prototype. The native workspace has now been recovered; the Python prototype is preserved under `archive/2026-09-planner-field-python/` and is not canonical runtime.
 
-Review by responsibility rather than age:
+Current work:
+- vet the recovered native C++ field implementation against the settled model/design record;
+- curate the modified Taichi fork and make its HCP delta reproducible;
+- preserve the >2^31 dense-index regression and capacity/allocation modernization tests;
+- establish realistic load/performance characterization later, without treating existing measurements as guarantees.
 
-- physics that remains current;
-- harness/control behaviour that remains useful;
-- ingestion/storage/addressing work that belongs outside physics;
-- experimental validation artifacts worth retaining;
-- superseded implementation that should move to archive.
+## 2. Establish the native engine boundary cleanly — recovered, partially vetted
 
-No component is discarded merely because it is earlier.
+- **modified Taichi fork** — portable compiler/runtime/device substrate;
+- **native engine support** — `engine/src/engine/`, mechanism only;
+- **field physics** — `engine/src/field/`, native C++ field/tick mechanics;
+- **engine harness** — wider control structure around the physics engine, still evolving;
+- **validation** — native smoke/field/index-cap tests plus the recovered vetting record.
 
-## 2. Establish the engine boundary cleanly — initial split complete
+The recovered class `field::Harness` predates the later system-level harness terminology; do not assume that class alone is the complete analyst-facing harness.
 
-The active field engine is now separated into:
-
-- **physics engine** — `engine/field/field_engine_physics.py`;
-- **engine harness** — `engine/field/field_engine_harness.py`, the control interface used to add/remove/adjust elements, configure and advance runs, and inspect/manipulate engine state;
-- **stable facade** — `engine/field/field_engine.py` preserves the CLI and existing imports;
-- **validation** — `engine/field/field_engine_validation.py` plus the no-DB physics smoke test, kept outside engine behaviour.
-
-Next work in this phase is deeper behavioural coverage and harness evolution, not recombining these responsibilities.
-
-The Taichi runtime remains the execution substrate rather than an HCP architectural layer of its own making.
+Python is not part of the HCP engine/data runtime path.
 
 ## 3. Stabilize analyst-supporting work surfaces
 
