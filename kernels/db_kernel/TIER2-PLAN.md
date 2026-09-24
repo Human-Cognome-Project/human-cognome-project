@@ -36,7 +36,7 @@ fresh adversary vets build → verify green → commit. This file is the plan ha
 > `reply_to` the message carries and never resolves, discovers, or allocates an endpoint
 > itself. In the fixture-fed test the **driver supplies the return endpoint** (a box it
 > owns and reads). The substrate's recycled-slot / stale-generation safety already lives
-> in `endpoint/` + its tests; tier 2 neither re-designs it nor claims a return-endpoint
+> in `network/endpoint/` + its tests; tier 2 neither re-designs it nor claims a return-endpoint
 > lifecycle. (Earlier draft's "ephemeral per-request, composing kernel allocates/recycles"
 > is withdrawn — it presumed the unbuilt advertising system.)
 >
@@ -47,7 +47,7 @@ fresh adversary vets build → verify green → commit. This file is the plan ha
 ## Mission (one line)
 
 Wire the **built record-tier cores** (`declare/`, `read/`, `update/`, routed by
-`dispatch/`) onto the **built endpoint substrate** (`endpoint/`) so the db/cache
+`dispatch/`) onto the **built endpoint substrate** (`network/endpoint/`) so the db/cache
 manager serves analyst current work as a **monitored-endpoint kernel**: a request
 arrives at an analyst in-box, its verb runs as a reaction body over the shared
 `Controller`, and the `Result` returns to the request's **caller-supplied return
@@ -73,7 +73,7 @@ endpoint** — fixture-fed, with tests, standalone-buildable. This is the tier-2
   activation-notes "READ … emits no WAL report".
 - **Single-threaded cooperative first cut**, handlers run to completion; no blocking
   sub-requests (the analyst's READ→sim→DECLARE loop is the analyst kernel's business,
-  modelled as the external driver). `endpoint/README.md` deferred seams.
+  modelled as the external driver). `network/endpoint/README.md` deferred seams.
 
 ## In scope — buildable now
 
