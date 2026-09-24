@@ -1,0 +1,158 @@
+--- a/field/field_engine.py
++++ b/field/field_engine.py
+@@ -13,7 +13,7 @@
+ nibbles at the DECLARED grain (field_engine_load_v0.load_at_declared_grain:
+ P's ladder Unicode -> table -> endpoint; the endpoint is the finest declared
+ step, its configuration is the hex digits of the value it carries). Each
+-nibble weighs value+1 (P's law). The field carries, per cell, the amount of
++nibble weighs 1, independent of its value. The field carries, per cell, the amount of
+ each nibble value in each slot: C[slot, value, cell]. That is the ONE deposit.
+ Total mass density rho = sum over (slot, value) of C — so the general pull is
+ the same Poisson-relaxed field field_engine_v0 already validated; it falls out
+@@ -36,8 +36,8 @@
+   resident   a point holds one configuration. The heaviest live entry in a
+              cell holds it (ties: lowest index) — a merged entry is heavier and
+              holds its point better, "one entry covers the range".
+-  condense   a non-resident with ZERO amount-differential to the resident
+-             (identical slot weights) IS the resident: it folds in, masses add
++  condense   a non-resident with the same ordered configuration as the resident
++             (identical ordered slot values) IS the resident: it folds in, masses add
+              linearly, the pool shrinks. The merge = the dedup = the mint, as
+              an engine event, not a threshold anybody picked.
+   exclusion  a non-resident that differs from the resident is unlike matter on
+@@ -94,11 +94,11 @@
+         S = max(len(p["config"]) for p in particles)
+         self.n, self.S = n, S
+         self.slot_val = np.full((n, S), -1, dtype=np.int32)   # -1 = undefined
+-        self.slot_w = np.zeros((n, S), dtype=np.int32)         # value+1, 0 if undefined
++        self.slot_w = np.zeros((n, S), dtype=np.int32)         # 1 if present, 0 if undefined
+         for i, p in enumerate(particles):
+             for s, v in enumerate(p["config"]):
+                 self.slot_val[i, s] = v
+-                self.slot_w[i, s] = v + 1
++                self.slot_w[i, s] = 1
+         self.base_mass = self.slot_w.sum(1).astype(np.int64)
+         self.count = np.ones(n, dtype=np.int64)     # copies folded into this entry
+         self.alive = np.ones(n, dtype=np.bool_)
+@@ -239,7 +239,7 @@
+     def condense(self, res):
+         pool = self.pool
+         ai, idx, r = res
+-        same = (pool.slot_w[ai] == pool.slot_w[r]).all(1)
++        same = (pool.slot_val[ai] == pool.slot_val[r]).all(1)
+         ab = (r != ai) & same
+         if ab.any():
+             src, dst = ai[ab], r[ab]
+@@ -484,7 +484,7 @@
+                     if r != p:
+                         same = 1
+                         for s in range(self.S):
+-                            if self.slot_w[p, s] != self.slot_w[r, s]:
++                            if self.slot_val[p, s] != self.slot_val[r, s]:
+                                 same = 0
+                         if same == 1:
+                             self.alive[p] = 0
+--- a/field/field_engine_load_v0.py
++++ b/field/field_engine_load_v0.py
+@@ -11,8 +11,8 @@
+   docs/architecture.md    — active particle = a byte (two nibbles); the flat
+                             pool holds one element per identity; characters are
+                             compositions of byte-codes.
+-  P's mass law (blessed, engine/kernel/diffuse.py): weight of a nibble = value+1
+-                            (0->1 .. 15->16). Mass of a composition = sum of its
++  Current mass rule (2026-09-11): weight of each nibble = 1.
++                            Mass of a composition = sum of its
+                             nibble weights. Intrinsic composition only.
+ 
+ Two metadata shapes exist in the catalogue and both are read as-is:
+@@ -41,8 +41,8 @@
+ 
+ 
+ def nibble_weight(byte_val):
+-    """P's law: each nibble weighs value+1 (0->1, 15->16). A byte is two nibbles."""
+-    return ((byte_val >> 4) + 1) + ((byte_val & 0xF) + 1)
++    """A byte contains two unit-mass hex digits, independent of its value."""
++    return 2
+ 
+ 
+ def mass_of(byte_vals):
+@@ -139,10 +139,9 @@
+ # endpoint) and takes the finest declared step as the grain. At the ENDPOINT
+ # grain a particle's configuration is the hex digits of the value the endpoint
+ # carries (its codepoint, or for the 128 no-codepoint ASCII rows the byte
+-# value) -- ONE rule, cp else value, no controls branch. The mass at a grain is
+-# the same value+1 law over the configuration's nibbles (Silas verified this
+-# identity-grain law vs live hcp_core: 19,260 codepoints, mass 5..63, zero
+-# mismatches). The sub-declared rung -- the encodings -- is the RESOLUTION
++# value) -- ONE rule, cp else value, no controls branch. Mass follows the
++# one-unit-per-hex-digit rule. Earlier value-based mass measurements are
++# superseded. The sub-declared rung -- the encodings -- is the RESOLUTION
+ # grain: configuration = the raw byte code (loader's original mass).
+ #
+ # Integrity rule: every particle's address must be a member of a declared step.
+@@ -180,7 +179,7 @@
+ 
+ 
+ def attach_configuration(particles, grain="endpoint"):
+-    """Set p['config'] (nibble list) and p['mass'] (value+1 sum over it).
++    """Set p['config'] (nibble list) and p['mass'] (number of hex digits).
+     endpoint  : hex of the value the endpoint carries (codepoint, U+ width>=4;
+                 else the byte value, width 2). Encodings of one endpoint carry
+                 the SAME configuration -- whether they merge is the physics.
+@@ -198,7 +197,7 @@
+             raise ValueError(grain)
+         p["config"] = nib
+         p["mass_resolution"] = mass_of(p["raw"])
+-        p["mass"] = sum(v + 1 for v in nib)
++        p["mass"] = len(nib)
+     return particles
+ 
+ 
+--- /dev/null
++++ b/field/test_unit_mass.py
+@@ -0,0 +1,45 @@
++import sys
++from pathlib import Path
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++
++import numpy as np
++import pytest
++from field_engine_load_v0 import mass_of, attach_configuration
++from field_engine import Pool, Oracle, make_kernel
++
++
++def test_all_bytes_have_equal_mass():
++    assert {mass_of([b]) for b in range(256)} == {2}
++    assert mass_of([0, 255, 17]) == 6
++
++
++def test_configuration_preserves_order_and_counts_units():
++    particles = [{'identity': ('codepoint', 65), 'raw': [65]}]
++    attach_configuration(particles, 'endpoint')
++    assert particles[0]['config'] == [0, 0, 4, 1]
++    assert particles[0]['mass'] == 4
++    attach_configuration(particles, 'resolution')
++    assert particles[0]['config'] == [4, 1]
++    assert particles[0]['mass'] == 2
++
++
++@pytest.mark.parametrize('arch', ['numpy', 'cpu', 'cuda'])
++def test_equal_mass_does_not_mean_equal_identity(arch):
++    pool = Pool([{'config': [0, 15]}, {'config': [15, 0]}, {'config': [0, 15]}])
++    assert pool.base_mass.tolist() == [2, 2, 2]
++    pos = np.ones((3, 3), dtype=np.float64)
++    if arch == 'numpy':
++        engine = Oracle(pool, 4, 4., 1, 0., False, False, True)
++        assert engine.condense(engine.residents(pos)) == 1
++    else:
++        import taichi as ti
++        engine = make_kernel(pool, 4, 4., 1, 0., False, False, True, arch)
++        if arch == 'cuda':
++            assert ti.lang.impl.current_cfg().arch == ti.cuda
++        engine.pos.from_numpy(pos)
++        assert engine.tick() == 1
++        engine.sync_pool()
++    assert pool.alive.tolist() == [True, True, False]
++    assert pool.parent.tolist() == [0, 1, 0]
++    assert pool.count.tolist() == [2, 1, 1]
++    assert int((pool.base_mass[pool.alive] * pool.count[pool.alive]).sum()) == 6

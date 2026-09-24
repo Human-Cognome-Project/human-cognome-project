@@ -1,0 +1,216 @@
+{
+  "views": [
+    [
+      "public",
+      "tokens_v",
+      " SELECT array_to_string(address, '.'::text) AS token_id,\n    address,\n    name,\n    category,\n    subcategory,\n    status,\n    provenance,\n    source_ref,\n    origin_node,\n    observed_time\n   FROM tokens t;"
+    ],
+    [
+      "public",
+      "atomizations_v",
+      " SELECT array_to_string(parent, '.'::text) AS parent_id,\n    ord,\n    array_to_string(child, '.'::text) AS child_id,\n    array_to_string(resolution, '.'::text) AS resolution_id,\n    weight,\n    provenance,\n    parent,\n    child,\n    resolution\n   FROM atomizations a;"
+    ]
+  ],
+  "functions": [],
+  "constraints": [
+    [
+      "-",
+      "addr_check",
+      "CHECK (((array_length(VALUE, 1) >= 1) AND (array_length(VALUE, 1) <= 5)))"
+    ],
+    [
+      "-",
+      "pairval_check",
+      "CHECK (((VALUE >= 0) AND (VALUE < 2500)))"
+    ],
+    [
+      "address_forwarding",
+      "address_forwarding_pkey",
+      "PRIMARY KEY (alias)"
+    ],
+    [
+      "atomizations",
+      "atomizations_pkey",
+      "PRIMARY KEY (parent, resolution, ord)"
+    ],
+    [
+      "engine.declarations_v0",
+      "declarations_v0_pkey",
+      "PRIMARY KEY (declares, state, provenance)"
+    ],
+    [
+      "engine.declarations_v0",
+      "declarations_v0_state_check",
+      "CHECK ((state = ANY (ARRAY['part-step'::text, 'kind'::text, 'linear'::text])))"
+    ],
+    [
+      "engine.declarations_v0",
+      "declarations_v0_tag_check",
+      "CHECK ((tag = ANY (ARRAY['bootstrap'::text, 'emergent'::text])))"
+    ],
+    [
+      "event_ledger",
+      "event_ledger_pkey",
+      "PRIMARY KEY (event_id)"
+    ],
+    [
+      "event_ledger",
+      "event_ledger_supersedes_fkey",
+      "FOREIGN KEY (supersedes) REFERENCES event_ledger(event_id)"
+    ],
+    [
+      "namespace_allocations",
+      "namespace_allocations_parent_fkey",
+      "FOREIGN KEY (parent) REFERENCES namespace_allocations(pattern)"
+    ],
+    [
+      "namespace_allocations",
+      "namespace_allocations_pkey",
+      "PRIMARY KEY (pattern)"
+    ],
+    [
+      "shard_registry",
+      "shard_registry_pkey",
+      "PRIMARY KEY (ns_prefix)"
+    ],
+    [
+      "tokens",
+      "tokens_pkey",
+      "PRIMARY KEY (address)"
+    ]
+  ],
+  "atomization_sample": [
+    [
+      [
+        "AA",
+        "AB",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      0,
+      [
+        "AA",
+        "AA",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      1,
+      [
+        "AA",
+        "AD",
+        "AB",
+        "Ae",
+        "AA"
+      ]
+    ],
+    [
+      [
+        "AA",
+        "AB",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      0,
+      [
+        "AA",
+        "AA",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      1,
+      [
+        "AA",
+        "AD",
+        "AB",
+        "Af",
+        "AA"
+      ]
+    ],
+    [
+      [
+        "AA",
+        "AB",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      1,
+      [
+        "AA",
+        "AA",
+        "AA",
+        "AA",
+        "AA"
+      ],
+      1,
+      [
+        "AA",
+        "AD",
+        "AB",
+        "Af",
+        "AA"
+      ]
+    ],
+    [
+      [
+        "AA",
+        "AB",
+        "AA",
+        "AA",
+        "AB"
+      ],
+      0,
+      [
+        "AA",
+        "AA",
+        "AA",
+        "AA",
+        "AB"
+      ],
+      2,
+      [
+        "AA",
+        "AD",
+        "AB",
+        "Ae",
+        "AA"
+      ]
+    ]
+  ],
+  "metadata_keys_sample": [
+    [
+      "display"
+    ],
+    [
+      "ascii_value"
+    ],
+    [
+      "atomization"
+    ],
+    [
+      "unicode_category"
+    ],
+    [
+      "hex"
+    ],
+    [
+      "terms"
+    ],
+    [
+      "codepoint_hex"
+    ],
+    [
+      "byte_code_ref"
+    ],
+    [
+      "char"
+    ],
+    [
+      "codepoint"
+    ]
+  ]
+}

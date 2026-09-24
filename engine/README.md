@@ -46,17 +46,39 @@ The previous planner-generated Python field engine has been archived under
 ## Building
 
 The native wrapper expects the modified fork source and a matching Taichi build
-tree. By default the CMake integration resolves:
+tree. The external dependencies are normal Git submodules rooted at
+`engine/taichi/external/`.
 
-```text
-source:  engine/taichi/
-build:   engine/taichi/build-review/
-runtime: engine/taichi/python/taichi/_lib/runtime/
+After cloning:
+
+```sh
+git submodule update --init --recursive
 ```
 
-All three must come from the same fork/build.
+Build the fork first. The recovered modernization was validated with LLVM 15,
+Clang and CUDA; exact historical configuration is recorded in
+`taichi/modernization/IMPLEMENTATION-STATUS.md`. A representative native build
+is:
 
-Once the fork has been built:
+```sh
+cmake -S engine/taichi -B engine/taichi/build-review -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=/usr/lib/llvm-15/bin/clang \
+      -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \
+      -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm \
+      -DCLANG_EXECUTABLE=/usr/lib/llvm-15/bin/clang \
+      -DTI_WITH_CUDA=ON -DTI_WITH_OPENGL=OFF -DTI_WITH_VULKAN=OFF \
+      -DTI_WITH_METAL=OFF -DTI_WITH_GGUI=OFF -DTI_BUILD_TESTS=ON \
+      -DTI_BUILD_EXAMPLES=OFF
+cmake --build engine/taichi/build-review -j 4
+```
+
+Taichi's build generates `runtime_x64.bc` and `runtime_cuda.bc` from native
+runtime source. The HCP wrapper stages those plus `slim_libdevice.10.bc` into
+its own build directory for `TI_LIB_DIR`; it does not depend on Taichi's
+Python-package staging path.
+
+Then build the HCP wrapper:
 
 ```sh
 cmake -S engine -B engine/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
