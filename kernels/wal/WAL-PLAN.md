@@ -1,7 +1,7 @@
 # WAL subsystem — plan (rev. 6)
 
 > **⚠ Forward flag (2026-09-21; updated 2026-09-22) — Pair-1 push now BUILT.**
-> `kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` rebases, on the activation substrate:
+> `network/ENDPOINT-ACTIVATION-NOTES.md` rebases, on the activation substrate:
 > (i) a **push** outbox (WAL manager → cache manager's inbox) rebasing §0's observer/pull
 > framing (close still self-accounting; durable obligation stays in the relation);
 > (ii) an **active swarm-manager coupling** — unpack inbound change, compose outbound delta
