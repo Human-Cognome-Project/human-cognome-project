@@ -1,6 +1,6 @@
 # Engine architecture boundary
 
-This file records the architectural boundaries being preserved during the repository reorganization. It is not a claim that the current files are already cleanly separated.
+This file records the architectural boundaries preserved during the repository reorganization.
 
 ## Field-engine stack
 
@@ -11,13 +11,13 @@ This file records the architectural boundaries being preserved during the reposi
 
 The harness is specifically the physics engine's control surface. It is not the database manager, WAL manager, endpoint network, topology resolver, bridge layer, or thread manager.
 
-The current `engine/field/` implementation still mixes physics, harness, oracle, and validation concerns in several files. They are kept together during the first structural pass so history and working behaviour remain intact. Internal separation is a later code refactor.
+The active `engine/field/` implementation now separates physics (`field_engine_physics.py`), harness/control lifecycle (`field_engine_harness.py`), and validation (`field_engine_validation.py`) while retaining `field_engine.py` as the stable facade. The earlier v0 substrate remains as regression/reference material.
 
 ## Analyst-supporting database kernels
 
 The PostgreSQL, cache, record-operation, and WAL functions exist to support the future analyst and keep its working surfaces current. They are autonomous kernels in the wider kernel network, but their system role is analyst support rather than part of the field-engine harness.
 
-The preserved development bundle currently lives at `/kernels/db_kernel/`. Its internal co-location reflects development isolation and existing relative build relationships, not the final logical structure.
+Database/cache work lives under `/kernels/database/`; the WAL manager is its peer under `/kernels/wal/`. Shared endpoint/box/scheduler infrastructure lives under `/network/endpoint/`.
 
 ## Kernel network
 
