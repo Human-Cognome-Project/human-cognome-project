@@ -2,7 +2,7 @@
 
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
-> (`engine/db_kernel/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as
+> (`kernels/db_kernel/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as
 > a **monitored-endpoint kernel** (`wal/wal_kernel.{h,cpp}`, commits `3aca2ac`/`cf7e0c6`).
 > **Next entry point (Patrick, 2026-09-22): realign the main db_kernel / cache-manager
 > design with this new messaging system** — see "Incoming direction" below. Branch
