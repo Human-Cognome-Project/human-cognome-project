@@ -58,7 +58,7 @@ land.**
 | `wal_ingest_test.cpp` | Same-batch and later-batch forward/return pairs both close; a mass-fill closes a mass obligation; an unmatched settling write is inert. |
 | `wal_monitor.{h,cpp}` | The ordered per-source loop: feeds `wal_ingest` one report at a time, tracking one `lsn` high-water mark per source. |
 | `wal_monitor_test.cpp` | A scripted multi-source, interleaved stream reconciles to the expected open set; per-source progress is independent; out-of-order same-source delivery throws; a DELETE is History-booked only. |
-| `wal_kernel.{h,cpp}` | The WAL manager as a monitored-endpoint kernel (`WAL-INTEGRATION-PLAN.md`): the `scheduler::Handler` reaction body wired onto the `endpoint/` substrate — per-source in-box(es), owed-work pushed as arena-handles to one standing out-box. Reuses `wal_recognize`/`wal_book`/`wal_ingest`/`wal_monitor` unchanged. |
+| `wal_kernel.{h,cpp}` | The WAL manager as a monitored-endpoint kernel (`WAL-INTEGRATION-PLAN.md`): the `scheduler::Handler` reaction body wired onto the `network/endpoint/` substrate — per-source in-box(es), owed-work pushed as arena-handles to one standing out-box. Reuses `wal_recognize`/`wal_book`/`wal_ingest`/`wal_monitor` unchanged. |
 | `wal_kernel_test.cpp` | Fixture-fed, DB-backed, scheduler-driven: per-source ingest, owed-work emission, same/later-batch settlement, cross-source interleave independence, recycled-endpoint drop (volatile transport, durable relation), a thrown out-of-order report pushing nothing, and the out-box/freshly-opened-rows single-tie invariant. |
 
 ## Build & run
@@ -96,11 +96,11 @@ g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I"$(pg_config --includedir)" \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_monitor_test && /tmp/wal_monitor_test
 
-# from db_kernel/wal/ — DB-backed AND links the endpoint substrate (-I../endpoint):
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I../endpoint -I"$(pg_config --includedir)" \
+# from kernels/db_kernel/wal/ — DB-backed AND links the shared endpoint substrate:
+g++ -std=c++17 -O2 -Wall -Wextra -I. -I../codec -I../../../network/endpoint -I"$(pg_config --includedir)" \
     wal_kernel.cpp wal_kernel_test.cpp \
     wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp \
-    ../endpoint/endpoint.cpp ../endpoint/scheduler.cpp ../codec/codec.cpp \
+    ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp ../codec/codec.cpp \
     -L"$(pg_config --libdir)" -lpq \
     -o /tmp/wal_kernel_test && /tmp/wal_kernel_test
 ```
