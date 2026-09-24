@@ -6,15 +6,17 @@ The English shard stores:
 """
 
 import json
+import os
 import psycopg
 
 DB_CONFIG = {
-    "dbname": "hcp_english",
-    "user": "hcp",
-    "password": "hcp_dev",
-    "host": "localhost",
-    "port": 5432,
+    "dbname": os.environ.get("HCP_ENGLISH_DB", "hcp_english"),
+    "user": os.environ.get("HCP_USER", "hcp"),
+    "host": os.environ.get("HCP_HOST", "localhost"),
+    "port": int(os.environ.get("HCP_PORT", "5432")),
 }
+if os.environ.get("HCP_PW"):
+    DB_CONFIG["password"] = os.environ["HCP_PW"]
 
 
 def connect():
@@ -60,13 +62,16 @@ def insert_token(cur, token_id: str, name: str, layer: str = None,
 def dump_sql(conn, output_path: str):
     """Export the database as a SQL dump file."""
     import subprocess
+    env = os.environ.copy()
+    if "password" in DB_CONFIG:
+        env["PGPASSWORD"] = DB_CONFIG["password"]
     result = subprocess.run(
         ["pg_dump", "--clean", "--if-exists", "--no-owner",
          "-d", DB_CONFIG["dbname"],
          "-U", DB_CONFIG["user"],
          "-h", DB_CONFIG["host"],
          "-f", output_path],
-        env={"PGPASSWORD": DB_CONFIG["password"]},
+        env=env,
         capture_output=True, text=True
     )
     if result.returncode != 0:
