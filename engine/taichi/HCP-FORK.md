@@ -64,6 +64,11 @@ The HCP wrapper under `../cmake/FindTaichiEngine.cmake` stages the native LLVM
 runtime bitcode and CUDA libdevice into the HCP build directory after this fork
 has been built.
 
-See `modernization/IMPLEMENTATION-STATUS.md` and
+See [HCP-DELTA.md](HCP-DELTA.md) for the exact path-level fork delta, and
+`modernization/IMPLEMENTATION-STATUS.md` /
 `modernization/INSTALL-CONFIGURATION.md` for the recovered implementation and
 validation record.
+
+When this fork is nested in the HCP monorepo, dependency initialization is
+driven by the repository-root `/.gitmodules`; the upstream `.gitmodules`
+inside this directory is retained only as upstream source/provenance.
