@@ -38,7 +38,7 @@
 >   **removed** (adversary-vetted CLEAN, `dispatch_test` 31/31 green). The analyst messages the
 >   **WAL manager directly**, which promotes the relevant pending queue into a **priority
 >   in-box** the manager drains.
-> - **WAL manager Pair-1 push is BUILT** (`kernels/wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`):
+> - **WAL manager Pair-1 push is BUILT** (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`):
 >   source-blind (=location-blind, knows its counterpart), emitting owed reciprocal work to the
 >   cache-manager out-box, fixture-fed. Local activation primitives BUILT (commit `b97034a`).
 > - **Tier 2 (analyst reaction body) is BUILT** as `dbmanager/` (`db_manager_kernel.{h,cpp}`
@@ -251,7 +251,7 @@ whether it is later bundled with other processes is a separate concern.
 > reciprocal is written inside the authoring op (`mint`'s WIRE, `add_membership`
 > both directions). The async **file-now / wire-later** split described below
 > remains the **cache manager's own runtime to build** — it is NOT implemented by
-> the WAL manager, which is now BUILT (`wal/`, see *Current build state*) as a
+> the WAL manager, which is now BUILT (`kernels/wal/`, see *Current build state*) as a
 > pure bookkeeper: it books the return-path/mass obligations a change owes and
 > monitors for their followup writes (tolerating the same-batch-today /
 > later-batch-future gap via fixtures), but it does not perform, drive, or design
@@ -278,7 +278,7 @@ is real I/O and must be handled right from the base:
   **file-now / wire-later-via-pending-list**, the reverse indexes (`token_child`,
   and likewise the `members`/`member_of` reciprocal) being eventually-consistent
   while deferred work drains.
-- **⚠ Revisit (2026-09-19):** the WAL manager (now BUILT, `wal/`) implements a
+- **⚠ Revisit (2026-09-19):** the WAL manager (now BUILT, `kernels/wal/`) implements a
   **self-accounting** completion model — followup obligations booked from a
   change's own data and closed by *observing* the followup writes, with **no
   pending-list drain** (see `kernels/wal/WAL-PLAN.md`, `kernels/wal/README.md`) — bears directly on
@@ -808,7 +808,7 @@ necessary. Firmed so far:
   2026-09-18 — see DELETE gates ruling below]** originally "validation tags for
   other instances," but **no local validation-tag machinery is built**: the delete
   executes locally now, its report is **booked by the WAL manager** (built —
-  `wal/`), and the peer/cross-network tentative→systemic validation is
+  `kernels/wal/`), and the peer/cross-network tentative→systemic validation is
   **deferred swarm-side**.
   Rationale: a record is assumed well-vetted and
   reasonably supported before it reaches the DB, so destruction contradicts the
@@ -982,7 +982,7 @@ bare/fire-and-forget delete, never a blanket confirm flag. It then executes
 LOCALLY against the store. The peer / cross-network validation path
 (tentative→systemic across instances) is NOT built at the record tier — the
 delete's report is **booked by the WAL manager** (a bookkeeper/observer over WAL
-reports, now BUILT — `wal/`; see `kernels/wal/WAL-PLAN.md`, `kernels/wal/README.md`), while the
+reports, now BUILT — `kernels/wal/`; see `kernels/wal/WAL-PLAN.md`, `kernels/wal/README.md`), while the
 cross-network validation **act** is **deferred swarm-side**, not run by the WAL
 bookkeeper. (This resolves the old G7
 delete-peer-validation seam; WAL-manager-is-bookkeeper reframed 2026-09-18.)
@@ -1174,7 +1174,7 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
   line `db_runtime` are superseded by `command/`+`declare/` (intake), `dispatch/`
   (routing), `seed/` (floor); `ingestion/README.md` is a supersession breadcrumb.
 
-**WAL manager COMPLETE** (built 2026-09-19; `wal/` kernel set, tasks W-1…W-6,
+**WAL manager COMPLETE** (built 2026-09-19; `kernels/wal/` kernel set, tasks W-1…W-6,
 package-vetted primary↔adversary, committed through `a899970`; its own standalone
 Postgres DB `wal_manager`, always separate from `hcp3_core`). A pure
 bookkeeper/observer over WAL reports — it never writes `hcp3_core`, never reads
