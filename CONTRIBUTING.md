@@ -33,7 +33,7 @@ Database/cache/record/WAL kernels are separate autonomous components whose syste
 
 ## Where work is currently useful
 
-- **Repository reconciliation.** Classify the earlier Taichi v0-staging components against the later `engine/field/` implementation by responsibility and behaviour.
+- **Field-engine cleanup.** Continue separating the active `engine/field/` implementation into physics, harness, oracle, and validation responsibilities without changing behaviour. The earlier Taichi v0-staging generation is preserved under `archive/2026-09-taichi-v0-staging/` for reference.
 - **Field-engine separation.** Isolate physics from harness controls without changing results, preserving CPU-oracle/GPU equivalence tests.
 - **Kernel-network build/test work.** Keep the current `kernels/db_kernel/` bundle buildable while its architectural seams are made explicit.
 - **Analyst-supporting data surfaces.** Database/cache/WAL work should improve the surfaces the future analyst will consume; it should not invent analyst reasoning.
@@ -67,10 +67,7 @@ Once the reorganization is promoted, normal work returns to branches from `main`
 human-cognome-project/
 ├── engine/
 │   ├── field/              # later Taichi field-engine work
-│   ├── kernel/             # earlier v0-staging line, pending reconciliation
-│   ├── timestep/
-│   ├── storage/
-│   └── ingest/
+│   └── field/              # active later Taichi field-engine work
 ├── kernels/
 │   └── db_kernel/          # preserved DB/cache/WAL/endpoint development bundle
 ├── research/
