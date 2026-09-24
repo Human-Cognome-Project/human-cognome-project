@@ -6,7 +6,8 @@
 # Inputs (cache variables, all overridable on the command line):
 #   ENGINE_TAICHI_ROOT     engine source checkout        (default ${engine workspace}/taichi)
 #   ENGINE_TAICHI_BUILD    engine build tree             (default ${ROOT}/build-review)
-#   ENGINE_TAICHI_RUNTIME  LLVM runtime bitcode dir      (default ${ROOT}/python/taichi/_lib/runtime)
+#   ENGINE_TAICHI_RUNTIME_SOURCE  generated LLVM runtime bitcode dir
+#                                (default ${ROOT}/taichi/runtime/llvm/runtime_module)
 #   ENGINE_LLVM_CONFIG     llvm-config of the engine's LLVM (default /usr/lib/llvm-15/bin/llvm-config)
 #
 # Outputs:
@@ -16,16 +17,18 @@
 
 set(ENGINE_TAICHI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/taichi" CACHE PATH "Taichi engine checkout")
 set(ENGINE_TAICHI_BUILD "${ENGINE_TAICHI_ROOT}/build-review" CACHE PATH "Taichi engine build tree")
-set(ENGINE_TAICHI_RUNTIME "${ENGINE_TAICHI_ROOT}/python/taichi/_lib/runtime" CACHE PATH "LLVM runtime bitcode directory")
+set(ENGINE_TAICHI_RUNTIME_SOURCE "${ENGINE_TAICHI_ROOT}/taichi/runtime/llvm/runtime_module" CACHE PATH "Generated LLVM runtime bitcode directory")
 set(ENGINE_LLVM_CONFIG "/usr/lib/llvm-15/bin/llvm-config" CACHE FILEPATH "llvm-config used to build the engine")
 
 foreach(probe
     "${ENGINE_TAICHI_ROOT}/taichi/program/program.h"
     "${ENGINE_TAICHI_ROOT}/taichi/ir/ir_builder.h"
     "${ENGINE_TAICHI_BUILD}/libtaichi_core_static.a"
-    "${ENGINE_TAICHI_RUNTIME}/runtime_x64.bc")
+    "${ENGINE_TAICHI_RUNTIME_SOURCE}/runtime_x64.bc"
+    "${ENGINE_TAICHI_RUNTIME_SOURCE}/runtime_cuda.bc"
+    "${ENGINE_TAICHI_ROOT}/external/cuda_libdevice/slim_libdevice.10.bc")
   if(NOT EXISTS "${probe}")
-    message(FATAL_ERROR "Engine incomplete: ${probe} is missing. Set ENGINE_TAICHI_ROOT/ENGINE_TAICHI_BUILD.")
+    message(FATAL_ERROR "Engine incomplete: ${probe} is missing. Build the Taichi fork first or set ENGINE_TAICHI_ROOT/ENGINE_TAICHI_BUILD.")
   endif()
 endforeach()
 
@@ -108,8 +111,19 @@ target_link_libraries(engine_taichi INTERFACE
     "-L${ENGINE_LLVM_LIB_DIR}" ${_engine_llvm_libs} ${_engine_llvm_system_libs}
     Threads::Threads ${CMAKE_DL_LIBS})
 
-set(ENGINE_TAICHI_RUNTIME_DIR "${ENGINE_TAICHI_RUNTIME}")
+# Stage the three files TI_LIB_DIR actually consumes without depending on
+# Taichi's Python package/install layout.
+set(ENGINE_TAICHI_RUNTIME_DIR "${CMAKE_CURRENT_BINARY_DIR}/taichi-runtime")
+file(MAKE_DIRECTORY "${ENGINE_TAICHI_RUNTIME_DIR}")
+configure_file("${ENGINE_TAICHI_RUNTIME_SOURCE}/runtime_x64.bc"
+               "${ENGINE_TAICHI_RUNTIME_DIR}/runtime_x64.bc" COPYONLY)
+configure_file("${ENGINE_TAICHI_RUNTIME_SOURCE}/runtime_cuda.bc"
+               "${ENGINE_TAICHI_RUNTIME_DIR}/runtime_cuda.bc" COPYONLY)
+configure_file("${ENGINE_TAICHI_ROOT}/external/cuda_libdevice/slim_libdevice.10.bc"
+               "${ENGINE_TAICHI_RUNTIME_DIR}/slim_libdevice.10.bc" COPYONLY)
+
 message(STATUS "Engine checkout : ${ENGINE_TAICHI_ROOT} (${ENGINE_TAICHI_REVISION})")
 message(STATUS "Engine build    : ${ENGINE_TAICHI_BUILD}")
-message(STATUS "Engine runtime  : ${ENGINE_TAICHI_RUNTIME_DIR}")
+message(STATUS "Engine runtime source : ${ENGINE_TAICHI_RUNTIME_SOURCE}")
+message(STATUS "Engine runtime stage  : ${ENGINE_TAICHI_RUNTIME_DIR}")
 message(STATUS "Engine LLVM     : ${ENGINE_LLVM_VERSION} (${ENGINE_LLVM_LIB_DIR})")
