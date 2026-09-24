@@ -97,7 +97,7 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   green against a live disposable `hcp3_core`. Full reference: `API.md`.
   `ingestion/` is retired (superseded, breadcrumb only).
 - **WAL manager — COMPLETE as a tested library, AND wired onto the messaging
-  system (Pair-1 kernel, 2026-09-22).** `wal/` kernel set (W-1…W-6) built, every
+  system (Pair-1 kernel, 2026-09-22).** `kernels/wal/` kernel set (W-1…W-6) built, every
   test PASSes, package-vetted primary↔adversary. A pure bookkeeper/observer over
   WAL reports — maintains the **active deferred-work topology** (the live
   open-obligation relation + append-only History) in its own `wal_manager` Postgres
