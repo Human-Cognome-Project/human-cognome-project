@@ -1,7 +1,7 @@
 # Swarm / p2p layer — preliminary notes
 
 > **⚠ Forward flag (2026-09-21).** The swarm-side facet and tracker indexing are now being
-> designed on the activation substrate — `engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`
+> designed on the activation substrate — `kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`
 > ("WAL-manager comms wiring + swarm indexing"): Pair-2 boxes (unpack inbound / compose
 > outbound delta packets); the **address tree IS the tracker index**; a truncated area = the
 > existing **coarse label token** (this doc's distillation / connection indicators) reused via
