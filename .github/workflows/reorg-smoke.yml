@@ -5,6 +5,8 @@ on:
     paths:
       - "engine/field/**"
       - "network/endpoint/**"
+      - "kernels/database/**"
+      - "kernels/wal/**"
       - ".github/workflows/reorg-smoke.yml"
   push:
     branches:
@@ -12,6 +14,8 @@ on:
     paths:
       - "engine/field/**"
       - "network/endpoint/**"
+      - "kernels/database/**"
+      - "kernels/wal/**"
       - ".github/workflows/reorg-smoke.yml"
 
 jobs:
@@ -45,3 +49,31 @@ jobs:
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/dataflow_test endpoint.cpp scheduler.cpp dataflow_test.cpp
           /tmp/dataflow_test
+
+  database-codec:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kernels/database/codec
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run codec unit tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/codec_test codec.cpp codec_test.cpp
+          /tmp/codec_test
+
+  wal-pure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kernels/wal
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run WAL recognition tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra             -I. -I../database/codec             wal_recognize.cpp wal_recognize_test.cpp ../database/codec/codec.cpp             -o /tmp/wal_recognize_test
+          /tmp/wal_recognize_test
+      - name: Build and run WAL report tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra             -I. -I../database/codec             wal_report_test.cpp ../database/codec/codec.cpp             -o /tmp/wal_report_test
+          /tmp/wal_report_test
