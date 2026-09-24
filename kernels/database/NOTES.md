@@ -1,8 +1,8 @@
-# db_kernel — data protocol & address-layout notes
+# database/cache — data protocol & address-layout notes
 
 > **⚠ MESSAGING REALIGNMENT — governing (2026-09-22).** The **entire messaging of this
 > kernel is being realigned to the monitored-endpoint activation format**
-> (`kernels/db_kernel/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
+> (`network/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
 > plan for that realignment, not a build history.** Where a thing is being redone it is
 > **SUPERSEDED here, not left marked DONE** — a stale "BUILT/COMPLETE" on a redone piece
 > drags the old precepts (synchronous verb-dispatch, "issue a command at the kernel,"
@@ -38,7 +38,7 @@
 >   **removed** (adversary-vetted CLEAN, `dispatch_test` 31/31 green). The analyst messages the
 >   **WAL manager directly**, which promotes the relevant pending queue into a **priority
 >   in-box** the manager drains.
-> - **WAL manager Pair-1 push is BUILT** (`wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`):
+> - **WAL manager Pair-1 push is BUILT** (`kernels/wal/wal_kernel.{h,cpp}`, `WAL-INTEGRATION-PLAN.md`):
 >   source-blind (=location-blind, knows its counterpart), emitting owed reciprocal work to the
 >   cache-manager out-box, fixture-fed. Local activation primitives BUILT (commit `b97034a`).
 > - **Tier 2 (analyst reaction body) is BUILT** as `dbmanager/` (`db_manager_kernel.{h,cpp}`
@@ -54,7 +54,7 @@
 > Pair-2/swarm coupling, the cache-manager consumer). **The wider project needs several doc
 > updates after this kernel is realigned.**
 
-Working notes for the hcp3_core db_kernel set. Prose/design record; the code
+Working notes for the hcp3_core database/cache kernel set. Prose/design record; the code
 and its tests are the source of truth for behaviour. Canadian English.
 
 > **Available work streams for the next session → see `HANDOFF.md`.** The record-tier
@@ -241,7 +241,7 @@ membership reciprocal (mirroring `token_parent` / `token_child`). Net store:
 
 ## Process runtime — the cache manager is a complete runtime
 
-The cache manager (this whole db_kernel) is a **complete, standalone runtime
+The cache manager (this database/cache kernel family) is a **complete, standalone runtime
 process**, not library pieces called ad hoc: it owns the DB (only the process
 controls the DB) and its primary duty is serving input/output requests. It must
 be complete on its own and may be **detachable to ride with the swarm**;
@@ -281,7 +281,7 @@ is real I/O and must be handled right from the base:
 - **⚠ Revisit (2026-09-19):** the WAL manager (now BUILT, `wal/`) implements a
   **self-accounting** completion model — followup obligations booked from a
   change's own data and closed by *observing* the followup writes, with **no
-  pending-list drain** (see `WAL-PLAN.md`, `wal/README.md`) — bears directly on
+  pending-list drain** (see `kernels/wal/WAL-PLAN.md`, `kernels/wal/README.md`) — bears directly on
   this pending-list / wire-later runtime. Whether self-accounting **replaces**
   the pending-list-that-drains here or only governs the WAL manager's own view is
   unresolved (**F4, NEEDS-PATRICK**) and **must be revisited when the
@@ -292,7 +292,7 @@ is real I/O and must be handled right from the base:
   manager's `close()` and `record_seen()` can silently mis-record a
   settlement) is real and becomes this runtime's problem to solve, since
   cross-kernel-cycle durability belongs to whichever runtime orchestrates the
-  cycle, not the bookkeeping door on one end of it. See `WAL-PLAN.md`'s status
+  cycle, not the bookkeeping door on one end of it. See `kernels/wal/WAL-PLAN.md`'s status
   blockquote for the full trace.
 - **Multi-analyst.** The cache manager may serve more than one analyst and needs
   a per-analyst input/response link. Maintained aggregates (own masses, label
@@ -326,7 +326,7 @@ lowest:
    Lowest priority; standing box(es) that run only when nothing above is occupied. The
    cache-tier ops (`UPDATE_CACHE` / `REBASE_CACHE`) plausibly live here as standing
    box-priority operations rather than dispatched verbs (consistent with
-   `ENDPOINT-ACTIVATION-NOTES.md`'s "UPDATE_CACHE / REBASE_CACHE plausibly follow RECONCILE
+   `network/ENDPOINT-ACTIVATION-NOTES.md`'s "UPDATE_CACHE / REBASE_CACHE plausibly follow RECONCILE
    into box-priority operations").
 
 **Consequences:** filing > cross-processing is the tier-2 > tier-3 ordering; reconcile =
@@ -982,7 +982,7 @@ bare/fire-and-forget delete, never a blanket confirm flag. It then executes
 LOCALLY against the store. The peer / cross-network validation path
 (tentative→systemic across instances) is NOT built at the record tier — the
 delete's report is **booked by the WAL manager** (a bookkeeper/observer over WAL
-reports, now BUILT — `wal/`; see `WAL-PLAN.md`, `wal/README.md`), while the
+reports, now BUILT — `wal/`; see `kernels/wal/WAL-PLAN.md`, `kernels/wal/README.md`), while the
 cross-network validation **act** is **deferred swarm-side**, not run by the WAL
 bookkeeper. (This resolves the old G7
 delete-peer-validation seam; WAL-manager-is-bookkeeper reframed 2026-09-18.)
@@ -1026,7 +1026,7 @@ two view ops is continuity of basis:
   the analyst messages the **WAL manager directly**, which promotes the relevant
   pending work into a pinned priority box the cache manager drains. See the
   messaging-realignment banner at the top of this file and
-  `ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE". Only `UPDATE_CACHE`/`REBASE_CACHE`
+  `network/ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE". Only `UPDATE_CACHE`/`REBASE_CACHE`
   remain named-but-unbuilt cache-tier stubs. *(The original characterization,
   retained for provenance:)* orthogonal to both, and demand-driven: an analyst
   request for IMMEDIATE, prioritized cross-matching — forcing the deferred
@@ -1184,8 +1184,8 @@ membership, PK-delete on close, no status column) plus an append-only History �
 the topology the cache manager navigates to find what followup work (reciprocal
 returns, mass) is still owed. Door surface: `open` / `close` / `is_open` /
 `list_open` / `record_seen`, every access a bounded PK follow (only-follow, no
-reverse index). See `wal/README.md` (charter, file map, build/run) and
-`wal/USAGE.md` (how a consumer — chiefly the cache manager — navigates it and the
+reverse index). See `kernels/wal/README.md` (charter, file map, build/run) and
+`kernels/wal/USAGE.md` (how a consumer — chiefly the cache manager — navigates it and the
 door/scope contract). **RECONCILE** (an analyst-raised "this deferred cross-work
 is priority now" flag) **routes through the WAL manager, not the cache manager
 directly** (revised 2026-09-22 — supersedes the earlier framing here that had the
@@ -1195,7 +1195,7 @@ topology (only-follow) to **move the relevant pending work into a pinned priorit
 box**; the cache manager only *drains* that box. This is a conscious revision of the
 built bookkeeper boundary — the WAL manager now *selects and places* reconcile work
 (it does not do the work). Its open→close obligation ledger is otherwise unchanged,
-still driven by the reciprocal write landing. See `ENDPOINT-ACTIVATION-NOTES.md`
+still driven by the reciprocal write landing. See `network/ENDPOINT-ACTIVATION-NOTES.md`
 "RECONCILE" and the messaging-realignment banner at the top of this file.
 **Ingest atomicity — resolved as out-of-scope here (Patrick, 2026-09-19):**
 package review found `close()` + `record_seen()` are two separate writes, not
@@ -1208,8 +1208,8 @@ no transaction surface is added to `WalBook`, `ingest()` stays as-is — because
 atomicity across the whole observe→book cycle is the job of whichever runtime
 orchestrates that cycle, not this bookkeeping door. It becomes a
 **cache-manager-runtime** open item, to revisit alongside F4 when that runtime
-is built (see `WAL-PLAN.md`'s status blockquote for the full trace).
-Still deferred within/around this layer (bucket B/C, `WAL-IMPL-PLAN.md` §1): the
+is built (see `kernels/wal/WAL-PLAN.md`'s status blockquote for the full trace).
+Still deferred within/around this layer (bucket B/C, `kernels/wal/WAL-IMPL-PLAN.md` §1): the
 async reciprocal split, live logical-decoding ingest, and the mass-fill write
 (the cache manager's own runtime, not built); MOVE/rekey of open obligations; and
 NEEDS-PATRICK — the connection mass-recompute signal, F4, the cross-source
@@ -1296,5 +1296,5 @@ than guess. Flagged by the 2026-09-15 adversarial review of these notes:
 late stage, after the record tier is solid. (**RECONCILE removed from the
 dispatch surface 2026-09-22** — it is no longer a db/cache-manager verb but
 an analyst → WAL-manager message; the WAL manager promotes the relevant
-pending queue into a priority in-box. See `ENDPOINT-ACTIVATION-NOTES.md`
+pending queue into a priority in-box. See `network/ENDPOINT-ACTIVATION-NOTES.md`
 "RECONCILE".)
