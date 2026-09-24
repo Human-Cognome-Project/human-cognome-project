@@ -66,7 +66,6 @@ Once the reorganization is promoted, normal work returns to branches from `main`
 ```text
 human-cognome-project/
 ├── engine/
-│   ├── field/              # later Taichi field-engine work
 │   └── field/              # active later Taichi field-engine work
 ├── kernels/
 │   ├── database/           # PostgreSQL record + database/cache-manager family
@@ -80,8 +79,8 @@ human-cognome-project/
 ├── data/
 │   └── postgres/snapshots/
 ├── docs/
-├── extraction/
-├── db/                     # legacy DB tooling/dumps pending disposition
+├── tools/
+│   └── legacy-extraction/  # retained read-only migration toolkit
 ├── archive/
 └── review/
 ```
