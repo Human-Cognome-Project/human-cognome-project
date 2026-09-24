@@ -3,8 +3,8 @@
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
 > (`network/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as
-> a **monitored-endpoint kernel** (`wal/wal_kernel.{h,cpp}`, commits `3aca2ac`/`cf7e0c6`).
-> **Next entry point (Patrick, 2026-09-22): realign the main db_kernel / cache-manager
+> a **monitored-endpoint kernel** (`kernels/wal/wal_kernel.{h,cpp}`, commits `3aca2ac`/`cf7e0c6`).
+> **Next entry point (Patrick, 2026-09-22): realign the main database/cache / cache-manager
 > design with this new messaging system** — see "Incoming direction" below. Branch
 > `dbkernel-design-checkpoint`.
 >
@@ -15,7 +15,7 @@
 > config/advertising routine, the cache structure build-out. See "Current state" and the
 > "Progress" note under the Cache-manager work stream below.
 
-**For:** the next db_kernel session. **Incoming direction (Patrick, 2026-09-22):
+**For:** the next database/cache session. **Incoming direction (Patrick, 2026-09-22):
 realign the cache-manager design with the new messaging system** — the core-data-flows
 discussion that was pending is done and gave us the activation substrate + the WAL
 Pair-1 kernel; the cache-manager design now has to be brought onto that basis. See
@@ -35,13 +35,13 @@ snapshot, not a live query.
 **(Patrick, 2026-09-22 — this is the entry point.)** The pending core-data-flows /
 command-structure discussion (Patrick, 2026-09-19) HAPPENED and settled into the
 **monitored-endpoint activation model** — the "new messaging system." The next context
-**realigns the main db_kernel / cache-manager design with it.** Read the messaging
+**realigns the main database/cache / cache-manager design with it.** Read the messaging
 model first, then rework the cache-manager design (mostly still design; **tier 2 —
 the analyst reaction body — is now built**, `dbmanager/`, 2026-09-23) so it
 sits natively on boxes rather than on the old active-instruction / polling shape.
 
 **The messaging model to realign onto (read these first):**
-- `ENDPOINT-ACTIVATION-NOTES.md` — the governing model. Kernels couple **only through
+- `network/ENDPOINT-ACTIVATION-NOTES.md` — the governing model. Kernels couple **only through
   in/out boxes**; **data arriving at a box is the activation** (no instruction, no
   poll). **Every outbox is a specific counterpart's inbox**; **each kernel has multiple
   in/out boxes** (an interactive internal-state mail system). **Source-blind =
@@ -52,7 +52,7 @@ sits natively on boxes rather than on the old active-instruction / polling shape
   into.
 - `network/endpoint/README.md` + headers — the built substrate (`box`, `endpoint` registry,
   `scheduler` = sole enqueue path). Single-threaded cooperative first cut.
-- `WAL-INTEGRATION-PLAN.md` + `wal/wal_kernel.{h,cpp}` — the worked example: a real
+- `kernels/wal/WAL-INTEGRATION-PLAN.md` + `kernels/wal/wal_kernel.{h,cpp}` — the worked example: a real
   kernel (the WAL manager) wired onto the substrate. Use it as the pattern for how the
   cache manager becomes a kernel.
 
@@ -67,7 +67,7 @@ under "Cache manager" all still stand, now re-framed onto boxes):**
 - **F4** — whether self-accounting replaces the cache manager's own drainable
   pending-list. The activation model points **F4-affirmative** (the denied list is the
   cache manager's own; the durable obligation stays in the WAL relation) — confirm it
-  as part of this realignment. `NOTES.md` "Process runtime"; `ENDPOINT-ACTIVATION-NOTES.md`
+  as part of this realignment. `NOTES.md` "Process runtime"; `network/ENDPOINT-ACTIVATION-NOTES.md`
   "What the rebase keeps and replaces".
 - **Ingest-atomicity** — the observe→act cross-kernel-cycle atomicity was ruled OFF the
   WAL manager and reassigned here; the realignment owns where that transaction boundary
@@ -101,11 +101,11 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   test PASSes, package-vetted primary↔adversary. A pure bookkeeper/observer over
   WAL reports — maintains the **active deferred-work topology** (the live
   open-obligation relation + append-only History) in its own `wal_manager` Postgres
-  DB, never `hcp3_core`. See `wal/README.md` (charter, file map, build/run) and
-  `wal/USAGE.md` (consumer contract). **Now also built as a monitored-endpoint
-  kernel** — `wal/wal_kernel.{h,cpp}` + `wal_kernel_test.cpp` (commits
+  DB, never `hcp3_core`. See `kernels/wal/README.md` (charter, file map, build/run) and
+  `kernels/wal/USAGE.md` (consumer contract). **Now also built as a monitored-endpoint
+  kernel** — `kernels/wal/wal_kernel.{h,cpp}` + `wal_kernel_test.cpp` (commits
   `3aca2ac`/`cf7e0c6`; 30 checks PASS, ASan/UBSan clean; coder+adversary discipline;
-  plan `WAL-INTEGRATION-PLAN.md`): reads a fixture `Report` off a per-source in-box →
+  plan `kernels/wal/WAL-INTEGRATION-PLAN.md`): reads a fixture `Report` off a per-source in-box →
   books via the unchanged path → pushes owed reciprocal work to the cache-manager
   out-box. **Still fixture-fed** (no live report feed; `main()` outside the tests
   only in the kernel test's driver). Deferred: reload repopulation, the API-pair
@@ -131,13 +131,13 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
   adversary-vetted CLEAN, `dispatch_test` 31/31 green):** it is no longer a
   db/cache-manager verb — the analyst messages the WAL manager directly and
   the WAL manager promotes the relevant pending queue into a priority in-box
-  (`ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE"). Don't assume otherwise from how firm the prose elsewhere reads;
+  (`network/ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE"). Don't assume otherwise from how firm the prose elsewhere reads;
   `API.md` §9 is the ground truth for built-vs-deferred.
 
 ## How to consume the WAL manager
 
-Read `wal/USAGE.md` in full before writing cache-manager code that touches
-it; `wal/README.md` if you also need to know how the WAL manager's own
+Read `kernels/wal/USAGE.md` in full before writing cache-manager code that touches
+it; `kernels/wal/README.md` if you also need to know how the WAL manager's own
 build/tests work. The one-line boundary, repeated here because everything
 else follows from it:
 
@@ -145,7 +145,7 @@ else follows from it:
 paths; the WAL manager books what returns are owed and watches them land.**
 
 **On the messaging system this is now a PUSH, not a pull (2026-09-22).** The WAL
-kernel (`wal/wal_kernel.{h,cpp}`) emits owed reciprocal work to the cache-manager
+kernel (`kernels/wal/wal_kernel.{h,cpp}`) emits owed reciprocal work to the cache-manager
 **out-box** (= the cache manager's in-box) as reports arrive — the cache manager no
 longer polls `list_open` to discover work in steady state. `is_open` / `list_open`
 (`list_open(kind)` / `list_open(kind, addr_a)` — PK/PK-prefix reads only, never
@@ -190,7 +190,7 @@ stream, not before it:
 
 - **Runnable binary — READY-NOW, small, a reasonable place to start.** The
   WAL manager is a complete, tested *library*, not yet an assembled process:
-  `main()` exists only in `wal/*_test.cpp`; `wal_book` / `wal_ingest` /
+  `main()` exists only in `kernels/wal/*_test.cpp`; `wal_book` / `wal_ingest` /
   `wal_recognize` / `wal_monitor` have no entry point of their own. Standing
   one up means writing a driver/`main` that wires `WalBook` (against the
   `wal_manager` DB) + `WalMonitor` + `wal_ingest` together. This is buildable
@@ -200,7 +200,7 @@ stream, not before it:
   **real** (non-fixture) runnable process is gated on the next item.
 - **Live report feed (bucket B, design-ahead; gates a real runnable
   process)** — Postgres logical-decoding ingest, or whatever the **G6**
-  external wire form ends up being (`API.md` §9's G6 row; `WAL-PLAN.md` §1
+  external wire form ends up being (`API.md` §9's G6 row; `kernels/wal/WAL-PLAN.md` §1
   bucket B). Until one of these exists, a standalone WAL-manager binary has
   no real input — every report is an in-process fixture. This is the actual
   gate on a live `wal_manager` process, not the driver/`main` above, which
@@ -217,8 +217,8 @@ stream, not before it:
   deferred work into a pinned priority box; the cache manager only *drains* it.
   A momentary priority boost on existing work, not new work. The WAL manager's
   open→close obligation ledger is unaffected, but it does take the action of
-  selecting/placing the reconcile work. `ENDPOINT-ACTIVATION-NOTES.md`
-  "RECONCILE"; `wal/USAGE.md`'s RECONCILE section.
+  selecting/placing the reconcile work. `network/ENDPOINT-ACTIVATION-NOTES.md`
+  "RECONCILE"; `kernels/wal/USAGE.md`'s RECONCILE section.
 - **Ingest-atomicity ownership** — the transaction boundary around the
   observe (WAL report) → book (act on it) cycle. Raised during WAL-manager
   package review, traced, and **ruled dropped from the WAL manager**
@@ -227,11 +227,11 @@ stream, not before it:
   atomicity is the orchestrating runtime's job, not the bookkeeping door's.
   The gap is real, not illusory: a crash between the WAL manager's
   `close()` and `record_seen()` can leave a settlement silently
-  mis-recorded in History. Full trace: `WAL-PLAN.md`'s status blockquote;
-  also noted in `NOTES.md`'s F4 bullet and `wal/USAGE.md`.
+  mis-recorded in History. Full trace: `kernels/wal/WAL-PLAN.md`'s status blockquote;
+  also noted in `NOTES.md`'s F4 bullet and `kernels/wal/USAGE.md`.
 - **Attach / granularity** — what the cache manager attaches to, and at
   what granularity, in the local storage swarm (which DBs/regions it
-  pulls into the warm tier). Named in `SWARM-NOTES.md`'s division-of-labour
+  pulls into the warm tier). Named in `network/SWARM-NOTES.md`'s division-of-labour
   note ("the cache manager decides what to attach / at what granularity")
   but not designed — it's this stream's decision, made before the swarm
   side can build against it.
@@ -240,11 +240,11 @@ stream, not before it:
   `NOTES.md` "Cache tier" / `API.md` §9), and how a dirtied *existing*
   token's mass gets marked for recompute (an `ADD_CONNECTION` writes no
   `token.mass` and the WAL manager's NULL-signal only covers a *new-token*
-  DECLARE — `WAL-PLAN.md` §5/§8). Both are this runtime's to design; the
+  DECLARE — `kernels/wal/WAL-PLAN.md` §5/§8). Both are this runtime's to design; the
   WAL manager only ever monitors the resulting `token.mass` write land.
 
 **Future WAL-manager extension (not owned outright today — contingent on
-bucket-B groundwork this stream may lay):** `WAL-PLAN.md` §7 names two more
+bucket-B groundwork this stream may lay):** `kernels/wal/WAL-PLAN.md` §7 names two more
 WAL-manager-adjacent items, "named, not designed," each blocked on something
 that doesn't exist yet rather than ready to build now — **MOVE_RECORD/rekey
 of open obligations** (a MOVE changes the `token_id`s an open obligation
@@ -260,10 +260,10 @@ concrete.
 ### Swarm / p2p layer — PRELIMINARY, GATED
 
 Direction-only notes, not designed, not built, not adversary-firmed — see
-`SWARM-NOTES.md` in full. Explicitly **gated on examining the WAL data
+`network/SWARM-NOTES.md` in full. Explicitly **gated on examining the WAL data
 shape first** (Patrick), which in practice means gated on the cache manager
 stream existing enough to show what that shape actually is in use. Open,
-per `SWARM-NOTES.md`'s "To pin" / "Parked" sections:
+per `network/SWARM-NOTES.md`'s "To pin" / "Parked" sections:
 
 - The **delta-span vs. state-range** chunking fork (sync/update unit vs.
   bulk-coverage unit) and the **hash-key granularity hinge** (per WAL
@@ -300,16 +300,16 @@ decisions".
 
 | Doc | What's in it |
 | --- | --- |
-| `ENDPOINT-ACTIVATION-NOTES.md` | **The messaging model** — monitored-endpoint activation, boxes as the sole coupling, source-blind=location-blind, the mail-system, priority, RECONCILE, endpoint identity. Read FIRST for the realignment; its resolved decisions govern. |
+| `network/ENDPOINT-ACTIVATION-NOTES.md` | **The messaging model** — monitored-endpoint activation, boxes as the sole coupling, source-blind=location-blind, the mail-system, priority, RECONCILE, endpoint identity. Read FIRST for the realignment; its resolved decisions govern. |
 | `network/endpoint/README.md` (+ `box.h`/`endpoint.h`/`scheduler.h`) | The **built** local activation substrate (commit `b97034a`): dumb-FIFO box, endpoint registry, scheduler as sole enqueue path. Pure C++17, no DB. |
-| `WAL-INTEGRATION-PLAN.md` | The **worked example** — the adversary-vetted plan for wiring the WAL manager onto the substrate (BUILT). The pattern the cache-manager realignment follows. |
-| `WAL-INTEGRATION-HANDOFF.md` | The (EXECUTED) mission record for the WAL kernel; carries the source-blind + API-pair clarifications. |
+| `kernels/wal/WAL-INTEGRATION-PLAN.md` | The **worked example** — the adversary-vetted plan for wiring the WAL manager onto the substrate (BUILT). The pattern the cache-manager realignment follows. |
+| `kernels/wal/WAL-INTEGRATION-HANDOFF.md` | The (EXECUTED) mission record for the WAL kernel; carries the source-blind + API-pair clarifications. |
 | `NOTES.md` | The working design record — governing principles, firmed rulings, build state, open decisions. Source of truth for *intent*; code is source of truth for *behaviour*. |
 | `PLAN.md` | The record-tier API-face implementation plan (executed; historical staging record). |
 | `API.md` | The record-tier + WAL-manager API reference, and §9's built-vs-deferred table — the fastest way to check what's actually built. |
-| `WAL-PLAN.md` | The WAL manager's design (rev. 6) — IMPLEMENTED; top status carries the ingest-atomicity trace + ownership ruling and the Pair-1-push-built flag. §8/§10 are its own open-items lists. |
-| `WAL-IMPL-PLAN.md` | The WAL manager's build-task breakdown (W-1…W-6) — IMPLEMENTED. |
-| `wal/README.md` | Working *on* the WAL manager: charter, file map, build/run, disposable-DB convention (now includes `wal_kernel`). |
-| `wal/USAGE.md` | Working *with* the WAL manager (consumer contract) — read before writing cache-manager code against it; carries the push-model-built flag. |
-| `SWARM-NOTES.md` | Preliminary swarm/p2p direction notes — gated, not designed. |
+| `kernels/wal/WAL-PLAN.md` | The WAL manager's design (rev. 6) — IMPLEMENTED; top status carries the ingest-atomicity trace + ownership ruling and the Pair-1-push-built flag. §8/§10 are its own open-items lists. |
+| `kernels/wal/WAL-IMPL-PLAN.md` | The WAL manager's build-task breakdown (W-1…W-6) — IMPLEMENTED. |
+| `kernels/wal/README.md` | Working *on* the WAL manager: charter, file map, build/run, disposable-DB convention (now includes `wal_kernel`). |
+| `kernels/wal/USAGE.md` | Working *with* the WAL manager (consumer contract) — read before writing cache-manager code against it; carries the push-model-built flag. |
+| `network/SWARM-NOTES.md` | Preliminary swarm/p2p direction notes — gated, not designed. |
 | `HANDOFF.md` | This file. |
