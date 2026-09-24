@@ -4,7 +4,7 @@
 > record tier described here is built; treat specifics as of-their-time. In particular,
 > **`RECONCILE` was removed from the dispatch surface (2026-09-22)** — it is no longer a
 > face entry / stub / verb; the analyst messages the WAL manager directly. For current
-> design see `NOTES.md` (messaging-realignment banner) and `ENDPOINT-ACTIVATION-NOTES.md`
+> design see `NOTES.md` (messaging-realignment banner) and `network/ENDPOINT-ACTIVATION-NOTES.md`
 > "RECONCILE".
 
 **Provenance.** Drawn from `NOTES.md` as firmed 2026-09-17 and vetted clean
