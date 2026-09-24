@@ -49,6 +49,7 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 - **[network/endpoint/](network/endpoint/)** — the shared in-memory endpoint/box/scheduler substrate, promoted out of the DB bundle because it is common kernel-network infrastructure.
 - **[research/](research/)** — field/ledger research and convenience packages. Research informs the implementation but is not runtime code.
 - **[data/postgres/snapshots/](data/postgres/snapshots/)** — reserved for reproducibility snapshots exported from development PostgreSQL systems.
+- **[tools/legacy-extraction/](tools/legacy-extraction/)** — retained read-only migration/source tooling from earlier storage generations; not runtime code.
 - **[archive/](archive/)** and **[review/](review/)** — preserved prior generations and the August 2026 rebase record.
 
 ## Read first
