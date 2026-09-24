@@ -2,23 +2,16 @@
 
 HCP components are designed as loosely coupled kernels rather than as one centrally clocked process. Each kernel can operate at its own cadence and communicates through active inbox/outbox endpoints.
 
-## db_kernel/
+## database/
 
-The current `db_kernel/` tree is a preserved DB/cache/WAL development unit. It still contains several concerns that were intentionally developed together to control agent drift:
+`database/` contains the PostgreSQL record tier and database/cache-manager kernel family. Its system role is to support the future analyst and keep its working surfaces current.
 
-- PostgreSQL record operations and schema;
-- database/cache-manager work;
-- WAL-manager work;
-- associated plans, handoffs, tests and reviews.
+## wal/
 
-The shared endpoint/box/scheduler substrate has now been promoted to `../network/endpoint/` because it is common kernel-network infrastructure rather than database-specific code.
+`wal/` contains the WAL manager kernel family. It is a peer of the database/cache family: it observes/books obligations and participates in the return-work flow without being owned by the database manager.
 
-## System role
+## Shared network substrate
 
-The database/cache/record/WAL functions exist to support the future analyst and keep its working surfaces current. They are not part of the field-engine harness.
+`../network/endpoint/` contains the common in-memory box/endpoint/scheduler substrate consumed by both families. Future topology/configuration, serialization/transmission bridges and thread management belong under the network layer rather than under a specific kernel family.
 
-Future configuration/topology and thread/bridge managers have not yet been built. They are expected to resolve local versus remote endpoint paths and manage lower-frequency or bridged activation without changing kernel logic.
-
-## Reorganization rule
-
-Do not split the remaining DB/cache/WAL bundle merely for cosmetic layout. Its C++ modules still rely on deliberate relative build relationships. Further decomposition should update include paths, build instructions and tests together.
+These are architectural peers connected by endpoint contracts. Filesystem nesting should not be used to imply control ownership between them.
