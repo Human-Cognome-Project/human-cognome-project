@@ -81,3 +81,43 @@ jobs:
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra             -I. -I../database/codec             wal_report_test.cpp ../database/codec/codec.cpp             -o /tmp/wal_report_test
           /tmp/wal_report_test
+
+
+  db-backed-kernels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start disposable local PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres createuser --superuser "$USER" 2>/dev/null || true
+          pg_isready
+      - name: Build and run database-manager kernel tests
+        working-directory: kernels/database/dbmanager
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra \
+            -I. -I../codec -I../command -I../controller -I../declare -I../read \
+            -I../update -I../dispatch -I../../../network/endpoint \
+            -I"$(pg_config --includedir)" \
+            db_manager_kernel.cpp db_manager_kernel_test.cpp \
+            ../dispatch/dispatch.cpp \
+            ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
+            ../controller/controller.cpp \
+            ../declare/declare_core.cpp ../read/read_core.cpp ../update/update_core.cpp \
+            ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp \
+            -L"$(pg_config --libdir)" -lpq \
+            -o /tmp/db_manager_kernel_test
+          /tmp/db_manager_kernel_test
+      - name: Build and run WAL-manager kernel tests
+        working-directory: kernels/wal
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra \
+            -I. -I../database/codec -I../../network/endpoint \
+            -I"$(pg_config --includedir)" \
+            wal_kernel.cpp wal_kernel_test.cpp \
+            wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp \
+            ../../network/endpoint/endpoint.cpp ../../network/endpoint/scheduler.cpp \
+            ../database/codec/codec.cpp \
+            -L"$(pg_config --libdir)" -lpq \
+            -o /tmp/wal_kernel_test
+          /tmp/wal_kernel_test
