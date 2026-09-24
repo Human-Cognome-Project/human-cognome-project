@@ -1,0 +1,29 @@
+{
+ "artifact": "ingest-v0 (full-file ingestion routine, single door, db-native)",
+ "plan_line": "data-plan §4 one full-file routine (engine receives EVERYTHING, whole) + §6 event ledger (dated initiations, observed-time keyed) + §2 ledger-in-db",
+ "routine": "engine/ingest/ingest_v0.py — one code path for every file; zero selection, zero sniffing, zero transformation; ledger row = the store, manifest = emit-only",
+ "ledger": "hcp_english engine.event_ledger_v0 (append-only: adjustments = new dated events via `supersedes`, never edits; statuses evidenced|hypothesized|discharged)",
+ "first_ingestions": [
+  {
+   "source": "data/gutenberg/texts/02701_Moby Dick Or The Whale.txt",
+   "ledger_event_id": 1,
+   "sha256_12": "7cc6f1aac955",
+   "n_bytes": 1276306,
+   "emission_stamp": "1851-11-14 (first US edition — the attestation hook riding ingestion free)",
+   "continuity": "sha256 MATCHES pour-raw-mobydick-02701-fpcuda-report.json source_sha256 — the already-poured state's source is now ledgered under the identity the kernel contract verifies"
+  },
+  {
+   "source": "sources/1780411991431.pdf",
+   "ledger_event_id": 2,
+   "sha256_12": "af0765c2d482",
+   "n_bytes": 549847,
+   "note": "a real PDF through the SAME door, whole — binary streams, xref, everything; no format branch exists in the code"
+  }
+ ],
+ "seam": "kernel (silas) consumes the FILE at manifest.source and verifies content_sha256 before pouring; routine transforms nothing so handover byte-identity is checkable end-to-end",
+ "stop_condition_honored": "no branch in this code decides what matters before the engine sees it",
+ "caveats": [
+  "npz/state files remain the pour's transient cache only — regenerated, never authored beside the db",
+  "emission_stamp supplied only when evidenced (Moby: first-US-edition date); absent stamps stay open — attestation tightens the late bound as dated matter arrives via normal ingestion"
+ ]
+}

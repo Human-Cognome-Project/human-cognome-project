@@ -1,0 +1,116 @@
+{
+ "artifact": "era-root-v0",
+ "plan_line": "data-plan \u00a7A.4 temporality / P go ~1384",
+ "role": "derived receipt, read-only, regenerable",
+ "era_spans": {
+  "OE": [
+   450,
+   1150
+  ],
+  "ME": [
+   1150,
+   1500
+  ]
+ },
+ "cohort_census_by_era": {
+  "ME": 3798,
+  "ME+OE": 1273,
+  "OE": 2383
+ },
+ "edge_kind_census": {
+  "inherited": 4828,
+  "derived": 6012,
+  "onomastic": 1933,
+  "borrowed": 78
+ },
+ "dual_era_entries": {
+  "count": 1273,
+  "sample": [
+   "'em",
+   "'emselves",
+   "-e",
+   "-ern",
+   "-free",
+   "-kind",
+   "-leigh",
+   "-less",
+   "-lock",
+   "-mas",
+   "-most",
+   "-ock",
+   "-red",
+   "-ren",
+   "-s-",
+   "-se",
+   "-self",
+   "-ship",
+   "-wards",
+   "Abridge"
+  ]
+ },
+ "borrowed_reentry": {
+  "count": 78,
+  "sample": [
+   "Egbert",
+   "Engelbeorht",
+   "Frig",
+   "Heorot",
+   "Hereward",
+   "Hretha",
+   "Hrothgar",
+   "Seaxneat",
+   "Theodism",
+   "Thingstead",
+   "Throwends",
+   "Thunor",
+   "Tiu",
+   "Ulrome",
+   "Wendel Sea",
+   "Wicca",
+   "Woden",
+   "Wyrd",
+   "atgar",
+   "atheed"
+  ]
+ },
+ "relations_read": {
+  "cohort_source_rows": 23119,
+  "both_ends_in_cohort": 1587,
+  "relation_type_mix": {
+   "related": 694,
+   "synonym": 583,
+   "derived": 153,
+   "antonym": 58,
+   "coordinate": 57,
+   "hyponym": 22,
+   "meronym": 11,
+   "hypernym": 9
+  }
+ },
+ "gathering_within_vs_cross_era": {
+  "ME->ME": {
+   "observed": 1342,
+   "expected_indep": 1234.7,
+   "ratio": 1.087
+  },
+  "ME->OE": {
+   "observed": 394,
+   "expected_indep": 501.3,
+   "ratio": 0.786
+  },
+  "OE->ME": {
+   "observed": 446,
+   "expected_indep": 553.3,
+   "ratio": 0.806
+  },
+  "OE->OE": {
+   "observed": 332,
+   "expected_indep": 224.7,
+   "ratio": 1.478
+  }
+ },
+ "notes": [
+  "attestation refinement (dated docs) = next; not in this read",
+  "no frequency computed; no db writes"
+ ]
+}

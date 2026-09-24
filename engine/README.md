@@ -1,20 +1,31 @@
 # engine/
 
-The field engine: the project's cosmology of thought as runnable physics.
-Two halves, one contract: Phase A (kernel/ — diffusion, radiation, valency,
-node forcing) x Phase B (timestep/ — the pair-rung clock, bond state,
-restoration; storage/ — array-stored compositional addressing + instance
-streams). SEAM.md is the living contract and the engineering history.
+The field-engine development area.
 
-Doctrine compliance:
-- "Python never in the hot path": the hot path is @ti.kernel code,
-  JIT-compiled to native by Taichi. The Python here AUTHORS kernels and
-  loads arrays; the numpy twins are the executable SPEC, bound to the
-  kernels by twin-proofs at ~1e-16 max error.
-- "Tests on everything": falsifier suites run in-file — F1-F9 (kernel),
-  [1]-[8] (timestep), producer proofs (storage: byte-exact reconstruction,
-  fail-closed). A change that breaks physics breaks a named falsifier.
-- "Log big results to files": runs write JSON reports + .npz state;
-  stdout carries verdicts only.
-- Storage tiering: bulk run-states live on Haven (NVMe over gigabit
-  outruns local spinners); manifests + chain arrays travel in-repo.
+## Current later field implementation
+
+`field/` contains the active September field engine. Physics, harness/control lifecycle, and validation are now separated into explicit modules while `field_engine.py` remains the stable facade. See `field/README.md` and `ARCHITECTURE.md`.
+
+The intended stack is:
+
+```text
+Taichi runtime
+    ↓
+physics engine
+    ↑
+engine harness
+    ↑
+future analyst functions
+```
+
+The engine harness is the control interface for the physics engine: the surface used to add, remove and adjust elements, control runs, and inspect/manipulate engine state for analysis.
+
+## Archived predecessor
+
+The parallel August 31–September 1 Taichi v0-staging generation has been moved intact to `../archive/2026-09-taichi-v0-staging/`. Reconciliation confirmed that the later `field/` implementation does not import or execute that generation. It remains available as an experimental and historical reference, including its storage, ingestion, timestep, seam, and corpus-pour work.
+
+## Not under engine
+
+Database/cache work lives under `/kernels/database/`, WAL under `/kernels/wal/`, and shared endpoint-network infrastructure under `/network/`. These support the future analyst's working surfaces or the wider kernel network; they are not parts of the physics-engine harness.
+
+Research material that informed the field work lives under `/research/`.

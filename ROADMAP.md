@@ -1,54 +1,83 @@
 # Roadmap
 
-The project was re-founded on the field-balancing physics basis in August 2026 (see
-[docs/physics-basis.md](docs/physics-basis.md)). The prior 4-phase linguistic arc is archived with
-the paradigm that defined it. The new arc, in dependency order:
+This roadmap reflects the repository and implementation state after the September 2026 development split. It replaces the August roadmap that still described the field engine as future work.
 
-## 0. The rewrite (this phase — largely complete)
+## 0. Repository reconciliation — initial structural pass complete
 
-Review every artifact of the previous era, disposition it, archive honestly, and rewrite the
-project so others can understand it before anything is built. Record: [REBASE_REVIEW_PLAN.md](REBASE_REVIEW_PLAN.md)
-and [review/](review/). Remaining in this phase: the GitHub issue sweep, and review of the
-orchestrator claim-graph (out-of-date with the new paradigm; superseded on its own schedule).
+- Preserve both active development histories.
+- Align the filesystem with actual architectural roles.
+- Separate runtime implementation, kernel-network components, research, data snapshots and historical material.
+- Refresh contributor/agent entry points.
+- Keep structural moves and behavioural refactors in separate commits.
 
-## 1. The clean substrate
+Working record: [REORGANIZATION.md](REORGANIZATION.md), PR #63.
 
-Define the new schema from the precept (flat pool, arrayed-pair addresses, one-level composition,
-flags, provenance paths) and stand it up empty. Extraction then pulls from the old stores
-(read-only, per [docs/data-protocol.md](docs/data-protocol.md)): arrayed addresses from the
-decomposed columns, O/o drift corrected with a kept mapping table, sentinels flagged. The old
-databases are never modified.
+## 1. Reconcile the Taichi development lines
 
-## 2. The landing lattice
+The August 31–September 1 Taichi generation and the later September `engine/field/` implementation developed on parallel branches. The earlier generation is now preserved intact under `archive/2026-09-taichi-v0-staging/`; the later field engine is active.
 
-Place Kaikki/Wiktionary first — the full lexical inventory at the present face, etymologies as
-drafted temporal flows, reconstructed forms flagged model-produced. This gives every subsequent
-element somewhere to land.
+Review by responsibility rather than age:
 
-## 3. Corpus accretion
+- physics that remains current;
+- harness/control behaviour that remains useful;
+- ingestion/storage/addressing work that belongs outside physics;
+- experimental validation artifacts worth retaining;
+- superseded implementation that should move to archive.
 
-Documents enter as byte-particle streams (UTF-8 bytes are already two-nibble particles) and accrete
-onto the lattice: Gutenberg first (corpus and provenance metadata already in hand), then further
-aggregator emissions with their raw faces where recoverable. Creators and works get placed on
-temporal coordinates; target flows connect placements; unresolvable differentials are detections of
-unread sources.
+No component is discarded merely because it is earlier.
 
-## 4. The engine
+## 2. Establish the engine boundary cleanly — initial split complete
 
-The single balancing operation on Taichi's sparse LoD machinery — `taichi_core` is pure C++;
-direct C++ against the core is the probable path, evaluated as we go. Method requirements fixed in
-advance: a research corpus before the port (the AZSL-corpus method from the previous era), and
-oracle-first validation for every kernel (CPU reference oracle, GPU mirror, hardware equivalence
-harness). Tests on everything.
+The active field engine is now separated into:
 
-## 5. NAPIER
+- **physics engine** — `engine/field/field_engine_physics.py`;
+- **engine harness** — `engine/field/field_engine_harness.py`, the control interface used to add/remove/adjust elements, configure and advance runs, and inspect/manipulate engine state;
+- **stable facade** — `engine/field/field_engine.py` preserves the CLI and existing imports;
+- **validation** — `engine/field/field_engine_validation.py` plus the no-DB physics smoke test, kept outside engine behaviour.
 
-Inference as flow-solving in the emitted field, on the far side of the compression. The DI's
-substrate contract is the compressed field only.
+Next work in this phase is deeper behavioural coverage and harness evolution, not recombining these responsibilities.
 
-## Standing open problems (physics)
+The Taichi runtime remains the execution substrate rather than an HCP architectural layer of its own making.
 
-Carried from the packages, in view of anyone who wants them: ladder coefficients (Lamoreaux's
-five-percent number is the first target), the surplus/flow crossover, retardation as
-density-dependent propagation, the empty lower ledger, and the amount-side re-reading protocol.
-See [docs/physics-basis.md](docs/physics-basis.md) § Open problems.
+## 3. Stabilize analyst-supporting work surfaces
+
+Continue the PostgreSQL/cache/record/WAL kernel work so the future analyst can rely on current, reconciled working surfaces.
+
+- preserve independently testable record operations;
+- complete cache-manager tiers and WAL coupling as the settled design requires;
+- establish reproducible development database snapshots under `data/postgres/snapshots/`;
+- keep persistent database state distinct from schema, fixtures and runtime code.
+
+The analyst's reasoning/functions are still out of scope here.
+
+## 4. Complete the kernel-network substrate
+
+Build the remaining pieces of the loose Beowulf-style kernel network:
+
+- environment/configuration discovery;
+- endpoint advertising and topology resolution;
+- direct-memory local inbox/outbox pairing;
+- serialization and transmission bridge pairs for remote/system boundaries;
+- thread management for lower-frequency/system-facing endpoints;
+- activation of less-frequently-needed kernels when relevant inboxes become occupied.
+
+Kernel behaviour should remain independent of physical locality.
+
+## 5. Analyst functions — future design phase
+
+Only after the engine harness and working-data surfaces are stable should analyst functions be designed.
+
+The analyst is expected to use:
+
+- the engine harness as the physics-engine control panel; and
+- analyst-supporting database/cache/WAL kernels for current work surfaces.
+
+No analyst implementation should be inferred from the present DB-facing request interfaces.
+
+## 6. Wider NAPIER integration
+
+Integrate the stabilized field engine, kernel network and analyst layer into the broader NAPIER/HCP system while preserving the project's open, auditable architecture.
+
+## Parallel research track
+
+The field/ledger research basis remains under [research/](research/), with current explanatory material under [docs/](docs/). Research can continue independently of repository restructuring, but research artifacts should not be mistaken for runtime modules.

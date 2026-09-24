@@ -42,3 +42,7 @@ archive/2026-08-rebase/hcp-engine/backtrace.log
 
 # Research PDFs (large binaries; keep out of git — store externally)
 archive/2026-08-rebase/docs/research/*.pdf
+
+# Field engine run state / local backups (regenerable)
+field/*.npz
+field/*.bak-*

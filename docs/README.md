@@ -3,8 +3,8 @@
 Read in order:
 
 1. **[physics-basis.md](physics-basis.md)** — what was determined, the principles the project runs
-   on, lineage, and the open problems. The primary sources are [`/ledger`](../ledger/) and
-   [`/field`](../field/).
+   on, lineage, and the open problems. The primary sources are [`/ledger`](../research/ledger/) and
+   [`/field`](../research/field/).
 2. **[architecture.md](architecture.md)** — the structure of the space (nibble/byte particles),
    arrayed-pair addressing, the flat pool and logical chains, composition and compression, the
    singularity, NAPIER, and the engine substrate.

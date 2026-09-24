@@ -1,0 +1,201 @@
+{
+ "artifact": "timestep-observables-v0",
+ "caveats": [
+  "single-document / lexicon states \u2014 corpus-scale dilation tail and tau distributions await silas's corpus pour; this run validates the INSTRUMENT (gates) and baselines the shapes",
+  "frequency is never computed here \u2014 emergent-only per lane spec; sampler-shadow check is a separate artifact"
+ ],
+ "reads": [
+  {
+   "state": "moby-raw-fpcuda",
+   "n_leaves": 2552612,
+   "n_pairs": 1276306,
+   "all_bonded": true,
+   "code_equals_given": true,
+   "tau_ledger": {
+    "tau_total": 22,
+    "tau_hist": {
+     "0": 1276284,
+     "1": 22
+    },
+    "healed_by_class": {
+     "space": 19,
+     "utf8-cont": 3
+    }
+   },
+   "gates": {
+    "tau_total": {
+     "expect": 22,
+     "got": 22,
+     "pass": true
+    },
+    "healed_class_split": {
+     "expect": {
+      "space": 19,
+      "other": 3
+     },
+     "got": {
+      "space": 19,
+      "other": 3
+     },
+     "pass": true
+    }
+   },
+   "dilation": {
+    "det_percentiles_pair": {
+     "0": 0.604254,
+     "1": 0.629163,
+     "5": 0.638783,
+     "25": 0.737111,
+     "50": 0.762685,
+     "75": 0.780885,
+     "95": 0.798245,
+     "99": 0.808039,
+     "100": 0.837262
+    },
+    "per_byte_class": {
+     "space": {
+      "n": 197842,
+      "mean_det": 0.643522
+     },
+     "newline": {
+      "n": 44620,
+      "mean_det": 0.677969
+     },
+     "letter": {
+      "n": 970402,
+      "mean_det": 0.76863
+     },
+     "digit": {
+      "n": 1099,
+      "mean_det": 0.744722
+     },
+     "utf8-cont": {
+      "n": 15752,
+      "mean_det": 0.706544
+     },
+     "punct/other": {
+      "n": 46591,
+      "mean_det": 0.755484
+     }
+    },
+    "slow_zone_p5": {
+     "threshold": 0.638783,
+     "n_zones": 63735,
+     "max_run_pairs": 5,
+     "mean_run_pairs": 1.0
+    }
+   },
+   "scaffold_dependence": {
+    "space": {
+     "own_mean": 0.643522,
+     "by_prev_neighbor_class": {
+      "space": 0.643879,
+      "newline": 0.643545,
+      "letter": 0.643526,
+      "utf8-cont": 0.643647,
+      "punct/other": 0.643486
+     }
+    },
+    "newline": {
+     "own_mean": 0.677969,
+     "by_prev_neighbor_class": {
+      "newline": 0.672831,
+      "letter": 0.684718,
+      "utf8-cont": 0.685154,
+      "punct/other": 0.684798
+     }
+    },
+    "letter": {
+     "own_mean": 0.76863,
+     "by_prev_neighbor_class": {
+      "space": 0.765142,
+      "newline": 0.763056,
+      "letter": 0.769719,
+      "utf8-cont": 0.766722,
+      "punct/other": 0.761203
+     }
+    },
+    "digit": {
+     "own_mean": 0.744722,
+     "by_prev_neighbor_class": {
+      "space": 0.756526,
+      "digit": 0.738194
+     }
+    },
+    "utf8-cont": {
+     "own_mean": 0.706544,
+     "by_prev_neighbor_class": {
+      "utf8-cont": 0.76873,
+      "punct/other": 0.644735
+     }
+    },
+    "punct/other": {
+     "own_mean": 0.755484,
+     "by_prev_neighbor_class": {
+      "space": 0.756876,
+      "newline": 0.758726,
+      "letter": 0.754914,
+      "digit": 0.757531,
+      "utf8-cont": 0.768802,
+      "punct/other": 0.759968
+     }
+    }
+   }
+  },
+  {
+   "state": "lexicon-v031",
+   "n_leaves": 16775644,
+   "n_pairs": 8387822,
+   "all_bonded": true,
+   "code_equals_given": null,
+   "tau_ledger": {
+    "tau_total": 0,
+    "tau_hist": {
+     "0": 8387822
+    },
+    "healed_by_class": {}
+   },
+   "gates": {
+    "tau_total": {
+     "expect": 0,
+     "got": 0,
+     "pass": true
+    }
+   },
+   "dilation": {
+    "det_percentiles_pair": {
+     "0": 0.644865,
+     "1": 0.679995,
+     "5": 0.733926,
+     "25": 0.757365,
+     "50": 0.773177,
+     "75": 0.785425,
+     "95": 0.799533,
+     "99": 0.808271,
+     "100": 0.840899
+    },
+    "per_byte_class": {
+     "letter": {
+      "n": 8387822,
+      "mean_det": 0.769385
+     }
+    },
+    "slow_zone_p5": {
+     "threshold": 0.733926,
+     "n_zones": 397006,
+     "max_run_pairs": 7,
+     "mean_run_pairs": 1.06
+    }
+   },
+   "scaffold_dependence": {
+    "letter": {
+     "own_mean": 0.769385,
+     "by_prev_neighbor_class": {
+      "letter": 0.769385
+     }
+    }
+   }
+  }
+ ],
+ "all_gates_pass": true
+}

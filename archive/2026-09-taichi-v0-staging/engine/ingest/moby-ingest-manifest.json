@@ -1,0 +1,11 @@
+{
+ "artifact": "ingest-v0 handover manifest (EMIT-ONLY; the ledger row is the store)",
+ "plan_line": "data-plan \u00a74 one full-file routine + \u00a76 ledger + \u00a72 ledger-in-db",
+ "source": "/home/planner/engine/hcp/data/gutenberg/texts/02701_Moby Dick Or The Whale.txt",
+ "content_sha256": "7cc6f1aac955b38c5a59306f48fe2d752d917549e8019c0f6ea65fb52d1d21cc",
+ "n_bytes": 1276306,
+ "ledger_event_id": 1,
+ "observed_time": "2026-09-01T16:15:47.516821+00:00",
+ "emission_stamp": "1851-11-14",
+ "kernel_contract": "pour_raw.py consumes the FILE at `source`; verify content_sha256 before pouring (routine transforms nothing, so identity is checkable end-to-end)"
+}

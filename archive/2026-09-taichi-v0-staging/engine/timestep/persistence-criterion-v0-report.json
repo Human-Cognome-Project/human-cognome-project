@@ -1,0 +1,273 @@
+{
+ "artifact": "persistence-criterion-v0 (stability = persistence across ticks)",
+ "plan_line": "data-plan \u00a76 tick-states/tau instrument + \u00a72 closes-persistently-becomes-entry; closes write-back v0 proxy caveat",
+ "criterion": {
+  "window": "last 5 snapshots (ticks 120-200)",
+  "closed_iff": [
+   "bonded at every snapshot (no breaks)",
+   "identity constant (both nibbles)",
+   "det not falling (final >= first - 0.005)"
+  ],
+  "no_det_level_threshold": true
+ },
+ "docs": {
+  "doc1": {
+   "n_pairs": 52610,
+   "closed_frac": 0.96605,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 1786
+   },
+   "proxy_stable_actually_persistent": 1.0,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc2": {
+   "n_pairs": 174355,
+   "closed_frac": 0.96559,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 5999
+   },
+   "proxy_stable_actually_persistent": 0.99989,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc3": {
+   "n_pairs": 163530,
+   "closed_frac": 0.96805,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 5224
+   },
+   "proxy_stable_actually_persistent": 1.0,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc4": {
+   "n_pairs": 448929,
+   "closed_frac": 0.96886,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 13978
+   },
+   "proxy_stable_actually_persistent": 0.99993,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc5": {
+   "n_pairs": 693877,
+   "closed_frac": 0.96786,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 22298
+   },
+   "proxy_stable_actually_persistent": 0.99994,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc6": {
+   "n_pairs": 772429,
+   "closed_frac": 0.96761,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 25018
+   },
+   "proxy_stable_actually_persistent": 0.9999,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc7": {
+   "n_pairs": 1201767,
+   "closed_frac": 0.96799,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 38473
+   },
+   "proxy_stable_actually_persistent": 0.99994,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc8": {
+   "n_pairs": 1276306,
+   "closed_frac": 0.96845,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 40268
+   },
+   "proxy_stable_actually_persistent": 0.99996,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  },
+  "doc9": {
+   "n_pairs": 306594,
+   "closed_frac": 0.96629,
+   "open_signatures": {
+    "broken": 0,
+    "identity_oscillating": 0,
+    "dissolving": 10335
+   },
+   "proxy_stable_actually_persistent": 0.99997,
+   "tau_mean_closed_vs_open": [
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "moby": {
+  "closed_pairs": 1236038,
+  "proxy_pairs": 127631,
+  "condensation_types_persistence": 114,
+  "condensation_types_proxy": 45,
+  "types_only_in_proxy": [],
+  "types_only_in_persistence": [
+   10,
+   13,
+   32,
+   33,
+   35,
+   36,
+   37,
+   38,
+   40,
+   41,
+   42,
+   44,
+   45,
+   47,
+   48,
+   49,
+   50,
+   52,
+   56,
+   57,
+   65,
+   66,
+   67,
+   68,
+   69,
+   70,
+   71,
+   72,
+   73,
+   74,
+   75,
+   76,
+   77,
+   78,
+   80,
+   81,
+   82,
+   84,
+   88,
+   90,
+   91,
+   97,
+   98,
+   100,
+   104,
+   112,
+   113,
+   120,
+   128,
+   130,
+   132,
+   142,
+   143,
+   146,
+   147,
+   148,
+   149,
+   151,
+   152,
+   162,
+   163,
+   168,
+   169,
+   176,
+   194,
+   197,
+   206,
+   207,
+   226
+  ],
+  "open_population": {
+   "open_pairs": 40268,
+   "both_light_frac_open": 0.6713,
+   "both_light_frac_closed": 0.1508,
+   "top_open_bytes": [
+    {
+     "byte": 32,
+     "glyph": " ",
+     "n_open": 25990
+    },
+    {
+     "byte": 13,
+     "glyph": "0xd",
+     "n_open": 4875
+    },
+    {
+     "byte": 10,
+     "glyph": "0xa",
+     "n_open": 4127
+    },
+    {
+     "byte": 112,
+     "glyph": "p",
+     "n_open": 3694
+    },
+    {
+     "byte": 128,
+     "glyph": "0x80",
+     "n_open": 1042
+    },
+    {
+     "byte": 80,
+     "glyph": "P",
+     "n_open": 207
+    },
+    {
+     "byte": 111,
+     "glyph": "o",
+     "n_open": 116
+    },
+    {
+     "byte": 119,
+     "glyph": "w",
+     "n_open": 43
+    }
+   ]
+  },
+  "db_write": {
+   "rows": 114,
+   "table": "engine.condensations_v0 (beside proxy rows, new provenance)",
+   "minted": 0,
+   "note": "all types resolve to given byte codes (R0)"
+  }
+ },
+ "wall_s": 5.25
+}
