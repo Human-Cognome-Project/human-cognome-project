@@ -24,9 +24,15 @@ import psycopg2
 
 
 def connect():
-    return psycopg2.connect(host="192.168.68.60", port=5435, user="hcp",
-                            password=os.environ.get("HCP_PW", "hcp_dev"),
-                            dbname="hcp2_english")
+    kwargs = {
+        "host": os.environ.get("HCP_HOST", "localhost"),
+        "port": int(os.environ.get("HCP_PORT", "5435")),
+        "user": os.environ.get("HCP_USER", "hcp"),
+        "dbname": os.environ.get("HCP_ENGLISH_DB", "hcp2_english"),
+    }
+    if os.environ.get("HCP_PW"):
+        kwargs["password"] = os.environ["HCP_PW"]
+    return psycopg2.connect(**kwargs)
 
 
 def main():
