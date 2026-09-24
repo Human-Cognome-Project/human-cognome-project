@@ -1,7 +1,7 @@
 # Endpoint-activation cross-kernel model — design notes
 
 **Status: PARTLY BUILT (2026-09-22). Governing model for the cross-kernel command /
-coupling layer.** The local activation substrate (`endpoint/`, commit `b97034a`) and the
+coupling layer.** The local activation substrate (`network/endpoint/`, commit `b97034a`) and the
 WAL manager as a monitored-endpoint kernel (Pair 1 — `wal/wal_kernel.{h,cpp}`, commits
 `3aca2ac`/`cf7e0c6`) are **BUILT**; the remaining coupling (cache-manager kernel, Pair-2
 swarm, the API-pair transport bridge, reload repopulation, the live feed) is still
