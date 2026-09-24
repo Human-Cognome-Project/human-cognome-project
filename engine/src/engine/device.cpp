@@ -1,18 +1,22 @@
 #include "engine/device.h"
 
 #include <cstdlib>
-#include <thread>
 #include <cstdint>
+#include <thread>
 #include <unistd.h>
 
 #include "taichi/platform/cuda/detect_cuda.h"
+
+#if defined(TI_WITH_CUDA)
 #include "taichi/rhi/cuda/cuda_context.h"
 #include "taichi/rhi/cuda/cuda_driver.h"
+#endif
 
 namespace engine {
 
 namespace {
 
+#if defined(TI_WITH_CUDA)
 // Set once anything here initializes the CUDA driver, because the visibility
 // list is only read at that point.
 bool cuda_touched = false;
@@ -25,6 +29,7 @@ taichi::lang::CUDADriver &driver() {
   }
   return instance;
 }
+#endif
 
 }  // namespace
 
@@ -41,11 +46,16 @@ HostInfo host_info() {
 }
 
 bool cuda_available() {
+#if defined(TI_WITH_CUDA)
   return taichi::is_cuda_api_available();
+#else
+  return false;
+#endif
 }
 
 std::vector<CudaDevice> visible_cuda_devices() {
   std::vector<CudaDevice> devices;
+#if defined(TI_WITH_CUDA)
   if (!cuda_available()) {
     return devices;
   }
@@ -54,28 +64,31 @@ std::vector<CudaDevice> visible_cuda_devices() {
   cuda.device_get_count(&count);
   for (int index = 0; index < count; ++index) {
     void *handle = nullptr;
-    cuda.device_get(&handle, reinterpret_cast<void *>(
-                                 static_cast<std::intptr_t>(index)));
+    cuda.device_get(
+        &handle,
+        reinterpret_cast<void *>(static_cast<std::intptr_t>(index)));
     char name[128] = {0};
     cuda.device_get_name(name, sizeof(name), handle);
     CudaDevice device;
     device.visible_index = index;
     device.name = name;
-    cuda.device_get_attribute(&device.compute_capability_major,
-                              taichi::lang::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR,
-                              handle);
-    cuda.device_get_attribute(&device.compute_capability_minor,
-                              taichi::lang::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR,
-                              handle);
+    cuda.device_get_attribute(
+        &device.compute_capability_major,
+        taichi::lang::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, handle);
+    cuda.device_get_attribute(
+        &device.compute_capability_minor,
+        taichi::lang::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, handle);
     // The engine binds ordinal zero of whatever this process can see.
     device.bound = index == 0;
     devices.push_back(device);
   }
+#endif
   return devices;
 }
 
 CudaDevice bound_cuda_device() {
   CudaDevice device;
+#if defined(TI_WITH_CUDA)
   if (!cuda_available()) {
     return device;
   }
@@ -90,23 +103,33 @@ CudaDevice bound_cuda_device() {
   device.free_bytes = context.get_free_memory();
   device.memory_pool_path = context.supports_mem_pool();
   device.bound = true;
+#endif
   return device;
 }
 
 std::size_t cuda_free_memory() {
+#if defined(TI_WITH_CUDA)
   if (!cuda_available()) {
     return 0;
   }
   cuda_touched = true;
   return taichi::lang::CUDAContext::get_instance().get_free_memory();
+#else
+  return 0;
+#endif
 }
 
 bool set_visible_cuda_devices(const std::string &list) {
+#if defined(TI_WITH_CUDA)
   if (cuda_touched) {
     return false;
   }
   setenv("CUDA_VISIBLE_DEVICES", list.c_str(), 1);
   return true;
+#else
+  (void)list;
+  return false;
+#endif
 }
 
 }  // namespace engine
