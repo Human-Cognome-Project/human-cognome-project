@@ -1,3 +1,5 @@
+> **Recovered September 2026 record.** This document preserves the native-engine development/vetting context in which it was written. Absolute `/opt/project/...` paths, agent-routing instructions, and statements about branch/commit status are historical. Current paths/status are indexed in [README.md](README.md); current repository policy is in the root `AGENTS.md` and `CONTRIBUTING.md`.
+
 # Vetting plan — workspace claims to verify against live code
 
 Premise (Patrick, 2026-09-13): **none of the current workspace can be fully
