@@ -11,8 +11,6 @@ or analyst-facing controls. Those belong to the engine harness.
 """
 import numpy as np
 
-import field_engine_v0 as v0
-
 NV = 16  # nibble values
 
 
@@ -116,6 +114,10 @@ class Oracle:
             self.Phi = relax_channels(self.Phi, src, self.iters, f, per)
             phi = self.Phi.sum(axis=(0, 1))
         elif per:
+            # v0 is needed only for the explicit periodic-regression path.
+            # Keep it lazy so the current physics module has no database-loader
+            # dependency merely by being imported.
+            import field_engine_v0 as v0
             phi = v0.relax(self.phi, rho - rho.mean(), self.iters, h)
             self.phi = phi
         else:
