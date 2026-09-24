@@ -42,7 +42,7 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 
 ## Current implementation
 
-- **[engine/field/](engine/field/)** — later September Taichi field-engine development. The current files still mix physics, harness, CPU-oracle and validation concerns; that split is a planned refactor, not something to infer from filenames.
+- **[engine/field/](engine/field/)** — active September field engine, now separated into physics (`field_engine_physics.py`), control harness (`field_engine_harness.py`), validation (`field_engine_validation.py`), and a stable `field_engine.py` facade.
 - **[archive/2026-09-taichi-v0-staging/](archive/2026-09-taichi-v0-staging/)** — the parallel August 31–September 1 Taichi generation, now archived intact as a predecessor/experimental record after reconciliation showed no runtime dependency from the later field engine.
 - **[kernels/database/](kernels/database/)** — PostgreSQL record operations and database/cache-manager kernel family supporting the analyst's working surfaces.
 - **[kernels/wal/](kernels/wal/)** — WAL manager kernel family, now a peer of the database/cache family.
