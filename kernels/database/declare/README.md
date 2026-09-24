@@ -17,7 +17,7 @@ in `../schema`, `../read`, or the ingestion runtime.
 ## Build & run
 
 ```sh
-# from db_kernel/declare/
+# from kernels/database/declare/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
     declare_core.cpp declare_core_test.cpp \
