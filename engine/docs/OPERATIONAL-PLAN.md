@@ -1,3 +1,5 @@
+> **Recovered September 2026 record.** This document preserves the native-engine development/vetting context in which it was written. Absolute `/opt/project/...` paths, agent-routing instructions, and statements about branch/commit status are historical. Current paths/status are indexed in [README.md](README.md); current repository policy is in the root `AGENTS.md` and `CONTRIBUTING.md`.
+
 # Operational plan — the field-analysis harness
 
 **The single consolidated plan.** Patrick has covered this material across several
