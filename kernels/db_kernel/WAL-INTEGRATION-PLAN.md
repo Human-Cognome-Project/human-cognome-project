@@ -1,6 +1,6 @@
 # WAL-manager activation integration — plan (draft, for adversary vetting)
 
-**Status: BUILT + VERIFIED (2026-09-22).** Built against the built `endpoint/` substrate
+**Status: BUILT + VERIFIED (2026-09-22).** Built against the built `network/endpoint/` substrate
 (commit `b97034a`) and the built `wal/` bookkeeper, as `wal/wal_kernel.{h,cpp}` +
 `wal_kernel_test.cpp`. Drafted 2026-09-22 MDT and reconciled the same day against a
 fresh-adversary plan review (SHOULD-FIX 1–4 + CONSIDER 5–8 all folded in:
@@ -15,7 +15,7 @@ the source of truth for what is *built*.
 ## Mission (one line)
 
 Wire the built WAL bookkeeper (`wal/`) onto the built endpoint substrate
-(`endpoint/`) so the WAL manager runs as a **monitored-endpoint kernel**: it reads
+(`network/endpoint/`) so the WAL manager runs as a **monitored-endpoint kernel**: it reads
 WAL reports off its in-box, books obligations (existing logic, unchanged), and
 pushes the owed reciprocal work into its out-box — **fixture-fed**, tested,
 standalone-buildable.
@@ -144,7 +144,7 @@ registered as a `scheduler::Handler` on the WAL manager's in-box(es).
   does **not** drop-and-continue. Because `feed()` runs before the push, a thrown
   report contributes **nothing** to the out-box. Two things this obliges:
   (a) the plan records that **a throwing handler aborts the whole scheduler run** — a
-  *substrate-level* behaviour (the `endpoint/` tests never exercise a throwing
+  *substrate-level* behaviour (the `network/endpoint/` tests never exercise a throwing
   handler, so this build is the first to rely on it), acceptable for a standalone
   fixture test but noted as a property, not hidden; (b) a test proves the out-box
   received nothing for the offending report (test #6).
