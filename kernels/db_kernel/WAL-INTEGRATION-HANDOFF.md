@@ -22,12 +22,12 @@
 **For: a clean context.** You have no prior history with this work; this doc is
 self-contained. Your mission: **draft a plan, get it vetted, build it under review,
 and commit** — the same coder+adversary discipline the endpoint primitives were built
-under (see commit `b97034a` and `endpoint/README.md` for the pattern).
+under (see commit `b97034a` and `network/endpoint/README.md` for the pattern).
 
 ## Mission (one line)
 
 Wire the **built WAL bookkeeper** (`wal/`) onto the **built endpoint substrate**
-(`endpoint/`) so the WAL manager runs as a **monitored-endpoint component** that
+(`network/endpoint/`) so the WAL manager runs as a **monitored-endpoint component** that
 ingests WAL reports from per-source inboxes, books obligations, and **pushes the owed
 reciprocal work to the originating cache manager's outbox** — **fixture-fed**, with
 tests, standalone-buildable. This is the "Pair 1" wiring from the design note.
@@ -44,7 +44,7 @@ tests, standalone-buildable. This is the "Pair 1" wiring from the design note.
   - *"Endpoint identity & the dupe-address rule"* — endpoint identity = token_id-space
     address + local slot.
   - The **RECONCILE** section (staging into a pinned box) — context; not the first build.
-- **`endpoint/`** (the substrate you build ON — committed `b97034a`): `README.md`,
+- **`network/endpoint/`** (the substrate you build ON — committed `b97034a`): `README.md`,
   `box.h`, `endpoint.h`, `scheduler.h`. Note the ownership rules: **the scheduler is
   the sole enqueue path** (`submit` / `Sender::send`); box is a dumb FIFO; a component
   is a **handler** registered on a box; recycled-slot generation safety.
