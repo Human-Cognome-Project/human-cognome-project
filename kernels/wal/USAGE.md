@@ -1,12 +1,12 @@
 # Using the WAL manager
 
 > **⚠ Forward flag (2026-09-21; updated 2026-09-22) — PUSH model now BUILT (Pair 1).** The
-> activation-substrate design (`engine/db_kernel/ENDPOINT-ACTIVATION-NOTES.md`) rebases to a
+> activation-substrate design (`network/ENDPOINT-ACTIVATION-NOTES.md`) rebases to a
 > **PUSH** model: the WAL manager emits owed reciprocal work to the cache manager's inbox
 > (and stages RECONCILE into a pinned box) — superseding this doc's "not to be told what to do
 > next," "no schedule/prioritize surface," and "The WAL manager's role is unchanged by
-> RECONCILE." The **push half is now BUILT** as `wal/wal_kernel.{h,cpp}`
-> (`WAL-INTEGRATION-PLAN.md`): a monitored-endpoint kernel (source-blind = location-blind, but
+> RECONCILE." The **push half is now BUILT** as `kernels/wal/wal_kernel.{h,cpp}`
+> (`kernels/wal/WAL-INTEGRATION-PLAN.md`): a monitored-endpoint kernel (source-blind = location-blind, but
 > aware of its counterpart) that books via the unchanged door below and emits owed work to the
 > cache-manager out-box (= that counterpart's inbox). Close stays self-accounting (the
 > durable obligation remains in the open-obligation relation; the out-box is volatile
@@ -17,7 +17,7 @@
 
 This is the **consumer contract** for anything that reads the WAL manager's
 bookkeeping — chiefly the **cache manager**, which is the only real consumer
-today. If you are working *on* the WAL manager itself, see `wal/README.md`
+today. If you are working *on* the WAL manager itself, see `kernels/wal/README.md`
 instead (charter, file map, build/run). This file is for everyone else.
 
 ## What it provides
@@ -91,7 +91,7 @@ reverse-search index and none should ever be added. `wal_book.h`
   the reciprocal or the mass fill to `hcp3_core`). That write becomes the
   next WAL report; the WAL manager observes it and closes the matching
   obligation by identity equality. This is the **read → follow → do →
-  repeat** cycle (`WAL-PLAN.md` §3): the consumer's own write *is* the
+  repeat** cycle (`kernels/wal/WAL-PLAN.md` §3): the consumer's own write *is* the
   proof of completion, and the WAL manager's only job is to notice it
   landed.
 - Reads the open-obligation relation to know **what's still owed**, not to
@@ -101,7 +101,7 @@ reverse-search index and none should ever be added. `wal_book.h`
   decision, made by reading `list_open`, not something the WAL manager
   hands over.
 
-One line, repeated from `wal/README.md` because it's the whole boundary:
+One line, repeated from `kernels/wal/README.md` because it's the whole boundary:
 **the cache manager writes the primary change and builds its own return
 paths; the WAL manager books what returns are owed and watches them land.**
 
@@ -109,7 +109,7 @@ paths; the WAL manager books what returns are owed and watches them land.**
 and `record_seen` are each their own independent write — the WAL manager
 gives no atomicity guarantee spanning "observe a settling write, then book
 it" (a crash mid-step can leave History mis-recording what settled; see
-`WAL-PLAN.md`'s status blockquote for the trace, and `NOTES.md`'s
+`kernels/wal/WAL-PLAN.md`'s status blockquote for the trace, and `kernels/database/NOTES.md`'s
 Process-runtime section for the ruling). That gap was raised, and Patrick
 ruled it dropped as a WAL-manager item, not fixed here — a consumer/runtime
 that needs atomicity across its own observe→act cycle owns that at its own
@@ -127,10 +127,10 @@ level; the WAL manager does not provide it and is not adding surface to.
 > was also removed from the dispatch surface entirely (no longer a db/cache-manager verb).
 > The prose below ("acted on entirely by the cache manager"; "the WAL manager's role is
 > unchanged") reflects the **currently-built** library, which has no reconcile-staging yet;
-> it is superseded as *design*. See `ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE" and
-> `NOTES.md`'s messaging-realignment banner.
+> it is superseded as *design*. See `network/ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE" and
+> `kernels/database/NOTES.md`'s messaging-realignment banner.
 
-RECONCILE (`NOTES.md` "Cache tier") is an analyst-raised **"this deferred
+RECONCILE (`kernels/database/NOTES.md` "Cache tier") is an analyst-raised **"this deferred
 cross-work is priority now"** flag — the analyst expects the pending
 cross-processing results (reciprocal returns, derived masses/centroids)
 will help their current analysis, so they want it pulled forward instead of
@@ -153,7 +153,7 @@ Link against `wal_book.{h,cpp}` (the door), `wal_recognize.h` (the
 `Obligation`/`ObligationKind` types — header-only for the type itself),
 and `wal_report.h` (the `Report`/`OpKind` types, header-only) as needed;
 `../codec` is a transitive dependency (`codec::Address`). See
-`wal/README.md` for the exact `g++` invocations, the **run-FROM-`wal/`**
+`kernels/wal/README.md` for the exact `g++` invocations, the **run-FROM-`wal/`**
 convention (DB-backed code loads `wal_schema.sql` relative to the current
 working directory), and the disposable `wal_manager` database note — that
 convention and those build lines are canonical there; this file doesn't
