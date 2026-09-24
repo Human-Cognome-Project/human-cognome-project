@@ -1,7 +1,7 @@
 # The Physics Basis
 
 **What was determined, August 2026.** The primary sources are the two packages in this repository:
-[`ledger/`](../ledger/) and [`field/`](../field/). This page is the orientation, not the substitute —
+[`research/ledger/`](../research/ledger/) and [`research/field/`](../research/field/). This page is the orientation, not the substitute —
 the packages carry the measurements, derivations, citations, and runnable models.
 
 ## The argument in five sentences
@@ -11,12 +11,12 @@ the packages carry the measurements, derivations, citations, and runnable models
    hold.
 2. Removing the two junctions and the square they produce — by operations that each have a named
    source — leaves the measured world on one rational axis with no time and no energy in its labels:
-   the **Mann ledger** (`ledger/mann_ledger_writeup.md`, `mann_ledger_math.md`).
+   the **Mann ledger** (`research/ledger/mann_ledger_writeup.md`, `mann_ledger_math.md`).
 3. On the separated ledgers, **frequency** is only how often a sampler reads, and **amount** is only
    how much of the continuous field is present; nothing converts one into the other.
 4. Treating matter as a density imbalance in that field, relaxing by diffusion, gives inverse-square
    attraction between two bodies as a product of their imbalances with no frequency term — Newton's
-   law, and Coulomb's with a sign rule (`field/field_attraction_writeup.md`, run: `field/field_model.py`).
+   law, and Coulomb's with a sign rule (`research/field/field_attraction_writeup.md`, run: `research/field/field_model.py`).
 5. Every higher inverse power in physics (dipole, van der Waals, Casimir-Polder, the plate law, the
    thermal crossover) is that same inverse square compounded once per mutual adjustment folded into
    the calculation — including adjustments contributed by the field's own state.
@@ -38,7 +38,7 @@ anywhere. Two or more centres cannot avoid periodicity: their emissions meet at 
 geometry and propagation rate, and the period is the timetable of the collisions, not a property of
 any centre. Periodic emission is signal-equivalent (a sampler can lock to it); continuous emission is
 force-like (it fills every window). Heat is the type case of the confusion this separates
-(`ledger/RP_amount_ledger_rereading.md`).
+(`research/ledger/RP_amount_ledger_rereading.md`).
 
 **The separation rule.** Frequency belongs to samplers and lives on a log axis. Amount belongs to
 the field and lives on a linear axis. Any inherited formula joining the two is cut at the join, and
@@ -77,4 +77,4 @@ The prior paradigm converged on this basis independently before it was stated:
 - **The lower ledger.** Empty below 0.013 Mann by measurement; expected to fill.
 - **Unread slots.** 24 of 36 ledger entries have no measured amount; 12 have no measured frequency.
   They stay empty until read. The amount side awaits re-reading with sampler cycle and continuity
-  declared on every entry (`ledger/RP_amount_ledger_rereading.md`).
+  declared on every entry (`research/ledger/RP_amount_ledger_rereading.md`).
