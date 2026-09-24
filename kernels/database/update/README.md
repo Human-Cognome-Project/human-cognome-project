@@ -20,7 +20,7 @@ runtime.
 ## Build & run
 
 ```sh
-# from db_kernel/update/
+# from kernels/database/update/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
     update_core.cpp update_core_test.cpp \
