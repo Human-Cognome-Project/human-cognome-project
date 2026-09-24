@@ -70,11 +70,18 @@ graphics/pixel/vertex assumptions HCP deliberately removed.
 Taichi build.
 
 - CPU/LLVM components are mandatory.
-- CUDA components are optional and auto-detected by default.
-- `ENGINE_TAICHI_CUDA=ON` requires a complete CUDA-capable matched build.
-- `ENGINE_TAICHI_CUDA=OFF` forces the HCP wrapper to ignore CUDA components.
-- `ENGINE_TAICHI_CUDA=AUTO` uses CUDA only when the complete component/runtime
-  set is present.
+- CUDA is selected from the matched Taichi build's `TI_WITH_CUDA` setting.
+  Leftover archives in a reused build tree do not enable it.
+- `ENGINE_TAICHI_CUDA=ON` requires a CUDA-enabled matched build with all
+  CUDA components and runtime artifacts present.
+- `ENGINE_TAICHI_CUDA=OFF` requires Taichi built with `TI_WITH_CUDA=OFF`.
+  Use a separate CPU build tree when switching between CPU and CUDA builds.
+- `ENGINE_TAICHI_CUDA=AUTO` (default) mirrors the matched Taichi build and
+  fails if an enabled CUDA build is incomplete.
+
+The current HCP C++ wrapper selects LLVM/x64 or CUDA. Taichi supports more
+backends, but each additional HCP target needs explicit wrapper linkage and
+functional qualification before claiming support.
 
 The HCP field formulas and control semantics must not branch merely because the
 backend changes.

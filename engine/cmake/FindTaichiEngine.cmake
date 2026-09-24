@@ -11,8 +11,8 @@
 #                        (default: ${ROOT}/build-review)
 #   ENGINE_TAICHI_RUNTIME_SOURCE
 #                        generated LLVM runtime bitcode directory
-#   ENGINE_TAICHI_CUDA   AUTO, ON or OFF. AUTO detects whether the matched
-#                        build contains the CUDA component archives.
+#   ENGINE_TAICHI_CUDA   AUTO, ON or OFF. Must agree with the matched Taichi
+#                        build; AUTO reads that build's CUDA configuration.
 #   ENGINE_LLVM_CONFIG   llvm-config used by the Taichi build
 #
 # Outputs:
@@ -72,6 +72,23 @@ set(_engine_cuda_components
     taichi/runtime/cuda/libcuda_runtime.a
     taichi/rhi/cuda/libcuda_rhi.a)
 
+# Archives from an earlier configuration can remain in a reused build tree.
+# The core archive's compile definitions, rather than those stale files,
+# decide which backend dependencies must be linked.
+set(_engine_taichi_cache "${ENGINE_TAICHI_BUILD}/CMakeCache.txt")
+if(NOT EXISTS "${_engine_taichi_cache}")
+  message(FATAL_ERROR "Matched Taichi build has no CMakeCache.txt at ${_engine_taichi_cache}")
+endif()
+file(STRINGS "${_engine_taichi_cache}" _engine_cuda_cache
+     REGEX "^TI_WITH_CUDA:BOOL=(ON|OFF)$")
+if(NOT _engine_cuda_cache)
+  message(FATAL_ERROR "Matched Taichi build has no TI_WITH_CUDA:BOOL setting")
+endif()
+set(_engine_taichi_cuda FALSE)
+if(_engine_cuda_cache STREQUAL "TI_WITH_CUDA:BOOL=ON")
+  set(_engine_taichi_cuda TRUE)
+endif()
+
 set(_engine_cuda_complete TRUE)
 foreach(component IN LISTS _engine_cuda_components)
   if(NOT EXISTS "${ENGINE_TAICHI_BUILD}/${component}")
@@ -87,21 +104,29 @@ endif()
 
 string(TOUPPER "${ENGINE_TAICHI_CUDA}" _engine_cuda_mode)
 if(_engine_cuda_mode STREQUAL "AUTO")
-  set(ENGINE_TAICHI_WITH_CUDA ${_engine_cuda_complete})
+  set(ENGINE_TAICHI_WITH_CUDA ${_engine_taichi_cuda})
 elseif(_engine_cuda_mode STREQUAL "ON")
-  if(NOT _engine_cuda_complete)
-    message(FATAL_ERROR
-      "ENGINE_TAICHI_CUDA=ON but the matched Taichi build does not contain "
-      "all CUDA component archives/runtime artifacts.")
+  if(NOT _engine_taichi_cuda)
+    message(FATAL_ERROR "ENGINE_TAICHI_CUDA=ON requires a CUDA-enabled Taichi build")
   endif()
   set(ENGINE_TAICHI_WITH_CUDA TRUE)
 elseif(_engine_cuda_mode STREQUAL "OFF")
+  if(_engine_taichi_cuda)
+    message(FATAL_ERROR
+      "ENGINE_TAICHI_CUDA=OFF requires Taichi built with TI_WITH_CUDA=OFF; "
+      "use a separate CPU Taichi build tree instead")
+  endif()
   set(ENGINE_TAICHI_WITH_CUDA FALSE)
 else()
   message(FATAL_ERROR "ENGINE_TAICHI_CUDA must be AUTO, ON or OFF")
 endif()
 
 if(ENGINE_TAICHI_WITH_CUDA)
+  if(NOT _engine_cuda_complete)
+    message(FATAL_ERROR
+      "CUDA-enabled Taichi build is missing CUDA component archives/runtime "
+      "artifacts; rebuild the matched Taichi tree")
+  endif()
   list(APPEND _engine_components ${_engine_cuda_components})
 endif()
 
