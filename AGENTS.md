@@ -31,7 +31,7 @@ If you are contributing to paths affected by the reorganization, branch from the
 - Code and executable tests determine what is built. Design notes determine intent only where they explicitly say a decision is settled.
 - Preserve distinctions such as **BUILT**, **planned**, **deferred**, and **experimental**. Do not promote a plan to implementation by paraphrase.
 - When moving kernel families, migrate their include paths, build instructions and tests together. Preserve working interfaces before refactoring behaviour.
-- Do not refactor `engine/field/` into physics/harness modules in the same commit as structural moves. Establish behaviour-preserving boundaries first.
+- Preserve the established `engine/field/` boundary: physics in `field_engine_physics.py`, controls/lifecycle in `field_engine_harness.py`, validation outside engine behaviour, and `field_engine.py` as the compatibility facade.
 - Never force-push or rewrite shared history for cleanup. Normal commits, merges and moves keep prior versions recoverable.
 - Avoid destructive database operations outside disposable test databases. Never point reset/drop-schema tests at data that must be kept.
 - Keep credentials and private data out of Git. PostgreSQL reproducibility exports belong under `data/postgres/snapshots/` and use Git LFS for compressed dumps.
