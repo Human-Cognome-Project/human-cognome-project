@@ -1,5 +1,7 @@
 # Endpoint-substrate primitives — implementation plan (rev. 2)
 
+> **STATUS: IMPLEMENTED.** The local substrate described here is built under `network/endpoint/`. The later WAL integration is also built under `kernels/wal/`; the remaining out-of-scope seams below stay future work.
+
 **Rev. 2 reconciles the plan-adversary findings (2026-09-21):** readiness ownership +
 injection entry point (F1), generation bump-site (F2), slot-space partition (F3),
 handler-continuation deferral named (F4), build-order (F5), send semantics (F6),
@@ -34,7 +36,7 @@ where that note and this plan differ, the note's resolved decisions govern.
 
 **Discipline:** each part standalone-buildable and self-testing (C++17, tiny in-file
 `ok`/`FAIL` harness, prints `PASS <name>`, non-zero exit on failure), same convention as
-`codec/`, `wal/`. These primitives are **pure in-memory — no libpq/Postgres**, so tests
+`kernels/database/codec/`, `kernels/wal/`. These primitives are **pure in-memory — no libpq/Postgres**, so tests
 build and run with a plain `g++` and no database. Tests ship with every part. No imported
 machinery — build the minimum the flows need; name anything beyond it. Canadian English.
 
