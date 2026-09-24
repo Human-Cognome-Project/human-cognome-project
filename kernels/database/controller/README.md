@@ -173,7 +173,7 @@ therefore has no `resolve`/`fold` and touches no forwarding table.
 Requires libpq and a local Postgres. Flags come from `pg_config`:
 
 ```sh
-# from db_kernel/controller/
+# from kernels/database/controller/
 g++ -std=c++17 -O2 -Wall -Wextra \
     -I. -I../codec -I"$(pg_config --includedir)" \
     controller.cpp controller_test.cpp ../codec/codec.cpp \
