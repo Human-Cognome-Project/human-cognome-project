@@ -90,7 +90,7 @@ cache tier's named-but-unbuilt verbs. **RECONCILE is no longer a
 db/cache-manager verb** (removed 2026-09-22): it is an analyst →
 WAL-manager message — the analyst messages the WAL manager directly, which
 promotes the relevant pending queue into a priority in-box. See
-`ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE".
+`network/ENDPOINT-ACTIVATION-NOTES.md` "RECONCILE".
 
 `dispatch_one(ctl, cmd)` is a plain function over these in-process C++
 values -- there is no request line, no text grammar, and no parser here.
