@@ -29,12 +29,17 @@ No gathering rule is coded here. Identity is carried; whether same-identity
 particles gather is the experiment, left to the physics.
 """
 import json
+import os
 import sys
 
 import psycopg2
 
-KW = dict(host="192.168.68.60", port=5435, user="hcp", password="hcp_dev",
-          dbname="hcp2_core")
+KW = dict(host=os.environ.get("HCP_HOST", "localhost"),
+          port=int(os.environ.get("HCP_PORT", "5435")),
+          user=os.environ.get("HCP_USER", "hcp"),
+          dbname=os.environ.get("HCP_CORE_DB", "hcp2_core"))
+if os.environ.get("HCP_PW"):
+    KW["password"] = os.environ["HCP_PW"]
 
 CATALOGUE = ("address[1]='AA' AND address[2]='AB' AND address[3]='AA' "
              "AND cardinality(address)=5 AND metadata IS NOT NULL")
