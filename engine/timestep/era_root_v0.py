@@ -15,8 +15,11 @@ No frequency anywhere. No writes (P owns writes; write-back namespace unsettled)
 import csv, io, json, os, subprocess, sys
 from collections import Counter, defaultdict
 
-DB = dict(host=os.environ.get("HCP_HOST", "192.168.68.60"), port="5435",
-          user="hcp", db="hcp_english", pw=os.environ.get("HCP_PW", "hcp_dev"))
+DB = dict(host=os.environ.get("HCP_HOST", "localhost"),
+          port=os.environ.get("HCP_PORT", "5435"),
+          user=os.environ.get("HCP_USER", "hcp"),
+          db=os.environ.get("HCP_ENGLISH_DB", "hcp_english"),
+          pw=os.environ.get("HCP_PW"))
 
 ERA_SPANS = {"OE": (450, 1150), "ME": (1150, 1500)}  # conventional; P may strike
 CATS = {  # category name -> (era, edge_kind)
@@ -32,7 +35,9 @@ CATS = {  # category name -> (era, edge_kind)
 }
 
 def q(sql):
-    env = dict(os.environ, PGPASSWORD=DB["pw"])
+    env = dict(os.environ)
+    if DB["pw"]:
+        env["PGPASSWORD"] = DB["pw"]
     r = subprocess.run(["psql", "-h", DB["host"], "-p", DB["port"], "-U", DB["user"],
                         "-d", DB["db"], "-tA", "-F", "\t", "-c", sql],
                        capture_output=True, text=True, env=env, timeout=300)
