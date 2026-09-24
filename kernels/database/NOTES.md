@@ -41,7 +41,7 @@
 > - **WAL manager Pair-1 push is BUILT** (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`):
 >   source-blind (=location-blind, knows its counterpart), emitting owed reciprocal work to the
 >   cache-manager out-box, fixture-fed. Local activation primitives BUILT (commit `b97034a`).
-> - **Tier 2 (analyst reaction body) is BUILT** as `dbmanager/` (`db_manager_kernel.{h,cpp}`
+> - **Tier 2 (analyst-facing current-work body) is BUILT** as `dbmanager/` (`db_manager_kernel.{h,cpp}`
 >   + test + README; `TIER2-PLAN.md`, adversary-vetted plan + build): `DbManagerKernel` runs
 >   the record-tier verbs as reaction bodies over the shared `Controller`, reusing `dispatch/`
 >   verbatim, returning each `Result` to the request's caller-supplied `reply_to`. Fixture-fed;
@@ -339,7 +339,7 @@ synchronous router is **superseded** by the scheduler + handlers.
 occupied at tier 2 (the scheduler's within-tier selection rule) — not yet pinned; a scheduling
 detail, not a structural one.
 
-### Tier 2 — analyst reaction body (design pinned 2026-09-23; build plan `TIER2-PLAN.md`)
+### Tier 2 — analyst-facing current-work body (design pinned 2026-09-23; build plan `TIER2-PLAN.md`)
 
 The analyst-facing current-work surface, re-expressed on the activation substrate. A rehome
 following the `WalKernel` precedent — **the six verb cores and the `dispatch/` logic do not
