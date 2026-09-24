@@ -44,7 +44,8 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 
 - **[engine/field/](engine/field/)** — later September Taichi field-engine development. The current files still mix physics, harness, CPU-oracle and validation concerns; that split is a planned refactor, not something to infer from filenames.
 - **[archive/2026-09-taichi-v0-staging/](archive/2026-09-taichi-v0-staging/)** — the parallel August 31–September 1 Taichi generation, now archived intact as a predecessor/experimental record after reconciliation showed no runtime dependency from the later field engine.
-- **[kernels/db_kernel/](kernels/db_kernel/)** — the preserved PostgreSQL/cache/WAL development bundle. Its remaining co-location reflects controlled development and existing build relationships, not final architecture.
+- **[kernels/database/](kernels/database/)** — PostgreSQL record operations and database/cache-manager kernel family supporting the analyst's working surfaces.
+- **[kernels/wal/](kernels/wal/)** — WAL manager kernel family, now a peer of the database/cache family.
 - **[network/endpoint/](network/endpoint/)** — the shared in-memory endpoint/box/scheduler substrate, promoted out of the DB bundle because it is common kernel-network infrastructure.
 - **[research/](research/)** — field/ledger research and convenience packages. Research informs the implementation but is not runtime code.
 - **[data/postgres/snapshots/](data/postgres/snapshots/)** — reserved for reproducibility snapshots exported from development PostgreSQL systems.
