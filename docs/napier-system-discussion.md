@@ -142,6 +142,11 @@ is specified here. Local storage encryption and other guardrails are reasons
 the local databases have been deferred rather than implemented as ordinary
 shared shards.
 
+An instance owner's willingness to share does not set a release rule for
+every instance or for other people recorded in its relationships. The
+immediate project focus is preserving knowledge; private-data release and
+encryption remain design work for a later pass.
+
 **Interpretation to confirm later:** local/global describes visibility and
 address scope, while cold/warm describes storage and working state. A private
 record could inform an instance's working cache without itself becoming a
@@ -211,8 +216,9 @@ report-to-work routing must preserve enough provenance and target information
 to apply the direction rule. A future tracker must not treat the WAL database's
 instance-local History entries as automatically publishable.
 
-**Priority (Patrick, 2026-09-25):** focus on the local report-ingress,
-bookkeeping and cache-manager deferred-work loop. The p2p/swarm and content
+**Priority (Patrick, 2026-09-25):** focus on preserving knowledge and on the
+local report-ingress, bookkeeping and cache-manager deferred-work loop.
+Private-data release rules remain to be addressed. The p2p/swarm and content
 tracker path is the lowest priority and can wait until the project's scale
 and available help make it relevant; it need not shape the present build.
 
