@@ -51,9 +51,11 @@ continues broader connection work outside the immediate focus.
 The recovered [`storage-and-working-split.md`](storage-and-working-split.md)
 already describes viewer-bounded activation, a compressed working projection,
 and a discovery ledger that retires repeated work. Those are relevant
-mechanisms, but the exact `N` and operation measured by `O(log N)` have not yet
-been fixed as a formal performance contract. The biological comparison is an
-analogy, not a measured complexity claim about human thought.
+mechanisms. **`N` is defined in the calculation streams**; this discussion
+record does not redefine it. We will walk those streams to check what is
+already correct and prepare clarified elements for restructuring. The
+biological comparison here is an analogy, not a measured complexity claim
+about human thought.
 
 ## Shared and instance-local databases
 
