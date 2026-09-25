@@ -138,9 +138,10 @@ fields. This is a changing calculation set, not a loss of the archived data.
 
 **Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
 field centroid is identical to its current value, exclude that field from
-subsequent calculations. Something that directly affects the field makes it
-active again. Motion of an element within it is expected to show as variance
-in the **pairwise field calculation**. The exact calculated value being
+subsequent calculations. A later perturbation of **any constituent** makes
+the field active again and invokes its centroid calculation, even if its last
+result was identical. Motion of an element within it is expected to show as
+variance in the **pairwise field calculation**. The exact calculated value being
 compared, where the `O(log N)` bound applies within the pairwise stream, and
 which passes skip an excluded field can be pinned down as we walk the formulas.
 
@@ -148,8 +149,9 @@ which passes skip an excluded field can be pinned down as we walk the formulas.
 isolated mass-weighted centroid remains fixed, but actual interactions are not
 monolithic. Multiple field relationships contribute to the tick-to-tick
 pairwise calculation, so its variance is compound. The isolated cancellation
-is a theoretical edge, not a reason to replace the exclusion rule. The exact
-calculated quantity to compare will be checked during the formula walkthrough.
+is a theoretical edge, not a permanent exclusion: perturbing either object
+later reactivates the field. The exact calculated quantity to compare will be
+checked during the formula walkthrough.
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
 not yet implement this shrinking active set. The older
