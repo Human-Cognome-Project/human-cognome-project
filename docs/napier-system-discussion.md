@@ -61,6 +61,18 @@ distinct structural forms, not a claim that their exchange is only one-way.
 The analyst's assembly and the exact handoffs among these tiers remain design
 roles, not an implementation claim.
 
+### Address recommendations from a partial view
+
+The analyst has only some of the direct data available while considering a
+topic. Its suggested address is therefore provisional: its accuracy depends
+on how much relevant data the current view contains. The existing
+[`kernels/database/NOTES.md`](../kernels/database/NOTES.md) already states that
+an analyst-proposed address is a position **within the composed view**, while
+the cache manager disposes the actual cold-store placement. This distinction
+is especially important when the warm assembly and hot structure are
+selectively oriented toward one field of study. No numerical confidence or
+address-revision procedure is settled by this note.
+
 ## Active thought and scale
 
 Patrick's scaling analogy is that the **active thought area** is where
