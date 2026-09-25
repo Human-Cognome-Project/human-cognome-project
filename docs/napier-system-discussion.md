@@ -19,6 +19,25 @@ database or a swarm component has been built from its appearance here.
   synchronous communication gaps. This is a system-level reason for the kernel
   split, not a claim that the future analyst's functions have been designed.
 
+## Processing analogy
+
+- The **cold shard swarm** is the collective subconscious analogue: connections
+  are made and shared beyond one instance's immediate focus.
+- The **warm cache** is the material actively under consideration, compiled by
+  the cache manager. It is the working area, not itself the model or analyst.
+- The **model** is the superconscious analogue: active consideration of the
+  factors relevant to an issue, comparable to the indirect processes involved
+  when a biological entity is thinking about it.
+- The **analyst** is the conscious analogue. Its functions have not yet been
+  designed or implemented, so this analogy does not prescribe its interface
+  to the model or how it directs attention.
+
+These are roles in the proposed system, not four interchangeable names for
+the same processing step. The existing
+[`architecture.md`](architecture.md) places cognition in field balancing;
+[`engine/ARCHITECTURE.md`](../engine/ARCHITECTURE.md) records the native field
+model and keeps the analyst layer future work.
+
 ## Shared and instance-local databases
 
 Global databases participate in the shared archive. Separately, every NAPIER
