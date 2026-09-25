@@ -25,9 +25,11 @@ database or a swarm component has been built from its appearance here.
   are made and shared beyond one instance's immediate focus.
 - The **warm cache** is the material actively under consideration, compiled by
   the cache manager. It is the working area, not itself the model or analyst.
-- The **model** is the superconscious analogue: active consideration of the
-  factors relevant to an issue, comparable to the indirect processes involved
-  when a biological entity is thinking about it.
+- The **model** is the superconscious analogue. For a specific thought under
+  consideration, it provides a mathematical evaluation of the interacting
+  factors, analogous to the semi-direct, indirect evaluation a biological
+  entity experiences while thinking about that thought. This is the model's
+  active work, not merely background storage or retrieval.
 - The **analyst** is the conscious analogue. Its functions have not yet been
   designed or implemented, so this analogy does not prescribe its interface
   to the model or how it directs attention.
