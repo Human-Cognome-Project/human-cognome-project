@@ -187,6 +187,9 @@ places. The self-limiting return to stability should follow from those
 calculations, rather than from a separate programmed rule that forces the
 construct to stop. Tracking and excluding unchanged particles or centroids is
 an efficiency measure; it should preserve the result of calculating them.
+The governing rule is to avoid repeating unnecessary work while always being
+able to perform necessary work: an exclusion must be reversible as soon as a
+new interaction or the current analysis calls for that calculation again.
 Exact resolution may be theoretical in practice. Whether the actual field and
 constraint equations reach this fixed point remains to be checked in the
 formula walkthrough and measured in the running engine.
