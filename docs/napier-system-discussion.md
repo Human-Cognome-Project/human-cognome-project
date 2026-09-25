@@ -61,6 +61,28 @@ distinct structural forms, not a claim that their exchange is only one-way.
 The analyst's assembly and the exact handoffs among these tiers remain design
 roles, not an implementation claim.
 
+### Perspective-relative LoD in the working set
+
+The SNode tree controls the level-of-detail (LoD) rollup. As the view zooms
+out, its tree levels determine which perspectives the working structure
+exposes. The cache manager's assembly of the working set determines which
+constructs are **nested SNodes**, whose components can be broken down along
+the present line of inquiry, and which are **compressed SNodes**, treated as
+rollups along that line. This distinction depends on the inquiry and the
+working assembly; compression here does not mean that the main database has
+discarded the underlying object definition or its relationships.
+
+Both system factors and an **analyst-defined need** guide that choice. The
+form in which the analyst expresses its need is still to be determined; this
+record does not prescribe an interface or selection algorithm. The existing
+[`engine/docs/OPERATIONAL-PLAN.md`](../engine/docs/OPERATIONAL-PLAN.md) §3.3
+already describes the tree as the mechanism for exposing LoD relative to a
+moving observation root, and
+[`storage-and-working-split.md`](storage-and-working-split.md) describes the
+working tree as a per-analysis compression. This clarification connects those
+mechanisms to the warm cache manager's assembly and to whether a construct is
+expandable for the active inquiry.
+
 ### Address recommendations from a partial view
 
 The analyst has only some of the direct data available while considering a
