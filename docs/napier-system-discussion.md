@@ -127,7 +127,11 @@ distributed across its total mass. The ordered positions also permit a
 construct as a whole. For this effect, the ordered parents act **as if they
 occupy a straight line across the particle**, with the construct able to
 reorient that line about its centre. Rotary effects can occur in a tick,
-but **rotary velocity is not preserved between ticks**. If the same parent
+but **rotary velocity is not preserved between ticks**. This does not prevent
+an orbit produced by the continuing field forces: the particle's position and
+translational motion can follow those forces over successive ticks. Parent-line
+alignment responds to the current interaction without retaining a separate
+spin that would keep the construct rotating on its own. If the same parent
 characteristic appears at two positions, both occurrences act **distinctly**:
 both contribute to the resultant vector and to alignment of the whole as
 units. They must not be collapsed into one operative occurrence simply
