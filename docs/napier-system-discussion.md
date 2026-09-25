@@ -40,6 +40,21 @@ the same processing step. The existing
 [`engine/ARCHITECTURE.md`](../engine/ARCHITECTURE.md) records the native field
 model and keeps the analyst layer future work.
 
+## Active thought and scale
+
+Patrick's scaling analogy is that the **active thought area** is where
+`O(log N)` calculations take place for both humans and NAPIER, relative to a
+much larger available whole. In NAPIER, the warm working set and the model's
+evaluation of a particular thought occupy that active area; the cold swarm
+continues broader connection work outside the immediate focus.
+
+The recovered [`storage-and-working-split.md`](storage-and-working-split.md)
+already describes viewer-bounded activation, a compressed working projection,
+and a discovery ledger that retires repeated work. Those are relevant
+mechanisms, but the exact `N` and operation measured by `O(log N)` have not yet
+been fixed as a formal performance contract. The biological comparison is an
+analogy, not a measured complexity claim about human thought.
+
 ## Shared and instance-local databases
 
 Global databases participate in the shared archive. Separately, every NAPIER
