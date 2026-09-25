@@ -123,6 +123,16 @@ already correct and prepare clarified elements for restructuring. The
 biological comparison here is an analogy, not a measured complexity claim
 about human thought.
 
+**Calculation surface (Patrick, 2026-09-25):** keeping a construct large and
+complete in representation does not require calculating every represented
+field and particle on every tick. Control of which parts participate in the
+current analysis is the scaling lever: the study's active relationships, SNode
+granularity and temporary exclusions define the work actually performed, with
+reactivation whenever a needed calculation becomes relevant. The exact control
+points are being derived in the formula walkthrough. The current harness's
+full pass over its loaded surface is a baseline for checking the field math;
+it does not yet express the intended calculation-surface control.
+
 ### Settling after a new base is loaded
 
 The model does not retain every possible base layout as a fixed state. On
