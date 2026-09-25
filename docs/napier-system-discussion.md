@@ -191,6 +191,26 @@ WAL data as the network's distribution manifest/index, with its piece shape
 still deferred. Instance-local contents remain private; any derived result
 shared beyond an instance needs the separate guardrails noted above.
 
+### Direction of deferred work at the private boundary
+
+Deferred work concerning the instance-local/personal databases flows **into
+those databases only**. A change in global factors can alter an instance's
+personal landscape, so global-to-local followup is allowed. A private change
+does not generally create deferred work that writes directly to a global
+database or to another instance. A report from a local database may still be
+observed by **that instance's** WAL manager for local tracking; observation
+does not make the report or its resulting work shareable. Any significant
+derived result that crosses this boundary needs the separate guarded release
+path noted above.
+
+This rule is **design intent, not current enforcement**. `wal::Report` carries
+local/global `Scope`, and the WAL History stores it, but `wal::Obligation` has
+only its identity and the fixture-fed `WalKernel` pushes every owed item into
+one cache-manager out-box without a destination or scope check. The eventual
+report-to-work routing must preserve enough provenance and target information
+to apply the direction rule. A future tracker must not treat the WAL database's
+instance-local History entries as automatically publishable.
+
 **Priority (Patrick, 2026-09-25):** focus on the local report-ingress,
 bookkeeping and cache-manager deferred-work loop. The p2p/swarm and content
 tracker path is the lowest priority and can wait until the project's scale
@@ -210,8 +230,10 @@ and available help make it relevant; it need not shape the present build.
 - [`kernels/wal/WAL-PLAN.md`](../kernels/wal/WAL-PLAN.md) §1 already names a
   personality-and-relationship database with local-only addressing. The built
   WAL report seam records local/global address scope in
-  [`wal_report.h`](../kernels/wal/wal_report.h); this does not implement private
-  database storage, encryption or a rule for sharing results.
+  [`wal_report.h`](../kernels/wal/wal_report.h). The
+  [`WAL README`](../kernels/wal/README.md) now records the directional
+  instance-local deferred-work rule as a discussion note; the code does not
+  enforce it or implement private storage, encryption or guarded release.
 - [`AGENTS.md`](../AGENTS.md) keeps analyst functions future work and the
   engine harness separate from database, WAL and network infrastructure.
 
