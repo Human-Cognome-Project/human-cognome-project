@@ -167,7 +167,7 @@ to the WAL manager's existing per-source inboxes:
 | Report-to-inbox adapter | Convert decoded change data to the existing `wal::Report` (`source`, `lsn`, local/global scope, op, decoded address footprint and relevant mass field), then deliver it to that source's inbox. Recognition reads the change data, not the initiating command. No global ordering of unrelated sources is assumed. | Wire form and live adapter still to be defined; decoded-report struct and fixture input exist. |
 | WAL manager | From the report, book or settle obligations in its own durable open-obligation relation and History; push owed work to the cache manager's pending-work box. | Bookkeeping and fixture-fed endpoint push built. |
 | Analyst `RECONCILE` | Select relevant existing obligations and stage them in the cache manager's normally empty priority box; their durable home stays in the WAL manager. | Routing and staging designed, not built. |
-| Content tracker source | Use eligible entries in the WAL manager's PostgreSQL database as source material for the content tracker network. | Network facet deferred; exact source-file/manifest shape not yet settled. |
+| Content tracker source | Use eligible entries in the WAL manager's PostgreSQL database as source material for the content tracker network. | Lowest priority; network facet deferred and exact source-file/manifest shape not yet settled. |
 
 “Queue” here means the **persistent outstanding-work relation** plus transient
 delivery boxes, rather than a consumed FIFO: an obligation closes when its
@@ -190,6 +190,11 @@ pass. [`network/SWARM-NOTES.md`](../network/SWARM-NOTES.md) already describes
 WAL data as the network's distribution manifest/index, with its piece shape
 still deferred. Instance-local contents remain private; any derived result
 shared beyond an instance needs the separate guardrails noted above.
+
+**Priority (Patrick, 2026-09-25):** focus on the local report-ingress,
+bookkeeping and cache-manager deferred-work loop. The p2p/swarm and content
+tracker path is the lowest priority and can wait until the project's scale
+and available help make it relevant; it need not shape the present build.
 
 ## Existing repo seams
 
