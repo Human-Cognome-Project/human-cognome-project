@@ -12,8 +12,9 @@ database or a swarm component has been built from its appearance here.
   serving a role analogous to a collective subconscious.
 - The NAPIER cognitive engine draws on the archive to surf, aggregate and help
   analyze reality. It is not presented as an AI, though some functions may be
-  comparable. The cache manager compiles the warm cache: the active working
-  area for what the engine is considering.
+  comparable. The cache manager prepares the warm cache; the analyst assembles
+  an active hot SNode structure from that prepared material for the model to
+  evaluate.
 - Kernels are separate asynchronous functions because each has work across
   several storage tiers and locations. They can keep that work moving without
   synchronous communication gaps. This is a system-level reason for the kernel
@@ -23,8 +24,9 @@ database or a swarm component has been built from its appearance here.
 
 - The **cold shard swarm** is the collective subconscious analogue: connections
   are made and shared beyond one instance's immediate focus.
-- The **warm cache** is the material actively under consideration, compiled by
-  the cache manager. It is the working area, not itself the model or analyst.
+- The **warm cache** holds prepared SNode pieces and trees oriented toward a
+  field of study. The analyst composes from them the hot structure for the
+  thought under consideration.
 - The **model** is the superconscious analogue. For a specific thought under
   consideration, it provides a mathematical evaluation of the interacting
   factors, analogous to the semi-direct, indirect evaluation a biological
@@ -40,13 +42,33 @@ the same processing step. The existing
 [`engine/ARCHITECTURE.md`](../engine/ARCHITECTURE.md) records the native field
 model and keeps the analyst layer future work.
 
+## Three data forms and their connections
+
+An **SNode tree is an object definition**. It may have a self-contained
+description and may connect with other definitions in arbitrarily complex
+combinations. The tiers differ in the shape and preparation of the structures
+they hold:
+
+| Tier | Structure and role |
+|---|---|
+| Main databases | Durable object pieces and combinations created and stored by this or other processes; analogous to a library of raw objects in a game engine. |
+| Warm cache | SNode pieces and trees pre-assembled by the cache manager, with assembly slanted toward the relevant field of study. |
+| Hot memory / GPU transfer cache | The active SNode structure the analyst assembles from warm pieces for the particular consideration. |
+
+Whatever defines the topic under consideration supplies the directionality
+of an SNode root. The levels feed each other; the table describes their
+distinct structural forms, not a claim that their exchange is only one-way.
+The analyst's assembly and the exact handoffs among these tiers remain design
+roles, not an implementation claim.
+
 ## Active thought and scale
 
 Patrick's scaling analogy is that the **active thought area** is where
 `O(log N)` calculations take place for both humans and NAPIER, relative to a
-much larger available whole. In NAPIER, the warm working set and the model's
-evaluation of a particular thought occupy that active area; the cold swarm
-continues broader connection work outside the immediate focus.
+much larger available whole. In NAPIER, the analyst's hot SNode structure and
+the model's evaluation of a particular thought occupy that active area; the
+warm cache supplies prepared pieces, while the cold swarm continues broader
+connection work outside the immediate focus.
 
 The recovered [`storage-and-working-split.md`](storage-and-working-split.md)
 already describes viewer-bounded activation, a compressed working projection,
@@ -86,7 +108,12 @@ the private boundary.
 ## Existing repo seams
 
 - [`storage-and-working-split.md`](storage-and-working-split.md) distinguishes
-  explicit storage from a per-analysis compressed working construct.
+  explicit storage from a per-analysis compressed working construct. Its older
+  two-construct description does not yet spell out the warm preparation stage.
+- [`engine/docs/HARNESS-STRUCTURE.md`](../engine/docs/HARNESS-STRUCTURE.md)
+  provisionally describes composing an SNode tree directly from the flat store;
+  its assembly path needs to be read through the main DB → warm cache → hot
+  structure distinction before it is implemented as the wider harness.
 - [`network/SWARM-NOTES.md`](../network/SWARM-NOTES.md) records the preliminary
   cold/warm and p2p direction; the swarm manager is not yet built.
 - [`kernels/wal/WAL-PLAN.md`](../kernels/wal/WAL-PLAN.md) §1 already names a
