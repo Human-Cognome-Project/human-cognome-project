@@ -152,9 +152,20 @@ pairwise calculation, so its variance is compound. The isolated cancellation
 is a theoretical edge, not a permanent exclusion: perturbing either object
 later reactivates the field. The exact calculated quantity to compare will be
 checked during the formula walkthrough.
+
+**Centroid mass (Patrick, 2026-09-25):** within a study, calculate each
+centroid's aggregate mass when the base is established and reuse it while its
+mass contributors remain the same. Recalculate on a change that affects those
+contributors, such as adding a member. Perturbing a member can reactivate the
+centroid's position/pairwise calculation without changing its mass; motion
+alone is not a reason to sum its mass again. This is an initial and on-change
+calculation, distinct from the tick-to-tick geometry update.
+
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
-not yet implement this shrinking active set. The older
+not yet implement this shrinking active set. It also clears and sums group mass
+on every tick as part of the centroid pass, so the proposed mass reuse is not
+implemented. The older
 [`field-physics-and-tick-notes.md`](field-physics-and-tick-notes.md) already
 describes recomputing centroids only for active fields.
 
