@@ -92,6 +92,33 @@ working tree as a per-analysis compression. This clarification connects those
 mechanisms to the warm cache manager's assembly and to whether a construct is
 expandable for the active inquiry.
 
+### Parent and membership connections across LoD
+
+For a particle, **every field it belongs to has an effect on some level on
+every tick**. Temporary exclusion from repeated calculation does not remove
+that standing relationship or its already resolved contribution. Two
+connection modes determine how a particle participates in a field:
+
+| Connection | Participation and structure |
+|---|---|
+| Parent | Acts through the distinct masses of the parent particles listed for the piece under consideration. The list's order is part of that piece's definition; the indicated component masses, including their positions within the piece, determine its partial field participation. |
+| Membership | Connects the particle as a member of a group/field. The recovered notes call the whole-particle, full-mass form a **sibling** relationship; this discussion uses **membership** for that connection. |
+
+The **cold** structure spells out the relationships at every layer. The
+study-oriented **warm cache** composes appropriate aggregates of their field
+effects. For any particle represented at the current level, its ordered
+parents supply the **next available level of LoD** if the inquiry expands that
+particle. The aggregated effects remain available at the coarser level; their
+underlying connections remain explicit in cold storage. This is a connection
+between structural expansion and field participation, not a different force
+law for each level.
+
+The current C++ `field::Harness` streams one membership-edge shape with a mass
+share and an offset, which can perform whole or partial participation. It does
+not by itself represent the ordered parent definition or compose cold records
+into warm LoD aggregates. This note records those intended relationships
+without claiming the assembly path has been built.
+
 ### Address recommendations from a partial view
 
 The analyst has only some of the direct data available while considering a
