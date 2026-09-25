@@ -94,14 +94,14 @@ expandable for the active inquiry.
 
 ### Parent and membership connections across LoD
 
-For a particle, **every field it belongs to has an effect on some level on
-every tick**. Temporary exclusion from repeated calculation does not remove
-that standing relationship or its already resolved contribution. The two
-relationship axes are:
+For a particle, **every exposed field it belongs to has an effect on some
+level on every tick**. Temporary exclusion from repeated calculation does not
+remove that standing relationship or its already resolved contribution. The
+two relationship axes are:
 
 | Connection | Stored direction and meaning |
 |---|---|
-| Parent | `token_parent` lists the direct parent particles and their distinct masses **in order** for the piece under consideration. A parent field acts through the listed constituent masses and their positions in that piece. `token_child` is the stored reverse walk from a constituent to pieces that use it. |
+| Parent | `token_parent` lists the direct parent particles **in order**, with a mass for each occurrence in the piece under consideration. A parent field acts through those constituent masses and their positions; repeated occurrences retain distinct ordinals. `token_child` is the stored reverse walk from a constituent to pieces that use it. |
 | Membership | `member_of` lists **all field groups a particle directly participates in**. Each group's `members` list is the reciprocal fast walk to its direct participants, analogous to `token_child` for parents. A field group is itself a token and can have its own `member_of` groups. |
 
 **Membership is the group listing, not a synonym for sibling or a declaration
@@ -119,6 +119,24 @@ follow directly back to the values it represents. The direct edge and the
 recursive classification chain are distinct; the example does not imply that
 every ancestor is stored as a direct `member_of` edge on `01`.
 
+**Parent field effects and repetition (Patrick, 2026-09-25):** each exposed
+parent field acts on the mass of the parent occurrence it reaches. That
+partial force contributes to the total motion vector of the whole construct,
+distributed across its total mass. The ordered positions also permit a
+**rotary alignment expression**, even when the force does not shift the
+construct as a whole. For this effect, the ordered parents act **as if they
+occupy a straight line across the particle**, with the construct able to
+reorient that line about its centre. Rotary effects can occur in a tick,
+but **rotary velocity is not preserved between ticks**. If the same parent
+characteristic appears at two positions, both occurrences act **distinctly**:
+both contribute to the resultant vector and to alignment of the whole as
+units. They must not be collapsed into one operative occurrence simply
+because they share a token.
+
+The database already preserves each ordinal and per-occurrence mass in
+`token_parent`, while `token_child` correctly keeps one reverse navigation
+link per distinct constituent/composite pair.
+
 The **cold** structure spells out the relationships at every layer. The
 study-oriented **warm cache** composes appropriate aggregates of their field
 effects. For any particle represented at the current level, its ordered
@@ -132,10 +150,16 @@ The database schema and controller already store/read `token_parent` with
 `token_child`, and `member_of` with `members`, as reciprocal relations. The
 current C++ `field::Harness` streams generic particle-to-group edges with a
 mass share and offset; it does not itself traverse those database lists or
-compose cold records into warm LoD aggregates. This note does not claim the
-byte-couplet/table rebuild or that assembly path has been built. The WAL
-manager's deferred return-path work for these relationships is described
-below.
+compose cold records into warm LoD aggregates. Separate edge entries can
+contribute separate force vectors to whole-mass translation, but the harness
+has **no rotary-alignment calculation or orientation state**. Its existing
+no-rotation comments and translation-only offset test therefore describe
+what is built, not the complete parent-field behaviour clarified here. The
+older drift audit rejects carried rigid-body spin; directed reorientation of
+the ordered parent configuration is a different, still-unbuilt operation.
+This note does not claim the byte-couplet/table rebuild or assembly path has
+been built. The WAL manager's deferred return-path work for these
+relationships is described below.
 
 ### Address recommendations from a partial view
 
@@ -254,6 +278,11 @@ centroids hold, stability propagates back through that active portion of the
 network and those elements can be excluded again. The exact no-movement test
 remains to be specified in the formula walkthrough, and this note does not
 establish a complexity bound.
+
+**Exclusion implication:** zero or insufficient whole-construct translation
+does not alone prove a particle is resolved. A repeated parent characteristic
+may still call for rotary alignment, so the eventual no-movement test must
+also account for that expression before excluding the particle.
 
 **Resolved construct as a fixed point (Patrick, 2026-09-25):** the intended
 end state is that a fully resolved construct has no motion: its equations
