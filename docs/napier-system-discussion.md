@@ -180,6 +180,17 @@ network and those elements can be excluded again. The exact no-movement test
 remains to be specified in the formula walkthrough, and this note does not
 establish a complexity bound.
 
+**Resolved construct as a fixed point (Patrick, 2026-09-25):** the intended
+end state is that a fully resolved construct has no motion: its equations
+yield no further positional changes because its relationships have found their
+places. The self-limiting return to stability should follow from those
+calculations, rather than from a separate programmed rule that forces the
+construct to stop. Tracking and excluding unchanged particles or centroids is
+an efficiency measure; it should preserve the result of calculating them.
+Exact resolution may be theoretical in practice. Whether the actual field and
+constraint equations reach this fixed point remains to be checked in the
+formula walkthrough and measured in the running engine.
+
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
 not yet implement this shrinking active set. Its integration and determiner
