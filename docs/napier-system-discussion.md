@@ -79,7 +79,11 @@ parameters also restrict how many LoD levels can effectively be kept **hot**
 at once. That active residency limit affects both the granularity available
 within a construct and the overall scope of data present for an analysis. It
 does not set the depth of the durable object definitions. No numeric hot-set
-limit or policy for allocating it is specified here. The existing
+limit or policy for allocating it is specified here. Once the base engine can
+exercise this working-set behaviour, measure effective hot LoD depth alongside
+granularity, scope and total data load on the available hardware. Those
+measurements will help establish how and why Taichi suits this use case before
+choosing operating limits. The existing
 [`engine/docs/OPERATIONAL-PLAN.md`](../engine/docs/OPERATIONAL-PLAN.md) §3.3
 already describes the tree as the mechanism for exposing LoD relative to a
 moving observation root, and
