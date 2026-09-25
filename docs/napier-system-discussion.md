@@ -116,11 +116,32 @@ connection work outside the immediate focus.
 The recovered [`storage-and-working-split.md`](storage-and-working-split.md)
 already describes viewer-bounded activation, a compressed working projection,
 and a discovery ledger that retires repeated work. Those are relevant
-mechanisms. **`N` is defined in the calculation streams**; this discussion
-record does not redefine it. We will walk those streams to check what is
+mechanisms. **Here `N` is the exposed fields across all particles** in the
+loaded base, rather than the fixed particle-pool capacity also called `N` in
+some engine notes. We will walk the calculation streams to check what is
 already correct and prepare clarified elements for restructuring. The
 biological comparison here is an analogy, not a measured complexity claim
 about human thought.
+
+### Settling after a new base is loaded
+
+The model does not retain every possible base layout as a fixed state. On
+loading a new base, its first ticks establish the current geometry while
+elements find their placement. More of the exposed fields participate at this
+stage, so those ticks are expected to cost more and to show greater movement
+than later, settled ticks. Patrick describes the initial series as `O(log N)`
+with `N` defined above. As centroids stabilize, they can be excluded from
+ongoing calculations so work concentrates on the relevant, still active
+fields. This is a changing calculation set, not a loss of the archived data.
+
+The exact unit of the `O(log N)` claim (settling ticks, active work or total
+work), the stabilization criterion, and how excluded centroids return to
+active calculations remain to be pinned down during the formula walkthrough.
+The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
+and centroid passes across all loaded membership edges on each tick; it does
+not yet implement this shrinking active set. The older
+[`field-physics-and-tick-notes.md`](field-physics-and-tick-notes.md) already
+describes recomputing centroids only for active fields.
 
 ## Shared and instance-local databases
 
