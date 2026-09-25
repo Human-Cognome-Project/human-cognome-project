@@ -74,7 +74,12 @@ discarded the underlying object definition or its relationships.
 
 Both system factors and an **analyst-defined need** guide that choice. The
 form in which the analyst expresses its need is still to be determined; this
-record does not prescribe an interface or selection algorithm. The existing
+record does not prescribe an interface or selection algorithm. System
+parameters also restrict how many LoD levels can effectively be kept **hot**
+at once. That active residency limit affects both the granularity available
+within a construct and the overall scope of data present for an analysis. It
+does not set the depth of the durable object definitions. No numeric hot-set
+limit or policy for allocating it is specified here. The existing
 [`engine/docs/OPERATIONAL-PLAN.md`](../engine/docs/OPERATIONAL-PLAN.md) §3.3
 already describes the tree as the mechanism for exposing LoD relative to a
 moving observation root, and
