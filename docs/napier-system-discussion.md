@@ -129,14 +129,27 @@ The model does not retain every possible base layout as a fixed state. On
 loading a new base, its first ticks establish the current geometry while
 elements find their placement. More of the exposed fields participate at this
 stage, so those ticks are expected to cost more and to show greater movement
-than later, settled ticks. Patrick describes the initial series as `O(log N)`
-with `N` defined above. As centroids stabilize, they can be excluded from
+than later, settled ticks. Patrick describes the initial pairwise-calculation
+series in `O(log N)` terms, with `N` defined above: its purpose is to control
+the otherwise `O(N²)` pairwise work. This is about calculation, not the
+number of settling ticks. As centroids stabilize, they can be excluded from
 ongoing calculations so work concentrates on the relevant, still active
 fields. This is a changing calculation set, not a loss of the archived data.
 
-The exact unit of the `O(log N)` claim (settling ticks, active work or total
-work), the stabilization criterion, and how excluded centroids return to
-active calculations remain to be pinned down during the formula walkthrough.
+**Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
+field centroid is identical to its current value, exclude that field from
+subsequent calculations. Something that directly affects the field makes it
+active again. Motion of an element within it is expected to show as variance
+in the **pairwise field calculation**. The exact calculated value being
+compared, where the `O(log N)` bound applies within the pairwise stream, and
+which passes skip an excluded field can be pinned down as we walk the formulas.
+
+**Compound variance:** two equal masses can move symmetrically while an
+isolated mass-weighted centroid remains fixed, but actual interactions are not
+monolithic. Multiple field relationships contribute to the tick-to-tick
+pairwise calculation, so its variance is compound. The isolated cancellation
+is a theoretical edge, not a reason to replace the exclusion rule. The exact
+calculated quantity to compare will be checked during the formula walkthrough.
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
 not yet implement this shrinking active set. The older
