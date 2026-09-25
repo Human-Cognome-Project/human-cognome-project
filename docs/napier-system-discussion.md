@@ -96,13 +96,28 @@ expandable for the active inquiry.
 
 For a particle, **every field it belongs to has an effect on some level on
 every tick**. Temporary exclusion from repeated calculation does not remove
-that standing relationship or its already resolved contribution. Two
-connection modes determine how a particle participates in a field:
+that standing relationship or its already resolved contribution. The two
+relationship axes are:
 
-| Connection | Participation and structure |
+| Connection | Stored direction and meaning |
 |---|---|
-| Parent | Acts through the distinct masses of the parent particles listed for the piece under consideration. The list's order is part of that piece's definition; the indicated component masses, including their positions within the piece, determine its partial field participation. |
-| Membership | Connects the particle as a member of a group/field. The recovered notes call the whole-particle, full-mass form a **sibling** relationship; this discussion uses **membership** for that connection. |
+| Parent | `token_parent` lists the direct parent particles and their distinct masses **in order** for the piece under consideration. A parent field acts through the listed constituent masses and their positions in that piece. `token_child` is the stored reverse walk from a constituent to pieces that use it. |
+| Membership | `member_of` lists **all field groups a particle directly participates in**. Each group's `members` list is the reciprocal fast walk to its direct participants, analogous to `token_child` for parents. A field group is itself a token and can have its own `member_of` groups. |
+
+**Membership is the group listing, not a synonym for sibling or a declaration
+that every listed relationship engages the particle's whole mass.** The older
+notes use *sibling* for a particular whole-particle participation concept; the
+term may still be useful, but its relation to these group listings is not
+being fixed by this discussion.
+
+The byte-couplet rebuild provides the operative example. The value `01` can
+occur across encoding tables, often by itself and sometimes in a larger
+configuration. A table in which it has a **direct representation** appears in
+`01`'s `member_of` list. That table can, in turn, be `member_of` groupings for
+its vendor/source and format. The table's `members` list lets a traversal
+follow directly back to the values it represents. The direct edge and the
+recursive classification chain are distinct; the example does not imply that
+every ancestor is stored as a direct `member_of` edge on `01`.
 
 The **cold** structure spells out the relationships at every layer. The
 study-oriented **warm cache** composes appropriate aggregates of their field
@@ -113,11 +128,14 @@ underlying connections remain explicit in cold storage. This is a connection
 between structural expansion and field participation, not a different force
 law for each level.
 
-The current C++ `field::Harness` streams one membership-edge shape with a mass
-share and an offset, which can perform whole or partial participation. It does
-not by itself represent the ordered parent definition or compose cold records
-into warm LoD aggregates. This note records those intended relationships
-without claiming the assembly path has been built.
+The database schema and controller already store/read `token_parent` with
+`token_child`, and `member_of` with `members`, as reciprocal relations. The
+current C++ `field::Harness` streams generic particle-to-group edges with a
+mass share and offset; it does not itself traverse those database lists or
+compose cold records into warm LoD aggregates. This note does not claim the
+byte-couplet/table rebuild or that assembly path has been built. The WAL
+manager's deferred return-path work for these relationships is described
+below.
 
 ### Address recommendations from a partial view
 
@@ -300,6 +318,26 @@ priority box. Database WAL reports are its ongoing data input, not commands
 from the analyst. The WAL manager owns the cache manager's durable deferred
 work list; the cache manager carries out the work, and its resulting database
 writes become further WAL reports. Swarm functions are outside this pass.
+
+**Why this deferred work exists (Patrick, 2026-09-25):** each new direct
+relationship also needs a stored path for future traversal in the other
+direction. An ordered `token_parent` declaration owes a `token_child` return
+from each constituent to the composite; a group's `members` declaration owes
+a `member_of` return from each member to that group. Repeating these direct
+follows through parent structures and group classifications gives the DB its
+future n-dimensional traversal paths without searching for reverse edges.
+The WAL manager books which returns are owed, delivers outstanding work and
+observes the followup writes; the cache manager builds the paths. This is the
+connection between its deferred-work list and the cold structure from which
+warm aggregates will later be assembled.
+
+**Current integration seam:** the existing database `Controller::mint` and
+`Controller::add_membership` already write their reciprocal links immediately
+in the record tier. The fixture-fed WAL kernel can book and settle return
+obligations, but the live WAL-to-cache-manager route that would establish
+those returns as deferred work is not built. The intended future division of
+write timing and ownership should be reconciled with the existing eager
+controller when this path is implemented.
 
 The next ingress wireframe connects the participating databases' WAL streams
 to the WAL manager's existing per-source inboxes:
