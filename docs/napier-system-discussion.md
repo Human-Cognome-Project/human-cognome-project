@@ -164,13 +164,14 @@ calculation, distinct from the tick-to-tick geometry update.
 **Particle exclusion (Patrick, 2026-09-25):** apply the same temporary
 exclusion principle at particle scale. If a particle needs no movement on a
 given tick, leave it out of subsequent particle calculations until something
-touches it again. Particle and field activation are connected: a changed
-particle can wake its dependent field calculations, and interactions through
-those fields can wake other particles. This creates a changing network of
-active work rather than requiring every particle and field to be recalculated
-on every settled tick. The precise no-movement test, what counts as a touch,
-and how wake-up travels through dependencies remain to be specified in the
-formula walkthrough; no complexity bound is established by this note.
+touches it again. The wake-up chain is: calculate every active field on every
+unresolved particle; each field calculation touches its centroids and invokes
+their calculation. When a centroid changes, every particle it touches
+resolves, potentially bringing its active fields into the calculation and
+continuing the process through the network. A particle or centroid without a
+new change can fall out of this active work again. This is the intended
+propagation rule; the exact no-movement test remains to be specified in the
+formula walkthrough, and this note does not establish a complexity bound.
 
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
