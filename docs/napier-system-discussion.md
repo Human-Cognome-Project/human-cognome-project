@@ -148,6 +148,49 @@ record could inform an instance's working cache without itself becoming a
 swarm record. This interpretation does not decide how derived results cross
 the private boundary.
 
+## WAL manager: independent bookkeeping and report ingress
+
+The WAL manager works independently from the analyst's current-work requests.
+**RECONCILE is its only analyst-issued command**: it asks the WAL manager to
+promote relevant work already tracked for the cache manager into the pinned
+priority box. Database WAL reports are its ongoing data input, not commands
+from the analyst. The WAL manager owns the cache manager's durable deferred
+work list; the cache manager carries out the work, and its resulting database
+writes become further WAL reports. Swarm functions are outside this pass.
+
+The next ingress wireframe connects the participating databases' WAL streams
+to the WAL manager's existing per-source inboxes:
+
+| Stage | Contract | State |
+|---|---|---|
+| Database report feed | Observe changes from each relevant database, including instance-local stores, preserving each source's own order. | Live feed deferred. |
+| Report-to-inbox adapter | Convert decoded change data to the existing `wal::Report` (`source`, `lsn`, local/global scope, op, decoded address footprint and relevant mass field), then deliver it to that source's inbox. Recognition reads the change data, not the initiating command. No global ordering of unrelated sources is assumed. | Wire form and live adapter still to be defined; decoded-report struct and fixture input exist. |
+| WAL manager | From the report, book or settle obligations in its own durable open-obligation relation and History; push owed work to the cache manager's pending-work box. | Bookkeeping and fixture-fed endpoint push built. |
+| Analyst `RECONCILE` | Select relevant existing obligations and stage them in the cache manager's normally empty priority box; their durable home stays in the WAL manager. | Routing and staging designed, not built. |
+| Content tracker source | Use eligible entries in the WAL manager's PostgreSQL database as source material for the content tracker network. | Network facet deferred; exact source-file/manifest shape not yet settled. |
+
+“Queue” here means the **persistent outstanding-work relation** plus transient
+delivery boxes, rather than a consumed FIFO: an obligation closes when its
+matching followup write appears in a report. The conversion bridge needs a
+focused design for real logical decoding, source identity, and delivery/replay;
+this note does not choose its wire format or transaction boundary. See
+[`wal_report.h`](../kernels/wal/wal_report.h),
+[`WAL-INTEGRATION-PLAN.md`](../kernels/wal/WAL-INTEGRATION-PLAN.md) and
+[`ENDPOINT-ACTIVATION-NOTES.md`](../network/ENDPOINT-ACTIVATION-NOTES.md).
+
+Patrick proposes **entry into the WAL manager's own PostgreSQL database** as
+the durable handoff for these reports. The persisted entries serve both its
+deferred-work tracking and the source files/records from which the content
+tracker network is built. The current fixture-fed kernel receives reports
+through inboxes and then writes the `history` and `obligation` tables; History
+holds a decoded footprint and bookkeeping fields, not the full original WAL
+record. How database entry and inbox activation fit together, and what exact
+persisted representation the tracker consumes, need the focused data-shape
+pass. [`network/SWARM-NOTES.md`](../network/SWARM-NOTES.md) already describes
+WAL data as the network's distribution manifest/index, with its piece shape
+still deferred. Instance-local contents remain private; any derived result
+shared beyond an instance needs the separate guardrails noted above.
+
 ## Existing repo seams
 
 - [`storage-and-working-split.md`](storage-and-working-split.md) distinguishes
