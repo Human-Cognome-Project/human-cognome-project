@@ -161,11 +161,23 @@ centroid's position/pairwise calculation without changing its mass; motion
 alone is not a reason to sum its mass again. This is an initial and on-change
 calculation, distinct from the tick-to-tick geometry update.
 
+**Particle exclusion (Patrick, 2026-09-25):** apply the same temporary
+exclusion principle at particle scale. If a particle needs no movement on a
+given tick, leave it out of subsequent particle calculations until something
+touches it again. Particle and field activation are connected: a changed
+particle can wake its dependent field calculations, and interactions through
+those fields can wake other particles. This creates a changing network of
+active work rather than requiring every particle and field to be recalculated
+on every settled tick. The precise no-movement test, what counts as a touch,
+and how wake-up travels through dependencies remain to be specified in the
+formula walkthrough; no complexity bound is established by this note.
+
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
-not yet implement this shrinking active set. It also clears and sums group mass
+not yet implement this shrinking active set. Its integration and determiner
+passes also visit every particle on each tick. It clears and sums group mass
 on every tick as part of the centroid pass, so the proposed mass reuse is not
-implemented. The older
+implemented either. The older
 [`field-physics-and-tick-notes.md`](field-physics-and-tick-notes.md) already
 describes recomputing centroids only for active fields.
 
