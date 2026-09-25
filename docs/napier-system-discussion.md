@@ -161,6 +161,26 @@ centroid's position/pairwise calculation without changing its mass; motion
 alone is not a reason to sum its mass again. This is an initial and on-change
 calculation, distinct from the tick-to-tick geometry update.
 
+**Current formula cross-check (2026-09-25):** the C++ field harness represents
+particle `p` participating in group `g` with a membership edge of mass
+`m(p) * share(p,g)` at `position(p) + offset(p,g)`. The centroid reduction sums
+**every edge of the group, including the interacting particle's edge**, so its
+published `kCenM` is the group's full participating mass. The force pass reads
+that mass (`m2`) **at the previously published centroid position** for each
+member's edge; distance and direction are from the member's participating
+position to that centroid. At tick end, after integration, the centroid pass
+reduces updated positions and publishes the group's next position and mass;
+`seed_centroids()` initializes them before the first tick. Thus subject
+inclusion and the one-tick centroid lag agree with the stated sequence. With
+unchanged membership, particle masses and participation shares, group mass is
+independent of positions and can be reused. **Implementation difference:** the
+current pass clears and recomputes mass and position for *every* group on every
+tick; first/new-entry-only mass calculation and touched-centroid-only position
+calculation are still design intent. The separate origin-pegged universal
+field is currently suspended from the tick. The existing centroid test checks
+the inclusive seeded mass and position; this review checks the tick ordering
+from source, rather than asserting a new runtime timing test.
+
 **Particle exclusion (Patrick, 2026-09-25):** apply the same temporary
 exclusion principle at particle scale. If a particle needs no movement on a
 given tick, leave it out of subsequent particle calculations until something
