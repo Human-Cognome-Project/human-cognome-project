@@ -172,8 +172,13 @@ continuing the process through the network. A particle or centroid without a
 new change can fall out of this active work again. This is the intended
 propagation rule. The ripple follows the active relationships as far as the
 current analysis requires; it does not imply traversing unrelated archived
-structures. The exact no-movement test remains to be specified in the formula
-walkthrough, and this note does not establish a complexity bound.
+structures. It is self-limiting: once a perturbation is insufficient to change
+a recalculated centroid, no further particles are woken through that
+centroid. As the touched particles cease needing movement and their field
+centroids hold, stability propagates back through that active portion of the
+network and those elements can be excluded again. The exact no-movement test
+remains to be specified in the formula walkthrough, and this note does not
+establish a complexity bound.
 
 The current [`field::Harness`](../engine/src/field/field.cpp) runs its force
 and centroid passes across all loaded membership edges on each tick; it does
