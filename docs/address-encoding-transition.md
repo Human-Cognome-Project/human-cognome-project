@@ -75,8 +75,10 @@ lower-case letters, both in ASCII order). Under RFC §5 it does not:
 | `COLLATE "C"` byte order | `-` (0x2D), `0–9` (0x30–39), `A–Z` (0x41–5A), `_` (0x5F), `a–z` (0x61–7A) |
 
 A text key would therefore misplace every address containing a digit, `-`
-or `_`. For example, a gather over `Z*` scans `[ZA, aA)` in bytes, while
-`Z0`…`Z_` sort *before* `ZA`, so they would be silently missed.
+or `_`. For example, a gather over `Z*` scans `[ZA, aA)` in bytes. `Z-` and
+`Z0`…`Z9` sort *before* `ZA` in bytes, so those eleven members would be
+silently missed. `Z_` sorts after `ZA` (and before `aA`), so it is
+returned, but in the wrong position relative to its siblings.
 
 **Options considered:**
 
@@ -101,12 +103,34 @@ or `_`. For example, a gather over `Z*` scans `[ZA, aA)` in bytes, while
    collation fails silently as wrong range results. That is the same
    failure mode the `COLLATE "C"` pin was introduced to prevent.
 
+**Partial addresses are query-only.** A partial (wildcard) address such
+as `AB.C*` names a range of tokens and is resolved by `gather()`; it is
+never a token identity. The pair key therefore has no form for it
+(`to_pair_key` refuses it), and the record tier refuses partials at every
+key boundary: mint, constituents, membership, rekey, delete and exact
+follows, and WAL obligation/history identities. This was already the
+documented role of wildcards ("a GATHER, never a search"); it is now
+enforced and tested so the `smallint[]` step cannot silently drop an
+accepted identity shape. If a context node ever needs to be a token in its
+own right, that needs its own full address.
+
 **Consequences.** The codec exposes `to_pair_key` / `from_pair_key` (the
 storage form) and `partial_code_range` (a wildcard's code interval).
 Base64url strings remain the interchange format and are always produced
-from, and parsed back to, the key through the codec. Because the existing
-development data is nominal and regenerable, the store is **wiped and
-repopulated** under the new key rather than rekeyed in place.
+from, and parsed back to, the key through the codec.
+
+**Development store.** The project owner's working assessment
+(2026-09-26) is that the current development data is nominal and
+regenerable, so the store is to be **rebuilt under the new key** rather
+than rekeyed in place. The rebuild is conditional on three steps first:
+
+1. inventory the live store (tables, row counts, what produced each set);
+2. keep a snapshot under `data/postgres/snapshots/` along with the source
+   records needed to regenerate it;
+3. verify that the required identities and relationships can be
+   reconstructed from those sources.
+
+Only then is the store wiped and repopulated.
 
 ## Implementation status
 
@@ -115,6 +139,7 @@ repopulated** under the new key rather than rekeyed in place.
 | Codec: RFC §5 alphabet, value-order pair codes `0..4095`, token_id parsing/rendering, pair-key form, partial code range, tests | **Built** |
 | Address successor / span planner: radix-64 carry in value order (`Az → A0`, `A9 → A-`, `AA.__ → AB.AA`) | **Built** (generic over the codec's radix; tests updated) |
 | Record tier (controller) on `text[]` | **Interim:** accepts only the letter subset `A–Z a–z` (values 0–51), for which byte order equals value order, so every range stays exact. Digits, `-` and `_` are refused loudly (mint, follow and gather throw). Bound arithmetic treats `z` as the last stored symbol. |
+| Partial addresses query-only: refused at every record-tier and WAL key boundary | **Built** (controller and WAL tests) |
 | Pair-code storage: `smallint[]` PK/FK columns in `schema.sql` and `wal_schema.sql`, controller/WAL rendering and parsing, seeder, verify script, DB tests | **Next step**; removes the interim letter limit |
 | WAL bookkeeper | Uses equality only, so it is correct under either order; moves to pair-code columns with the storage step |
 | Legacy extraction | Unchanged. Remains the base-50 provenance record |
@@ -155,8 +180,9 @@ references, WAL obligations, snapshots and content-addressed manifests;
 decide explicitly what must be translated and what can be regenerated.
 Change address producers and consumers together. The codec has since been
 converted (see [Implementation status](#implementation-status)); no live
-store has been rekeyed. The development store is to be wiped and
-repopulated under the pair-code key.
+store has been rekeyed. The development store is to be rebuilt under the
+pair-code key once the inventory, snapshot and reconstruction checks under
+[Development store](#storage-key-ordering-decided-2026-09-26) are done.
 
 The governing [system guide](napier-system-guide.md) and
 [architecture](architecture.md) describe the intended system. Existing

@@ -71,6 +71,11 @@ Until the decided `smallint[]` pair-code key lands, the controller stores
 exactly that subset: rendering an address that uses a digit, `-` or `_`
 throws (so mint, follows and gather refuse it loudly), and the gather bound
 arithmetic treats `z` as the last symbol. Every range therefore stays exact.
+
+**Partial addresses are query-only.** A wildcard address (`AB.C*`) is
+resolved by `gather()` and is never a token identity. Every key rendering
+(mint, constituents, membership, rekey, delete, exact follows) refuses a
+partial address, so no stored key can be one.
 See [storage key ordering](../../../docs/address-encoding-transition.md#storage-key-ordering-decided-2026-09-26). Reads `token` only. Returns the matching
 token_ids in deterministic PK (address) order.
 
