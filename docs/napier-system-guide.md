@@ -38,8 +38,8 @@ The [architecture](architecture.md) starts from a four-bit undefined base
 particle and a defined two-nibble byte as the smallest relational unit.
 It treats compound tokens as definitions by parts, addressed by arrays of
 two-character pairs; dotted addresses are a human-facing rendering. The
-built codec still uses base-50; the [primary address transition](address-encoding-transition.md)
-adopts the RFC 4648 §5 URL-safe Base64 alphabet while keeping the pairs.
+built codec uses the RFC 4648 §5 URL-safe Base64 alphabet while keeping the
+pairs; storage moves to numeric pair-code keys (see the [primary address transition](address-encoding-transition.md)).
 The built PostgreSQL token schema uses the address array as `token_id`, with
 direct composition and membership links. The field substrate's proposed
 undefined-particle intake and the full archival ingestion path should not

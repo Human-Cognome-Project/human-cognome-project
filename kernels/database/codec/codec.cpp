@@ -24,13 +24,13 @@ const std::array<int, 256> &reverse_lookup() {
 
 }  // namespace
 
+// RFC 4648 section 5, in RFC value order: index == value.
 const std::array<char, kAlphabetSize> kAlphabet = {
-    // Uppercase A-N, P-Z (25 characters; 'O' excluded).
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    // Lowercase a-n, p-z (25 characters; 'o' excluded).
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_',
 };
 
 int alphabet_index(char c) {
@@ -168,6 +168,42 @@ std::optional<Address> decode_token_id(const std::string &token_id) {
     address.push_back(make_full_element(*code));
   }
   return address;
+}
+
+std::optional<PairKey> to_pair_key(const Address &address) {
+  if (!is_valid_address(address)) {
+    return std::nullopt;
+  }
+  PairKey key;
+  key.reserve(address.size());
+  for (const AddressElement &e : address) {
+    if (e.partial) {
+      return std::nullopt;
+    }
+    key.push_back(static_cast<uint16_t>(e.first * kAlphabetSize + e.second));
+  }
+  return key;
+}
+
+std::optional<Address> from_pair_key(const PairKey &key) {
+  Address address;
+  address.reserve(key.size());
+  for (uint16_t code : key) {
+    if (code >= kCoupletSpace) {
+      return std::nullopt;
+    }
+    address.push_back(make_full_element(code));
+  }
+  return address;
+}
+
+std::optional<std::pair<uint16_t, uint16_t>> partial_code_range(
+    const AddressElement &e) {
+  if (!e.partial || !is_valid_element(e)) {
+    return std::nullopt;
+  }
+  const uint16_t low = static_cast<uint16_t>(e.first * kAlphabetSize);
+  return std::make_pair(low, static_cast<uint16_t>(low + kAlphabetSize - 1));
 }
 
 std::optional<Address> compute_delta(const Address &context,

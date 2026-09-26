@@ -37,13 +37,15 @@
 -- ============================================================================
 -- ADDRESS / TOKEN_ID ENCODING (config, not enforced by CHECK constraints)
 -- ============================================================================
--- CURRENT BUILT FORMAT: base-50. The 2026-09-26 primary-address decision in
--- docs/address-encoding-transition.md adopts the RFC 4648 section 5 URL-safe
--- 64-symbol alphabet for a future code/data migration. In that alphabet,
--- RFC digit order no longer matches COLLATE "C" byte order; the range-scan
--- and successor assumptions documented below must be revisited together.
--- No populated store can change identity semantics merely by changing a
--- codec table, even though the column type need not change.
+-- TRANSITION STATE (2026-09-26): the codec now implements the RFC 4648
+-- section 5 URL-safe 64-symbol alphabet (docs/address-encoding-transition.md).
+-- Its value order differs from COLLATE "C" byte order for digits, '-' and
+-- '_', so it is decided that the address columns below move from text[] to
+-- smallint[] pair codes (first*64+second, 0..4095), whose integer order is
+-- address order. Until that storage step lands, this schema is unchanged
+-- and the controller stores only the letter subset A-Z a-z, for which byte
+-- order still equals address order. The base-50 description below is the
+-- original record-tier format; it remains accurate for letter addresses.
 --
 -- A token's address is an ordered array of "couplets". Each couplet is two
 -- characters drawn from a base-50 alphabet: A-Z, a-z (52 chars) minus the

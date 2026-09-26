@@ -1,48 +1,61 @@
 # codec
 
-> **Alphabet transition decided 2026-09-26:** The current codec implements
-> base-50. The [primary address decision](../../../docs/address-encoding-transition.md)
-> adopts the RFC 4648 §5 URL-safe 64-symbol alphabet for a later code and
-> data migration. This README describes current executable behaviour.
+> **Alphabet (2026-09-26):** The codec implements the RFC 4648 §5 URL-safe
+> 64-symbol alphabet. See the [address decision](../../../docs/address-encoding-transition.md),
+> including why storage keys are numeric pair codes rather than text. Until
+> the pair-code storage step lands, the record tier stores only the letter
+> subset (see [controller](../controller/README.md)).
 
-The address / token_id codec: the primitive every higher database-kernel routine
-uses to convert between a token's address and its canonical string
-token_id, and to handle prefix-delta (context-relative) addressing.
+The address / token_id codec: the primitive every higher database-kernel
+routine uses to convert between a token's address, its canonical string
+token_id, and its storage key, and to handle prefix-delta (context-relative)
+addressing.
 
 Pure functions, no state, no I/O, no DB. Standard library only.
 
 ## Files
 
 - `codec.h` / `codec.cpp` -- the module.
-- `codec_test.cpp` -- unit tests (standalone; own tiny check harness, no
-  external test framework).
+- `codec_test.cpp` -- unit tests.
+- `codec_advtest.cpp` -- adversarial tests (every byte, every pair code,
+  malformed strings, boundary indices).
+
+Both are standalone, with their own tiny check harness and no external test
+framework.
 
 ## Build & run the tests
 
 ```
 g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/codec_test codec.cpp codec_test.cpp && /tmp/codec_test
+g++ -std=c++17 -O2 -Wall -Wextra -o /tmp/codec_advtest codec.cpp codec_advtest.cpp && /tmp/codec_advtest
 ```
 
-Exits 0 and prints `PASS codec_test` if every check passes; prints `FAIL`
+Each exits 0 and prints `PASS <name>` if every check passes; prints `FAIL`
 lines for anything that didn't and exits non-zero.
 
 ## Alphabet
 
-Base-50: `A`-`Z` and `a`-`z` (52 characters) minus `o` and `O` (excluded --
-easily confused with `0`). The 50 surviving characters and their order
-(alphabet index 0..49) are the single source of truth, defined once as
-`codec::kAlphabet` in `codec.cpp`: the 25 surviving uppercase letters
-(A-N, P-Z) followed by the 25 surviving lowercase letters (a-n, p-z).
-Conversion functions use `alphabet_index()` / `kAlphabet`. Changing the
-alphabet or base also affects the `kAlphabetSize` constant, successor and
-range planning, schema ordering assumptions, legacy translation and tests;
-it is not only a one-table replacement.
+RFC 4648 §5, in RFC value order, defined once as `codec::kAlphabet`:
+
+```
+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
+```
+
+A symbol's alphabet index **is** its RFC value (`A` = 0, `a` = 26, `0` = 52,
+`-` = 62, `_` = 63). `=` (octet-Base64 padding), standard Base64's `+` and
+`/`, the delimiter `.` and the partial marker `*` are not address symbols.
+
+Addresses use the RFC's alphabet and value mapping, **not** its
+octet-to-symbol encoding. An address is a sequence of independent radix-64
+digits grouped into pairs, and a generic Base64url byte decoder will not
+round-trip it. Any byte-level serialization must define its own explicit
+mapping (see the decision record).
 
 ## Representation choices
 
-- **Couplet code**: `uint16_t` in `[0, 2500)` -- `first_index * 50 +
-  second_index`. Matches the spec's required interface exactly
-  (`couplet_to_code` / `code_to_couplet`).
+- **Couplet (pair) code**: `uint16_t` in `[0, 4096)` --
+  `first_value * 64 + second_value`, twelve bits. Numeric code order is
+  value order (`couplet_to_code` / `code_to_couplet`).
 - **Address element**: a small struct, not a bare couplet code --
 
   ```cpp
@@ -68,10 +81,28 @@ it is not only a one-table replacement.
 
   Base cases (both covered in `codec_test.cpp`):
   - `AA.AA.AA.AA.AA` -- the `0x` particle: five full couplets, all `AA`
-    (couplet code 0).
+    (couplet code 0; the same string as under base-50, a different
+    alphabet table behind it).
   - `AA.AA.AA.AA.A*` -- the 17-entry root: four full couplets plus a
     partial trailing element, addressing the context/prefix node rather
     than one leaf.
+
+## Storage key
+
+The record tier's identity key is the address as an array of pair codes
+(`codec::PairKey`, a `std::vector<uint16_t>`, stored as PostgreSQL
+`smallint[]`). Comparing keys lexicographically compares addresses in value
+order for every symbol, so an ordered index over the key keeps wildcard and
+`FROM..TO` reads as single contiguous range scans. Comparing token_id text
+does not do this: in byte order, digits, `-` and `_` fall between or before
+the letters (`test_key_order_is_value_order` shows the difference).
+
+- `to_pair_key(address)` gives the key of a full address. A partial address
+  has no single key.
+- `from_pair_key(key)` gives the address back; any code `>= 4096` is rejected.
+- `partial_code_range(element)` gives the inclusive code interval
+  `[first*64, first*64+63]` a partial element stands for. That is one
+  contiguous range in key order.
 
 ## OPEN decisions
 
@@ -88,7 +119,7 @@ correct choices made here, each marked `// OPEN:` at its definition in
   `<char>*`. This is the simplest string form that (a) round-trips
   losslessly, (b) matches the `AA.AA.AA.AA.A*` worked example verbatim,
   and (c) needs no escaping since `*` is never a valid alphabet
-  character.
+  character (nor is `.`; both are outside RFC 4648 §5).
 - **`// OPEN: delta is positional, not content-verified`** -- the spec
   states the shared prefix "is assumed by position." `compute_delta`
   therefore does not compare `context`'s element values against `full`'s;
@@ -122,6 +153,11 @@ bool is_valid_address(const Address &address);
 // Address <-> token_id
 std::optional<std::string> encode_token_id(const Address &address);
 std::optional<Address> decode_token_id(const std::string &token_id);
+
+// Storage key
+std::optional<PairKey> to_pair_key(const Address &address);
+std::optional<Address> from_pair_key(const PairKey &key);
+std::optional<std::pair<uint16_t, uint16_t>> partial_code_range(const AddressElement &e);
 
 // Delta-by-position
 std::optional<Address> compute_delta(const Address &context, const Address &full);

@@ -507,6 +507,54 @@ void run_controller_checks(const std::string &conninfo) {
           "just below z, correctly outside the low bound)");
   }
 
+  // --- Interim storage limit (Base64url transition): text[] byte order is
+  //     address order only for letters, so digits, '-' and '_' are refused
+  //     loudly rather than stored where range scans would misplace them. ---
+  {
+    const Address digit = A("A0");
+    bool threw = false;
+    try {
+      ctl.mint(digit, "digit-symbol", {});
+    } catch (const std::exception &) {
+      threw = true;
+    }
+    check(threw, "interim limit: an address using a digit symbol is refused");
+    bool gather_threw = false;
+    try {
+      ctl.gather(A("-*"));
+    } catch (const std::exception &) {
+      gather_threw = true;
+    }
+    check(gather_threw, "interim limit: a wildcard on a non-letter symbol is refused");
+  }
+
+  // --- Partial (wildcard) addresses are query-only: never a token
+  //     identity, so every write boundary refuses them. ---
+  {
+    auto refuses = [](auto &&op) {
+      try {
+        op();
+      } catch (const std::exception &) {
+        return true;
+      }
+      return false;
+    };
+    const Address wildcard = A("K*");
+    check(refuses([&] { ctl.mint(wildcard, "wildcard-token", {}); }),
+          "partial contract: mint refuses a partial token_id");
+    check(refuses([&] { ctl.mint(A("KA"), "wildcard-parent", {dbk::Constituent{wildcard, 1}}); }),
+          "partial contract: mint refuses a partial constituent");
+    check(!ctl.token_exists(A("KA")), "partial contract: the refused mint wrote nothing");
+    ctl.mint(A("KB"), "membership-probe", {});
+    check(refuses([&] { ctl.mint(A("KB"), "again", {dbk::Constituent{wildcard, 1}}); }),
+          "partial contract: a partial constituent is refused even when the token exists");
+    check(refuses([&] { ctl.add_membership(A("KB"), wildcard); }),
+          "partial contract: add_membership refuses a partial group");
+    check(refuses([&] { ctl.rekey(A("KB"), wildcard); }),
+          "partial contract: rekey refuses a partial target");
+    check(ctl.token_exists(A("KB")), "partial contract: the refused rekey left the token in place");
+  }
+
   // --- Error path: mint referencing a missing constituent rolls back. ---
   {
     const Address bad = A("DA");

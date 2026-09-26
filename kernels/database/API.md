@@ -1,9 +1,10 @@
 # database — record-tier API reference
 
-> **Address-format boundary (2026-09-26):** The signatures and base-50
-> semantics here describe the built record tier. The planned URL-safe
-> Base64 alphabet, and the migration of its indexes and callers, are
-> documented in [address encoding transition](../../docs/address-encoding-transition.md).
+> **Address-format boundary (2026-09-26):** The codec now uses the RFC 4648
+> §5 URL-safe alphabet (radix 64). Until the pair-code storage step lands,
+> the record tier stores only the letter subset `A–Z a–z` and refuses
+> digits, `-` and `_`. Base-50 examples below still read correctly as
+> letter addresses. See [address encoding transition](../../docs/address-encoding-transition.md).
 
 > **⚠ Forward flag (2026-09-21; updated 2026-09-22).** §9's "WAL manager —
 > bookkeeper/observer … never drives" characterization has been rebased onto the

@@ -10,14 +10,49 @@ namespace dbk {
 
 namespace {
 
+// Interim storage limit (Base64url transition, see
+// docs/address-encoding-transition.md "Storage key ordering"). Addresses are
+// still stored as text[] COLLATE "C", whose byte order equals the codec's
+// value order only for the letter symbols A-Z, a-z (values 0-51). Digits,
+// '-' and '_' (values 52-63) sort differently in bytes, so every range scan
+// below would silently miss or misplace them. Until the pair-code
+// (smallint[]) storage step lands, the store accepts exactly the letter
+// subset: rendering refuses anything above it, and successor/bound
+// arithmetic treats 'z' as the last symbol, so every range stays exact.
+constexpr int kStoredSymbolLimit = 52;
+
+bool element_is_storable(const codec::AddressElement &e) {
+  return e.first < kStoredSymbolLimit && e.second < kStoredSymbolLimit;
+}
+
 // Render a codec address as a Postgres text[] array literal, one couplet per
 // element, each element double-quoted (e.g. {"AA","AB"}). Couplets are drawn
-// from the base-50 alphabet plus the partial marker '*', none of which need
-// escaping, so plain double-quoting is enough. Throws if the address is not a
-// valid codec address.
+// from the stored letter subset, none of which need escaping, so plain
+// double-quoting is enough. Throws if the address is not a valid codec
+// address, uses a symbol outside the stored subset, or has a partial
+// element.
+//
+// Partial (wildcard) addresses are query-only: they name a range of
+// tokens, resolved by gather(), and are never a token identity. Every
+// write (mint, constituents, membership, rekey, delete) and every exact
+// follow renders through here, so refusing partials here keeps them out
+// of every stored key. gather() renders only the full addresses of its
+// bounds.
 std::string address_to_pg_array(const codec::Address &addr) {
   if (!codec::is_valid_address(addr) || addr.empty()) {
     throw std::runtime_error("address_to_pg_array: invalid or empty address");
+  }
+  if (addr.back().partial) {
+    throw std::runtime_error(
+        "address_to_pg_array: a partial (wildcard) address is query-only, "
+        "never a token identity");
+  }
+  for (const codec::AddressElement &e : addr) {
+    if (!element_is_storable(e)) {
+      throw std::runtime_error(
+          "address_to_pg_array: digits, '-' and '_' need the pair-code storage "
+          "step (text[] byte order differs from address order for them)");
+    }
   }
   std::string out = "{";
   for (std::size_t i = 0; i < addr.size(); ++i) {
@@ -27,7 +62,7 @@ std::string address_to_pg_array(const codec::Address &addr) {
     const codec::AddressElement &e = addr[i];
     out.push_back('"');
     out.push_back(codec::kAlphabet[e.first]);
-    out.push_back(e.partial ? codec::kPartialMarker : codec::kAlphabet[e.second]);
+    out.push_back(codec::kAlphabet[e.second]);
     out.push_back('"');
   }
   out.push_back('}');
@@ -53,7 +88,8 @@ codec::Address text_to_address(const std::string &text) {
   return *addr;
 }
 
-// Increments `addr` in place as a base-50 counter over full couplets — the
+// Increments `addr` in place as a counter over full couplets of the stored
+// letter subset (radix kStoredSymbolLimit) — the
 // second character increments fastest, carrying into the first character,
 // then carrying left into the preceding element — used only to compute
 // gather's exclusive upper bound (a private implementation detail of this
@@ -67,12 +103,12 @@ codec::Address text_to_address(const std::string &text) {
 bool increment_full_address(codec::Address &addr) {
   for (std::size_t i = addr.size(); i-- > 0;) {
     codec::AddressElement &e = addr[i];
-    if (e.second + 1 < codec::kAlphabetSize) {
+    if (e.second + 1 < kStoredSymbolLimit) {
       ++e.second;
       return true;
     }
     e.second = 0;
-    if (e.first + 1 < codec::kAlphabetSize) {
+    if (e.first + 1 < kStoredSymbolLimit) {
       ++e.first;
       return true;
     }
@@ -101,8 +137,8 @@ struct WildcardBounds {
 // a shared prefix's longer extension strictly after the point the two
 // arrays first diverge (see NOTES.md "Gather primitive"). When the
 // wildcard's first character is already the alphabet's last, the next
-// trunk carries into the fixed leading elements (incremented as a base-50
-// counter); if those are exhausted too (or the wildcard has no leading
+// trunk carries into the fixed leading elements (incremented as a
+// stored-subset counter); if those are exhausted too (or the wildcard has no leading
 // elements at all), there is no trunk above this one and the range is left
 // open (`high` stays nullopt).
 WildcardBounds wildcard_bounds(const codec::Address &w) {
@@ -112,7 +148,7 @@ WildcardBounds wildcard_bounds(const codec::Address &w) {
   b.low.assign(w.begin(), w.end() - 1);
   b.low.push_back(codec::AddressElement{last.first, 0, false});
 
-  if (last.first + 1 < codec::kAlphabetSize) {
+  if (last.first + 1 < kStoredSymbolLimit) {
     codec::Address high(w.begin(), w.end() - 1);
     high.push_back(codec::AddressElement{static_cast<uint8_t>(last.first + 1), 0, false});
     b.high = std::move(high);
@@ -359,6 +395,15 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
                       const std::vector<Constituent> &constituents,
                       std::optional<int> mass) {
   const std::string composite_arr = address_to_pg_array(token_id);
+  // Render every constituent before touching the store, so a malformed
+  // constituent (e.g. a partial address) is refused even when the token
+  // already exists and the idempotent path below would otherwise return
+  // without looking at it.
+  std::vector<std::string> parent_arrs;
+  parent_arrs.reserve(constituents.size());
+  for (const Constituent &c : constituents) {
+    parent_arrs.push_back(address_to_pg_array(c.address));
+  }
 
   PGresult *begun = run(conn_, "BEGIN", {});
   PQclear(begun);
@@ -401,7 +446,7 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
     // several ordinals yields a single reverse edge.
     std::set<std::string> distinct_parents;
     for (std::size_t i = 0; i < constituents.size(); ++i) {
-      const std::string parent_arr = address_to_pg_array(constituents[i].address);
+      const std::string &parent_arr = parent_arrs[i];
       const std::string ordinal = std::to_string(i);  // 0-based (OPEN TEST SLOT 2)
       // Per-element mass: absent -> SQL NULL, never a stand-in 0.
       std::string elem_mass_str;
