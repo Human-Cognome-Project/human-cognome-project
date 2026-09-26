@@ -280,6 +280,14 @@ points are being derived in the formula walkthrough. The current harness's
 full pass over its loaded surface is a baseline for checking the field math;
 it does not yet express the intended calculation-surface control.
 
+**Calculation economy (Patrick, 2026-09-25):** only calculate what changes;
+when a calculation is necessary, use its result everywhere it applies. The
+bidirectional field calculation can supply both its motion contribution and
+the would-move decision, a flagged centroid is placed once for all connected
+consumers, and an unchanged group mass can be reused across ticks. This is
+the organising rule behind selective activation and the cheap propagation
+gate, not a separate force law.
+
 ### Settling after a new base is loaded
 
 The model does not retain every possible base layout as a fixed state. On
@@ -498,20 +506,18 @@ trajectories. This is a design expectation, not a measured error bound.
 exclusion principle at particle scale. If a particle needs no movement on a
 given tick, leave it out of subsequent particle calculations until something
 touches it again. The wake-up chain is: calculate every active field on every
-unresolved particle; each field calculation touches its centroids and invokes
-their calculation. When a centroid changes, every particle it touches
-resolves, potentially bringing its active fields into the calculation and
-continuing the process through the network. A particle or centroid without a
-new change can fall out of this active work again. This is the intended
-propagation rule. The ripple follows the active relationships as far as the
-current analysis requires; it does not imply traversing unrelated archived
-structures. It is self-limiting: once a perturbation is insufficient to change
-a recalculated centroid, no further particles are woken through that
-centroid. As the touched particles cease needing movement and their field
-centroids hold, stability propagates back through that active portion of the
-network and those elements can be excluded again. The exact no-movement test
-remains to be specified in the formula walkthrough, and this note does not
-establish a complexity bound.
+unresolved particle; each bidirectional field calculation supplies its
+centroid's would-move decision. Mark a centroid for end-of-tick placement if
+any interaction flags it; its connected particles can then calculate against
+the published position on a following tick, continuing through their active
+fields. If no interaction flags it, do not schedule that placement or outward
+work. The ripple follows active relationships as far as the analysis
+requires, without traversing unrelated archived structures. It limits itself
+when the force-expression ratio no longer flags further centroid effects;
+small unpropagated flex is allowed. As particles cease needing movement, they
+can also be excluded until a later interaction wakes them. The exact
+particle-level no-movement test remains to be specified, and this note does
+not establish a complexity bound.
 
 **Exclusion implication:** zero or insufficient whole-construct translation
 does not alone prove a particle is resolved. A repeated parent characteristic
@@ -540,6 +546,25 @@ on every tick as part of the centroid pass, so the proposed mass reuse is not
 implemented either. The older
 [`field-physics-and-tick-notes.md`](field-physics-and-tick-notes.md) already
 describes recomputing centroids only for active fields.
+
+**Formula points still to derive or check (2026-09-25):**
+
+- Specify how per-field centroid destinations and directed pulls combine into
+  the particle's effective destination and motive force, including the brake's
+  remaining-distance reference. The current `|F_net|` reach has not been shown
+  to equal distance to that combined destination.
+- Specify the bidirectional force-expression rule that yields each centroid's
+  would-move flag, and the particle-level no-movement rule that also covers
+  parent-line reorientation. The any-active accumulation and end-of-tick
+  centroid placement are already clear.
+- Specify how ordered parent occurrences reorient their line in response to
+  their distinct partial forces, including repeated characteristics, without
+  carried angular velocity.
+- State what operation the `O(log N)` claim bounds when `N` is all exposed
+  fields. A pass that reads each of those `N` fields individually has at least
+  linear total work; logarithmic depth, lookup or active work may be a
+  different measure. This checks the complexity unit without changing the
+  intended active-set design.
 
 ## Shared and instance-local databases
 
