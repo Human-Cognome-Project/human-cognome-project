@@ -182,15 +182,23 @@ struct ExpandResult {
 // which reads straight off `token` -- so everything it returns already
 // exists; a plain address is used as-is after an explicit existence
 // check (mirrors declare::resolve_reference's "must pre-exist" check).
+//
+// A store or controller error while resolving is reported as !ok with its
+// message rather than thrown, so one bad operand is rejected on its own
+// (README.md "Per-pair granularity").
 ExpandResult expand_side(dbk::Controller &ctl, const codec::Address &addr) {
-  if (is_wildcard(addr)) {
-    return ExpandResult{true, ctl.gather(addr), ""};
+  try {
+    if (is_wildcard(addr)) {
+      return ExpandResult{true, ctl.gather(addr), ""};
+    }
+    if (!ctl.token_exists(addr)) {
+      return ExpandResult{
+          false, {}, "endpoint does not exist -- ADD_CONNECTION mints nothing, endpoints must pre-exist"};
+    }
+    return ExpandResult{true, {addr}, ""};
+  } catch (const std::exception &e) {
+    return ExpandResult{false, {}, e.what()};
   }
-  if (!ctl.token_exists(addr)) {
-    return ExpandResult{
-        false, {}, "endpoint does not exist -- ADD_CONNECTION mints nothing, endpoints must pre-exist"};
-  }
-  return ExpandResult{true, {addr}, ""};
 }
 
 }  // namespace
@@ -233,9 +241,17 @@ AddConnectionResult add_connection(dbk::Controller &ctl, const command::AddConne
       for (const codec::Address &group_addr : groups.addresses) {
         // Door is SEE-idempotent (ON CONFLICT DO NOTHING, both
         // directions) -- a re-add is a clean success, never an error.
-        ctl.add_membership(member_addr, group_addr);
-        result.outcomes.push_back(
-            ConnectionOutcome{true, member_addr, group_addr, ""});
+        // A store error on this pair (the door rolls the pair back) is
+        // reported for this pair alone; the remaining pairs are still
+        // attempted, the same discipline as MOVE's per-source outcomes.
+        try {
+          ctl.add_membership(member_addr, group_addr);
+          result.outcomes.push_back(
+              ConnectionOutcome{true, member_addr, group_addr, ""});
+        } catch (const std::exception &e) {
+          result.outcomes.push_back(
+              ConnectionOutcome{false, member_addr, group_addr, e.what()});
+        }
       }
     }
   }
