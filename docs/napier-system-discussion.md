@@ -386,12 +386,19 @@ destination. The parent-line rotary alignment expression remains distinct
 work to implement.
 
 **Discretization brake (Patrick, 2026-09-25):** its purpose is to prevent
-kinetic shearing caused by finite simulation ticks. After a particle's field
-contributions have produced its combined destination and motive force, the
-brake compares the proposed travel for that tick with the remaining distance
-to that destination. It should have an effect near unity while the step stays
-comfortably short of the destination, can slow a particle on an approach
-tick, and should brake aggressively if the unbraked step would overshoot.
+kinetic shearing caused by finite simulation ticks. The fields are intended
+to balance continuously, with their kinetic expression settling a particle
+into position. A discrete tick can carry it past that balancing target;
+small oversteps followed by reversals can compound across ticks into motion
+that the continuous field interaction would have damped. The brake addresses
+this numerical instability by dampening the overstep's kinetics directly,
+without adaptive time steps, substeps or a more complex temporal correction.
+After a particle's field contributions have produced its combined destination
+and motive force, the brake compares proposed travel for that tick with the
+remaining distance to that destination. It should have an effect near unity
+while the step stays comfortably short of the destination. It can slow an
+approach tick and should brake aggressively if the unbraked step would
+overshoot.
 Later ticks can continue settling toward the exact effective centroid; the
 brake need not put the particle at the target in one step. This is a
 correction to the discrete step, applied to the particle's combined motion;
