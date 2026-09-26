@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
   // `0x` lands first, at the A trunk's own first slot (NOTES.md "Per-kind
   // trunk allocation": "single hex codes + 0x -- the A trunk
   // (AA.AA.AA.AA.A*)"). The 16 hex atoms follow it sequentially in the
-  // same trunk, via the base-50 successor helper (command/span_planner.h)
+  // same trunk, via the radix-64 successor helper (command/span_planner.h)
   // -- the analyst-supplied-start sequential fill NOTES.md "Analyst
   // command semantics" describes, applied here by hand for the one
   // bootstrap statement that has no analyst above it yet.

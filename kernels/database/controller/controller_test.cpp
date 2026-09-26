@@ -507,6 +507,27 @@ void run_controller_checks(const std::string &conninfo) {
           "just below z, correctly outside the low bound)");
   }
 
+  // --- Interim storage limit (Base64url transition): text[] byte order is
+  //     address order only for letters, so digits, '-' and '_' are refused
+  //     loudly rather than stored where range scans would misplace them. ---
+  {
+    const Address digit = A("A0");
+    bool threw = false;
+    try {
+      ctl.mint(digit, "digit-symbol", {});
+    } catch (const std::exception &) {
+      threw = true;
+    }
+    check(threw, "interim limit: an address using a digit symbol is refused");
+    bool gather_threw = false;
+    try {
+      ctl.gather(A("-*"));
+    } catch (const std::exception &) {
+      gather_threw = true;
+    }
+    check(gather_threw, "interim limit: a wildcard on a non-letter symbol is refused");
+  }
+
   // --- Error path: mint referencing a missing constituent rolls back. ---
   {
     const Address bad = A("DA");
