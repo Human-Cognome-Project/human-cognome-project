@@ -32,9 +32,10 @@ database or a swarm component has been built from its appearance here.
   factors, analogous to the semi-direct, indirect evaluation a biological
   entity experiences while thinking about that thought. This is the model's
   active work, not merely background storage or retrieval.
-- The **analyst** is the conscious analogue. Its functions have not yet been
-  designed or implemented, so this analogy does not prescribe its interface
-  to the model or how it directs attention.
+- The **analyst** is the conscious analogue. It is intended to analyze the
+  physics engine's raw numerical output, without relying on rendered views.
+  Its functions and model-facing interface have not yet been designed or
+  implemented.
 
 These are roles in the proposed system, not four interchangeable names for
 the same processing step. The existing
@@ -259,14 +260,17 @@ fields. This is a changing calculation set, not a loss of the archived data.
 This is a continuing physics simulation: a single tick contributes a small
 step, with its larger effects emerging over many ticks. Patrick's earlier
 modeling attempts ran for **hundreds of thousands of ticks** while updating
-the screen only every few hundred ticks. Simulation ticks and display refresh
-therefore have distinct cadences. Roughly **4 ms per lean tick** was an
-illustration of how fast repeated calculation can be, not a performance
-target or measurement for NAPIER. Physics engines serving games at 120 FPS or
-more illustrate the available class of computation; that frame rate does not
-specify this model's tick or display rate. Loading and highly active periods
-can cost more, and settling continues for as many ticks as interactions
-require.
+the monitoring screen only every few hundred ticks. That screen cadence was
+specific to the earlier visual monitor; it is not how the future analyst
+obtains results. The analyst works from the engine's raw mathematical state
+and determines how often to read it, potentially close to **one read per
+tick**. Its read cadence, the simulation tick rate and the monitor's refresh
+rate are distinct. Roughly **4 ms per lean tick** was an illustration of fast
+repeated calculation, not a performance target or measurement for NAPIER.
+Physics engines serving games at 120 FPS or more illustrate the speed of this
+kind of computation, without imposing a frame schedule on this system.
+Loading and highly active periods can cost more, and settling continues for
+as many ticks as interactions require.
 
 **Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
 field centroid is identical to its current value, exclude that field from
