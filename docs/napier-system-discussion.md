@@ -119,6 +119,28 @@ follow directly back to the values it represents. The direct edge and the
 recursive classification chain are distinct; the example does not imply that
 every ancestor is stored as a direct `member_of` edge on `01`.
 
+**Membership composability (Patrick, 2026-09-25):** memberships relevant to a
+study must be composable into an SNode tree rooted in the concept that defines
+that study. For an encoding-table analysis, **“Encoding tables”** is the root:
+the included membership relationships must fit beneath it through
+progressively more specific tree steps. Tables, their vendor/source and format
+groupings, and represented values can therefore be reached in the context of
+that root. This does not prescribe a single fixed order for those breakdowns
+or require unrelated studies to sit under the same root. The cold database
+keeps its direct links at each level; the warm cache assembles the relevant
+paths and aggregates for the chosen study without discarding those links.
+
+**A composed SNode element can attach at more than one locus of any SNode
+tree.** Each attachment can expose it at a different point in the nested
+representation, so a study-rooted view need not assign an element one unique
+path or depth. Reusing composed elements across attachment points permits
+arbitrarily nested levels of representation without requiring a separate
+underlying object definition for each appearance.
+
+The current schema and `Controller::add_membership` store reciprocal direct
+pairs but do not check composability to a named study root. The warm assembly
+and the point at which this qualification is checked remain to be developed.
+
 **Parent field effects and repetition (Patrick, 2026-09-25):** each exposed
 parent field acts on the mass of the parent occurrence it reaches. That
 partial force contributes to the total motion vector of the whole construct,
