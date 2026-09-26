@@ -371,6 +371,15 @@ ValidationResult validate_move_record(const MoveRecord &op) {
   // specific restriction); "does the destination cover the resolved
   // source-N" is an EXECUTION-time check belonging to the UPDATE core
   // (PLAN.md II.5), not this one.
+  //
+  // N being unknown does not relax what a destination value must be:
+  // direct, pin and FROM values (and FROM..TO bounds) place concrete
+  // tokens here exactly as on the known-N path, so the same placement
+  // rules apply before the shape check. AFTER stays G5-pending.
+  auto placement_result = validate_address_span_nested(op.destination);
+  if (!placement_result.ok()) {
+    return Invalid("MOVE_RECORD destination: " + placement_result.reason);
+  }
   auto shape_result = validate_span_shape(op.destination);
   if (!shape_result.ok) {
     return Invalid("MOVE_RECORD destination span is malformed: " + shape_result.reason);

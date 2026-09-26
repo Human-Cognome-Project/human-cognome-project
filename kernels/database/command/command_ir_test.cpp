@@ -501,6 +501,43 @@ void test_move_record_validation() {
         "with all-explicit sources, a destination that under-covers N is "
         "rejected -- static cover-N still applies when N is known");
 
+  // N unknown (a prefix or range source) does not relax the destination:
+  // a direct, pin or FROM value, or a FROM..TO bound, still has to name a
+  // concrete token (#92). Prefix/range sources themselves stay legal.
+  const codec::Address wildcard_a = {codec::make_partial_element(0)};  // A*
+  for (const MoveSource &bulk :
+       {MoveSource::Prefix(wildcard_a), MoveSource::Range(addr("AA"), addr("AD"))}) {
+    const std::string src = bulk.kind == MoveSource::Kind::kPrefix ? "prefix" : "range";
+    for (const codec::Address &invalid : {codec::Address{}, wildcard_a}) {
+      const std::string form = invalid.empty() ? "an empty" : "a wildcard";
+      const std::vector<std::pair<std::string, AddressSpan>> destinations = {
+          {"direct", AddressSpan{AddressSegment::Direct(invalid)}},
+          {"pinned", AddressSpan{AddressSegment::Pin(invalid)}},
+          {"FROM", AddressSpan{AddressSegment::From(invalid)}},
+          {"FROM..TO bound", AddressSpan{AddressSegment::From(addr("BA"), invalid)}},
+      };
+      for (const auto &d : destinations) {
+        MoveRecord op;
+        op.sources = {bulk};
+        op.destination = d.second;
+        check(command::validate_move_record(op).status == ValidationStatus::kInvalid,
+              "MOVE with a " + src + " source rejects " + form + " " + d.first +
+                  " destination");
+      }
+    }
+    MoveRecord ok;
+    ok.sources = {bulk};
+    ok.destination = AddressSpan{AddressSegment::From(addr("BA"))};
+    check(command::validate_move_record(ok).status == ValidationStatus::kValid,
+          "MOVE with a " + src + " source and a concrete open FROM destination is accepted");
+    MoveRecord after_block;
+    after_block.sources = {bulk};
+    after_block.destination = AddressSpan{AddressSegment::After(wildcard_a)};
+    check(command::validate_move_record(after_block).status == ValidationStatus::kValid,
+          "MOVE with a " + src + " source and a non-empty AFTER block stays pending G5, "
+          "not rejected");
+  }
+
   MoveRecord over_covered;
   over_covered.sources = {MoveSource::Explicit(addr("AA")), MoveSource::Explicit(addr("AB"))};
   over_covered.destination = direct_span({"BA", "BB", "BC"});  // covers 3, needs 2.
