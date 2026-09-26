@@ -119,18 +119,10 @@ storage form) and `partial_code_range` (a wildcard's code interval).
 Base64url strings remain the interchange format and are always produced
 from, and parsed back to, the key through the codec.
 
-**Development store.** The project owner's working assessment
-(2026-09-26) is that the current development data is nominal and
-regenerable, so the store is to be **rebuilt under the new key** rather
-than rekeyed in place. The rebuild is conditional on three steps first:
-
-1. inventory the live store (tables, row counts, what produced each set);
-2. keep a snapshot under `data/postgres/snapshots/` along with the source
-   records needed to regenerate it;
-3. verify that the required identities and relationships can be
-   reconstructed from those sources.
-
-Only then is the store wiped and repopulated.
+**Development store.** The current development rows are not necessarily
+the desired contents of the new store. It is rebuilt cleanly from the
+intended schema and data derivation under the pair-code key, rather than
+rekeyed in place.
 
 ## Implementation status
 
@@ -180,9 +172,8 @@ references, WAL obligations, snapshots and content-addressed manifests;
 decide explicitly what must be translated and what can be regenerated.
 Change address producers and consumers together. The codec has since been
 converted (see [Implementation status](#implementation-status)); no live
-store has been rekeyed. The development store is to be rebuilt under the
-pair-code key once the inventory, snapshot and reconstruction checks under
-[Development store](#storage-key-ordering-decided-2026-09-26) are done.
+store has been rekeyed. The development store is to be rebuilt cleanly
+under the pair-code key.
 
 The governing [system guide](napier-system-guide.md) and
 [architecture](architecture.md) describe the intended system. Existing
