@@ -1,6 +1,8 @@
 #include "field/field.h"
 
 #include <algorithm>
+#include <stdexcept>
+#include <string>
 
 #include "engine/transfer.h"
 
@@ -56,6 +58,9 @@ Harness::Harness(engine::Runtime &runtime,
       groups_(group_count),
       edges_(edge_count),
       bonds_(bond_count) {
+  if (particle_count < 0 || group_count < 0 || edge_count < 0 || bond_count < 0) {
+    throw std::invalid_argument("field::Harness: counts must be non-negative");
+  }
   particle_data.assign(std::size_t(particles_) * kParticleFieldCount, 0.0f);
   group_data.assign(std::size_t(groups_) * kGroupFieldCount, 0.0f);
   edge_float_data.assign(std::size_t(edges_) * kEdgeFloatFieldCount, 0.0f);
@@ -657,7 +662,29 @@ Harness::Harness(engine::Runtime &runtime,
   }
 }
 
+void Harness::validate_indices() const {
+  // The kernels address device memory directly with these indices; an
+  // out-of-range one would read or write past the array, not fail.
+  for (int e = 0; e < edges_; ++e) {
+    const int p = edge_int_data[offset(kEdgeParticle, edges_, e)];
+    const int g = edge_int_data[offset(kEdgeGroup, edges_, e)];
+    if (p < 0 || p >= particles_ || g < 0 || g >= groups_) {
+      throw std::out_of_range("field::Harness::upload: edge " + std::to_string(e) +
+                              " names a particle or group out of range");
+    }
+  }
+  for (int k = 0; k < bonds_; ++k) {
+    const int a = bond_int_data[offset(kBondA, bonds_, k)];
+    const int b = bond_int_data[offset(kBondB, bonds_, k)];
+    if (a < 0 || a >= particles_ || b < 0 || b >= particles_) {
+      throw std::out_of_range("field::Harness::upload: bond " + std::to_string(k) +
+                              " names a particle out of range");
+    }
+  }
+}
+
 void Harness::upload() {
+  validate_indices();
   engine::upload(*particle_array_, particle_data.data(),
                  particle_data.size() * sizeof(float));
   engine::upload(*group_array_, group_data.data(),
