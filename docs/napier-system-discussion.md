@@ -212,6 +212,12 @@ both contribute to the resultant vector and to alignment of the whole as
 units. They must not be collapsed into one operative occurrence simply
 because they share a token.
 
+**Chemical-structure analogy (Patrick, 2026-09-25):** constructs may contain
+the same parent elements and total mass yet yield very different behaviour
+when those elements are arranged differently, just as a chemical formula's
+inventory alone does not capture organisation. Parent ordinals and positions
+therefore belong to the operative comparison, not only the storage listing.
+
 The database already preserves each ordinal and per-occurrence mass in
 `token_parent`, while `token_child` correctly keeps one reverse navigation
 link per distinct constituent/composite pair.
