@@ -363,11 +363,14 @@ If placement moves it, the centroid becomes active and all connected
 particles are due to calculate against its new position on the next tick.
 Their field calculations touch their centroids in turn, allowing the effect
 to continue across connected fields over multiple ticks if the system
-requires them. As each branch's perturbations settle and its centroids stop
-moving, its calculations can be
-excluded again; there is no fixed number of settling ticks. Previously quiet
-centroids can be touched again by later changes. This specifies propagation
-of calculation work, not a second force formula. The current harness follows
+requires them. This is the self-limiting calculation surface: once the mass
+effect under consideration no longer changes a touched centroid's placement,
+that centroid has no further change to propagate and schedules no connected
+calculations from that effect. There is no fixed ripple depth or number of
+settling ticks; the propagation ends where the centroid positions stop
+changing. Previously quiet centroids can be touched again by later changes.
+This specifies propagation of calculation work, not a second force formula.
+The current harness follows
 the force → integration → centroid-publication order, but has no
 touched-centroid flags, old/new position comparison or selective wake-up of
 connected particles. It still recomputes the full loaded edge list each tick.
