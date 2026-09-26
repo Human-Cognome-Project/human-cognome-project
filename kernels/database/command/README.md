@@ -102,6 +102,13 @@ branch anywhere in this module.
   `MEMBER_OF`) and every nested-declare `ADDRESS` segment is validated
   recursively via `validate_declare`, so a mixed nested statement is
   checked node by node.
+- **Concrete DECLARE identities.** Plain references and direct, pinned,
+  or `FROM` placement values must be non-empty, full token addresses;
+  `FROM..TO` bounds must be concrete as well. The codec also accepts
+  empty and terminal-wildcard query forms, but those are not individual
+  token identities. `AFTER` names a non-empty block and remains pending
+  the G5 trunk map; validation does not decide whether that block is
+  represented by a full address or a terminal wildcard.
 
 `READ_RECORD` / `MOVE_RECORD` / `ADD_CONNECTION` / `DELETE_RECORD` /
 `DELETE_CONNECTION` get lighter, presence/shape-only validation (valid

@@ -18,17 +18,15 @@ ValidationResult Valid() {
 
 // A wildcard is a prefix/context address -- its last element is partial
 // (codec's wildcard-tail marker), selecting a whole block/trunk rather
-// than one leaf. Every record-tier op except MOVE_RECORD's source is
-// explicit-ids-only (NOTES.md UPDATE ops: DELETE is "specific IDs and
-// connections ONLY -- no wildcards"), so this guards those ops' address
-// fields. An empty address has no last element and is never a wildcard
-// by this definition.
+// than one token. Some read/update selectors permit it, but a concrete
+// token identity must contain at least one full address element.
 bool is_wildcard(const codec::Address &address) {
   return !address.empty() && address.back().partial;
 }
 
 bool is_explicit_address(const codec::Address &address) {
-  return codec::is_valid_address(address) && !is_wildcard(address);
+  return !address.empty() && codec::is_valid_address(address) &&
+         !is_wildcard(address);
 }
 
 ValidationResult validate_reference(const Reference &ref) {
@@ -40,8 +38,8 @@ ValidationResult validate_reference(const Reference &ref) {
         "not both or neither");
   }
   if (has_address) {
-    if (!codec::is_valid_address(*ref.address)) {
-      return Invalid("reference address is not a valid codec address");
+    if (!is_explicit_address(*ref.address)) {
+      return Invalid("reference address must name a concrete token");
     }
     return Valid();
   }
@@ -72,12 +70,34 @@ ValidationResult validate_address_span_nested(const AddressSpan &span) {
       if (!result.ok()) {
         return result;
       }
-    } else if (segment.origin.has_value() &&
-               !codec::is_valid_address(*segment.origin)) {
-      return Invalid("ADDRESS segment origin is not a valid codec address");
-    } else if (segment.to_bound.has_value() &&
-               !codec::is_valid_address(*segment.to_bound)) {
-      return Invalid("ADDRESS segment TO bound is not a valid codec address");
+    } else {
+      // Direct, pin and FROM values place concrete tokens. AFTER names a
+      // block whose placement remains G5-pending; a terminal wildcard may
+      // describe that block, but an empty reference cannot name one.
+      if (segment.origin.has_value()) {
+        const bool valid_origin =
+            segment.kind == AddressSegment::Kind::kAfter
+                ? (!segment.origin->empty() &&
+                   codec::is_valid_address(*segment.origin))
+                : is_explicit_address(*segment.origin);
+        if (!valid_origin) {
+          return Invalid("ADDRESS segment origin must name a concrete token "
+                         "(or a non-empty AFTER block)");
+        }
+      }
+      if (segment.to_bound.has_value()) {
+        // FROM..TO enumerates concrete slots. AFTER..TO remains pending
+        // G5; its bound can be a block until that mapping is defined.
+        const bool valid_bound =
+            segment.kind == AddressSegment::Kind::kAfter
+                ? (!segment.to_bound->empty() &&
+                   codec::is_valid_address(*segment.to_bound))
+                : is_explicit_address(*segment.to_bound);
+        if (!valid_bound) {
+          return Invalid("ADDRESS segment TO bound must name a concrete token "
+                         "(or a non-empty AFTER block)");
+        }
+      }
     }
   }
   return Valid();
