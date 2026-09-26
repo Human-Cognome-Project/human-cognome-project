@@ -33,8 +33,6 @@ struct Settings {
   // A particle or centroid counts as touched in a window when any single
   // observed step moved it farther than this.
   float motion_threshold = 1e-4f;
-  // The step the tick integrated with; used to turn speed into travel.
-  float dt = 1.0f;
 };
 
 // One window of observations. Step quantities are accumulated over every
@@ -60,11 +58,13 @@ struct Sample {
   double max_step_displacement = 0.0;
   int touched_particles = 0;   // moved past the threshold on any step
   int touched_centroids = 0;
-  // Edges whose particle or centroid was touched. A displacement-based
-  // proxy for the surface a selective tick would have to revisit. It is NOT
-  // a count of work performed or skipped: the current tick evaluates every
-  // loaded edge on every tick.
-  int touched_edges = 0;
+  // Motion diagnostic only: edges whose particle or centroid moved past the
+  // threshold. It is not the calculable surface. A particle can be still
+  // because its fields balance, so motion is not a predicate for excluding
+  // work, and the current tick evaluates every loaded edge regardless.
+  // Evaluated, skipped and woken work must be counted by the control
+  // implementation, not inferred here.
+  int motion_edges = 0;
   int velocity_reversals = 0;  // summed over steps: velocity turned > 90 degrees
 
   // Net over the window: first observation to last. Motion that returned
@@ -76,8 +76,6 @@ struct Sample {
   // The last observed state.
   double max_speed = 0.0;
   double kinetic_proxy = 0.0;  // sum of m * |v|^2
-  int near_reach = 0;          // post-brake travel/reach in (0.5, 1]
-  int past_reach = 0;          // post-brake travel/reach > 1
 
   // Cost, filled in by the caller that timed the work.
   double tick_ms = 0.0;

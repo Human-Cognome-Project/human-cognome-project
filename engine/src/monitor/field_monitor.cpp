@@ -158,7 +158,10 @@ void FieldMonitor::observe(const FieldView &view, long tick) {
     const double d = length3(double(at(gc, field::kCenX, g, k)) - at(gq, field::kCenX, g, k),
                              double(at(gc, field::kCenY, g, k)) - at(gq, field::kCenY, g, k),
                              double(at(gc, field::kCenZ, g, k)) - at(gq, field::kCenZ, g, k));
-    if (!(d <= settings_.motion_threshold)) {  // NaN counts as touched
+    // A broken group is never settled, even if only its mass or an
+    // accumulator went bad while the centroid position stayed put.
+    if (!(d <= settings_.motion_threshold) || !group_finite(gc, g, k) ||
+        !group_finite(gq, g, k)) {
       touched_centroid_[std::size_t(k)] = 1;
     }
   }
@@ -200,16 +203,6 @@ Sample FieldMonitor::take_sample() {
                                  at(p, field::kVelZ, n, i));
     s.max_speed = std::max(s.max_speed, speed);
     s.kinetic_proxy += m * speed * speed;
-    const double reach = length3(at(p, field::kForceX, n, i), at(p, field::kForceY, n, i),
-                                 at(p, field::kForceZ, n, i));
-    if (reach > 0.0) {
-      const double ratio = speed * settings_.dt / reach;
-      if (ratio > 1.0) {
-        ++s.past_reach;
-      } else if (ratio > 0.5) {
-        ++s.near_reach;
-      }
-    }
     if (steps_ > 0 && particle_finite(w, n, i)) {
       net.push_back(position_distance(p, w, n, i));
     }
@@ -241,7 +234,7 @@ Sample FieldMonitor::take_sample() {
     const int gi = last_.edges[std::size_t(field::kEdgeGroup) * e + j];
     if ((pi >= 0 && pi < n && touched_particle_[std::size_t(pi)]) ||
         (gi >= 0 && gi < g && touched_centroid_[std::size_t(gi)])) {
-      ++s.touched_edges;
+      ++s.motion_edges;
     }
   }
 
@@ -261,22 +254,22 @@ void write_csv_header(std::FILE *out) {
                "tick,steps_observed,ticks_per_step,nonfinite_particles,"
                "nonfinite_groups,total_mass,centre_of_mass_drift,"
                "max_step_displacement,touched_particles,touched_centroids,"
-               "touched_edges,velocity_reversals,net_max_displacement,"
+               "motion_edges,velocity_reversals,net_max_displacement,"
                "net_mean_displacement,net_p99_displacement,max_speed,"
-               "kinetic_proxy,near_reach,past_reach,tick_ms,download_ms,"
+               "kinetic_proxy,tick_ms,download_ms,"
                "download_bytes\n");
 }
 
 void write_csv_row(std::FILE *out, const Sample &s) {
   std::fprintf(out,
                "%ld,%ld,%ld,%d,%d,%.9g,%.9g,%.9g,%d,%d,%d,%d,%.9g,%.9g,%.9g,"
-               "%.9g,%.9g,%d,%d,%.6f,%.6f,%zu\n",
+               "%.9g,%.9g,%.6f,%.6f,%zu\n",
                s.tick, s.steps_observed, s.ticks_per_step, s.nonfinite_particles,
                s.nonfinite_groups, s.total_mass, s.centre_of_mass_drift,
                s.max_step_displacement, s.touched_particles, s.touched_centroids,
-               s.touched_edges, s.velocity_reversals, s.net_max_displacement,
+               s.motion_edges, s.velocity_reversals, s.net_max_displacement,
                s.net_mean_displacement, s.net_p99_displacement, s.max_speed,
-               s.kinetic_proxy, s.near_reach, s.past_reach, s.tick_ms,
+               s.kinetic_proxy, s.tick_ms,
                s.download_ms, s.download_bytes);
 }
 

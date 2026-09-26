@@ -221,7 +221,6 @@ int main(int argc, char **argv) {
 
   monitor::Settings ms;
   ms.motion_threshold = o.threshold;
-  ms.dt = o.dt;
   monitor::FieldMonitor mon(ms);
   monitor::write_csv_header(out);
 

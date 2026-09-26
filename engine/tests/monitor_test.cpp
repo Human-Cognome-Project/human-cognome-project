@@ -65,11 +65,11 @@ void check_baseline() {
   CHECK_TRUE(near(a.total_mass, 3.0), "total mass is summed");
   CHECK_EQ_INT(a.steps_observed, 0, "a lone observation has no steps");
   CHECK_EQ_INT(a.touched_particles, 0, "no steps, nothing touched");
-  CHECK_EQ_INT(a.touched_edges, 0, "no steps, no touched edges");
+  CHECK_EQ_INT(a.motion_edges, 0, "no steps, no motion edges");
   CHECK_TRUE(near(a.centre_of_mass_drift, 0.0), "the first observation is the drift origin");
 }
 
-void check_motion_and_touched_edges() {
+void check_motion_and_motion_edges() {
   harness::note("motion and the touched surface");
   State s = base();
   monitor::FieldMonitor mon;
@@ -85,7 +85,7 @@ void check_motion_and_touched_edges() {
   CHECK_TRUE(near(b.max_step_displacement, 0.5), "largest single step");
   CHECK_TRUE(near(b.net_max_displacement, 0.5), "net displacement over the window");
   CHECK_TRUE(near(b.net_mean_displacement, 0.5 / 3.0), "net mean over all particles");
-  CHECK_EQ_INT(b.touched_edges, 1, "only the moved particle's edge is touched");
+  CHECK_EQ_INT(b.motion_edges, 1, "only the moved particle's edge is a motion edge");
   CHECK_TRUE(near(b.centre_of_mass_drift, 0.5 / 3.0), "centre of mass drift from the origin");
 
   s.c(field::kCenX, 0) += 1.0f;
@@ -93,7 +93,7 @@ void check_motion_and_touched_edges() {
   const monitor::Sample c = mon.take_sample();
   CHECK_EQ_INT(c.touched_particles, 0, "the window reset: nothing moved since");
   CHECK_EQ_INT(c.touched_centroids, 1, "one centroid moved");
-  CHECK_EQ_INT(c.touched_edges, 2, "both edges into the moved centroid are touched");
+  CHECK_EQ_INT(c.motion_edges, 2, "both edges into the moved centroid are motion edges");
 }
 
 // Motion that returns to where it started inside one window must still
@@ -117,7 +117,7 @@ void check_oscillate_and_return() {
   CHECK_EQ_INT(w.steps_observed, 2, "two steps in the window");
   CHECK_EQ_INT(w.touched_particles, 1, "the returning particle is still touched");
   CHECK_EQ_INT(w.touched_centroids, 1, "the returning centroid is still touched");
-  CHECK_EQ_INT(w.touched_edges, 2, "its edges are still touched");
+  CHECK_EQ_INT(w.motion_edges, 2, "its edges are still motion edges");
   CHECK_EQ_INT(w.velocity_reversals, 1, "the reversal inside the window is counted");
   CHECK_TRUE(near(w.max_step_displacement, 1.0), "the largest step is recorded");
   CHECK_TRUE(near(w.net_max_displacement, 0.0), "net displacement is zero, labelled as net");
@@ -175,23 +175,19 @@ void check_observation_gap() {
   CHECK_EQ_INT(mon.take_sample().ticks_per_step, 5, "a coarser observation interval is visible");
 }
 
-void check_reversals_and_reach() {
-  harness::note("velocity reversal and brake regime");
+void check_reversals() {
+  harness::note("velocity reversal and last-state motion");
   State s = base();
   s.p(field::kVelX, 0) = 1.0f;
   s.p(field::kVelX, 1) = 1.0f;
   monitor::FieldMonitor mon;
   mon.observe(s.view(), 0);
 
-  s.p(field::kVelX, 0) = -1.0f;   // turned around
-  s.p(field::kVelX, 1) = 0.8f;    // same direction
-  s.p(field::kForceX, 0) = 0.5f;  // travel 1 vs reach 0.5: past reach
-  s.p(field::kForceX, 1) = 1.0f;  // travel 0.8 vs reach 1: near reach
+  s.p(field::kVelX, 0) = -1.0f;  // turned around
+  s.p(field::kVelX, 1) = 0.8f;   // same direction
   mon.observe(s.view(), 1);
   const monitor::Sample b = mon.take_sample();
   CHECK_EQ_INT(b.velocity_reversals, 1, "one particle reversed");
-  CHECK_EQ_INT(b.past_reach, 1, "travel beyond reach is counted");
-  CHECK_EQ_INT(b.near_reach, 1, "travel close to reach is counted");
   CHECK_TRUE(near(b.max_speed, 1.0), "max speed");
   CHECK_TRUE(near(b.kinetic_proxy, 1.0 + 0.64), "kinetic proxy sums m|v|^2");
 }
@@ -236,12 +232,23 @@ void check_nonfinite() {
     State s = base();
     monitor::FieldMonitor mon;
     mon.observe(s.view(), 0);
-    s.c(field::kCenM, 1) = nan;
     s.c(field::kCenY, 1) = nan;
     mon.observe(s.view(), 1);
     const monitor::Sample a = mon.take_sample();
     CHECK_EQ_INT(a.nonfinite_groups, 1, "a non-finite centroid is counted");
     CHECK_EQ_INT(a.touched_centroids, 1, "a broken centroid is never counted as settled");
+  }
+  {
+    // Mass alone goes bad while the centroid position stays put.
+    State s = base();
+    monitor::FieldMonitor mon;
+    mon.observe(s.view(), 0);
+    s.c(field::kCenM, 1) = nan;
+    mon.observe(s.view(), 1);
+    const monitor::Sample a = mon.take_sample();
+    CHECK_EQ_INT(a.nonfinite_groups, 1, "a group with only a non-finite mass is counted");
+    CHECK_EQ_INT(a.touched_centroids, 1, "a group with only a non-finite mass is never settled");
+    CHECK_EQ_INT(a.motion_edges, 1, "its one edge is flagged in the motion diagnostic");
   }
 }
 
@@ -249,12 +256,12 @@ void check_nonfinite() {
 
 int main() {
   check_baseline();
-  check_motion_and_touched_edges();
+  check_motion_and_motion_edges();
   check_oscillate_and_return();
   check_new_base();
   check_threshold();
   check_observation_gap();
-  check_reversals_and_reach();
+  check_reversals();
   check_nonfinite();
   return harness::report("monitor_test");
 }
