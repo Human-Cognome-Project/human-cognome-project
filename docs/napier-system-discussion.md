@@ -28,6 +28,21 @@ for the workload, as with other systems. A later implementation may fuse or
 reorder compatible work while preserving the data dependencies and
 end-of-tick publication points the model requires.
 
+**Monitor-led kernel activation (Patrick, 2026-09-25):** the runtime monitor
+watches multiple mailboxes and activates less frequently needed kernel sets
+when their work arrives. Primary kernels can proliferate with demand;
+secondary kernel sets are threaded into the active flow as needed. This
+ties kernel composability to monitored endpoint activation, rather than a
+fixed list of CPU passes. The existing
+[`network/ENDPOINT-ACTIVATION-NOTES.md`](../network/ENDPOINT-ACTIVATION-NOTES.md)
+describes mailbox occupancy as activation and readiness-driven selection;
+dynamic kernel-set scaling and assembly remain a runtime design direction.
+An **active runtime balancer** is a fit for this approach: it can adapt the
+active primary capacity and bring secondary work into the flow as mailbox
+activity changes, instead of treating the foundation functions as a fixed
+runtime lineup. Its signals, scaling policy and execution mechanism have
+not been specified here.
+
 ## Processing analogy
 
 - The **cold shard swarm** is the collective subconscious analogue: connections
