@@ -70,7 +70,7 @@ coupling around them.
 
 ## Tests
 
-DB-backed against the same disposable `hcp3_core` database
+DB-backed against the same disposable `hcp_core` database
 `dispatch_test.cpp` uses (reset the same way: `DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;`, then `../schema/schema.sql` reapplied). Drives
 fixture `dispatch::Command` / `dispatch::AdditiveCommand` values through
@@ -130,10 +130,10 @@ db_manager_kernel_test` summary, and a non-zero exit on any failure. If no
 local Postgres is reachable it prints a clear message and exits non-zero
 rather than pretending to pass.
 
-### Disposable `hcp3_core` DB
+### Disposable `hcp_core` DB
 
 Same convention as `dispatch_test.cpp` / `read/read_core_test.cpp`: the
-test connects to `dbname=hcp3_core`, creating it if absent and resetting
+test connects to `dbname=hcp_core`, creating it if absent and resetting
 it (`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`, then
 `schema.sql` reapplied) at the start of every run. Don't point it at an
-`hcp3_core` database holding anything you want kept.
+`hcp_core` database holding anything you want kept.

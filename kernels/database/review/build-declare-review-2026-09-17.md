@@ -31,7 +31,7 @@ EXIT: 0
 
 Clean compile. No warnings under `-Wall -Wextra`.
 
-**Run** (live local Postgres; `hcp3_core` present; schema reset+reapplied):
+**Run** (live local Postgres; `hcp_core` present; schema reset+reapplied):
 
 ```
 NOTICE:  drop cascades to 5 other objects

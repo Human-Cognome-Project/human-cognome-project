@@ -1,11 +1,11 @@
 // Scratch/seed driver -- NOT one of the record-tier cores, and it modifies
-// none of their sources. It seeds the SEED FLOOR into the real hcp3_core
+// none of their sources. It seeds the SEED FLOOR into the real hcp_core
 // store and reads it back to verify: the 16 hex atoms (mass 1) plus `0x`
 // (mass 0/undefined) -- "the ONLY declared masses" (NOTES.md "Mass -- why
 // none is declared"; PLAN.md I.B "Mass"). Every other composite mass above
 // this floor is manager-built/derived, never declared.
 //
-// This starts clean: it resets hcp3_core ONCE (DROP SCHEMA public CASCADE;
+// This starts clean: it resets hcp_core ONCE (DROP SCHEMA public CASCADE;
 // CREATE SCHEMA public;) and reapplies ../schema/schema.sql. Subsequent
 // base entries will NOT reset -- they accumulate on this base.
 //
@@ -87,9 +87,9 @@ long count_rows(PGconn *conn, const std::string &table) {
 
 int main(int argc, char **argv) {
   const std::string schema_path = (argc > 1) ? argv[1] : "../schema/schema.sql";
-  const std::string conninfo = "dbname=hcp3_core";
+  const std::string conninfo = "dbname=hcp_core";
 
-  // Ensure hcp3_core exists (created once if absent; peer auth, no password).
+  // Ensure hcp_core exists (created once if absent; peer auth, no password).
   {
     PGconn *maint = PQconnectdb("dbname=postgres");
     if (maint == nullptr || PQstatus(maint) != CONNECTION_OK) {
@@ -98,11 +98,11 @@ int main(int argc, char **argv) {
       if (maint) PQfinish(maint);
       return 1;
     }
-    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp3_core'");
+    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp_core'");
     const bool exists = PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) > 0;
     PQclear(r);
-    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp3_core")) {
-      std::fprintf(stderr, "FAIL seed_0x: could not create hcp3_core\n");
+    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp_core")) {
+      std::fprintf(stderr, "FAIL seed_0x: could not create hcp_core\n");
       PQfinish(maint);
       return 1;
     }
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   {
     PGconn *db = PQconnectdb(conninfo.c_str());
     if (db == nullptr || PQstatus(db) != CONNECTION_OK) {
-      std::fprintf(stderr, "FAIL seed_0x: cannot connect to hcp3_core: %s\n",
+      std::fprintf(stderr, "FAIL seed_0x: cannot connect to hcp_core: %s\n",
                    db ? PQerrorMessage(db) : "null connection");
       if (db) PQfinish(db);
       return 1;

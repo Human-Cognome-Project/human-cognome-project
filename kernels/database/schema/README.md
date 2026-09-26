@@ -1,4 +1,4 @@
-# hcp3_core schema — cold swarm cache
+# hcp_core schema — cold swarm cache
 
 > **Address transition (2026-09-26):** The codec now implements the RFC 4648
 > §5 alphabet, whose value order differs from `COLLATE "C"` byte order for
@@ -10,7 +10,7 @@
 > address order. The `text[]` descriptions below are the current interim
 > state.
 
-Drafted schema for the `hcp3_core` database: the passive backing store for
+Drafted schema for the `hcp_core` database: the passive backing store for
 the token-graph. Greenfield — no relationship to `hcp2_core` / `db/core.sql`.
 No logic lives here (no triggers/functions); construction and validation
 logic is the C++ layer's job.
@@ -141,7 +141,7 @@ can remain `text[]`.
 
 ## Explicitly not addressed here
 
-- No `CREATE DATABASE hcp3_core` — this file assumes it's applied while
+- No `CREATE DATABASE hcp_core` — this file assumes it's applied while
   already connected to that database (coordinator's step).
 - No indexes beyond the PK indexes required to resolve a direct address.
   In particular, `token_parent.parent_token_id`, `members.member_token_id`

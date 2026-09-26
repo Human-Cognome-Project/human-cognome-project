@@ -10,7 +10,7 @@ commands.
 - `dispatch.h` / `dispatch.cpp` -- the `Command` / `AdditiveCommand`
   variants, `dispatch_one()`, and `dispatch_stream()`.
 - `dispatch_test.cpp` -- unit tests against a real, disposable local
-  `hcp3_core` (same harness shape as `declare/declare_core_test.cpp`).
+  `hcp_core` (same harness shape as `declare/declare_core_test.cpp`).
 
 ## What the arraying executor adds
 

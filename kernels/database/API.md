@@ -20,7 +20,7 @@
 `dbkernel-design-checkpoint`; commit `912d681` and prior on this branch).
 Every module below — `codec/`, `schema/`, `controller/`, `command/`,
 `declare/`, `read/`, `update/`, `dispatch/`, `seed/` — is built and tests
-green against a live, disposable `hcp3_core` Postgres database.
+green against a live, disposable `hcp_core` Postgres database.
 
 "Record tier" means: the six live verbs — `DECLARE_RECORD`, `READ_RECORD`,
 `MOVE_RECORD`, `ADD_CONNECTION`, `DELETE_RECORD`, `DELETE_CONNECTION` — are
@@ -585,7 +585,7 @@ through `dispatch::`, and read back a typed result. This is exactly how
 #include "command_ir.h"
 #include "dispatch.h"
 
-dbk::Controller ctl("dbname=hcp3_core");
+dbk::Controller ctl("dbname=hcp_core");
 
 // Build a DECLARE_RECORD IR value directly.
 command::DeclareRecord node;
@@ -647,7 +647,7 @@ layer, not a required gate.
 ## 6. Door primitives (for agents building directly on the controller)
 
 `dbk::Controller` (`controller/controller.h`) is the **sole writer** to
-`hcp3_core` — communications-only; nothing outside `controller/` touches
+`hcp_core` — communications-only; nothing outside `controller/` touches
 the tables directly. One libpq connection per `Controller` instance
 (`explicit Controller(const std::string &conninfo)`, throws
 `std::runtime_error` on connection failure).
@@ -707,7 +707,7 @@ makes DELETE safe to expose to a caller; calling `delete_token`/
 ## 7. Bootstrap
 
 There is no manager-placed address assignment yet (G4/G5, open). The
-*only* way tokens exist in a fresh `hcp3_core` is the seed floor,
+*only* way tokens exist in a fresh `hcp_core` is the seed floor,
 written once by `seed/seed_0x.cpp` directly through `Controller::mint`'s
 optional `mass` parameter — never through `declare::execute` or
 `dispatch::`, since those build on top of a store that already has a
@@ -761,7 +761,7 @@ the call made there.
 | **G4 — next-slot mechanism** | Deferred. Analyst-supplied-start vs. per-trunk cursor — Patrick's open decision. Gates manager-placed mint. |
 | **G5 — block boundaries past "hex couplets"** | Deferred. The trunk→kind map's extent past the hex-couplet kind is unfixed. |
 | **G6 — external wire/transport format** | Deferred. The in-process IR (§5) is the current surface; no text/file/network framing exists. |
-| **WAL manager** (`kernels/wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp3_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `kernels/wal/README.md`, `kernels/wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
+| **WAL manager** (`kernels/wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `kernels/wal/README.md`, `kernels/wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
 | **Cache tier** (`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. **`RECONCILE` removed from the dispatch surface (2026-09-22)** — now an analyst → WAL-manager message (priority-inbox promotion), not a db/cache-manager verb. |
 | **Mass aggregation** (sum-vs-centroid, nested aggregation) | Deferred. `DECLARE_RECORD` always writes mass blank. |
 | **Notation derivation** (surface-from-parents) | Deferred. `NOTATION` is stored exactly as given (or blank), never derived. |

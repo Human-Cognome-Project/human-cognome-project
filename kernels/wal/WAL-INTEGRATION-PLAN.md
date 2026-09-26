@@ -306,7 +306,7 @@ new files (and, at most, a README line pointing at the new part).
    interrogate completeness, refuse partial). Reconcile findings before building.
 2. **Build** (coder) to the reconciled plan; standalone-buildable, tests green
    (`g++ -std=c++17 -O2 -Wall -Wextra` [+ libpq/codec includes], prints `PASS`).
-   DB-backed parts use the disposable `wal_manager` DB, never `hcp3_core`.
+   DB-backed parts use the disposable `wal_manager` DB, never `hcp_core`.
 3. **Vet the build** with a fresh adversary; reconcile.
 4. **Verify green**, then **commit** to `dbkernel-design-checkpoint` and push;
    update the 2026-09-21 forward flags in the touched docs to reflect what is built.

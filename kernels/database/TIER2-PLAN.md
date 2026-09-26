@@ -116,7 +116,7 @@ New module `dbmanager/` inside `kernels/database/`; WAL is now the peer family `
 3. **A driver/test** (standing in for the deferred configuration routine) wiring
    `Registry` + `Scheduler` + N analyst boxes + the shared `Controller` + the two
    arenas, seeding fixture `Request`s and asserting the right `Response` lands at the
-   right return endpoint. DB-backed (disposable `hcp3_core`, the `dispatch_test`
+   right return endpoint. DB-backed (disposable `hcp_core`, the `dispatch_test`
    harness shape).
    - **Priority levels (pinned, per `kernels/wal/WAL-INTEGRATION-PLAN.md` §4's precedent of
      pinning them for the isolated cut):** `Scheduler` constructed with `num_levels = 4`,
@@ -167,7 +167,7 @@ New module `dbmanager/` inside `kernels/database/`; WAL is now the peer family `
 ## Tests (project rule — ships with tests)
 
 `g++ -std=c++17 -O2 -Wall -Wextra`, prints `PASS <name>`, DB-backed against a
-disposable `hcp3_core` (skips-clean with a clear non-zero message if no local
+disposable `hcp_core` (skips-clean with a clear non-zero message if no local
 Postgres), same harness as `dispatch_test.cpp`:
 
 - Each verb as a single `Command` → correct `Result` lands at `reply_to` (DECLARE,

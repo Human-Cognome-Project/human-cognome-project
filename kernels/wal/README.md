@@ -16,7 +16,7 @@ see [REPORT-TO-WORK.md](REPORT-TO-WORK.md).
 The WAL manager is a **bookkeeper/observer over WAL reports** — never a
 writer of the primary change:
 
-- It **never touches `hcp3_core`** and **never reads the command string**;
+- It **never touches `hcp_core`** and **never reads the command string**;
   recognition works from a report's own initial data only (`wal_recognize`).
 - It **never designs or drives the cache manager** — the async
   file-now/wire-later runtime this monitors for is out of scope; this set
@@ -145,8 +145,8 @@ The DB-backed tests (`wal_book_test`, `wal_ingest_test`, `wal_monitor_test`)
 connect to `dbname=wal_manager` — a **disposable** database, created if
 absent and reset (`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`, then
 `wal_schema.sql` reapplied) at the start of every run, exactly as
-`read/read_core_test.cpp` does for `hcp3_core`. It is **always a separate
-database from `hcp3_core`** — nothing here ever connects to the core store.
+`read/read_core_test.cpp` does for `hcp_core`. It is **always a separate
+database from `hcp_core`** — nothing here ever connects to the core store.
 Because the reset is destructive, don't point these tests at a
 `wal_manager` database holding anything you want kept, and don't run two of
 these DB-backed tests against it at the same instant (concurrent resets

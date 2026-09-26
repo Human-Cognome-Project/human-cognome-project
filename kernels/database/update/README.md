@@ -14,7 +14,7 @@ runtime.
   `update::move_record`, `update::add_connection`, `update::delete_record`,
   `update::delete_connection`.
 - `update_core_test.cpp` -- a standalone check harness against a real,
-  disposable local `hcp3_core`, same style as `controller/controller_test.cpp`
+  disposable local `hcp_core`, same style as `controller/controller_test.cpp`
   and `declare/declare_core_test.cpp`.
 
 ## Build & run
@@ -33,7 +33,7 @@ g++ -std=c++17 -O2 -Wall -Wextra \
 ./update_core_test /path/to/schema.sql   # optional override
 ```
 
-Resets the real, disposable `hcp3_core` before running, exactly as the
+Resets the real, disposable `hcp_core` before running, exactly as the
 other `*_test.cpp` harnesses do. If no local Postgres is reachable it
 prints a clear message and exits non-zero rather than faking a pass.
 

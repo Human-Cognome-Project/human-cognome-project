@@ -12,7 +12,7 @@ rewritten `seed/seed_0x.cpp`, and the removal of the old `ingestion/` source
 ("Arraying is universal"; "Build-phase rulings — firmed 2026-09-18" incl.
 "Request transport", DELETE gates); read every changed source and the consumed
 headers; **independently rebuilt from scratch and ran every suite** against a
-disposable local `hcp3_core` (peer auth, OS user `patrick`); grepped the tree
+disposable local `hcp_core` (peer auth, OS user `patrick`); grepped the tree
 for removed surface and dangling references.
 
 ---
@@ -20,7 +20,7 @@ for removed surface and dangling references.
 ## Independently rebuilt + ran — every suite (verbatim)
 
 Built from clean with `g++ -std=c++17 -O2 -Wall -Wextra` (each module's own
-README recipe), each suite run serially against a live, self-reset `hcp3_core`.
+README recipe), each suite run serially against a live, self-reset `hcp_core`.
 **All 11 suites: BUILD-OK, 0 warnings surfaced as errors, exit 0.**
 
 | Suite | Build | Verbatim summary | Exit |

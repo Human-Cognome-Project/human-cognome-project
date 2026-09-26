@@ -2,7 +2,7 @@
 // reaction body as a monitored-endpoint kernel (TIER2-PLAN.md). Same tiny
 // check-macro style as wal/wal_kernel_test.cpp / dispatch/dispatch_test.cpp:
 // one ok/FAIL line per check, PASS/FAIL summary, non-zero exit on any
-// failure. Runs directly against the real, disposable hcp3_core database
+// failure. Runs directly against the real, disposable hcp_core database
 // (reset the same way dispatch_test.cpp resets it), driving fixture
 // dispatch::Command / dispatch::AdditiveCommand values through the
 // endpoint/scheduler substrate rather than calling dispatch_one/
@@ -510,7 +510,7 @@ void run_db_manager_kernel_checks(const std::string &conninfo) {
 
 int main(int argc, char **argv) {
   const std::string schema_path = (argc > 1) ? argv[1] : "../schema/schema.sql";
-  const std::string conninfo = "dbname=hcp3_core";
+  const std::string conninfo = "dbname=hcp_core";
 
   {
     PGconn *maint = PQconnectdb("dbname=postgres");
@@ -520,11 +520,11 @@ int main(int argc, char **argv) {
       if (maint) PQfinish(maint);
       return 1;
     }
-    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp3_core'");
+    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp_core'");
     const bool exists = PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) > 0;
     PQclear(r);
-    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp3_core")) {
-      std::fprintf(stderr, "FAIL db_manager_kernel_test: could not create hcp3_core\n");
+    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp_core")) {
+      std::fprintf(stderr, "FAIL db_manager_kernel_test: could not create hcp_core\n");
       PQfinish(maint);
       return 1;
     }
@@ -534,7 +534,7 @@ int main(int argc, char **argv) {
   {
     PGconn *db = PQconnectdb(conninfo.c_str());
     if (db == nullptr || PQstatus(db) != CONNECTION_OK) {
-      std::fprintf(stderr, "FAIL db_manager_kernel_test: cannot connect to hcp3_core: %s\n",
+      std::fprintf(stderr, "FAIL db_manager_kernel_test: cannot connect to hcp_core: %s\n",
                    db ? PQerrorMessage(db) : "null connection");
       if (db) PQfinish(db);
       return 1;

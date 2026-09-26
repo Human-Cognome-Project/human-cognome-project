@@ -11,10 +11,10 @@
 // PGconn;`.
 struct pg_conn;
 
-// The write/mint controller: the single "door" to the hcp3_core token-graph
+// The write/mint controller: the single "door" to the hcp_core token-graph
 // store. Sole-owner writer, communications-only — callers go through the
 // controller and never touch the tables directly. It binds directly to a
-// real Postgres `hcp3_core` database over libpq.
+// real Postgres `hcp_core` database over libpq.
 //
 // Read side is "only-follow": look a token up by its exact address (PK), then
 // follow stored lists across the two relationship axes — structure
@@ -72,7 +72,7 @@ struct TokenAttributes {
 class Controller {
  public:
   // Opens a libpq connection using the given conninfo string (e.g.
-  // "dbname=hcp3_core"). Throws std::runtime_error if the connection fails.
+  // "dbname=hcp_core"). Throws std::runtime_error if the connection fails.
   explicit Controller(const std::string &conninfo);
   ~Controller();
 

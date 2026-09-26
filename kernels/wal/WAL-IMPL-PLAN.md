@@ -25,7 +25,7 @@ needs the async reciprocal, the cache manager, or a Patrick decision is named an
 
 - **Bookkeeper/observer only.** The WAL manager reads WAL reports, derives what
   returns each change owes, and monitors for those returns. It **never writes the
-  primary change** (never touches `hcp3_core`), **never reads the command string**,
+  primary change** (never touches `hcp_core`), **never reads the command string**,
   and **never designs or drives the cache manager**. *(Spec 1.)*
   - Nuance to encode honestly: it **does** write to **its own WAL DB** (the
     obligation relation + History) — that is its bookkeeping, not a primary-store
@@ -138,7 +138,7 @@ Build/run convention per part (as `codec/README.md` documents):
 `g++ -std=c++17 -O2 -Wall -Wextra <part>.cpp <part>_test.cpp -lpq -o /tmp/<part>_test && /tmp/<part>_test`
 → prints `PASS <part>_test`, exits 0. DB-backed tests connect to a **disposable
 `wal_manager` database** (create-if-absent, same pattern as
-`read/read_core_test.cpp`); the WAL DB is **separate from `hcp3_core`**.
+`read/read_core_test.cpp`); the WAL DB is **separate from `hcp_core`**.
 
 ---
 
@@ -259,7 +259,7 @@ The libpq door over the WAL DB. Every access a **bounded PK follow**:
   non-key column — that would be the forbidden predicate scan.
 - `record_seen(report)` — the **sole** history append: one row per report (source,
   lsn, footprint, scope, settled-identity-if-any).
-- Writes go **only** to the WAL DB — never `hcp3_core`.
+- Writes go **only** to the WAL DB — never `hcp_core`.
 - **Acceptance:** open then close leaves zero rows for that identity; `is_open` is
   true only between them; absent-identity close is a no-op that still History-records
   the report; every query plan is a PK lookup or PK-prefix range (no seq scan on a
@@ -316,8 +316,8 @@ independently.
   (the mechanism's forward compatibility) **without** modelling cache-manager
   internals.
 - **DB-backed tests** use a **disposable `wal_manager` database**, created if
-  absent exactly as `read/read_core_test.cpp` does for `hcp3_core`, and reset per
-  run. Never point them at `hcp3_core`.
+  absent exactly as `read/read_core_test.cpp` does for `hcp_core`, and reset per
+  run. Never point them at `hcp_core`.
 - **only-follow assertion** is a first-class test (W-4 adv): `EXPLAIN` must show
   PK access for every obligation query; a reverse/seq scan is a failure.
 
@@ -326,7 +326,7 @@ independently.
 ## 5. Explicitly NOT in this plan
 
 Cache-manager runtime (pending-list, file-now/wire-later, RECONCILE); mass
-computation/aggregation; any write to `hcp3_core`; the DELETE cross-network
+computation/aggregation; any write to `hcp_core`; the DELETE cross-network
 validation act; live replication-slot consumption / wire-form decode; MOVE/rekey
 of live obligations; cross-source global ordering; the connection mass-recompute
 signal; the optional canonical NOTES section. (Buckets B and C above.)

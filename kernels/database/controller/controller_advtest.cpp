@@ -1,8 +1,8 @@
-// Adversarial validation harness for the hcp3_core write/mint controller.
+// Adversarial validation harness for the hcp_core write/mint controller.
 //
 // Complements controller_test.cpp. It targets the paths the base harness does
-// not exercise, all against the real, disposable hcp3_core (local Postgres,
-// peer auth). Like the base harness it resets hcp3_core (DROP SCHEMA public
+// not exercise, all against the real, disposable hcp_core (local Postgres,
+// peer auth). Like the base harness it resets hcp_core (DROP SCHEMA public
 // CASCADE + reapply ../schema/schema.sql) so it starts from a clean schema,
 // then probes:
 //
@@ -435,7 +435,7 @@ void run_adv_checks(const std::string &conninfo) {
 
 int main(int argc, char **argv) {
   const std::string schema_path = (argc > 1) ? argv[1] : "../schema/schema.sql";
-  const std::string conninfo = "dbname=hcp3_core";
+  const std::string conninfo = "dbname=hcp_core";
 
   {
     PGconn *maint = PQconnectdb("dbname=postgres");
@@ -445,11 +445,11 @@ int main(int argc, char **argv) {
       if (maint) PQfinish(maint);
       return 1;
     }
-    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp3_core'");
+    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp_core'");
     const bool exists = PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) > 0;
     PQclear(r);
-    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp3_core")) {
-      std::fprintf(stderr, "FAIL controller_advtest: could not create hcp3_core\n");
+    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp_core")) {
+      std::fprintf(stderr, "FAIL controller_advtest: could not create hcp_core\n");
       PQfinish(maint);
       return 1;
     }
@@ -459,7 +459,7 @@ int main(int argc, char **argv) {
   {
     PGconn *db = PQconnectdb(conninfo.c_str());
     if (db == nullptr || PQstatus(db) != CONNECTION_OK) {
-      std::fprintf(stderr, "FAIL controller_advtest: cannot connect hcp3_core: %s\n",
+      std::fprintf(stderr, "FAIL controller_advtest: cannot connect hcp_core: %s\n",
                    db ? PQerrorMessage(db) : "null connection");
       if (db) PQfinish(db);
       return 1;

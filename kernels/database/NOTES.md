@@ -62,7 +62,7 @@
 > Pair-2/swarm coupling, the cache-manager consumer). **The wider project needs several doc
 > updates after this kernel is realigned.**
 
-Working notes for the hcp3_core database/cache kernel set. Prose/design record; the code
+Working notes for the hcp_core database/cache kernel set. Prose/design record; the code
 and its tests are the source of truth for behaviour. Canadian English.
 
 > **Available work streams for the next session → see `HANDOFF.md`.** The record-tier
@@ -1144,7 +1144,7 @@ strategy to design when the cache structure is built:
 **Record tier COMPLETE** (built 2026-09-17/18; each stage built by a Sonnet agent,
 adversary-reviewed to a clean PASS, and lead-confirmed; on branch
 `dbkernel-design-checkpoint`). All modules test green against a live disposable
-`hcp3_core`.
+`hcp_core`.
 
 - `codec/` — address ↔ token_id transforms. Done.
 - `schema/` — **5 tables**: `token` (no `type`; `mass` nullable), `token_parent`,
@@ -1184,8 +1184,8 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
 
 **WAL manager COMPLETE** (built 2026-09-19; `kernels/wal/` kernel set, tasks W-1…W-6,
 package-vetted primary↔adversary, committed through `a899970`; its own standalone
-Postgres DB `wal_manager`, always separate from `hcp3_core`). A pure
-bookkeeper/observer over WAL reports — it never writes `hcp3_core`, never reads
+Postgres DB `wal_manager`, always separate from `hcp_core`). A pure
+bookkeeper/observer over WAL reports — it never writes `hcp_core`, never reads
 the command string, and never drives the cache manager. What it maintains is the
 **active deferred-work topology**: the live open-obligation relation (open =
 membership, PK-delete on close, no status column) plus an append-only History —

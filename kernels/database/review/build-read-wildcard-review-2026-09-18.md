@@ -70,7 +70,7 @@ EXIT=0
 ```
 
 26/26 checks pass on an independently-built binary against disposable
-`hcp3_core`.
+`hcp_core`.
 
 ## Scrutiny findings
 

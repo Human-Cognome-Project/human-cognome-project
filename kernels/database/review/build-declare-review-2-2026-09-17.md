@@ -28,7 +28,7 @@ BUILD EXIT: 0
 
 Clean compile, no warnings.
 
-**Run** (live local Postgres; `hcp3_core` present; schema reset+reapplied):
+**Run** (live local Postgres; `hcp_core` present; schema reset+reapplied):
 57/57 checks `ok`, ending `PASS declare_core_test` / `RUN EXIT: 0`. Full log:
 
 ```

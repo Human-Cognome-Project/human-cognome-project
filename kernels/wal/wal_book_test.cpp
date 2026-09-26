@@ -6,9 +6,9 @@
 // Runs directly against a real, DISPOSABLE `wal_manager` database --
 // created if absent, reset (DROP SCHEMA public CASCADE; CREATE SCHEMA
 // public;) and reapplied from wal_schema.sql on every run, exactly as
-// read_core_test.cpp does for `hcp3_core`. This is the WAL manager's OWN
-// database -- it is never `hcp3_core`, and this harness never touches
-// `hcp3_core`. If no local Postgres is reachable it prints a clear message
+// read_core_test.cpp does for `hcp_core`. This is the WAL manager's OWN
+// database -- it is never `hcp_core`, and this harness never touches
+// `hcp_core`. If no local Postgres is reachable it prints a clear message
 // and exits non-zero rather than claiming a pass.
 #include <libpq-fe.h>
 

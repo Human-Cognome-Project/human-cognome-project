@@ -1,7 +1,7 @@
 // Standalone check harness for the DECLARE core (declare/declare_core.h),
 // same tiny check-macro style as controller/controller_test.cpp.
 //
-// Runs directly against the real, disposable hcp3_core database: resets it
+// Runs directly against the real, disposable hcp_core database: resets it
 // (DROP SCHEMA public CASCADE; CREATE SCHEMA public;) and reapplies
 // ../schema/schema.sql, exactly as controller_test.cpp does, then exercises
 // declare::execute() over a live dbk::Controller.
@@ -534,7 +534,7 @@ void run_declare_checks(const std::string &conninfo) {
 
 int main(int argc, char **argv) {
   const std::string schema_path = (argc > 1) ? argv[1] : "../schema/schema.sql";
-  const std::string conninfo = "dbname=hcp3_core";
+  const std::string conninfo = "dbname=hcp_core";
 
   {
     PGconn *maint = PQconnectdb("dbname=postgres");
@@ -544,11 +544,11 @@ int main(int argc, char **argv) {
       if (maint) PQfinish(maint);
       return 1;
     }
-    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp3_core'");
+    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp_core'");
     const bool exists = PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) > 0;
     PQclear(r);
-    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp3_core")) {
-      std::fprintf(stderr, "FAIL declare_core_test: could not create hcp3_core\n");
+    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp_core")) {
+      std::fprintf(stderr, "FAIL declare_core_test: could not create hcp_core\n");
       PQfinish(maint);
       return 1;
     }
@@ -558,7 +558,7 @@ int main(int argc, char **argv) {
   {
     PGconn *db = PQconnectdb(conninfo.c_str());
     if (db == nullptr || PQstatus(db) != CONNECTION_OK) {
-      std::fprintf(stderr, "FAIL declare_core_test: cannot connect to hcp3_core: %s\n",
+      std::fprintf(stderr, "FAIL declare_core_test: cannot connect to hcp_core: %s\n",
                    db ? PQerrorMessage(db) : "null connection");
       if (db) PQfinish(db);
       return 1;

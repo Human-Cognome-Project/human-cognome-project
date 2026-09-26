@@ -6,7 +6,7 @@
 // created if absent, reset (DROP SCHEMA public CASCADE; CREATE SCHEMA
 // public;) and reapplied from wal_schema.sql on every run, exactly as
 // wal_book_test.cpp does. This is the WAL manager's OWN database -- it is
-// never `hcp3_core`, and this harness never touches `hcp3_core`.
+// never `hcp_core`, and this harness never touches `hcp_core`.
 #include <libpq-fe.h>
 
 #include <cstdio>

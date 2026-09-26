@@ -156,7 +156,7 @@ to the **correct originator's** outbox; recycled-slot / only-follow discipline p
    completeness, refuse partial). Reconcile findings before building.
 3. **Build** (coder) to the reconciled plan; each part standalone-buildable, tests green
    (`g++ -std=c++17 -O2 -Wall -Wextra`, prints `PASS <name>`). DB-backed parts use the
-   disposable `wal_manager` DB (see `wal/README.md`), never `hcp3_core`.
+   disposable `wal_manager` DB (see `wal/README.md`), never `hcp_core`.
 4. **Vet the build** with a fresh adversary; reconcile.
 5. **Verify green yourself**, then **commit** to `dbkernel-design-checkpoint` (attribution
    trailer per the session's convention) and push.

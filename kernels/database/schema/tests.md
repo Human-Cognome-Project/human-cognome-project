@@ -1,4 +1,4 @@
-# hcp3_core schema — coordinator checklist
+# hcp_core schema — coordinator checklist
 
 Concrete checks to run after applying `schema.sql`, using `verify.sql`
 (section numbers match `verify.sql`'s `-- N.` headers).

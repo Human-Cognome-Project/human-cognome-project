@@ -2,7 +2,7 @@
 
 - **Reviewer:** fresh independent adversary (no stake in the outcome).
 - **Date:** 2026-09-18.
-- **Target:** the schema change pinning `COLLATE "C"` on the `hcp3_core`
+- **Target:** the schema change pinning `COLLATE "C"` on the `hcp_core`
   `text[]` address columns (`schema/schema.sql`, `verify.sql`, `tests.md`,
   `README.md`).
 - **Method:** full read of the changed files + `codec/codec.h`, `NOTES.md`
@@ -85,7 +85,7 @@ Severity legend: **must-fix** / should-fix / nit / observation.
 
 ### F4 — Bounded-range proof reproduced independently (the load-bearing one). **observation (PASS).**
 - **Location:** `README.md` / `NOTES.md` gather rationale; PLAN §II.0.
-- **Setup:** disposable `hcp3_core` on `en_US.UTF-8`. A* trunk under
+- **Setup:** disposable `hcp_core` on `en_US.UTF-8`. A* trunk under
   `AA.AA.AA.AA.A*` including the pair the default collation misorders
   (`...AZ` vs `...Ab`), plus `AA` and `Az`; a sibling `B*` trunk
   (`...BA`, `...Bb`) and two other-parent trunks (`AA.AA.AA.AB.AA`,
@@ -179,7 +179,7 @@ out of scope).
 - Postgres 16.15, default DB collation `en_US.UTF-8` (verified
   case-interleaved on the same server), so the "without the pin" premise is
   faithfully reproduced rather than assumed.
-- The disposable `hcp3_core` was dropped after the run. Test binaries were
+- The disposable `hcp_core` was dropped after the run. Test binaries were
   built into the session scratchpad, not the project tree. No project file
   was modified.
 - One incidental: the collation *object* for the default locale is named

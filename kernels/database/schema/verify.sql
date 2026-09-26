@@ -1,7 +1,7 @@
--- hcp3_core schema verification
+-- hcp_core schema verification
 --
 -- Read-only. Every query inspects information_schema / pg_catalog only —
--- nothing here mutates data or structure. Run against hcp3_core after
+-- nothing here mutates data or structure. Run against hcp_core after
 -- schema.sql has been applied. Each query is preceded by a comment stating
 -- the expected result; see tests.md for the checklist form of the same.
 

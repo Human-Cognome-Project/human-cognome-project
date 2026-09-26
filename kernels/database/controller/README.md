@@ -1,11 +1,11 @@
-# hcp3_core write/mint controller
+# hcp_core write/mint controller
 
-The single **door** to the `hcp3_core` token-graph store. Sole-owner writer,
+The single **door** to the `hcp_core` token-graph store. Sole-owner writer,
 communications-only: callers go through the controller and never touch the
 tables directly. It is the C++ layer the schema header calls "a later
 write/mint controller (fold AND wire)."
 
-Binds **directly to a real Postgres `hcp3_core` database over libpq** — not an
+Binds **directly to a real Postgres `hcp_core` database over libpq** — not an
 in-memory or virtual store. The data is disposable/consumptive, so there is no
 durability, migration, or persistence-abstraction machinery: the controller
 speaks plain SQL against real tables and keeps it simple.
@@ -26,7 +26,7 @@ Files mirror `../codec/`'s shape:
 ## Interface
 
 `dbk::Controller` opens one libpq connection from a conninfo string
-(e.g. `"dbname=hcp3_core"`), and throws `std::runtime_error` if the connection
+(e.g. `"dbname=hcp_core"`), and throws `std::runtime_error` if the connection
 fails. All addresses cross the interface as `codec::Address`; the controller
 renders them to the schema's `text[]` couplet arrays and their dot-joined
 `token_text` internally, always via the codec.
@@ -208,11 +208,11 @@ translation units; the only external link dependency is `-lpq`.
 
 ## Test harness
 
-`controller_test.cpp` runs directly against the real **`hcp3_core`** database,
+`controller_test.cpp` runs directly against the real **`hcp_core`** database,
 which is disposable and may be overwritten any number of times — no throwaway
 or uniquely-named database is used. It never fakes the store:
 
-1. ensures `hcp3_core` exists (created once if absent, never dropped),
+1. ensures `hcp_core` exists (created once if absent, never dropped),
 2. resets it — `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` — and
    reapplies `../schema/schema.sql`, so each run starts from a clean schema
    regardless of prior contents,
@@ -226,7 +226,7 @@ or uniquely-named database is used. It never fakes the store:
    rejection), and the FK-violation rollback path.
 
 `controller_advtest.cpp` is a second, adversarial harness over the same
-disposable `hcp3_core`. It targets paths the base harness does not:
+disposable `hcp_core`. It targets paths the base harness does not:
 multi-constituent FK rollback (no orphan link/child rows), controller reuse
 after a failed mint, `token_text` derivation (equals the codec dot-join of
 `token_id`, never the notation), notation SQL-injection safety, the

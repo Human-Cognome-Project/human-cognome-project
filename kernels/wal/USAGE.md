@@ -25,7 +25,7 @@ instead (charter, file map, build/run). This file is for everyone else.
 The WAL manager maintains the **active deferred-work topology**: what
 followup work a change has left owed, and whether it is still owed right
 now. Two pieces, both in the WAL manager's own `wal_manager` Postgres
-database (never `hcp3_core`):
+database (never `hcp_core`):
 
 - **The open-obligation relation** (`obligation`, `wal_schema.sql`) — a
   **live relation**. A row exists **iff** that obligation is still open;
@@ -88,7 +88,7 @@ reverse-search index and none should ever be added. `wal_book.h`
   yourself — see RECONCILE below.
 - Does **its own primary work** against its own store (for the cache
   manager: reading a report, following its own stored lists, and writing
-  the reciprocal or the mass fill to `hcp3_core`). That write becomes the
+  the reciprocal or the mass fill to `hcp_core`). That write becomes the
   next WAL report; the WAL manager observes it and closes the matching
   obligation by identity equality. This is the **read → follow → do →
   repeat** cycle (`kernels/wal/WAL-PLAN.md` §3): the consumer's own write *is* the

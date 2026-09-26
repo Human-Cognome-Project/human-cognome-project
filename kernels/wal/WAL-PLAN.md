@@ -61,7 +61,7 @@ bookkeeper/observer**; recognition is by **return paths carried in the initial
 data**, not inference; there is **no drain**; the swarm side is non-essential to
 the primary work list; and mass is a **monitored followup**. Builds on the record
 tier (`codec/`, `command/`, `declare/`, `read/`, `update/`, `dispatch/`, `seed/`)
-over `hcp3_core`. **Rev. 5** applies a cross-doc consistency validation (findings
+over `hcp_core`. **Rev. 5** applies a cross-doc consistency validation (findings
 F1–F9): the retired WAL-management drift is shed from `NOTES.md`/`PLAN.md`/`API.md`
 (bookkeeper, not a scheduler or validation-runner; no drain attributed to it), §5
 splits the mass VALUE (rides the FIXED `token.mass`) from the mass calc-DEBT
@@ -120,7 +120,7 @@ paths; the WAL manager books what returns are owed and watches them land.**
 ## 1. The instances (context, not this subsystem's design)
 
 *(2026-09-18 discussion — §7.1.)* A running instance connects to ≥3 DB instances:
-**core** (`hcp3_core` — anchor, most-shared, slowest), **language DB(s)** (a
+**core** (`hcp_core` — anchor, most-shared, slowest), **language DB(s)** (a
 sharded, partitioned domain), and the **personality-and-relationship DB** (fastest,
 least-shared; identical format/handling, **local addressing only**). Volatility and
 fabric-visibility are inverted by design: the churny data is private, so it cannot

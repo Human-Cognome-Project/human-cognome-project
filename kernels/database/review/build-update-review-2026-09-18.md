@@ -2,7 +2,7 @@
 
 **Reviewer:** fresh, independent adversary. No stake in a pass.
 **Target:** `engine/db_kernel/update/{update_core.h,update_core.cpp,update_core_test.cpp,README.md}`
-**Method:** full read of the module + governing spec (PLAN.md §I.D/§I.F/§II.0/§II.5/§II.6, Part V; NOTES.md "Relationship model & type", "Build-phase rulings 2026-09-17/18", "UPDATE — record-tier ops"); full read of the consumed foundation (`command/command_ir.{h,cpp}`, `command/span_planner.{h,cpp}`, `controller/controller.{h,cpp}`, `schema/schema.sql`); **independent rebuild** of `update_core_test` in a scratchpad and run vs a disposable live `hcp3_core` (PostgreSQL 16.15); plus **7 additional adversary probes** for cases the provided test omits.
+**Method:** full read of the module + governing spec (PLAN.md §I.D/§I.F/§II.0/§II.5/§II.6, Part V; NOTES.md "Relationship model & type", "Build-phase rulings 2026-09-17/18", "UPDATE — record-tier ops"); full read of the consumed foundation (`command/command_ir.{h,cpp}`, `command/span_planner.{h,cpp}`, `controller/controller.{h,cpp}`, `schema/schema.sql`); **independent rebuild** of `update_core_test` in a scratchpad and run vs a disposable live `hcp_core` (PostgreSQL 16.15); plus **7 additional adversary probes** for cases the provided test omits.
 
 ## Verdict: **PASS-WITH-FIXES**
 
@@ -19,7 +19,7 @@ Everything else is correct, data-safe, faithful to spec, and read-back-verified.
 
 ## Independent build + run (verbatim)
 
-Built in scratchpad with the README's own command line (sources from the working tree, unmodified), run against a freshly reset `hcp3_core`:
+Built in scratchpad with the README's own command line (sources from the working tree, unmodified), run against a freshly reset `hcp_core`:
 
 ```
 NOTICE:  drop cascades to 5 other objects
@@ -91,7 +91,7 @@ PASS update_core_test
 
 ## Additional adversary probes (cases the provided test does not cover)
 
-Independently written, built, and run vs a fresh `hcp3_core`. Verbatim:
+Independently written, built, and run vs a fresh `hcp_core`. Verbatim:
 
 ```
 === P1: ADD_CONNECTION both-sides wildcard -> cross product (Decision 2) ===

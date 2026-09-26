@@ -2,7 +2,7 @@
 // controller/controller_test.cpp: a tiny check macro, one line per check,
 // PASS/FAIL summary, non-zero exit on any failure.
 //
-// Runs directly against the real hcp3_core database, disposable and
+// Runs directly against the real hcp_core database, disposable and
 // overwritten on every run (reset via ../schema/schema.sql, same as
 // controller_test.cpp -- this harness does not invent a second schema
 // path). If no local Postgres is reachable it prints a clear message and
@@ -338,7 +338,7 @@ void run_read_core_checks(const std::string &conninfo) {
 
 int main(int argc, char **argv) {
   const std::string schema_path = (argc > 1) ? argv[1] : "../schema/schema.sql";
-  const std::string conninfo = "dbname=hcp3_core";
+  const std::string conninfo = "dbname=hcp_core";
 
   {
     PGconn *maint = PQconnectdb("dbname=postgres");
@@ -348,11 +348,11 @@ int main(int argc, char **argv) {
       if (maint) PQfinish(maint);
       return 1;
     }
-    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp3_core'");
+    PGresult *r = PQexec(maint, "SELECT 1 FROM pg_database WHERE datname = 'hcp_core'");
     const bool exists = PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) > 0;
     PQclear(r);
-    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp3_core")) {
-      std::fprintf(stderr, "FAIL read_core_test: could not create hcp3_core\n");
+    if (!exists && !exec_bare(maint, "CREATE DATABASE hcp_core")) {
+      std::fprintf(stderr, "FAIL read_core_test: could not create hcp_core\n");
       PQfinish(maint);
       return 1;
     }
@@ -362,7 +362,7 @@ int main(int argc, char **argv) {
   {
     PGconn *db = PQconnectdb(conninfo.c_str());
     if (db == nullptr || PQstatus(db) != CONNECTION_OK) {
-      std::fprintf(stderr, "FAIL read_core_test: cannot connect to hcp3_core: %s\n",
+      std::fprintf(stderr, "FAIL read_core_test: cannot connect to hcp_core: %s\n",
                    db ? PQerrorMessage(db) : "null connection");
       if (db) PQfinish(db);
       return 1;

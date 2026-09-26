@@ -12,7 +12,7 @@ in `../schema`, `../read`, or the ingestion runtime.
 - `declare_core.h` / `declare_core.cpp` -- the DECLARE core:
   `declare::execute(Controller&, const DeclareRecord&) -> declare::Result`.
 - `declare_core_test.cpp` -- a standalone check harness against a real,
-  disposable local `hcp3_core`, same style as `controller/controller_test.cpp`.
+  disposable local `hcp_core`, same style as `controller/controller_test.cpp`.
 
 ## Build & run
 
@@ -30,7 +30,7 @@ g++ -std=c++17 -O2 -Wall -Wextra \
 ./declare_core_test /path/to/schema.sql   # optional override
 ```
 
-Resets the real, disposable `hcp3_core` (`DROP SCHEMA public CASCADE;
+Resets the real, disposable `hcp_core` (`DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;`, reapply `schema.sql`) before running, exactly as
 `controller_test.cpp` does. If no local Postgres is reachable it prints a
 clear message and exits non-zero rather than faking a pass.

@@ -201,7 +201,7 @@ g++ -std=c++17 -O2 -Wall -Wextra \
 ./read_core_test /path/to/schema.sql   # optional override
 ```
 
-`read_core_test` resets the real, disposable `hcp3_core` database (drop +
+`read_core_test` resets the real, disposable `hcp_core` database (drop +
 recreate `public`, reapply the schema) exactly as `controller_test` does,
 builds the fixture described above, and covers: a radial read; structure-
 axis-only; membership-axis-only; reverse orientation on each axis; depth 0

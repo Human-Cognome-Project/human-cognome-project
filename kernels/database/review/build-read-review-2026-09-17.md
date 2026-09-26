@@ -28,7 +28,7 @@ g++ -std=c++17 -O2 -Wall -Wextra \
 
 Build: **clean, no warnings** under `-Wall -Wextra` (exit 0).
 
-Run against the live local Postgres (`hcp3_core`, reset from `../schema/schema.sql`):
+Run against the live local Postgres (`hcp_core`, reset from `../schema/schema.sql`):
 
 ```
 NOTICE:  drop cascades to 5 other objects

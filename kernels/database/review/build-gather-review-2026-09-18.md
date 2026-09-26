@@ -20,7 +20,7 @@ is taken on the implementer's word.
   `controller.cpp` + the codec + libpq, per `README.md` "Build and run".
   Both compiled clean with `-Wall -Wextra` (no warnings).
 - **Live DB.** Ran both against a real local Postgres 16.15 cluster.
-  `hcp3_core` collation is `en_US.UTF-8` / `en_US.UTF-8`
+  `hcp_core` collation is `en_US.UTF-8` / `en_US.UTF-8`
   (case-interleaved) — i.e. **the genuine adversarial condition** the
   `COLLATE "C"` pin exists to defend against, not a C-locale cluster that
   would pass trivially. `token.token_id` column collation confirmed `C`;

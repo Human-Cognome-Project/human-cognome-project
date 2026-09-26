@@ -94,14 +94,14 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
 
 - **Record tier — COMPLETE.** `codec/`, `schema/`, `controller/`, `command/`,
   `declare/`, `read/`, `update/`, `dispatch/`, `seed/` — all built, tested
-  green against a live disposable `hcp3_core`. Full reference: `API.md`.
+  green against a live disposable `hcp_core`. Full reference: `API.md`.
   `ingestion/` is retired (superseded, breadcrumb only).
 - **WAL manager — COMPLETE as a tested library, AND wired onto the messaging
   system (Pair-1 kernel, 2026-09-22).** `kernels/wal/` kernel set (W-1…W-6) built, every
   test PASSes, package-vetted primary↔adversary. A pure bookkeeper/observer over
   WAL reports — maintains the **active deferred-work topology** (the live
   open-obligation relation + append-only History) in its own `wal_manager` Postgres
-  DB, never `hcp3_core`. See `kernels/wal/README.md` (charter, file map, build/run) and
+  DB, never `hcp_core`. See `kernels/wal/README.md` (charter, file map, build/run) and
   `kernels/wal/USAGE.md` (consumer contract). **Now also built as a monitored-endpoint
   kernel** — `kernels/wal/wal_kernel.{h,cpp}` + `wal_kernel_test.cpp` (commits
   `3aca2ac`/`cf7e0c6`; 30 checks PASS, ASan/UBSan clean; coder+adversary discipline;
