@@ -77,7 +77,7 @@ jobs:
 
       - name: Run native CPU functional suite
         run: |
-          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test)$'
+          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test|monitor_test)$'
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

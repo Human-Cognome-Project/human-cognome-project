@@ -30,8 +30,19 @@ target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
+# Observation of the field model: reads downloaded host state and measures
+# it. Launches nothing and writes no engine state.
+add_library(field_monitor STATIC src/monitor/field_monitor.cpp)
+target_include_directories(field_monitor PUBLIC src)
+target_link_libraries(field_monitor PUBLIC field_core)
+target_compile_options(field_monitor PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
 add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
+
+add_executable(field_probe apps/field_probe.cpp)
+target_link_libraries(field_probe PRIVATE field_monitor)
+target_compile_options(field_probe PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
 enable_testing()
 add_executable(engine_smoke_test tests/engine_smoke_test.cpp)
@@ -46,6 +57,13 @@ target_include_directories(field_test PRIVATE tests)
 target_link_libraries(field_test PRIVATE field_core)
 add_test(NAME field_test COMMAND field_test)
 set_tests_properties(field_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+
+add_executable(monitor_test tests/monitor_test.cpp)
+target_include_directories(monitor_test PRIVATE tests)
+target_link_libraries(monitor_test PRIVATE field_monitor)
+add_test(NAME monitor_test COMMAND monitor_test)
+set_tests_properties(monitor_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 
 # Proves the >2^31 flattened-index cap is lifted: a 2-axis dense ndarray
