@@ -1,5 +1,11 @@
 # hcp3_core schema — cold swarm cache
 
+> **Alphabet transition decided 2026-09-26:** This schema/README describe
+> the still-built base-50 record tier. The planned RFC 4648 §5 alphabet
+> changes the value order relative to `COLLATE "C"`, so today's claim that
+> every numeric address interval is a contiguous PK range must be revisited.
+> See [primary address transition](../../../docs/address-encoding-transition.md).
+
 Drafted schema for the `hcp3_core` database: the passive backing store for
 the token-graph. Greenfield — no relationship to `hcp2_core` / `db/core.sql`.
 No logic lives here (no triggers/functions); construction and validation
@@ -98,8 +104,9 @@ nothing for the pin to fix.
 Base-50 alphabet: `A-Z`, `a-z` (52 chars) minus `o` and `O` → 50 chars. Each
 couplet is 2 characters from this alphabet. This is documented as config in
 `schema.sql`'s header comment and here — **not** enforced by a CHECK
-constraint, so the loader/C++ layer can change the alphabet or couplet width
-without a migration.
+constraint. Changing it for an already populated store still requires an
+identity/PK/FK and address-order migration, even though the SQL column type
+can remain `text[]`.
 
 ## Format element -> schema mapping
 

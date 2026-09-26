@@ -37,14 +37,22 @@
 -- ============================================================================
 -- ADDRESS / TOKEN_ID ENCODING (config, not enforced by CHECK constraints)
 -- ============================================================================
+-- CURRENT BUILT FORMAT: base-50. The 2026-09-26 primary-address decision in
+-- docs/address-encoding-transition.md adopts the RFC 4648 section 5 URL-safe
+-- 64-symbol alphabet for a future code/data migration. In that alphabet,
+-- RFC digit order no longer matches COLLATE "C" byte order; the range-scan
+-- and successor assumptions documented below must be revisited together.
+-- No populated store can change identity semantics merely by changing a
+-- codec table, even though the column type need not change.
+--
 -- A token's address is an ordered array of "couplets". Each couplet is two
 -- characters drawn from a base-50 alphabet: A-Z, a-z (52 chars) minus the
 -- two that are visually ambiguous with zero, `o` and `O` -> 50 chars.
 --
 -- This alphabet, and the couplet width itself, are PROVISIONAL / config,
 -- not schema law: they are documented here and in README.md, not baked
--- into CHECK constraints, so the loader/C++ layer can change them without
--- a migration. token_id is `text[]`, one couplet per array element.
+-- into CHECK constraints. Changing populated identities still needs a
+-- coordinated migration. token_id is `text[]`, one couplet per array element.
 --
 -- token_id representation choice: the address array IS the canonical
 -- identity (used as PRIMARY KEY / FK target everywhere below). A rendered

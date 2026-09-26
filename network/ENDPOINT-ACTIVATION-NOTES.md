@@ -1,5 +1,10 @@
 # Endpoint-activation cross-kernel model — design notes
 
+> **Later address-alphabet decision (2026-09-26):** Base-50 references in
+> this record describe the built identity codec and its earlier topology
+> sketches. The planned primary namespace uses the RFC 4648 §5 URL-safe
+> Base64 alphabet; see [address encoding transition](../docs/address-encoding-transition.md).
+
 **Status: PARTLY BUILT (2026-09-22). Governing model for the cross-kernel command /
 coupling layer.** The local activation substrate (`network/endpoint/`, commit `b97034a`) and the
 WAL manager as a monitored-endpoint kernel (Pair 1 — `kernels/wal/wal_kernel.{h,cpp}`, commits

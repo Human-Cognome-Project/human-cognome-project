@@ -59,6 +59,8 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 For the overall NAPIER flow, component roles, and what is built versus still
 under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
 Its component notes are linked from [the documentation index](docs/README.md).
+The [primary address transition](docs/address-encoding-transition.md) records
+the planned URL-safe Base64 alphabet and the current base-50 implementation seam.
 
 For current development:
 

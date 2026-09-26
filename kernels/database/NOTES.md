@@ -1,5 +1,11 @@
 # database/cache — data protocol & address-layout notes
 
+> **Later addressing decision (2026-09-26):** Base-50 sizes, examples and
+> numeric range rules below describe the built record tier. The intended
+> primary namespace now uses the RFC 4648 §5 URL-safe 64-symbol alphabet.
+> See [address encoding transition](../../docs/address-encoding-transition.md)
+> before extending this code or interpreting its address capacity.
+
 > **⚠ MESSAGING REALIGNMENT — governing (2026-09-22).** The **entire messaging of this
 > kernel is being realigned to the monitored-endpoint activation format**
 > (`network/ENDPOINT-ACTIVATION-NOTES.md` is the messaging model). **This is the
