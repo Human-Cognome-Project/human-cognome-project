@@ -528,6 +528,33 @@ void run_controller_checks(const std::string &conninfo) {
     check(gather_threw, "interim limit: a wildcard on a non-letter symbol is refused");
   }
 
+  // --- Partial (wildcard) addresses are query-only: never a token
+  //     identity, so every write boundary refuses them. ---
+  {
+    auto refuses = [](auto &&op) {
+      try {
+        op();
+      } catch (const std::exception &) {
+        return true;
+      }
+      return false;
+    };
+    const Address wildcard = A("K*");
+    check(refuses([&] { ctl.mint(wildcard, "wildcard-token", {}); }),
+          "partial contract: mint refuses a partial token_id");
+    check(refuses([&] { ctl.mint(A("KA"), "wildcard-parent", {dbk::Constituent{wildcard, 1}}); }),
+          "partial contract: mint refuses a partial constituent");
+    check(!ctl.token_exists(A("KA")), "partial contract: the refused mint wrote nothing");
+    ctl.mint(A("KB"), "membership-probe", {});
+    check(refuses([&] { ctl.mint(A("KB"), "again", {dbk::Constituent{wildcard, 1}}); }),
+          "partial contract: a partial constituent is refused even when the token exists");
+    check(refuses([&] { ctl.add_membership(A("KB"), wildcard); }),
+          "partial contract: add_membership refuses a partial group");
+    check(refuses([&] { ctl.rekey(A("KB"), wildcard); }),
+          "partial contract: rekey refuses a partial target");
+    check(ctl.token_exists(A("KB")), "partial contract: the refused rekey left the token in place");
+  }
+
   // --- Error path: mint referencing a missing constituent rolls back. ---
   {
     const Address bad = A("DA");

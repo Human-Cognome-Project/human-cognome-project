@@ -22,17 +22,30 @@ namespace {
 constexpr int kStoredSymbolLimit = 52;
 
 bool element_is_storable(const codec::AddressElement &e) {
-  return e.first < kStoredSymbolLimit && (e.partial || e.second < kStoredSymbolLimit);
+  return e.first < kStoredSymbolLimit && e.second < kStoredSymbolLimit;
 }
 
 // Render a codec address as a Postgres text[] array literal, one couplet per
 // element, each element double-quoted (e.g. {"AA","AB"}). Couplets are drawn
-// from the stored letter subset plus the partial marker '*', none of which
-// need escaping, so plain double-quoting is enough. Throws if the address is
-// not a valid codec address or uses a symbol outside the stored subset.
+// from the stored letter subset, none of which need escaping, so plain
+// double-quoting is enough. Throws if the address is not a valid codec
+// address, uses a symbol outside the stored subset, or has a partial
+// element.
+//
+// Partial (wildcard) addresses are query-only: they name a range of
+// tokens, resolved by gather(), and are never a token identity. Every
+// write (mint, constituents, membership, rekey, delete) and every exact
+// follow renders through here, so refusing partials here keeps them out
+// of every stored key. gather() renders only the full addresses of its
+// bounds.
 std::string address_to_pg_array(const codec::Address &addr) {
   if (!codec::is_valid_address(addr) || addr.empty()) {
     throw std::runtime_error("address_to_pg_array: invalid or empty address");
+  }
+  if (addr.back().partial) {
+    throw std::runtime_error(
+        "address_to_pg_array: a partial (wildcard) address is query-only, "
+        "never a token identity");
   }
   for (const codec::AddressElement &e : addr) {
     if (!element_is_storable(e)) {
@@ -49,7 +62,7 @@ std::string address_to_pg_array(const codec::Address &addr) {
     const codec::AddressElement &e = addr[i];
     out.push_back('"');
     out.push_back(codec::kAlphabet[e.first]);
-    out.push_back(e.partial ? codec::kPartialMarker : codec::kAlphabet[e.second]);
+    out.push_back(codec::kAlphabet[e.second]);
     out.push_back('"');
   }
   out.push_back('}');
@@ -382,6 +395,15 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
                       const std::vector<Constituent> &constituents,
                       std::optional<int> mass) {
   const std::string composite_arr = address_to_pg_array(token_id);
+  // Render every constituent before touching the store, so a malformed
+  // constituent (e.g. a partial address) is refused even when the token
+  // already exists and the idempotent path below would otherwise return
+  // without looking at it.
+  std::vector<std::string> parent_arrs;
+  parent_arrs.reserve(constituents.size());
+  for (const Constituent &c : constituents) {
+    parent_arrs.push_back(address_to_pg_array(c.address));
+  }
 
   PGresult *begun = run(conn_, "BEGIN", {});
   PQclear(begun);
@@ -424,7 +446,7 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
     // several ordinals yields a single reverse edge.
     std::set<std::string> distinct_parents;
     for (std::size_t i = 0; i < constituents.size(); ++i) {
-      const std::string parent_arr = address_to_pg_array(constituents[i].address);
+      const std::string &parent_arr = parent_arrs[i];
       const std::string ordinal = std::to_string(i);  // 0-based (OPEN TEST SLOT 2)
       // Per-element mass: absent -> SQL NULL, never a stand-in 0.
       std::string elem_mass_str;
