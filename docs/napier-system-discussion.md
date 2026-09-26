@@ -302,6 +302,30 @@ field is currently suspended from the tick. The existing centroid test checks
 the inclusive seeded mass and position; this review checks the tick ordering
 from source, rather than asserting a new runtime timing test.
 
+**Field-to-centroid propagation (Patrick, 2026-09-25):** for every exposed
+field of an active particle, its last published centroid position supplies
+the target point. The field produces a force toward that point according to
+`m1 * m2 / d²`, with `m2` the field centroid's full participating mass; the
+current formula gates exact coincidence and sole-participant fields to zero.
+The calculation touches that centroid, which must have its position assessed
+from its members at the end of the tick, after particle integration. Compare
+the newly calculated position with the previously published one. If it is
+unchanged, there is no **new outward change through that centroid** to wake
+other members; the particle's current-tick force has still been calculated.
+If the position changes, all connected particles are due to calculate against
+the new centroid position on the next tick. Their field calculations touch
+their centroids in turn, allowing the effect to continue across connected
+fields over multiple ticks if the system requires them. As each branch's
+perturbations settle and its centroids stop moving, its calculations can be
+excluded again; there is no fixed number of settling ticks. Previously quiet
+centroids can be touched again by later changes. This specifies propagation
+of calculation work, not a second force formula. The current harness follows
+the force → integration → centroid-publication order, but has no
+touched-centroid flags, old/new position comparison or selective wake-up of
+connected particles. It still recomputes the full loaded edge list each tick.
+How simultaneous field effects compound is the next part of the formula
+discussion.
+
 **Particle exclusion (Patrick, 2026-09-25):** apply the same temporary
 exclusion principle at particle scale. If a particle needs no movement on a
 given tick, leave it out of subsequent particle calculations until something
