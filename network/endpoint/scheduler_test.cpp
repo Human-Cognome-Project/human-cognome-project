@@ -3,6 +3,7 @@
 // non-zero if any check failed.
 #include <cstdio>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -166,6 +167,34 @@ void test_send_dropped_on_bad_endpoint() {
         "submit to a valid, currently-allocated endpoint returns kDelivered");
 }
 
+void test_handler_throw_does_not_strand_box() {
+  endpoint::Registry registry(1, 0);
+  scheduler::Scheduler sched(registry, 1);
+  box::Box inbox;
+  endpoint::EndpointId id = registry.register_standing(0, &inbox);
+  std::vector<std::string> seen;
+  sched.register_box(&inbox, 0, [&](const box::Message &m, scheduler::Sender &) {
+    seen.push_back(m.payload);
+    if (m.payload == "m1") {
+      throw std::runtime_error("handler failure");
+    }
+  });
+  sched.submit(id, box::Message{"m1", std::nullopt});
+  sched.submit(id, box::Message{"m2", std::nullopt});
+
+  bool threw = false;
+  try {
+    sched.step();
+  } catch (const std::runtime_error &) {
+    threw = true;
+  }
+  check(threw, "a handler exception propagates out of step()");
+  check(sched.step(), "after a handler throws, the box is still ready for its remaining items");
+  check(seen.size() == 2 && seen[1] == "m2",
+        "the item queued behind the failed one is processed; the failed item is not retried");
+  check(inbox.empty() && !sched.step(), "the box drains and the scheduler goes idle");
+}
+
 }  // namespace
 
 int main() {
@@ -173,6 +202,7 @@ int main() {
   test_fifo_within_a_box();
   test_selection_boundary_reevaluation();
   test_send_dropped_on_bad_endpoint();
+  test_handler_throw_does_not_strand_box();
 
   if (g_failures == 0) {
     std::printf("PASS scheduler_test\n");

@@ -74,6 +74,10 @@ void Registry::recycle(EndpointId id) {
   if (id.generation != ephemeral_generation_[idx]) {
     throw std::invalid_argument("endpoint::Registry::recycle: stale generation");
   }
+  // Discard anything still queued for the outgoing owner. The generation
+  // bump stops late sends from resolving; this stops messages that arrived
+  // before recycle from being handed to the slot's next owner.
+  ephemeral_boxes_[idx] = box::Box();
   ++ephemeral_generation_[idx];
   freelist_.push_back(id.slot);
 }

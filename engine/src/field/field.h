@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -107,13 +108,17 @@ class Harness {
   // not staged from the host.
   std::vector<float> universal_data;
 
-  float &particle(int f, int i) { return particle_data[f * particles_ + i]; }
-  float &group(int f, int i) { return group_data[f * groups_ + i]; }
-  float &edge_float(int f, int i) { return edge_float_data[f * edges_ + i]; }
-  int &edge_int(int f, int i) { return edge_int_data[f * edges_ + i]; }
-  float &bond_float(int f, int i) { return bond_float_data[f * bonds_ + i]; }
-  int &bond_int(int f, int i) { return bond_int_data[f * bonds_ + i]; }
+  // Offsets are computed in size_t: f * count overflows int once the item
+  // count passes ~2^31 / field count.
+  float &particle(int f, int i) { return particle_data[offset(f, particles_, i)]; }
+  float &group(int f, int i) { return group_data[offset(f, groups_, i)]; }
+  float &edge_float(int f, int i) { return edge_float_data[offset(f, edges_, i)]; }
+  int &edge_int(int f, int i) { return edge_int_data[offset(f, edges_, i)]; }
+  float &bond_float(int f, int i) { return bond_float_data[offset(f, bonds_, i)]; }
+  int &bond_int(int f, int i) { return bond_int_data[offset(f, bonds_, i)]; }
 
+  // Throws std::out_of_range, before transferring anything, if a staged
+  // edge or bond names a particle or group outside this harness's counts.
   void upload();
   void download();
 
@@ -130,6 +135,11 @@ class Harness {
   const std::vector<float> &determined() const { return determined_; }
 
  private:
+  static std::size_t offset(int f, int count, int i) {
+    return std::size_t(f) * std::size_t(count) + std::size_t(i);
+  }
+  void validate_indices() const;
+
   void launch_clear();
   void launch_force(const Parameters &p);
   void launch_contact(const Parameters &p);
