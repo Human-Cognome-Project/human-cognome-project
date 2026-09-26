@@ -422,6 +422,23 @@ need rechecking once the destination composition is settled. Current tests
 check near-meeting within a tolerance and boundedness over 400 chaotic ring
 ticks; neither establishes exact convergence to the effective centroid.
 
+**Brake-slope tuning candidate (discussion, 2026-09-25):** Patrick suggests
+steepening the exponential if it suppresses legitimate approach motion too
+early, while keeping a strong slow wall at an impending overstep. With
+`r = proposed_travel / reach`, the present multiplier `exp(-r^4)` is about
+0.66 at `r = 0.8`; `exp(-r^16)` would be about 0.97 there. Every form
+`exp(-r^p)` still equals `1/e` at `r = 1`, regardless of `p`; increasing
+the exponent sharpens the transition but does not eliminate attenuation
+at that boundary. For `p >= 1` and an aligned displacement toward a
+correctly identified destination, the corrected distance `r * exp(-r^p)`
+is below one reach, even if the proposed step exceeds it. This makes a
+larger exponent a plausible tuning change without a new temporal scheme.
+That bound applies to the brake's chosen reach; it cannot establish
+overshoot protection relative to the *actual* combined destination until
+the relationship between `|F_net|` and that destination is resolved.
+Treat the exponent as a candidate to measure against settling trajectories,
+not as a settled change to the shipped formula.
+
 **Wake propagation latency (Patrick, 2026-09-25):** activation can take
 several ticks to ripple through connected particles and centroids. A
 previously resolved particle may have its next movement deferred a few ticks
