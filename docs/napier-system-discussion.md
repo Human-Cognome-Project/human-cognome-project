@@ -367,8 +367,23 @@ of calculation work, not a second force formula. The current harness follows
 the force → integration → centroid-publication order, but has no
 touched-centroid flags, old/new position comparison or selective wake-up of
 connected particles. It still recomputes the full loaded edge list each tick.
-How simultaneous field effects compound is the next part of the formula
-discussion.
+
+**Per-particle superposition (Patrick, 2026-09-25):** each exposed field gives
+the particle a destination at its relevant centroid and a directed pull
+toward it, scaled by `m1 * m2 / d²`. Across the particle's fields, the
+destinations and pulls must combine into **both an effective destination and
+a motive force for that tick**. The precise composition of those two outputs
+and where the exponential brake belongs are being clarified in this
+walkthrough. The earlier `engine/docs/DRIFT-AUDIT.md` §3 and
+`docs/field-physics-and-tick-notes.md` equate the destination with the
+position plus one summed force vector; that equivalence needs rechecking
+against Patrick's clarification that both outputs are required. The current
+`field_force` pass accumulates only force vectors in `kForceX/Y/Z`, and
+`field_integrate` takes the magnitude of their sum as brake reach before
+updating position. It has no separately calculated effective-destination
+field, and the brake may currently engage too early. Leave the composition
+and brake placement open until the next part of the explanation. The
+parent-line rotary alignment expression remains distinct work to implement.
 
 **Wake propagation latency (Patrick, 2026-09-25):** activation can take
 several ticks to ripple through connected particles and centroids. A
