@@ -78,7 +78,16 @@ bool Scheduler::step() {
 
     box::Message message = b->pop();
     Sender sender(*this);
-    entry.handler(message, sender);
+    try {
+      entry.handler(message, sender);
+    } catch (...) {
+      // The failed message stays consumed (retrying it could loop
+      // forever), but anything queued behind it must stay reachable.
+      if (!b->empty()) {
+        mark_ready(b);
+      }
+      throw;
+    }
 
     if (!b->empty()) {
       // Still occupied -- possibly because the handler just sent into

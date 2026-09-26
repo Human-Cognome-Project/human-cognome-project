@@ -81,6 +81,10 @@ class Scheduler {
   // now empty (re-entering it if a handler left more behind, including
   // anything the handler itself just sent into it -- selection-boundary
   // priority re-evaluation, F8). Returns false if nothing was ready.
+  //
+  // If the handler throws, the head item stays consumed and the exception
+  // propagates to the caller; the box re-enters the ready set if items
+  // remain, so the rest of its queue is not stranded.
   bool step();
 
   // step() until no box is ready.

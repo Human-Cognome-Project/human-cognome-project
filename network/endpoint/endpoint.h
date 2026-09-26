@@ -63,7 +63,9 @@ class Registry {
 
   // Return an ephemeral slot to the freelist and bump its generation --
   // the ONE and ONLY generation bump-site (F2). A late ack addressed to
-  // the pre-recycle id fails resolve() from this point on. Throws
+  // the pre-recycle id fails resolve() from this point on. Any messages
+  // still queued in the slot's box are discarded, so the next allocate()
+  // always hands out an empty return mailbox. Throws
   // std::invalid_argument if `id` does not name a currently-allocated
   // ephemeral slot at its current generation.
   void recycle(EndpointId id);
