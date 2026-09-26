@@ -5,6 +5,7 @@
 // discretization brake that suppresses overshoot without varying the step.
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -715,6 +716,55 @@ void check_architectures_agree() {
                   "largest difference " + std::to_string(worst));
 }
 
+// Kernels address device memory directly with staged indices, so upload()
+// must refuse an out-of-range edge or bond before anything reaches the device.
+bool upload_throws(Harness &h) {
+  try {
+    h.upload();
+  } catch (const std::out_of_range &) {
+    return true;
+  }
+  return false;
+}
+
+void check_index_validation(bool cuda, const std::string &arch) {
+  harness::note(arch + ": staged index validation");
+  Runtime runtime(base_settings(cuda));
+  {
+    Harness h(runtime, 2, 1, 2, /*bonds=*/1);
+    set_particle(h, 0, 0.0f, 0.0f, 0.0f, 1.0f);
+    set_particle(h, 1, 1.0f, 0.0f, 0.0f, 1.0f);
+    set_whole_edge(h, 0, 0, 0);
+    set_whole_edge(h, 1, 1, 0);
+    h.bond_int(field::kBondA, 0) = 0;
+    h.bond_int(field::kBondB, 0) = 1;
+    bool ok = true;
+    try {
+      h.upload();
+    } catch (const std::exception &) {
+      ok = false;
+    }
+    harness::record(ok, arch + ": in-range edges and bonds upload", "");
+
+    set_whole_edge(h, 1, 2, 0);
+    harness::record(upload_throws(h), arch + ": edge particle past the count is refused", "");
+    set_whole_edge(h, 1, 1, 1);
+    harness::record(upload_throws(h), arch + ": edge group past the count is refused", "");
+    set_whole_edge(h, 1, -1, 0);
+    harness::record(upload_throws(h), arch + ": negative edge particle is refused", "");
+    set_whole_edge(h, 1, 1, 0);
+    h.bond_int(field::kBondB, 0) = 2;
+    harness::record(upload_throws(h), arch + ": bond particle past the count is refused", "");
+  }
+  bool negative_refused = false;
+  try {
+    Harness h(runtime, -1, 1, 1);
+  } catch (const std::invalid_argument &) {
+    negative_refused = true;
+  }
+  harness::record(negative_refused, arch + ": negative count is refused", "");
+}
+
 void check_arch(bool cuda) {
   const std::string arch = cuda ? "cuda" : "cpu";
   check_centroid(cuda, arch);
@@ -726,6 +776,7 @@ void check_arch(bool cuda) {
   check_stability(cuda, arch);
   check_corona(cuda, arch);
   check_universal(cuda, arch);
+  check_index_validation(cuda, arch);
 }
 
 }  // namespace
