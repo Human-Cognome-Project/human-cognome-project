@@ -104,11 +104,23 @@ two relationship axes are:
 | Parent | `token_parent` lists the direct parent particles **in order**, with a mass for each occurrence in the piece under consideration. A parent field acts through those constituent masses and their positions; repeated occurrences retain distinct ordinals. `token_child` is the stored reverse walk from a constituent to pieces that use it. |
 | Membership | `member_of` lists **all field groups a particle directly participates in**. Each group's `members` list is the reciprocal fast walk to its direct participants, analogous to `token_child` for parents. A field group is itself a token and can have its own `member_of` groups. |
 
-**Membership is the group listing, not a synonym for sibling or a declaration
-that every listed relationship engages the particle's whole mass.** The older
-notes use *sibling* for a particular whole-particle participation concept; the
-term may still be useful, but its relation to these group listings is not
-being fixed by this discussion.
+**Membership is the stored group listing, not a synonym for sibling or a
+declaration that every listed relationship engages the particle's whole
+mass.** Sibling has a specific automatic meaning in the active model:
+
+**`particle_id`, `token_id`, and sibling identity (Patrick, 2026-09-25):**
+`particle_id` identifies a particular allocated particle instance in the
+model; `token_id` identifies its base form. One `token_id` may have multiple
+simultaneously exposed `particle_id` instances. Every exposed instance is
+automatically grouped with **all other exposed instances of the same
+`token_id`** in an always-applicable sibling field. Each instance participates
+as its whole mass, and the field centroid includes the subject as it does for
+every other group. This uses the same particle-to-centroid force formula; it
+does not introduce a separate sibling force law. The automatic same-token
+field should not be confused with the database's explicit `member_of` table
+relationships. The recovered parent-structure notes already describe exact
+`token_id` matches as an unconditional self-identity field, but the current
+active harness does not create it automatically.
 
 The byte-couplet rebuild provides the operative example. The value `01` can
 occur across encoding tables, often by itself and sometimes in a larger
@@ -183,6 +195,10 @@ no-rotation comments and translation-only offset test therefore describe
 what is built, not the complete parent-field behaviour clarified here. The
 older drift audit rejects carried rigid-body spin; directed reorientation of
 the ordered parent configuration is a different, still-unbuilt operation.
+The harness uses particle array slots and group edges but stores no `token_id`
+for each allocated particle and creates no automatic same-token sibling group;
+its tests stage group edges explicitly. The active-set assembly still needs to
+provide that mapping and group for every exposed token identity.
 This note does not claim the byte-couplet/table rebuild or assembly path has
 been built. The WAL manager's deferred return-path work for these
 relationships is described below.
