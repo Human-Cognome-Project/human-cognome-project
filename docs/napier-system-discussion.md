@@ -439,6 +439,14 @@ the relationship between `|F_net|` and that destination is resolved.
 Treat the exponent as a candidate to measure against settling trajectories,
 not as a settled change to the shipped formula.
 
+**Model-design criterion (Patrick, 2026-09-25):** NAPIER derives its field
+model from common physics principles to serve the behavior this system needs;
+it does not aim to reproduce one particular existing physics model. Choose
+the brake's curve, and other numerical details, by how well they preserve
+the intended field relationships, settling and tractable computation across
+many ticks. The exponential slope is a tuning choice within that derived
+model, not a physical constant to inherit unchanged from elsewhere.
+
 **Wake propagation latency (Patrick, 2026-09-25):** activation can take
 several ticks to ripple through connected particles and centroids. A
 previously resolved particle may have its next movement deferred a few ticks
