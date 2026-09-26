@@ -310,6 +310,79 @@ void test_malformed_reference_rejected() {
         "is rejected");
 }
 
+void test_declare_references_require_concrete_tokens() {
+  const codec::Address wildcard = {codec::make_partial_element(0)};  // A*
+  for (const codec::Address &invalid : {codec::Address{}, wildcard}) {
+    const std::string form = invalid.empty() ? "empty" : "wildcard";
+
+    auto structure = minimal_structure_declare();
+    (*structure.parents)[0][0] = Reference::ToAddress(invalid);
+    check(command::validate_declare(structure).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " PARENTS token reference");
+
+    auto grouping = minimal_structure_declare();
+    grouping.members = std::vector<Reference>{Reference::ToAddress(invalid)};
+    check(command::validate_declare(grouping).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " MEMBERS token reference");
+
+    auto membership = minimal_structure_declare();
+    command::DeclareRecord::MemberOf member_of;
+    member_of.shared = {Reference::ToAddress(invalid)};
+    membership.member_of = member_of;
+    check(command::validate_declare(membership).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " MEMBER_OF token reference");
+  }
+
+  auto nested = std::make_shared<DeclareRecord>(minimal_structure_declare());
+  (*nested->parents)[0][0] = Reference::ToAddress(wildcard);
+  auto outer = minimal_structure_declare();
+  (*outer.parents)[0][0] = Reference::ToNested(nested);
+  check(command::validate_declare(outer).status == ValidationStatus::kInvalid,
+        "nested DECLARE also rejects wildcard token references");
+}
+
+void test_declare_placement_requires_concrete_tokens() {
+  const codec::Address wildcard = {codec::make_partial_element(0)};  // A*
+  for (const codec::Address &invalid : {codec::Address{}, wildcard}) {
+    const std::string form = invalid.empty() ? "empty" : "wildcard";
+    auto direct = minimal_structure_declare();
+    direct.address = AddressSpan{AddressSegment::Direct(invalid)};
+    check(command::validate_declare(direct).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " direct ADDRESS placement");
+
+    auto pinned = minimal_structure_declare();
+    pinned.address = AddressSpan{AddressSegment::Pin(invalid)};
+    check(command::validate_declare(pinned).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " pinned ADDRESS placement");
+
+    auto from = minimal_structure_declare();
+    from.address = AddressSpan{AddressSegment::From(invalid)};
+    check(command::validate_declare(from).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " FROM origin");
+
+    auto from_to = minimal_structure_declare();
+    from_to.address = AddressSpan{AddressSegment::From(addr("BA"), invalid)};
+    check(command::validate_declare(from_to).status == ValidationStatus::kInvalid,
+          "DECLARE rejects an " + form + " concrete FROM..TO bound");
+
+    auto provided_id = DeclareRecord{};
+    provided_id.members = std::vector<Reference>{Reference::ToAddress(addr("AA"))};
+    provided_id.address = AddressSpan{AddressSegment::Direct(invalid)};
+    check(command::validate_declare(provided_id).status == ValidationStatus::kInvalid,
+          "grouping use-provided-ID rejects an " + form + " naming literal");
+  }
+
+  auto after_empty = minimal_structure_declare();
+  after_empty.address = AddressSpan{AddressSegment::After(codec::Address{})};
+  check(command::validate_declare(after_empty).status == ValidationStatus::kInvalid,
+        "DECLARE rejects an empty AFTER block reference");
+
+  auto after_wildcard = minimal_structure_declare();
+  after_wildcard.address = AddressSpan{AddressSegment::After(wildcard)};
+  check(command::validate_declare(after_wildcard).status == ValidationStatus::kValid,
+        "a non-empty AFTER block reference remains pending G5, not rejected");
+}
+
 void test_declare_with_open_after_tail_is_accepted_pending_seam() {
   // N=2: a direct slot plus an open (un-TO'd) AFTER tail as the last
   // segment. AFTER is structurally legal here (same elastic shape as an
@@ -400,6 +473,11 @@ void test_move_record_validation() {
   check(command::validate_move_record(explicit_ok).status == ValidationStatus::kValid,
         "a MOVE_RECORD with a well-formed explicit source and a matching "
         "destination is accepted");
+
+  MoveRecord empty_identity = explicit_ok;
+  empty_identity.sources = {MoveSource::Explicit(codec::Address{})};
+  check(command::validate_move_record(empty_identity).status == ValidationStatus::kInvalid,
+        "MOVE_RECORD explicit source cannot name an empty token identity");
 
   MoveRecord empty;
   check(command::validate_move_record(empty).status == ValidationStatus::kInvalid,
@@ -638,6 +716,10 @@ void test_delete_ops_validation() {
   check(command::validate_delete_record(ok_record).status == ValidationStatus::kValid,
         "a DELETE_RECORD naming a valid address is accepted");
 
+  DeleteRecord empty_record{codec::Address{}};
+  check(command::validate_delete_record(empty_record).status == ValidationStatus::kInvalid,
+        "DELETE_RECORD requires a non-empty explicit token identity");
+
   DeleteConnection ok_conn{addr("AA"), addr("AB")};
   check(command::validate_delete_connection(ok_conn).status == ValidationStatus::kValid,
         "a DELETE_CONNECTION naming a valid pair is accepted");
@@ -666,6 +748,8 @@ int main() {
   test_nested_declare_in_address_span_recurses();
   test_address_nested_declare_colliding_with_parents_rejected();
   test_malformed_reference_rejected();
+  test_declare_references_require_concrete_tokens();
+  test_declare_placement_requires_concrete_tokens();
   test_declare_with_open_after_tail_is_accepted_pending_seam();
   test_declare_with_closed_after_to_is_accepted_pending_seam();
   test_read_record_validation();
