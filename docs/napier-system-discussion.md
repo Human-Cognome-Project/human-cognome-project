@@ -33,7 +33,8 @@ database or a swarm component has been built from its appearance here.
   entity experiences while thinking about that thought. This is the model's
   active work, not merely background storage or retrieval.
 - The **analyst** is the conscious analogue. It is intended to analyze the
-  physics engine's raw numerical output, without relying on rendered views.
+  physics engine's raw numerical output exposed by the harness, without
+  relying on rendered views.
   Its functions and model-facing interface have not yet been designed or
   implemented.
 
@@ -266,11 +267,22 @@ update rules still matter because their effects accumulate. Patrick's
 earlier modeling attempts ran for **hundreds of thousands of ticks** while
 updating a browser-rendered monitor every few hundred ticks. That view is a
 human-readable interpretation of the math for inspection. The future analyst
-instead analyzes the engine's numerical output and can choose to read it
-nearly every tick; the monitor's refresh schedule does not limit that access.
+instead analyzes the engine's numerical output. The harness controls at
+runtime which results leave device memory (VRAM on a GPU) and when; the
+selection and readback cadence can change during a run. It might expose
+results nearly every tick when needed. The monitor's refresh schedule does
+not limit that access.
 More active periods can take longer per tick, and settling continues for as
 many ticks as the interactions require. No fixed tick-time or frame-rate
 target is specified here.
+
+**Readback implementation seam:** `field::Harness::tick()` does not download
+results. Its explicit `download()` synchronizes the runtime and reads the
+whole particle, group and determiner arrays into host memory. This provides
+an on-demand full-array transfer: its caller can choose when to invoke it,
+but the harness cannot yet select particular results for readback or control
+their cadence through a runtime setting. The intended harness control and
+the future analyst's data interface remain to be built.
 
 **Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
 field centroid is identical to its current value, exclude that field from
