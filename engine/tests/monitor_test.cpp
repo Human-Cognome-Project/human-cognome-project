@@ -123,6 +123,36 @@ void check_oscillate_and_return() {
   CHECK_TRUE(near(w.net_max_displacement, 0.0), "net displacement is zero, labelled as net");
 }
 
+// A monitor measures one base. A new base needs reset(), which also moves
+// the centre-of-mass drift origin; a changed shape without reset() is an
+// error rather than a silent mix of two bases.
+void check_new_base() {
+  harness::note("new base");
+  State first = base();
+  monitor::FieldMonitor mon;
+  mon.observe(first.view(), 0);
+  mon.take_sample();
+
+  State shifted = base();
+  for (int i = 0; i < 3; ++i) {
+    shifted.p(field::kPosX, i) += 100.0f;
+  }
+  mon.reset();
+  mon.observe(shifted.view(), 0);
+  const monitor::Sample a = mon.take_sample();
+  CHECK_TRUE(near(a.centre_of_mass_drift, 0.0), "reset() moves the drift origin to the new base");
+  CHECK_EQ_INT(a.steps_observed, 0, "reset() starts a fresh baseline");
+
+  State bigger(4, 2, 3);
+  bool threw = false;
+  try {
+    mon.observe(bigger.view(), 1);
+  } catch (const std::logic_error &) {
+    threw = true;
+  }
+  CHECK_TRUE(threw, "a changed shape without reset() is refused");
+}
+
 void check_threshold() {
   harness::note("motion threshold");
   State s = base();
@@ -221,6 +251,7 @@ int main() {
   check_baseline();
   check_motion_and_touched_edges();
   check_oscillate_and_return();
+  check_new_base();
   check_threshold();
   check_observation_gap();
   check_reversals_and_reach();

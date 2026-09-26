@@ -92,7 +92,15 @@ class FieldMonitor {
   // Record the state at `tick`. Call it for every tick whose effect should
   // count (every tick, for settling and surface claims); each call after
   // the first is one step accumulated into the open window.
+  //
+  // A monitor measures one loaded base. If the loaded shape (particle,
+  // group or edge count) changes, observe() throws std::logic_error rather
+  // than silently mixing two bases; call reset() when loading a new base.
   void observe(const FieldView &view, long tick);
+
+  // Start a new base: forget every previous observation, including the
+  // centre-of-mass drift origin. The next observe() is the new baseline.
+  void reset();
 
   // Close the open window and return its sample. The last observed state
   // becomes the start of the next window. Requires at least one observe().
@@ -111,7 +119,6 @@ class FieldMonitor {
   static State copy_of(const FieldView &view, long tick);
 
   Settings settings_;
-  bool have_first_ = false;
   double com0_[3] = {0.0, 0.0, 0.0};
   State window_start_;
   State last_;

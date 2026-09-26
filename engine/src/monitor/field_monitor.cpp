@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace monitor {
 namespace {
@@ -94,17 +95,30 @@ FieldMonitor::State FieldMonitor::copy_of(const FieldView &view, long tick) {
   return s;
 }
 
+void FieldMonitor::reset() {
+  have_last_ = false;
+  com0_[0] = com0_[1] = com0_[2] = 0.0;
+  window_start_ = State{};
+  last_ = State{};
+  steps_ = 0;
+  max_gap_ = 0;
+  max_step_displacement_ = 0.0;
+  reversals_ = 0;
+  touched_particle_.clear();
+  touched_centroid_.clear();
+}
+
 void FieldMonitor::observe(const FieldView &view, long tick) {
+  if (have_last_ && (view.particles != last_.n || view.groups != last_.g ||
+                     view.edges != last_.e)) {
+    throw std::logic_error(
+        "FieldMonitor::observe: loaded shape changed; call reset() for a new base");
+  }
   State cur = copy_of(view, tick);
-  const bool same_shape = have_last_ && cur.n == last_.n && cur.g == last_.g &&
-                          cur.e == last_.e;
-  if (!same_shape) {
-    // First observation, or the loaded shape changed: start afresh here.
-    if (!have_first_) {
-      double mass = 0.0;
-      centre_of_mass(cur.particles.data(), cur.n, com0_, &mass);
-      have_first_ = true;
-    }
+  if (!have_last_) {
+    // First observation of this base: it is the baseline.
+    double mass = 0.0;
+    centre_of_mass(cur.particles.data(), cur.n, com0_, &mass);
     window_start_ = cur;
     touched_particle_.assign(std::size_t(cur.n), 0);
     touched_centroid_.assign(std::size_t(cur.g), 0);
