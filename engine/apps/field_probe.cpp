@@ -9,7 +9,7 @@
 //   . ./build/engine-env.sh
 //   ./build/field_probe --scenario clusters --particles 512 --groups 32 \
 //       --ticks 2000 --every 10 --out runs/clusters.csv
-//   ./build/field_probe --scenario ring --particles 64 --perturb 1000:0:0.5
+//   ./build/field_probe --scenario ring --particles 64
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -32,13 +32,11 @@ namespace {
       "                   [--groups N] [--max-memberships N] [--seed N]\n"
       "                   [--ticks N] [--every N] [--observe-every N]\n"
       "                   [--dt F]\n"
-      "                   [--threshold F] [--perturb TICK:PARTICLE:DX]\n"
+      "                   [--threshold F]\n"
       "                   [--threads N] [--cuda] [--out FILE]\n"
       "  ring      the field_test ring: every particle in one shared group.\n"
       "  clusters  particles scattered in a cube, each a whole member of\n"
       "            1..max-memberships groups chosen from --groups.\n"
-      "  --perturb shifts one particle by DX along x at the given tick, so\n"
-      "            the samples after it show how far the change travels.\n"
       "  --every          ticks per CSV row (window).\n"
       "  --observe-every  ticks between observations (default 1; larger is\n"
       "                   cheaper but can miss motion that returns).\n"
@@ -67,10 +65,6 @@ struct Options {
   long observe_every = 1;
   float dt = 1.0f;
   float threshold = 1e-4f;
-  bool perturb = false;
-  long perturb_tick = 0;
-  int perturb_particle = 0;
-  float perturb_dx = 0.0f;
   bool cuda = false;
   int threads = 0;  // 0: runtime default
   std::string out;
@@ -100,14 +94,6 @@ Options parse(int argc, char **argv) {
       o.dt = float(std::atof(value_of(argc, argv, i)));
     } else if (!std::strcmp(a, "--threshold")) {
       o.threshold = float(std::atof(value_of(argc, argv, i)));
-    } else if (!std::strcmp(a, "--perturb")) {
-      const char *v = value_of(argc, argv, i);
-      if (std::sscanf(v, "%ld:%d:%f", &o.perturb_tick, &o.perturb_particle,
-                      &o.perturb_dx) != 3) {
-        std::fprintf(stderr, "--perturb expects TICK:PARTICLE:DX\n");
-        usage(2);
-      }
-      o.perturb = true;
     } else if (!std::strcmp(a, "--threads")) {
       o.threads = std::atoi(value_of(argc, argv, i));
     } else if (!std::strcmp(a, "--cuda")) {
@@ -124,10 +110,6 @@ Options parse(int argc, char **argv) {
   const bool known = o.scenario == "ring" || o.scenario == "clusters";
   if (!known || o.particles < 1 || o.groups < 1 || o.max_memberships < 1 ||
       o.ticks < 0 || o.every < 1 || o.observe_every < 1) {
-    usage(2);
-  }
-  if (o.perturb && (o.perturb_particle < 0 || o.perturb_particle >= o.particles)) {
-    std::fprintf(stderr, "--perturb particle out of range\n");
     usage(2);
   }
   return o;
@@ -259,11 +241,6 @@ int main(int argc, char **argv) {
   long ticks_in_window = 0;
   long observations_in_window = 0;
   for (long t = 1; t <= o.ticks; ++t) {
-    if (o.perturb && t == o.perturb_tick) {
-      h.download();
-      h.particle(field::kPosX, o.perturb_particle) += o.perturb_dx;
-      h.upload();
-    }
     const auto start = std::chrono::steady_clock::now();
     h.tick(p);
     runtime.synchronize();
