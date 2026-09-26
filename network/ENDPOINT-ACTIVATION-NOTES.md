@@ -53,6 +53,17 @@ is DECLARE / READ / UPDATE; a converter's body is serialize-and-hand-off; its
 counterpart's body is deserialize-and-place. The scheduler over a set of boxes
 does exactly one thing (see *Priority*).
 
+**Runtime composition clarification (Patrick, 2026-09-25; design direction):**
+the monitor can watch multiple mailboxes. Primary kernel instances proliferate
+as work requires; less frequently needed secondary kernel sets are threaded
+into the active flow when their mailboxes require them. An active runtime
+balancer fits this workload: it may adjust the primary capacity and secondary
+activation as demand shifts. The individual CPU functions describe foundation
+pieces, so they may also be combined or parallelized while respecting their
+data dependencies. The balancing policy, resource signals and execution
+mechanism are still to be designed; the current `network/endpoint/` scheduler
+implements readiness-driven handler selection, not dynamic kernel-set scaling.
+
 ## Serialization as a bridge (the .json/API converter)
 
 For any two of *our own* internal components separated by a representation /

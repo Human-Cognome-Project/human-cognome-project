@@ -1,5 +1,11 @@
 > **Recovered design record (2026-09-24).** This note was authored during the native C++ engine/harness work before that local workspace was fully pushed. Statements about what was "not built", file locations, or open work reflect the date/context of the note. For current implementation status, read `engine/docs/README.md` and `engine/docs/OPERATIONAL-PLAN.md`; current repository policy is in `AGENTS.md` and `CONTRIBUTING.md`.
 
+> **Later tier/relationship clarification (2026-09-25):** The store → working
+> distinction now includes a warm cache-manager preparation stage before the
+> analyst's hot structure. The older blanket “sibling” language below is
+> separated into explicit `member_of`/`members` and automatic same-token
+> instance grouping. See the [NAPIER system guide](napier-system-guide.md).
+
 # Storage construct and working construct
 
 Working notes, not a specification. Patrick's statements recorded as given;

@@ -27,6 +27,8 @@ Kernels should remain location-blind. Local versus remote transport is resolved 
 
 ## Design records
 
+- `KERNEL-ACTIVATION.md` — current cross-component map of mailboxes, priority,
+  future balancing, and the distinct monitor roles.
 - `ENDPOINT-ACTIVATION-NOTES.md` — governing cross-kernel activation model and resolved messaging decisions.
 - `ENDPOINT-PRIMITIVES-PLAN.md` — implementation record for the built local endpoint substrate.
 - `SWARM-NOTES.md` — preliminary p2p/swarm direction; not yet built.

@@ -1,5 +1,24 @@
 # Documentation
 
+## Current system map
+
+- **[napier-system-guide.md](napier-system-guide.md)** — coherent cold → warm → hot,
+  model, analyst, WAL, and endpoint flow, with built/planned boundaries.
+- **[instance-local-data.md](instance-local-data.md)** — reserved private DB
+  scope, inward-only deferred work, and unresolved release/encryption design.
+- **[database working set and ledger](../kernels/database/WORKING-SET-AND-LEDGER.md)** —
+  reciprocal paths, study-rooted warm projection, and calculation scopes.
+- **[active field model](../engine/docs/ACTIVE-FIELD-MODEL.md)** — tick order,
+  centroid wakeup, brake, and open formula questions.
+- **[WAL report to work](../kernels/wal/REPORT-TO-WORK.md)** — report ingress,
+  durable deferred work, and privacy boundary.
+- **[kernel activation](../network/KERNEL-ACTIVATION.md)** — mailbox priority,
+  component scaling, and monitor responsibilities.
+- **[napier-system-discussion.md](napier-system-discussion.md)** — dated working
+  record preserving the derivation and unsettled alternatives.
+
+## Foundations and recovered notes
+
 Read in order:
 
 1. **[physics-basis.md](physics-basis.md)** — what was determined, the principles the project runs

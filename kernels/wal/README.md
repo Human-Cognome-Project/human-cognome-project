@@ -8,6 +8,8 @@ and tests **on its own**.
 This file is for working **on** this kernel set (charter, file map,
 build/run). If you're working on something that **uses** it instead —
 chiefly the cache manager — see `USAGE.md` for the consumer contract.
+For the intended live ingress, deferred-work flow, and local-data direction,
+see [REPORT-TO-WORK.md](REPORT-TO-WORK.md).
 
 ## Charter
 
@@ -40,6 +42,29 @@ writer of the primary change:
 One line: **the cache manager writes the primary change and builds its own
 return paths; the WAL manager books what returns are owed and watches them
 land.**
+
+## Instance-local databases — discussion note (2026-09-25)
+
+NAPIER's planned private databases hold one instance's personal history and
+relationships (provisional names: `personality.db`, `relationships.db`; their
+partition is not settled). The intended WAL privacy rule is **directional**:
+changes in global factors may generate deferred work *into* these private
+databases, while changes originating there do not ordinarily generate
+deferred work that writes directly to global databases or another instance.
+Private database reports can still be booked by that instance's WAL manager
+for its own followup tracking. Any significant derived result shared beyond
+the instance needs a separate guarded release path; local reports and WAL
+History entries are not automatically network/tracker output.
+
+**Status: design intent, not enforced by this kernel.** `Report::scope` and
+`history.scope` record local/global provenance; `Obligation` contains only its
+identity, and the fixture-fed `WalKernel` pushes all owed items to one
+cache-manager out-box without checking a destination. The future live report
+feed and deferred-work routing need to preserve origin and target scope so
+this rule can be enforced. Private storage, encryption and the release
+guardrails remain deferred. See the ongoing
+[`NAPIER system discussion`](../../docs/napier-system-discussion.md) for the
+wider local/global relationship.
 
 ## Files
 

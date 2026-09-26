@@ -1,5 +1,13 @@
 > **Recovered design record (2026-09-24).** This note was authored during the native C++ engine/harness work before that local workspace was fully pushed. Statements about what was "not built", file locations, or open work reflect the date/context of the note. For current implementation status, read `engine/docs/README.md` and `engine/docs/OPERATIONAL-PLAN.md`; current repository policy is in `AGENTS.md` and `CONTRIBUTING.md`.
 
+> **Later relationship clarification (2026-09-25):** This record uses
+> “sibling” for several broad memberships. The current schema stores direct
+> groups as `member_of`/`members`; the automatic sibling field groups exposed
+> instances with identical `token_id`. Ordered parent occurrences may reorient
+> a construct without carried spin. Read the
+> [database guide](../kernels/database/WORKING-SET-AND-LEDGER.md) and
+> [active field model](../engine/docs/ACTIVE-FIELD-MODEL.md) for those distinctions.
+
 # Parent and sibling structure notes
 
 Working notes, not a specification. Everything below is Patrick's, recorded as
