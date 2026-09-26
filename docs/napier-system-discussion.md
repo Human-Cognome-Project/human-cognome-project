@@ -370,6 +370,16 @@ connected particles. It still recomputes the full loaded edge list each tick.
 How simultaneous field effects compound is the next part of the formula
 discussion.
 
+**Wake propagation latency (Patrick, 2026-09-25):** activation can take
+several ticks to ripple through connected particles and centroids. A
+previously resolved particle may have its next movement deferred a few ticks
+until the change reaches it. Against a fast simulation running for very many
+ticks, that short delay is intended to be a nominal disturbance in the
+overall physics behaviour; the calculation does not require every connected
+particle to move on the tick when the initial perturbation occurs. When the
+active-set path is built, check both eventual wake-up and the resulting
+trajectories. This is a design expectation, not a measured error bound.
+
 **Particle exclusion (Patrick, 2026-09-25):** apply the same temporary
 exclusion principle at particle scale. If a particle needs no movement on a
 given tick, leave it out of subsequent particle calculations until something
