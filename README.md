@@ -83,6 +83,8 @@ The September 2026 repository reconciliation was carried through `integration/ke
 
 The current tree is the canonical starting point for new work. The native C++ engine recovery and curated Taichi fork are layered onto that reconciled history. CI builds and tests the native CPU engine from source; the engine has also run on development hardware. Earlier and off-direction generations remain under `archive/` and through Git history.
 
+**Review queue (2026-09-26):** [Draft PR #73](https://github.com/Human-Cognome-Project/human-cognome-project/pull/73) proposes endpoint slot-recycling, scheduler exception-handling and field-harness index-safety fixes. It is still open and needs careful code and test review against the current contracts before integration. It does not implement the [new address alphabet decision](docs/address-encoding-transition.md).
+
 ## Governance
 
 - [Covenant](covenant.md) — perpetual-openness commitment.

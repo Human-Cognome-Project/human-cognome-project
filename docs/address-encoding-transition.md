@@ -9,6 +9,14 @@ implementation work; the current C++ codec and PostgreSQL record tier still
 use base-50. The previous choice prioritized human legibility; a standard
 alphabet and easier interchange now take precedence.
 
+**Why this was chosen:** This is a newly made design decision, not a change
+already reflected in the running database. A conventional 64-symbol alphabet
+and six-bit digit values should make the address path easier to implement and
+use from C++, with less project-specific base conversion to maintain. It is
+also more familiar to external tooling and coding collaborators. Those are
+reasons for choosing the alphabet, not a claim that ordinary byte-oriented
+Base64url library calls already encode the project's pair-array addresses.
+
 ## Alphabet, shape and capacity
 
 The planned 64 symbols, **in RFC value order**, are
@@ -64,12 +72,17 @@ verify the physical-order strategy in the implementation PR, including
 bounded PK scans; keep the record tier's only-follow rule.
 
 The old alphabet's strings overlap with the new one, while their symbol
-indices differ. Treat the conversion as an **identity migration**, not an
-unchecked literal substitution or an unversioned mixed decoder. Specify
-how existing `token_id` keys, reciprocal PK/FK references, WAL obligations,
-snapshots, and any content-addressed manifests retain their identity and
-provenance; then change producer and consumer code together. No live store
-has been rekeyed by this decision.
+indices differ. Treat the conversion as an **identity change**, not an
+unchecked literal substitution or an unversioned mixed decoder. The working
+expectation is to **rebuild or rewrite the present development DB data as the
+new address path and data structures are constructed**, where that is simpler
+than an in-place rekey. The exact reconstruction process is still to be
+worked out during implementation. Retain the source data and provenance
+needed to reconstruct or relate existing `token_id` keys, reciprocal PK/FK
+references, WAL obligations, snapshots and content-addressed manifests;
+decide explicitly what must be translated and what can be regenerated.
+Change address producers and consumers together. No running codec or live
+store was converted by this documentation decision.
 
 The governing [system guide](napier-system-guide.md) and
 [architecture](architecture.md) describe the intended system. Existing
