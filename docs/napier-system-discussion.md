@@ -264,12 +264,13 @@ address-revision procedure is settled by this note.
 
 ## Active thought and scale
 
-Patrick's scaling analogy is that the **active thought area** is where
-`O(log N)` calculations take place for both humans and NAPIER, relative to a
-much larger available whole. In NAPIER, the analyst's hot SNode structure and
-the model's evaluation of a particular thought occupy that active area; the
-warm cache supplies prepared pieces, while the cold swarm continues broader
-connection work outside the immediate focus.
+Patrick's scaling goal is that the **active thought area** needs work closer
+to `O(log N)` than to the quadratic full-pairwise surface of a much larger
+available whole. In NAPIER, the analyst's hot SNode structure and the model's
+evaluation of a particular thought occupy that active area; the warm cache
+supplies prepared pieces, while the cold swarm continues broader connection
+work outside the immediate focus. The comparison with human thought remains
+an analogy, not a measured complexity result.
 
 The recovered [`storage-and-working-split.md`](storage-and-working-split.md)
 already describes viewer-bounded activation, a compressed working projection,
@@ -277,9 +278,7 @@ and a discovery ledger that retires repeated work. Those are relevant
 mechanisms. **Here `N` is the exposed fields across all particles** in the
 loaded base, rather than the fixed particle-pool capacity also called `N` in
 some engine notes. We will walk the calculation streams to check what is
-already correct and prepare clarified elements for restructuring. The
-biological comparison here is an analogy, not a measured complexity claim
-about human thought.
+already correct and prepare clarified elements for restructuring.
 
 **Calculation surface (Patrick, 2026-09-25):** keeping a construct large and
 complete in representation does not require calculating every represented
@@ -290,6 +289,26 @@ reactivation whenever a needed calculation becomes relevant. The exact control
 points are being derived in the formula walkthrough. The current harness's
 full pass over its loaded surface is a baseline for checking the field math;
 it does not yet express the intended calculation-surface control.
+
+**Pairwise cost clarification (Patrick, 2026-09-25):** a complete comparison
+of all pairs among `n` entities costs `Θ(n²)`. Lawfully excluding settled
+particles and fields removes their pair interactions from later ticks, while
+the bidirectional would-move gate and wake-up paths preserve interactions
+made relevant by new changes. This is how the model aims to reduce the
+necessary pairwise work toward the logarithmic active-work scale. Exclusion
+changes the *active* number of interactions; its actual asymptotic bound
+depends on how that number and the wake-up cost scale with the loaded base.
+Removing any one participant saves its incident pairs but does not by itself
+turn a dense `Θ(n²)` workload into `O(log N)`.
+
+**Absolute predicate requirement (Patrick, 2026-09-25):** only exclude a
+particle, field or predicate from future calculations when the parameters
+that justify that exclusion are absolute under the model. Track every change
+that can invalidate the condition so the excluded work wakes when necessary.
+A per-tick would-move decision can gate centroid placement and outward work
+for that interaction; an approximate small-effect observation alone does not
+authorise a continuing predicate exclusion. The calculation savings count
+as lawful exclusions only when this stronger condition holds.
 
 **Calculation economy (Patrick, 2026-09-25):** only calculate what changes;
 when a calculation is necessary, use its result everywhere it applies. The
@@ -306,11 +325,15 @@ loading a new base, its first ticks establish the current geometry while
 elements find their placement. More of the exposed fields participate at this
 stage, so those ticks are expected to cost more and to show greater movement
 than later, settled ticks. Patrick describes the initial pairwise-calculation
-series in `O(log N)` terms, with `N` defined above: its purpose is to control
-the otherwise `O(N²)` pairwise work. This is about calculation, not the
-number of settling ticks. As centroids stabilize, they can be excluded from
-ongoing calculations so work concentrates on the relevant, still active
-fields. This is a changing calculation set, not a loss of the archived data.
+series as the point where exclusions begin controlling the otherwise
+quadratic pairwise work. A newly loaded base can have many active fields;
+as centroids stabilize, they can be excluded from ongoing calculations so
+work concentrates on the relevant, still active fields. The logarithmic
+description is the intended reduction in ongoing *necessary work*, not a
+bound already shown for the initial ticks or a claim about the number of
+settling ticks. Continuing exclusions require absolute predicates and a
+wake path for any later invalidation. This is a changing calculation set,
+not a loss of archived data.
 
 **Simulation scale (Patrick, 2026-09-25):** the physics engine is meant to
 perform these calculations quickly and repeatedly. A single tick is a small
@@ -347,7 +370,9 @@ the future analyst's data interface remain to be built.
 force expression in each field interaction supplies a *would effectively
 move this centroid* decision. If no interaction sets that flag on a tick,
 skip placing the centroid and skip new outward work through it. A later
-interaction can set the flag again. The earlier description required an
+interaction can set the flag again. This is a per-tick placement gate; keeping
+that field excluded from future pairwise work additionally requires the
+absolute predicate specified above. The earlier description required an
 exact post-placement equality comparison to decide activity; that reading
 is superseded by the force-ratio trigger below. The ratio of movement
 expression across the interacting masses is the test for an effective
@@ -603,8 +628,9 @@ describes recomputing centroids only for active fields.
 - State what operation the `O(log N)` claim bounds when `N` is all exposed
   fields. A pass that reads each of those `N` fields individually has at least
   linear total work; logarithmic depth, lookup or active work may be a
-  different measure. This checks the complexity unit without changing the
-  intended active-set design.
+  different measure. Show that the continuing exclusions use absolute
+  predicates and that the active interaction and wake-up counts actually
+  scale as claimed for the workloads of interest.
 
 ## Shared and instance-local databases
 
