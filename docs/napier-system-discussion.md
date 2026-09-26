@@ -260,13 +260,14 @@ fields. This is a changing calculation set, not a loss of the archived data.
 This is a continuing physics simulation: a single tick contributes a small
 step, with its larger effects emerging over many ticks. Patrick's earlier
 modeling attempts ran for **hundreds of thousands of ticks** while updating
-the monitoring screen only every few hundred ticks. That screen cadence was
-specific to the earlier visual monitor; it is not how the future analyst
-obtains results. The analyst works from the engine's raw mathematical state
-and determines how often to read it, potentially close to **one read per
-tick**. Its read cadence, the simulation tick rate and the monitor's refresh
-rate are distinct. Roughly **4 ms per lean tick** was an illustration of fast
-repeated calculation, not a performance target or measurement for NAPIER.
+the browser-rendered monitor only every few hundred ticks. That view is a
+human-readable interpretation of the numerical state for inspection; its
+refresh schedule does not govern the analyst's reads. The analyst works from
+the engine's raw mathematical state and determines how often to read it,
+potentially close to **one read per tick**. The simulation tick rate,
+analyst read cadence and monitor refresh rate are distinct. The earlier
+example of about 4 ms for a lean tick illustrated fast repeated calculation;
+it set no performance target for NAPIER.
 Physics engines serving games at 120 FPS or more illustrate the speed of this
 kind of computation, without imposing a frame schedule on this system.
 Loading and highly active periods can cost more, and settling continues for
