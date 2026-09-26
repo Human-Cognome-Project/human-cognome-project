@@ -1,7 +1,9 @@
 # database/cache — data protocol & address-layout notes
 
 > **Later addressing decision (2026-09-26):** Base-50 sizes, examples and
-> numeric range rules below describe the built record tier. The intended
+> numeric range rules below describe the record tier as originally built;
+> the codec has since moved to radix 64 (the record tier stores the letter
+> subset until the pair-code storage step). The intended
 > primary namespace now uses the RFC 4648 §5 URL-safe 64-symbol alphabet.
 > See [address encoding transition](../../docs/address-encoding-transition.md)
 > before extending this code or interpreting its address capacity.

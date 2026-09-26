@@ -62,12 +62,21 @@ possible because `token_id` is `COLLATE "C"`, pinning PK order to
 `codec::kAlphabet`'s byte order — see `../schema/schema.sql` and
 `../NOTES.md` "Address column collation").
 Only-follow, never search: no new/secondary index, no sequence scan, no
-predicate on a non-key column. Reads `token` only. Returns the matching
+predicate on a non-key column.
+
+**Interim storage limit (Base64url transition).** The codec now uses the
+RFC 4648 §5 alphabet, but `token_id` is still `text[] COLLATE "C"`. Byte
+order equals address order only for the letters `A–Z a–z` (values 0–51).
+Until the decided `smallint[]` pair-code key lands, the controller stores
+exactly that subset: rendering an address that uses a digit, `-` or `_`
+throws (so mint, follows and gather refuse it loudly), and the gather bound
+arithmetic treats `z` as the last symbol. Every range therefore stays exact.
+See [storage key ordering](../../../docs/address-encoding-transition.md#storage-key-ordering-decided-2026-09-26). Reads `token` only. Returns the matching
 token_ids in deterministic PK (address) order.
 
 | Overload | Form | Bounds |
 |---|---|---|
-| `gather(prefix)` | Terminal-wildcard prefix — `prefix` must end in a partial (`AddressElement::partial`) element | `token_id >= low AND token_id < high` — `low`/`high` are computed from the wildcard's fixed leading elements plus its free couplet's minimum, and the next couplet's minimum (carrying into the leading elements, base-50, when the wildcard's first character is already the alphabet maximum). `high` is open (no upper bound) only for the literal last trunk in the whole address space. |
+| `gather(prefix)` | Terminal-wildcard prefix — `prefix` must end in a partial (`AddressElement::partial`) element | `token_id >= low AND token_id < high` — `low`/`high` are computed from the wildcard's fixed leading elements plus its free couplet's minimum, and the next couplet's minimum (carrying into the leading elements when the wildcard's first character is already the stored maximum, `z`). `high` is open (no upper bound) only for the literal last trunk in the whole address space. |
 | `gather(from, to)` | A `FROM..TO` range — both must be valid, fully-specified (non-partial) addresses | `token_id >= from AND token_id <= to` — inclusive both ends. |
 
 The exclusive high bound in the prefix form also correctly covers addresses

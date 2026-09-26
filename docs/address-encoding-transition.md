@@ -4,9 +4,11 @@
 alphabet with the URL and filename safe Base64 alphabet defined in
 [RFC 4648 §5](https://www.rfc-editor.org/rfc/rfc4648#section-5). Retain the
 existing concept of an ordered array of two-character address elements for
-the primary namespace. This page records the intended address format and
-implementation work; the current C++ codec and PostgreSQL record tier still
-use base-50. The previous choice prioritized human legibility; a standard
+the primary namespace. This page records the address format, the storage
+ordering decision and the implementation state. **The C++ codec now
+implements the RFC §5 alphabet** (see [Implementation status](#implementation-status));
+the PostgreSQL record tier is in an interim state until the pair-code
+storage step lands. The previous choice prioritized human legibility; a standard
 alphabet and easier interchange now take precedence.
 
 **Why this was chosen:** This is a newly made design decision, not a change
@@ -51,7 +53,77 @@ boundary; do not silently reinterpret an address as a seven- or eight-octet
 payload. The address API's logical array and lossless identities remain the
 authority during this transition.
 
+## Storage key ordering (decided 2026-09-26)
+
+**Decision:** The stored identity of an address is an array of numeric
+**pair codes**, one per element (`first_value × 64 + second_value`, range
+`0..4095`), held in PostgreSQL as `smallint[]`. Base64url `token_id` text is
+the rendering used at the edges (display, interchange, the stored
+`token_text` debug column). It is never the ordering authority.
+
+**The problem this solves.** The record tier depends on one property: the
+primary-key index order must equal address order, so that a terminal
+wildcard (`AB.C*`) or a `FROM..TO` span is **one contiguous indexed range
+scan**. That is what keeps range reads to a bounded index walk rather than a
+search, under the only-follow rule. Under base-50, `text[] COLLATE "C"`
+byte order happened to equal digit order (upper-case letters before
+lower-case letters, both in ASCII order). Under RFC §5 it does not:
+
+| | Symbol order |
+|---|---|
+| RFC value order (address order) | `A–Z` (0–25), `a–z` (26–51), `0–9` (52–61), `-` (62), `_` (63) |
+| `COLLATE "C"` byte order | `-` (0x2D), `0–9` (0x30–39), `A–Z` (0x41–5A), `_` (0x5F), `a–z` (0x61–7A) |
+
+A text key would therefore misplace every address containing a digit, `-`
+or `_`. For example, a gather over `Z*` scans `[ZA, aA)` in bytes, while
+`Z0`…`Z_` sort *before* `ZA`, so they would be silently missed.
+
+**Options considered:**
+
+1. **Pair-code key (`smallint[]`), Base64url rendered at the edges** —
+   chosen. Integer array comparison is lexicographic by value, so index
+   order equals address order for every symbol with no collation involved.
+   A partial final element becomes one contiguous code interval
+   (`[first×64, first×64+63]`), and deeper addresses under a prefix still
+   sort inside that prefix's range, exactly as with `text[]` today. Pair
+   codes are the codec's own `couplet_to_code` values, so the codec and
+   the key cannot drift apart. The key is compact (2 bytes per element).
+   The cost is that raw SQL shows numbers; `token_text` keeps the readable
+   form alongside.
+2. **Keep `text[]` and accept byte order ≠ value order** — rejected.
+   Exact follows and fixed-prefix lookups would still work, but numeric
+   spans and wildcard bounds would have to be split into several byte
+   ranges. That spreads the ordering exception through the span planner
+   and controller permanently.
+3. **Keep `text[]` with a custom collation that sorts in value order** —
+   rejected. It depends on a non-default collation surviving PostgreSQL
+   upgrades, dumps/restores and every deployment, and a missing or changed
+   collation fails silently as wrong range results. That is the same
+   failure mode the `COLLATE "C"` pin was introduced to prevent.
+
+**Consequences.** The codec exposes `to_pair_key` / `from_pair_key` (the
+storage form) and `partial_code_range` (a wildcard's code interval).
+Base64url strings remain the interchange format and are always produced
+from, and parsed back to, the key through the codec. Because the existing
+development data is nominal and regenerable, the store is **wiped and
+repopulated** under the new key rather than rekeyed in place.
+
+## Implementation status
+
+| Step | State |
+|---|---|
+| Codec: RFC §5 alphabet, value-order pair codes `0..4095`, token_id parsing/rendering, pair-key form, partial code range, tests | **Built** |
+| Address successor / span planner: radix-64 carry in value order (`Az → A0`, `A9 → A-`, `AA.__ → AB.AA`) | **Built** (generic over the codec's radix; tests updated) |
+| Record tier (controller) on `text[]` | **Interim:** accepts only the letter subset `A–Z a–z` (values 0–51), for which byte order equals value order, so every range stays exact. Digits, `-` and `_` are refused loudly (mint, follow and gather throw). Bound arithmetic treats `z` as the last stored symbol. |
+| Pair-code storage: `smallint[]` PK/FK columns in `schema.sql` and `wal_schema.sql`, controller/WAL rendering and parsing, seeder, verify script, DB tests | **Next step**; removes the interim letter limit |
+| WAL bookkeeper | Uses equality only, so it is correct under either order; moves to pair-code columns with the storage step |
+| Legacy extraction | Unchanged. Remains the base-50 provenance record |
+
 ## Migration seams in the current repository
+
+The table below is the original seam inventory made with the decision.
+See [Implementation status](#implementation-status) for what has since
+been built.
 
 | Component | Current assumption | Work needed before cutover |
 |---|---|---|
@@ -81,8 +153,10 @@ worked out during implementation. Retain the source data and provenance
 needed to reconstruct or relate existing `token_id` keys, reciprocal PK/FK
 references, WAL obligations, snapshots and content-addressed manifests;
 decide explicitly what must be translated and what can be regenerated.
-Change address producers and consumers together. No running codec or live
-store was converted by this documentation decision.
+Change address producers and consumers together. The codec has since been
+converted (see [Implementation status](#implementation-status)); no live
+store has been rekeyed. The development store is to be wiped and
+repopulated under the pair-code key.
 
 The governing [system guide](napier-system-guide.md) and
 [architecture](architecture.md) describe the intended system. Existing

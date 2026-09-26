@@ -1,10 +1,14 @@
 # hcp3_core schema — cold swarm cache
 
-> **Alphabet transition decided 2026-09-26:** This schema/README describe
-> the still-built base-50 record tier. The planned RFC 4648 §5 alphabet
-> changes the value order relative to `COLLATE "C"`, so today's claim that
-> every numeric address interval is a contiguous PK range must be revisited.
-> See [primary address transition](../../../docs/address-encoding-transition.md).
+> **Address transition (2026-09-26):** The codec now implements the RFC 4648
+> §5 alphabet, whose value order differs from `COLLATE "C"` byte order for
+> digits, `-` and `_`. It is decided that address columns move from `text[]`
+> to `smallint[]` pair codes, whose integer order is address order (see
+> [storage key ordering](../../../docs/address-encoding-transition.md#storage-key-ordering-decided-2026-09-26)).
+> Until that storage step lands, this schema is unchanged, and the controller
+> stores only the letter subset `A–Z a–z`, for which byte order still equals
+> address order. The `text[]` descriptions below are the current interim
+> state.
 
 Drafted schema for the `hcp3_core` database: the passive backing store for
 the token-graph. Greenfield — no relationship to `hcp2_core` / `db/core.sql`.

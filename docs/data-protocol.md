@@ -37,9 +37,10 @@ singularities deep (Wiktionary → Kaikki → us); the corpus that lands on it c
 ## The addressing precept (operational form)
 
 Storage holds the **array of address pairs**; the dotted string is display-only,
-generated on emit, not the canonical stored identity. The current record tier
-uses base-50 and validates its alphabet in C++; the `text[]` schema does not
-constrain the alphabet. The [planned Base64url alphabet transition](address-encoding-transition.md)
+generated on emit, not the canonical stored identity. The codec implements the
+RFC 4648 §5 alphabet and validates it in C++; the `text[]` schema does not
+constrain the alphabet, and the record tier stores only its letter subset
+until the pair-code storage key lands. The [Base64url transition](address-encoding-transition.md)
 changes those symbols while preserving addressed follows and provenance. Only
 as much of an address as an operation requires is read (see
 [architecture.md](architecture.md)).
