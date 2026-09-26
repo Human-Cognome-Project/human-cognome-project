@@ -257,21 +257,20 @@ the otherwise `O(N²)` pairwise work. This is about calculation, not the
 number of settling ticks. As centroids stabilize, they can be excluded from
 ongoing calculations so work concentrates on the relevant, still active
 fields. This is a changing calculation set, not a loss of the archived data.
-This is a continuing physics simulation: a single tick contributes a small
-step, with its larger effects emerging over many ticks. Patrick's earlier
-modeling attempts ran for **hundreds of thousands of ticks** while updating
-the browser-rendered monitor only every few hundred ticks. That view is a
-human-readable interpretation of the numerical state for inspection; its
-refresh schedule does not govern the analyst's reads. The analyst works from
-the engine's raw mathematical state and determines how often to read it,
-potentially close to **one read per tick**. The simulation tick rate,
-analyst read cadence and monitor refresh rate are distinct. The earlier
-example of about 4 ms for a lean tick illustrated fast repeated calculation;
-it set no performance target for NAPIER.
-Physics engines serving games at 120 FPS or more illustrate the speed of this
-kind of computation, without imposing a frame schedule on this system.
-Loading and highly active periods can cost more, and settling continues for
-as many ticks as interactions require.
+
+**Simulation scale (Patrick, 2026-09-25):** the physics engine is meant to
+perform these calculations quickly and repeatedly. A single tick is a small
+step; the criterion is the correct overall behaviour that develops across
+many ticks, rather than a significant result on any one tick. The local
+update rules still matter because their effects accumulate. Patrick's
+earlier modeling attempts ran for **hundreds of thousands of ticks** while
+updating a browser-rendered monitor every few hundred ticks. That view is a
+human-readable interpretation of the math for inspection. The future analyst
+instead analyzes the engine's numerical output and can choose to read it
+nearly every tick; the monitor's refresh schedule does not limit that access.
+More active periods can take longer per tick, and settling continues for as
+many ticks as the interactions require. No fixed tick-time or frame-rate
+target is specified here.
 
 **Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
 field centroid is identical to its current value, exclude that field from
