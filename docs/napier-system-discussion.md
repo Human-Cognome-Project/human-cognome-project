@@ -74,6 +74,17 @@ rollups along that line. This distinction depends on the inquiry and the
 working assembly; compression here does not mean that the main database has
 discarded the underlying object definition or its relationships.
 
+**Planet-view analogy (Patrick, 2026-09-25):** in a game with multiple
+planets, standing on one exposes its local features in detail. Positions of
+the other bodies still contribute to the physics construct, appearing from
+that viewpoint as stars in the sky and relative placements, although their
+local features are not expanded there. The same distinction applies to a
+study-rooted SNode view: nearby or topical constructs can be nested in detail
+while more distant constructs contribute through compressed representations.
+Rollup changes the resolution of an exposed relationship, not whether the
+relationship exists. Excluding an unchanged field from redundant calculation
+likewise does not erase its current contribution.
+
 Both system factors and an **analyst-defined need** guide that choice. The
 form in which the analyst expresses its need is still to be determined; this
 record does not prescribe an interface or selection algorithm. System
