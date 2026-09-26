@@ -352,15 +352,19 @@ the target point. The field produces a force toward that point according to
 `m1 * m2 / d²`, with `m2` the field centroid's full participating mass; the
 current formula gates exact coincidence and sole-participant fields to zero.
 The calculation touches that centroid, which must have its position assessed
-from its members at the end of the tick, after particle integration. Compare
-the newly calculated position with the previously published one. If it is
-unchanged, there is no **new outward change through that centroid** to wake
+from its members at the end of the tick, after particle integration. This
+touch is the direct trigger for the centroid's placement check: particle
+calculations do **not** build or retain a predicted movement target for the
+centroid. The end-of-tick placement computes its actual position from the
+updated members. Compare that position with the previously published one;
+if unchanged, there is no **new outward change through that centroid** to wake
 other members; the particle's current-tick force has still been calculated.
-If the position changes, all connected particles are due to calculate against
-the new centroid position on the next tick. Their field calculations touch
-their centroids in turn, allowing the effect to continue across connected
-fields over multiple ticks if the system requires them. As each branch's
-perturbations settle and its centroids stop moving, its calculations can be
+If placement moves it, the centroid becomes active and all connected
+particles are due to calculate against its new position on the next tick.
+Their field calculations touch their centroids in turn, allowing the effect
+to continue across connected fields over multiple ticks if the system
+requires them. As each branch's perturbations settle and its centroids stop
+moving, its calculations can be
 excluded again; there is no fixed number of settling ticks. Previously quiet
 centroids can be touched again by later changes. This specifies propagation
 of calculation work, not a second force formula. The current harness follows
