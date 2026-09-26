@@ -403,6 +403,60 @@ void check_add_connection(dbk::Controller &ctl) {
   }
 }
 
+// A store error on one pair is reported for that pair; the other pairs
+// in the same statement are still written and reported (README.md
+// "Per-pair granularity"). The failure is forced with a trigger on the
+// disposable test database, dropped again afterwards.
+void check_add_connection_pair_failure(dbk::Controller &ctl, const std::string &conninfo) {
+  const Address ua = A("YA"), ub = A("YB"), uc = A("YC"), ug = A("YG");
+  ctl.mint(ua, "ua", {});
+  ctl.mint(ub, "ub", {});
+  ctl.mint(uc, "uc", {});
+  ctl.mint(ug, "ug", {});
+
+  PGconn *raw = PQconnectdb(conninfo.c_str());
+  const bool armed =
+      raw != nullptr && PQstatus(raw) == CONNECTION_OK &&
+      exec_bare(raw,
+                "CREATE FUNCTION hcp_test_fail_pair() RETURNS trigger AS $$ "
+                "BEGIN IF NEW.token_id = ARRAY['YB']::text[] THEN "
+                "RAISE EXCEPTION 'forced pair failure'; END IF; RETURN NEW; END "
+                "$$ LANGUAGE plpgsql; "
+                "CREATE TRIGGER hcp_test_fail_pair BEFORE INSERT ON member_of "
+                "FOR EACH ROW EXECUTE FUNCTION hcp_test_fail_pair();");
+  check(armed, "ADD_CONNECTION pair failure: test trigger installed");
+
+  AddConnection op;
+  op.group = ug;
+  op.elements = {ua, ub, uc};
+  bool threw = false;
+  update::AddConnectionResult r;
+  try {
+    r = update::add_connection(ctl, op);
+  } catch (const std::exception &) {
+    threw = true;
+  }
+  check(!threw, "ADD_CONNECTION pair failure: the statement does not throw");
+  check(r.outcomes.size() == 3, "ADD_CONNECTION pair failure: every pair is reported");
+  if (r.outcomes.size() == 3) {
+    check(r.outcomes[0].added && r.outcomes[2].added,
+          "ADD_CONNECTION pair failure: the pairs before and after are written");
+    check(!r.outcomes[1].added &&
+              r.outcomes[1].reason.find("forced pair failure") != std::string::npos,
+          "ADD_CONNECTION pair failure: the failing pair carries its reason");
+  }
+  check(contains(ctl.member_of(ua), ug) && contains(ctl.member_of(uc), ug),
+        "ADD_CONNECTION pair failure: surviving pairs are in the store");
+  check(!contains(ctl.member_of(ub), ug) && !contains(ctl.members_of(ug), ub),
+        "ADD_CONNECTION pair failure: the failed pair left no edge on either side");
+
+  if (raw != nullptr) {
+    exec_bare(raw, "DROP TRIGGER IF EXISTS hcp_test_fail_pair ON member_of; "
+                   "DROP FUNCTION IF EXISTS hcp_test_fail_pair();");
+    PQfinish(raw);
+  }
+}
+
 // --------------------------------------------------------------------
 // DELETE_RECORD / DELETE_CONNECTION
 // --------------------------------------------------------------------
@@ -605,6 +659,7 @@ int main(int argc, char **argv) {
     dbk::Controller ctl(conninfo);
     check_move_record(ctl);
     check_add_connection(ctl);
+    check_add_connection_pair_failure(ctl, conninfo);
     check_delete_record(ctl);
     check_delete_connection(ctl);
   } catch (const std::exception &e) {
