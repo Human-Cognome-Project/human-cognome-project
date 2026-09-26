@@ -417,18 +417,37 @@ wake-up: it recomputes the full loaded edge list every tick.
 the particle a destination at its relevant centroid and a directed pull
 toward it, scaled by `m1 * m2 / d²`. Across the particle's fields, the
 destinations and pulls must combine into **both an effective destination and
-a motive force for that tick**. The precise composition of those two outputs
-and where the exponential brake belongs are being clarified in this
-walkthrough. The earlier `engine/docs/DRIFT-AUDIT.md` §3 and
-`docs/field-physics-and-tick-notes.md` equate the destination with the
-position plus one summed force vector; that equivalence needs rechecking
-against Patrick's clarification that both outputs are required. The current
-`field_force` pass accumulates only force vectors in `kForceX/Y/Z`, and
-`field_integrate` takes the magnitude of their sum as brake reach before
-updating position. It has no separately calculated effective-destination
-field, so its reach still needs to be checked against the intended combined
-destination. The parent-line rotary alignment expression remains distinct
-work to implement.
+a motive force for that tick**. Each interaction has an intended endpoint
+relative to its `m2` and a vector toward it whose magnitude follows the
+inverse-square expression. **Sum the directed radial force vectors** to
+produce the resultant pull. Patrick expects the same contributions to yield
+the combined intended destination and its distance, with a balanced particle
+at the positions appropriate to all its interacting masses and their
+characteristics. Whether the endpoint operation is a sum, mean or other
+normalisation is **not yet settled**; Patrick presently expects summation
+but wants the radial-vector expression checked. The earlier
+`engine/docs/DRIFT-AUDIT.md` §3 and `docs/field-physics-and-tick-notes.md`
+define the destination as position plus the summed force vector. Keep that
+as a candidate while checking that its distance is the intended brake reach.
+
+**Optional algebraic consistency check (assistant derivation, not approved):**
+let `x` be the particle position and `q_i` the field's centroid point
+expressed as a target for that particle position (accounting for an edge's
+participation offset). For positive nonzero distances, write the current
+inverse-square vector as
+`F_i = a_i * (q_i - x)` with `a_i = G * m1_i * m2_i / |q_i - x|³` (including
+the field's engagement/share terms). Then `F = Σ F_i`, `A = Σ a_i`, and,
+when `A > 0`, one possible averaged destination
+`T = (Σ a_i * q_i) / A = x + F/A` satisfies `F = A * (T - x)`. This would
+place the destination along the net pull and give a remaining distance
+`|F|/A`. It is only an alternative to test against the simpler `x + F`
+reading, **not a settled rule or a second target to implement now**. Compare
+their behaviour for balanced, unequal and repeated fields before deciding.
+This algebra covers the attractive field pass; other contributions such as
+the contact pass need separate treatment when evaluating the whole motion.
+The current `field_force` accumulates only `kForceX/Y/Z`, while
+`field_integrate` uses `|F|` for its brake reach. Parent-line rotary
+alignment remains distinct work to implement.
 
 **Discretization brake (Patrick, 2026-09-25):** its purpose is to prevent
 kinetic shearing caused by finite simulation ticks. The fields are intended
@@ -549,10 +568,10 @@ describes recomputing centroids only for active fields.
 
 **Formula points still to derive or check (2026-09-25):**
 
-- Specify how per-field centroid destinations and directed pulls combine into
-  the particle's effective destination and motive force, including the brake's
-  remaining-distance reference. The current `|F_net|` reach has not been shown
-  to equal distance to that combined destination.
+- The directed radial pulls sum into a resultant. Check how their intended
+  endpoints yield the combined destination (sum, mean or normalised sum), and
+  therefore the brake's remaining-distance reference. The current `|F_net|`
+  reach has not been shown to equal distance to that destination.
 - Specify the bidirectional force-expression rule that yields each centroid's
   would-move flag, and the particle-level no-movement rule that also covers
   parent-line reorientation. The any-active accumulation and end-of-tick
