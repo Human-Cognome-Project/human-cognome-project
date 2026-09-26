@@ -381,9 +381,39 @@ against Patrick's clarification that both outputs are required. The current
 `field_force` pass accumulates only force vectors in `kForceX/Y/Z`, and
 `field_integrate` takes the magnitude of their sum as brake reach before
 updating position. It has no separately calculated effective-destination
-field, and the brake may currently engage too early. Leave the composition
-and brake placement open until the next part of the explanation. The
-parent-line rotary alignment expression remains distinct work to implement.
+field, so its reach still needs to be checked against the intended combined
+destination. The parent-line rotary alignment expression remains distinct
+work to implement.
+
+**Discretization brake (Patrick, 2026-09-25):** its purpose is to prevent
+kinetic shearing caused by finite simulation ticks. After a particle's field
+contributions have produced its combined destination and motive force, the
+brake compares the proposed travel for that tick with the remaining distance
+to that destination. It should have an effect near unity while the step stays
+comfortably short of the destination, can slow a particle on an approach
+tick, and should brake aggressively if the unbraked step would overshoot.
+Later ticks can continue settling toward the exact effective centroid; the
+brake need not put the particle at the target in one step. This is a
+correction to the discrete step, applied to the particle's combined motion;
+it is not another attracting field. The exact transition close to the target
+and the construction of the combined destination are still being clarified.
+
+**Current brake formula:** `field_integrate` first calculates a proposed
+velocity from carried velocity plus `dt * F_net / mass`. It calls the
+proposed travel `travel = |velocity| * dt`, uses `reach = |F_net|`, and
+multiplies the proposed velocity by `exp(-(travel / reach)^4)` when reach is
+nonzero. At travel/reach ratios of 0.5, 0.8 and 1, that multiplier is about
+0.94, 0.66 and 0.37, respectively. It therefore reduces velocity before an
+overshoot and does not land exactly at the destination on that tick. That
+early attenuation can be consistent with the intended multi-tick settling,
+provided subsequent ticks converge. A zero reach leaves this brake at unity.
+A separate outward radial dampener runs after the brake; it is not the
+discretization correction. The code implements a smooth exponential brake,
+but whether its reach is the **actual distance to the combined effective
+destination** and whether the resulting trajectory converges as intended
+need rechecking once the destination composition is settled. Current tests
+check near-meeting within a tolerance and boundedness over 400 chaotic ring
+ticks; neither establishes exact convergence to the effective centroid.
 
 **Wake propagation latency (Patrick, 2026-09-25):** activation can take
 several ticks to ripple through connected particles and centroids. A

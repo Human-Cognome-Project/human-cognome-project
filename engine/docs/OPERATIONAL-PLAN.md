@@ -372,6 +372,18 @@ pairwise sum to its centroid. No special per-force ratios; combined forces can p
 emergent variance.
 
 ### 3.7 The brake and the d=0 gate (physics core — DONE, Units A–C)
+
+> **2026-09-25 review:** Units A–C are built, but the destination/force
+> composition and brake timing below are under review. The current
+> `exp(-(proposed_travel/|F_net|)^4)` brake attenuates before the proposed
+> step reaches `|F_net|`; for example, at 80% of that reach its multiplier
+> is about 0.66. Patrick clarified that the model needs both an effective
+> destination and motive force and that the brake corrects discretization
+> overshoot. Slowing on approach can be correct if later ticks settle to the
+> effective centroid; current tests do not establish exact convergence. See
+> [the working record](../../docs/napier-system-discussion.md)
+> before treating the old destination equivalence as a final design rule.
+
 - **d=0 gate (exact, in the equation):** if d=0, v=0 — covers a sole-member centroid
   and a particle on the centroid. Branchless exact zeroing via `sgn(d²)` (1 for d²>0,
   0 at coincidence). **Not** epsilon-softening. **Shipped (Unit A).**

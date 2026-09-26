@@ -71,6 +71,20 @@ integration is imported machinery filling that gap = drift.
 
 ## 3. The brake / destination — RESOLVED (2026-09-14)
 
+> **2026-09-25 formula review:** The resolution below records what Unit C
+> implemented; Patrick has reopened the composition of effective destination
+> and motive force, and the point at which the exponential brake engages.
+> `field_integrate` currently uses `|F_net|` as reach and
+> `exp(-(proposed_travel/reach)^4)` as the velocity multiplier, which already
+> attenuates steps short of that reach. The intended brake is a correction for
+> discretization and kinetic shearing, strong when an unbraked step would
+> overshoot the combined destination. Patrick clarified that some slowing on
+> the approach tick is acceptable if subsequent ticks settle to the exact
+> effective centroid; current tests do not prove that convergence. The exact
+> destination composition and brake comparison remain under discussion in
+> [the NAPIER working record](../../docs/napier-system-discussion.md). This
+> review does not undo the fact that Unit C shipped.
+
 **Composition RESOLVED (Patrick, 2026-09-14). Not yet implemented — dispatch as
 Unit C.** The code still carries the drifted `kTarget*` weighted blend and the
 brake aimed at it — unchanged until Unit C runs. **Read the pinballing warning
