@@ -29,11 +29,16 @@ recruits its own completion.
 
 ## Addressing: arrayed pairs
 
-Every reference is an address, and the canonical form is an **array of two-character base-50 pairs**
-(1–5 pairs deep in the current data; the alphabet is the 52 letters minus O/o — O reads as 0 and
-creates friction for humans; 50 is a clean number). The familiar dotted string (`AB.cd.EF`) is the
-**display form only**, generated at the boundary and never persisted. Storage that persists the
-display form is the defect the previous era demonstrated.
+Every reference is an address, with the canonical form an **array of two-character pairs**
+(1–5 pairs deep in the current data). The built codec still uses the older
+base-50 letter alphabet. The [next primary alphabet](address-encoding-transition.md)
+uses all 64 URL-safe Base64 symbols in RFC 4648 §5 value order, including
+`O/o` and `0`. Five full pairs then span `64^10 ≈ 1.153` quintillion
+possible addresses, versus `50^10 ≈ 97.656` quadrillion with base-50.
+The familiar dotted string (`AB.cd.EF`) is the **display form only**,
+generated at the boundary rather than persisted as the canonical address.
+Storage that persists only the display form is the defect the previous era
+demonstrated.
 
 Properly arrayed, the address system *is* the rooted tree the runtime needs:
 
@@ -43,7 +48,7 @@ Properly arrayed, the address system *is* the rooted tree the runtime needs:
   pass reads two pairs where a fine pass reads five — and anything b-treeable or octree-able
   benefits directly, because each level is a typed sort key and address depth = tree depth.
 
-The previous-era executable statement of this convention is retained in [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py) for migration/reference. The current compiled address/token codec is under [`kernels/database/codec/`](../kernels/database/codec/), and current code—not the legacy Python helper—is authoritative for active storage behaviour.
+The previous-era executable statement of the base-50 convention is retained in [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py) for migration/reference. The current compiled address/token codec is under [`kernels/database/codec/`](../kernels/database/codec/), and current code—not the legacy Python helper or the planned transition—is authoritative for active storage behaviour.
 
 ## Storage: one flat pool, many logical chains
 

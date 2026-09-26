@@ -1,5 +1,10 @@
 # codec
 
+> **Alphabet transition decided 2026-09-26:** The current codec implements
+> base-50. The [primary address decision](../../../docs/address-encoding-transition.md)
+> adopts the RFC 4648 §5 URL-safe 64-symbol alphabet for a later code and
+> data migration. This README describes current executable behaviour.
+
 The address / token_id codec: the primitive every higher database-kernel routine
 uses to convert between a token's address and its canonical string
 token_id, and to handle prefix-delta (context-relative) addressing.
@@ -28,9 +33,10 @@ easily confused with `0`). The 50 surviving characters and their order
 (alphabet index 0..49) are the single source of truth, defined once as
 `codec::kAlphabet` in `codec.cpp`: the 25 surviving uppercase letters
 (A-N, P-Z) followed by the 25 surviving lowercase letters (a-n, p-z).
-Every conversion function goes through `alphabet_index()` / `kAlphabet`,
-so the alphabet or base can change in one place without touching any
-logic.
+Conversion functions use `alphabet_index()` / `kAlphabet`. Changing the
+alphabet or base also affects the `kAlphabetSize` constant, successor and
+range planning, schema ordering assumptions, legacy translation and tests;
+it is not only a one-table replacement.
 
 ## Representation choices
 

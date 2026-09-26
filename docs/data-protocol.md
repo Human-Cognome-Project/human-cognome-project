@@ -36,9 +36,13 @@ singularities deep (Wiktionary → Kaikki → us); the corpus that lands on it c
 
 ## The addressing precept (operational form)
 
-Storage holds the **array of base-50 pairs**; the dotted string is display-only, generated on emit,
-never persisted — enforced by column types and constraints, not discipline. Only as much of an
-address as an operation requires is read (see [architecture.md](architecture.md)).
+Storage holds the **array of address pairs**; the dotted string is display-only,
+generated on emit, not the canonical stored identity. The current record tier
+uses base-50 and validates its alphabet in C++; the `text[]` schema does not
+constrain the alphabet. The [planned Base64url alphabet transition](address-encoding-transition.md)
+changes those symbols while preserving addressed follows and provenance. Only
+as much of an address as an operation requires is read (see
+[architecture.md](architecture.md)).
 
 ## Using the previous era's stores
 
@@ -51,10 +55,11 @@ clean and content is *pulled* into it; not-yet-pulled is not excluded. The live-
 - **Extraction pulls the arrayed form directly** from the decomposed `ns/p2–p5` columns (99.996%
   agreement with the blobs; the blobs serve as checksum). The enumerable mismatches are eyeballed,
   not automated over.
-- **O/o alphabet drift is corrected at extraction** (decision 4 in
+- **O/o alphabet drift was corrected for legacy base-50 extraction** (decision 4 in
   [../review/decisions.md](../review/decisions.md)): ids minted with O/o are remapped into the
-  canonical 50-letter space, with the mapping table kept. Addresses stay easily human-parsable;
-  O reads as 0.
+  old 50-letter space, with the mapping table kept. Those letters are valid in
+  the planned 64-symbol alphabet, so this historical remapping must remain
+  provenance, not be silently repeated on new addresses.
 - **Sentinel conventions are flags, never parsed as addresses**: `UNK:*`, `BYTE_xx`, `[literal]`
   bracket fallbacks, and numeric var-ids (`00.00.00.00.NN`) form the declared legacy registry.
 - The `source_*` databases (raw JSONB kept beside the indexed form) are the internal precedent for

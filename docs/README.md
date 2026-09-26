@@ -2,6 +2,9 @@
 
 ## Current system map
 
+- **[address-encoding-transition.md](address-encoding-transition.md)** —
+  new RFC 4648 §5 URL-safe Base64 alphabet decision, namespace arithmetic,
+  and migration seams; existing record-tier code is still base-50.
 - **[napier-system-guide.md](napier-system-guide.md)** — coherent cold → warm → hot,
   model, analyst, WAL, and endpoint flow, with built/planned boundaries.
 - **[instance-local-data.md](instance-local-data.md)** — reserved private DB
