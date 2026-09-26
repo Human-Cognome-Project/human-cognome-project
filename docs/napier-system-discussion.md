@@ -256,6 +256,14 @@ the otherwise `O(N²)` pairwise work. This is about calculation, not the
 number of settling ticks. As centroids stabilize, they can be excluded from
 ongoing calculations so work concentrates on the relevant, still active
 fields. This is a changing calculation set, not a loss of the archived data.
+This is a continuing physics simulation that can run for hundreds or
+thousands of ticks, not a short, fixed sequence to reach an answer. A lean
+active set should allow ticks to run quickly; roughly **4 ms per lean tick**
+was an illustration of the scale, not a performance target or measurement.
+Physics engines can support games running at 120 FPS or more. That supplies
+the intended comparison for fast, repeated calculation, without assigning a
+fixed NAPIER tick rate. Loading and highly active periods can cost more, and
+settling continues for as many ticks as the field interactions require.
 
 **Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
 field centroid is identical to its current value, exclude that field from
