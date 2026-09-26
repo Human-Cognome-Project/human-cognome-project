@@ -56,6 +56,10 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 
 ## Read first
 
+For the overall NAPIER flow, component roles, and what is built versus still
+under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
+Its component notes are linked from [the documentation index](docs/README.md).
+
 For current development:
 
 1. [REORGANIZATION.md](REORGANIZATION.md)

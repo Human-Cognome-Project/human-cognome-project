@@ -8,6 +8,8 @@ and tests **on its own**.
 This file is for working **on** this kernel set (charter, file map,
 build/run). If you're working on something that **uses** it instead —
 chiefly the cache manager — see `USAGE.md` for the consumer contract.
+For the intended live ingress, deferred-work flow, and local-data direction,
+see [REPORT-TO-WORK.md](REPORT-TO-WORK.md).
 
 ## Charter
 

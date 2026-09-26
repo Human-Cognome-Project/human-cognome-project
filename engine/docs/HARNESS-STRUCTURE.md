@@ -1,5 +1,10 @@
 > **Recovered September 2026 record.** This document preserves the native-engine development/vetting context in which it was written. Absolute `/opt/project/...` paths, agent-routing instructions, and statements about branch/commit status are historical. Current paths/status are indexed in [README.md](README.md); current repository policy is in the root `AGENTS.md` and `CONTRIBUTING.md`.
 
+> **Later assembly clarification (2026-09-25):** Read any direct cold-store →
+> hot-tree sketch below through the cache manager's intervening warm, study-rooted
+> composition. The [system guide](../../docs/napier-system-guide.md) describes
+> this flow; [active field model](ACTIVE-FIELD-MODEL.md) records current tick code.
+
 # Harness structure (open skeleton)
 
 **Status: provisional and OPEN.** This is the incorporation of the model so far

@@ -27,6 +27,10 @@ or contribution instructions. Current contributor policy is in
 
 ## Document roles
 
+- **[ACTIVE-FIELD-MODEL.md](ACTIVE-FIELD-MODEL.md)** — current integrated field
+  and tick explanation, distinguishing built passes from the later active-set
+  and revised destination/brake questions. Read with the
+  [NAPIER system guide](../../docs/napier-system-guide.md).
 - **OPERATIONAL-PLAN.md** — most complete consolidation of the native field
   model and build state as of 2026-09-14. Treat explicit RESOLVED/BUILT entries
   as design/build evidence, but check current code and later decisions before

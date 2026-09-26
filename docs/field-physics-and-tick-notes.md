@@ -1,5 +1,11 @@
 > **Recovered design record (2026-09-24).** This note was authored during the native C++ engine/harness work before that local workspace was fully pushed. Statements about what was "not built", file locations, or open work reflect the date/context of the note. For current implementation status, read `engine/docs/README.md` and `engine/docs/OPERATIONAL-PLAN.md`; current repository policy is in `AGENTS.md` and `CONTRIBUTING.md`.
 
+> **Later formula clarification (2026-09-25):** The spin/angular-velocity
+> model described below is historical; the intended ordered-parent effect is
+> reorientation without carried angular velocity. The resultant pull is
+> built, but the combined destination/reach and active-set exclusion rules
+> need further derivation. See [active field model](../engine/docs/ACTIVE-FIELD-MODEL.md).
+
 # Field physics and tick notes
 
 Working notes, not a specification. Patrick's statements are recorded as given;

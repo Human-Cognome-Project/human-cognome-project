@@ -1,5 +1,9 @@
 # NAPIER system discussion — working record
 
+For a shorter integrated explanation and links to component-level notes, read
+the [NAPIER system guide](napier-system-guide.md). This record retains the
+step-by-step clarification, historical alternatives, and open derivations.
+
 **Status:** Discussion notes from 2026-09-25, not an implementation specification.
 The overall flow below was described by Patrick; implementation details marked
 deferred have not been settled by this discussion. Do not infer that a named

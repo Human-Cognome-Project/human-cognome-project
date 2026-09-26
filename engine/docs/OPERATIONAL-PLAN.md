@@ -1,5 +1,11 @@
 > **Recovered September 2026 record.** This document preserves the native-engine development/vetting context in which it was written. Absolute `/opt/project/...` paths, agent-routing instructions, and statements about branch/commit status are historical. Current paths/status are indexed in [README.md](README.md); current repository policy is in the root `AGENTS.md` and `CONTRIBUTING.md`.
 
+> **September 25 formula review:** The RESOLVED/OPEN ledger below is the
+> September 14 snapshot. The composition of the combined destination and
+> brake reach, selective centroid/particle activation, and ordered-parent
+> reorientation are now being derived. Do not read “OPEN: none” as their
+> current status; see [ACTIVE-FIELD-MODEL.md](ACTIVE-FIELD-MODEL.md).
+
 # Operational plan — the field-analysis harness
 
 **The single consolidated plan.** Patrick has covered this material across several
