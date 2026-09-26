@@ -351,29 +351,36 @@ field of an active particle, its last published centroid position supplies
 the target point. The field produces a force toward that point according to
 `m1 * m2 / d²`, with `m2` the field centroid's full participating mass; the
 current formula gates exact coincidence and sole-participant fields to zero.
-The calculation touches that centroid, which must have its position assessed
-from its members at the end of the tick, after particle integration. This
-touch is the direct trigger for the centroid's placement check: particle
-calculations do **not** build or retain a predicted movement target for the
-centroid. The end-of-tick placement computes its actual position from the
-updated members. Compare that position with the previously published one;
-if unchanged, there is no **new outward change through that centroid** to wake
-other members; the particle's current-tick force has still been calculated.
-If placement moves it, the centroid becomes active and all connected
-particles are due to calculate against its new position on the next tick.
-Their field calculations touch their centroids in turn, allowing the effect
-to continue across connected fields over multiple ticks if the system
-requires them. This is the self-limiting calculation surface: once the mass
-effect under consideration no longer changes a touched centroid's placement,
-that centroid has no further change to propagate and schedules no connected
-calculations from that effect. There is no fixed ripple depth or number of
-settling ticks; the propagation ends where the centroid positions stop
-changing. Previously quiet centroids can be touched again by later changes.
-This specifies propagation of calculation work, not a second force formula.
-The current harness follows
-the force → integration → centroid-publication order, but has no
-touched-centroid flags, old/new position comparison or selective wake-up of
-connected particles. It still recomputes the full loaded edge list each tick.
+**Correction to the trigger (Patrick, 2026-09-25):** each field effect is
+bidirectional. The ratio in which its motive force is expressed across the
+participating masses tells *during the field calculation* whether this effect
+shifts the centroid side. If the smaller mass absorbs the motive force in
+full, the centroid remains stable from this effect, so there is no outward
+calculation or centroid placement to schedule **from this effect**. Otherwise
+the centroid becomes active and its placement is due at tick end; calculation
+extends through connected particles. An active centroid's actual position is
+placed and published from members after particle integration; no predicted
+centroid-movement target is accumulated during particle calculations. The
+force-expression ratio supplies the activity decision already, without a
+second end-of-tick position comparison solely to decide whether to propagate.
+On a following tick, connected particles use the new published position,
+potentially activating other centroids. The surface limits itself where an
+effect is absorbed without centroid movement, without a programmed ripple
+depth. Other effects may touch the same centroid later. **The prior note
+incorrectly made a post-integration position comparison the sole activation
+gate; the force-ratio decision is available during the field calculation.**
+
+**Math to reconcile before implementation:** the present centroid is an
+inclusive mass-weighted reduction of its members. If only one member edge of
+mass `w` moves by `Δx` with fixed membership and total mass `M`, the
+recomputed centroid shifts by `(w/M) * Δx`. The exact bidirectional
+force-expression/absorption rule must explain how the smaller-mass-only case
+leaves that inclusive centroid stable, and how several effects combine before
+end-of-tick placement. Keep the intended early trigger while deriving that
+rule. The current harness follows force → integration → centroid publication
+but has no
+force-ratio-based active-centroid flag or selective wake-up; it recomputes the
+full loaded edge list every tick.
 
 **Per-particle superposition (Patrick, 2026-09-25):** each exposed field gives
 the particle a destination at its relevant centroid and a directed pull
