@@ -280,6 +280,18 @@ loaded base, rather than the fixed particle-pool capacity also called `N` in
 some engine notes. We will walk the calculation streams to check what is
 already correct and prepare clarified elements for restructuring.
 
+**Database as pairwise discovery-tax ledger (Patrick, 2026-09-25):** once a
+pairwise relationship is discovered, record its common points and the effects
+on them so later analyses can read and reuse that result instead of paying
+the discovery cost again. The composed working view exposes the relationships
+needed for its present calculation; effects outside that explicit exposure
+can be excluded from *that calculation* on a defined basis. This is a
+scope-relative exclusion, not a claim that other effects do not exist. A
+newly discovered relationship, a changed working view or changed relevant
+parameters can revise the exposed set and require calculation again. This
+links the database ledger to the smaller active physics surface and to the
+analyst's provisional conclusions from a partial view.
+
 **Calculation surface (Patrick, 2026-09-25):** keeping a construct large and
 complete in representation does not require calculating every represented
 field and particle on every tick. Control of which parts participate in the
@@ -303,8 +315,11 @@ turn a dense `Θ(n²)` workload into `O(log N)`.
 
 **Absolute predicate requirement (Patrick, 2026-09-25):** only exclude a
 particle, field or predicate from future calculations when the parameters
-that justify that exclusion are absolute under the model. Track every change
-that can invalidate the condition so the excluded work wakes when necessary.
+that justify that exclusion are absolute for the defined calculation and
+its exposed relationships. This can be exact within the current composed
+view while remaining revisable: track each change in data, exposure or
+relevant parameters that can invalidate the condition, and wake the work
+when necessary.
 A per-tick would-move decision can gate centroid placement and outward work
 for that interaction; an approximate small-effect observation alone does not
 authorise a continuing predicate exclusion. The calculation savings count
@@ -628,9 +643,10 @@ describes recomputing centroids only for active fields.
 - State what operation the `O(log N)` claim bounds when `N` is all exposed
   fields. A pass that reads each of those `N` fields individually has at least
   linear total work; logarithmic depth, lookup or active work may be a
-  different measure. Show that the continuing exclusions use absolute
-  predicates and that the active interaction and wake-up counts actually
-  scale as claimed for the workloads of interest.
+  different measure. Show that continuing exclusions are exact for the
+  calculation's exposed relationships, reactivate when that exposure
+  changes, and give the claimed active-interaction and wake-up cost for the
+  workloads of interest.
 
 ## Shared and instance-local databases
 
