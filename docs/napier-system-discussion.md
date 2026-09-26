@@ -338,9 +338,11 @@ move this centroid* decision. If no interaction sets that flag on a tick,
 skip placing the centroid and skip new outward work through it. A later
 interaction can set the flag again. The earlier description required an
 exact post-placement equality comparison to decide activity; that reading
-is superseded by the force-ratio trigger below. The detailed predicate,
+is superseded by the force-ratio trigger below. The ratio of movement
+expression across the interacting masses is the test for an effective
+centroid effect. Its numerical significance at the active study's resolution,
 where the `O(log N)` bound applies within the pairwise stream, and which
-passes skip an inactive field can be pinned down during the formula walk.
+passes skip an inactive field can be pinned down during implementation.
 
 **Compound variance:** multiple field relationships can affect the same
 centroid on one tick; combine their would-move decisions with an any-active
@@ -386,7 +388,12 @@ current formula gates exact coincidence and sole-participant fields to zero.
 bidirectional. During that interaction, the ratio in which its motive force
 is expressed across the participating masses already answers the *boolean*
 question: would this interaction effectively move the centroid? If the
-smaller mass absorbs the effect, it does not flag the centroid. Accumulate
+smaller mass absorbs the effect, it does not flag the centroid. **Scale
+example (Patrick, 2026-09-25):** a person moving against the mass of Earth
+has an insignificant share of motion at the whole-Earth centroid; that
+interaction should not wake calculations across the entire aggregate. The
+movement ratio gives this answer during the field calculation, without
+placing the centroid to measure its actual displacement. Accumulate
 these answers across the tick: **if any interaction says yes, mark that
 centroid for placement**. No interaction calculates or stores how far the
 centroid will actually move. At tick end, after particle integration, place
@@ -406,9 +413,10 @@ within the construct. A change to one included member can shift the exact
 mass-weighted result even when that interaction does not set a would-move
 flag; the gate does not promise exact equality of the two centroid positions.
 The previous note confused the early yes/no trigger with end-of-tick
-placement and treated effective stability as exact immobility. The exact
-force-expression rule for the would-move predicate remains to be derived;
-do not add a predicted centroid displacement or an arbitrary ripple depth.
+placement and treated effective stability as exact immobility. The governing
+test is the movement-expression ratio; the implementation still has to set
+what counts as a significant effect at the current model resolution. It
+needs no predicted centroid position or arbitrary ripple depth.
 The current harness follows force → integration → centroid publication but
 has no per-centroid would-move flags, conditional placement or selective
 wake-up: it recomputes the full loaded edge list every tick.
@@ -572,8 +580,9 @@ describes recomputing centroids only for active fields.
   endpoints yield the combined destination (sum, mean or normalised sum), and
   therefore the brake's remaining-distance reference. The current `|F_net|`
   reach has not been shown to equal distance to that destination.
-- Specify the bidirectional force-expression rule that yields each centroid's
-  would-move flag, and the particle-level no-movement rule that also covers
+- The centroid's would-move gate follows the interaction's ratio of movement
+  expression across masses; set its effective significance for the current
+  model resolution. The particle-level no-movement rule must also cover
   parent-line reorientation. The any-active accumulation and end-of-tick
   centroid placement are already clear.
 - Specify how ordered parent occurrences reorient their line in response to
