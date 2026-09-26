@@ -19,7 +19,7 @@ engine/taichi/
 |---|---|
 | `src/engine/` | Thin native wrapper around the Taichi runtime: instance lifetime, kernel compile/launch, devices, transfers. |
 | `src/field/` | Native C++ field/tick implementation. |
-| `src/monitor/` | Read-only measurement of downloaded field state (motion, would-be active set, lag reversals, brake regime, cost). |
+| `src/monitor/` | Read-only measurement of downloaded field state, accumulated per observed tick (integrity, touched surface, lag reversals, net motion, brake regime, cost). |
 | `apps/` | Device/runtime inspection utilities; `field_probe` runs a field scenario and writes monitor samples as CSV. |
 | `tests/` | Native smoke, field, monitor and >2^31 dense-index regression tests. |
 | `cmake/` | Locates the matching Taichi source/build/runtime set. |

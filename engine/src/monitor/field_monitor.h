@@ -30,40 +30,54 @@ struct FieldView {
 FieldView view_of(const field::Harness &h);
 
 struct Settings {
-  // A particle or centroid counts as moving when it travelled farther than
-  // this since the previous sample.
+  // A particle or centroid counts as touched in a window when any single
+  // observed step moved it farther than this.
   float motion_threshold = 1e-4f;
   // The step the tick integrated with; used to turn speed into travel.
   float dt = 1.0f;
 };
 
+// One window of observations. Step quantities are accumulated over every
+// observed step in the window, so motion that returns to where it started
+// is still counted; net quantities compare only the window's first and
+// last states and are labelled as such.
 struct Sample {
-  long tick = 0;
-  long ticks_since_previous = 0;
+  long tick = 0;                // tick of the last observation in the window
+  long steps_observed = 0;      // observed steps accumulated in this window
+  long ticks_per_step = 0;      // largest tick gap between observations
+                                // (1 means every tick was observed)
 
-  // Integrity.
+  // Integrity of the last observed state. A particle is non-finite when
+  // any of position, velocity, mass or force is; a group when any centroid
+  // or accumulator field is. Non-finite particles are left out of every
+  // sum below, so a broken run cannot read as settled: check these first.
   int nonfinite_particles = 0;
+  int nonfinite_groups = 0;
   double total_mass = 0.0;
-  double centre_of_mass_drift = 0.0;  // from the first sample
+  double centre_of_mass_drift = 0.0;  // from the first observation
 
-  // Motion since the previous sample.
-  double max_displacement = 0.0;
-  double mean_displacement = 0.0;
-  double p99_displacement = 0.0;
+  // Accumulated over every observed step in the window.
+  double max_step_displacement = 0.0;
+  int touched_particles = 0;   // moved past the threshold on any step
+  int touched_centroids = 0;
+  // Edges whose particle or centroid was touched. A displacement-based
+  // proxy for the surface a selective tick would have to revisit. It is NOT
+  // a count of work performed or skipped: the current tick evaluates every
+  // loaded edge on every tick.
+  int touched_edges = 0;
+  int velocity_reversals = 0;  // summed over steps: velocity turned > 90 degrees
+
+  // Net over the window: first observation to last. Motion that returned
+  // to where it started does not show here.
+  double net_max_displacement = 0.0;
+  double net_mean_displacement = 0.0;
+  double net_p99_displacement = 0.0;
+
+  // The last observed state.
   double max_speed = 0.0;
   double kinetic_proxy = 0.0;  // sum of m * |v|^2
-
-  // The surface that would need work if only what changed were computed.
-  int moving_particles = 0;
-  int moving_centroids = 0;
-  int active_edges = 0;  // edges whose particle or centroid moved
-
-  // Lag expression: particles whose velocity turned by more than 90 degrees.
-  int velocity_reversals = 0;
-
-  // Post-brake travel |v|*dt against reach |F_net|.
-  int near_reach = 0;  // 0.5 < travel/reach <= 1
-  int past_reach = 0;  // travel/reach > 1
+  int near_reach = 0;          // post-brake travel/reach in (0.5, 1]
+  int past_reach = 0;          // post-brake travel/reach > 1
 
   // Cost, filled in by the caller that timed the work.
   double tick_ms = 0.0;
@@ -75,19 +89,39 @@ class FieldMonitor {
  public:
   explicit FieldMonitor(Settings settings = {}) : settings_(settings) {}
 
-  // Measure `view` as the state at `tick`. The first call establishes the
-  // baseline: motion fields are zero and the centre of mass is recorded.
-  Sample observe(const FieldView &view, long tick);
+  // Record the state at `tick`. Call it for every tick whose effect should
+  // count (every tick, for settling and surface claims); each call after
+  // the first is one step accumulated into the open window.
+  void observe(const FieldView &view, long tick);
+
+  // Close the open window and return its sample. The last observed state
+  // becomes the start of the next window. Requires at least one observe().
+  Sample take_sample();
 
   const Settings &settings() const { return settings_; }
 
  private:
+  struct State {
+    long tick = 0;
+    std::vector<float> particles;
+    std::vector<float> groups;
+    std::vector<int> edges;
+    int n = 0, g = 0, e = 0;
+  };
+  static State copy_of(const FieldView &view, long tick);
+
   Settings settings_;
-  bool have_previous_ = false;
-  long previous_tick_ = 0;
-  std::vector<float> previous_particles_;
-  std::vector<float> previous_groups_;
+  bool have_first_ = false;
   double com0_[3] = {0.0, 0.0, 0.0};
+  State window_start_;
+  State last_;
+  bool have_last_ = false;
+  long steps_ = 0;
+  long max_gap_ = 0;
+  double max_step_displacement_ = 0.0;
+  int reversals_ = 0;
+  std::vector<char> touched_particle_;
+  std::vector<char> touched_centroid_;
 };
 
 // One CSV row per sample, header first.
