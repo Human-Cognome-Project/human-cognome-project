@@ -192,11 +192,16 @@ and the point at which this qualification is checked remain to be developed.
 **Parent field effects and repetition (Patrick, 2026-09-25):** each exposed
 parent field acts on the mass of the parent occurrence it reaches. That
 partial force contributes to the total motion vector of the whole construct,
-distributed across its total mass. The ordered positions also permit a
-**rotary alignment expression**, even when the force does not shift the
-construct as a whole. For this effect, the ordered parents act **as if they
-occupy a straight line across the particle**, with the construct able to
-reorient that line about its centre. Rotary effects can occur in a tick,
+distributed across its total mass. At the overall-construct scale, the
+movement question is whether that parent relationship has enough weight to
+shift the whole construct. At the internal scale, the ordered parent
+positions give the piece a **polarity-like ordering** for comparing it with
+like constructs; this is an analogy for oriented comparison, not a claim
+of identical physical polarity. The order can support a **rotary alignment
+expression** even when the parent effect cannot translate the whole. For
+this effect, the ordered parents act **as if they occupy a straight line
+across the particle**, with the construct able to reorient that line about
+its centre. Rotary effects can occur in a tick,
 but **rotary velocity is not preserved between ticks**. This does not prevent
 an orbit produced by the continuing field forces: the particle's position and
 translational motion can follow those forces over successive ticks. Parent-line
@@ -586,8 +591,9 @@ describes recomputing centroids only for active fields.
   parent-line reorientation. The any-active accumulation and end-of-tick
   centroid placement are already clear.
 - Specify how ordered parent occurrences reorient their line in response to
-  their distinct partial forces, including repeated characteristics, without
-  carried angular velocity.
+  distinct partial forces, including repeated characteristics, and how that
+  polarity-like ordering participates in comparison of like constructs.
+  Reorientation does not carry angular velocity between ticks.
 - State what operation the `O(log N)` claim bounds when `N` is all exposed
   fields. A pass that reads each of those `N` fields individually has at least
   linear total work; logarithmic depth, lookup or active work may be a
