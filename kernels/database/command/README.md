@@ -17,7 +17,7 @@ unbuilt layer; the IR here starts from already-parsed C++ values.
   `AddConnection`, `DeleteRecord`, `DeleteConnection`) and their
   structural validation.
 - `span_planner.h` / `span_planner.cpp` -- the ADDRESS span planner
-  (`plan()`) and the base-50 address-successor helper the codec does not
+  (`plan()`) and the radix-64 address-successor helper the codec does not
   provide.
 - `command_ir_test.cpp` / `span_planner_test.cpp` -- unit tests
   (standalone; same tiny check harness as `codec/codec_test.cpp`, no
@@ -183,12 +183,16 @@ unwalkable `FROM..TO` run), or `kPendingSeam` (structurally well-formed
 but containing an `AFTER` segment whose concrete origin needs the
 deferred trunk map -- see Open seams below).
 
-### Base-50 address successor
+### Radix-64 address successor
 
 The codec (`codec/codec.h`) has no whole-address increment, so this
 module adds one: `successor()` treats an `Address` as a mixed-radix
-counter over base-`kCoupletSpace` couplets, most-significant element
-first, carrying leftward on overflow. `span_length()` computes an
+counter over base-`kCoupletSpace` (4,096) couplets, most-significant
+element first, carrying leftward on overflow. Digits step in RFC 4648 §5
+value order, not byte order: `Az → A0`, `A9 → A-`, `A- → A_`, and
+`AA.__ → AB.AA` carries. Everything here is written against
+`codec::kAlphabetSize`/`kCoupletSpace`, so it followed the alphabet change
+without code edits. `span_length()` computes an
 inclusive slot count between two addresses by exact digit-wise
 subtraction over that same representation (not by stepping `successor`
 in a loop). Both reject partial (wildcard) elements, since a context/

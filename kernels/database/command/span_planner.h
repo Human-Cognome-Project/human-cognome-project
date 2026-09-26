@@ -20,7 +20,7 @@
 namespace command {
 
 // ---------------------------------------------------------------------
-// Base-50 address successor -- the codec exposes encode/decode and delta
+// Radix-64 address successor -- the codec exposes encode/decode and delta
 // transforms but no increment; this is that increment, built purely from
 // the codec's alphabet/couplet primitives.
 // ---------------------------------------------------------------------
@@ -45,7 +45,7 @@ std::optional<codec::Address> successor(const codec::Address &address);
 
 // The number of slots from `from` to `to` inclusive, i.e.
 // |{from, successor(from), successor(successor(from)), ..., to}|,
-// computed by exact digit-wise arithmetic over the same base-50 couplet
+// computed by exact digit-wise arithmetic over the same radix-64 couplet
 // representation `successor` uses (not by stepping `successor` in a
 // loop). Returns nullopt when:
 //   - `from` and `to` have different lengths (different address depth --

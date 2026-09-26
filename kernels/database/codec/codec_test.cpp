@@ -2,7 +2,6 @@
 // library only, no test framework, no dependency outside this directory.
 // A test prints one line per check and the process exits non-zero if any
 // check failed.
-#include <cctype>
 #include <cstdio>
 #include <set>
 #include <string>
@@ -38,33 +37,33 @@ AddressElement partial(uint8_t first_index) {
 // ---------------------------------------------------------------------
 
 void test_alphabet() {
-  check(codec::kAlphabetSize == 50, "alphabet has exactly 50 characters");
+  check(codec::kAlphabetSize == 64, "alphabet has exactly 64 symbols");
 
-  std::set<char> seen;
-  bool all_letters = true;
-  for (char c : codec::kAlphabet) {
-    seen.insert(c);
-    if (!std::isalpha(static_cast<unsigned char>(c))) {
-      all_letters = false;
-    }
+  const std::string rfc4648_s5 =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  bool matches_rfc = rfc4648_s5.size() == codec::kAlphabet.size();
+  for (int i = 0; matches_rfc && i < codec::kAlphabetSize; ++i) {
+    matches_rfc = codec::kAlphabet[i] == rfc4648_s5[std::size_t(i)] &&
+                  codec::alphabet_index(rfc4648_s5[std::size_t(i)]) == i;
   }
-  check(seen.size() == 50, "alphabet characters are unique");
-  check(all_letters, "alphabet characters are all letters");
+  check(matches_rfc, "alphabet is RFC 4648 section 5 in RFC value order (index == value)");
 
-  check(!codec::is_valid_char('o'), "lowercase o is excluded");
-  check(!codec::is_valid_char('O'), "uppercase O is excluded");
-  check(codec::alphabet_index('o') < 0, "lowercase o has no alphabet index");
-  check(codec::alphabet_index('O') < 0, "uppercase O has no alphabet index");
+  std::set<char> seen(codec::kAlphabet.begin(), codec::kAlphabet.end());
+  check(seen.size() == 64, "alphabet symbols are unique");
 
-  check(codec::is_valid_char('A'), "A is valid");
-  check(codec::is_valid_char('z'), "z is valid");
-  check(!codec::is_valid_char('0'), "digit 0 is invalid");
+  check(codec::is_valid_char('O') && codec::is_valid_char('o'), "O and o are valid symbols");
+  check(codec::is_valid_char('0') && codec::is_valid_char('1'), "0 and 1 are valid symbols");
+  check(codec::is_valid_char('-') && codec::is_valid_char('_'), "- and _ are valid symbols");
+  check(!codec::is_valid_char('='), "= (octet-Base64 padding) is not an address symbol");
+  check(!codec::is_valid_char('+') && !codec::is_valid_char('/'),
+        "standard-Base64 + and / are not symbols (URL-safe alphabet only)");
   check(!codec::is_valid_char('*'), "the wildcard marker is not itself an alphabet character");
+  check(!codec::is_valid_char('.'), "the delimiter is not an alphabet character");
 
-  // A is index 0 by the documented ordering (uppercase block first).
-  check(codec::alphabet_index('A') == 0, "A is alphabet index 0");
-  // 'a' immediately follows the 25-character uppercase block.
-  check(codec::alphabet_index('a') == 25, "a is alphabet index 25");
+  check(codec::alphabet_index('A') == 0, "A is value 0");
+  check(codec::alphabet_index('a') == 26, "a is value 26");
+  check(codec::alphabet_index('0') == 52, "0 is value 52");
+  check(codec::alphabet_index('_') == 63, "_ is value 63");
 }
 
 // ---------------------------------------------------------------------
@@ -85,19 +84,22 @@ void test_couplet_round_trip() {
       break;
     }
   }
-  check(all_ok, "every couplet code in [0, 2500) round-trips through its two characters");
+  check(all_ok, "every couplet code in [0, 4096) round-trips through its two characters");
 
-  check(codec::code_to_couplet(2500) == std::nullopt, "code 2500 is out of range");
+  check(codec::code_to_couplet(4096) == std::nullopt, "code 4096 is out of range");
   check(codec::code_to_couplet(65535) == std::nullopt, "code 65535 is out of range");
 }
 
 void test_couplet_rejection() {
-  check(!codec::couplet_to_code('o', 'A').has_value(), "couplet with lowercase o is rejected");
-  check(!codec::couplet_to_code('A', 'O').has_value(), "couplet with uppercase O is rejected");
-  check(!codec::couplet_to_code('0', 'A').has_value(), "couplet with a digit is rejected");
+  check(!codec::couplet_to_code('=', 'A').has_value(), "couplet with padding = is rejected");
+  check(!codec::couplet_to_code('A', '+').has_value(), "couplet with standard-Base64 + is rejected");
   check(!codec::couplet_to_code('A', '*').has_value(), "couplet with the wildcard marker is rejected");
-  check(!codec::is_valid_couplet('o', 'o'), "is_valid_couplet rejects o/o");
-  check(codec::is_valid_couplet('A', 'z'), "is_valid_couplet accepts A/z");
+  check(!codec::is_valid_couplet('.', 'A'), "is_valid_couplet rejects the delimiter");
+  check(codec::is_valid_couplet('O', 'o'), "is_valid_couplet accepts O/o");
+  check(codec::is_valid_couplet('-', '_'), "is_valid_couplet accepts -/_");
+  check(codec::couplet_to_code('A', 'A') == 0, "AA is code 0");
+  check(codec::couplet_to_code('_', '_') == 4095, "__ is code 4095");
+  check(codec::couplet_to_code('B', 'A') == 64, "BA is code 64 (first * 64 + second)");
 }
 
 // ---------------------------------------------------------------------
@@ -130,7 +132,7 @@ void test_address_token_id_round_trip() {
 
   // A general multi-couplet address, not tied to the base case.
   {
-    Address addr = {full(37), full(1234), full(2499)};
+    Address addr = {full(37), full(1234), full(4095)};
     const auto id = codec::encode_token_id(addr);
     check(id.has_value(), "a general full-couplet address encodes");
     const auto back = codec::decode_token_id(*id);
@@ -159,12 +161,12 @@ void test_invalid_input_rejection() {
   check(!codec::decode_token_id("A*.AA").has_value(),
         "decode_token_id rejects a wildcard marker before the last element");
 
-  check(!codec::decode_token_id("AA.oA").has_value(),
-        "decode_token_id rejects an excluded character (o)");
-  check(!codec::decode_token_id("AA.AO").has_value(),
-        "decode_token_id rejects an excluded character (O)");
-  check(!codec::decode_token_id("A0").has_value(),
-        "decode_token_id rejects a digit");
+  check(!codec::decode_token_id("AA.=A").has_value(),
+        "decode_token_id rejects padding (=)");
+  check(!codec::decode_token_id("AA.A/").has_value(),
+        "decode_token_id rejects standard-Base64 /");
+  check(codec::decode_token_id("Oo.01.-_").has_value(),
+        "decode_token_id accepts O, o, digits, - and _");
   check(!codec::decode_token_id("A").has_value(),
         "decode_token_id rejects a one-character element");
   check(!codec::decode_token_id("AAA").has_value(),
@@ -180,7 +182,7 @@ void test_invalid_input_rejection() {
   // second is unused when partial, so validity turns on `first` alone.
   check(codec::is_valid_element(bad_partial_second[0]),
         "a partial element's unused second field does not affect validity");
-  AddressElement bad_first{60, 0, false};
+  AddressElement bad_first{64, 0, false};
   check(!codec::is_valid_element(bad_first), "an out-of-range first index is invalid");
 }
 
@@ -225,6 +227,56 @@ void test_delta_round_trip() {
         "delta is taken by position, not verified against context content");
 }
 
+// ---------------------------------------------------------------------
+// Storage key (pair codes) and ordering
+// ---------------------------------------------------------------------
+
+void test_pair_key() {
+  const Address addr = {full(0), full(64), full(4095)};
+  const auto key = codec::to_pair_key(addr);
+  check(key.has_value() && *key == codec::PairKey({0, 64, 4095}),
+        "to_pair_key gives one pair code per element, in order");
+  const auto back = codec::from_pair_key(*key);
+  check(back.has_value() && *back == addr, "from_pair_key recovers the address");
+
+  check(!codec::to_pair_key({full(0), partial(3)}).has_value(),
+        "a partial address has no single storage key");
+  check(!codec::from_pair_key({0, 4096}).has_value(),
+        "a code outside [0, 4096) is not a storage key");
+  check(codec::to_pair_key(Address{}).has_value() && codec::to_pair_key(Address{})->empty(),
+        "the empty address has the empty key");
+
+  const auto range = codec::partial_code_range(partial(1));
+  check(range.has_value() && range->first == 64 && range->second == 127,
+        "a partial element is one contiguous code range [first*64, first*64+63]");
+  check(!codec::partial_code_range(full(5)).has_value(),
+        "a full element has no partial range");
+}
+
+void test_key_order_is_value_order() {
+  // Every pair of symbols, ordered by value, must also be ordered by code.
+  bool ordered = true;
+  for (int code = 1; ordered && code < codec::kCoupletSpace; ++code) {
+    const auto prev = codec::code_to_couplet(static_cast<uint16_t>(code - 1));
+    const auto cur = codec::code_to_couplet(static_cast<uint16_t>(code));
+    const int pv = codec::alphabet_index(prev->first) * 64 + codec::alphabet_index(prev->second);
+    const int cv = codec::alphabet_index(cur->first) * 64 + codec::alphabet_index(cur->second);
+    ordered = pv < cv;
+  }
+  check(ordered, "pair-code order is value order across all 4096 pairs");
+
+  // The trap the pair key avoids: byte order of the token_id text is not
+  // value order. 'Z' (value 25) < 'a' (26) < '0' (52) by value, but in
+  // bytes '0' (0x30) < 'Z' (0x5A) < 'a' (0x61).
+  const std::string by_value_low = *codec::encode_token_id({full(*codec::couplet_to_code('Z', 'Z'))});
+  const std::string by_value_high = *codec::encode_token_id({full(*codec::couplet_to_code('0', '0'))});
+  check(*codec::to_pair_key(*codec::decode_token_id(by_value_low)) <
+            *codec::to_pair_key(*codec::decode_token_id(by_value_high)),
+        "ZZ sorts before 00 by pair key (value order)");
+  check(by_value_high < by_value_low,
+        "...while the token_id text sorts 00 before ZZ (byte order): text is not the order authority");
+}
+
 }  // namespace
 
 int main() {
@@ -234,6 +286,8 @@ int main() {
   test_address_token_id_round_trip();
   test_invalid_input_rejection();
   test_delta_round_trip();
+  test_pair_key();
+  test_key_order_is_value_order();
 
   if (g_failures == 0) {
     std::printf("PASS codec_test\n");

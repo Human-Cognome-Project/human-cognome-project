@@ -30,11 +30,14 @@ recruits its own completion.
 ## Addressing: arrayed pairs
 
 Every reference is an address, with the canonical form an **array of two-character pairs**
-(1–5 pairs deep in the current data). The built codec still uses the older
-base-50 letter alphabet. The [next primary alphabet](address-encoding-transition.md)
-uses all 64 URL-safe Base64 symbols in RFC 4648 §5 value order, including
+(1–5 pairs deep in the current data). The [primary alphabet](address-encoding-transition.md),
+implemented in the codec, uses all 64 URL-safe Base64 symbols in RFC 4648 §5
+value order, including
 `O/o` and `0`. Five full pairs then span `64^10 ≈ 1.153` quintillion
-possible addresses, versus `50^10 ≈ 97.656` quadrillion with base-50.
+possible addresses, versus `50^10 ≈ 97.656` quadrillion with the earlier
+base-50 alphabet. Storage keys are numeric pair codes so index order is
+address order; the record tier stores the letter subset until that storage
+step lands.
 The familiar dotted string (`AB.cd.EF`) is the **display form only**,
 generated at the boundary rather than persisted as the canonical address.
 Storage that persists only the display form is the defect the previous era

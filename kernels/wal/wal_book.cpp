@@ -17,9 +17,17 @@ namespace {
 // empty because hcp3_core addresses are never empty; that rule is specific
 // to that schema, not this one (WAL-PLAN.md "Standing": own-schema
 // latitude).
+//
+// Obligation and history identities are token identities, so a partial
+// (wildcard) address is refused: partials are query-only in the record tier
+// and never a stored key.
 std::string address_to_pg_array(const codec::Address &addr) {
   if (!codec::is_valid_address(addr)) {
     throw std::runtime_error("address_to_pg_array: invalid address");
+  }
+  if (!addr.empty() && addr.back().partial) {
+    throw std::runtime_error(
+        "address_to_pg_array: a partial (wildcard) address is not an identity");
   }
   std::string out = "{";
   for (std::size_t i = 0; i < addr.size(); ++i) {
@@ -29,7 +37,7 @@ std::string address_to_pg_array(const codec::Address &addr) {
     const codec::AddressElement &e = addr[i];
     out.push_back('"');
     out.push_back(codec::kAlphabet[e.first]);
-    out.push_back(e.partial ? codec::kPartialMarker : codec::kAlphabet[e.second]);
+    out.push_back(codec::kAlphabet[e.second]);
     out.push_back('"');
   }
   out.push_back('}');

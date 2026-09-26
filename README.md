@@ -60,7 +60,8 @@ For the overall NAPIER flow, component roles, and what is built versus still
 under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
 Its component notes are linked from [the documentation index](docs/README.md).
 The [primary address transition](docs/address-encoding-transition.md) records
-the planned URL-safe Base64 alphabet and the current base-50 implementation seam.
+the URL-safe Base64 alphabet (implemented in the codec), the pair-code storage
+key decision, and what remains before the record tier is fully converted.
 
 For current development:
 
