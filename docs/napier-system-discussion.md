@@ -271,7 +271,13 @@ instead analyzes the engine's numerical output. The harness controls at
 runtime which results leave device memory (VRAM on a GPU) and when; the
 selection and readback cadence can change during a run. It might expose
 results nearly every tick when needed. The monitor's refresh schedule does
-not limit that access.
+not limit that access. In the game-design analogy, a displayed frame needs
+only the physics results relevant to that view, even while the engine
+calculates more to support it. Here the harness exposes selected numerical
+results for the current analysis while the engine can work on a wider active
+field set. Selecting which results to transfer is distinct from excluding
+settled fields from calculation.
+
 More active periods can take longer per tick, and settling continues for as
 many ticks as the interactions require. No fixed tick-time or frame-rate
 target is specified here.
