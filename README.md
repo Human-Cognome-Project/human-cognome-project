@@ -60,7 +60,8 @@ For the overall NAPIER flow, component roles, and what is built versus still
 under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
 Its component notes are linked from [the documentation index](docs/README.md).
 The [primary address transition](docs/address-encoding-transition.md) records
-the planned URL-safe Base64 alphabet and the current base-50 implementation seam.
+the URL-safe Base64 alphabet (implemented in the codec), the pair-code storage
+key decision, and what remains before the record tier is fully converted.
 
 For current development:
 
@@ -82,6 +83,8 @@ For the research basis and project context:
 The September 2026 repository reconciliation was carried through `integration/kernel-network-reorg` and PR #63. It preserves both active development lineages through normal merge history; no history rewrite or force-push was used.
 
 The current tree is the canonical starting point for new work. The native C++ engine recovery and curated Taichi fork are layered onto that reconciled history. CI builds and tests the native CPU engine from source; the engine has also run on development hardware. Earlier and off-direction generations remain under `archive/` and through Git history.
+
+**Review queue (2026-09-26):** [Draft PR #73](https://github.com/Human-Cognome-Project/human-cognome-project/pull/73) proposes endpoint slot-recycling, scheduler exception-handling and field-harness index-safety fixes. It is still open and needs careful code and test review against the current contracts before integration. It does not implement the [new address alphabet decision](docs/address-encoding-transition.md).
 
 ## Governance
 

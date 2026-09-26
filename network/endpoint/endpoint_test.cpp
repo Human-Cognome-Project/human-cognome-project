@@ -2,6 +2,7 @@
 // no test framework, no DB. Prints one line per check; the process exits
 // non-zero if any check failed.
 #include <cstdio>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -160,6 +161,18 @@ void test_standing_and_ephemeral_ranges_disjoint() {
         "hand out a slot register_standing could also claim (F3)");
 }
 
+void test_recycle_discards_queued_messages() {
+  endpoint::Registry registry(1, 1);
+  endpoint::EndpointId a = registry.allocate();
+  registry.resolve(a)->push(box::Message{"late-ack-for-A", std::nullopt});
+  registry.recycle(a);
+  endpoint::EndpointId b = registry.allocate();
+  check(b.slot == a.slot, "the recycled slot is reused by the next allocate()");
+  check(registry.resolve(b)->empty(),
+        "recycle discards messages still queued for the previous owner -- a reply that "
+        "arrived before recycle is never handed to the slot's next owner");
+}
+
 }  // namespace
 
 int main() {
@@ -167,6 +180,7 @@ int main() {
   test_allocate_recycle_round_trip();
   test_stale_generation_resolve_fails();
   test_recycle_bumps_generation();
+  test_recycle_discards_queued_messages();
   test_allocate_does_not_itself_bump();
   test_allocate_throws_when_exhausted();
   test_recycle_rejects_non_ephemeral_slot();
