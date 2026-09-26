@@ -301,22 +301,22 @@ but the harness cannot yet select particular results for readback or control
 their cadence through a runtime setting. The intended harness control and
 the future analyst's data interface remain to be built.
 
-**Exclusion rule (Patrick, 2026-09-25):** on a tick, if a newly calculated
-field centroid is identical to its current value, exclude that field from
-subsequent calculations. A later perturbation of **any constituent** makes
-the field active again and invokes its centroid calculation, even if its last
-result was identical. Motion of an element within it is expected to show as
-variance in the **pairwise field calculation**. The exact calculated value being
-compared, where the `O(log N)` bound applies within the pairwise stream, and
-which passes skip an excluded field can be pinned down as we walk the formulas.
+**Exclusion rule, clarified (Patrick, 2026-09-25):** the bidirectional motive
+force expression in each field interaction supplies a *would effectively
+move this centroid* decision. If no interaction sets that flag on a tick,
+skip placing the centroid and skip new outward work through it. A later
+interaction can set the flag again. The earlier description required an
+exact post-placement equality comparison to decide activity; that reading
+is superseded by the force-ratio trigger below. The detailed predicate,
+where the `O(log N)` bound applies within the pairwise stream, and which
+passes skip an inactive field can be pinned down during the formula walk.
 
-**Compound variance:** two equal masses can move symmetrically while an
-isolated mass-weighted centroid remains fixed, but actual interactions are not
-monolithic. Multiple field relationships contribute to the tick-to-tick
-pairwise calculation, so its variance is compound. The isolated cancellation
-is a theoretical edge, not a permanent exclusion: perturbing either object
-later reactivates the field. The exact calculated quantity to compare will be
-checked during the formula walkthrough.
+**Compound variance:** multiple field relationships can affect the same
+centroid on one tick; combine their would-move decisions with an any-active
+rule, then place a flagged centroid once from its members. Their actual
+motions can compound or cancel in the resulting position. This activation
+rule permits some flex instead of requiring an exact post-placement equality
+test solely to decide whether propagation is allowed.
 
 **Centroid mass (Patrick, 2026-09-25):** within a study, calculate each
 centroid's aggregate mass when the base is established and reuse it while its
@@ -340,7 +340,7 @@ inclusion and the one-tick centroid lag agree with the stated sequence. With
 unchanged membership, particle masses and participation shares, group mass is
 independent of positions and can be reused. **Implementation difference:** the
 current pass clears and recomputes mass and position for *every* group on every
-tick; first/new-entry-only mass calculation and touched-centroid-only position
+tick; first/new-entry-only mass calculation and would-move-flagged position
 calculation are still design intent. The separate origin-pegged universal
 field is currently suspended from the tick. The existing centroid test checks
 the inclusive seeded mass and position; this review checks the tick ordering
@@ -352,35 +352,35 @@ the target point. The field produces a force toward that point according to
 `m1 * m2 / d²`, with `m2` the field centroid's full participating mass; the
 current formula gates exact coincidence and sole-participant fields to zero.
 **Correction to the trigger (Patrick, 2026-09-25):** each field effect is
-bidirectional. The ratio in which its motive force is expressed across the
-participating masses tells *during the field calculation* whether this effect
-shifts the centroid side. If the smaller mass absorbs the motive force in
-full, the centroid remains stable from this effect, so there is no outward
-calculation or centroid placement to schedule **from this effect**. Otherwise
-the centroid becomes active and its placement is due at tick end; calculation
-extends through connected particles. An active centroid's actual position is
-placed and published from members after particle integration; no predicted
-centroid-movement target is accumulated during particle calculations. The
-force-expression ratio supplies the activity decision already, without a
-second end-of-tick position comparison solely to decide whether to propagate.
-On a following tick, connected particles use the new published position,
-potentially activating other centroids. The surface limits itself where an
-effect is absorbed without centroid movement, without a programmed ripple
-depth. Other effects may touch the same centroid later. **The prior note
-incorrectly made a post-integration position comparison the sole activation
-gate; the force-ratio decision is available during the field calculation.**
+bidirectional. During that interaction, the ratio in which its motive force
+is expressed across the participating masses already answers the *boolean*
+question: would this interaction effectively move the centroid? If the
+smaller mass absorbs the effect, it does not flag the centroid. Accumulate
+these answers across the tick: **if any interaction says yes, mark that
+centroid for placement**. No interaction calculates or stores how far the
+centroid will actually move. At tick end, after particle integration, place
+each marked centroid once from its members' updated positions and publish
+its new position. Its connected particles can use that position on a later
+tick, continuing the calculation through their other fields. With no
+would-move flag, keep the published centroid position and do not schedule
+further work through it from these interactions. The force calculation's
+existing ratio supplies the trigger; a second position comparison solely
+for activation is unnecessary. The gate adds a small decision to a field
+calculation that is already needed, saving end-of-tick centroid reductions
+and subsequent connected work when no interaction flags that centroid.
 
-**Math to reconcile before implementation:** the present centroid is an
-inclusive mass-weighted reduction of its members. If only one member edge of
-mass `w` moves by `Δx` with fixed membership and total mass `M`, the
-recomputed centroid shifts by `(w/M) * Δx`. The exact bidirectional
-force-expression/absorption rule must explain how the smaller-mass-only case
-leaves that inclusive centroid stable, and how several effects combine before
-end-of-tick placement. Keep the intended early trigger while deriving that
-rule. The current harness follows force → integration → centroid publication
-but has no
-force-ratio-based active-centroid flag or selective wake-up; it recomputes the
-full loaded edge list every tick.
+**Effective stability, not exact immobility:** this gate is intended to stop
+propagation once a centroid is effectively stable, while allowing some flex
+within the construct. A change to one included member can shift the exact
+mass-weighted result even when that interaction does not set a would-move
+flag; the gate does not promise exact equality of the two centroid positions.
+The previous note confused the early yes/no trigger with end-of-tick
+placement and treated effective stability as exact immobility. The exact
+force-expression rule for the would-move predicate remains to be derived;
+do not add a predicted centroid displacement or an arbitrary ripple depth.
+The current harness follows force → integration → centroid publication but
+has no per-centroid would-move flags, conditional placement or selective
+wake-up: it recomputes the full loaded edge list every tick.
 
 **Per-particle superposition (Patrick, 2026-09-25):** each exposed field gives
 the particle a destination at its relevant centroid and a directed pull
