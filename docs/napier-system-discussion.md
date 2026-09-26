@@ -20,6 +20,14 @@ database or a swarm component has been built from its appearance here.
   synchronous communication gaps. This is a system-level reason for the kernel
   split, not a claim that the future analyst's functions have been designed.
 
+**Kernel composition (Patrick, 2026-09-25):** discussion of one CPU kernel or
+one flow at a time lays out the foundation functions and their dependencies;
+it does not fix a serial execution plan or permanent one-function-per-pass
+layout. These functions can be optimized, parallelized and combined as needed
+for the workload, as with other systems. A later implementation may fuse or
+reorder compatible work while preserving the data dependencies and
+end-of-tick publication points the model requires.
+
 ## Processing analogy
 
 - The **cold shard swarm** is the collective subconscious analogue: connections
