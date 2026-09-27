@@ -59,9 +59,9 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 For the overall NAPIER flow, component roles, and what is built versus still
 under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
 Its component notes are linked from [the documentation index](docs/README.md).
-The [primary address transition](docs/address-encoding-transition.md) records
-the URL-safe Base64 alphabet (implemented in the codec), the pair-code storage
-key decision, and what remains before the record tier is fully converted.
+The [paired-address decision](docs/address-encoding-transition.md) records
+the byte-ordered Base62 alphabet, literal `text[]` pairs, the reversal of
+the proposed numeric key, and the shared-root compression rationale.
 
 For current development:
 

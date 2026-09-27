@@ -446,14 +446,14 @@ void run_controller_checks(const std::string &conninfo) {
   }
 
   // --- gather(prefix): the CARRY branch. The wildcard's fixed first
-  //     character is the alphabet MAXIMUM ('z', index 49), so the
+  //     character is the alphabet MAXIMUM ('z', index 61), so the
   //     exclusive high bound cannot just bump that position — it must
-  //     carry into the fixed leading elements (base-50, second-char-
+  //     carry into the fixed leading elements (Base62, second-char-
   //     fastest, same as increment_full_address). Trunk here is "HA.z*":
   //     leading element HA, wildcard element z*. High must come out as
   //     HB (HA's own successor), one element shorter than low. ---
   {
-    const Address low_exact = A("HA.zA");     // the trunk's own low bound
+    const Address low_exact = A("HA.z0");     // the trunk's own low bound
     const Address near_top = A("HA.zZ");      // still first-char 'z', within trunk
     const Address deep = A("HA.zA.AB");       // nested deeper under the trunk
     const Address excl_below = A("HA.YA");    // same leading elem, below the z couplet
@@ -468,7 +468,7 @@ void run_controller_checks(const std::string &conninfo) {
     const auto gathered = ctl.gather(wildcard);
     const std::vector<Address> expected = {low_exact, deep, near_top};
     check(gathered == expected,
-          "gather(prefix) carry branch: HA.z* returns exactly {HA.zA, "
+          "gather(prefix) carry branch: HA.z* returns exactly {HA.z0, "
           "HA.zA.AB, HA.zZ} in byte order (high bound carried into the "
           "leading element HA -> HB)");
     check(!contains(gathered, excl_below),
@@ -507,25 +507,21 @@ void run_controller_checks(const std::string &conninfo) {
           "just below z, correctly outside the low bound)");
   }
 
-  // --- Interim storage limit (Base64url transition): text[] byte order is
-  //     address order only for letters, so digits, '-' and '_' are refused
-  //     loudly rather than stored where range scans would misplace them. ---
+  // --- The full Base62 alphabet is available as literal text[] pairs.
+  //     Prefix gathering crosses the digit/upper/lower boundaries while
+  //     retaining a single C-collated indexed range. ---
   {
-    const Address digit = A("A0");
-    bool threw = false;
-    try {
-      ctl.mint(digit, "digit-symbol", {});
-    } catch (const std::exception &) {
-      threw = true;
+    const std::vector<Address> in_trunk = {A("00"), A("09"), A("0A"),
+                                          A("0A.00"), A("0Z"), A("0a"), A("0z")};
+    for (const Address &a : in_trunk) {
+      ctl.mint(a, "base62-boundary", {});
     }
-    check(threw, "interim limit: an address using a digit symbol is refused");
-    bool gather_threw = false;
-    try {
-      ctl.gather(A("-*"));
-    } catch (const std::exception &) {
-      gather_threw = true;
-    }
-    check(gather_threw, "interim limit: a wildcard on a non-letter symbol is refused");
+    ctl.mint(A("10"), "outside-trunk", {});
+    check(ctl.gather(A("0*")) == in_trunk,
+          "gather(0*) includes digit/uppercase/lowercase pairs and nested addresses in PK order");
+    check(ctl.gather(A("09"), A("0a")) ==
+              std::vector<Address>({A("09"), A("0A"), A("0A.00"), A("0Z"), A("0a")}),
+          "gather(range) spans 9/A, Z/a and a nested pair without including 10");
   }
 
   // --- Partial (wildcard) addresses are query-only: never a token

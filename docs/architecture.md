@@ -31,13 +31,11 @@ recruits its own completion.
 
 Every reference is an address, with the canonical form an **array of two-character pairs**
 (1–5 pairs deep in the current data). The [primary alphabet](address-encoding-transition.md),
-implemented in the codec, uses all 64 URL-safe Base64 symbols in RFC 4648 §5
-value order, including
-`O/o` and `0`. Five full pairs then span `64^10 ≈ 1.153` quintillion
-possible addresses, versus `50^10 ≈ 97.656` quadrillion with the earlier
-base-50 alphabet. Storage keys are numeric pair codes so index order is
-address order; the record tier stores the letter subset until that storage
-step lands.
+implemented in the codec, is byte-ordered Base62 (`0–9 A–Z a–z`). Five
+full pairs span `62^10 = 839,299,365,868,340,224` possible addresses,
+versus `50^10 = 97,656,250,000,000,000` with the earlier base-50 alphabet.
+Literal pair arrays stored as `text[] COLLATE "C"` are the indexed keys;
+no numeric pair key or special sorting code is needed.
 The familiar dotted string (`AB.cd.EF`) is the **display form only**,
 generated at the boundary rather than persisted as the canonical address.
 Storage that persists only the display form is the defect the previous era
@@ -47,11 +45,15 @@ Properly arrayed, the address system *is* the rooted tree the runtime needs:
 
 - **Zoom is truncation**: the first k pairs name the level-k container.
 - **Neighbourhood is shared prefix**; LoD membership is prefix arithmetic.
+- **Compression and wildcard are inverse uses of a root**: record a shared
+  root once per element tree and retain differing continuations to recover
+  complete values; fix the same root and open a continuation to gather the
+  range. Pair alignment makes both operations use the same subdivisions.
 - **Lazy consumption**: an operation uses only as much of the address as it requires — a far-field
   pass reads two pairs where a fine pass reads five — and anything b-treeable or octree-able
   benefits directly, because each level is a typed sort key and address depth = tree depth.
 
-The previous-era executable statement of the base-50 convention is retained in [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py) for migration/reference. The current compiled address/token codec is under [`kernels/database/codec/`](../kernels/database/codec/), and current code—not the legacy Python helper or the planned transition—is authoritative for active storage behaviour.
+The previous-era executable statement of the base-50 convention is retained in [`tools/legacy-extraction/token_id.py`](../tools/legacy-extraction/token_id.py) for migration/reference. The current compiled address/token codec is under [`kernels/database/codec/`](../kernels/database/codec/). The record schema stores complete address arrays per row; shared-root physical compression has not yet been built.
 
 ## Storage: one flat pool, many logical chains
 

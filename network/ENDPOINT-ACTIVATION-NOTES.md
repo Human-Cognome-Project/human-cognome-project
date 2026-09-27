@@ -2,8 +2,8 @@
 
 > **Later address-alphabet decision (2026-09-26):** Base-50 references in
 > this record describe the identity codec as it was when written. The codec
-> now uses the RFC 4648 §5 URL-safe Base64 alphabet, with numeric pair-code
-> storage keys decided; see [address encoding transition](../docs/address-encoding-transition.md).
+> now uses byte-ordered Base62 with literal `text[]` pairs; see the
+> [paired-address decision](../docs/address-encoding-transition.md).
 
 **Status: PARTLY BUILT (2026-09-22). Governing model for the cross-kernel command /
 coupling layer.** The local activation substrate (`network/endpoint/`, commit `b97034a`) and the

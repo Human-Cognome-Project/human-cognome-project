@@ -1,14 +1,8 @@
 # hcp3_core schema — cold swarm cache
 
-> **Address transition (2026-09-26):** The codec now implements the RFC 4648
-> §5 alphabet, whose value order differs from `COLLATE "C"` byte order for
-> digits, `-` and `_`. It is decided that address columns move from `text[]`
-> to `smallint[]` pair codes, whose integer order is address order (see
-> [storage key ordering](../../../docs/address-encoding-transition.md#storage-key-ordering-decided-2026-09-26)).
-> Until that storage step lands, this schema is unchanged, and the controller
-> stores only the letter subset `A–Z a–z`, for which byte order still equals
-> address order. The `text[]` descriptions below are the current interim
-> state.
+> **Address decision (2026-09-26):** The codec and schema use literal Base62
+> pairs in `text[] COLLATE "C"`. The proposed numeric storage key from PR #77
+> is withdrawn; see [the correction](../../../docs/address-encoding-transition.md).
 
 Drafted schema for the `hcp3_core` database: the passive backing store for
 the token-graph. Greenfield — no relationship to `hcp2_core` / `db/core.sql`.
@@ -53,7 +47,7 @@ branch.
 
 ## token_id representation choice
 
-`token_id` is `text[]` — the address itself, one base-50 couplet per array
+`token_id` is `text[]` — the address itself, one Base62 couplet per array
 element, used directly as the PRIMARY KEY and as the FK target everywhere
 else in the schema. The address *is* the canonical identity, so there is no
 separate surrogate identity to keep in sync with it.
@@ -66,7 +60,7 @@ out of the schema, per the "no clever triggers/functions" constraint.
 ## Address column collation
 
 Firmed 2026-09-18. Every `text[]` **address** column — `token.token_id` (the
-PK) and the four FK columns that reference it (`token_parent.token_id`,
+PK) and the eight FK columns that reference it (`token_parent.token_id`,
 `token_parent.parent_token_id`, `token_child.token_id`,
 `token_child.child_token_id`, `members.token_id`, `members.member_token_id`,
 `member_of.token_id`, `member_of.group_token_id`) — is declared
@@ -75,8 +69,8 @@ PK) and the four FK columns that reference it (`token_parent.token_id`,
 **Why.** `text[]` element comparison uses the array element type's
 collation. Left unpinned, these columns inherit the database's default
 collation (here `en_US.UTF-8`), which orders **case-interleaved**
-(`aAbB…`). `codec::kAlphabet`'s order (`A-Z` minus `O`, then `a-z` minus
-`o` — i.e. `A-N,P-Z,a-n,p-z`) IS plain byte order. So under the default
+(`aAbB…`). `codec::kAlphabet`'s order (`0–9 A–Z a–z`) IS plain byte order.
+So under the default
 collation the PK btree's sort order does **not** match address order: a
 contiguous trunk (a terminal-wildcard prefix, or a `FROM..TO` range) is
 **not** a contiguous PK range. That breaks every operation that depends on
@@ -90,9 +84,8 @@ degrades planning to a full index walk — the reverse-search cost this
 schema forbids. Pinning the column itself is what turns the range into a
 genuine, planner-recognized **Index Cond** bounded scan on the PK.
 
-This is a **pure collation pin, not an alphabet change**: byte order
-already equals the codec's documented order, so no character or ordering
-semantics change, only which collation the comparison operators use.
+The existing collation pin makes byte order equal the current codec's
+documented Base62 order, without conversion or a custom comparator.
 **Equality / point reads are unaffected** — collation only governs
 ordering (`<`, `<=`, `>`, `>=`, `ORDER BY`, btree range scans), never `=`.
 The arrayed `text[]` storage itself is unchanged (still chosen for address
@@ -105,7 +98,7 @@ nothing for the pin to fix.
 
 ## Alphabet / couplet encoding
 
-Base-50 alphabet: `A-Z`, `a-z` (52 chars) minus `o` and `O` → 50 chars. Each
+Base62 alphabet: `0–9 A–Z a–z`, in byte order. Each
 couplet is 2 characters from this alphabet. This is documented as config in
 `schema.sql`'s header comment and here — **not** enforced by a CHECK
 constraint. Changing it for an already populated store still requires an

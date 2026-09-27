@@ -35,19 +35,16 @@ AddressElement partial(uint8_t first_index) {
 // ---------------------------------------------------------------------
 
 void test_alphabet_exact_membership() {
-  // Build the expected set directly (RFC 4648 section 5: A-Z, a-z, 0-9,
-  // '-', '_') and compare against kAlphabet / is_valid_char for EVERY
+  // Build the expected Base62 set directly and compare against kAlphabet / is_valid_char for EVERY
   // byte value, not just a handful of samples.
   std::set<char> expected;
   for (char c = 'A'; c <= 'Z'; ++c) expected.insert(c);
   for (char c = 'a'; c <= 'z'; ++c) expected.insert(c);
   for (char c = '0'; c <= '9'; ++c) expected.insert(c);
-  expected.insert('-');
-  expected.insert('_');
-  check(expected.size() == 64, "harness sanity: expected set has 64 chars");
+  check(expected.size() == 62, "harness sanity: expected set has 62 chars");
 
   std::set<char> actual(codec::kAlphabet.begin(), codec::kAlphabet.end());
-  check(actual == expected, "kAlphabet is EXACTLY A-Z,a-z,0-9,-,_ (no more, no less)");
+  check(actual == expected, "kAlphabet is EXACTLY 0-9,A-Z,a-z (no more, no less)");
 
   bool all_agree = true;
   int first_mismatch = -1;
@@ -65,20 +62,20 @@ void test_alphabet_exact_membership() {
                                                  std::to_string(first_mismatch) + ")")
                                               : ""));
 
-  // Neighbours of the URL-safe symbols in ASCII and the standard-Base64
-  // symbols they replace are not address symbols.
-  check(!codec::is_valid_char('+'), "+ (standard Base64 value 62) is not a symbol");
-  check(!codec::is_valid_char('/'), "/ (standard Base64 value 63) is not a symbol");
-  check(!codec::is_valid_char('='), "= (padding) is not a symbol");
-  check(!codec::is_valid_char(','), ", (ASCII neighbour of -) is not a symbol");
-  check(!codec::is_valid_char('`'), "` (ASCII neighbour of _) is not a symbol");
+  // Symbols between the Base62 byte runs are not address symbols.
+  check(!codec::is_valid_char('-'), "- is not a symbol");
+  check(!codec::is_valid_char('_'), "_ is not a symbol");
+  check(!codec::is_valid_char('+') && !codec::is_valid_char('/'), "+ and / are not symbols");
+  check(!codec::is_valid_char('='), "= is not a symbol");
+  check(!codec::is_valid_char('`'), "` is not a symbol");
 
-  // Alphabet indices are a bijection onto [0, 64) in RFC value order.
-  bool in_value_order = true;
+  // Alphabet indices are a bijection onto [0, 62) in byte order.
+  bool in_byte_order = true;
   for (int i = 0; i < codec::kAlphabetSize; ++i) {
-    in_value_order = in_value_order && codec::alphabet_index(codec::kAlphabet[i]) == i;
+    in_byte_order = in_byte_order && codec::alphabet_index(codec::kAlphabet[i]) == i &&
+                    (i == 0 || codec::kAlphabet[i - 1] < codec::kAlphabet[i]);
   }
-  check(in_value_order, "alphabet_index is the RFC value for every symbol");
+  check(in_byte_order, "alphabet_index and byte order agree for every symbol");
 }
 
 // ---------------------------------------------------------------------
@@ -86,27 +83,27 @@ void test_alphabet_exact_membership() {
 // ---------------------------------------------------------------------
 
 void test_couplet_full_range_both_directions() {
-  // char-pair -> code -> char-pair, for EVERY pair in the 64x64 grid,
-  // checking the exact expected code (first*64+second), not just that
+  // char-pair -> code -> char-pair, for EVERY pair in the 62x62 grid,
+  // checking the exact expected code (first*62+second), not just that
   // round-trip succeeds.
   bool all_ok = true;
-  for (int a = 0; a < 64 && all_ok; ++a) {
-    for (int b = 0; b < 64 && all_ok; ++b) {
+  for (int a = 0; a < codec::kAlphabetSize && all_ok; ++a) {
+    for (int b = 0; b < codec::kAlphabetSize && all_ok; ++b) {
       const char ca = codec::kAlphabet[a];
       const char cb = codec::kAlphabet[b];
       const auto code = codec::couplet_to_code(ca, cb);
-      if (!code.has_value() || *code != static_cast<uint16_t>(a * 64 + b)) {
+      if (!code.has_value() || *code != static_cast<uint16_t>(a * codec::kAlphabetSize + b)) {
         all_ok = false;
       }
     }
   }
-  check(all_ok, "couplet_to_code == first_index*64+second_index for all 4096 pairs");
+  check(all_ok, "couplet_to_code == first_index*62+second_index for all 3844 pairs");
 
-  check(codec::couplet_to_code('A', 'A') == 0, "AA is code 0 (minimum)");
-  check(codec::couplet_to_code('_', '_') == 4095, "__ is code 4095 (maximum)");
-  check(codec::code_to_couplet(0) == std::make_pair('A', 'A'), "code 0 decodes to AA");
-  check(codec::code_to_couplet(4095) == std::make_pair('_', '_'), "code 4095 decodes to __");
-  check(!codec::code_to_couplet(4096).has_value(), "code 4096 (one past max) is rejected");
+  check(codec::couplet_to_code('0', '0') == 0, "00 is code 0 (minimum)");
+  check(codec::couplet_to_code('z', 'z') == 3843, "zz is code 3843 (maximum)");
+  check(codec::code_to_couplet(0) == std::make_pair('0', '0'), "code 0 decodes to 00");
+  check(codec::code_to_couplet(3843) == std::make_pair('z', 'z'), "code 3843 decodes to zz");
+  check(!codec::code_to_couplet(3844).has_value(), "code 3844 (one past max) is rejected");
   check(!codec::code_to_couplet(std::numeric_limits<uint16_t>::max()).has_value(),
         "uint16_t max is rejected");
 }
@@ -134,7 +131,7 @@ void test_token_id_full_range_round_trip() {
       break;
     }
   }
-  check(all_ok, "every couplet code 0..4095 round-trips through a single-element token_id" +
+  check(all_ok, "every couplet code 0..3843 round-trips through a single-element token_id" +
                     (bad_code >= 0 ? (" (first failure at code " + std::to_string(bad_code) + ")")
                                    : ""));
 }
@@ -212,23 +209,23 @@ void test_address_validity_edges() {
   Address single_partial = {partial(5)};
   check(codec::is_valid_address(single_partial), "a lone partial element is a valid address");
 
-  // first index exactly at the boundary: 63 valid, 64 invalid.
-  check(codec::is_valid_element(AddressElement{63, 0, false}),
-        "first index 63 (max valid) is valid");
-  check(!codec::is_valid_element(AddressElement{64, 0, false}),
-        "first index 64 (one past max) is invalid");
+  // first index exactly at the boundary: 61 valid, 62 invalid.
+  check(codec::is_valid_element(AddressElement{61, 0, false}),
+        "first index 61 (max valid) is valid");
+  check(!codec::is_valid_element(AddressElement{62, 0, false}),
+        "first index 62 (one past max) is invalid");
   check(!codec::is_valid_element(AddressElement{255, 0, false}),
         "first index 255 (uint8_t max) is invalid");
-  check(codec::is_valid_element(AddressElement{0, 63, false}),
-        "second index 63 (max valid) is valid");
-  check(!codec::is_valid_element(AddressElement{0, 64, false}),
-        "second index 64 (one past max) is invalid");
+  check(codec::is_valid_element(AddressElement{0, 61, false}),
+        "second index 61 (max valid) is valid");
+  check(!codec::is_valid_element(AddressElement{0, 62, false}),
+        "second index 62 (one past max) is invalid");
   check(!codec::is_valid_element(AddressElement{0, 255, false}),
         "second index 255 (uint8_t max) is invalid");
 
   // encode_token_id must refuse an address containing an out-of-range
   // element rather than silently emitting a garbage character.
-  Address bad = {AddressElement{64, 0, false}};
+  Address bad = {AddressElement{62, 0, false}};
   check(!codec::encode_token_id(bad).has_value(),
         "encode_token_id refuses an address with an out-of-range element");
 }
@@ -238,7 +235,7 @@ void test_address_validity_edges() {
 // ---------------------------------------------------------------------
 
 void test_delta_adversarial() {
-  const Address root4 = {full(0), full(0), full(0), full(0)};       // AA.AA.AA.AA
+  const Address root4 = {full(0), full(0), full(0), full(0)};       // 00.00.00.00
   const Address leaf5 = {full(0), full(0), full(0), full(0), full(7)};
 
   // Context longer than full by exactly one -- boundary of the rejection.

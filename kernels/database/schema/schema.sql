@@ -37,19 +37,11 @@
 -- ============================================================================
 -- ADDRESS / TOKEN_ID ENCODING (config, not enforced by CHECK constraints)
 -- ============================================================================
--- TRANSITION STATE (2026-09-26): the codec now implements the RFC 4648
--- section 5 URL-safe 64-symbol alphabet (docs/address-encoding-transition.md).
--- Its value order differs from COLLATE "C" byte order for digits, '-' and
--- '_', so it is decided that the address columns below move from text[] to
--- smallint[] pair codes (first*64+second, 0..4095), whose integer order is
--- address order. Until that storage step lands, this schema is unchanged
--- and the controller stores only the letter subset A-Z a-z, for which byte
--- order still equals address order. The base-50 description below is the
--- original record-tier format; it remains accurate for letter addresses.
---
 -- A token's address is an ordered array of "couplets". Each couplet is two
--- characters drawn from a base-50 alphabet: A-Z, a-z (52 chars) minus the
--- two that are visually ambiguous with zero, `o` and `O` -> 50 chars.
+-- characters drawn from byte-ordered Base62:
+-- 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.
+-- One literal pair occupies one text[] element; no numeric key is stored.
+-- See docs/address-encoding-transition.md for the correction of PR #77.
 --
 -- This alphabet, and the couplet width itself, are PROVISIONAL / config,
 -- not schema law: they are documented here and in README.md, not baked
@@ -63,10 +55,9 @@
 -- (see README.md "token_id choice").
 --
 -- COLLATE "C" (firmed 2026-09-18): every text[] ADDRESS column below
--- (token.token_id and the four FK address columns) is pinned COLLATE "C",
+-- (token.token_id and the eight FK address columns) is pinned COLLATE "C",
 -- so text[] element comparison is byte order -- which IS the alphabet's
--- documented order above (A-N,P-Z,a-n,p-z). A pure collation pin, not an
--- alphabet change: it changes sort/range order only, never equality. This
+-- documented order above (0-9,A-Z,a-z). This
 -- is what makes the token_id PK's btree order equal address order, so a
 -- contiguous trunk (a terminal-wildcard prefix or a FROM..TO range) is a
 -- contiguous PK range -- the gather primitive's prerequisite. Without it
@@ -78,11 +69,11 @@
 -- never compared/ranged/keyed on) is deliberately left on the database
 -- default collation. See README.md "Address column collation".
 --
--- OPEN TEST SLOT: addresses are conceptually "recorded only as the delta,
--- the shared prefix assumed by position" (prefix/delta compression against
--- an implied parent path). This schema stores the FULL address array,
--- lossless and testable. Delta-compressed storage is a later optimization
--- and is intentionally not implemented here.
+-- OPEN TEST SLOT: a compressed element tree can record a shared root once
+-- and the differing pair suffixes per member; expanding with that root
+-- reconstructs the complete values. Parent storage is intended to use
+-- this heavily. The current schema stores FULL address arrays per row;
+-- compressed parent/tree recording is not implemented here.
 -- ============================================================================
 
 
@@ -90,12 +81,12 @@
 -- token — the token store itself: identity + temporary notation.
 -- ----------------------------------------------------------------------------
 CREATE TABLE token (
-    -- Canonical identity: the token's address, one base-50 couplet per
+    -- Canonical identity: the token's address, one Base62 couplet per
     -- array element, outermost-to-innermost. This IS the token_id.
     --
     -- COLLATE "C" (firmed 2026-09-18): pins element comparison to byte
-    -- order, which IS codec::kAlphabet's documented order (A-N,P-Z,a-n,
-    -- p-z). Without this pin the column inherits the database's default
+    -- order, which IS codec::kAlphabet's documented order (0-9,A-Z,a-z).
+    -- Without this pin the column inherits the database's default
     -- collation (here en_US.UTF-8, case-interleaved: aAbB...), so the PK
     -- btree order would NOT match address order and a contiguous trunk
     -- would NOT be a contiguous PK range -- breaking gather / bounded
@@ -135,7 +126,7 @@ COMMENT ON TABLE token IS
     'The token store: one row per token_id. Identity only + temporary notation. '
     'Composition, membership and reverse-adjacency live in the other tables.';
 COMMENT ON COLUMN token.token_id IS
-    'Canonical identity: address as an array of base-50 couplets. See schema header for the alphabet (config, not enforced here).';
+    'Canonical identity: address as an array of literal Base62 two-character pairs. See schema header for the alphabet (config, not enforced here).';
 COMMENT ON COLUMN token.token_text IS
     'Dot-joined rendering of token_id for human/debug use. Loader-populated, not derived in SQL.';
 COMMENT ON COLUMN token.notation IS

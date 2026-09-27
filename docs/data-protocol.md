@@ -37,11 +37,10 @@ singularities deep (Wiktionary → Kaikki → us); the corpus that lands on it c
 ## The addressing precept (operational form)
 
 Storage holds the **array of address pairs**; the dotted string is display-only,
-generated on emit, not the canonical stored identity. The codec implements the
-RFC 4648 §5 alphabet and validates it in C++; the `text[]` schema does not
-constrain the alphabet, and the record tier stores only its letter subset
-until the pair-code storage key lands. The [Base64url transition](address-encoding-transition.md)
-changes those symbols while preserving addressed follows and provenance. Only
+generated on emit, not the canonical stored identity. The codec implements
+byte-ordered Base62 and validates it in C++; the `text[] COLLATE "C"` schema
+sorts full pairs directly. [The paired-address decision](address-encoding-transition.md)
+describes shared-root compression and exact expansion. Only
 as much of an address as an operation requires is read (see
 [architecture.md](architecture.md)).
 
@@ -59,7 +58,7 @@ clean and content is *pulled* into it; not-yet-pulled is not excluded. The live-
 - **O/o alphabet drift was corrected for legacy base-50 extraction** (decision 4 in
   [../review/decisions.md](../review/decisions.md)): ids minted with O/o are remapped into the
   old 50-letter space, with the mapping table kept. Those letters are valid in
-  the planned 64-symbol alphabet, so this historical remapping must remain
+  the current Base62 alphabet, so this historical remapping must remain
   provenance, not be silently repeated on new addresses.
 - **Sentinel conventions are flags, never parsed as addresses**: `UNK:*`, `BYTE_xx`, `[literal]`
   bracket fallbacks, and numeric var-ids (`00.00.00.00.NN`) form the declared legacy registry.
