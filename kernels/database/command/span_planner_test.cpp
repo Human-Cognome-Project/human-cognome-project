@@ -48,26 +48,23 @@ void test_successor() {
     auto next = command::successor(addr("AA"));
     check(next.has_value() && *next == addr("AB"), "successor(AA) == AB");
   }
-  // The second symbol steps in value order through the letters, digits
-  // and URL-safe symbols: Az -> A0, A9 -> A-, A- -> A_.
+  // Byte order steps through digits, uppercase and lowercase directly.
   {
-    check(command::successor(addr("Az")) == addr("A0"), "successor(Az) == A0 (value order, not byte order)");
-    check(command::successor(addr("A9")) == addr("A-"), "successor(A9) == A-");
-    check(command::successor(addr("A-")) == addr("A_"), "successor(A-) == A_");
+    check(command::successor(addr("09")) == addr("0A"), "successor(09) == 0A");
+    check(command::successor(addr("0Z")) == addr("0a"), "successor(0Z) == 0a");
+    check(command::successor(addr("0z")) == addr("10"), "successor(0z) == 10");
   }
-  // Carry into the previous element: '_' is the last symbol (value 63),
-  // so AA.__ (max couplet) rolls the last element and carries into the
-  // first: AA.__ -> AB.AA.
+  // Carry into the previous element: zz is the max couplet, so AA.zz -> AB.00.
   {
-    auto next = command::successor(addr("AA.__"));
-    check(next.has_value() && *next == addr("AB.AA"),
-          "successor(AA.__) carries into the previous element -> AB.AA");
+    auto next = command::successor(addr("AA.zz"));
+    check(next.has_value() && *next == addr("AB.00"),
+          "successor(AA.zz) carries into the previous element -> AB.00");
   }
-  // Full overflow: the single-element max (__) has nowhere to carry to.
+  // Full overflow: the single-element max (zz) has nowhere to carry to.
   {
-    auto next = command::successor(addr("__"));
+    auto next = command::successor(addr("zz"));
     check(!next.has_value(),
-          "successor(__) overflows the leftmost element -> nullopt (G5, "
+          "successor(zz) overflows the leftmost element -> nullopt (G5, "
           "not guessed here)");
   }
   // Partial (wildcard) elements have no single successor.
@@ -97,8 +94,8 @@ void test_span_length() {
     check(len.has_value() && *len == 4, "span_length(AA, AD) == 4");
   }
   {
-    // AA.__ -> AB.AB spans exactly 3: AA.__, AB.AA, AB.AB.
-    auto len = command::span_length(addr("AA.__"), addr("AB.AB"));
+    // AA.zz -> AB.01 spans exactly 3: AA.zz, AB.00, AB.01.
+    auto len = command::span_length(addr("AA.zz"), addr("AB.01"));
     check(len.has_value() && *len == 3,
           "span_length carries across an element boundary correctly");
   }

@@ -64,19 +64,16 @@ possible because `token_id` is `COLLATE "C"`, pinning PK order to
 Only-follow, never search: no new/secondary index, no sequence scan, no
 predicate on a non-key column.
 
-**Interim storage limit (Base64url transition).** The codec now uses the
-RFC 4648 §5 alphabet, but `token_id` is still `text[] COLLATE "C"`. Byte
-order equals address order only for the letters `A–Z a–z` (values 0–51).
-Until the decided `smallint[]` pair-code key lands, the controller stores
-exactly that subset: rendering an address that uses a digit, `-` or `_`
-throws (so mint, follows and gather refuse it loudly), and the gather bound
-arithmetic treats `z` as the last symbol. Every range therefore stays exact.
+**Byte-ordered storage.** The codec uses `0–9 A–Z a–z`, and `token_id`
+remains a literal paired `text[] COLLATE "C"` address. All 62 symbols
+are available. The byte order of the stored pairs is the codec's order,
+so a wildcard trunk stays one indexed range without a numeric key.
 
 **Partial addresses are query-only.** A wildcard address (`AB.C*`) is
 resolved by `gather()` and is never a token identity. Every key rendering
 (mint, constituents, membership, rekey, delete, exact follows) refuses a
 partial address, so no stored key can be one.
-See [storage key ordering](../../../docs/address-encoding-transition.md#storage-key-ordering-decided-2026-09-26). Reads `token` only. Returns the matching
+See [paired-address decision](../../../docs/address-encoding-transition.md). Reads `token` only. Returns the matching
 token_ids in deterministic PK (address) order.
 
 | Overload | Form | Bounds |

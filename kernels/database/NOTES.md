@@ -1,11 +1,8 @@
 # database/cache — data protocol & address-layout notes
 
-> **Later addressing decision (2026-09-26):** Base-50 sizes, examples and
-> numeric range rules below describe the record tier as originally built;
-> the codec has since moved to radix 64 (the record tier stores the letter
-> subset until the pair-code storage step). The intended
-> primary namespace now uses the RFC 4648 §5 URL-safe 64-symbol alphabet.
-> See [address encoding transition](../../docs/address-encoding-transition.md)
+> **Later addressing decision (2026-09-26):** Base-50 sizes and examples
+> below describe earlier work; the current codec and literal `text[]` key use
+> byte-ordered Base62. See [paired-address decision](../../docs/address-encoding-transition.md)
 > before extending this code or interpreting its address capacity.
 
 > **⚠ MESSAGING REALIGNMENT — governing (2026-09-22).** The **entire messaging of this
@@ -98,18 +95,21 @@ non-downward action. Store the tax; never re-pay it.
 
 ## Address space
 
-An address is an ordered sequence of base-50 couplets (alphabet `A–Z`,`a–z`
-minus `o`,`O`; see `codec/`). Treat each single character as a digit: freeing
-one more digit multiplies the reachable set ×50 — nested **rings** off a shared
-prefix.
+An address is an ordered sequence of literal Base62 couplets (alphabet
+`0–9 A–Z a–z`; see `codec/`). Treat each single character as a digit:
+freeing one more digit multiplies the reachable set ×62 — nested **rings**
+off a shared prefix. A shared root can be recorded once for an element tree,
+with each differing continuation expanded to recover the complete value;
+wildcards traverse the corresponding range. Parent storage can use that
+shared context heavily. Full address arrays are the currently built keys.
 
 Off the `AA.AA.AA.AA.` prefix:
 
 | Freed | Reachable | Example |
 |---|---|---|
-| last char (`A*`) | 50 | `AA.AA.AA.AA.A*` |
-| whole 5th couplet | 2,500 | `AA.AA.AA.AA.` |
-| one digit deeper | 125,000 | `AA.AA.AA.A` |
+| last char (`A*`) | 62 | `AA.AA.AA.AA.A*` |
+| whole 5th couplet | 3,844 | `AA.AA.AA.AA.` |
+| one digit deeper | 238,328 | `AA.AA.AA.A` |
 
 A **trunk** is a leading-character subtree at a given ring — `AA.AA.AA.AA.A*`,
 `…B*`, `…C*`, … A trunk is not a fixed width: it grows **deeper** (adds rings)
@@ -122,7 +122,7 @@ same unit; `AFTER:b`'s `b` is a trunk.)
 Kinds are laid out **trunk-aligned**, one kind per trunk (a kind may span more
 than one), sized to demand:
 
-- A kind rounds **up to the next whole trunk letter**. It fills part of its
+- A kind rounds **up to the next whole trunk symbol**. It fills part of its
   trunk(s); the unused tail is left empty as deliberate **sparse headroom**.
 - The next kind starts at the **next unoccupied trunk**, never butted against
   the previous kind's last used slot. If a kind finishes anywhere in the `D*`
@@ -133,7 +133,7 @@ Running example (root namespace `AA.AA.AA.AA.*`):
 - **single hex codes + `0x`** — the `A` trunk (`AA.AA.AA.AA.A*`). Small; the
   whole kind fits in one trunk. (`0x` = `AA.AA.AA.AA.AA`.)
 - **hex couplets (256-byte codes)** — start at `AA.AA.AA.AA.BA`, taking as much
-  of the `B` trunk as 256 requires (expanding into depth past B's first 50).
+  of the `B` trunk as 256 requires (expanding into depth past B's first 62).
 - **next kind** (3- or 4-couplet set — **undecided**) — the next clean trunk
   (`C`/…), leaving B's tail sparse.
 
@@ -916,14 +916,14 @@ drop that slot's constituents).
 **Address column collation (firmed 2026-09-18) — `COLLATE "C"` on the `text[]`
 address columns.** `token_id` and the FK address columns (`parent_token_id`,
 `child_token_id`, `member_token_id`, `group_token_id`) are pinned `COLLATE "C"` so
-element comparison is **byte order = `codec::kAlphabet`'s order** (A–N,P–Z,a–n,
-p–z). Without the pin the columns inherit the DB default collation
+element comparison is **byte order = `codec::kAlphabet`'s order**
+(`0–9 A–Z a–z`). Without the pin the columns inherit the DB default collation
 (case-interleaved, `aAbB…`), so the PK btree order does NOT match address order —
 a contiguous trunk is NOT a contiguous PK range, breaking gather / ranges /
 sequential fill (a bare range scan silently drops members; a query-side
-`COLLATE "C"` degrades to a full index walk, the forbidden search cost). This is a
-**pure collation pin, not an alphabet change** (byte order already equals the
-codec's documented order) and it **preserves the arrayed `text[]` storage** —
+`COLLATE "C"` degrades to a full index walk, the forbidden search cost). The
+existing collation pin matches the current Base62 alphabet and
+**preserves the arrayed `text[]` storage** —
 chosen for address compression and to avoid re-parsing a dot-joined string on
 every action — changing only sort order. Equality / point reads are unaffected
 (collation-independent); ordered ranges now ride a genuine bounded PK `Index
@@ -1158,7 +1158,7 @@ adversary-reviewed to a clean PASS, and lead-confirmed; on branch
   `delete_pair`; and `gather` (contiguous PK-range enumerator for
   terminal-wildcard / range). Done.
 - `command/` — command IR + structural (no-TYPE) validation + ADDRESS span planner
-  (with a base-50 successor). Done.
+  (with a Base62 successor). Done.
 - `declare/` — DECLARE core: literal structure (mint ordered constituents) +
   grouping (naming literal by use-provided-ID or mint-from-PARENTS), nesting, SEE
   idempotency; mass blank (pending work); manager-placed mint rejected pending G4.

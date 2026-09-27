@@ -10,27 +10,11 @@ namespace dbk {
 
 namespace {
 
-// Interim storage limit (Base64url transition, see
-// docs/address-encoding-transition.md "Storage key ordering"). Addresses are
-// still stored as text[] COLLATE "C", whose byte order equals the codec's
-// value order only for the letter symbols A-Z, a-z (values 0-51). Digits,
-// '-' and '_' (values 52-63) sort differently in bytes, so every range scan
-// below would silently miss or misplace them. Until the pair-code
-// (smallint[]) storage step lands, the store accepts exactly the letter
-// subset: rendering refuses anything above it, and successor/bound
-// arithmetic treats 'z' as the last symbol, so every range stays exact.
-constexpr int kStoredSymbolLimit = 52;
-
-bool element_is_storable(const codec::AddressElement &e) {
-  return e.first < kStoredSymbolLimit && e.second < kStoredSymbolLimit;
-}
-
 // Render a codec address as a Postgres text[] array literal, one couplet per
 // element, each element double-quoted (e.g. {"AA","AB"}). Couplets are drawn
-// from the stored letter subset, none of which need escaping, so plain
-// double-quoting is enough. Throws if the address is not a valid codec
-// address, uses a symbol outside the stored subset, or has a partial
-// element.
+// from the byte-ordered Base62 alphabet, none of which need escaping, so
+// plain double-quoting is enough. Throws on an invalid, empty or partial
+// address.
 //
 // Partial (wildcard) addresses are query-only: they name a range of
 // tokens, resolved by gather(), and are never a token identity. Every
@@ -46,13 +30,6 @@ std::string address_to_pg_array(const codec::Address &addr) {
     throw std::runtime_error(
         "address_to_pg_array: a partial (wildcard) address is query-only, "
         "never a token identity");
-  }
-  for (const codec::AddressElement &e : addr) {
-    if (!element_is_storable(e)) {
-      throw std::runtime_error(
-          "address_to_pg_array: digits, '-' and '_' need the pair-code storage "
-          "step (text[] byte order differs from address order for them)");
-    }
   }
   std::string out = "{";
   for (std::size_t i = 0; i < addr.size(); ++i) {
@@ -88,8 +65,7 @@ codec::Address text_to_address(const std::string &text) {
   return *addr;
 }
 
-// Increments `addr` in place as a counter over full couplets of the stored
-// letter subset (radix kStoredSymbolLimit) — the
+// Increments `addr` in place as a counter over full Base62 couplets — the
 // second character increments fastest, carrying into the first character,
 // then carrying left into the preceding element — used only to compute
 // gather's exclusive upper bound (a private implementation detail of this
@@ -103,12 +79,12 @@ codec::Address text_to_address(const std::string &text) {
 bool increment_full_address(codec::Address &addr) {
   for (std::size_t i = addr.size(); i-- > 0;) {
     codec::AddressElement &e = addr[i];
-    if (e.second + 1 < kStoredSymbolLimit) {
+    if (e.second + 1 < codec::kAlphabetSize) {
       ++e.second;
       return true;
     }
     e.second = 0;
-    if (e.first + 1 < kStoredSymbolLimit) {
+    if (e.first + 1 < codec::kAlphabetSize) {
       ++e.first;
       return true;
     }
@@ -138,7 +114,7 @@ struct WildcardBounds {
 // arrays first diverge (see NOTES.md "Gather primitive"). When the
 // wildcard's first character is already the alphabet's last, the next
 // trunk carries into the fixed leading elements (incremented as a
-// stored-subset counter); if those are exhausted too (or the wildcard has no leading
+// Base62 counter); if those are exhausted too (or the wildcard has no leading
 // elements at all), there is no trunk above this one and the range is left
 // open (`high` stays nullopt).
 WildcardBounds wildcard_bounds(const codec::Address &w) {
@@ -148,7 +124,7 @@ WildcardBounds wildcard_bounds(const codec::Address &w) {
   b.low.assign(w.begin(), w.end() - 1);
   b.low.push_back(codec::AddressElement{last.first, 0, false});
 
-  if (last.first + 1 < kStoredSymbolLimit) {
+  if (last.first + 1 < codec::kAlphabetSize) {
     codec::Address high(w.begin(), w.end() - 1);
     high.push_back(codec::AddressElement{static_cast<uint8_t>(last.first + 1), 0, false});
     b.high = std::move(high);

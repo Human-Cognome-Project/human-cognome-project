@@ -8,9 +8,8 @@
 #include <vector>
 
 // The address / token_id codec: pure functions that convert between the
-// RFC 4648 section 5 (URL- and filename-safe Base64) symbol alphabet,
-// address sequences, their canonical string (token_id) form, and their
-// storage key (one numeric pair code per element), plus a position-based
+// byte-ordered Base62 symbol alphabet, address sequences, their dotted
+// string rendering (token_id), plus a position-based
 // delta transform used for prefix-relative (context) addressing.
 //
 // Nothing here talks to storage or holds state. Every function is a pure
@@ -20,26 +19,20 @@ namespace codec {
 // ---------------------------------------------------------------------
 // Alphabet: the single source of truth.
 //
-// The 64 symbols of RFC 4648 section 5, in RFC value order:
-//   A-Z (0-25), a-z (26-51), 0-9 (52-61), '-' (62), '_' (63).
-// A symbol's alphabet index IS its RFC value, and every code/index
-// conversion below uses that order. '=' (octet-Base64 padding), the
-// delimiter '.' and the partial marker '*' are not address symbols.
-//
-// Addresses are sequences of independent radix-64 digits grouped into
-// pairs. They use the RFC alphabet and value mapping, not the RFC's
-// octet-to-symbol encoding: an address is not the output of a generic
-// Base64url byte encoder (see docs/address-encoding-transition.md).
+// The 62 symbols, in PostgreSQL's built-in COLLATE "C" byte order:
+//   0-9 (0-9), A-Z (10-35), a-z (36-61).
+// Each address element is a literal two-character pair stored in text[].
+// The delimiter '.' and partial marker '*' are rendering/query syntax,
+// not address symbols. See docs/address-encoding-transition.md.
 // ---------------------------------------------------------------------
 
-constexpr int kAlphabetSize = 64;
+constexpr int kAlphabetSize = 62;
 extern const std::array<char, kAlphabetSize> kAlphabet;
 
-// Couplet (pair) codes span [0, kCoupletSpace) -- 64*64 possible pairs,
-// i.e. twelve bits: first_value * 64 + second_value.
-constexpr int kCoupletSpace = kAlphabetSize * kAlphabetSize;  // 4096
+// Transient pair codes span [0, kCoupletSpace). Stored keys remain text[].
+constexpr int kCoupletSpace = kAlphabetSize * kAlphabetSize;  // 3844
 
-// The character's alphabet index (RFC value), or -1 if it is not in the
+// The character's byte-ordered alphabet index, or -1 if it is not in the
 // alphabet.
 int alphabet_index(char c);
 
@@ -48,7 +41,8 @@ bool is_valid_char(char c);
 // ---------------------------------------------------------------------
 // Couplets: one address element is a pair of alphabet symbols, packed
 // into a code in [0, kCoupletSpace). Code order is value order: comparing
-// two codes numerically compares the pairs digit by digit.
+// two codes numerically compares the pairs digit by digit. Pair codes
+// support address arithmetic; they are not the PostgreSQL storage key.
 // ---------------------------------------------------------------------
 
 bool is_valid_couplet(char first, char second);
@@ -113,9 +107,8 @@ bool is_valid_address(const Address &address);
 // ---------------------------------------------------------------------
 // token_id: the canonical string form of an address.
 //
-// token_id is the human-facing and interchange rendering. Storage keys
-// use the pair-code form below, because byte order of token_id strings
-// is NOT value order once digits, '-' and '_' are in the alphabet.
+// token_id is the dotted human-facing rendering. PostgreSQL stores each
+// full pair literally as one element of a text[] key with COLLATE "C".
 //
 // OPEN: delimiter is '.' between elements (matches the worked examples,
 // e.g. "AA.AA.AA.AA.AA"). A full element serializes as its two
@@ -139,35 +132,6 @@ std::optional<std::string> encode_token_id(const Address &address);
 // (non-alphabet, non-marker) character, a partial marker on any element
 // but the last, or a stray/duplicated/leading/trailing delimiter.
 std::optional<Address> decode_token_id(const std::string &token_id);
-
-// ---------------------------------------------------------------------
-// Storage key: one pair code per element, in address order.
-//
-// The record tier stores token_id as this array (PostgreSQL smallint[];
-// codes fit in [0, 4096)). Lexicographic comparison of two keys is value
-// order of the addresses, so an ordered index over the key follows the
-// codec's digit order exactly, whatever symbols are involved. token_id
-// strings are rendered from the key at the edges; they are never the
-// ordering authority.
-// ---------------------------------------------------------------------
-
-using PairKey = std::vector<uint16_t>;
-
-// The storage key of a full address. Returns nullopt if the address is
-// invalid or contains a partial element (a partial names a range of keys,
-// not one key; see partial_code_range).
-std::optional<PairKey> to_pair_key(const Address &address);
-
-// The address a storage key names. Returns nullopt if any code is outside
-// [0, kCoupletSpace).
-std::optional<Address> from_pair_key(const PairKey &key);
-
-// The inclusive range of pair codes a partial element stands for: every
-// second symbol after its first, i.e. [first*64, first*64 + 63]. One
-// contiguous interval in key order. Returns nullopt if `e` is not a valid
-// partial element.
-std::optional<std::pair<uint16_t, uint16_t>> partial_code_range(
-    const AddressElement &e);
 
 // ---------------------------------------------------------------------
 // Delta-by-position: prefix-relative (context) addressing.

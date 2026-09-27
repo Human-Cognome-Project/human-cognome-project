@@ -1,10 +1,8 @@
 # database — record-tier API reference
 
-> **Address-format boundary (2026-09-26):** The codec now uses the RFC 4648
-> §5 URL-safe alphabet (radix 64). Until the pair-code storage step lands,
-> the record tier stores only the letter subset `A–Z a–z` and refuses
-> digits, `-` and `_`. Base-50 examples below still read correctly as
-> letter addresses. See [address encoding transition](../../docs/address-encoding-transition.md).
+> **Address format (2026-09-26):** The codec uses byte-ordered Base62 and the
+> record tier stores literal pairs in `text[] COLLATE "C"`. Older base-50
+> examples are historical; see [paired-address decision](../../docs/address-encoding-transition.md).
 
 > **⚠ Forward flag (2026-09-21; updated 2026-09-22).** §9's "WAL manager —
 > bookkeeper/observer … never drives" characterization has been rebased onto the
@@ -51,7 +49,7 @@ in `NOTES.md` ("Relationship model & type — firmed 2026-09-17", "Build-phase
 rulings — firmed 2026-09-17/18") and `PLAN.md` Part I.
 
 - **Address IS identity — no aliasing, no forwarding.** A token's address
-  (`codec::Address`, an ordered sequence of base-50 `codec::AddressElement`
+  (`codec::Address`, an ordered sequence of Base62 `codec::AddressElement`
   couplets) *is* its identity. The same construction always yields the
   same address (deduplicated by `mint`'s own SEE-probe); two distinct
   addresses are never bridged to a common identity. This is why
@@ -716,7 +714,7 @@ floor to ground constituent references against:
 - `0x` at `AA.AA.AA.AA.AA`, mass `0` (declared, the one explicit
   exception — there is nothing to derive at the floor).
 - The 16 hex atoms (`0`–`F`), mass `1` each, placed sequentially after
-  `0x` in the same trunk via `command::successor` (the base-50 address
+  `0x` in the same trunk via `command::successor` (the Base62 address
   increment).
 
 Every other constituent reference `declare::execute` resolves ultimately

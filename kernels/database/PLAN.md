@@ -308,7 +308,7 @@ In flight — next to lock (structural validation).
 ### II.2 Address span planner
 
 `plan(span, N) → [address per slot] + validity`. Cover-N, elastic-last-only,
-interior self-delimiting, nested-declare-as-one-slot. Adds a **base-50
+interior self-delimiting, nested-declare-as-one-slot. Adds a **Base62
 address-successor** helper over the codec (the codec exposes none) for sequential
 fill; depth expansion leans on the deferred trunk map (G5). Fill =
 analyst-supplied-start form pending G4. *Spec:* The literal intake formula
@@ -412,7 +412,7 @@ constraint — agents are used freely.
 | Agent | Builds | Depends on |
 |---|---|---|
 | 1 | II.0 schema + door rebase (new tables, dropped column/table, `member_of`/`members` read+write, mutation/delete primitives, `Constituent.mass` optional) | baseline |
-| 2 | II.1 Command IR + structural validation, II.2 span planner (+ base-50 successor) | baseline |
+| 2 | II.1 Command IR + structural validation, II.2 span planner (+ Base62 successor) | baseline |
 | 3 | II.3 DECLARE core (structure + grouping, synchronous reciprocal) | 1, 2 |
 | 4 | II.4 READ raw radial (structure + membership axes) | 1, 2 |
 | 5 | II.5 UPDATE four ops (over the II.0 primitives + gates) | 1, 2 (Agent 3 for test fixtures only — the UPDATE cores build on the II.0 door + II.2 span grammar, not on the DECLARE core) |

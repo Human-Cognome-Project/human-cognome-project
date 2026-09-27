@@ -222,9 +222,9 @@ WHERE trigger_schema = 'public'
 -- ============================================================================
 -- 8. Address columns carry COLLATE "C" (firmed 2026-09-18).
 -- ============================================================================
--- Every text[] ADDRESS column (the PK and its four FK counterparts) must be
+-- Every text[] ADDRESS column (the PK and its eight FK counterparts) must be
 -- pinned COLLATE "C" so element comparison is byte order = codec::kAlphabet's
--- documented order (A-N,P-Z,a-n,p-z); PK btree order must equal address
+-- documented Base62 order (0-9,A-Z,a-z); PK btree order must equal address
 -- order for a contiguous trunk/range to be a contiguous PK range (the
 -- gather primitive's prerequisite). Expect exactly these 9 rows, all
 -- collname 'C':
