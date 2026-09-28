@@ -16,7 +16,7 @@ struct pg_conn;
 // libpq door over the WAL manager's OWN Postgres DB (`wal_manager` --
 // wal_schema.sql, W-1). Mirrors controller/controller.h's "single door,
 // communications-only" discipline, but writes go ONLY to the WAL DB -- this
-// door never touches `hcp3_core` (WAL-IMPL-PLAN.md S0).
+// door never touches `hcp_core` (WAL-IMPL-PLAN.md S0).
 //
 // Every access is a bounded PK follow, matching the schema's only-follow
 // discipline (no reverse index, no predicate scan on a non-key column):

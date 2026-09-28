@@ -8,8 +8,7 @@
 // bookkeeping step -- record the report exactly once, open what it owes,
 // and close the obligation it settles when it is a settling write.
 //
-// A discrete, standalone-buildable module (its own wal_ingest_test.cpp,
-// WAL-IMPL-PLAN.md S2 layout) -- not folded into wal_book or
+// A discrete, standalone-buildable module (WAL-IMPL-PLAN.md S2 layout) -- not folded into wal_book or
 // wal_recognize.
 namespace wal {
 

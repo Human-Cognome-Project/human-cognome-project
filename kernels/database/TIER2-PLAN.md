@@ -1,5 +1,9 @@
 # TIER2-PLAN — the analyst-facing current-work body on the activation substrate
 
+> Historical build and test plan. The database-resetting harness described
+> below was removed on 2026-09-28. `hcp_core` is retained as an initial
+> candidate core and must not be reset to run a test.
+
 > **Terminology.** This is a database/cache-manager reaction handler, not analyst cognition or an implementation of analyst functions. It is the analyst-facing current-work endpoint of the DB/cache kernel.
 
 **Status: BUILT + adversary-vetted (2026-09-23).** Realigns the
@@ -116,8 +120,8 @@ New module `dbmanager/` inside `kernels/database/`; WAL is now the peer family `
 3. **A driver/test** (standing in for the deferred configuration routine) wiring
    `Registry` + `Scheduler` + N analyst boxes + the shared `Controller` + the two
    arenas, seeding fixture `Request`s and asserting the right `Response` lands at the
-   right return endpoint. DB-backed (disposable `hcp3_core`, the `dispatch_test`
-   harness shape).
+   right return endpoint. The original DB-backed fixture harness was removed
+   because it reset its database.
    - **Priority levels (pinned, per `kernels/wal/WAL-INTEGRATION-PLAN.md` §4's precedent of
      pinning them for the isolated cut):** `Scheduler` constructed with `num_levels = 4`,
      reflecting the pinned tier map (0 = reconcile, **1 = analyst**, 2 = pending,
@@ -166,9 +170,7 @@ New module `dbmanager/` inside `kernels/database/`; WAL is now the peer family `
 
 ## Tests (project rule — ships with tests)
 
-`g++ -std=c++17 -O2 -Wall -Wextra`, prints `PASS <name>`, DB-backed against a
-disposable `hcp3_core` (skips-clean with a clear non-zero message if no local
-Postgres), same harness as `dispatch_test.cpp`:
+Historical cases from the removed database-resetting harness:
 
 - Each verb as a single `Command` → correct `Result` lands at `reply_to` (DECLARE,
   READ, MOVE_RECORD, ADD_CONNECTION, DELETE_RECORD, DELETE_CONNECTION).

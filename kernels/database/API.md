@@ -16,9 +16,11 @@
 
 **Status: record tier COMPLETE** (built 2026-09-17/18, on branch
 `dbkernel-design-checkpoint`; commit `912d681` and prior on this branch).
-Every module below — `codec/`, `schema/`, `controller/`, `command/`,
-`declare/`, `read/`, `update/`, `dispatch/`, `seed/` — is built and tests
-green against a live, disposable `hcp3_core` Postgres database.
+The record-tier modules — `codec/`, `schema/`, `controller/`, `command/`,
+`declare/`, `read/`, `update/`, `dispatch/` — were built and reviewed at
+this checkpoint. Their DB-resetting test harnesses were removed on
+2026-09-28. The `hcp_core` snapshot is the candidate start of the growing
+canonical core, not test data to reset.
 
 "Record tier" means: the six live verbs — `DECLARE_RECORD`, `READ_RECORD`,
 `MOVE_RECORD`, `ADD_CONNECTION`, `DELETE_RECORD`, `DELETE_CONNECTION` — are
@@ -104,13 +106,15 @@ rulings — firmed 2026-09-17/18") and `PLAN.md` Part I.
   relationship is which axis (which table) it sits on, never a stored
   label.
 
-- **Mass is derived, never declared — except the seed floor.** No verb
+- **Mass is derived, never declared by verbs — initial values are assigned.** No verb
   request carries a mass operand. `DECLARE_RECORD` always writes mass
   blank (SQL `NULL`); aggregation is later, unbuilt, manager work. The
-  *only* declared masses in the whole system are the 16 hex atoms (mass
-  1) and `0x` (mass 0), written once by `seed/seed_0x.cpp` through
-  `Controller::mint`'s optional `mass` parameter — a bootstrap channel,
-  not something `DECLARE_RECORD` or any core exposes.
+  encoding floor assigns mass 1 to the 16 hex atoms and 0 to `0x`.
+  The initial snapshot also has three provisional label rows assigned
+  mass 10. They are not fully constructed tokens: the data needed for
+  their proper structures does not exist yet.
+  `Controller::mint`'s optional `mass` parameter is a bootstrap channel,
+  not an operand of `DECLARE_RECORD`.
 
 ---
 
@@ -576,14 +580,15 @@ There is **no external wire format yet** — building one is a named,
 deferred seam (G6; see §9). The only surface today is the **in-process
 IR**: construct the `command::` struct(s) directly in C++, route them
 through `dispatch::`, and read back a typed result. This is exactly how
-`dispatch_test.cpp` and every core's own `*_test.cpp` drive the API.
+Earlier integration harnesses drove this API, but those that reset named
+databases were removed on 2026-09-28.
 
 ```cpp
 #include "controller.h"
 #include "command_ir.h"
 #include "dispatch.h"
 
-dbk::Controller ctl("dbname=hcp3_core");
+dbk::Controller ctl("dbname=hcp_core");
 
 // Build a DECLARE_RECORD IR value directly.
 command::DeclareRecord node;
@@ -645,7 +650,7 @@ layer, not a required gate.
 ## 6. Door primitives (for agents building directly on the controller)
 
 `dbk::Controller` (`controller/controller.h`) is the **sole writer** to
-`hcp3_core` — communications-only; nothing outside `controller/` touches
+`hcp_core` — communications-only; nothing outside `controller/` touches
 the tables directly. One libpq connection per `Controller` instance
 (`explicit Controller(const std::string &conninfo)`, throws
 `std::runtime_error` on connection failure).
@@ -704,22 +709,16 @@ makes DELETE safe to expose to a caller; calling `delete_token`/
 
 ## 7. Bootstrap
 
-There is no manager-placed address assignment yet (G4/G5, open). The
-*only* way tokens exist in a fresh `hcp3_core` is the seed floor,
-written once by `seed/seed_0x.cpp` directly through `Controller::mint`'s
-optional `mass` parameter — never through `declare::execute` or
-`dispatch::`, since those build on top of a store that already has a
-floor to ground constituent references against:
-
-- `0x` at `AA.AA.AA.AA.AA`, mass `0` (declared, the one explicit
-  exception — there is nothing to derive at the floor).
-- The 16 hex atoms (`0`–`F`), mass `1` each, placed sequentially after
-  `0x` in the same trunk via `command::successor` (the Base62 address
-  increment).
-
-Every other constituent reference `declare::execute` resolves ultimately
-traces back to one of these 17 seed tokens, or to a composite built (via
-DECLARE) on top of them.
+Manager-placed address assignment remains open (G4/G5). The 2026-09-28
+`hcp_core` snapshot provides an initial floor: 16 hex atoms at
+`00.00.00.00.00`–`00.00.00.00.0F` (mass 1), `0x` at
+`00.00.00.00.0G` (mass 0), 256 two-nibble couplets with ordered parents,
+and three provisional label rows whose proper token structure awaits more
+data. See
+[`MANIFEST.md`](../../data/postgres/snapshots/2026-09-28-encoding-floor/MANIFEST.md).
+The former `seed/seed_0x.cpp` reset the database and used obsolete `AA`
+addresses; it has been removed. The snapshot is a starting point for
+checking, extending, or correcting the canonical core.
 
 ---
 
@@ -735,7 +734,7 @@ DECLARE) on top of them.
 | `read/` | The READ core. |
 | `update/` | The UPDATE core (four sub-ops). |
 | `dispatch/` | The verb dispatcher and arraying executor (§5, §3). |
-| `seed/` | `seed_0x` — the bootstrap seed floor (§7). |
+| `data/postgres/snapshots/` | Initial `hcp_core` encoding-floor snapshot (§7). |
 
 Each directory's own `README.md` goes deeper than this document,
 including every point where the spec was silent and the reasoning behind
@@ -759,7 +758,7 @@ the call made there.
 | **G4 — next-slot mechanism** | Deferred. Analyst-supplied-start vs. per-trunk cursor — Patrick's open decision. Gates manager-placed mint. |
 | **G5 — block boundaries past "hex couplets"** | Deferred. The trunk→kind map's extent past the hex-couplet kind is unfixed. |
 | **G6 — external wire/transport format** | Deferred. The in-process IR (§5) is the current surface; no text/file/network framing exists. |
-| **WAL manager** (`kernels/wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp3_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `kernels/wal/README.md`, `kernels/wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
+| **WAL manager** (`kernels/wal/` — a bookkeeper/observer over WAL reports; door surface `open`/`close`/`is_open`/`list_open`/`record_seen`, all against its own `wal_manager` DB, never `hcp_core`) | **Built.** Books return-path + mass obligations from a change's own data and monitors for their settling writes (self-accounting, no drain, only-follow). See `kernels/wal/README.md`, `kernels/wal/USAGE.md`. **Activation:** also **built** as a monitored-endpoint kernel (`kernels/wal/wal_kernel.{h,cpp}`, `kernels/wal/WAL-INTEGRATION-PLAN.md`) — reads reports off per-source in-boxes, books, and pushes owed reciprocal work to the cache-manager out-box (Pair-1 push, fixture-fed). The swarm-manager coupling, reload repopulation, the API-pair transport bridge, the live report feed, the cross-network DELETE validation act, and the cache manager's own runtime remain deferred. |
 | **Cache tier** (`UPDATE_CACHE`/`REBASE_CACHE`) | Deferred. Named face entries + dispatch stubs only; no mechanism designed. **`RECONCILE` removed from the dispatch surface (2026-09-22)** — now an analyst → WAL-manager message (priority-inbox promotion), not a db/cache-manager verb. |
 | **Mass aggregation** (sum-vs-centroid, nested aggregation) | Deferred. `DECLARE_RECORD` always writes mass blank. |
 | **Notation derivation** (surface-from-parents) | Deferred. `NOTATION` is stored exactly as given (or blank), never derived. |

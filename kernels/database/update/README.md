@@ -13,32 +13,11 @@ runtime.
 - `update_core.h` / `update_core.cpp` -- the four ops:
   `update::move_record`, `update::add_connection`, `update::delete_record`,
   `update::delete_connection`.
-- `update_core_test.cpp` -- a standalone check harness against a real,
-  disposable local `hcp3_core`, same style as `controller/controller_test.cpp`
-  and `declare/declare_core_test.cpp`.
 
-## Build & run
+## Build
 
-```sh
-# from kernels/database/update/
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
-    update_core.cpp update_core_test.cpp \
-    ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
-    ../controller/controller.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o update_core_test
-
-./update_core_test               # uses ../schema/schema.sql
-./update_core_test /path/to/schema.sql   # optional override
-```
-
-Resets the real, disposable `hcp3_core` before running, exactly as the
-other `*_test.cpp` harnesses do. If no local Postgres is reachable it
-prints a clear message and exits non-zero rather than faking a pass.
-
-**Verified against a real local Postgres for this build**: all 74 checks
-pass (`PASS update_core_test`).
+`update_core.cpp` builds against the codec, command IR, and controller.
+The former DB-resetting test harness has been removed.
 
 ## Scope
 

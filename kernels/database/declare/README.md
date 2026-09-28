@@ -11,29 +11,11 @@ in `../schema`, `../read`, or the ingestion runtime.
 
 - `declare_core.h` / `declare_core.cpp` -- the DECLARE core:
   `declare::execute(Controller&, const DeclareRecord&) -> declare::Result`.
-- `declare_core_test.cpp` -- a standalone check harness against a real,
-  disposable local `hcp3_core`, same style as `controller/controller_test.cpp`.
 
-## Build & run
+## Build
 
-```sh
-# from kernels/database/declare/
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
-    declare_core.cpp declare_core_test.cpp \
-    ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
-    ../controller/controller.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o declare_core_test
-
-./declare_core_test               # uses ../schema/schema.sql
-./declare_core_test /path/to/schema.sql   # optional override
-```
-
-Resets the real, disposable `hcp3_core` (`DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;`, reapply `schema.sql`) before running, exactly as
-`controller_test.cpp` does. If no local Postgres is reachable it prints a
-clear message and exits non-zero rather than faking a pass.
+`declare_core.cpp` builds against the codec, command IR, and controller.
+The former DB-resetting test harness has been removed.
 
 ## Scope
 

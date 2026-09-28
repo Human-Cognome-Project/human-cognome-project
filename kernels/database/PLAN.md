@@ -397,8 +397,9 @@ intent): DECLARE→declare core, READ→read core, UPDATE ops→update core, all
 the arraying executor for the additive verbs; cache verbs stay stubs. The external
 wire/framing format is DEFERRED (G6, firmed 2026-09-18) — build only a **minimal
 testable surface**; the bar for this stage is that the verbs are testable through
-the dispatch layer. Also reconcile the pre-rebase entry: rewire `seed/seed_0x.cpp`
-to the rebased door (`mint` optional-mass bootstrap channel) and supersede/rework
+the dispatch layer. Historical bootstrap task: the `seed/seed_0x.cpp` utility
+was subsequently removed because it reset the database and used obsolete
+addresses; the initial floor is now in the 2026-09-28 `hcp_core` snapshot. Supersede/rework
 the old flat-form `ingestion/` path that calls the removed door surface.
 
 ---

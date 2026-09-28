@@ -69,6 +69,11 @@ than one locus of a working tree without creating a new underlying identity.
 | Warm cache | Cache manager projects relevant dimensions into prepared SNode pieces and trees for a field of study. | It chooses nested detail or compressed aggregates according to the study and system budget. |
 | Hot memory / GPU working structure | Future analyst assembles a current model from warm pieces; harness loads the active field state. | Its SNode tree exposes detail near the inquiry and coarse perspectives elsewhere. |
 
+The cache manager will treat `hcp_core` as an always-relevant core database and
+access other databases according to the study. The 2026-09-28 encoding-floor
+snapshot is the initial candidate core to inspect and expand; the full
+multi-database runtime remains under development.
+
 For an encoding-table study, **Encoding tables** could be the root. Table
 memberships, vendor/source and format groupings, and represented byte values
 must fit beneath that root through progressively specific steps. The store

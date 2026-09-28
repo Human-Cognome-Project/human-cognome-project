@@ -37,9 +37,9 @@ DECLARE core now do better:
 **What replaces this directory:** `../command/` (the IR + validation +
 span planner), `../declare/` (DECLARE), `../read/` (READ), `../update/`
 (the four UPDATE ops), and `../dispatch/` (the verb dispatcher + arraying
-executor, PLAN.md II.7/II.8) -- test it there. `../seed/seed_0x.cpp` seeds
-the floor directly through `Controller::mint`'s bootstrap mass channel,
-no longer through this directory's `Ingestor`.
+executor, PLAN.md II.7/II.8). The old `seed/seed_0x.cpp` reset its
+database and used superseded addresses, so it was removed. The 2026-09-28
+`hcp_core` snapshot now records the initial encoding floor.
 
 Nothing here is rebuilt in place: the files that called the removed door
 surface (`ingestion.h`, `ingestion.cpp`, `ingestion_test.cpp`,

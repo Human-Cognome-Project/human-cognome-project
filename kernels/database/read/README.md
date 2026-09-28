@@ -19,9 +19,6 @@ PLAN.md I.C ("the core function is raw-radial only").
 
 - `read_core.h` / `read_core.cpp` -- the traversal (`dbread::read`), its
   result shape (`ReadNode`, `ReadResult`, `ReachedVia`, `ReadStatus`).
-- `read_core_test.cpp` -- a standalone check harness against a real,
-  disposable local Postgres (same style/bootstrap as
-  `controller/controller_test.cpp`).
 
 ## Interface
 
@@ -183,36 +180,7 @@ Flagged here, not silently assumed:
   members. Depth, direction and exclusions all apply per member exactly
   as they would to a concrete single-token anchor.
 
-## Build and run the tests
+## Build
 
-Requires libpq and a local Postgres (same as `controller/`):
-
-```sh
-# from kernels/database/read/
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I../command -I../controller -I"$(pg_config --includedir)" \
-    read_core.cpp read_core_test.cpp \
-    ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
-    ../controller/controller.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o read_core_test
-
-./read_core_test               # uses ../schema/schema.sql
-./read_core_test /path/to/schema.sql   # optional override
-```
-
-`read_core_test` resets the real, disposable `hcp3_core` database (drop +
-recreate `public`, reapply the schema) exactly as `controller_test` does,
-builds the fixture described above, and covers: a radial read; structure-
-axis-only; membership-axis-only; reverse orientation on each axis; depth 0
-vs. a deeper level (the LoD dial); a specific-id exclusion pruning a named
-branch; a terminal-wildcard exclusion pruning the same branch by pure
-prefix comparison; the linearized once-per-path return with a shared node
-(`p1`, reachable through two different composites) recurring at two
-positions, not deduplicated; a nonexistent anchor; a wildcard anchor that
-gathers a trunk and reads each member radially (asserting the linearized
-result over the whole region, including a node shared across members
-recurring per path, not deduplicated); and a wildcard anchor over an
-empty region (asserting `kOk` with no nodes, not a deferred status). If
-no local Postgres is reachable it prints a clear message and exits
-non-zero rather than claiming a pass.
+`read_core.cpp` builds against the codec, command IR, and controller.
+The former DB-resetting test harness has been removed.

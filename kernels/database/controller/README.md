@@ -1,14 +1,14 @@
-# hcp3_core write/mint controller
+# hcp_core write/mint controller
 
-The single **door** to the `hcp3_core` token-graph store. Sole-owner writer,
+The single **door** to the `hcp_core` token-graph store. Sole-owner writer,
 communications-only: callers go through the controller and never touch the
 tables directly. It is the C++ layer the schema header calls "a later
 write/mint controller (fold AND wire)."
 
-Binds **directly to a real Postgres `hcp3_core` database over libpq** — not an
-in-memory or virtual store. The data is disposable/consumptive, so there is no
-durability, migration, or persistence-abstraction machinery: the controller
-speaks plain SQL against real tables and keeps it simple.
+Binds directly to a PostgreSQL database over libpq. `hcp_core` is the initial
+core store, expected to grow or be corrected as the seed is checked. The
+controller takes connection information from its caller and speaks SQL against
+the named database; it does not create or reset it.
 
 Standalone: it builds, runs, and tests on its own. Its only dependency is the
 codec (`../codec/`), which owns all address ↔ token_id handling. It does not
@@ -17,16 +17,12 @@ assume it is the only resident process; it just opens its own connection.
 Files mirror `../codec/`'s shape:
 
 - `controller.h` / `controller.cpp` — the door plus the read/write ops.
-- `controller_test.cpp` — a standalone check harness against a real,
-  disposable local Postgres.
-- `controller_advtest.cpp` — an adversarial harness over the same store
-  (rollback, recovery, derivation, injection, distinct-reverse, idempotency).
 - `README.md` — this file.
 
 ## Interface
 
 `dbk::Controller` opens one libpq connection from a conninfo string
-(e.g. `"dbname=hcp3_core"`), and throws `std::runtime_error` if the connection
+(e.g. `"dbname=hcp_core"`), and throws `std::runtime_error` if the connection
 fails. All addresses cross the interface as `codec::Address`; the controller
 renders them to the schema's `text[]` couplet arrays and their dot-joined
 `token_text` internally, always via the codec.
@@ -179,60 +175,8 @@ PK), and two distinct addresses are never bridged to a common identity (this
 is also why `rekey` refuses a `new_id` that already exists). The controller
 therefore has no `resolve`/`fold` and touches no forwarding table.
 
-## Build and run
+## Build
 
-Requires libpq and a local Postgres. Flags come from `pg_config`:
-
-```sh
-# from kernels/database/controller/
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I"$(pg_config --includedir)" \
-    controller.cpp controller_test.cpp ../codec/codec.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o controller_test
-
-./controller_test               # uses ../schema/schema.sql
-./controller_test /path/to/schema.sql   # optional override
-```
-
-The adversarial harness builds and runs the same way (swap
-`controller_test.cpp` for `controller_advtest.cpp`, output binary
-`controller_advtest`).
-
-To compile the controller into a larger engine instead of the test, drop
-`controller_test.cpp` and link `controller.cpp` (plus the codec) with your own
-translation units; the only external link dependency is `-lpq`.
-
-## Test harness
-
-`controller_test.cpp` runs directly against the real **`hcp3_core`** database,
-which is disposable and may be overwritten any number of times — no throwaway
-or uniquely-named database is used. It never fakes the store:
-
-1. ensures `hcp3_core` exists (created once if absent, never dropped),
-2. resets it — `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` — and
-   reapplies `../schema/schema.sql`, so each run starts from a clean schema
-   regardless of prior contents,
-3. exercises the mint path (see/mint/link/wire), the only-follow reads,
-   idempotent re-mint, fold-and-wire consistency (`token_child` is the exact
-   reverse of `token_parent`'s distinct parents), membership reads/writes
-   (`add_membership`, `members_of`, `member_of`), the mutation primitives
-   (`rekey`, `delete_token`, `delete_pair`), `gather` (both overloads,
-   across its ordinary/carry/open-ended bound branches, byte-order
-   correctness, sibling-trunk exclusion, empty regions, and malformed-input
-   rejection), and the FK-violation rollback path.
-
-`controller_advtest.cpp` is a second, adversarial harness over the same
-disposable `hcp3_core`. It targets paths the base harness does not:
-multi-constituent FK rollback (no orphan link/child rows), controller reuse
-after a failed mint, `token_text` derivation (equals the codec dot-join of
-`token_id`, never the notation), notation SQL-injection safety, the
-distinct-reverse count for a repeated parent, idempotent re-mint leaving
-notation/links untouched, and adversarial cases for `rekey` (onto an
-existing `new_id`, from a nonexistent `old_id`) and `delete_pair`/
-`delete_token` (reciprocal-only removal, FK-blocked delete).
-
-It authenticates over the local unix socket (peer auth, no password). If no
-local Postgres is reachable it prints a clear message and exits non-zero
-rather than pretending to pass. Output is one `ok`/`FAIL` line per check, a
-`PASS`/`FAIL controller_test` summary, and a non-zero exit on any failure.
+`controller.cpp` is a C++17/libpq component. Link it with `codec.cpp` and
+`-lpq` from a caller that explicitly selects its database. The former
+DB-resetting test harnesses have been removed.

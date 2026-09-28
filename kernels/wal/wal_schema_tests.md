@@ -70,20 +70,17 @@ headers).
    secondary index of any kind on `history` beyond its own PK — the WAL
    manager only-follows; it never reverse-searches.
 
-## Build/run
+## Read-only verification
+
+Against an existing WAL manager database whose schema has already been
+installed:
 
 ```bash
-createdb wal_manager 2>/dev/null || true
-psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_schema.sql
-psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_verify.sql
+psql -X -d wal_manager -v ON_ERROR_STOP=1 -f wal_verify.sql
 ```
 
-Re-run against a freshly recreated `wal_manager` (`dropdb wal_manager &&
-createdb wal_manager`) to confirm the schema loads clean from scratch each
-time (idempotent-from-clean, not idempotent-in-place — `wal_schema.sql`
-issues plain `CREATE TABLE`, so a second run against the same live
-database is expected to error on already-existing objects, same as
-`schema/schema.sql`).
+Do not reset the database to run the verification. `wal_schema.sql` issues
+plain `CREATE TABLE` statements and is only for an explicitly new schema.
 
 `grep -i 'create index' wal_schema.sql` should show no matches: every
 index in this schema is PK-implied, never an explicit `CREATE INDEX`.

@@ -92,16 +92,18 @@ Current record-tier command baseline (unchanged, the reaction bodies a kernel ru
 
 ## Current state
 
-- **Record tier — COMPLETE.** `codec/`, `schema/`, `controller/`, `command/`,
-  `declare/`, `read/`, `update/`, `dispatch/`, `seed/` — all built, tested
-  green against a live disposable `hcp3_core`. Full reference: `API.md`.
+- **Record tier — built.** `codec/`, `schema/`, `controller/`, `command/`,
+  `declare/`, `read/`, `update/`, `dispatch/` were verified at the earlier
+  checkpoint. The reset harnesses and obsolete seeder were removed on
+  2026-09-28; the `hcp_core` snapshot is a candidate canonical starting
+  point. Full reference: `API.md`.
   `ingestion/` is retired (superseded, breadcrumb only).
 - **WAL manager — COMPLETE as a tested library, AND wired onto the messaging
   system (Pair-1 kernel, 2026-09-22).** `kernels/wal/` kernel set (W-1…W-6) built, every
   test PASSes, package-vetted primary↔adversary. A pure bookkeeper/observer over
   WAL reports — maintains the **active deferred-work topology** (the live
   open-obligation relation + append-only History) in its own `wal_manager` Postgres
-  DB, never `hcp3_core`. See `kernels/wal/README.md` (charter, file map, build/run) and
+  DB, never `hcp_core`. See `kernels/wal/README.md` (charter, file map, build/run) and
   `kernels/wal/USAGE.md` (consumer contract). **Now also built as a monitored-endpoint
   kernel** — `kernels/wal/wal_kernel.{h,cpp}` + `wal_kernel_test.cpp` (commits
   `3aca2ac`/`cf7e0c6`; 30 checks PASS, ASan/UBSan clean; coder+adversary discipline;
@@ -309,7 +311,7 @@ decisions".
 | `API.md` | The record-tier + WAL-manager API reference, and §9's built-vs-deferred table — the fastest way to check what's actually built. |
 | `kernels/wal/WAL-PLAN.md` | The WAL manager's design (rev. 6) — IMPLEMENTED; top status carries the ingest-atomicity trace + ownership ruling and the Pair-1-push-built flag. §8/§10 are its own open-items lists. |
 | `kernels/wal/WAL-IMPL-PLAN.md` | The WAL manager's build-task breakdown (W-1…W-6) — IMPLEMENTED. |
-| `kernels/wal/README.md` | Working *on* the WAL manager: charter, file map, build/run, disposable-DB convention (now includes `wal_kernel`). |
+| `kernels/wal/README.md` | Working *on* the WAL manager: charter, file map, and current verification status (includes `wal_kernel`). |
 | `kernels/wal/USAGE.md` | Working *with* the WAL manager (consumer contract) — read before writing cache-manager code against it; carries the push-model-built flag. |
 | `network/SWARM-NOTES.md` | Preliminary swarm/p2p direction notes — gated, not designed. |
 | `HANDOFF.md` | This file. |

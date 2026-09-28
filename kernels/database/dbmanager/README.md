@@ -14,8 +14,7 @@ coupling around them.
 `DbManagerKernel` is the **tier-2 rehome**, not a new core:
 
 - It routes a request to `dispatch_one` / `dispatch_stream`
-  (`dispatch/dispatch.h`) exactly as `dispatch_test.cpp` calls them
-  directly — `dispatch/` is consumed verbatim, unmodified, and this module
+  (`dispatch/dispatch.h`) directly — `dispatch/` is consumed verbatim, unmodified, and this module
   adds no verb logic, no validation, and no new rejection path.
 - Each request carries its own return endpoint (`box::Message::reply_to`)
   — the box IS the correlation, per `network/ENDPOINT-ACTIVATION-NOTES.md`
@@ -49,8 +48,6 @@ coupling around them.
   → `dispatch_one`/`dispatch_stream` over the shared `Controller` →
   append the `Response` → send its own handle to the request's
   `reply_to`.
-- `db_manager_kernel_test.cpp` — DB-backed, scheduler-driven fixture test
-  (see "Tests" below).
 
 ## What this module does NOT build (named seams, TIER2-PLAN.md)
 
@@ -68,72 +65,8 @@ coupling around them.
   sub-requests (READ→sim→DECLARE); concurrent-append/MPSC (single-threaded
   first cut).
 
-## Tests
+## Verification status
 
-DB-backed against the same disposable `hcp3_core` database
-`dispatch_test.cpp` uses (reset the same way: `DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;`, then `../schema/schema.sql` reapplied). Drives
-fixture `dispatch::Command` / `dispatch::AdditiveCommand` values through
-the endpoint/scheduler substrate — via `Scheduler::submit` +
-`run_until_idle`, never by calling `dispatch_one`/`dispatch_stream`
-directly — which is exactly what this module adds over `dispatch/`.
-
-Covers (`TIER2-PLAN.md` "Tests"):
-
-- Each verb as a single `Command` (DECLARE, READ, MOVE_RECORD,
-  ADD_CONNECTION, DELETE_RECORD, DELETE_CONNECTION) routes its `Result` to
-  `reply_to`.
-- An ordered stream (DECLARE then a MOVE of what it just placed) preserves
-  dependent ordering through the box.
-- A partial-rejection stream (an ADD_CONNECTION naming a nonexistent
-  group — a `Result` with its success flag false, NOT a throw) still runs
-  every subsequent item and returns the full N-length `Response`.
-- Multi-analyst correlation: two analyst boxes, two distinct
-  driver-supplied return endpoints; each request's `Response` lands at its
-  own `reply_to`, never crossed.
-- READ mutates nothing, checked by a `Controller` relationship/mass
-  snapshot diff before/after (no WAL manager in this harness to observe an
-  obligation on).
-- A malformed arena handle throws `std::invalid_argument`, propagated
-  uncaught out of `run_until_idle()`, store untouched.
-- A well-formed handle with an absent `reply_to` throws
-  `std::invalid_argument`, propagated uncaught out of `run_until_idle()`,
-  store untouched, nothing sent to any return box.
-- A numeric but out-of-range arena handle throws `std::out_of_range` from
-  `req_arena_.at(index)`, propagated uncaught out of `run_until_idle()`.
-
-## Build & run
-
-Requires libpq and a local Postgres reachable as the current OS user (peer
-auth, no password) — same harness convention as `dispatch/dispatch_test.cpp`.
-
-```sh
-# from kernels/database/dbmanager/
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I../command -I../controller -I../declare -I../read \
-    -I../update -I../dispatch -I../../../network/endpoint -I"$(pg_config --includedir)" \
-    db_manager_kernel.cpp db_manager_kernel_test.cpp \
-    ../dispatch/dispatch.cpp \
-    ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
-    ../controller/controller.cpp \
-    ../declare/declare_core.cpp ../read/read_core.cpp ../update/update_core.cpp \
-    ../../../network/endpoint/endpoint.cpp ../../../network/endpoint/scheduler.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o db_manager_kernel_test
-
-./db_manager_kernel_test                       # uses ../schema/schema.sql
-./db_manager_kernel_test /path/to/schema.sql   # optional override
-```
-
-Output is one `ok`/`FAIL` line per check, a `PASS`/`FAIL
-db_manager_kernel_test` summary, and a non-zero exit on any failure. If no
-local Postgres is reachable it prints a clear message and exits non-zero
-rather than pretending to pass.
-
-### Disposable `hcp3_core` DB
-
-Same convention as `dispatch_test.cpp` / `read/read_core_test.cpp`: the
-test connects to `dbname=hcp3_core`, creating it if absent and resetting
-it (`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`, then
-`schema.sql` reapplied) at the start of every run. Don't point it at an
-`hcp3_core` database holding anything you want kept.
+The former DB-resetting integration test has been removed. The tier-2
+kernel remains available for a later verification approach that preserves
+existing database contents.
