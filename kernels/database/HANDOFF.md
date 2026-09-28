@@ -1,5 +1,42 @@
 # HANDOFF — reload pointer for the next session
 
+> **⚠ CURRENT reload pointer (2026-09-28) — supersedes the 2026-09-22 pointer below for WHAT'S NEXT.**
+>
+> **Done since:** the hex encoding floor is seeded into `hcp_core` and dumped (PR #103) — 276 tokens
+> (16 hex atoms `00.00.00.00.00`–`0F` mass 1; `0x` at `…0G` mass 0; 256 hex couplets `…10`–`…57`,
+> `0H`–`0z` sparse, ordered nibble parents folded+wired to `token_child`, mass 2; 3 temporary label
+> anchors at `00.00.01.00.0*`). Snapshot: `data/postgres/snapshots/2026-09-28-encoding-floor/`.
+> Addressing model: `kernels/database/NOTES.md` "Addressing re-based to the `00` root" (2026-09-28).
+>
+> **Engine is MOUNTED and CUDA-green on the GTX 1070.** Wrapper built at `engine/build-cuda` against
+> the machine's matched Taichi tree at `/opt/project/taichi` (`-DENGINE_TAICHI_ROOT=/opt/project/taichi
+> -DENGINE_TAICHI_CUDA=ON`, clang-15 / llvm-15). **No CUDA toolkit needed** — `TI_WITH_CUDA` (backend)
+> is separate from `TI_WITH_CUDA_TOOLKIT` (off); it uses the driver API + vendored libdevice.
+> `engine_devices` binds the 1070; `ctest` 3/3 (engine_smoke_test, field_test, index_cap_test). The
+> prebuilt binary is NOT yet folded into `engine/taichi` (optional copy + gitignore; build dirs already
+> ignored via `.gitignore` `engine/build*/`, `engine/taichi/build*/`).
+>
+> **Design worked this session (Patrick, 2026-09-28, later):** two decisions landed.
+> (1) **SNode research done and grounded** — `engine/docs/taichi-snode-mechanics.md` (cited to live
+> Taichi source): the index into a container `SNode` is the particle id; a `place` leaf is the
+> direct-value slot, a `pointer` cell is the reference-to-nested-tree slot (null = `0x`); a shared
+> subtree is a schema/id and warm-cache/DB property, **not** physical storage (each active cell owns its
+> child); full materialization is expected assignment into the fixed pool, not a cost; node ids are
+> monotonic and **restart** (analyst → harness, or engine via harness) reclaims the budget.
+> (2) **The 32-label row/column insert is DROPPED** in favour of a parent-field refinement — parent
+> fields key on **(parent value, ordinal slot)**, so rows/columns are EMERGENT, no new labels/edges/data
+> (`kernels/database/NOTES.md` "Parent fields key on (value, ordinal slot)"; `engine/docs/HARNESS-NOTES.md`
+> "Session clarifications (2026-09-28)"). Warm cache = composed `SNode` trees per line of study (volatile);
+> cold cache (`hcp_core`) = master library; the particle/particle-set is the instance assembled from
+> warm-cache pieces by the harness/analyst.
+>
+> **NEXT (pending PR acceptance for the notes+research above): draft the warm-cache schema plan and the
+> construction instructions** for how the cache manager builds the warm-cache pieces and how the harness
+> reads them into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`;
+> `engine/docs/OPERATIONAL-PLAN.md` §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree
+> construction; the built substrate pattern `engine/tests/engine_smoke_test.cpp` `make_field()` →
+> `Program::add_snode_tree` (root→dense/pointer→place). Still PLANNED, not built. Preserve BUILT vs planned.
+
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
 > (`network/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as

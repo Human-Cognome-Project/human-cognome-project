@@ -189,6 +189,42 @@ no grouping logic to write** — the division falls out of where the points sit.
 The assignment side's only job is to place kinds in whole trunks and leave the
 gaps. **Do not implement the division; it is emergent from the layout.**
 
+## Parent fields key on (value, ordinal slot) — firmed 2026-09-28 (governs on conflict)
+
+**(Patrick, 2026-09-28.)** Ordering is part of the **basis of commonality**, not
+just a physical effect. The parent call keys on **(parent value, ordinal slot)**
+in the ordered parent list — not the value alone. For a hex couplet the ordinal
+slots are `1 = high nibble`, `2 = low nibble`; the couplets already store their
+parents in that order (high then low, wired to `token_child`), so **the data
+already exists** — this only reads it completely.
+
+- **The 32-label row/column insert is DROPPED.** An earlier plan would have minted
+  `first hex=0…F` and `second hex=0…F` labels with membership edges to give the
+  couplets a row/column stratum. That is not needed and would invite a
+  **cross-connection explosion** we do not want. No new labels, no membership
+  edges, no new data.
+- **Rows and columns are EMERGENT, not stored.** Every couplet with value X in
+  ordinal slot 1 *is* the "first hex = X" set; every couplet with value Y in
+  ordinal slot 2 *is* the "second hex = Y" set. The grouping falls out of the
+  (value, slot) key, the same spirit as *Division by sparsity — a property of the
+  data, NOT code* above: do not implement the grouping; it is emergent.
+- **Position = ordinal slot** (the slot index in the ordered parent list). What
+  "position" means for ordered chains longer than a 2-parent couplet — the ordinal
+  slot, and how it relates to the existing "position vs the centre" note — is to
+  pin when the composition routine is designed; for the couplet it is unambiguous.
+- **Force is unchanged — whole-body, based on ordinal position.** The commonality
+  now keys on (value, slot), but the force is still applied over the **whole
+  body**, based on that ordinal position; position is the basis for the force, not
+  a localization of it to the sub-part. (Whole-body-responds rule preserved — see
+  `engine/docs/HARNESS-NOTES.md`.)
+- **Generalizes.** Making ordinal position part of the commonality basis covers
+  any construct where ordering matters, in one rule rather than per-case grouping
+  structures.
+- **OPEN (revisit later, do NOT design now):** this may also simplify connection
+  mechanics — §3.8 polarity is already derived from ordinal numbering, so a
+  positional commonality basis could subsume part of it. Noted only; leave
+  connection mechanics as-is until Patrick takes it up.
+
 ## Analyst command semantics (the relative assignment rule)
 
 The normal ingestion command is group-level, not point-level:
