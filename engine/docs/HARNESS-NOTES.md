@@ -938,6 +938,63 @@ Authoritative calling convention: `docs/api-reference/ir_builder_test.cpp`.
   a 3060 elsewhere, so the 1070 figures are dev reference — not chasing, per
   Patrick's no-over-polish). **The docs are now trustworthy to build against.**
 
+## Session clarifications (2026-09-28) — warm cache, SNode terms, positional commonality
+
+Literal record of Patrick's clarifications this session. Engine mechanics are
+grounded and cited in the new `engine/docs/taichi-snode-mechanics.md`; this
+section keeps the model-level reading.
+
+- **Taichi is particle-based by design.** Particles are what the engine is for; a
+  field over an `SNode` tree is the native particle set, not a concept bolted on.
+  Use the software's own terms, never coined ones.
+- **Identity, in real terms.** The **index** into a container `SNode` is the
+  particle id. Each cell's slot is either a **`place`** leaf (a direct-value slot
+  — the particle's own value) or a **`pointer`** cell (a reference to a nested
+  tree, **null when unused** = the `0x` state). That is Patrick's original "an
+  SNode index that is either a direct value or a reference to nested SNode ids."
+- **Positional commonality basis.** Parents were already noted to have a
+  positional effect (position vs the centre; the polarity source, §3.8), but
+  position was **not** part of the basis of commonality. It is now: the parent
+  call keys on **(parent value, ordinal slot)**. The **force is unchanged** —
+  whole-body, based on ordinal position (whole-body-responds rule preserved);
+  position is the basis for the force, not a localization to the sub-part. This
+  drops the idea of minting row/column labels — the grouping is emergent from the
+  (value, slot) key (see `kernels/database/NOTES.md`, "Parent fields key on
+  (value, ordinal slot)").
+- **Materialization is assignment, not a cost.** Claiming a particle is
+  **assignment of values** into a fixed-pool slot that already exists
+  (declaration), not allocation; unused = `0x`; release = zero back. Full
+  expansion creating all of a construct's leaves is the **expected, correct**
+  result of pulling in the whole construct at base LoD, bounded only by the
+  configured budget N. Sparsity (`pointer`/`bitmasked`) is only about **partial**
+  pulls, where the finer LoD is not brought in.
+- **Restart is the id-budget reclaim.** Node ids are monotonic (never recycle);
+  the process separation exists so the analyst can restart the harness, or the
+  engine via the harness, to reclaim the spent node-id budget. Budget sensibly for
+  a session; restart reclaims it.
+- **Cold vs warm cache, and the instance.** The **cold cache** (`hcp_core`) is the
+  master library of all possible items, configurations and connections. The
+  **warm cache** is the library for one line of study — composed `SNode` trees,
+  volatile — holding only the elements that study can reach (the WoW library, not
+  the Star Wars one). The **particle / particle-set is the specific instance**
+  assembled *from* the warm-cache pieces by the harness/analyst. This is the
+  storage → working → resident tiering (§3.9), selection happening twice.
+- **Frameworks, endpoints, LoD reduction.** A framework is an `SNode` tree with a
+  mix of **defined and open endpoints**. An **open endpoint is a connection
+  socket** where another tree or data point attaches at assembly (e.g. an avatar's
+  arm style, chosen per instance). LoD reduction collapses a **satisfied
+  grouping** into one referenced node ("sword fighting grip" stands in for all the
+  finger detail below the relevant LoD, and expands when the user works at that
+  LoD); expanded members **stay distinct** — the collapse is a **lossless
+  reference, not a merge** (address-is-identity holds through the LoD change).
+  Low-adjustability fixed continuations (elbow, wrist) roll up into what Patrick
+  calls **"compound functions"** rather than being exposed as separate adjustable
+  endpoints.
+- **Shared subtree is a schema/DB property, not physical.** "Stored once, attached
+  by read, not a dupe" is real at the `SNode` schema/id level and the warm-cache/DB
+  level, but **not** at physical storage — each active cell owns its child. See
+  `engine/docs/taichi-snode-mechanics.md` for the cited verdict.
+
 ## Open threads (pending Patrick's input)
 
 - **Tick spec (2026-09-13, updated):** the **next-tick setup IS the amalgamation
