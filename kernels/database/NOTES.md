@@ -103,6 +103,41 @@ with each differing continuation expanded to recover the complete value;
 wildcards traverse the corresponding range. Parent storage can use that
 shared context heavily. Full address arrays are the currently built keys.
 
+### Addressing re-based to the `00` root — reconfirmed 2026-09-28 (governs on conflict below)
+
+**(Patrick, 2026-09-28.)** The store is arrays of one address structure
+cross-referencing each other; at every point only the **delta from the current
+location** is recorded, and only as much of it as diverges — the shared prefix is
+**extrapolated from relative position**, never stored (the n-dimensional walk).
+Postgres holds this cleanly; it self-compresses innately, and a dump is mostly
+manifest, so standard tools compress it hard.
+
+- **Root is `00.00.00.00.00`, byte-ordered Base62** — not the `AA.…` letter root
+  the examples below still use. Base62's first 16 symbols are the hex digits
+  `0–F`, so placing the single hex codes at `…00`–`…0F` makes the **address
+  character equal the hex value** (natural ids, no lookup). The 256 hex couplets
+  share the `00.00.00.00.*` root, so only the **last couplet** is recorded per
+  address.
+- **`0x`** (virtual root particle, its number arbitrary): placed at `…0G`
+  (index 16, the first slot past `0F`) so it does not collide with hex `0` at
+  `…00` and the 16 codes keep their natural ids. **Firmed by the built floor**
+  (snapshot below).
+- **Manifest recording for a literal** (one option this unlocks — the big-data
+  lever): resolve the literal to its LoD units; record each **distinct unit once**
+  under its common prefix, with its value and the **locations it appears at**. The
+  location list is itself addresses, so it delta-compresses by the same rule.
+- **Self-consumption / compression routines — DEFERRED (later pass).**
+  Self-consumption = the reciprocal update of cross-connected items when a
+  commonality is declared; likely already partly covered by the reciprocal-link
+  work, may need a finesse pass. Do not build now.
+- **Pending re-base:** the `AA.…`-rooted examples in *Address space* and *Per-kind
+  trunk allocation* below predate this and are to be re-based to the `00` root; the
+  trunk/kind allocation logic itself is unchanged.
+- **Built 2026-09-28:** the encoding floor is seeded into `hcp_core` — 16 hex atoms
+  `…00`–`…0F`, `0x` at `…0G`, 256 hex couplets `…10`–`…57` (`0H`–`0z` left sparse),
+  plus the three temporary label anchors at `00.00.01.00.0*`. Snapshot +
+  manifest: `data/postgres/snapshots/2026-09-28-encoding-floor/`.
+
 Off the `AA.AA.AA.AA.` prefix:
 
 | Freed | Reachable | Example |
