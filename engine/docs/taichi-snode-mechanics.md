@@ -56,30 +56,47 @@ and set `leaf.dt`, then register the whole tree with
 `runtime.program().add_snode_tree(std::move(root), /*compile_only=*/false)`
 (`Program::add_snode_tree`, `taichi/program/program.cpp:238`).
 
-## Identity mapping (in real Taichi terms)
+## Identity mapping (proposed harness mapping, not an intrinsic Taichi rule)
 
-Patrick's "particle id" and "SNode_id" map onto two distinct things:
+Patrick's "particle id" and "SNode_id" are model terms. How they land on Taichi
+is a **harness mapping** — proposed here, not a rule the engine enforces:
 
-- **The index into a container `SNode` is the particle id.** A container of `N`
-  cells is addressed by its physical index; an instance is `(SNode, index)`.
-  There is no separate scalar "particle id" primitive — the index is it
-  (`snode.h:81` `physical_index_position[]`, `:97,307` `num_cells_per_container`).
+- **Proposed: the index into a container `SNode` is the particle id.** A container
+  of `N` cells is addressed by its physical index; a runtime instance is
+  `(SNode, index)` (`snode.h:81` `physical_index_position[]`, `:97,307`
+  `num_cells_per_container`). Taichi has no separate scalar "particle id"
+  primitive. Caveats the design still owes: a `particle_id` is an allocated
+  *instance* of a stored `token_id`, and one `token_id` can have several
+  `particle_id` instances (`kernels/database/WORKING-SET-AND-LEDGER.md`); a Taichi
+  index is scoped to one layout/tree; and carrying a stable particle instance
+  *through* tree recomposition is undesigned.
 - **`SNode::id`** is the id of the *structural node* (the schema element), not an
-  instance: `id = counter++` from a process-global `std::atomic<int> counter`
-  (`snode.cpp:12,220`).
+  instance: `id = counter++` (`snode.cpp:220`) from a static `std::atomic<int>`
+  that is reset per `Program` instance (see "Node ids" below).
 - **`snode_tree_id_`** identifies the *tree*, separate from the node id
   (`snode.h:342,353`).
 
-Each cell's slot is one of two things, and that is what says what the index
-represents:
+`place` and `pointer` are per-**container** `SNode` schema node types, chosen at
+schema-build time — **not** two values picked independently per index of one
+container:
 
-- a **`place`** leaf → a **direct-value slot** (the particle's own value);
-- a **`pointer`** cell → a **reference to a nested tree** (its child block),
-  which is **null when the cell is inactive** — the `0x` / unused state
-  (`llvm_sparse_runtime.md:52-54`).
+- a **`place`** leaf holds a **direct value** (the container's cells each carry
+  that value);
+- a **`pointer`** container's cell points to *its own* Taichi-allocated child
+  block of that **fixed** schema (`llvm_sparse_runtime.md:52-54`) — **not** a
+  general reference to an arbitrary shared or nested warm-cache tree.
 
-A container `SNode` holds its children in `std::vector<std::unique_ptr<SNode>>
-ch` (`snode.h:76`) — that is the schema-level "reference to nested SNode ids".
+Patrick's model intent — "a slot is a direct value, or a reference to nested SNode
+ids" — is a *model* statement; expressing it over Taichi's per-container schema
+types (rather than a per-index choice) is an **open translation question**. A
+container `SNode` does hold its children in `std::vector<std::unique_ptr<SNode>>
+ch` (`snode.h:76`) — the schema-level nesting — but that is fixed shape, not a
+per-cell arbitrary reference.
+
+On the `0x` correspondence: an inactive/null `pointer` cell is a **runtime storage
+state**; the addressed `0x` is a **real mass-zero row in `hcp_core`** (data). They
+correspond conceptually (both inert/empty) but are **different layers** — do not
+equate them.
 
 ## Load-bearing verdict: shared subtree is a schema/DB property, not physical storage
 
@@ -112,19 +129,30 @@ the paged `ListManager` (below). `dense` is for an always-materialized floor.
 
 **Corollary — full materialization is expected, not a cost to avoid.**
 Materializing every leaf is the correct result of pulling in the whole construct
-at base LoD. It is *assignment into the fixed particle pool* (declaration), not
-allocation, bounded only by the configured budget N. Sparsity is only about
-**partial** pulls, where the finer LoD is simply not brought in.
+at base LoD. In the model this is *assignment into the fixed particle pool*
+(declaration), bounded only by the configured budget N — how that pool maps to
+Taichi containers is open (see below). Sparsity is only about **partial** pulls,
+where the finer LoD is simply not brought in.
 
 ## Fixed particle budget, and claim = assignment not allocation
 
 The particle budget is fixed per system at initial configuration (the pool sized
-to the card, allocated once). Using a particle is **assignment of values**
-(claim / declaration) into a slot that already exists; an unused slot is `0x`
-(inert); releasing is zeroing it back to `0x`. This is the model's pool
-mechanic (`OPERATIONAL-PLAN.md` §3.11); on the engine side it is exactly why a
-`pointer` cell's active/inactive state is the claim/release, and why a `dense`
-floor is "already there."
+to the card, allocated once). In the model, using a particle is **assignment of
+values** (claim / declaration) into a slot that already exists; an unused slot is
+`0x` (inert); releasing is zeroing it back to `0x`. This is the model's pool
+mechanic (`OPERATIONAL-PLAN.md` §3.11).
+
+**How that maps to Taichi is OPEN — and it is not `pointer` activation.** A Taichi
+`pointer` cell does not assign into a pre-existing slot: `Pointer_activate` calls
+`alloc->allocate()` (`taichi/runtime/llvm/runtime_module/node_pointer.h:41,56`)
+and `Pointer_deactivate` recycles (`:67`) — a real per-activation allocation with
+its own cost, the *opposite* of assign-into-an-existing-slot. So the model's
+fixed-pool claim/release maps more naturally onto a **`dense` pool allocated
+once**, with claim/release expressed as **value assignment** into cells that
+already exist; `pointer` / `bitmasked` sparsity is a *different* mechanism (real
+allocate/recycle) that may serve a different layer. Which Taichi containers back
+the fixed pool is undesigned — do not treat `pointer` activation as the pool
+claim.
 
 ## Node ids monotonic; tree ids recycle; restart reclaims
 

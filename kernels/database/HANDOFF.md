@@ -18,8 +18,10 @@
 >
 > **Design worked this session (Patrick, 2026-09-28, later):** two decisions landed.
 > (1) **SNode research done and grounded** — `engine/docs/taichi-snode-mechanics.md` (cited to live
-> Taichi source): the index into a container `SNode` is the particle id; a `place` leaf is the
-> direct-value slot, a `pointer` cell is the reference-to-nested-tree slot (null = `0x`); a shared
+> Taichi source): the index into a container `SNode` is *proposed* as the particle id (a harness
+> mapping, not an intrinsic Taichi rule); `place`/`pointer` are per-container schema node types (a
+> `pointer` cell points to its own fixed-schema child block; an inactive null pointer is a runtime state,
+> a different layer from the `0x` data row); a shared
 > subtree is a schema/id and warm-cache/DB property, **not** physical storage (each active cell owns its
 > child); full materialization is expected assignment into the fixed pool, not a cost; node ids are
 > monotonic and **restart** (analyst → harness, or engine via harness) reclaims the budget.
@@ -27,7 +29,8 @@
 > fields key on **(parent value, ordinal slot)**, so rows/columns are EMERGENT, no new labels/edges/data
 > (`kernels/database/NOTES.md` "Parent fields key on (value, ordinal slot)"; `engine/docs/HARNESS-NOTES.md`
 > "Session clarifications (2026-09-28)"). Warm cache = composed `SNode` trees per line of study (volatile);
-> cold cache (`hcp_core`) = master library; the particle/particle-set is the instance assembled from
+> cold cache = master library spanning several DBs, of which `hcp_core` is the always-loaded core (not
+> the whole); the particle/particle-set is the instance assembled from
 > warm-cache pieces by the harness/analyst.
 >
 > **NEXT (pending PR acceptance for the notes+research above): draft the warm-cache schema plan and the

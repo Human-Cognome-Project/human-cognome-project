@@ -194,9 +194,10 @@ gaps. **Do not implement the division; it is emergent from the layout.**
 **(Patrick, 2026-09-28.)** Ordering is part of the **basis of commonality**, not
 just a physical effect. The parent call keys on **(parent value, ordinal slot)**
 in the ordered parent list — not the value alone. For a hex couplet the ordinal
-slots are `1 = high nibble`, `2 = low nibble`; the couplets already store their
-parents in that order (high then low, wired to `token_child`), so **the data
-already exists** — this only reads it completely.
+slots are `0 = high nibble`, `1 = low nibble` (the schema stores `ordinal` 0-based
+— `schema/schema.sql:176`, `controller/controller.h:44-45`); the couplets already
+store their parents in that order (high then low, wired to `token_child`), so
+**the data already exists** — this only reads it completely.
 
 - **The 32-label row/column insert is DROPPED.** An earlier plan would have minted
   `first hex=0…F` and `second hex=0…F` labels with membership edges to give the
@@ -204,11 +205,11 @@ already exists** — this only reads it completely.
   **cross-connection explosion** we do not want. No new labels, no membership
   edges, no new data.
 - **Rows and columns are EMERGENT, not stored.** Every couplet with value X in
-  ordinal slot 1 *is* the "first hex = X" set; every couplet with value Y in
-  ordinal slot 2 *is* the "second hex = Y" set. The grouping falls out of the
+  ordinal slot 0 *is* the "first hex = X" set; every couplet with value Y in
+  ordinal slot 1 *is* the "second hex = Y" set. The grouping falls out of the
   (value, slot) key, the same spirit as *Division by sparsity — a property of the
   data, NOT code* above: do not implement the grouping; it is emergent.
-- **Position = ordinal slot** (the slot index in the ordered parent list). What
+- **Position = ordinal slot** (the 0-based slot index in the ordered parent list). What
   "position" means for ordered chains longer than a 2-parent couplet — the ordinal
   slot, and how it relates to the existing "position vs the centre" note — is to
   pin when the composition routine is designed; for the couplet it is unambiguous.
