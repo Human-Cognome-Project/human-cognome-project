@@ -947,11 +947,19 @@ section keeps the model-level reading.
 - **Taichi is particle-based by design.** Particles are what the engine is for; a
   field over an `SNode` tree is the native particle set, not a concept bolted on.
   Use the software's own terms, never coined ones.
-- **Identity, in real terms.** The **index** into a container `SNode` is the
-  particle id. Each cell's slot is either a **`place`** leaf (a direct-value slot
-  — the particle's own value) or a **`pointer`** cell (a reference to a nested
-  tree, **null when unused** = the `0x` state). That is Patrick's original "an
-  SNode index that is either a direct value or a reference to nested SNode ids."
+- **Identity (proposed harness mapping).** The **index** into a container `SNode`
+  is *proposed* as the particle id (Patrick's term) — a harness mapping, not an
+  intrinsic Taichi rule; a `particle_id` is an allocated *instance* of a stored
+  `token_id` (`kernels/database/WORKING-SET-AND-LEDGER.md`), and carrying a stable
+  instance through tree recomposition is still design work. `place` and `pointer`
+  are per-**container** schema node types (chosen at schema time, not per index): a
+  `place` container's cells hold direct values; a `pointer` container's cell points
+  to *its own* fixed-schema child block, not an arbitrary nested warm-cache tree.
+  Patrick's "a slot is a direct value or a reference to nested SNode ids" is the
+  model intent; expressing it over Taichi's per-container types is open. An
+  inactive/null `pointer` cell is a runtime storage state; the `0x` token is a real
+  mass-zero row in `hcp_core` — related (both inert) but different layers. See
+  `engine/docs/taichi-snode-mechanics.md`.
 - **Positional commonality basis.** Parents were already noted to have a
   positional effect (position vs the centre; the polarity source, §3.8), but
   position was **not** part of the basis of commonality. It is now: the parent
@@ -967,18 +975,24 @@ section keeps the model-level reading.
   expansion creating all of a construct's leaves is the **expected, correct**
   result of pulling in the whole construct at base LoD, bounded only by the
   configured budget N. Sparsity (`pointer`/`bitmasked`) is only about **partial**
-  pulls, where the finer LoD is not brought in.
+  pulls, where the finer LoD is not brought in. (Taichi `pointer` activation itself
+  *allocates* — `node_pointer.h:41,56` — so how the fixed pool maps onto Taichi
+  containers is open; see `engine/docs/taichi-snode-mechanics.md`.)
 - **Restart is the id-budget reclaim.** Node ids are monotonic (never recycle);
   the process separation exists so the analyst can restart the harness, or the
   engine via the harness, to reclaim the spent node-id budget. Budget sensibly for
   a session; restart reclaims it.
-- **Cold vs warm cache, and the instance.** The **cold cache** (`hcp_core`) is the
-  master library of all possible items, configurations and connections. The
-  **warm cache** is the library for one line of study — composed `SNode` trees,
-  volatile — holding only the elements that study can reach (the WoW library, not
-  the Star Wars one). The **particle / particle-set is the specific instance**
-  assembled *from* the warm-cache pieces by the harness/analyst. This is the
-  storage → working → resident tiering (§3.9), selection happening twice.
+- **Cold vs warm cache, and the instance.** The **cold cache** is the broad master
+  library of possible items, configurations and connections; it spans **several
+  databases** the cache manager connects to, with private local databases kept
+  separate. **`hcp_core` is the seeded core database** — an element of the cold
+  cache likely loaded all the time — **not** the whole cold cache, and the initial
+  dump is not the sole source of all cold content. The **warm cache** is the
+  library for one line of study — composed `SNode` trees, volatile — holding only
+  the elements that study can reach (the WoW library, not the Star Wars one). The
+  **particle / particle-set is the specific instance** assembled *from* the
+  warm-cache pieces by the harness/analyst. This is the storage → working →
+  resident tiering (§3.9), selection happening twice.
 - **Frameworks, endpoints, LoD reduction.** A framework is an `SNode` tree with a
   mix of **defined and open endpoints**. An **open endpoint is a connection
   socket** where another tree or data point attaches at assembly (e.g. an avatar's
