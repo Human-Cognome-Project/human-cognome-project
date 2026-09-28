@@ -16,7 +16,7 @@ see [REPORT-TO-WORK.md](REPORT-TO-WORK.md).
 The WAL manager is a **bookkeeper/observer over WAL reports** — never a
 writer of the primary change:
 
-- It **never touches `hcp3_core`** and **never reads the command string**;
+- It **never touches `hcp_core`** and **never reads the command string**;
   recognition works from a report's own initial data only (`wal_recognize`).
 - It **never designs or drives the cache manager** — the async
   file-now/wire-later runtime this monitors for is out of scope; this set
@@ -78,80 +78,16 @@ wider local/global relationship.
 | `wal_recognize.{h,cpp}` | Pure `owed(report) -> vector<Obligation>`: no DB, no store read, no command string. |
 | `wal_recognize_test.cpp` | Each recognition rule (structure, membership, mass); DELETE yields nothing. |
 | `wal_book.{h,cpp}` | The libpq bookkeeping door over the WAL DB: `open` / `close` / `is_open` / `list_open` / `record_seen`, every one a bounded PK follow. |
-| `wal_book_test.cpp` | Open/close round-trip, double-open idempotence, absent-identity close as a no-op, History append-only, and an adversarial `EXPLAIN` check that every access plans as PK/PK-prefix (never a scan). |
 | `wal_ingest.{h,cpp}` | The one-report step: `record_seen` → `owed(report)` → `open` each; if `report` is a settling write, `close` the obligation it settles by identity equality. |
-| `wal_ingest_test.cpp` | Same-batch and later-batch forward/return pairs both close; a mass-fill closes a mass obligation; an unmatched settling write is inert. |
 | `wal_monitor.{h,cpp}` | The ordered per-source loop: feeds `wal_ingest` one report at a time, tracking one `lsn` high-water mark per source. |
-| `wal_monitor_test.cpp` | A scripted multi-source, interleaved stream reconciles to the expected open set; per-source progress is independent; out-of-order same-source delivery throws; a DELETE is History-booked only. |
 | `wal_kernel.{h,cpp}` | The WAL manager as a monitored-endpoint kernel (`WAL-INTEGRATION-PLAN.md`): the `scheduler::Handler` reaction body wired onto the `network/endpoint/` substrate — per-source in-box(es), owed-work pushed as arena-handles to one standing out-box. Reuses `wal_recognize`/`wal_book`/`wal_ingest`/`wal_monitor` unchanged. |
-| `wal_kernel_test.cpp` | Fixture-fed, DB-backed, scheduler-driven: per-source ingest, owed-work emission, same/later-batch settlement, cross-source interleave independence, recycled-endpoint drop (volatile transport, durable relation), a thrown out-of-order report pushing nothing, and the out-box/freshly-opened-rows single-tie invariant. |
 
-## Build & run
+## Verification
 
-Every part is standalone-buildable, C++17 + libpq, its own tiny in-file
-check harness (`ok`/`FAIL` lines, `PASS <part>_test` on success, non-zero
-exit on any failure) — same convention as `kernels/database/codec/README.md`. **DB-backed
-tests must be run from inside this directory** (`wal/`): they load
-`wal_schema.sql` relative to the current working directory (optionally
-overridable as `argv[1]`).
-
-```sh
-# from kernels/wal/ — pure, no DB:
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec \
-    wal_recognize.cpp wal_recognize_test.cpp ../database/codec/codec.cpp \
-    -o /tmp/wal_recognize_test && /tmp/wal_recognize_test
-
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec \
-    wal_report_test.cpp ../database/codec/codec.cpp \
-    -o /tmp/wal_report_test && /tmp/wal_report_test
-
-# from kernels/wal/ — DB-backed (see "Disposable wal_manager DB" below):
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
-    wal_book.cpp wal_book_test.cpp ../database/codec/codec.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o /tmp/wal_book_test && /tmp/wal_book_test
-
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
-    wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_ingest_test.cpp ../database/codec/codec.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o /tmp/wal_ingest_test && /tmp/wal_ingest_test
-
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I"$(pg_config --includedir)" \
-    wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp wal_monitor_test.cpp ../database/codec/codec.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o /tmp/wal_monitor_test && /tmp/wal_monitor_test
-
-# from kernels/wal/ — DB-backed AND links the shared endpoint substrate:
-g++ -std=c++17 -O2 -Wall -Wextra -I. -I../database/codec -I../../network/endpoint -I"$(pg_config --includedir)" \
-    wal_kernel.cpp wal_kernel_test.cpp \
-    wal_monitor.cpp wal_ingest.cpp wal_book.cpp wal_recognize.cpp \
-    ../../network/endpoint/endpoint.cpp ../../network/endpoint/scheduler.cpp ../database/codec/codec.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o /tmp/wal_kernel_test && /tmp/wal_kernel_test
-```
-
-Schema-only check (no C++ build):
-
-```sh
-# from kernels/wal/
-createdb wal_manager 2>/dev/null || true
-psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_schema.sql
-psql -d wal_manager -v ON_ERROR_STOP=1 -f wal_verify.sql
-```
-
-### Disposable `wal_manager` DB
-
-The DB-backed tests (`wal_book_test`, `wal_ingest_test`, `wal_monitor_test`)
-connect to `dbname=wal_manager` — a **disposable** database, created if
-absent and reset (`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`, then
-`wal_schema.sql` reapplied) at the start of every run, exactly as
-`read/read_core_test.cpp` does for `hcp3_core`. It is **always a separate
-database from `hcp3_core`** — nothing here ever connects to the core store.
-Because the reset is destructive, don't point these tests at a
-`wal_manager` database holding anything you want kept, and don't run two of
-these DB-backed tests against it at the same instant (concurrent resets
-race — a transient "relation does not exist" is that race, not a code
-defect; the test is deterministic when run alone).
+The pure `wal_recognize_test.cpp` and `wal_report_test.cpp` require no
+database and remain available. The DB-backed reset harnesses have been
+removed. To inspect an existing WAL manager schema without changing it,
+run `psql -X -v ON_ERROR_STOP=1 -d wal_manager -f wal_verify.sql`.
 
 ## Decisions on record
 

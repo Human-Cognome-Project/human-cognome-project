@@ -42,6 +42,8 @@ They were merged with both parent histories preserved. No force-push or history 
 - PR #63 reconciled the active histories and separated engine, kernel, network, research and archive material.
 - PR #66 restored the native C++ engine; PR #67 curated the modified Taichi fork with pinned dependencies.
 - PRs #68 and #69 established a from-source native CPU build, functional tests and matched-backend build checks in CI. The native engine has also run on development hardware. The >2^31 dense-index regression (`index_cap_test`) also runs in hosted CPU CI; the u8 array's pages are committed lazily, so the CPU check needs little real memory. Its CUDA variant runs only where a GPU is available.
-- Repository smoke tests cover the separated endpoint, database and WAL modules.
+- Repository smoke tests cover the endpoint and the pure database codec,
+  command, and WAL modules. The DB-backed test harnesses that reset named
+  databases were removed on 2026-09-28.
 
 The structural reorganization is complete. Further field-model vetting, realistic load measurements, kernel interface work and future network modules are development work described in [ROADMAP.md](ROADMAP.md), not conditions for accepting the repository layout. Historical material remains recoverable through Git even after files are moved or later removed from the current tree.

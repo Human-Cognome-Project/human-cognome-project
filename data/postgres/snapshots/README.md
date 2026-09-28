@@ -2,6 +2,11 @@
 
 This directory is reserved for reproducibility snapshots exported from development PostgreSQL instances.
 
+The [2026-09-28 encoding floor](2026-09-28-encoding-floor/MANIFEST.md) is the
+candidate starting state of `hcp_core`. It is retained while its contents
+are checked, corrected, and extended. Later snapshots may record its growth;
+none of these files authorizes resetting the live store.
+
 Use dated subdirectories and keep state dumps separate from source schema/migrations and from runtime kernel code. A snapshot set should normally include:
 
 - compressed SQL dump(s);

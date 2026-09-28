@@ -48,8 +48,8 @@ tests, standalone-buildable. This is the "Pair 1" wiring from the design note.
   `box.h`, `endpoint.h`, `scheduler.h`. Note the ownership rules: **the scheduler is
   the sole enqueue path** (`submit` / `Sender::send`); box is a dumb FIFO; a component
   is a **handler** registered on a box; recycled-slot generation safety.
-- **`wal/`** (the bookkeeper you wire IN): `README.md` (charter, file map, build/run,
-  the disposable `wal_manager` DB convention) and `USAGE.md` (the door: `open`/`close`/
+- **`wal/`** (the bookkeeper you wire IN): `README.md` (charter, file map,
+  current verification status) and `USAGE.md` (the door: `open`/`close`/
   `is_open`/`list_open`/`record_seen`; recognition via `wal_recognize`; the monitor
   loop). **The bookkeeping logic stays as-is** — you are wiring it onto boxes and adding
   a push outbox + originator routing + a driver, NOT rewriting recognize/book/close.
@@ -154,9 +154,9 @@ to the **correct originator's** outbox; recycled-slot / only-follow discipline p
    decision in the note; flag where the note is silent rather than inventing.
 2. **Vet the plan** with a fresh adversary (complete review, no summarization, interrogate
    completeness, refuse partial). Reconcile findings before building.
-3. **Build** (coder) to the reconciled plan; each part standalone-buildable, tests green
-   (`g++ -std=c++17 -O2 -Wall -Wextra`, prints `PASS <name>`). DB-backed parts use the
-   disposable `wal_manager` DB (see `wal/README.md`), never `hcp3_core`.
+3. **Historical build step:** the DB-backed test harness that reset
+   `wal_manager` has been removed. The pure tests remain in `wal/README.md`;
+   `wal_manager` remains separate from `hcp_core`.
 4. **Vet the build** with a fresh adversary; reconcile.
 5. **Verify green yourself**, then **commit** to `dbkernel-design-checkpoint` (attribution
    trailer per the session's convention) and push.

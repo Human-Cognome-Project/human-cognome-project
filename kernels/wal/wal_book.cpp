@@ -14,7 +14,7 @@ namespace {
 // controller.cpp's address_to_pg_array, EXCEPT here an EMPTY address is
 // legitimate input: it is the mass obligation's addr_b sentinel
 // (wal_schema.sql, W-1), not an error. controller.cpp's version rejects
-// empty because hcp3_core addresses are never empty; that rule is specific
+// empty because hcp_core addresses are never empty; that rule is specific
 // to that schema, not this one (WAL-PLAN.md "Standing": own-schema
 // latitude).
 //

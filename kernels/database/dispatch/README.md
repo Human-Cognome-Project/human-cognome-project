@@ -9,8 +9,6 @@ commands.
 
 - `dispatch.h` / `dispatch.cpp` -- the `Command` / `AdditiveCommand`
   variants, `dispatch_one()`, and `dispatch_stream()`.
-- `dispatch_test.cpp` -- unit tests against a real, disposable local
-  `hcp3_core` (same harness shape as `declare/declare_core_test.cpp`).
 
 ## What the arraying executor adds
 
@@ -19,10 +17,9 @@ Per Patrick's ruling (2026-09-18): DELETE_RECORD and DELETE_CONNECTION are
 the ONLY non-batchable record-tier ops, because they are destructive.
 DECLARE, READ, MOVE_RECORD and ADD_CONNECTION are ALL batchable -- the
 executor below is what makes that true across separate command
-invocations, and it is built and tested for all four
-(`dispatch_test.cpp`'s "4-verb chained stream" check runs a DECLARE, a
-READ, a MOVE_RECORD and an ADD_CONNECTION in one ordered stream, each
-depending on the previous item's write).
+invocations. The earlier four-verb chained-stream verification ran at
+the 2026-09-18 checkpoint; its database-resetting harness has since been
+removed.
 
 PLAN.md II.7 asks for "arraying is universal" -- an array is a compressed,
 ordered serial stream of single commands sharing a scalar frame; frame
@@ -106,27 +103,7 @@ Every core still re-validates its own IR defensively (the same discipline
 no validation, no new rejection path, and no new semantics of its own --
 it is pure routing plus, for the stream form, ordering.
 
-## Build & run the tests
+## Build
 
-Requires libpq and a local Postgres reachable as the current OS user (peer
-auth, no password), matching every other module's test harness.
-
-```
-g++ -std=c++17 -O2 -Wall -Wextra \
-    -I. -I../codec -I../command -I../controller -I../declare -I../read \
-    -I../update -I"$(pg_config --includedir)" \
-    dispatch.cpp dispatch_test.cpp \
-    ../codec/codec.cpp ../command/command_ir.cpp ../command/span_planner.cpp \
-    ../controller/controller.cpp \
-    ../declare/declare_core.cpp ../read/read_core.cpp ../update/update_core.cpp \
-    -L"$(pg_config --libdir)" -lpq \
-    -o dispatch_test
-
-./dispatch_test               # uses ../schema/schema.sql
-./dispatch_test /path/to/schema.sql   # optional override
-```
-
-Output is one `ok`/`FAIL` line per check, a `PASS`/`FAIL dispatch_test`
-summary, and a non-zero exit on any failure. If no local Postgres is
-reachable it prints a clear message and exits non-zero rather than
-pretending to pass.
+`dispatch.cpp` builds against the record-tier cores. The former
+DB-resetting test harness has been removed.

@@ -16,7 +16,7 @@ hex encoding floor.
 ## Contents — the encoding floor
 - **17 base particles** at `00.00.00.00.0*`: 16 hex atoms `…00`–`…0F`
   (notation `0`–`F`, mass 1) + `0x` virtual root at `…0G` (notation `0x`, mass 0).
-- **3 temporary label tokens** at `00.00.01.00.0*` (mass 10, notation = visible
+- **3 provisional label rows** at `00.00.01.00.0*` (assigned mass 10, notation = visible
   value): `Single Hex Code`, `Hex Couplets`, `Hex Code Patterns`. `Single Hex
   Code` and `Hex Couplets` are members of `Hex Code Patterns`. The 16 hex codes
   are members of `Single Hex Code`.
@@ -26,9 +26,11 @@ hex encoding floor.
   folded-and-wired into `token_child`; mass 2 (sum of parents); a member of
   `Hex Couplets`.
 
-Labels are crude construction-post placeholders: no parents/children yet, prose
-`notation` standing in for the real naming literal. The `notation` column is
-temporary/debug and slated to be dropped.
+These labels are placeholders, not fully constructed tokens. Their masses
+have been assigned, but the data needed to form their proper structures does
+not exist yet. They have no parents/children; prose `notation` stands in for
+the real naming literal. The `notation` column is temporary/debug and slated
+to be dropped.
 
 ## Row totals
 | table | rows |
@@ -40,11 +42,11 @@ temporary/debug and slated to be dropped.
 | member_of | 274 |
 
 ## Restore
-```
-createdb hcp_core
-zcat hcp_core.sql.gz | psql hcp_core
-```
-Verified 2026-09-28 by restoring into a throwaway database and reproducing the
+Restore only to an explicitly chosen **empty** database. Do not pipe this dump
+into the existing `hcp_core` store: `createdb hcp_core` failing because it
+already exists would not stop a following pipeline from writing to it.
+Use `psql -X -v ON_ERROR_STOP=1` so a restore fails on its first SQL error.
+The exporter verified a separate restore on 2026-09-28 and reproduced the
 row totals above.
 
 ## Integrity

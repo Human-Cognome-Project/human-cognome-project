@@ -1,5 +1,9 @@
 # WAL-manager activation integration — plan (draft, for adversary vetting)
 
+> Historical test plan. `wal_kernel_test.cpp` was removed on 2026-09-28
+> because it reset `wal_manager`; its historical results below describe
+> what was verified then, not a runnable current harness.
+
 **Status: BUILT + VERIFIED (2026-09-22).** Built against the built `network/endpoint/` substrate
 (commit `b97034a`) and the built `wal/` bookkeeper, as `wal/wal_kernel.{h,cpp}` +
 `wal_kernel_test.cpp`. Drafted 2026-09-22 MDT and reconciled the same day against a
@@ -201,7 +205,7 @@ exactly as `dataflow_test.cpp` drains an ephemeral return box.
 
 **Driver.** `wal/wal_kernel_main.cpp` (or fold into the test if a separate binary is
 premature — confirm in review): wires `Registry` + `Scheduler` + the in-box set + the
-out-box + a `WalBook` (against the disposable `wal_manager` DB) + a `WalMonitor` +
+out-box + a `WalBook` (against `wal_manager`) + a `WalMonitor` +
 `WalKernel`, registers the handler on each in-box, seeds the in-arena from fixtures,
 and `run_until_idle()`. Single-threaded cooperative scheduler, as built (no MPSC, no
 wake-on-arrival — the substrate's named deferred seams).
@@ -211,13 +215,13 @@ libpq calls are **synchronous**, and they run **inside** the run-to-completion
 handler on the **single-threaded** scheduler — so a DB round-trip blocks the entire
 scheduler until it returns; no other box (including, in a later pass, a pinned
 higher-priority RECONCILE box) is serviced meanwhile. This is **acceptable for this
-fixture-fed local pass against a disposable DB** and is called out so it is a known
+fixture-fed local pass** and is called out so it is a known
 property, not a surprise. Whether the durable store later moves to its own thread is
 Patrick's call in a later pass (see out-of-scope) — this pass does not design it.
 
 ## Tests — `wal/wal_kernel_test.cpp` (ships with the code; project rule)
 
-Fixture-fed, DB-backed (run from `wal/`, disposable `wal_manager` DB), same
+Fixture-fed, DB-backed (historical; harness removed), same
 `ok`/`FAIL` + `PASS <name>` convention. The **out-box consumer is a test stand-in**
 (the cache manager is not built): the test drains the out-box and reads owed-work out
 of the out-arena via the handle.
@@ -306,7 +310,7 @@ new files (and, at most, a README line pointing at the new part).
    interrogate completeness, refuse partial). Reconcile findings before building.
 2. **Build** (coder) to the reconciled plan; standalone-buildable, tests green
    (`g++ -std=c++17 -O2 -Wall -Wextra` [+ libpq/codec includes], prints `PASS`).
-   DB-backed parts use the disposable `wal_manager` DB, never `hcp3_core`.
+   Historically DB-backed parts used `wal_manager`, separate from `hcp_core`.
 3. **Vet the build** with a fresh adversary; reconcile.
 4. **Verify green**, then **commit** to `dbkernel-design-checkpoint` and push;
    update the 2026-09-21 forward flags in the touched docs to reflect what is built.

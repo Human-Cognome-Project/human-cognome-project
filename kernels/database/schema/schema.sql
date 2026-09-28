@@ -1,7 +1,7 @@
--- hcp3_core — cold swarm cache schema
+-- hcp_core — cold swarm cache schema
 --
 -- Passive backing store for the token-graph. Applied against an already
--- created `hcp3_core` database; this file issues no CREATE DATABASE.
+-- created `hcp_core` database; this file issues no CREATE DATABASE.
 --
 -- Everything is stored as token_ids, across two orthogonal relationship
 -- axes, each a reciprocal pair (see NOTES.md "Relationship model & type —

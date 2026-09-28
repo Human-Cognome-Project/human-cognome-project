@@ -1,5 +1,9 @@
 # WAL manager — implementation plan (for coding agents)
 
+> Historical test plan: the DB-backed harnesses described below were removed
+> on 2026-09-28 because they reset named databases. They are not run targets;
+> the pure recognition and report tests remain.
+
 > **STATUS: IMPLEMENTED** as `wal/` (2026-09-19) — W-1…W-6 all built and green
 > (see acceptance criteria per task below, all met), package-vetted
 > primary↔adversary, committed through `a899970`. See `wal/README.md` (charter,
@@ -25,7 +29,7 @@ needs the async reciprocal, the cache manager, or a Patrick decision is named an
 
 - **Bookkeeper/observer only.** The WAL manager reads WAL reports, derives what
   returns each change owes, and monitors for those returns. It **never writes the
-  primary change** (never touches `hcp3_core`), **never reads the command string**,
+  primary change** (never touches `hcp_core`), **never reads the command string**,
   and **never designs or drives the cache manager**. *(Spec 1.)*
   - Nuance to encode honestly: it **does** write to **its own WAL DB** (the
     obligation relation + History) — that is its bookkeeping, not a primary-store
@@ -134,11 +138,8 @@ wal/
   README.md             -- scope, the bookkeeper charter, build/run lines, decisions
 ```
 
-Build/run convention per part (as `codec/README.md` documents):
-`g++ -std=c++17 -O2 -Wall -Wextra <part>.cpp <part>_test.cpp -lpq -o /tmp/<part>_test && /tmp/<part>_test`
-→ prints `PASS <part>_test`, exits 0. DB-backed tests connect to a **disposable
-`wal_manager` database** (create-if-absent, same pattern as
-`read/read_core_test.cpp`); the WAL DB is **separate from `hcp3_core`**.
+The DB-backed test files in this historical build map have been removed.
+The WAL database remains separate from `hcp_core`.
 
 ---
 
@@ -259,12 +260,12 @@ The libpq door over the WAL DB. Every access a **bounded PK follow**:
   non-key column — that would be the forbidden predicate scan.
 - `record_seen(report)` — the **sole** history append: one row per report (source,
   lsn, footprint, scope, settled-identity-if-any).
-- Writes go **only** to the WAL DB — never `hcp3_core`.
+- Writes go **only** to the WAL DB — never `hcp_core`.
 - **Acceptance:** open then close leaves zero rows for that identity; `is_open` is
   true only between them; absent-identity close is a no-op that still History-records
   the report; every query plan is a PK lookup or PK-prefix range (no seq scan on a
   non-key column — assert with `EXPLAIN` in an adv test).
-- **Tests (`wal_book_test.cpp`, DB-backed, disposable `wal_manager`):** open/close
+- **Historical tests (`wal_book_test.cpp`, DB-backed; removed):** open/close
   round-trip; double-open idempotent; close of an absent identity is a no-op **and**
   the report is still in History; History grows append-only with `(source, lsn)`
   unique. Adv test: `EXPLAIN` shows PK-only / PK-prefix access, and a
@@ -315,9 +316,9 @@ independently.
   same-batch return (today's synchronous reality) and the later-batch return
   (the mechanism's forward compatibility) **without** modelling cache-manager
   internals.
-- **DB-backed tests** use a **disposable `wal_manager` database**, created if
-  absent exactly as `read/read_core_test.cpp` does for `hcp3_core`, and reset per
-  run. Never point them at `hcp3_core`.
+- **Historical DB-backed tests** were removed because they reset a named
+  database. Do not reset either `wal_manager` or `hcp_core` to verify this
+  implementation.
 - **only-follow assertion** is a first-class test (W-4 adv): `EXPLAIN` must show
   PK access for every obligation query; a reverse/seq scan is a failure.
 
@@ -326,7 +327,7 @@ independently.
 ## 5. Explicitly NOT in this plan
 
 Cache-manager runtime (pending-list, file-now/wire-later, RECONCILE); mass
-computation/aggregation; any write to `hcp3_core`; the DELETE cross-network
+computation/aggregation; any write to `hcp_core`; the DELETE cross-network
 validation act; live replication-slot consumption / wire-form decode; MOVE/rekey
 of live obligations; cross-source global ordering; the connection mass-recompute
 signal; the optional canonical NOTES section. (Buckets B and C above.)

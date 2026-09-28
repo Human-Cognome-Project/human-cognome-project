@@ -1,4 +1,4 @@
-# hcp3_core schema — coordinator checklist
+# hcp_core schema — coordinator checklist
 
 Concrete checks to run after applying `schema.sql`, using `verify.sql`
 (section numbers match `verify.sql`'s `-- N.` headers).
@@ -85,19 +85,18 @@ Concrete checks to run after applying `schema.sql`, using `verify.sql`
    reverse-search indexes are not allowed; the CPU only follows stored
    lists, it never searches.
 
-## Shape check for the foundational root (structural only — no data loaded)
+## Shape check for the foundational root
 
-Not run by `verify.sql` (there is no data yet), but worth a manual sanity
-pass once the root is populated by the data-loading agent:
+Not run by `verify.sql`. The 2026-09-28 `hcp_core` snapshot now has an initial
+encoding floor; inspect it read-only before extending or correcting it:
 
-- `0x` (address `AA.AA.AA.AA.AA`) should be representable as a `token` row
+- `0x` (address `00.00.00.00.0G`) should be representable as a `token` row
   with **no** `token_parent` row where it is the whole (`token_id`) side —
   i.e. it has no composition, consistent with "unallocated base container:
   no weight/mass/presence." It may still appear as a `parent_token_id` in
   other tokens' `token_parent` rows, or as a `member_token_id` in
   `members` rows, once real particles are loaded.
-- The 16 real particles plus `0x` should all share leading couplet `AA`
-  (root namespace) and be distinguishable by their trailing couplet under
-  `AA.AA.AA.AA.*`.
+- The 16 hex particles (`00`–`0F`) plus `0x` (`0G`) share the prefix
+  `00.00.00.00` and differ in their last couplet.
 - This is a shape check, not a data check: nothing above requires rows to
   exist yet, only that the schema does not prevent this shape.

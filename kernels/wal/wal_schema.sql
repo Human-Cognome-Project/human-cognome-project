@@ -2,11 +2,11 @@
 --
 -- Applied against an already created `wal_manager` database; this file
 -- issues no CREATE DATABASE. This is the WAL manager's OWN Postgres
--- instance — separate from `hcp3_core` and from any language/personality
+-- instance — separate from `hcp_core` and from any language/personality
 -- DB it observes. See WAL-PLAN.md and WAL-IMPL-PLAN.md (task W-1).
 --
 -- The WAL manager is a bookkeeper/observer, never a writer of the primary
--- change: it never touches `hcp3_core`, never reads the command string,
+-- change: it never touches `hcp_core`, never reads the command string,
 -- and never designs or drives the cache manager (WAL-IMPL-PLAN.md §0).
 -- What it DOES write is its own bookkeeping, defined here.
 --
@@ -40,7 +40,7 @@
 -- mass in this SAME relation, booked with the change's other followup
 -- obligations, instead of a separate mass table (Spec 4 / WAL-PLAN.md §5).
 -- The mass VALUE itself is untouched by this schema — it stays on the
--- FIXED `hcp3_core` `token.mass` column; this row is only the debt.
+-- FIXED `hcp_core` `token.mass` column; this row is only the debt.
 -- ============================================================================
 CREATE TABLE obligation (
     -- Discriminator for the obligation's axis/kind. Read from which value
