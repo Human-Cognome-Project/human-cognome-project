@@ -61,8 +61,8 @@ std::optional<std::pair<char, char>> code_to_couplet(uint16_t code);
 // Representation choice: vector<AddressElement> rather than a flat
 // vector<uint16_t> of couplet codes. Reason: one element -- and only the
 // address's LAST element -- may be PARTIAL: a single alphabet character
-// with no second character, addressing a prefix/context node (the up to
-// 64 couplets it could still extend to) rather than one leaf token. A
+// with no second character, addressing a prefix/context node (the 62
+// couplets it could still extend to) rather than one leaf token. A
 // flat couplet-code vector (range [0, kCoupletSpace)) has no room to
 // represent that case; a small element struct does, without inventing a
 // second, parallel address type just for contexts.
