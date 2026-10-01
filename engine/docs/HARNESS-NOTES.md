@@ -1013,6 +1013,12 @@ section keeps the model-level reading.
   by read, not a dupe" is real at the `SNode` schema/id level and the warm-cache/DB
   level, but **not** at physical storage — each active cell owns its child. See
   `engine/docs/taichi-snode-mechanics.md` for the cited verdict.
+- **Codepoint ≠ encoding (2026-10-01).** When input unspools, the intake works on
+  the **actual UTF-8 bytes**, never the codepoint digits: `é` = U+00E9 encodes to
+  `C3 A9`, not `00 E9`. Padded `U+XXXX` codepoint tables show a uniform ≥2-byte
+  form with leading `00`s that do not exist on the wire — a real source of
+  confusion. The encoding-tables build generates from the UTF-8 encoding, never a
+  codepoint table (`kernels/database/ENCODING-TABLES-PLAN.md`).
 
 ## Open threads (pending Patrick's input)
 

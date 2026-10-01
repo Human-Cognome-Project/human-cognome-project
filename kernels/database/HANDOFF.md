@@ -35,12 +35,22 @@
 > the whole); the particle/particle-set is the instance assembled from
 > warm-cache pieces by the harness/analyst.
 >
-> **NEXT (pending PR acceptance for the notes+research above): draft the warm-cache schema plan and the
-> construction instructions** for how the cache manager builds the warm-cache pieces and how the harness
-> reads them into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`;
-> `engine/docs/OPERATIONAL-PLAN.md` §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree
-> construction; the built substrate pattern `engine/tests/engine_smoke_test.cpp` `make_field()` →
-> `Program::add_snode_tree` (root→dense/pointer→place). Still PLANNED, not built. Preserve BUILT vs planned.
+> **Drafted 2026-10-01 — the UTF-8 encoding-tables build-out PLAN:**
+> `kernels/database/ENCODING-TABLES-PLAN.md` (docs only, PLAN not built; up for review). It specifies
+> the next cold-floor layer above the nibble/byte floor: relabel (`Nibbles`/`Byte Codes`/`Byte Code
+> Groups` + three category labels), the multi-byte hierarchy (2/3/4 ordered byte-code parents, mass
+> 4/6/8), the addressing allocation (all under `00.00.00.*`), generation by walking codepoints
+> U+0080–U+10FFFF (skip surrogates) and UTF-8-encoding, populate-all-valid (~1.11M characters), and an
+> **additive** C++ record-tier driver (`DECLARE`/`mint`). See also `NOTES.md` "UTF-8 encoding tables —
+> build-out plan (2026-10-01)".
+>
+> **NEXT: on acceptance of that plan, execute it** (relabel → category labels → populate via the driver
+> → verify counts → re-dump snapshot + PR). **Then** draft the warm-cache schema plan and construction
+> instructions for how the cache manager builds the warm-cache pieces and how the harness reads them
+> into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`; `engine/docs/OPERATIONAL-PLAN.md`
+> §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree construction; the built substrate
+> pattern `engine/tests/engine_smoke_test.cpp` `make_field()` → `Program::add_snode_tree`
+> (root→dense/pointer→place). All PLANNED, not built. Preserve BUILT vs planned.
 
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate

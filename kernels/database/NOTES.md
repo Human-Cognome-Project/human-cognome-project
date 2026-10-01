@@ -237,6 +237,41 @@ already exists** — this only reads it completely.
   ordinal-position field could subsume part of it. Noted only; leave connection
   mechanics as-is until Patrick takes it up.
 
+## UTF-8 encoding tables — build-out plan (2026-10-01)
+
+Full plan: **`ENCODING-TABLES-PLAN.md`** (PLAN, not built; execution gated on
+Patrick's acceptance). Summary of the decisions it records:
+
+- **Hierarchy:** nibbles (mass 1) → byte codes (2 nibble parents, mass 2) →
+  multi-byte characters (**2/3/4 ordered byte-code parents**, mass 4/6/8 = sum of
+  parents). 1-byte characters ARE the existing byte codes `00`–`7F`; no new
+  tokens for them.
+- **Relabel (notation only):** `Single Hex Code` → `Nibbles`; `Hex Couplets` →
+  `Byte Codes`; `Hex Code Patterns` → `Byte Code Groups`. Plus three new category
+  labels — `Two-Byte Codes` / `Three-Byte Codes` / `Four-Byte Codes` (names a
+  PROPOSAL awaiting Patrick), each `member_of` `Byte Code Groups`, with each
+  character `member_of` its category label.
+- **Addressing (locked), all under `00.00.00.*` so the `00.00.01.*` labels never
+  move:** nibbles+byte codes at `…00.*`; 2-byte at `…01.*`–`02.*` (7,688 cap,
+  1,920 used); 3-byte at `…03.*`–`0z.*` (~227k cap, 61,440 used); 4-byte at
+  `…10.*`–`zz.*` (~14.5M cap, 1,048,576 used). Reservations, sequential fill,
+  sparse tails — the *Per-kind trunk allocation* pattern. Full-combinatorial
+  reservation was rejected as overkill; re-addressing later is cheap.
+- **Generation:** walk codepoints U+0080–U+10FFFF, skip surrogates
+  U+D800–U+DFFF, UTF-8-encode; the bytes ARE the ordered byte-code parents. The
+  walk is exactly the valid set — generated, never sourced from a codepoint
+  table.
+- **Codepoint ≠ encoding:** parents are the actual UTF-8 bytes (`é` = U+00E9 →
+  `C3 A9`), NOT the codepoint digits (`00 E9`). Padded `U+` tables are
+  misleading; we generate from the encoding.
+- **Driver:** C++ bootstrap driver over the record-tier (`DECLARE`/`mint`),
+  byte-count-parameterized, **additive only** (no reset/drop; not the removed
+  `seed_0x` pattern).
+
+This **supersedes** the "next kind … undecided / boundaries deliberately unfixed"
+note under *Per-kind trunk allocation* above for the multi-byte tiers: those
+boundaries are now the allocation in `ENCODING-TABLES-PLAN.md`.
+
 ## Analyst command semantics (the relative assignment rule)
 
 The normal ingestion command is group-level, not point-level:
