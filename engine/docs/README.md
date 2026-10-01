@@ -27,6 +27,10 @@ or contribution instructions. Current contributor policy is in
 
 ## Document roles
 
+- **[ASSEMBLY-BOOTSTRAP.md](ASSEMBLY-BOOTSTRAP.md)** — narrow, unimplemented
+  translation example from the retained encoding floor to a Taichi C++
+  layout. Preserves shared parent-value fields across ordered positions and
+  marks the additional choices needed before an end-to-end numerical run.
 - **[ACTIVE-FIELD-MODEL.md](ACTIVE-FIELD-MODEL.md)** — current integrated field
   and tick explanation, distinguishing built passes from the later active-set
   and revised destination/brake questions. Read with the
