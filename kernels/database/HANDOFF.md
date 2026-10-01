@@ -26,9 +26,11 @@
 > child); full materialization is expected assignment into the fixed pool, not a cost; node ids are
 > monotonic and **restart** (analyst → harness, or engine via harness) reclaims the budget.
 > (2) **The 32-label row/column insert is DROPPED** in favour of a parent-field refinement — parent
-> fields key on **(parent value, ordinal slot)**, so rows/columns are EMERGENT, no new labels/edges/data
-> (`kernels/database/NOTES.md` "Parent fields key on (value, ordinal slot)"; `engine/docs/HARNESS-NOTES.md`
-> "Session clarifications (2026-09-28)"). Warm cache = composed `SNode` trees per line of study (volatile);
+> fields pull by **value** and by **ordinal position** as **two separate fields, each individually**
+> (not a joint (value, slot) key — corrected 2026-10-01), so a grid row/column is the overlap of two
+> fields, EMERGENT, no new labels/edges/data
+> (`kernels/database/NOTES.md` "Parent fields pull by value and by ordinal position, separately";
+> `engine/docs/HARNESS-NOTES.md` "Session clarifications (2026-09-28)"). Warm cache = composed `SNode` trees per line of study (volatile);
 > cold cache = master library spanning several DBs, of which `hcp_core` is the always-loaded core (not
 > the whole); the particle/particle-set is the instance assembled from
 > warm-cache pieces by the harness/analyst.
