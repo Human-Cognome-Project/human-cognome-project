@@ -189,42 +189,53 @@ no grouping logic to write** — the division falls out of where the points sit.
 The assignment side's only job is to place kinds in whole trunks and leave the
 gaps. **Do not implement the division; it is emergent from the layout.**
 
-## Parent fields key on (value, ordinal slot) — firmed 2026-09-28 (governs on conflict)
+## Parent fields pull by value and by ordinal position, separately — corrected 2026-10-01 (governs on conflict)
 
-**(Patrick, 2026-09-28.)** Ordering is part of the **basis of commonality**, not
-just a physical effect. The parent call keys on **(parent value, ordinal slot)**
-in the ordered parent list — not the value alone. For a hex couplet the ordinal
-slots are `0 = high nibble`, `1 = low nibble` (the schema stores `ordinal` 0-based
-— `schema/schema.sql:176`, `controller/controller.h:44-45`); the couplets already
-store their parents in that order (high then low, wired to `token_child`), so
-**the data already exists** — this only reads it completely.
+**(Patrick, 2026-10-01 — supersedes the 2026-09-28 "(value, ordinal slot)" framing,
+which pointed the wrong way.)** Ordering is part of the **basis of commonality**, but
+value and ordinal position are **two separate commonalities, each its own field,
+pulling individually** — NOT a joint `(value, ordinal slot)` key:
+
+- a **value field** — same value pulls toward same value, regardless of position;
+- an **ordinal-position field** — same ordinal slot pulls toward same ordinal slot
+  (first toward first, i.e. ordinal 0 toward ordinal 0; second toward second),
+  regardless of value.
+
+Each constituent participates in **both at once**, as two independent `m1·m2/d²`
+pulls — consistent with "every listing is a field." For a hex couplet the ordinal
+slots are `0 = high nibble`, `1 = low nibble` (the schema stores `ordinal` 0-based —
+`schema/schema.sql:176`, `controller/controller.h:44-45`); the couplets already store
+their parents in that order (high then low, wired to `token_child`), so **the data
+already exists** — this only reads it completely.
 
 - **The 32-label row/column insert is DROPPED.** An earlier plan would have minted
   `first hex=0…F` and `second hex=0…F` labels with membership edges to give the
   couplets a row/column stratum. That is not needed and would invite a
   **cross-connection explosion** we do not want. No new labels, no membership
-  edges, no new data.
-- **Rows and columns are EMERGENT, not stored.** Every couplet with value X in
-  ordinal slot 0 *is* the "first hex = X" set; every couplet with value Y in
-  ordinal slot 1 *is* the "second hex = Y" set. The grouping falls out of the
-  (value, slot) key, the same spirit as *Division by sparsity — a property of the
-  data, NOT code* above: do not implement the grouping; it is emergent.
+  edges, no new data — the value field and the ordinal-position field are derivable
+  from the existing ordered parents.
+- **A grid "row/column" is the OVERLAP of two independent fields, not a stored
+  group.** The couplets whose high nibble is X are the **intersection** of the
+  ordinal-0 field and the value-X field; the couplets whose low nibble is Y are the
+  intersection of the ordinal-1 field and the value-Y field. Neither is a single
+  stored joint grouping — same spirit as *Division by sparsity — a property of the
+  data, NOT code* above: do not implement the grouping; it falls out of the two
+  fields.
 - **Position = ordinal slot** (the 0-based slot index in the ordered parent list). What
   "position" means for ordered chains longer than a 2-parent couplet — the ordinal
   slot, and how it relates to the existing "position vs the centre" note — is to
   pin when the composition routine is designed; for the couplet it is unambiguous.
-- **Force is unchanged — whole-body, based on ordinal position.** The commonality
-  now keys on (value, slot), but the force is still applied over the **whole
-  body**, based on that ordinal position; position is the basis for the force, not
-  a localization of it to the sub-part. (Whole-body-responds rule preserved — see
-  `engine/docs/HARNESS-NOTES.md`.)
-- **Generalizes.** Making ordinal position part of the commonality basis covers
-  any construct where ordering matters, in one rule rather than per-case grouping
-  structures.
+- **Force is unchanged — whole-body.** A constituent's value and ordinal position
+  inform **which fields it is in**; the resulting force is still applied over the
+  **whole body** (whole-body-responds rule preserved — see
+  `engine/docs/HARNESS-NOTES.md`), never localized to the sub-part.
+- **Generalizes.** Treating value and ordinal position as separate commonalities
+  covers any construct where ordering matters, in one rule rather than per-case
+  grouping structures.
 - **OPEN (revisit later, do NOT design now):** this may also simplify connection
-  mechanics — §3.8 polarity is already derived from ordinal numbering, so a
-  positional commonality basis could subsume part of it. Noted only; leave
-  connection mechanics as-is until Patrick takes it up.
+  mechanics — §3.8 polarity is already derived from ordinal numbering, so an
+  ordinal-position field could subsume part of it. Noted only; leave connection
+  mechanics as-is until Patrick takes it up.
 
 ## Analyst command semantics (the relative assignment rule)
 

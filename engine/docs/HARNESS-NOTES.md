@@ -960,15 +960,20 @@ section keeps the model-level reading.
   inactive/null `pointer` cell is a runtime storage state; the `0x` token is a real
   mass-zero row in `hcp_core` — related (both inert) but different layers. See
   `engine/docs/taichi-snode-mechanics.md`.
-- **Positional commonality basis.** Parents were already noted to have a
-  positional effect (position vs the centre; the polarity source, §3.8), but
-  position was **not** part of the basis of commonality. It is now: the parent
-  call keys on **(parent value, ordinal slot)**. The **force is unchanged** —
-  whole-body, based on ordinal position (whole-body-responds rule preserved);
-  position is the basis for the force, not a localization to the sub-part. This
-  drops the idea of minting row/column labels — the grouping is emergent from the
-  (value, slot) key (see `kernels/database/NOTES.md`, "Parent fields key on
-  (value, ordinal slot)").
+- **Value and ordinal position are two separate commonalities (corrected
+  2026-10-01).** Parents were already noted to have a positional effect (position
+  vs the centre; the polarity source, §3.8), but position was **not** part of the
+  basis of commonality. It is now — and value and ordinal position are **two
+  independent fields, each pulling individually**, NOT a joint `(value, ordinal
+  slot)` key (which was the wrong direction): a **value field** (same value pulls
+  to same value, any position) and an **ordinal-position field** (same slot pulls
+  to same slot — first to first, second to second — any value). Each constituent is
+  in both at once. The **force is unchanged** — whole-body (whole-body-responds
+  rule preserved); value and position inform which fields a constituent is in, not
+  a localization to the sub-part. This still drops the row/column labels — a grid
+  "row/column" is the overlap of a value field and an ordinal-position field, not a
+  stored group (see `kernels/database/NOTES.md`, "Parent fields pull by value and
+  by ordinal position, separately").
 - **Materialization is assignment, not a cost.** Claiming a particle is
   **assignment of values** into a fixed-pool slot that already exists
   (declaration), not allocation; unused = `0x`; release = zero back. Full
