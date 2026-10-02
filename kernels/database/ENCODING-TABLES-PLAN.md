@@ -239,20 +239,19 @@ across ~2.2M+ commits** — `mint` is one atomic transaction per token and
 a performance guarantee**; Patrick accepts the runtime cost as the party paying
 for the cycles.
 
-**Atomic boundary (open — #110).** Per character, the `mint` and its category
-`add_membership` are logically one unit, but the current controller commits them
-**separately** (`mint` is one transaction, `add_membership` another), so a failure
-between them leaves a minted-but-unmembered token. True within-run per-character
-atomicity needs the shared command transaction tracked in **#110**; this plan does
-not add it.
+**Atomic per command (#110).** The per-character command — `mint` plus its category
+`add_membership` — is **one atomic unit**: it commits only if fully valid, otherwise
+it **rolls back entirely**. No partial work is retained — per Patrick, keeping a
+partial (e.g. a minted-but-unmembered token) only forces validating it later, so the
+command is reverted and **only valid commands are accepted**. The current controller
+commits `mint` and `add_membership` separately, so this per-command atomicity is the
+**shared command transaction tracked in #110**; the populate runs on it.
 
-Until then the load is **resumable in the converges-on-re-run sense, not
-atomic-per-item**: a re-run SEE-skips an existing mint (`mint` does a `SELECT` then
-early-returns on an existing token_id — identity only) and completes any missing
-membership via `add_membership`'s `ON CONFLICT DO NOTHING`, so repeated runs
-converge. Because SEE checks identity only, restart-safety verification must confirm
-each existing address carries the expected ordered parents, mass, **and** its
-category membership — not merely that the row exists.
+Because a failed command rolls back, no partial or invalid row is ever left to
+reconcile. Resumability is therefore clean: a re-run mints only the characters not
+already present (SEE skips a complete token by identity — a `SELECT`, then
+early-return), with nothing partial to self-heal. Restart verification confirms each
+present address carries its expected ordered parents, mass, and category membership.
 
 ## 7. Driver
 
@@ -268,8 +267,9 @@ the same code produces the 2-, 3-, and 4-byte tables. Per codepoint it:
    (the trigger fills structural mass from the parents);
 4. `add_membership` to the category label.
 
-Steps 3–4 are the intended per-character unit; the controller commits them
-separately today, so within-run atomicity is pending **#110** (see §6).
+Steps 3–4 are one per-character command — an atomic unit that fully commits or rolls
+back, with no partial retained; that is the shared command transaction of **#110**
+(see §6).
 
 It reuses the built codec (address representation) and the controller's
 reciprocal maintenance (`token_parent`/`token_child`, `members`/`member_of`) —
