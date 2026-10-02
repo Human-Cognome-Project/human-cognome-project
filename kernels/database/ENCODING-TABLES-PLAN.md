@@ -237,13 +237,22 @@ With parent/child reciprocals and membership edges this is roughly **12.1M rows
 across ~2.2M+ commits** — `mint` is one atomic transaction per token and
 `add_membership` commits separately (`controller/controller.cpp`). This is **not
 a performance guarantee**; Patrick accepts the runtime cost as the party paying
-for the cycles. The load is naturally **resumable**: each mint is atomic and the
-door is idempotent — `mint` uses SEE (a `SELECT`, then early-return if the
-token_id already exists; an identity check only), and `add_membership` uses `ON
-CONFLICT DO NOTHING` — so a re-run skips what is already in and continues. Because
-SEE checks identity only, restart-safety verification must confirm each existing
-address carries the expected ordered parents **and** mass, not merely that the row
-exists.
+for the cycles.
+
+**Atomic boundary (open — #110).** Per character, the `mint` and its category
+`add_membership` are logically one unit, but the current controller commits them
+**separately** (`mint` is one transaction, `add_membership` another), so a failure
+between them leaves a minted-but-unmembered token. True within-run per-character
+atomicity needs the shared command transaction tracked in **#110**; this plan does
+not add it.
+
+Until then the load is **resumable in the converges-on-re-run sense, not
+atomic-per-item**: a re-run SEE-skips an existing mint (`mint` does a `SELECT` then
+early-returns on an existing token_id — identity only) and completes any missing
+membership via `add_membership`'s `ON CONFLICT DO NOTHING`, so repeated runs
+converge. Because SEE checks identity only, restart-safety verification must confirm
+each existing address carries the expected ordered parents, mass, **and** its
+category membership — not merely that the row exists.
 
 ## 7. Driver
 
@@ -258,6 +267,9 @@ the same code produces the 2-, 3-, and 4-byte tables. Per codepoint it:
 3. `mint`s the character with those parents at that address and **no mass**
    (the trigger fills structural mass from the parents);
 4. `add_membership` to the category label.
+
+Steps 3–4 are the intended per-character unit; the controller commits them
+separately today, so within-run atomicity is pending **#110** (see §6).
 
 It reuses the built codec (address representation) and the controller's
 reciprocal maintenance (`token_parent`/`token_child`, `members`/`member_of`) —
