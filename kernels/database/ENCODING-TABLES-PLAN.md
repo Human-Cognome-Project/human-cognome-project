@@ -319,10 +319,30 @@ record-tier driver the HANDOFF flagged as ready-now.
   trigger does not recompute existing rows). Nothing is removed, and the
   nibble/byte floor is otherwise unchanged.
 
-## 10. Execution gating
+## 10. Execution gating and build protocol
 
 This document is the plan. The schema trigger, the relabel, the ~1.1M-row
-population, and the snapshot re-dump run **only after Patrick accepts it**. On
-acceptance the trigger and driver are built under the coder + adversary
-discipline, run additively against `hcp_core`, verified against §9, then
-snapshot + PR.
+population, and the snapshot re-dump run **only after Patrick accepts it**.
+
+On acceptance the build follows the standing protocol — not a single pass:
+
+- **Small, linear, fully-specified units**, each specified by the Opus 4.8
+  coordinator and **coded by a Sonnet agent** (coding is Sonnet; Opus 5 / Fable 5
+  banned). The units:
+  1. the structural-mass trigger + its model-anchored test (a newly-minted 2-byte
+     character reads mass 4; the existing floor is unchanged);
+  2. the relabel SQL on the three `notation` cells + re-query verification;
+  3. the three category labels under `Byte Code Groups`;
+  4. the direct-mint driver (codepoint walk → byte-code parents → sequential
+     address → `mint` → `add_membership`), additive only;
+  5. the populate run + §9 verification — runs on #110's shared command
+     transaction (§6), so no partial state persists;
+  6. snapshot re-dump + manifest.
+- **A separate adversary verifies each unit** — fresh, against live source / model
+  / tests — one adversary per unit; no self-attestation.
+- **The coordinator reviews only the reconciled final result** of each unit, after
+  the coder↔adversary reconciliation has completed on its own — never raw drafts or
+  raw review dumps, and **without urging** it along.
+- Each unit is validated before the next; nothing proceeds on an unreconciled unit.
+
+Run additively against `hcp_core`, then snapshot + PR.
