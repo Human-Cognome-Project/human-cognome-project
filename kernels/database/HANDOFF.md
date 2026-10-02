@@ -48,13 +48,18 @@
 > completeness invariant (parents mass-complete before use; mint-completion rule tracked in #109).
 > `token.mass` = structural seed, distinct from the calculated centroid layer; labels use
 > their structural value for meta-org and the centroid for component-org; the driver mints **directly
-> through the controller** (not `DECLARE`) and supplies no mass; the ~12.1M-row load is accepted and
-> resumable (idempotent mints). See also `NOTES.md` "UTF-8 encoding tables — build-out plan
-> (rev. 2026-10-02)".
+> through the controller** (not `DECLARE`) and supplies no mass; the ~12.1M-row load is accepted
+> (payer's call). Each per-character command (`mint` + membership) is **one atomic unit that rolls back
+> on failure — no partial state** — via the shared command transaction (**#110**) with the **#109**
+> complete-parent mass guard, so a re-run just mints the characters not yet present (not a self-heal of
+> partials). See also `NOTES.md` "UTF-8 encoding tables — build-out plan (rev. 2026-10-02)".
 >
-> **NEXT: on acceptance of that plan, execute it** (add the structural-mass trigger to `schema.sql` +
-> tests → relabel → category labels → populate via the direct-mint driver → verify counts + masses →
-> re-dump snapshot + PR). **Then** draft the warm-cache schema plan and construction
+> **NEXT: on acceptance, execute per the work division in `ENCODING-TABLES-PLAN.md` §8** — prerequisites
+> **U1** (#109 complete-parent guard) + **U2** (#110 shared command transaction) + **U3** (structural-mass
+> trigger) implemented AND verified before any population (**GATE 1**); then relabel → category labels →
+> direct-mint driver → **U7 sample stop-gate** (one valid token per byte-width tier + one rejected command
+> that leaves no writes) → full populate → verify counts + masses → re-dump snapshot + PR. **Then** draft
+> the warm-cache schema plan and construction
 > instructions for how the cache manager builds the warm-cache pieces and how the harness reads them
 > into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`; `engine/docs/OPERATIONAL-PLAN.md`
 > §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree construction; the built substrate

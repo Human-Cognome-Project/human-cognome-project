@@ -52,8 +52,21 @@ addresses, mass, and all `members`/`member_of` edges are untouched:
 **Three new category labels (PROPOSAL — awaiting Patrick's confirm on names):**
 `Two-Byte Codes`, `Three-Byte Codes`, `Four-Byte Codes`, each a `member_of`
 `Byte Code Groups` (alongside `Nibbles` and `Byte Codes`); every character is a
-`member_of` its category label. As construction posts these carry prose
-`notation` like the existing labels until real naming literals exist.
+`member_of` its category label. As construction posts they carry prose `notation`
+like the existing labels until real naming literals exist.
+
+- **Addresses.** Direct `Controller::mint` requires an address (the manager-placed
+  path is not built), so the driver supplies one. Place the three labels in the
+  **label region**, continuing the existing label block: the current three occupy
+  `00.00.01.00.00`–`…02`, so the new three take `00.00.01.00.03`–`…05`. That is
+  under `00.00.01.*`, disjoint from every character block reserved under
+  `00.00.00.*` (§3) — **no collision**; verify this at execution.
+- **Mass status — provisional/incomplete.** They have no naming literal and no
+  parents yet, so their **structural mass is incomplete (NULL)** — unlike the three
+  existing provisional labels, which carry a placeholder `mass` of 10. Under the
+  #109 complete-parent rule they are therefore **unavailable as parent
+  constituents** until completed. This does **not** block the population: characters
+  reference their category label only through `member_of`, never as a parent.
 
 ## 3. Addressing allocation (locked with Patrick)
 
@@ -129,13 +142,16 @@ its optional `mass` argument verbatim, writing SQL NULL when absent —
 `controller/controller.cpp:404-414` — and `DECLARE` passes `nullopt`,
 `declare/declare_core.cpp:222`).
 
-**Authorized by Patrick (2026-10-02).** This standing trigger is an explicit,
-decided exception to the schema's prior "no triggers/functions; all derivation in
-the C++ layer" rule (`schema/schema.sql:21-23`, `schema/README.md:11-12`). At
-execution that schema comment and `schema/README.md` are updated to carry the
-exception and the trigger DDL is added; this PR is docs-only, so those schema
-edits are an execution step, not made here. It is a decided exception, not an open
-question.
+**A deliberate exception to the no-trigger rule.** This standing trigger is an
+intentional exception to the schema's "no triggers/functions; all derivation in the
+C++ layer" rule (`schema/schema.sql:21-23`, `schema/README.md:11-12`); Patrick
+affirms the exception on the PR. It is the design, not an open question. What remains
+build work — specified, Sonnet-coded, and adversary-reviewed **before any
+population** (§8/§10) — is the **concrete trigger DDL**, its **additive install path
+on the existing `hcp_core`** (fires only on new inserts; the seeded floor rows are
+untouched), and the **#109/#110 guards** below. At execution the schema comment and
+`schema/README.md` are updated to carry the exception; this PR is docs-only, so those
+schema edits are an execution step.
 
 **The trigger.** A single `AFTER INSERT` trigger on `token_parent`: when a
 token's constituent rows are linked, set the owning token's
@@ -150,12 +166,16 @@ SEE no-op, so no `token_parent` insert and no trigger).
 **Completeness invariant (what makes it safe as a *standing* trigger).** A parent
 has its structural mass the moment it is minted; an unknown-mass (NULL) parent is
 not yet complete for composition. So a token may be used as a parent only once its
-mass is set, and a child's parent link is not accepted until every parent is
-mass-complete — SQL `SUM` therefore never silently skips a NULL parent and banks
-an incomplete total. This is the narrower mint-completion rule the repo agent is
-tracking in **#109**; it holds trivially for the UTF-8 bootstrap (every parent is
-a seeded atom or a mass-2 byte code) and is what generalizes the trigger safely
-beyond it.
+mass is set, and a child's parent link is **not accepted** until every parent is
+mass-complete. A **bare `SUM(parent.mass)` is not enough**: a foreign key and
+`token_exists` prove only that the parent *row* exists, and SQL `SUM` silently skips
+a NULL, banking an incomplete total. The guard therefore lives at mint / parent
+resolution — the **#109** complete-parent rule — so that a declaration naming a
+NULL-mass parent is **rejected and the whole command rolls back (no writes)**, and
+the trigger only ever sums a complete set. It holds trivially for the UTF-8 bootstrap
+(every parent is a seeded atom or a mass-2 byte code) and is what generalizes the
+trigger safely beyond it. **Test:** an attempted declaration with an incomplete-mass
+parent leaves no rows.
 
 **No cascade.** Structural mass is **invariant** — it is the structural value of
 the composition, and composition *is* identity: change a token's parents and it
@@ -233,11 +253,12 @@ Populate **all valid characters now**: 1,920 + 61,440 + 1,048,576 =
 re-minted — they are the existing byte codes — so this is below the 1,112,064
 total Unicode scalar count).
 
-With parent/child reciprocals and membership edges this is roughly **12.1M rows
-across ~2.2M+ commits** — `mint` is one atomic transaction per token and
-`add_membership` commits separately (`controller/controller.cpp`). This is **not
-a performance guarantee**; Patrick accepts the runtime cost as the party paying
-for the cycles.
+With parent/child reciprocals and membership edges this is roughly **12.1M rows**.
+Under the #110 per-character command transaction (below) that is about **1.1M command
+transactions** — one per character — not the ~2.2M the current separate-commit
+controller (`mint` and `add_membership` committing apart) would take. This is **not a
+performance guarantee**; Patrick accepts the runtime cost as the party paying for the
+cycles.
 
 **Atomic per command (#110).** The per-character command — `mint` plus its category
 `add_membership` — is **one atomic unit**: it commits only if fully valid, otherwise
@@ -281,19 +302,56 @@ must not resemble the removed `seed_0x` reset utility (AGENTS.md: no
 DB-resetting tooling as routine execution). This is the small runnable
 record-tier driver the HANDOFF flagged as ready-now.
 
-## 8. Construction instructions (ordered)
+## 8. Work division — ordered units, dependencies, and gates
 
-1. Add the structural-mass trigger to `schema/schema.sql` (§5) and test it
-   against the existing floor (byte codes must read mass 2; atoms unchanged).
-2. Relabel the three notations via direct SQL `UPDATE` (§2).
-3. Create the three category labels under `Byte Code Groups` (§2).
-4. Walk valid codepoints (§4); for each, mint directly (§7) with ordered
-   byte-code parents, the sequential address in the category range, and no
-   mass; `add_membership` to its category label. The trigger sets structural
-   mass as the parents are linked.
-5. Verify counts and masses (§9).
-6. Re-dump the snapshot to `data/postgres/snapshots/` (new dated dir; Git LFS
-   for the compressed dump) and update its manifest.
+The build is divided into small, linear units, each run under the protocol in §10
+(Sonnet-coded, one separate adversary per unit, the coordinator reviewing only the
+reconciled result). Order and dependencies:
+
+**Prerequisites — must be implemented *and* verified before anything is populated:**
+
+- **U1 — #109 complete-parent mass guard.** Mint / parent resolution rejects a
+  parent whose structural mass is NULL/incomplete, rolling back the whole command.
+  *Verify:* a declaration naming an incomplete-mass parent is rejected with **no
+  writes**.
+- **U2 — #110 shared command transaction.** A command (a per-character `mint` +
+  `add_membership`) runs in **one** transaction: it commits only if fully valid,
+  else rolls back entirely — no partial state. *Verify:* a command whose membership
+  step fails leaves **no token row**; a valid command commits atomically.
+- **U3 — structural-mass trigger** (depends on U1). Concrete `AFTER INSERT`
+  `token_parent` DDL (owning-token mass = sum of parents, guarded by U1 so it never
+  sums across a NULL-mass parent); **additive install on the existing `hcp_core`**
+  (fires only on new inserts; the floor rows are untouched); reconcile the schema
+  no-trigger comment to the authorized exception (§5). *Verify:* a newly-minted
+  2-byte character reads mass 4; the floor is unchanged; an incomplete-parent
+  declaration rolls back.
+
+> **GATE 1 — no writes until U1, U2, and U3 are implemented *and* verified.**
+> This gates every write below — the relabel, the category-label mints, the sample,
+> and the bulk load — until the trigger plus the mass-completion (#109) and
+> shared-transaction (#110) paths exist and are checked.
+
+**Build (after GATE 1 clears):**
+
+- **U4 — relabel.** Direct SQL `UPDATE` of the three `notation` cells (§2), verified
+  by re-query.
+- **U5 — category labels.** Mint the three labels at their reserved, non-colliding
+  addresses (§2), `member_of` `Byte Code Groups`, provisional/incomplete mass, marked
+  unavailable as parent constituents (#109).
+- **U6 — driver.** The byte-count-parameterized direct-mint driver (§7): codepoint
+  walk → byte-code parents → sequential address → per-character command
+  (`mint` + `add_membership`) on U2's transaction; additive only.
+
+**Population (gated):**
+
+- **U7 — sample + stop-gate.** With U4–U6 in place, populate and verify a **small
+  sample**: one valid token in **each** byte-width tier (2/3/4-byte, reading mass
+  4/6/8) **and** one **rejected command that leaves no writes** (rollback proof).
+  **STOP** here for review before the full walk.
+- **U8 — full populate** (1,111,936 characters), gated on U7 passing.
+- **U9 — verification** against §9 (counts, spot-checks, additive check).
+- **U10 — snapshot re-dump** to `data/postgres/snapshots/` (new dated dir; Git LFS
+  for the compressed dump) + manifest, then PR.
 
 ## 9. Verification plan
 
@@ -321,28 +379,21 @@ record-tier driver the HANDOFF flagged as ready-now.
 
 ## 10. Execution gating and build protocol
 
-This document is the plan. The schema trigger, the relabel, the ~1.1M-row
-population, and the snapshot re-dump run **only after Patrick accepts it**.
+This document is the plan. **Nothing in §8 runs against `hcp_core` until Patrick
+accepts it**, and the §8 gates hold regardless — GATE 1 (U1–U3 implemented and
+verified before any population) and the U7 stop-gate (sample proof before the full
+walk).
 
-On acceptance the build follows the standing protocol — not a single pass:
+Each §8 unit is built under the standing protocol:
 
-- **Small, linear, fully-specified units**, each specified by the Opus 4.8
-  coordinator and **coded by a Sonnet agent** (coding is Sonnet; Opus 5 / Fable 5
-  banned). The units:
-  1. the structural-mass trigger + its model-anchored test (a newly-minted 2-byte
-     character reads mass 4; the existing floor is unchanged);
-  2. the relabel SQL on the three `notation` cells + re-query verification;
-  3. the three category labels under `Byte Code Groups`;
-  4. the direct-mint driver (codepoint walk → byte-code parents → sequential
-     address → `mint` → `add_membership`), additive only;
-  5. the populate run + §9 verification — runs on #110's shared command
-     transaction (§6), so no partial state persists;
-  6. snapshot re-dump + manifest.
+- **Small, linear, fully-specified units** — the Opus 4.8 coordinator specifies
+  each; a **Sonnet agent codes it** (coding is Sonnet; Opus 5 / Fable 5 banned).
 - **A separate adversary verifies each unit** — fresh, against live source / model
   / tests — one adversary per unit; no self-attestation.
 - **The coordinator reviews only the reconciled final result** of each unit, after
   the coder↔adversary reconciliation has completed on its own — never raw drafts or
   raw review dumps, and **without urging** it along.
-- Each unit is validated before the next; nothing proceeds on an unreconciled unit.
+- **Each unit is validated before the next**; nothing proceeds on an unreconciled
+  unit, and the gates above are hard stops.
 
-Run additively against `hcp_core`, then snapshot + PR.
+The whole build runs additively against `hcp_core` (no reset / drop / truncate).

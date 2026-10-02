@@ -312,11 +312,16 @@ Patrick's acceptance). Summary of the decisions it records:
   (the seed-floor channel, `declare_core.cpp:224`), NOT the `DECLARE` core (which
   blanks mass); byte-count-parameterized; supplies no mass (trigger fills it);
   **additive only** (no reset/drop; not the removed `seed_0x` pattern).
-- **Population cost:** ~12.1M rows across ~2.2M+ per-token/per-membership commits
-  (`mint`/`add_membership` each commit separately). Not a performance guarantee;
-  the runtime cost is accepted (payer's call). Naturally **resumable** — mints are
-  atomic and SEE-idempotent (`ON CONFLICT DO NOTHING`), so a re-run continues. No
-  batched path added.
+- **Population cost + atomicity:** ~12.1M rows (1,111,936 tokens + parents/children
+  + membership). Runtime cost accepted (payer's call), not a performance guarantee.
+  Each per-character command (`mint` + `add_membership`) is **one atomic unit** — it
+  commits only if fully valid, else **rolls back entirely**; **no partial state is
+  retained** (only valid commands are accepted — keeping a partial would just mean
+  validating it later). The current controller commits the two steps separately, so
+  this is the **shared command transaction tracked in #110** the populate runs on,
+  with the **#109** complete-parent mass guard. Because failures roll back, a re-run
+  simply mints the characters not yet present (SEE is a `SELECT` then early-return on
+  an existing token_id — identity only); there is nothing partial to heal.
 
 **SNode composition (forward note):** when composing compressed / rolled-up
 particles, the cache manager walks and compiles the nested parent definitions —
