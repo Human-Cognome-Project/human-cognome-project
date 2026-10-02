@@ -35,17 +35,24 @@
 > the whole); the particle/particle-set is the instance assembled from
 > warm-cache pieces by the harness/analyst.
 >
-> **Drafted 2026-10-01 — the UTF-8 encoding-tables build-out PLAN:**
-> `kernels/database/ENCODING-TABLES-PLAN.md` (docs only, PLAN not built; up for review). It specifies
-> the next cold-floor layer above the nibble/byte floor: relabel (`Nibbles`/`Byte Codes`/`Byte Code
-> Groups` + three category labels), the multi-byte hierarchy (2/3/4 ordered byte-code parents, mass
-> 4/6/8), the addressing allocation (all under `00.00.00.*`), generation by walking codepoints
-> U+0080–U+10FFFF (skip surrogates) and UTF-8-encoding, populate-all-valid (~1.11M characters), and an
-> **additive** C++ record-tier driver (`DECLARE`/`mint`). See also `NOTES.md` "UTF-8 encoding tables —
-> build-out plan (2026-10-01)".
+> **Drafted 2026-10-01, revised 2026-10-02 — the UTF-8 encoding-tables build-out PLAN:**
+> `kernels/database/ENCODING-TABLES-PLAN.md` (docs only, PLAN not built; up for review, #108). It
+> specifies the next cold-floor layer above the nibble/byte floor: relabel via direct SQL `UPDATE`
+> (`Nibbles`/`Byte Codes`/`Byte Code Groups` + three category labels), the multi-byte hierarchy (2/3/4
+> ordered byte-code parents), the addressing allocation (all under `00.00.00.*`; reserve generously —
+> re-addressing a populated block via `rekey` is NOT cheap), generation by walking codepoints
+> U+0080–U+10FFFF (skip surrogates) and UTF-8-encoding, populate-all-valid (~1.11M characters).
+> **Rev. 2026-10-02:** structural mass is set by an `AFTER INSERT` trigger on `token_parent`
+> (`mass = sum of parents`; removes it from the aggregation workstream; no cascade — structural mass is
+> invariant); `token.mass` = structural seed, distinct from the calculated centroid layer; labels use
+> their structural value for meta-org and the centroid for component-org; the driver mints **directly
+> through the controller** (not `DECLARE`) and supplies no mass; the ~12.1M-row load is accepted and
+> resumable (idempotent mints). See also `NOTES.md` "UTF-8 encoding tables — build-out plan
+> (rev. 2026-10-02)".
 >
-> **NEXT: on acceptance of that plan, execute it** (relabel → category labels → populate via the driver
-> → verify counts → re-dump snapshot + PR). **Then** draft the warm-cache schema plan and construction
+> **NEXT: on acceptance of that plan, execute it** (add the structural-mass trigger to `schema.sql` +
+> tests → relabel → category labels → populate via the direct-mint driver → verify counts + masses →
+> re-dump snapshot + PR). **Then** draft the warm-cache schema plan and construction
 > instructions for how the cache manager builds the warm-cache pieces and how the harness reads them
 > into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`; `engine/docs/OPERATIONAL-PLAN.md`
 > §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree construction; the built substrate

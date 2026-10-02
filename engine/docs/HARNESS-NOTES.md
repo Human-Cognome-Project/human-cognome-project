@@ -1019,6 +1019,20 @@ section keeps the model-level reading.
   form with leading `00`s that do not exist on the wire — a real source of
   confusion. The encoding-tables build generates from the UTF-8 encoding, never a
   codepoint table (`kernels/database/ENCODING-TABLES-PLAN.md`).
+- **Structural mass vs centroid, and alignment (2026-10-02).** A token's stored
+  `token.mass` is its **structural** mass — the sum of its direct parents' masses,
+  a fixed seed, maintained by a DB trigger (`ENCODING-TABLES-PLAN.md` §5). It is
+  invariant: composition is identity and the values ground in the fixed atom
+  seeds. The **centroid** masses are a separate **calculated** layer — the per-tick
+  force/mass centroids (§3.5) and the cache manager's label/rollup centroids;
+  structural *seeds* the centroid, it is not the centroid. A **label uses both**:
+  its own structural value (from its naming literal) for **meta-organization**, and
+  its centroid (of members) for **component-organization**. Within a group,
+  structural values act as **gross alignment parameters** — close structural values
+  draw members coarsely togetherish (structurally-kin things cluster; the centroid
+  layer refines within). Concrete instance: in the encoding tables structural mass
+  bands by byte length (2-byte 4, 3-byte 6, 4-byte 8) — coarse alignment by
+  encoding width.
 
 ## Open threads (pending Patrick's input)
 

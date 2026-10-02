@@ -237,26 +237,34 @@ already exists** — this only reads it completely.
   ordinal-position field could subsume part of it. Noted only; leave connection
   mechanics as-is until Patrick takes it up.
 
-## UTF-8 encoding tables — build-out plan (2026-10-01)
+## UTF-8 encoding tables — build-out plan (rev. 2026-10-02)
 
 Full plan: **`ENCODING-TABLES-PLAN.md`** (PLAN, not built; execution gated on
 Patrick's acceptance). Summary of the decisions it records:
 
 - **Hierarchy:** nibbles (mass 1) → byte codes (2 nibble parents, mass 2) →
-  multi-byte characters (**2/3/4 ordered byte-code parents**, mass 4/6/8 = sum of
-  parents). 1-byte characters ARE the existing byte codes `00`–`7F`; no new
-  tokens for them.
-- **Relabel (notation only):** `Single Hex Code` → `Nibbles`; `Hex Couplets` →
-  `Byte Codes`; `Hex Code Patterns` → `Byte Code Groups`. Plus three new category
-  labels — `Two-Byte Codes` / `Three-Byte Codes` / `Four-Byte Codes` (names a
-  PROPOSAL awaiting Patrick), each `member_of` `Byte Code Groups`, with each
-  character `member_of` its category label.
+  multi-byte characters (**2/3/4 ordered byte-code parents**, structural mass
+  4/6/8 = sum of parents). 1-byte characters ARE the existing byte codes
+  `00`–`7F`; no new tokens for them.
+- **Relabel (notation only), by direct SQL `UPDATE`:** `Single Hex Code` →
+  `Nibbles`; `Hex Couplets` → `Byte Codes`; `Hex Code Patterns` →
+  `Byte Code Groups`. There is **no record-tier notation-edit verb** (UPDATE_RECORD
+  is MOVE/ADD_CONNECTION/DELETE_RECORD/DELETE_CONNECTION only), and `notation` is
+  the temporary/debug column — so the relabel is a direct SQL edit, verified by
+  re-query. Plus three new category labels — `Two-Byte Codes` /
+  `Three-Byte Codes` / `Four-Byte Codes` (names a PROPOSAL awaiting Patrick), each
+  `member_of` `Byte Code Groups`, with each character `member_of` its category
+  label.
 - **Addressing (locked), all under `00.00.00.*` so the `00.00.01.*` labels never
   move:** nibbles+byte codes at `…00.*`; 2-byte at `…01.*`–`02.*` (7,688 cap,
   1,920 used); 3-byte at `…03.*`–`0z.*` (~227k cap, 61,440 used); 4-byte at
   `…10.*`–`zz.*` (~14.5M cap, 1,048,576 used). Reservations, sequential fill,
   sparse tails — the *Per-kind trunk allocation* pattern. Full-combinatorial
-  reservation was rejected as overkill; re-addressing later is cheap.
+  reservation was rejected as overkill. **Reserve generously up front —
+  re-addressing a populated block is NOT cheap:** addresses are the `text[]` PKs
+  referenced across all four stores, and `Controller::rekey` relocates a token as
+  INSERT-new + repoint-8-FKs + DELETE-old per token (`controller.cpp:510-583`).
+  "Nothing holds addresses" is true for the analyst, not for the DB's own FKs.
 - **Generation:** walk codepoints U+0080–U+10FFFF, skip surrogates
   U+D800–U+DFFF, UTF-8-encode; the bytes ARE the ordered byte-code parents. The
   walk is exactly the valid set — generated, never sourced from a codepoint
@@ -264,9 +272,44 @@ Patrick's acceptance). Summary of the decisions it records:
 - **Codepoint ≠ encoding:** parents are the actual UTF-8 bytes (`é` = U+00E9 →
   `C3 A9`), NOT the codepoint digits (`00 E9`). Padded `U+` tables are
   misleading; we generate from the encoding.
-- **Driver:** C++ bootstrap driver over the record-tier (`DECLARE`/`mint`),
-  byte-count-parameterized, **additive only** (no reset/drop; not the removed
-  `seed_0x` pattern).
+- **Structural mass is a trigger, not supplied and not derived by `mint`**
+  (`mint` stores mass verbatim/NULL — `controller.cpp:404-414`; `DECLARE` passes
+  `nullopt` — `declare_core.cpp:222`). An `AFTER INSERT` trigger on `token_parent`
+  sets the owning token's `mass = sum of its direct parents' mass` (one level —
+  each parent's stored mass already aggregates its subtree). Parentless atoms
+  keep their seed; it reproduces the floor (byte codes 2, multi-byte 4/6/8). **No
+  cascade** — structural mass is invariant: composition IS identity, grounded in
+  fixed seeds; MOVE/rekey re-addresses the same composition, membership changes
+  don't touch structure. This is a `schema.sql` change + tests and **removes
+  structural mass from the deferred aggregation work**; the driver supplies no
+  mass.
+- **Structural vs centroid (do not conflate):** `token.mass` = **structural**
+  (the trigger's sum-of-parents, the seed). **Centroid** masses are the separate
+  **calculated** layer — the engine's per-tick force/mass centroids (§3.5) and
+  the cache manager's label/rollup centroids. Structural seeds the centroid; it
+  is not the centroid. This **refines** the "A token's own mass" / "label stored
+  mass = centroid of members" notes below: the *stored* `token.mass` is uniformly
+  structural; the centroid is computed.
+- **Labels use both:** a label's **own structural value** (its naming literal's
+  parents, in `token.mass`) drives **meta-organization**; its **centroid** (of
+  members, calculated) drives **component-organization**. Structural values are
+  **gross alignment parameters** — close structural values draw members coarsely
+  togetherish (structurally-kin things cluster; centroids refine within). Here
+  structural mass bands by byte length (2-byte 4, 3-byte 6, 4-byte 8) = coarse
+  alignment by encoding width.
+- **Driver:** C++ bootstrap driver minting **directly through the `Controller`**
+  (the seed-floor channel, `declare_core.cpp:224`), NOT the `DECLARE` core (which
+  blanks mass); byte-count-parameterized; supplies no mass (trigger fills it);
+  **additive only** (no reset/drop; not the removed `seed_0x` pattern).
+- **Population cost:** ~12.1M rows across ~2.2M+ per-token/per-membership commits
+  (`mint`/`add_membership` each commit separately). Not a performance guarantee;
+  the runtime cost is accepted (payer's call). Naturally **resumable** — mints are
+  atomic and SEE-idempotent (`ON CONFLICT DO NOTHING`), so a re-run continues. No
+  batched path added.
+
+**SNode composition (forward note):** when composing compressed / rolled-up
+particles, the cache manager walks and compiles the nested parent definitions —
+the structural (sum-of-parents) tree beneath a collapsed node.
 
 This **supersedes** the "next kind … undecided / boundaries deliberately unfixed"
 note under *Per-kind trunk allocation* above for the multi-byte tiers: those
@@ -577,7 +620,11 @@ precisely itself (the address-is-identity rule).
   members alike.
 - stored mass = the **aggregate (centroid) of its member masses** (e.g. 16 hex
   digits x 1 = 16), NOT the label's own intrinsic mass (that comes from word
-  associations, later).
+  associations, later). (**Reconciled 2026-10-02:** `token.mass` now holds
+  **structural** mass — sum of parents, trigger-maintained; the member centroid is
+  the separate *calculated* layer, not stored in `token.mass`. A label uses its
+  own structural value for meta-organization and its centroid for
+  component-organization. See *UTF-8 encoding tables*.)
 
 Mass aggregates in the direction the type reads *down*: a literal sums over its
 parents (constituents); a label sums over its children (members).
@@ -593,6 +640,16 @@ parents (constituents); a label sums over its children (members).
   whose mass-1 is the explicit seed), so for composites the stored value is a
   maintained cache of that sum; for base atoms it *is* the seed. Schema: add a
   mass column to `token`.
+
+  > **Reconciled 2026-10-02 (governs):** `token.mass` holds **structural** mass
+  > only — the sum of the direct parents' masses — maintained by an `AFTER INSERT`
+  > trigger on `token_parent` (see *UTF-8 encoding tables* above and
+  > `ENCODING-TABLES-PLAN.md` §5), **not** by a pending aggregation workstream, and
+  > it is **not** a label's centroid. A label's centroid-of-members is the separate
+  > **calculated** layer (engine force centroids §3.5, cache-manager rollups), not
+  > stored in `token.mass`. And `token_parent` carries **no** per-constituent mass
+  > (references only — `declare_core.cpp` writes `nullopt`); the trigger reads each
+  > parent's own `token.mass`.
 - **Nested aggregation.** When a label's members include sub-group labels, does
   the centroid recurse to leaf masses or sum the sub-groups' stored centroids?
   Defines one-level vs transitive roll-up and avoids double-counting.
