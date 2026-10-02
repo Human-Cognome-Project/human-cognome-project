@@ -129,6 +129,14 @@ its optional `mass` argument verbatim, writing SQL NULL when absent —
 `controller/controller.cpp:404-414` — and `DECLARE` passes `nullopt`,
 `declare/declare_core.cpp:222`).
 
+**Authorized by Patrick (2026-10-02).** This standing trigger is an explicit,
+decided exception to the schema's prior "no triggers/functions; all derivation in
+the C++ layer" rule (`schema/schema.sql:21-23`, `schema/README.md:11-12`). At
+execution that schema comment and `schema/README.md` are updated to carry the
+exception and the trigger DDL is added; this PR is docs-only, so those schema
+edits are an execution step, not made here. It is a decided exception, not an open
+question.
+
 **The trigger.** A single `AFTER INSERT` trigger on `token_parent`: when a
 token's constituent rows are linked, set the owning token's
 `mass = sum of its direct parents' token.mass`. It is **one level only** — each
@@ -137,9 +145,17 @@ funnel), so there is no recursion. Parentless base atoms never fire it and keep
 their declared seed (nibble 1, `0x` 0). The trigger's formula yields the floor's
 own values (byte codes → 2, multi-byte → 4 / 6 / 8); it fires only on new inserts,
 not retroactively, so it never recomputes the existing seeded rows (a re-mint is a
-SEE no-op, so no `token_parent` insert and no trigger). Guard: SQL `SUM` skips
-NULL, so the trigger assumes each parent already carries a mass — true here, every
-parent is a seeded atom or a mass-2 byte code.
+SEE no-op, so no `token_parent` insert and no trigger).
+
+**Completeness invariant (what makes it safe as a *standing* trigger).** A parent
+has its structural mass the moment it is minted; an unknown-mass (NULL) parent is
+not yet complete for composition. So a token may be used as a parent only once its
+mass is set, and a child's parent link is not accepted until every parent is
+mass-complete — SQL `SUM` therefore never silently skips a NULL parent and banks
+an incomplete total. This is the narrower mint-completion rule the repo agent is
+tracking in **#109**; it holds trivially for the UTF-8 bootstrap (every parent is
+a seeded atom or a mass-2 byte code) and is what generalizes the trigger safely
+beyond it.
 
 **No cascade.** Structural mass is **invariant** — it is the structural value of
 the composition, and composition *is* identity: change a token's parents and it
@@ -179,26 +195,36 @@ A label draws on **both** values, for two jobs:
 So `token.mass` is now **uniformly structural** (literals and a label's naming
 literal alike); the centroid is the calculated layer. This **refines** the
 earlier note that "a label's stored mass = centroid of members": the *stored*
-value is structural; the centroid is computed. The temporary labels have no
+value is structural; the centroid is computed. The schema and README lines that
+still say a label's `token.mass` stores its member centroid
+(`schema/schema.sql:135`, `schema/README.md:117`, and any NOTES echo) are
+therefore **stale** — to be corrected at execution so they read "uniformly
+structural; the member centroid is the live/calculated layer, never stored in the
+cold store." (Documented here as superseded; the comment edits are an execution
+step.) The temporary labels have no
 naming literal (no parents) yet, so the trigger never fires for them and their
 placeholder `mass` stays until the prose→token_id swap builds the naming
 literal; their centroid is computed from members whenever something composes
 them.
 
-### Structural values are gross alignment parameters
+### Structural values as a gross-alignment parameter (TENTATIVE — awaiting Patrick's steer)
 
-Within a group membership, structural values act as **gross alignment
-parameters**: members whose structural values are close are coarsely drawn
-togetherish, so structurally-kin things cluster at the coarse level (e.g. UTF-8
-and UTF-16 would be structurally inclined to sit togetherish — illustrative;
-UTF-16 is **not** added here, this build is UTF-8 only). The **centroid** values
-then do the finer component organization within that gross arrangement — the
-model's coarse→fine LoD, where more fields pin position more exactly.
+The idea in play: within a group membership, a token's structural value acts as a
+**gross, organizational alignment parameter** — a coarse way of *arranging* kin
+structures near one another (e.g. UTF-8 and UTF-16 sitting togetherish —
+illustrative; UTF-16 is **not** added here, this build is UTF-8 only) — with the
+**centroid** values doing the finer component organization.
 
-This falls straight out of the trigger values here: structural mass **bands by
-byte length** — every 2-byte character is mass 4, every 3-byte is 6, every
-4-byte is 8 — so characters coarsely align by encoding width, with finer
-separation within a band coming from the centroid layer.
+**This is proposed, not settled, and it is explicitly NOT the physical force
+law.** Under `m1·m2/d²` mass sets interaction *magnitude*, not a closeness-based
+attraction: a 4–8 pair's product (32) exceeds a 4–4 pair's (16), so nearby
+structural values do **not** cluster by the force law, and the earlier "bands by
+byte length / falls straight out" framing overstated it. What *is* factual is only
+that the trigger makes structural mass **equal within a byte-width tier** (2-byte
+= 4, 3-byte = 6, 4-byte = 8); whether that shared value is used as an
+organizational/addressing arrangement, or expressed through some additional
+field/target rule, is **Patrick's to steer** — recorded here as a tentative
+proposal, not a mechanism.
 
 ## 6. Population scope
 
@@ -212,9 +238,12 @@ across ~2.2M+ commits** — `mint` is one atomic transaction per token and
 `add_membership` commits separately (`controller/controller.cpp`). This is **not
 a performance guarantee**; Patrick accepts the runtime cost as the party paying
 for the cycles. The load is naturally **resumable**: each mint is atomic and the
-door is SEE-idempotent (`ON CONFLICT DO NOTHING`), so a re-run skips what is
-already in and continues. **No batched bulk-insert path is added** — speed is
-not the concern, and resumability comes for free from idempotency.
+door is idempotent — `mint` uses SEE (a `SELECT`, then early-return if the
+token_id already exists; an identity check only), and `add_membership` uses `ON
+CONFLICT DO NOTHING` — so a re-run skips what is already in and continues. Because
+SEE checks identity only, restart-safety verification must confirm each existing
+address carries the expected ordered parents **and** mass, not merely that the row
+exists.
 
 ## 7. Driver
 

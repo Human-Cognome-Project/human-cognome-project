@@ -1027,12 +1027,14 @@ section keeps the model-level reading.
   force/mass centroids (§3.5) and the cache manager's label/rollup centroids;
   structural *seeds* the centroid, it is not the centroid. A **label uses both**:
   its own structural value (from its naming literal) for **meta-organization**, and
-  its centroid (of members) for **component-organization**. Within a group,
-  structural values act as **gross alignment parameters** — close structural values
-  draw members coarsely togetherish (structurally-kin things cluster; the centroid
-  layer refines within). Concrete instance: in the encoding tables structural mass
-  bands by byte length (2-byte 4, 3-byte 6, 4-byte 8) — coarse alignment by
-  encoding width.
+  its centroid (of members) for **component-organization**. Structural value as a
+  **gross-alignment parameter** is a TENTATIVE, organizational idea (coarsely
+  arranging kin structures; the centroid layer refines within), **not** the force
+  law — under `m1·m2/d²` mass is magnitude, not closeness-attraction, so nearby
+  structural values do not cluster by the law. Factual only: the trigger makes
+  structural mass equal within a byte-width tier (2-byte 4, 3-byte 6, 4-byte 8);
+  whether that shared value is used as an arrangement or an added field rule is
+  Patrick's to steer.
 
 ## Open threads (pending Patrick's input)
 

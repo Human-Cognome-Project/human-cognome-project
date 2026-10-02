@@ -44,7 +44,9 @@
 > U+0080–U+10FFFF (skip surrogates) and UTF-8-encoding, populate-all-valid (~1.11M characters).
 > **Rev. 2026-10-02:** structural mass is set by an `AFTER INSERT` trigger on `token_parent`
 > (`mass = sum of parents`; removes it from the aggregation workstream; no cascade — structural mass is
-> invariant); `token.mass` = structural seed, distinct from the calculated centroid layer; labels use
+> invariant). **Authorized by Patrick as an explicit exception to the schema no-trigger rule**, with a
+> completeness invariant (parents mass-complete before use; mint-completion rule tracked in #109).
+> `token.mass` = structural seed, distinct from the calculated centroid layer; labels use
 > their structural value for meta-org and the centroid for component-org; the driver mints **directly
 > through the controller** (not `DECLARE`) and supplies no mass; the ~12.1M-row load is accepted and
 > resumable (idempotent mints). See also `NOTES.md` "UTF-8 encoding tables — build-out plan

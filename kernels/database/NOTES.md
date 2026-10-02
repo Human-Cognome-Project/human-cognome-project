@@ -282,21 +282,32 @@ Patrick's acceptance). Summary of the decisions it records:
   fixed seeds; MOVE/rekey re-addresses the same composition, membership changes
   don't touch structure. This is a `schema.sql` change + tests and **removes
   structural mass from the deferred aggregation work**; the driver supplies no
-  mass.
+  mass. **Authorized by Patrick (2026-10-02)** — an explicit, decided exception to
+  the schema's "no triggers/functions; derivation in C++" rule (`schema.sql:21-23`,
+  `schema/README.md:11-12`), reconciled in those docs at execution. **Completeness
+  invariant:** a parent carries its structural mass when minted; a child's parent
+  link is not accepted until every parent is mass-complete, so `SUM` never banks an
+  incomplete total (the narrower mint-completion rule tracked in #109).
 - **Structural vs centroid (do not conflate):** `token.mass` = **structural**
   (the trigger's sum-of-parents, the seed). **Centroid** masses are the separate
   **calculated** layer — the engine's per-tick force/mass centroids (§3.5) and
   the cache manager's label/rollup centroids. Structural seeds the centroid; it
   is not the centroid. This **refines** the "A token's own mass" / "label stored
   mass = centroid of members" notes below: the *stored* `token.mass` is uniformly
-  structural; the centroid is computed.
+  structural; the centroid is computed. The matching `schema/schema.sql:135` /
+  `schema/README.md:117` comments (a label's `token.mass` = member centroid) are
+  likewise **stale** — corrected at execution to read uniformly structural, member
+  centroid being the calculated layer, never stored in the cold store.
 - **Labels use both:** a label's **own structural value** (its naming literal's
   parents, in `token.mass`) drives **meta-organization**; its **centroid** (of
-  members, calculated) drives **component-organization**. Structural values are
-  **gross alignment parameters** — close structural values draw members coarsely
-  togetherish (structurally-kin things cluster; centroids refine within). Here
-  structural mass bands by byte length (2-byte 4, 3-byte 6, 4-byte 8) = coarse
-  alignment by encoding width.
+  members, calculated) drives **component-organization**. Structural value as a
+  **gross-alignment parameter** is a TENTATIVE, organizational idea (coarsely
+  arranging kin structures; centroids refine within), **not** the force law — under
+  `m1·m2/d²` mass is magnitude, not closeness-attraction (4–8 product 32 > 4–4
+  product 16), so nearby structural values do not cluster by the law. Factual only:
+  the trigger makes structural mass equal within a byte-width tier (2-byte 4,
+  3-byte 6, 4-byte 8); its use as an arrangement vs an added field rule is
+  Patrick's to steer.
 - **Driver:** C++ bootstrap driver minting **directly through the `Controller`**
   (the seed-floor channel, `declare_core.cpp:224`), NOT the `DECLARE` core (which
   blanks mass); byte-count-parameterized; supplies no mass (trigger fills it);
