@@ -20,7 +20,9 @@
 --
 -- No logic lives here beyond plain tables and keys. All derivation,
 -- validation and construction logic belongs to the C++ layer, not to
--- triggers or functions in this schema.
+-- triggers or functions in this schema. ONE authorized exception: the
+-- structural-mass trigger on token_parent (end of this file; also installable
+-- on an existing database via structural_mass_trigger.sql).
 --
 -- REVERSE-SEARCH INDEXES ARE NOT ALLOWED. The CPU only follows stored
 -- lists; it never searches. Groups 2, 3 and 4 (token_child, members,
@@ -268,3 +270,37 @@ COMMENT ON TABLE member_of IS
     'Membership, upward: the groups (group_token_id) a token (token_id) directly belongs to. Reciprocal of members, written together by add_membership.';
 COMMENT ON COLUMN member_of.token_id IS 'The member token.';
 COMMENT ON COLUMN member_of.group_token_id IS 'A group token_id this token directly belongs to.';
+
+
+-- ----------------------------------------------------------------------------
+-- Structural-mass trigger — the one authorized trigger exception.
+-- AFTER INSERT on token_parent: rejects a NULL-mass parent (#109, direct-mint
+-- path), else sets the child's mass to the SUM of its direct parents' masses
+-- (one level, no cascade). Fires only on new inserts. Identical to
+-- structural_mass_trigger.sql; keep the two in step.
+-- ----------------------------------------------------------------------------
+CREATE FUNCTION token_parent_structural_mass() RETURNS trigger
+LANGUAGE plpgsql AS $$
+DECLARE
+    parent_mass integer;
+BEGIN
+    SELECT mass INTO parent_mass FROM token WHERE token_id = NEW.parent_token_id;
+    IF parent_mass IS NULL THEN
+        RAISE EXCEPTION
+            'parent % has unknown (NULL) mass: not available for composition',
+            NEW.parent_token_id;
+    END IF;
+
+    UPDATE token
+    SET mass = (SELECT SUM(p.mass)::integer
+                FROM token_parent tp
+                JOIN token p ON p.token_id = tp.parent_token_id
+                WHERE tp.token_id = NEW.token_id)
+    WHERE token_id = NEW.token_id;
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER token_parent_structural_mass
+AFTER INSERT ON token_parent
+FOR EACH ROW EXECUTE FUNCTION token_parent_structural_mass();

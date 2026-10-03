@@ -210,7 +210,8 @@ ORDER BY kcu.column_name;
 -- ============================================================================
 -- 7. No unexpected triggers or functions attached to any of these tables.
 -- ============================================================================
--- Expect 0 rows: no logic lives in this schema (all logic is the C++ layer).
+-- Expect exactly 1 row: (token_parent_structural_mass, token_parent), the one
+-- authorized structural-mass trigger. No other logic lives in this schema.
 SELECT trigger_name, event_object_table
 FROM information_schema.triggers
 WHERE trigger_schema = 'public'

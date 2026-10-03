@@ -8,12 +8,14 @@ Schema for the `hcp_core` database: the passive backing store for
 the token-graph. The 2026-09-28 snapshot supplies an initial encoding floor;
 this store may be checked, corrected, and expanded. The schema has no
 relationship to historical `hcp2_core` / `db/core.sql`.
-No logic lives here (no triggers/functions); construction and validation
-logic is the C++ layer's job.
+No logic lives here (no triggers/functions) with ONE authorized exception,
+the structural-mass trigger on `token_parent` (see below); all other
+construction and validation logic is the C++ layer's job.
 
 Files:
 
 - `schema.sql` — CREATE TABLE statements (five tables; no views).
+- `structural_mass_trigger.sql` — additive install migration for the structural-mass trigger (CREATE FUNCTION/TRIGGER only; touches no data).
 - `verify.sql` — read-only information_schema/pg_catalog checks, each with the expected result in a comment.
 - `README.md` — this file.
 - `tests.md` — the checklist to run `verify.sql` against.
@@ -148,3 +150,15 @@ can remain `text[]`.
   full by `members`/`member_of`) and `token.type` (type is emergent/
   LoD-relative, never a stored column). See `NOTES.md` "Relationship model
   & type — firmed 2026-09-17" for the full rationale.
+
+## Structural-mass trigger (the one authorized exception)
+
+`token_parent_structural_mass` is `AFTER INSERT ON token_parent FOR EACH ROW`.
+It (1) raises if the just-linked parent's `token.mass` is NULL (#109, guards
+the direct `ctl.mint` path; inside a command transaction this rolls the whole
+command back), otherwise (2) sets the child's `token.mass` to the SUM of its
+direct parents' `token.mass` — one level only, no cascade to descendants.
+It fires only on new inserts: existing floor rows keep their masses, and
+parentless tokens (atoms, labels) never fire it. The same DDL is in
+`schema.sql` (fresh databases) and `structural_mass_trigger.sql` (existing
+databases; not applied to `hcp_core` by this change).
