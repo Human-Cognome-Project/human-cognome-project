@@ -189,6 +189,148 @@ no grouping logic to write** — the division falls out of where the points sit.
 The assignment side's only job is to place kinds in whole trunks and leave the
 gaps. **Do not implement the division; it is emergent from the layout.**
 
+## Parent fields pull by value and by ordinal position, separately — corrected 2026-10-01 (governs on conflict)
+
+**(Patrick, 2026-10-01 — supersedes the 2026-09-28 "(value, ordinal slot)" framing,
+which pointed the wrong way.)** Ordering is part of the **basis of commonality**, but
+value and ordinal position are **two separate commonalities, each its own field,
+pulling individually** — NOT a joint `(value, ordinal slot)` key:
+
+- a **value field** — same value pulls toward same value, regardless of position;
+- an **ordinal-position field** — same ordinal slot pulls toward same ordinal slot
+  (first toward first, i.e. ordinal 0 toward ordinal 0; second toward second),
+  regardless of value.
+
+Each constituent participates in **both at once**, as two independent `m1·m2/d²`
+pulls — consistent with "every listing is a field." For a hex couplet the ordinal
+slots are `0 = high nibble`, `1 = low nibble` (the schema stores `ordinal` 0-based —
+`schema/schema.sql:176`, `controller/controller.h:44-45`); the couplets already store
+their parents in that order (high then low, wired to `token_child`), so **the data
+already exists** — this only reads it completely.
+
+- **The 32-label row/column insert is DROPPED.** An earlier plan would have minted
+  `first hex=0…F` and `second hex=0…F` labels with membership edges to give the
+  couplets a row/column stratum. That is not needed and would invite a
+  **cross-connection explosion** we do not want. No new labels, no membership
+  edges, no new data — the value field and the ordinal-position field are derivable
+  from the existing ordered parents.
+- **A grid "row/column" is the OVERLAP of two independent fields, not a stored
+  group.** The couplets whose high nibble is X are the **intersection** of the
+  ordinal-0 field and the value-X field; the couplets whose low nibble is Y are the
+  intersection of the ordinal-1 field and the value-Y field. Neither is a single
+  stored joint grouping — same spirit as *Division by sparsity — a property of the
+  data, NOT code* above: do not implement the grouping; it falls out of the two
+  fields.
+- **Position = ordinal slot** (the 0-based slot index in the ordered parent list). What
+  "position" means for ordered chains longer than a 2-parent couplet — the ordinal
+  slot, and how it relates to the existing "position vs the centre" note — is to
+  pin when the composition routine is designed; for the couplet it is unambiguous.
+- **Force is unchanged — whole-body.** A constituent's value and ordinal position
+  inform **which fields it is in**; the resulting force is still applied over the
+  **whole body** (whole-body-responds rule preserved — see
+  `engine/docs/HARNESS-NOTES.md`), never localized to the sub-part.
+- **Generalizes.** Treating value and ordinal position as separate commonalities
+  covers any construct where ordering matters, in one rule rather than per-case
+  grouping structures.
+- **OPEN (revisit later, do NOT design now):** this may also simplify connection
+  mechanics — §3.8 polarity is already derived from ordinal numbering, so an
+  ordinal-position field could subsume part of it. Noted only; leave connection
+  mechanics as-is until Patrick takes it up.
+
+## UTF-8 encoding tables — build-out plan (rev. 2026-10-02)
+
+Full plan: **`ENCODING-TABLES-PLAN.md`** (PLAN, not built; execution gated on
+Patrick's acceptance). Summary of the decisions it records:
+
+- **Hierarchy:** nibbles (mass 1) → byte codes (2 nibble parents, mass 2) →
+  multi-byte characters (**2/3/4 ordered byte-code parents**, structural mass
+  4/6/8 = sum of parents). 1-byte characters ARE the existing byte codes
+  `00`–`7F`; no new tokens for them.
+- **Relabel (notation only), by direct SQL `UPDATE`:** `Single Hex Code` →
+  `Nibbles`; `Hex Couplets` → `Byte Codes`; `Hex Code Patterns` →
+  `Byte Code Groups`. There is **no record-tier notation-edit verb** (UPDATE_RECORD
+  is MOVE/ADD_CONNECTION/DELETE_RECORD/DELETE_CONNECTION only), and `notation` is
+  the temporary/debug column — so the relabel is a direct SQL edit, verified by
+  re-query. Plus three new category labels — `Two-Byte Codes` /
+  `Three-Byte Codes` / `Four-Byte Codes` (names a PROPOSAL awaiting Patrick), each
+  `member_of` `Byte Code Groups`, with each character `member_of` its category
+  label.
+- **Addressing (locked), all under `00.00.00.*` so the `00.00.01.*` labels never
+  move:** nibbles+byte codes at `…00.*`; 2-byte at `…01.*`–`02.*` (7,688 cap,
+  1,920 used); 3-byte at `…03.*`–`0z.*` (~227k cap, 61,440 used); 4-byte at
+  `…10.*`–`zz.*` (~14.5M cap, 1,048,576 used). Reservations, sequential fill,
+  sparse tails — the *Per-kind trunk allocation* pattern. Full-combinatorial
+  reservation was rejected as overkill. **Reserve generously up front —
+  re-addressing a populated block is NOT cheap:** addresses are the `text[]` PKs
+  referenced across all four stores, and `Controller::rekey` relocates a token as
+  INSERT-new + repoint-8-FKs + DELETE-old per token (`controller.cpp:510-583`).
+  "Nothing holds addresses" is true for the analyst, not for the DB's own FKs.
+- **Generation:** walk codepoints U+0080–U+10FFFF, skip surrogates
+  U+D800–U+DFFF, UTF-8-encode; the bytes ARE the ordered byte-code parents. The
+  walk is exactly the valid set — generated, never sourced from a codepoint
+  table.
+- **Codepoint ≠ encoding:** parents are the actual UTF-8 bytes (`é` = U+00E9 →
+  `C3 A9`), NOT the codepoint digits (`00 E9`). Padded `U+` tables are
+  misleading; we generate from the encoding.
+- **Structural mass is a trigger, not supplied and not derived by `mint`**
+  (`mint` stores mass verbatim/NULL — `controller.cpp:404-414`; `DECLARE` passes
+  `nullopt` — `declare_core.cpp:222`). An `AFTER INSERT` trigger on `token_parent`
+  sets the owning token's `mass = sum of its direct parents' mass` (one level —
+  each parent's stored mass already aggregates its subtree). Parentless atoms
+  keep their seed; it reproduces the floor (byte codes 2, multi-byte 4/6/8). **No
+  cascade** — structural mass is invariant: composition IS identity, grounded in
+  fixed seeds; MOVE/rekey re-addresses the same composition, membership changes
+  don't touch structure. This is a `schema.sql` change + tests and **removes
+  structural mass from the deferred aggregation work**; the driver supplies no
+  mass. **Authorized by Patrick (2026-10-02)** — an explicit, decided exception to
+  the schema's "no triggers/functions; derivation in C++" rule (`schema.sql:21-23`,
+  `schema/README.md:11-12`), reconciled in those docs at execution. **Completeness
+  invariant:** a parent carries its structural mass when minted; a child's parent
+  link is not accepted until every parent is mass-complete, so `SUM` never banks an
+  incomplete total (the narrower mint-completion rule tracked in #109).
+- **Structural vs centroid (do not conflate):** `token.mass` = **structural**
+  (the trigger's sum-of-parents, the seed). **Centroid** masses are the separate
+  **calculated** layer — the engine's per-tick force/mass centroids (§3.5) and
+  the cache manager's label/rollup centroids. Structural seeds the centroid; it
+  is not the centroid. This **refines** the "A token's own mass" / "label stored
+  mass = centroid of members" notes below: the *stored* `token.mass` is uniformly
+  structural; the centroid is computed. The matching `schema/schema.sql:135` /
+  `schema/README.md:117` comments (a label's `token.mass` = member centroid) are
+  likewise **stale** — corrected at execution to read uniformly structural, member
+  centroid being the calculated layer, never stored in the cold store.
+- **Labels use both:** a label's **own structural value** (its naming literal's
+  parents, in `token.mass`) drives **meta-organization**; its **centroid** (of
+  members, calculated) drives **component-organization**. Structural value as a
+  **gross-alignment parameter** is a TENTATIVE, organizational idea (coarsely
+  arranging kin structures; centroids refine within), **not** the force law — under
+  `m1·m2/d²` mass is magnitude, not closeness-attraction (4–8 product 32 > 4–4
+  product 16), so nearby structural values do not cluster by the law. Factual only:
+  the trigger makes structural mass equal within a byte-width tier (2-byte 4,
+  3-byte 6, 4-byte 8); its use as an arrangement vs an added field rule is
+  Patrick's to steer.
+- **Driver:** C++ bootstrap driver minting **directly through the `Controller`**
+  (the seed-floor channel, `declare_core.cpp:224`), NOT the `DECLARE` core (which
+  blanks mass); byte-count-parameterized; supplies no mass (trigger fills it);
+  **additive only** (no reset/drop; not the removed `seed_0x` pattern).
+- **Population cost + atomicity:** ~12.1M rows (1,111,936 tokens + parents/children
+  + membership). Runtime cost accepted (payer's call), not a performance guarantee.
+  Each per-character command (`mint` + `add_membership`) is **one atomic unit** — it
+  commits only if fully valid, else **rolls back entirely**; **no partial state is
+  retained** (only valid commands are accepted — keeping a partial would just mean
+  validating it later). The current controller commits the two steps separately, so
+  this is the **shared command transaction tracked in #110** the populate runs on,
+  with the **#109** complete-parent mass guard. Because failures roll back, a re-run
+  simply mints the characters not yet present (SEE is a `SELECT` then early-return on
+  an existing token_id — identity only); there is nothing partial to heal.
+
+**SNode composition (forward note):** when composing compressed / rolled-up
+particles, the cache manager walks and compiles the nested parent definitions —
+the structural (sum-of-parents) tree beneath a collapsed node.
+
+This **supersedes** the "next kind … undecided / boundaries deliberately unfixed"
+note under *Per-kind trunk allocation* above for the multi-byte tiers: those
+boundaries are now the allocation in `ENCODING-TABLES-PLAN.md`.
+
 ## Analyst command semantics (the relative assignment rule)
 
 The normal ingestion command is group-level, not point-level:
@@ -494,7 +636,11 @@ precisely itself (the address-is-identity rule).
   members alike.
 - stored mass = the **aggregate (centroid) of its member masses** (e.g. 16 hex
   digits x 1 = 16), NOT the label's own intrinsic mass (that comes from word
-  associations, later).
+  associations, later). (**Reconciled 2026-10-02:** `token.mass` now holds
+  **structural** mass — sum of parents, trigger-maintained; the member centroid is
+  the separate *calculated* layer, not stored in `token.mass`. A label uses its
+  own structural value for meta-organization and its centroid for
+  component-organization. See *UTF-8 encoding tables*.)
 
 Mass aggregates in the direction the type reads *down*: a literal sums over its
 parents (constituents); a label sums over its children (members).
@@ -510,6 +656,16 @@ parents (constituents); a label sums over its children (members).
   whose mass-1 is the explicit seed), so for composites the stored value is a
   maintained cache of that sum; for base atoms it *is* the seed. Schema: add a
   mass column to `token`.
+
+  > **Reconciled 2026-10-02 (governs):** `token.mass` holds **structural** mass
+  > only — the sum of the direct parents' masses — maintained by an `AFTER INSERT`
+  > trigger on `token_parent` (see *UTF-8 encoding tables* above and
+  > `ENCODING-TABLES-PLAN.md` §5), **not** by a pending aggregation workstream, and
+  > it is **not** a label's centroid. A label's centroid-of-members is the separate
+  > **calculated** layer (engine force centroids §3.5, cache-manager rollups), not
+  > stored in `token.mass`. And `token_parent` carries **no** per-constituent mass
+  > (references only — `declare_core.cpp` writes `nullopt`); the trigger reads each
+  > parent's own `token.mass`.
 - **Nested aggregation.** When a label's members include sub-group labels, does
   the centroid recurse to leaf masses or sum the sub-groups' stored centroids?
   Defines one-level vs transitive roll-up and avoids double-counting.
