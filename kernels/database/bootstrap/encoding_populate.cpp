@@ -152,10 +152,10 @@ bool populate_character(Controller &ctl, uint32_t cp, const codec::Address &labe
   for (uint8_t b : utf8_encode(cp)) {
     parents.push_back({byte_code_address(b), std::nullopt});
   }
-  // The character's own surface form, as the temporary notation.
+  // Temporary notation: the UTF-8 bytes as hex, in order (not the character).
   std::string notation;
   for (uint8_t b : utf8_encode(cp)) {
-    notation.push_back(static_cast<char>(b));
+    notation += hex_notation(b);
   }
   return ctl.with_transaction([&] {
     const bool existed = ctl.mint(id, notation, parents);

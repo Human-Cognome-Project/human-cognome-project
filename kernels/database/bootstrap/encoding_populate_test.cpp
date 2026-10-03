@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "encoding_populate.h"
 
@@ -156,6 +158,11 @@ int main(int argc, char **argv) {
                   text(character_address(0x20AC)));
   check_character(ctl, 0x1F600, "U+1F600", {"F0", "9F", "98", "80"}, 8, Category::Four,
                   text(character_address(0x1F600)));
+  for (const auto &[c, want] : std::vector<std::pair<uint32_t, std::string>>{
+           {0xE9, "C3A9"}, {0x20AC, "E282AC"}, {0x1F600, "F09F9880"}}) {
+    const auto attrs = ctl.attributes_of(character_address(c));
+    check(attrs && attrs->notation == want, "notation is byte hex " + want);
+  }
   check(text(character_address(0xE9)).rfind("00.00.00.01.", 0) == 0 &&
             text(character_address(0x20AC)).rfind("00.00.00.0", 0) == 0 &&
             text(character_address(0x1F600)).rfind("00.00.00.", 0) == 0,

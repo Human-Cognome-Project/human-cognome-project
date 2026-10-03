@@ -26,7 +26,7 @@ no SQL is issued here except through the `Controller`.
   codepoints in order with surrogates skipped; the slot is a pure function of
   the codepoint, so a sample run lands where a full run would. 2-byte
   `00.00.00.01.*`–`02.*`; 3-byte `…03.*`–`0z.*`; 4-byte `…10.*`–`zz.*`.
-- `notation` (temporary) carries the character itself.
+- `notation` (temporary) carries the byte hex (UTF-8 bytes as uppercase hex, in order, e.g. `C3A9`).
 
 Additive and idempotent: re-running mints nothing new; an existing token at a
 character address whose parents differ aborts that character.
