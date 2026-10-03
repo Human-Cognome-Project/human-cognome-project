@@ -365,6 +365,74 @@ std::vector<codec::Address> Controller::gather(const codec::Address &from,
   return out;
 }
 
+// ---- Command transaction scope --------------------------------------------
+
+void Controller::begin() {
+  if (in_scope_) {
+    throw std::runtime_error("begin: a command transaction is already active");
+  }
+  PGresult *begun = run(conn_, "BEGIN", {});
+  PQclear(begun);
+  in_scope_ = true;
+}
+
+void Controller::commit() {
+  if (!in_scope_) {
+    throw std::runtime_error("commit: no active command transaction");
+  }
+  // The scope ends whether or not COMMIT succeeds: a failed COMMIT leaves
+  // the transaction rolled back by the server.
+  in_scope_ = false;
+  try {
+    PGresult *committed = run(conn_, "COMMIT", {});
+    PQclear(committed);
+  } catch (...) {
+    PGresult *rolled = PQexec(conn_, "ROLLBACK");
+    if (rolled != nullptr) {
+      PQclear(rolled);
+    }
+    throw;
+  }
+}
+
+void Controller::rollback() noexcept {
+  if (!in_scope_) {
+    return;
+  }
+  in_scope_ = false;
+  PGresult *rolled = PQexec(conn_, "ROLLBACK");
+  if (rolled != nullptr) {
+    PQclear(rolled);
+  }
+}
+
+void Controller::op_begin() {
+  if (in_scope_) {
+    return;
+  }
+  PGresult *begun = run(conn_, "BEGIN", {});
+  PQclear(begun);
+}
+
+void Controller::op_commit() {
+  if (in_scope_) {
+    return;
+  }
+  PGresult *committed = run(conn_, "COMMIT", {});
+  PQclear(committed);
+}
+
+void Controller::op_abort() noexcept {
+  if (in_scope_) {
+    return;  // the scope owner rolls the whole command back
+  }
+  // Best-effort rollback; ignore its own status so the original error wins.
+  PGresult *rolled = PQexec(conn_, "ROLLBACK");
+  if (rolled != nullptr) {
+    PQclear(rolled);
+  }
+}
+
 // ---- Write side -----------------------------------------------------------
 
 bool Controller::mint(const codec::Address &token_id, const std::string &notation,
@@ -381,8 +449,7 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
     parent_arrs.push_back(address_to_pg_array(c.address));
   }
 
-  PGresult *begun = run(conn_, "BEGIN", {});
-  PQclear(begun);
+  op_begin();
 
   try {
     // SEE: idempotent if the token_id already exists.
@@ -391,8 +458,7 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
     const bool existed = PQntuples(seen) > 0;
     PQclear(seen);
     if (existed) {
-      PGresult *committed = run(conn_, "COMMIT", {});
-      PQclear(committed);
+      op_commit();
       return true;
     }
 
@@ -451,15 +517,10 @@ bool Controller::mint(const codec::Address &token_id, const std::string &notatio
       PQclear(wired);
     }
 
-    PGresult *committed = run(conn_, "COMMIT", {});
-    PQclear(committed);
+    op_commit();
     return false;
   } catch (...) {
-    // Best-effort rollback; ignore its own status so the original error wins.
-    PGresult *rolled = PQexec(conn_, "ROLLBACK");
-    if (rolled != nullptr) {
-      PQclear(rolled);
-    }
+    op_abort();
     throw;
   }
 }
@@ -469,8 +530,7 @@ void Controller::add_membership(const codec::Address &member,
   const std::string member_arr = address_to_pg_array(member);
   const std::string group_arr = address_to_pg_array(group);
 
-  PGresult *begun = run(conn_, "BEGIN", {});
-  PQclear(begun);
+  op_begin();
   try {
     // Idempotent, SEE-style: ON CONFLICT DO NOTHING on each side, so
     // re-adding an already-present pair is a clean no-op rather than a
@@ -491,13 +551,9 @@ void Controller::add_membership(const codec::Address &member,
                        "ON CONFLICT DO NOTHING",
                        {group_arr.c_str(), member_arr.c_str()});
     PQclear(mm);
-    PGresult *committed = run(conn_, "COMMIT", {});
-    PQclear(committed);
+    op_commit();
   } catch (...) {
-    PGresult *rolled = PQexec(conn_, "ROLLBACK");
-    if (rolled != nullptr) {
-      PQclear(rolled);
-    }
+    op_abort();
     throw;
   }
 }
@@ -507,8 +563,7 @@ void Controller::rekey(const codec::Address &old_id, const codec::Address &new_i
   const std::string new_arr = address_to_pg_array(new_id);
   const std::string new_text = address_to_text(new_id);
 
-  PGresult *begun = run(conn_, "BEGIN", {});
-  PQclear(begun);
+  op_begin();
   try {
     // Read the old row's carry-over attributes (notation, mass); also
     // confirms old_id exists.
@@ -572,13 +627,9 @@ void Controller::rekey(const codec::Address &old_id, const codec::Address &new_i
         run(conn_, "DELETE FROM token WHERE token_id = $1::text[]", {old_arr.c_str()});
     PQclear(deleted);
 
-    PGresult *committed = run(conn_, "COMMIT", {});
-    PQclear(committed);
+    op_commit();
   } catch (...) {
-    PGresult *rolled = PQexec(conn_, "ROLLBACK");
-    if (rolled != nullptr) {
-      PQclear(rolled);
-    }
+    op_abort();
     throw;
   }
 }
@@ -598,8 +649,7 @@ void Controller::delete_pair(const codec::Address &member, const codec::Address 
   const std::string member_arr = address_to_pg_array(member);
   const std::string group_arr = address_to_pg_array(group);
 
-  PGresult *begun = run(conn_, "BEGIN", {});
-  PQclear(begun);
+  op_begin();
   try {
     // member_of: remove the (member, group) row.
     PGresult *mo = run(conn_,
@@ -613,13 +663,9 @@ void Controller::delete_pair(const codec::Address &member, const codec::Address 
                        "AND member_token_id = $2::text[]",
                        {group_arr.c_str(), member_arr.c_str()});
     PQclear(mm);
-    PGresult *committed = run(conn_, "COMMIT", {});
-    PQclear(committed);
+    op_commit();
   } catch (...) {
-    PGresult *rolled = PQexec(conn_, "ROLLBACK");
-    if (rolled != nullptr) {
-      PQclear(rolled);
-    }
+    op_abort();
     throw;
   }
 }
