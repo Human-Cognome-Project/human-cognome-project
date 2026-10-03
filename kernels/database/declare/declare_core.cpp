@@ -82,6 +82,37 @@ RefListResolution resolve_reference_list(dbk::Controller &ctl,
   return out;
 }
 
+// The complete-parent mass guard (#109). A composite must not be declared
+// over a parent whose structural mass is unknown (`token.mass` SQL NULL: not
+// yet computed, so the parent is incomplete and not available for
+// composition). Only a pre-existing parent named by address is checked; a
+// parent minted inline by a nested declare is the composite's own work, not
+// a parent it resolved, and is exempt at this level. A nested declare's own
+// address parents are checked here too (recursively), so the whole command
+// is judged before anything is written. A missing token is left to
+// resolve_reference()'s existence failure. Returns the reason, or empty.
+std::string unknown_mass_parent(dbk::Controller &ctl,
+                                const std::vector<command::Reference> &refs) {
+  for (const auto &ref : refs) {
+    if (ref.address.has_value()) {
+      const auto attrs = ctl.attributes_of(*ref.address);
+      if (attrs.has_value() && !attrs->mass.has_value()) {
+        return "parent " + codec::encode_token_id(*ref.address).value_or("?") +
+               " has unknown (NULL) mass: an incomplete parent is not "
+               "available for composition";
+      }
+    } else if (ref.nested != nullptr && ref.nested->parents.has_value()) {
+      for (const auto &list : *ref.nested->parents) {
+        std::string reason = unknown_mass_parent(ctl, list);
+        if (!reason.empty()) {
+          return reason;
+        }
+      }
+    }
+  }
+  return "";
+}
+
 // NOTATION's per-slot surface form. A blank slot (absent from a short
 // NOTATION vector, or an explicitly-nullopt entry -- "successive commas")
 // stores blank: mint()'s `notation` parameter is a plain std::string with
@@ -172,6 +203,23 @@ Result execute_structure(dbk::Controller &ctl, const command::DeclareRecord &nod
     result.outcomes.push_back(
         Outcome{false, std::nullopt, "ADDRESS span invalid: " + plan_result.reason});
     return result;
+  }
+
+  // Complete-parent mass guard: judge every member's parents BEFORE any
+  // write (no outer transaction is relied on). One unknown-mass parent
+  // rejects the whole command -- every member un-ingested, nothing minted.
+  for (std::size_t i = 0; i < n; ++i) {
+    const std::string reason = unknown_mass_parent(ctl, (*node.parents)[i]);
+    if (!reason.empty()) {
+      for (std::size_t j = 0; j < n; ++j) {
+        result.outcomes.push_back(Outcome{
+            false, std::nullopt,
+            j == i ? "member " + std::to_string(i) + " constituent: " + reason
+                   : "command rejected: member " + std::to_string(i) +
+                         " constituent: " + reason});
+      }
+      return result;
+    }
   }
 
   for (std::size_t i = 0; i < n; ++i) {
