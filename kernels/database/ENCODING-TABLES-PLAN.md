@@ -61,12 +61,14 @@ like the existing labels until real naming literals exist.
   `00.00.01.00.00`–`…02`, so the new three take `00.00.01.00.03`–`…05`. That is
   under `00.00.01.*`, disjoint from every character block reserved under
   `00.00.00.*` (§3) — **no collision**; verify this at execution.
-- **Mass status — provisional/incomplete.** They have no naming literal and no
-  parents yet, so their **structural mass is incomplete (NULL)** — unlike the three
-  existing provisional labels, which carry a placeholder `mass` of 10. Under the
-  #109 complete-parent rule they are therefore **unavailable as parent
-  constituents** until completed. This does **not** block the population: characters
-  reference their category label only through `member_of`, never as a parent.
+- **Mass status — temporary values (Patrick, 2026-10-03).** Label masses are
+  **temporary placeholders** set manually, because the data to compile proper masses
+  does not exist yet — the same convention the three existing provisional labels use
+  (temporary `mass` 10). The category labels take a temporary mass on the same basis
+  (not `NULL`, not derived), pending proper compilation once the data exists (#109),
+  and stay provisional until real naming literals exist. This does **not** block the
+  population: characters reference their category label only through `member_of`,
+  never as a parent.
 
 ## 3. Addressing allocation (locked with Patrick)
 
@@ -143,9 +145,10 @@ its optional `mass` argument verbatim, writing SQL NULL when absent —
 `declare/declare_core.cpp:222`).
 
 **A deliberate exception to the no-trigger rule.** This standing trigger is an
-intentional exception to the schema's "no triggers/functions; all derivation in the
-C++ layer" rule (`schema/schema.sql:21-23`, `schema/README.md:11-12`); Patrick
-affirms the exception on the PR. It is the design, not an open question. What remains
+intentional, **authorized** exception to the schema's "no triggers/functions; all
+derivation in the C++ layer" rule (`schema/schema.sql:21-23`,
+`schema/README.md:11-12`). It is the design, not an open question; the separate
+plan-acceptance gate (§10) does not reopen it. What remains
 build work — specified, Sonnet-coded, and adversary-reviewed **before any
 population** (§8/§10) — is the **concrete trigger DDL**, its **additive install path
 on the existing `hcp_core`** (fires only on new inserts; the seeded floor rows are
@@ -344,9 +347,13 @@ reconciled result). Order and dependencies:
 
 **Population (gated):**
 
-- **U7 — sample + stop-gate.** With U4–U6 in place, populate and verify a **small
-  sample**: one valid token in **each** byte-width tier (2/3/4-byte, reading mass
-  4/6/8) **and** one **rejected command that leaves no writes** (rollback proof).
+- **U7 — sample + stop-gate.** With U4–U6 in place:
+  - **On `hcp_core`:** add the three valid sample tokens — one in **each** byte-width
+    tier (2/3/4-byte, reading mass 4/6/8).
+  - **In an isolated/disposable DB** (never the retained core snapshot — #110 and
+    AGENTS.md): the **rejected-command rollback proof**, a command that leaves no
+    writes.
+
   **STOP** here for review before the full walk.
 - **U8 — full populate** (1,111,936 characters), gated on U7 passing.
 - **U9 — verification** against §9 (counts, spot-checks, additive check).
