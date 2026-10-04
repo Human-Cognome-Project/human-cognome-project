@@ -59,9 +59,19 @@ the running model.
 
 An SNode tree is a working object definition: it can describe itself and
 participate in more complex compositions. Its root represents the question
-being asked. The cold store holds explicit object pieces and direct links,
-not one fixed tree for all questions. A composed element can occur at more
-than one locus of a working tree without creating a new underlying identity.
+being asked. The cold store holds reusable atomic and composed object
+definitions and their direct links; it does not materialize every fully
+expanded universe-level tree. A composed element can occur at more than one
+locus of a working tree without creating a new underlying token identity.
+
+**Physics object design is the work itself.** The cache manager starts with
+the finest relevant components and composes upward into study-shaped objects
+and rollups toward the selected root. The large SNode structures supported
+by the modified Taichi fork serve these working object rollups, not a giant
+pre-expanded hierarchy in PostgreSQL. A vast physics world of planets, ships, cities, characters, and components
+is composed from reusable standard objects; its current manipulable levels
+are the ones exposed in the working structure. This describes the intended
+cache-to-engine bridge, not an implemented cache manager.
 
 | Form | Owner and use | LoD consequence |
 |---|---|---|
@@ -100,8 +110,13 @@ remain to be designed. See [instance-local data](instance-local-data.md).
 
 ## Identity, fields, and traversal
 
-`token_id` is the base token identity and stored address; `particle_id` is an
-allocated instance of that token in a loaded model. A token can have multiple
+`token_id` identifies a reusable token in the record library: the variable
+representing a thing, atomic or composed. `particle_id` identifies one
+instantiated particle in the loaded model. A dimension is an aspect that
+makes the thing what it is or a measurable plane of commonality. These are
+general terms, not LLM-specific vocabulary. Taichi's `SNode::id` names a
+layout node, not a live particle; mapping instance IDs to Taichi cells/indices
+is part of the C++ bridge. A token can have multiple
 simultaneously exposed particles. All such instances automatically belong to
 an always-applicable **same-token sibling field** in the intended model. This
 field uses the ordinary particle-to-centroid law, with whole-mass participation;
