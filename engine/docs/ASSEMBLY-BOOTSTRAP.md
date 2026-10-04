@@ -26,6 +26,35 @@ are in [ENGINE-NOTES.md](ENGINE-NOTES.md). A Taichi cell can have several
 components with a fixed schema; a `pointer` component activates its own child
 block, not a reference to an arbitrary pre-existing warm-cache object.
 
+## Physics object assembly and the data bridge
+
+The cold database is the reusable physics object library: atomic and composed
+tokens, ordered constituent occurrences, and group memberships. It does not
+store a pre-expanded tree for every possible universe or study. The intended
+cache manager starts at the finest relevant tips, follows those explicit
+links, and builds larger standard objects and selected rollups upward toward
+the study root. The warm cache keeps those study-shaped prepared pieces;
+the hot working structure instantiates the levels that can be manipulated
+in the current simulation. Large SNode capacity is for these object rollups,
+not a reason to inflate the cold record store.
+
+This is literal physics object design. A simulation containing planets,
+ships, cities, characters, and components can instantiate them from reusable
+definitions and expose different constituent levels according to the study.
+Each hot instance retains its `token_id` (the reusable token representing
+the thing in the library) and has its own `particle_id` in the active model. Repeated
+instances of one token can have different positions and connections.
+`SNode::id` identifies Taichi's structural layout node, not that instance.
+
+Taichi supplies the hierarchical storage format; the **C++ data bridge** is
+the work still to build. It must translate cold definitions and links into
+warm compositions, decide the selected LoD, assign and track hot instances,
+stage their fields and relationships, and construct/register the Taichi
+layout used by the physics kernels. The specific SNode layout and mapping
+across recomposition remain open. Taichi's `pointer` SNode activates its own
+fixed-schema child storage; it does not by itself reference a shared
+object definition elsewhere in the library.
+
 ## What the current floor proves
 
 The snapshot contains 16 single hex tokens (`0`–`F`, mass 1), the addressed
