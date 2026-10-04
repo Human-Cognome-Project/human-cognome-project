@@ -1087,9 +1087,10 @@ bullet above.)
 
 ### Cache manager — view composer (design forming, 2026-09-23)
 
-> **DESIGN FORMING, not pinned, not built.** Captured from the cache-operations
-> discussion so it is not lost; will firm before any build. Game mechanics are the
-> operative frame; the Taichi SNode-tree resemblance is **structural, not functional**.
+> **DESIGN FORMING, not built.** The view-spec details remain open. Clarification
+> from Patrick (2026-10-04): this is **physics object design itself**, not a game
+> analogy or merely an SNode-tree resemblance. Taichi supplies the hierarchical
+> runtime format; the C++ bridge from the reusable object library is unbuilt.
 
 The store is **n-dimensional** — all connections across all axes; it is not itself a
 tree. A tree / composition appears only when an analysis **projects onto chosen relevant
@@ -1099,10 +1100,15 @@ dimensions**. The cache manager is the **view composer** that does that projecti
   *which axes of study* (the relevant-dimension projection) and *what levels of rollup*
   (LoD depth, **per area, not one global level**) are appropriate. Neither input alone
   sets the view.
-- **Structural, not functional, SNode resemblance.** A token is an SNode-composable
-  element (defined-by-parts = literal; nesting = LoD). But a Taichi SNode tree is a
-  *fixed* field layout for compute, whereas the cache is **re-composed per study** — a
-  projection, not a cutout of cold storage.
+- **Compose physics objects from the finest relevant tips toward the study root.**
+  The store is a library of reusable atomic and composed objects with direct
+  connections, not the pre-expanded tree of every possible universe. The warm
+  cache assembles standard objects into study-specific trees and rollups;
+  the hot model instantiates the selected manipulable levels. Large Taichi
+  SNode structures serve those rollups, not cold-store inflation. A Taichi
+  layout is built from a fixed SNode schema at runtime; the cache-to-Taichi
+  bridge must map the selected composition, instances and links into that
+  layout. Exact bridge mechanics remain to be specified.
 - **Rollup is dimension-parametric** — along the studied axis. Rolling up *word
   structures* is relevant only when words are the object of study; along another axis the
   rollup composes entirely different coarse particles. (Corrects the earlier word/hex
