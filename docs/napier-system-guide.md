@@ -1,6 +1,6 @@
 # NAPIER system guide
 
-**Status (2026-09-26):** Integrated account of the architecture discussed with
+**Status (2026-10-04):** Integrated account of the architecture discussed with
 Patrick and the active repository. It explains intended behaviour; the status
 table below separates that intent from running code. The dated
 [discussion record](napier-system-discussion.md) preserves the derivation and
@@ -68,8 +68,8 @@ locus of a working tree without creating a new underlying token identity.
 the finest relevant components and composes upward into study-shaped objects
 and rollups toward the selected root. The large SNode structures supported
 by the modified Taichi fork serve these working object rollups, not a giant
-pre-expanded hierarchy in PostgreSQL. A vast physics world of planets, ships, cities, characters, and components
-is composed from reusable standard objects; its current manipulable levels
+pre-expanded hierarchy in PostgreSQL. A vast physics world of planets, ships, cities, characters, and
+components is composed from reusable standard objects; its current manipulable levels
 are the ones exposed in the working structure. This describes the intended
 cache-to-engine bridge, not an implemented cache manager.
 
@@ -116,8 +116,8 @@ instantiated particle in the loaded model. A dimension is an aspect that
 makes the thing what it is or a measurable plane of commonality. These are
 general terms, not LLM-specific vocabulary. Taichi's `SNode::id` names a
 layout node, not a live particle; mapping instance IDs to Taichi cells/indices
-is part of the C++ bridge. A token can have multiple
-simultaneously exposed particles. All such instances automatically belong to
+is part of the C++ bridge. A token can have multiple simultaneously exposed
+particles. All such instances automatically belong to
 an always-applicable **same-token sibling field** in the intended model. This
 field uses the ordinary particle-to-centroid law, with whole-mass participation;
 it is not the database's former `token_sibling_group` table.
