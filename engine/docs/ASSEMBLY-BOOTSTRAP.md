@@ -1,6 +1,6 @@
 # Bootstrap guide: encoding-floor records into a Taichi working layout
 
-**Status (2026-09-30):** A small, reviewable assembly example, not a built
+**Status (2026-10-04):** A small, reviewable assembly example, not a built
 cache-manager protocol or a final SNode schema. It uses the retained
 [`hcp_core` encoding-floor snapshot](../../data/postgres/snapshots/2026-09-28-encoding-floor/MANIFEST.md)
 on `main`. No database change or extra seed is required for this example.
@@ -42,8 +42,9 @@ This is literal physics object design. A simulation containing planets,
 ships, cities, characters, and components can instantiate them from reusable
 definitions and expose different constituent levels according to the study.
 Each hot instance retains its `token_id` (the reusable token representing
-the thing in the library) and has its own `particle_id` in the active model. Repeated
-instances of one token can have different positions and connections.
+the thing in the library) and has its own `particle_id` in the active
+model. Repeated instances of one token can have different positions and
+connections.
 `SNode::id` identifies Taichi's structural layout node, not that instance.
 
 Taichi supplies the hierarchical storage format; the **C++ data bridge** is
