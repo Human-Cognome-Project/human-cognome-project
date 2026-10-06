@@ -273,6 +273,26 @@ std::vector<codec::Address> Controller::member_of(const codec::Address &token_id
   return out;
 }
 
+MembershipPresence Controller::membership_present(const codec::Address &member,
+                                                  const codec::Address &group) {
+  const std::string member_arr = address_to_pg_array(member);
+  const std::string group_arr = address_to_pg_array(group);
+  MembershipPresence out;
+  PGresult *mo = run(conn_,
+                     "SELECT 1 FROM member_of "
+                     "WHERE token_id = $1::text[] AND group_token_id = $2::text[]",
+                     {member_arr.c_str(), group_arr.c_str()});
+  out.in_member_of = PQntuples(mo) > 0;
+  PQclear(mo);
+  PGresult *mm = run(conn_,
+                     "SELECT 1 FROM members "
+                     "WHERE token_id = $1::text[] AND member_token_id = $2::text[]",
+                     {group_arr.c_str(), member_arr.c_str()});
+  out.in_members = PQntuples(mm) > 0;
+  PQclear(mm);
+  return out;
+}
+
 std::optional<TokenAttributes> Controller::attributes_of(
     const codec::Address &token_id) {
   const std::string arr = address_to_pg_array(token_id);

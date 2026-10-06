@@ -42,6 +42,7 @@ distinct addresses are never bridged to a common token.
 | `children_of(id)` | `token_child` by `token_id` PK prefix | Structure, reverse. Unordered in the schema, returned sorted for determinism. |
 | `members_of(id)` | `members` by `token_id` PK prefix | Membership, downward: what a group directly contains. Unordered in the schema, returned sorted for determinism. |
 | `member_of(id)` | `member_of` by `token_id` PK prefix | Membership, upward: the groups a token directly belongs to. Unordered in the schema, returned sorted for determinism. |
+| `membership_present(member, group)` | `member_of` and `members` by full PK pair | Pair probe: `{in_member_of, in_members}`, each a single point lookup, reported independently so a one-sided pair is visible. Read-only; heals nothing. Tested by `controller_membership_present_test.cpp` (`run_membership_present_test.sh`). |
 | `attributes_of(id)` | `token` PK | `notation`/`mass` pass-through; no `type` (dropped from the schema). |
 
 All follows key on the **leading PK column** (`token_id`), so they ride the PK

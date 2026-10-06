@@ -70,6 +70,14 @@ struct TokenAttributes {
   std::optional<int> mass;
 };
 
+// Result of a membership pair probe: whether the (member, group) pair is
+// present in each stored direction, independently. Both true is a whole
+// membership; exactly one true is a one-sided (inconsistent) pair.
+struct MembershipPresence {
+  bool in_member_of = false;  // member_of row (member -> group)
+  bool in_members = false;    // members row (group -> member)
+};
+
 class Controller {
  public:
   // Opens a libpq connection using the given conninfo string (e.g.
@@ -103,6 +111,14 @@ class Controller {
   // by token_id PK prefix. Unordered in the schema; returned sorted for
   // determinism (matches children_of).
   std::vector<codec::Address> member_of(const codec::Address &token_id);
+
+  // Pair probe: is (member, group) present as a member_of row, and as a
+  // members row? Two full-key point lookups (`SELECT 1` on each PK), one per
+  // direction, reported independently so a one-sided pair is visible. A
+  // follow, not a scan: unlike members_of(group) it never reads the group's
+  // other members. Read-only; heals nothing.
+  MembershipPresence membership_present(const codec::Address &member,
+                                        const codec::Address &group);
 
   // The token's own stored attributes (notation, whole-token mass) by
   // token_id PK. nullopt when the token does not exist; a present token
