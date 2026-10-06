@@ -31,6 +31,24 @@ no SQL is issued here except through the `Controller`.
 Additive and idempotent: re-running mints nothing new; an existing token at a
 character address whose parents differ aborts that character.
 
+## Endpoint tier (code BUILT and tested on throwaway databases; not yet run on `hcp_core`)
+
+Design: `../ENCODING-ENDPOINT-TIER-PLAN.md` (on `docs/encoding-endpoint-tier-plan`).
+Driver modes `endpoints-label` (creates the `UTF-8` label `00.00.01.00.06`),
+`endpoints-sample` (U+00E9, U+20AC, U+1F600) and `endpoints` (U+0080..U+10FFFF);
+the endpoint modes require the label and the byte-couplet tier to exist.
+
+- **Endpoint** per codepoint at `endpoint_address(cp)` = `00.00.02.<cp/3844>.<cp%3844>`
+  (couplets), notation = the character, one parent (the byte-couplet token,
+  `character_address(cp)`, resolved by direct PK read and cross-checked), no
+  mass passed (the trigger sets it: 4, 6, 8), `member_of` the `UTF-8` label.
+- **Re-run** accepts an existing endpoint only if the whole validates
+  (combination in its parents; mass = sum of all parents' token masses; the
+  combination lists it as a child; both membership directions by
+  `Controller::membership_present`; notation = the character). Otherwise it
+  throws and writes nothing; it never heals, and only a fresh mint adds
+  membership. The parent count is never required to be 1.
+
 ## Running
 
 The driver checks the floor first (256 byte codes with hex notation, the

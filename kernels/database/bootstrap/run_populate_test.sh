@@ -8,6 +8,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 db="hcp_test_$$"
 [[ "$db" == hcp_test_* ]] || exit 2
+export PGCLIENTENCODING=UTF8
 out="$(mktemp -d)"
 cleanup() { dropdb --if-exists "$db" >/dev/null 2>&1 || true; rm -rf "$out"; }
 trap cleanup EXIT

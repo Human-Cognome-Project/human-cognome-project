@@ -6,6 +6,8 @@
 // from schema.sql (which includes the structural-mass trigger). The test
 // seeds the floor it needs (256 byte codes of mass 2 with hex notation, and
 // the overgroup token) through the Controller.
+#include <libpq-fe.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
@@ -77,6 +79,121 @@ void check_character(Controller &ctl, uint32_t cp, const char *name,
     }
     check(wired, tag + "token_child wired from " + text(p.parent));
   }
+}
+
+// ---- Raw-SQL helpers (throwaway DB only: invalid-fixture construction and
+// row counting for the endpoint tests). ----
+
+void exec(PGconn *conn, const std::string &sql) {
+  PGresult *res = PQexec(conn, sql.c_str());
+  const bool ok = PQresultStatus(res) == PGRES_COMMAND_OK;
+  if (!ok) {
+    std::fprintf(stderr, "test bug: %s: %s\n", sql.c_str(), PQerrorMessage(conn));
+  }
+  PQclear(res);
+  if (!ok) {
+    std::exit(2);
+  }
+}
+
+std::string scalar(PGconn *conn, const std::string &sql) {
+  PGresult *res = PQexec(conn, sql.c_str());
+  std::string v;
+  if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) == 1 && !PQgetisnull(res, 0, 0)) {
+    v = PQgetvalue(res, 0, 0);
+  } else {
+    std::fprintf(stderr, "test bug: %s: %s\n", sql.c_str(), PQerrorMessage(conn));
+    std::exit(2);
+  }
+  PQclear(res);
+  return v;
+}
+
+// Row counts of the five tables, as one string.
+std::string counts(PGconn *conn) {
+  return scalar(conn,
+                "SELECT (SELECT count(*) FROM token) || '/' || (SELECT count(*) FROM token_parent) "
+                "|| '/' || (SELECT count(*) FROM token_child) || '/' || (SELECT count(*) FROM members) "
+                "|| '/' || (SELECT count(*) FROM member_of)");
+}
+
+// Fingerprint of every row of the five tables that concerns one endpoint.
+std::string fingerprint(PGconn *conn, const std::string &id) {
+  const std::string a = "'{" + [&] {
+    std::string s = id;
+    for (char &c : s) {
+      if (c == '.') c = ',';
+    }
+    return s;
+  }() + "}'::text[]";
+  return scalar(
+      conn,
+      "SELECT md5(concat_ws('#', "
+      "(SELECT string_agg(concat_ws('|', token_id::text, token_text, notation, mass), ';') FROM token WHERE token_id = " + a + "), "
+      "(SELECT string_agg(concat_ws('|', token_id::text, ordinal, parent_token_id::text, mass), ';' ORDER BY ordinal) FROM token_parent WHERE token_id = " + a + "), "
+      "(SELECT string_agg(concat_ws('|', token_id::text, child_token_id::text), ';') FROM token_child WHERE child_token_id = " + a + "), "
+      "(SELECT string_agg(concat_ws('|', token_id::text, member_token_id::text), ';') FROM members WHERE member_token_id = " + a + "), "
+      "(SELECT string_agg(concat_ws('|', token_id::text, group_token_id::text), ';') FROM member_of WHERE token_id = " + a + ")))");
+}
+
+// SQL text[] literal of an address, e.g. '{00,00,02,00,3l}'.
+std::string sqlarr(const codec::Address &a) {
+  std::string s = text(a);
+  for (char &c : s) {
+    if (c == '.') c = ',';
+  }
+  return "'{" + s + "}'";
+}
+
+// Checks one endpoint: address, character, one parent (the combination), mass,
+// reciprocal child, one membership (UTF-8) in both directions.
+void check_endpoint(Controller &ctl, uint32_t cp, const char *name, int mass,
+                    const std::string &addr_text) {
+  const auto id = endpoint_address(cp);
+  const auto combo = character_address(cp);
+  const std::string tag = std::string(name) + " endpoint: ";
+  check(text(id) == addr_text, tag + "address " + addr_text);
+  const auto attrs = ctl.attributes_of(id);
+  const auto bytes = utf8_encode(cp);
+  check(attrs && attrs->notation == std::string(bytes.begin(), bytes.end()),
+        tag + "notation is the character");
+  check(attrs && attrs->mass == mass, tag + "structural mass " + std::to_string(mass));
+  const auto parents = ctl.parents_of(id);
+  check(parents.size() == 1 && parents[0].ordinal == 0 && parents[0].parent == combo,
+        tag + "one parent, ordinal 0 = combination " + text(combo));
+  bool wired = false;
+  for (const auto &c : ctl.children_of(combo)) {
+    wired = wired || c == id;
+  }
+  check(wired, tag + "token_child wired from the combination");
+  const auto groups = ctl.member_of(id);
+  check(groups.size() == 1 && groups[0] == utf8_label_address(), tag + "member_of UTF-8 only");
+  const auto m = ctl.membership_present(id, utf8_label_address());
+  check(m.in_member_of && m.in_members, tag + "membership in both directions");
+  const auto cg = ctl.member_of(combo);
+  check(cg.size() == 1 && cg[0] == category_label_address(category_of(cp)),
+        tag + "combination still member_of its byte-width label only");
+}
+
+// Builds an endpoint, applies one raw-SQL corruption, and requires
+// populate_endpoint to throw and leave counts and the fingerprint unchanged.
+void check_rejected(Controller &ctl, PGconn *raw, uint32_t cp, const std::string &what,
+                    const std::string &corrupt_sql) {
+  populate_character(ctl, cp);
+  populate_endpoint(ctl, cp);
+  exec(raw, corrupt_sql);
+  const std::string id = text(endpoint_address(cp));
+  const std::string n0 = counts(raw), f0 = fingerprint(raw, id);
+  bool threw = false;
+  try {
+    populate_endpoint(ctl, cp);
+  } catch (const std::runtime_error &) {
+    threw = true;
+  }
+  check(threw, "invalid whole (" + what + "): throws");
+  check(!ctl.in_transaction(), "invalid whole (" + what + "): scope closed");
+  check(counts(raw) == n0 && fingerprint(raw, id) == f0,
+        "invalid whole (" + what + "): nothing written (counts + fingerprint)");
 }
 
 }  // namespace
@@ -192,6 +309,220 @@ int main(int argc, char **argv) {
     check(!wired, "forced membership failure: no child row from " + hex(b));
   }
 
+  // ======== Endpoint tier. ========
+
+  // ---- Pure: endpoint_address. ----
+  for (const auto &[c, want] : std::vector<std::pair<uint32_t, std::string>>{
+           {0x41, "00.00.02.00.13"},   {0x80, "00.00.02.00.24"},   {0xE9, "00.00.02.00.3l"},
+           {0x4E2D, "00.00.02.05.Cn"}, {0x20AC, "00.00.02.02.Au"}, {0x1F600, "00.00.02.0X.Qm"},
+           {0x10FFFF, "00.00.02.4f.pX"}}) {
+    char name[32];
+    std::snprintf(name, sizeof name, "endpoint_address(U+%04X)", c);
+    check(text(endpoint_address(c)) == want, std::string(name) + " = " + want);
+  }
+  {
+    bool mono = true, own_trunk = true;
+    std::string prev;
+    auto step = [&](uint32_t c) {
+      if (c >= 0xD800 && c <= 0xDFFF) {
+        return;
+      }
+      const std::string s = text(endpoint_address(c));
+      mono = mono && (prev.empty() || prev < s);  // fixed-width + "C" order = byte order
+      own_trunk = own_trunk && s.rfind("00.00.02.", 0) == 0;
+      prev = s;
+    };
+    for (uint32_t c = 0; c <= 0x10FFFF; c += 97) {
+      step(c);
+    }
+    check(mono && own_trunk, "endpoint_address strictly increasing over a stride of cp");
+    mono = true;
+    prev.clear();
+    for (uint32_t c : {0x7Fu, 0x80u, 0x7FFu, 0x800u, 0xD7FFu, 0xE000u, 0xFFFFu, 0x10000u, 0x10FFFFu}) {
+      step(c);
+    }
+    check(mono && own_trunk, "endpoint_address strictly increasing over every width boundary");
+    bool disjoint = true;
+    for (uint32_t c : {0x80u, 0x7FFu, 0x800u, 0xFFFFu, 0x10000u, 0x10FFFFu}) {
+      disjoint = disjoint && endpoint_address(c)[2] != character_address(c)[2] &&
+                 endpoint_address(c)[2] != utf8_label_address()[2];
+    }
+    check(disjoint, "endpoint trunk 02 disjoint from the combination (00) and label (01) trunks");
+    check(text(utf8_label_address()) == "00.00.01.00.06", "UTF-8 label address 00.00.01.00.06");
+  }
+  {
+    bool ok = true;
+    for (uint32_t c : {0xD800u, 0xDBFFu, 0xDFFFu, 0x110000u}) {
+      bool th = false;
+      try { endpoint_address(c); } catch (const std::invalid_argument &) { th = true; }
+      ok = ok && th;
+    }
+    check(ok, "endpoint_address refuses surrogates and values above U+10FFFF");
+    check(text(endpoint_address(0)) == "00.00.02.00.00", "endpoint_address(0) defined (no special case)");
+  }
+
+  // ---- Database. ----
+  PGconn *raw = PQconnectdb(conninfo.c_str());
+  if (PQstatus(raw) != CONNECTION_OK) {
+    std::fprintf(stderr, "cannot connect: %s\n", PQerrorMessage(raw));
+    return 2;
+  }
+  const std::vector<uint32_t> combos = {0xE9,   0x80,   0x7FF,  0x800,  0x4E2D,  0xD7FF,
+                                        0xE000, 0xFFFF, 0x10000, 0x1F600, 0x10FFFF, 0x20AC};
+  for (uint32_t c : combos) {
+    populate_character(ctl, c);
+  }
+  threw = false;
+  try { verify_utf8_label(ctl); } catch (const std::runtime_error &) { threw = true; }
+  check(threw, "verify_utf8_label throws before the label exists");
+
+  // Rollback: label absent, so add_membership fails after the mint -> nothing written.
+  {
+    const std::string n0 = counts(raw);
+    threw = false;
+    try { populate_endpoint(ctl, 0xE9); } catch (const std::runtime_error &) { threw = true; }
+    check(threw, "label absent: error propagates");
+    check(!ctl.in_transaction(), "label absent: scope closed");
+    check(!ctl.token_exists(endpoint_address(0xE9)) && counts(raw) == n0,
+          "label absent: no endpoint rows (token/parent/child/membership counts unchanged)");
+  }
+
+  // The UTF-8 label: one command, idempotent, no parents, member of nothing.
+  create_utf8_label(ctl);
+  create_utf8_label(ctl);
+  {
+    const auto attrs = ctl.attributes_of(utf8_label_address());
+    check(attrs && attrs->notation == "UTF-8" && attrs->mass == kLabelPlaceholderMass,
+          "UTF-8 label: notation, placeholder mass");
+    check(ctl.parents_of(utf8_label_address()).empty() && ctl.member_of(utf8_label_address()).empty(),
+          "UTF-8 label: no parents, member of nothing");
+    verify_utf8_label(ctl);
+    check(true, "verify_utf8_label passes once the label exists");
+  }
+
+  // Model-anchored endpoints: 2-, 3-, 4-byte, and the width boundaries.
+  const std::string n_before_mint = counts(raw);
+  for (uint32_t c : combos) {
+    check(populate_endpoint(ctl, c), "endpoint freshly minted");
+  }
+  {
+    std::string n = n_before_mint;
+    (void)n;
+    check(scalar(raw, "SELECT count(*) FROM token WHERE token_id >= '{00,00,02}' AND token_id < '{00,00,03}'") ==
+              std::to_string(combos.size()),
+          "one endpoint token per codepoint minted");
+    check(scalar(raw, "SELECT count(*) FROM token_parent WHERE token_id >= '{00,00,02}'") ==
+              std::to_string(combos.size()),
+          "one token_parent row per endpoint");
+  }
+  check_endpoint(ctl, 0xE9, "U+00E9", 4, "00.00.02.00.3l");
+  check_endpoint(ctl, 0x4E2D, "U+4E2D", 6, "00.00.02.05.Cn");
+  check_endpoint(ctl, 0x1F600, "U+1F600", 8, "00.00.02.0X.Qm");
+  check_endpoint(ctl, 0x20AC, "U+20AC", 6, "00.00.02.02.Au");
+  check_endpoint(ctl, 0x80, "U+0080", 4, "00.00.02.00.24");
+  check_endpoint(ctl, 0x7FF, "U+07FF", 4, text(endpoint_address(0x7FF)));
+  check_endpoint(ctl, 0x800, "U+0800", 6, text(endpoint_address(0x800)));
+  check_endpoint(ctl, 0xD7FF, "U+D7FF", 6, text(endpoint_address(0xD7FF)));
+  check_endpoint(ctl, 0xE000, "U+E000", 6, text(endpoint_address(0xE000)));
+  check_endpoint(ctl, 0xFFFF, "U+FFFF", 6, text(endpoint_address(0xFFFF)));
+  check_endpoint(ctl, 0x10000, "U+10000", 8, text(endpoint_address(0x10000)));
+  check_endpoint(ctl, 0x10FFFF, "U+10FFFF", 8, "00.00.02.4f.pX");
+  check(scalar(raw, "SELECT notation = chr(20013) FROM token WHERE token_id = '{00,00,02,05,Cn}'") == "t",
+        "U+4E2D notation = chr(20013) in SQL");
+  check(scalar(raw, "SELECT encode(convert_to(notation,'UTF8'),'hex') FROM token WHERE token_id = '{00,00,02,0X,Qm}'") ==
+            "f09f9880",
+        "U+1F600 notation bytes f09f9880");
+  check(ctl.members_of(utf8_label_address()).size() == combos.size(),
+        "UTF-8 label members = the endpoints minted");
+
+  // Re-run: complete endpoints are a no-op (nothing written).
+  {
+    const std::string n0 = counts(raw);
+    bool all_noop = true;
+    for (uint32_t c : combos) {
+      all_noop = all_noop && !populate_endpoint(ctl, c);
+    }
+    check(all_noop && counts(raw) == n0, "re-run: complete endpoints accepted, nothing written");
+  }
+
+  // Combination guards: absent, NULL mass, wrong notation -> throw, nothing written.
+  {
+    const std::string n0 = counts(raw);
+    threw = false;
+    try { populate_endpoint(ctl, 0xE7); } catch (const std::runtime_error &) { threw = true; }
+    check(threw && !ctl.token_exists(endpoint_address(0xE7)) && counts(raw) == n0,
+          "absent combination: throws, nothing written");
+    // NULL-mass combination (raw fixture; no trigger fires on a token insert).
+    exec(raw, "INSERT INTO token (token_id, token_text, notation, mass) VALUES (" +
+                  sqlarr(character_address(0xE8)) + ", '" + text(character_address(0xE8)) + "', 'C3A8', NULL)");
+    const std::string n1 = counts(raw);
+    threw = false;
+    try { populate_endpoint(ctl, 0xE8); } catch (const std::runtime_error &) { threw = true; }
+    check(threw && !ctl.token_exists(endpoint_address(0xE8)) && counts(raw) == n1,
+          "NULL-mass combination: pre-check throws, nothing written");
+    // The trigger's own arm (#109, direct-mint path) with the pre-check bypassed:
+    // the mint's NULL-parent RAISE rolls the whole command back.
+    threw = false;
+    try {
+      ctl.with_transaction([&] {
+        ctl.mint(endpoint_address(0xE8), "x", {{character_address(0xE8), std::nullopt}});
+      });
+    } catch (const std::runtime_error &) { threw = true; }
+    check(threw && !ctl.in_transaction() && !ctl.token_exists(endpoint_address(0xE8)) && counts(raw) == n1,
+          "NULL-mass parent: trigger RAISE rolls the command back");
+    // Wrong notation on the combination.
+    exec(raw, "INSERT INTO token (token_id, token_text, notation, mass) VALUES (" +
+                  sqlarr(character_address(0xE6)) + ", '" + text(character_address(0xE6)) + "', 'C3A7', 4)");
+    const std::string n2 = counts(raw);
+    threw = false;
+    try { populate_endpoint(ctl, 0xE6); } catch (const std::runtime_error &) { threw = true; }
+    check(threw && counts(raw) == n2, "wrong-notation combination: throws, nothing written");
+    // Outside the populated range.
+    threw = false;
+    try { populate_endpoint(ctl, 0x41); } catch (const std::invalid_argument &) { threw = true; }
+    check(threw, "U+0041 is outside this build: refused");
+  }
+
+  // Required negative tests: the five invalid wholes (plus a sixth: the
+  // combination not among the parents). Each throws and writes nothing.
+  {
+    const auto id = [](uint32_t c) { return sqlarr(endpoint_address(c)); };
+    const auto cb = [](uint32_t c) { return sqlarr(character_address(c)); };
+    check_rejected(ctl, raw, 0xEA, "missing reciprocal token_child edge",
+                   "DELETE FROM token_child WHERE token_id = " + cb(0xEA) + " AND child_token_id = " + id(0xEA));
+    check_rejected(ctl, raw, 0xEB, "member_of row present, members row absent",
+                   "DELETE FROM members WHERE member_token_id = " + id(0xEB));
+    check_rejected(ctl, raw, 0xEC, "members row present, member_of row absent",
+                   "DELETE FROM member_of WHERE token_id = " + id(0xEC));
+    check_rejected(ctl, raw, 0xED, "mass != sum of parents' masses",
+                   "UPDATE token SET mass = 99 WHERE token_id = " + id(0xED));
+    check_rejected(ctl, raw, 0xEE, "notation != chr(cp)",
+                   "UPDATE token SET notation = 'x' WHERE token_id = " + id(0xEE));
+    check_rejected(ctl, raw, 0xEF, "combination not among the parents",
+                   "UPDATE token_parent SET parent_token_id = " + cb(0xE9) + " WHERE token_id = " + id(0xEF));
+  }
+
+  // Schema-permits-N proof (raw SQL): a second parent and a second group on an
+  // endpoint insert cleanly, the trigger sums both, and the re-run still accepts.
+  {
+    const uint32_t cp2 = 0xE9;  // a 2-byte endpoint, mass 4
+    exec(raw, "INSERT INTO token_parent (token_id, ordinal, parent_token_id) VALUES (" + sqlarr(endpoint_address(cp2)) +
+                  ", 1, " + sqlarr(character_address(0x80)) + ")");
+    exec(raw, "INSERT INTO token_child (token_id, child_token_id) VALUES (" + sqlarr(character_address(0x80)) + ", " +
+                  sqlarr(endpoint_address(cp2)) + ")");
+    check(scalar(raw, "SELECT mass FROM token WHERE token_id = " + sqlarr(endpoint_address(cp2))) == "8",
+          "second parent: the trigger sums both parents (4 + 4 = 8)");
+    exec(raw, "INSERT INTO member_of (token_id, group_token_id) VALUES (" + sqlarr(endpoint_address(cp2)) + ", " +
+                  sqlarr(category_label_address(Category::Two)) + ")");
+    check(ctl.parents_of(endpoint_address(cp2)).size() == 2 && ctl.member_of(endpoint_address(cp2)).size() == 2,
+          "schema permits a second parent and a second group on an endpoint");
+    const std::string n0 = counts(raw), f0 = fingerprint(raw, text(endpoint_address(cp2)));
+    check(!populate_endpoint(ctl, cp2), "re-run: endpoint with a second parent (mass = sum) still accepted");
+    check(counts(raw) == n0 && fingerprint(raw, text(endpoint_address(cp2))) == f0,
+          "re-run with a second parent: nothing written");
+  }
+
+  PQfinish(raw);
   std::printf("%s encoding_populate_test\n", g_failures == 0 ? "PASS" : "FAIL");
   return g_failures == 0 ? 0 : 1;
 }

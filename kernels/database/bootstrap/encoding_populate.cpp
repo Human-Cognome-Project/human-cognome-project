@@ -183,4 +183,148 @@ void populate_codepoint(Controller &ctl, uint32_t cp) { populate_character(ctl, 
 
 std::vector<uint32_t> sample_codepoints() { return {0x00E9, 0x20AC, 0x1F600}; }
 
+// ---- Endpoint tier. ----
+
+namespace {
+
+// The character as UTF-8 text (what `chr(cp)` stores in a UTF8 database).
+std::string character_text(uint32_t cp) {
+  const auto bytes = utf8_encode(cp);
+  return std::string(bytes.begin(), bytes.end());
+}
+
+std::string utf8_hex(uint32_t cp) {
+  std::string hex;
+  for (uint8_t b : utf8_encode(cp)) {
+    hex += hex_notation(b);
+  }
+  return hex;
+}
+
+std::string cp_label(uint32_t cp) {
+  char buf[16];
+  std::snprintf(buf, sizeof buf, "U+%04X", cp);
+  return buf;
+}
+
+std::string text_of(const codec::Address &a) {
+  const auto t = codec::encode_token_id(a);
+  return t ? *t : std::string("<invalid address>");
+}
+
+// The whole-endpoint integrity check of populate_endpoint's re-run path.
+// Reads only: PK points and PK-prefix follows of this endpoint's own rows.
+void validate_endpoint(Controller &ctl, uint32_t cp, const codec::Address &id,
+                       const codec::Address &combination) {
+  const std::string who = cp_label(cp) + " endpoint " + text_of(id) + ": ";
+  const auto attrs = ctl.attributes_of(id);
+  if (!attrs) {
+    throw std::runtime_error(who + "vanished during validation");
+  }
+  if (attrs->notation != character_text(cp)) {
+    throw std::runtime_error(who + "notation is not the character");
+  }
+  // (i) the combination is among its parents (never size() == 1).
+  const auto parents = ctl.parents_of(id);
+  bool linked = false;
+  long sum = 0;
+  for (const auto &p : parents) {
+    linked = linked || p.parent == combination;
+    // (ii) the parent TOKENS' own masses; token_parent.mass is NULL here.
+    const auto pa = ctl.attributes_of(p.parent);
+    if (!pa || !pa->mass) {
+      throw std::runtime_error(who + "parent " + text_of(p.parent) +
+                               " is missing or has NULL mass");
+    }
+    sum += *pa->mass;
+  }
+  if (!linked) {
+    throw std::runtime_error(who + "combination " + text_of(combination) +
+                             " is not among its parents");
+  }
+  if (!attrs->mass || *attrs->mass != sum) {
+    throw std::runtime_error(who + "mass is not the sum of its parents' masses");
+  }
+  // (iii) the reciprocal token_child edge, from the combination's children.
+  bool wired = false;
+  for (const auto &c : ctl.children_of(combination)) {
+    wired = wired || c == id;
+  }
+  if (!wired) {
+    throw std::runtime_error(who + "combination does not list it as a child");
+  }
+  // (iv) both membership directions, by point-probe on the full pair.
+  const auto m = ctl.membership_present(id, utf8_label_address());
+  if (!m.in_member_of || !m.in_members) {
+    throw std::runtime_error(who + "UTF-8 membership is missing or one-sided");
+  }
+}
+
+}  // namespace
+
+codec::Address endpoint_address(uint32_t cp) {
+  if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+    throw std::invalid_argument("codepoint above U+10FFFF or a surrogate");
+  }
+  return addr({0, 0, couplet('0', '2'), cp / codec::kCoupletSpace, cp % codec::kCoupletSpace});
+}
+
+codec::Address utf8_label_address() {
+  return addr({0, 0, couplet('0', '1'), 0, couplet('0', '6')});
+}
+
+void create_utf8_label(Controller &ctl) {
+  ctl.with_transaction(
+      [&] { ctl.mint(utf8_label_address(), kUtf8LabelNotation, {}, kLabelPlaceholderMass); });
+}
+
+void verify_utf8_label(Controller &ctl) {
+  const auto attrs = ctl.attributes_of(utf8_label_address());
+  if (!attrs || attrs->notation != kUtf8LabelNotation) {
+    throw std::runtime_error("UTF-8 label 00.00.01.00.06 missing or wrong notation");
+  }
+}
+
+codec::Address resolve_combination(Controller &ctl, uint32_t cp) {
+  if (!is_populated_codepoint(cp)) {
+    throw std::invalid_argument("codepoint outside U+0080..U+10FFFF or a surrogate");
+  }
+  const auto combination = character_address(cp);
+  const std::string who = cp_label(cp) + " combination " + text_of(combination) + ": ";
+  const auto attrs = ctl.attributes_of(combination);
+  if (!attrs) {
+    throw std::runtime_error(who + "missing");
+  }
+  if (!attrs->mass) {
+    throw std::runtime_error(who + "mass is NULL");
+  }
+  if (attrs->notation != utf8_hex(cp)) {
+    throw std::runtime_error(who + "notation is not the UTF-8 byte hex " + utf8_hex(cp));
+  }
+  return combination;
+}
+
+void verify_combinations(Controller &ctl, const std::vector<uint32_t> &codepoints) {
+  for (uint32_t cp : codepoints) {
+    resolve_combination(ctl, cp);
+  }
+}
+
+bool populate_endpoint(Controller &ctl, uint32_t cp) {
+  const auto combination = resolve_combination(ctl, cp);
+  const auto id = endpoint_address(cp);
+  if (ctl.token_exists(id)) {
+    validate_endpoint(ctl, cp, id, combination);
+    return false;
+  }
+  return ctl.with_transaction([&] {
+    if (ctl.mint(id, character_text(cp), {{combination, std::nullopt}})) {
+      throw std::runtime_error(cp_label(cp) + " endpoint " + text_of(id) +
+                               ": appeared during the mint");
+    }
+    ctl.add_membership(id, utf8_label_address());
+    return true;
+  });
+}
+
 }  // namespace dbk::bootstrap

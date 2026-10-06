@@ -70,4 +70,58 @@ void populate_codepoint(Controller &ctl, uint32_t codepoint);
 // The sample set: U+00E9, U+20AC, U+1F600.
 std::vector<uint32_t> sample_codepoints();
 
+// ---- Endpoint tier (ENCODING-ENDPOINT-TIER-PLAN.md). ----
+//
+// An endpoint is the actual-character token: one per codepoint, with exactly
+// one structural parent (the byte-couplet token the UTF-8 mapping links it to)
+// and one membership (the UTF-8 label). Minted through the same direct
+// Controller channel as the byte tiers (DECLARE's >= 2-constituent floor
+// cannot express a one-parent token). No mass is passed: the structural-mass
+// trigger sets it as the sum of the parents' masses.
+
+// The codepoint written as four Base62 digits grouped in two couplets, under
+// the next free trunk:  00.00.02.<cp / 3844>.<cp % 3844>. Uses nothing but the
+// codepoint (no encoding, no byte-couplet layout, no special cases); PK order
+// is codepoint order. Throws std::invalid_argument for a value > U+10FFFF or a
+// surrogate (never minted); U+0000..U+007F have addresses though this build
+// mints only U+0080 and up.
+codec::Address endpoint_address(uint32_t codepoint);
+
+// The UTF-8 label (character-level encoding membership): 00.00.01.00.06.
+codec::Address utf8_label_address();
+constexpr const char *kUtf8LabelNotation = "UTF-8";
+
+// Creates the UTF-8 label (placeholder mass, no parents, member of nothing),
+// idempotently, in its own command transaction.
+void create_utf8_label(Controller &ctl);
+
+// Throws std::runtime_error unless the UTF-8 label exists with its notation.
+void verify_utf8_label(Controller &ctl);
+
+// The UTF-8 mapping's link-in: the byte-couplet token of `codepoint`
+// (character_address, a direct PK read). Throws std::runtime_error, writing
+// nothing, unless that token exists, has a non-NULL mass, and its notation is
+// the upper-case hex of utf8_encode(codepoint). The address is the identity;
+// the notation is only a cross-check. Returns the combination's address.
+codec::Address resolve_combination(Controller &ctl, uint32_t codepoint);
+
+// Reads and resolves the combinations of the given codepoints (the sample
+// mode's pre-check). Throws on the first fault.
+void verify_combinations(Controller &ctl, const std::vector<uint32_t> &codepoints);
+
+// One atomic command for one endpoint: resolve_combination, then
+// with_transaction { mint (token_text derived, notation = the character as
+// UTF-8 text, no mass, one constituent = the combination) ; add_membership to
+// the UTF-8 label }. Returns true if freshly minted.
+//
+// An existing endpoint is accepted (returns false, nothing written) only if
+// the WHOLE validates: the combination is among its parents; its mass equals
+// the sum of attributes_of(parent).mass over ALL its parents; the combination
+// lists it in children_of; BOTH membership directions are present
+// (membership_present); and its notation is the character. Anything else
+// throws std::runtime_error and writes nothing -- never healed, and
+// add_membership is run only for a fresh mint. The parent count is never
+// required to be 1.
+bool populate_endpoint(Controller &ctl, uint32_t codepoint);
+
 }  // namespace dbk::bootstrap
