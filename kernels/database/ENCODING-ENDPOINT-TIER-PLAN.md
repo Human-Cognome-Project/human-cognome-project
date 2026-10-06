@@ -1,5 +1,10 @@
 # Character / endpoint tier — PLAN
 
+> **Purpose and scope.** This endpoint tier establishes the level needed to begin ingesting language
+> dictionaries and assembling SNode objects for each language's base structures and recorded combinations,
+> ahead of assembling the English database. Cross-encoding completeness is deferred and is **not** a
+> prerequisite for this step: this build is one parent and one membership per endpoint (the `UTF-8` mapping).
+
 > **Status: PLAN, not built, not executed (drafted 2026-10-06, finalized after adversarial review).** A drafting-agent document; the
 > adversary's confirmed corrections are applied and the lead's decisions are in §0A. It is not accepted by Patrick until the PR is reviewed. No
 > database write, no commit, and no code was produced in drafting. Every status/structure claim
@@ -44,8 +49,9 @@ Codes` are each `member_of` `Byte Code Groups` (`00.00.01.00.02`).
    (`controller.cpp` returns at the SEE probe), and its header says "only mint writes structure".
    The forward requirement (§7) therefore needs a new, small primitive that does not exist.
 5. **Re-run idempotency must not cap an endpoint at one parent.** The check in `populate_endpoint`
-   is `combination ∈ parents_of(endpoint)`, never `size() == 1` (§5), so a later second parent does
-   not break a re-run of the UTF-8 membership step.
+   is `combination ∈ parents_of(endpoint)` plus whole-integrity (mass over all parents, reciprocal child edge,
+   both membership directions by point-probe; §5), never `size() == 1`, so a later additional parent does not break a
+   re-run, while an invalid whole is rejected rather than healed.
 6. **Terminology collision.** HANDOFF/README/driver call the byte-couplet tokens "characters"
    (`populate_encoding … sample|full`, `populate_character`). The pinned model calls the new
    tier the character/endpoint tier. This plan says *byte-couplet token* and *endpoint*
@@ -58,7 +64,8 @@ Codes` are each `member_of` `Byte Code Groups` (`00.00.01.00.02`).
 9. **Provenance caveat.** The byte couplet tables are the shared, encoding-agnostic substrate and are
    left exactly as built; no encoding is a property of them. An encoding's mapping onto them is recorded
    only at the character level (the endpoint's `member_of` label). Only one such mapping exists today, so
-   the "shared across encodings" claim is not yet exercised, and `combo_address(cp)` (§3) is necessarily
+   the "shared across encodings" claim is not yet exercised and current coverage is UTF-8-derived (a later
+   encoding such as UTF-16BE would first have to mint byte-couplet tokens that were never populated, e.g. `00 E9`), and `combo_address(cp)` (§3) is necessarily
    the substrate's own layout function.
 
 ## 1. Addressing and placement
@@ -197,7 +204,14 @@ inherit the substrate's layout by accident.
   `PGCLIENTENCODING=UTF8` explicitly so the character bytes are never reinterpreted.
 - **Normalization:** none; the stored text is `chr(cp)` verbatim (NFC/NFD never applied).
 
-## 5. Driver changes (`kernels/database/bootstrap/`)
+## 5. Driver and Controller changes (`kernels/database/bootstrap/`, `kernels/database/controller/`)
+
+**Component scope.** This step changes two components: the `bootstrap/` driver (below) **and** `controller/`,
+which gains one new read method, `membership_present(member, group)`, plus its own unit test (in
+`controller/`, in the style of `controller_txn_test.cpp`, against a throwaway DB). The Controller change is
+purely additive (a new const-style read; no existing signature or behaviour changes), so existing
+`Controller` consumers are unaffected (AGENTS.md: preserve working interfaces). It is a separate
+commit from the driver work.
 
 Extend in the existing style (free functions in `encoding_populate.{h,cpp}`, one driver `main`,
 tests in `encoding_populate_test.cpp` against a throwaway `hcp_test_<pid>` DB). Existing
@@ -208,9 +222,30 @@ New symbols (names use *endpoint*; §0A):
 - `endpoint_address(cp)` — §1.2; no encoding or byte-couplet-layout dependency; throws outside U+0000..U+10FFFF/surrogates.
 - `utf8_label_address()`, `create_utf8_label(ctl)` — one command, idempotent via SEE.
 - `resolve_combination(ctl, cp)` — §3 pre-check, returns the combination address.
-- `populate_endpoint(ctl, cp)` — the §2 command. Re-run semantics: existing endpoint ⇒ **verify
-  `combination ∈ parents_of(endpoint)`** (not size==1; §0 item 5) and notation == `chr(cp)`, then
-  `add_membership` (idempotent); a different/missing link throws.
+- `populate_endpoint(ctl, cp)` — the §2 command. Re-run semantics (SEE integrity): an existing
+  endpoint is accepted only if the **whole** validates, and an invalid whole is **rejected (throw, no
+  write)** — the settled command rule; nothing partial is retained or healed. Checks, each a PK
+  point or PK-prefix follow of one endpoint's own rows:
+  (i) `combination ∈ parents_of(endpoint)` (never `size()==1`, so later additional parents stay allowed);
+  (ii) the endpoint's `mass` equals the sum of `attributes_of(parent).mass` over **all** its current
+  parents (the parent tokens' own `token.mass`). Do **not** use `parents_of(...).mass`: that is the
+  per-element `token_parent.mass`, which is NULL for endpoints, so the sum would be wrong;
+  (iii) the reciprocal `token_child` edge (combination → endpoint) exists, read from
+  `children_of(combination)` (a byte-couplet token has one endpoint child in this step, so this read is small);
+  (iv) **both** membership directions exist, by a **direct point-probe on the full membership PK pair in
+  each direction**: `member_of(endpoint, UTF-8)` **and** `members(UTF-8, endpoint)`. It must **not** be
+  `members_of(label)`, which returns every member of the label (up to ~1.1 M rows) and would make a
+  resume ~10^12 reads. The current Controller has no pair probe, so this step names a **minimal required
+  read primitive**, `membership_present(member, group)` → `{in_member_of, in_members}` (two full-key
+  `SELECT 1` point lookups; a follow, not a search), added to `Controller` the same way §7 names
+  `link_parent`; it is the one Controller addition this step needs;
+  (v) `notation == chr(cp)` (from `attributes_of`).
+  **A one-sided membership is rejected, never healed.** The re-run/resume path must **not** call
+  `add_membership` on an already-existing endpoint: `add_membership` is `ON CONFLICT DO NOTHING` on each
+  side and would silently fill in a missing side, masking the invalid whole this check exists to reject.
+  Only a **freshly minted** endpoint runs `add_membership` (inside its §2 transaction). The byte-tier
+  `populate_character` calls `add_membership` unconditionally; that pattern must **not** be copied into
+  the integrity-rejecting re-run path.
 - Driver modes `endpoints-sample` (U+00E9, U+20AC, U+1F600 — `sample_codepoints()`) and
   `endpoints` (U+0080..U+10FFFF, `is_populated_codepoint`), after `verify_floor` **plus** a new
   `verify_combinations` that reads only the three spot combinations in sample mode and, in full
@@ -223,6 +258,17 @@ New symbols (names use *endpoint*; §0A):
   absent or NULL-mass; re-run no-op; **schema-permits-N proof** (in the throwaway DB, raw SQL: a
   second `token_parent` ordinal and a second `member_of` group on an endpoint insert cleanly and
   the trigger sums both) — proves nothing caps at one without building the attach primitive.
+- **Required negative (rejection) tests for the re-run integrity check.** An existing endpoint is accepted
+  only when the whole validates; each of the following invalid wholes, constructed in the throwaway DB by
+  raw SQL, must make `populate_endpoint` **throw and write nothing** (row counts and a fingerprint of the
+  endpoint's rows unchanged afterwards): (1) missing reciprocal `token_child` edge; (2) one-sided membership,
+  `member_of` row present but `members` row absent; (3) one-sided membership, `members` row present but
+  `member_of` row absent; (4) `mass` not equal to the sum of its parents' masses; (5) `notation != chr(cp)`.
+  Plus the accepting case: a complete endpoint re-run is a no-op, and one with an additional second parent
+  (raw SQL) whose mass equals the sum over both is still accepted.
+- **Required `membership_present` unit test (`controller/`).** For a pair present in both directions it
+  returns `{true, true}`; for an absent pair `{false, false}`; and for a one-sided pair created by raw SQL
+  it returns `{true, false}` and `{false, true}` respectively — so each direction is probed independently.
 
 Not in this build: the attach primitive for a second parent (§7).
 
@@ -231,6 +277,12 @@ Not in this build: the attach primitive for a second parent (§7).
 All steps additive: no reset, drop, truncate, update or delete against `hcp_core`. `hcp_core` is
 the working store; the snapshot is the public-sharing export produced at the end (§6.6). Gated on
 Patrick's acceptance of this plan and on the unit coder/adversary protocol of the tables plan §10.
+
+**Execution dependency on PR #111.** Execution requires PR #111's driver, structural-mass trigger and
+2026-10-03 snapshot (`exec/encoding-floor` at `5120ee6`) to be reviewed and available on the target.
+This PR targets `main` while that implementation is still on the open `exec/encoding-floor` branch;
+the plan cannot be executed until #111 is resolved. The open MANIFEST review thread on #111 also
+bears on §6.1 and §6.6.
 
 **6.0 Preflight (read-only).** Row totals equal §0; `00.00.02.*` and `00.00.01.00.06` empty; no NULL
 mass; combination counts per label 1,920/61,440/1,048,576; trigger present; free disk >= 10 GB.
@@ -241,8 +293,10 @@ Record the **pre-fingerprint** of the pre-existing region (§6.4).
 never a restore target. Taken before 6.4.
 
 **6.1 Rehearsal in a disposable DB (not `hcp_core`).** `createdb hcp_rehearsal_<pid>`; restore
-`data/postgres/snapshots/2026-10-03-encoding-tables/hcp_core.sql.gz` with
-`SET session_replication_role = replica` (MANIFEST's fast-load note); run the label, sample, full,
+`data/postgres/snapshots/2026-10-03-encoding-tables/hcp_core.sql.gz` by a **normal** restore
+(`zcat … | psql -v ON_ERROR_STOP=1`; no fast-load shortcut — `pg_dump` creates the trigger in the
+post-data section, after `token_parent` is loaded, so it does not fire over the dumped rows) and validate
+the restored totals first; run the label, sample, full,
 the §6.5 queries and the §6.4 fingerprint; record time; drop **only** that DB (name prefix
 checked, as `run_populate_test.sh` does). Because endpoints cannot be deleted from `hcp_core` under
 the no-delete rule, this rehearsal is what de-risks the real run.
@@ -297,7 +351,7 @@ the rehearsal gives the number).
 **6.5 Post-build read-only validation.** (Run each against the rehearsal DB, then `hcp_core`.)
 ```sql
 -- A. totals: the §6.4 table, plus label 06 has 0 parents and 0 member_of, 1,111,936 members.
--- B. endpoint decode + character + parent identity (all four must return 0):
+-- B. endpoint decode + character + parent identity (all four must return 0; every comparison is NULL-safe):
 WITH al AS (SELECT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'::text s),
 e AS (SELECT t.token_id, t.notation, t.mass,
         (((strpos(al.s,substr(t.token_id[4],1,1))-1)*62 + strpos(al.s,substr(t.token_id[4],2,1))-1)*3844
@@ -305,18 +359,32 @@ e AS (SELECT t.token_id, t.notation, t.mass,
       FROM token t, al
       WHERE t.token_id >= ARRAY['00','00','02'] AND t.token_id < ARRAY['00','00','03'])
 SELECT
- (SELECT count(*) FROM e WHERE e.cp BETWEEN 55296 AND 57343 OR e.cp < 128 OR e.cp > 1114111),            -- 0
+ (SELECT count(*) FROM e WHERE e.cp IS NULL OR e.cp BETWEEN 55296 AND 57343 OR e.cp < 128 OR e.cp > 1114111),            -- 0
  (SELECT count(*) FROM e WHERE e.notation IS DISTINCT FROM chr(e.cp)),                                    -- 0
  (SELECT count(*) FROM e JOIN token_parent p ON p.token_id=e.token_id
     JOIN token c ON c.token_id=p.parent_token_id
-   WHERE p.ordinal<>0 OR c.token_id[3]<>'00' OR c.notation <> upper(encode(convert_to(e.notation,'UTF8'),'hex'))
+   WHERE p.ordinal IS DISTINCT FROM 0 OR c.token_id[3] IS DISTINCT FROM '00' OR c.notation IS DISTINCT FROM upper(encode(convert_to(e.notation,'UTF8'),'hex'))
       OR e.mass IS DISTINCT FROM c.mass),                                                                 -- 0
- (SELECT count(*) FROM e WHERE (SELECT count(*) FROM token_parent p WHERE p.token_id=e.token_id)<>1
-      OR (SELECT count(*) FROM member_of m WHERE m.token_id=e.token_id)<>1);                              -- 0
--- C. every combination has exactly one endpoint child, and keeps its byte-width membership:
+ (SELECT count(*) FROM e WHERE (SELECT count(*) FROM token_parent p WHERE p.token_id=e.token_id) IS DISTINCT FROM 1
+      OR (SELECT count(*) FROM member_of m WHERE m.token_id=e.token_id) IS DISTINCT FROM 1
+      OR NOT EXISTS (SELECT 1 FROM member_of m WHERE m.token_id=e.token_id AND m.group_token_id=ARRAY['00','00','01','00','06'])
+      OR NOT EXISTS (SELECT 1 FROM members g WHERE g.token_id=ARRAY['00','00','01','00','06'] AND g.member_token_id=e.token_id)
+      OR e.mass IS DISTINCT FROM (SELECT sum(c.mass) FROM token_parent p JOIN token c ON c.token_id=p.parent_token_id WHERE p.token_id=e.token_id)); -- 0
+-- C. reciprocal identity, both directions (all must return 0).
+--  C1. every endpoint's parent lists that endpoint as its child (token_parent -> token_child):
+SELECT count(*) FROM token e JOIN token_parent p ON p.token_id=e.token_id
+ WHERE e.token_id >= ARRAY['00','00','02'] AND e.token_id < ARRAY['00','00','03']
+   AND NOT EXISTS (SELECT 1 FROM token_child k WHERE k.token_id=p.parent_token_id AND k.child_token_id=e.token_id);       -- 0
+--  C2. every endpoint-side child edge of a byte-couplet token is exactly an endpoint whose token_parent points back
+--      to it (token_child -> token_parent), so reciprocal links swapped among couplet tokens cannot pass:
+SELECT count(*) FROM token_child k
+ WHERE k.child_token_id >= ARRAY['00','00','02'] AND k.child_token_id < ARRAY['00','00','03']
+   AND NOT EXISTS (SELECT 1 FROM token_parent p WHERE p.token_id=k.child_token_id AND p.parent_token_id=k.token_id);       -- 0
+--  C3. each byte-couplet token has exactly one endpoint child and still exactly its one byte-width membership.
+--      Expected 0 POST-build; 1,111,936 PRE-build (no couplet token has an endpoint child yet):
 SELECT count(*) FROM token c WHERE c.token_id >= ARRAY['00','00','00','01'] AND c.token_id < ARRAY['00','00','01']
- AND ((SELECT count(*) FROM token_child k WHERE k.token_id=c.token_id AND k.child_token_id >= ARRAY['00','00','02'])<>1
-   OR (SELECT count(*) FROM member_of m WHERE m.token_id=c.token_id)<>1);                                  -- 0
+ AND ((SELECT count(*) FROM token_child k WHERE k.token_id=c.token_id AND k.child_token_id >= ARRAY['00','00','02']) IS DISTINCT FROM 1
+   OR (SELECT count(*) FROM member_of m WHERE m.token_id=c.token_id) IS DISTINCT FROM 1);                                  -- 0
 -- D. mass distribution of endpoints: 4 -> 1,920 ; 6 -> 61,440 ; 8 -> 1,048,576.
 SELECT mass, count(*) FROM token WHERE token_id >= ARRAY['00','00','02'] AND token_id < ARRAY['00','00','03'] GROUP BY 1 ORDER BY 1;
 -- E. fingerprints (§6.4) equal pre/post; and the byte-code/combination masses are still 2 / 4,6,8.
@@ -336,8 +404,10 @@ byte-width label only; `token_child`/`members` forward-follows reach the endpoin
 
 **6.6 Re-export the sharing snapshot.** New dated dir
 `data/postgres/snapshots/<date>-endpoint-tier/`: `pg_dump` (v16, plain, `--no-owner --no-privileges`)
-`| gzip -9`, `.sha256`, `MANIFEST.md` (new totals, the MANIFEST caveat that a plain restore re-fires the trigger,
-the `session_replication_role = replica` fast path), restore-verified into a throwaway DB reproducing
+`| gzip -9`, `.sha256`, `MANIFEST.md` (new totals; restore instructions describe a normal restore — the earlier
+MANIFEST's "trigger re-fires on restore" note is wrong and is being reviewed on #111; if suppressing
+referential checks is ever wanted that is `session_replication_role = replica`, not a trigger-ordering
+effect), restore-verified into a throwaway DB reproducing
 the §6.4 totals; Git LFS for the `.gz`. It supersedes, and does not delete, the 2026-10-03 snapshot.
 Commit via the agent-role author convention; separate commits per AGENTS.md (driver / docs / data).
 
@@ -345,30 +415,35 @@ Commit via the agent-role author convention; separate commits per AGENTS.md (dri
 the run resumes. A defect found *after* endpoints are written cannot be undone by this plan (no
 delete). Hence the rehearsal, the three-endpoint stop-gate, and the private dump (6.0b).
 
-## 7. Forward requirement: a shared endpoint (demonstrated)
+## 7. Forward requirement: a shared endpoint (DEFERRED; open model decision)
 
-The byte couplet tables are the shared, encoding-agnostic substrate. Each encoding is a **character-level
-membership label** (`UTF-8` now) that groups endpoints and records that encoding's mapping from
-codepoint to byte-couplet token. A second encoding adds another membership — and, where its byte-couplet
-token differs, another parent edge — to the same codepoint-keyed endpoint.
+Nothing in §7 is built or claimed to work. The schema and addressing do not *cap* an endpoint at one
+parent or one membership, and that is all this section establishes. This step uses exactly one parent
+(the byte-couplet token) and one membership (`UTF-8`), which is unambiguous now.
 
-Hypothetical second encoding **UTF-16** (illustrative only; nothing is added here), mapping onto the same
-byte couplet tables, and a hypothetical **ISO-8859-1**.
+**OPEN MODEL DECISION for Patrick (deferred).** `member_of(endpoint, encoding)` and
+`token_parent(endpoint, byte-couplet token)` are **independent binary relations**. Once an endpoint has
+several parents and several encoding labels, the membership label alone does **not** record *which*
+byte-couplet parent belongs to *which* encoding. That association is unresolved. It must be decided
+before any second encoding is attached; this plan does not specify it.
 
-1. *Shared codepoint.* UTF-16 maps U+00E9 to bytes `00 E9`, a byte-couplet token `X` in the shared tables
-   (mass 4). Its link-in computes `endpoint_address(0xE9)` = `00.00.02.00.3l` — the same function, no
-   UTF-16 term in it — and the mint's SEE probe finds the **existing** endpoint (address is identity ⇒
-   one token, no second row, no alias). It then needs (a) a parent link `X` at the next free ordinal (1),
-   wired into `X`'s `token_child` (if `X` equals the existing parent, no new parent edge is needed, only the
-   membership), and (b) a membership in its own `UTF-16` label — a second `member_of` row. The
-   endpoint's `notation` (`é`) is already right and is not rewritten.
-2. *Codepoint no endpoint covers.* U+0041 'A' for ISO-8859-1 (parent = byte code `41` at
-   `00.00.00.00.23`, mass 2): `endpoint_address` is defined (`00.00.02.00.13`), nothing is there, so SEE
-   misses and the encoding mints it with its single parent and its own label — same function, same
-   trunk, no collision with anything already minted.
-3. *Why the function must be encoding-agnostic.* An address that mirrored the substrate's layout has no
-   slot for U+0041 or surrogates, so a second encoding would have to extend the function, changing what
-   "address is identity" means.
+**Substrate qualification.** The stored byte-couplet identities are encoding-agnostic and can be shared,
+but **current coverage is UTF-8-derived**: only the byte sequences that valid UTF-8 produces were minted.
+
+Illustration of what a later second encoding would face (not a design):
+
+1. *Missing byte-couplet token.* A UTF-16BE table maps U+00E9 to bytes `00 E9`. That 2-byte sequence was
+   **never populated** (the built 2-byte tokens all start `C2`–`DF`; live check: no token with notation
+   `00E9`), so such a table would first have to **mint** the missing byte-couplet token from the
+   byte-code atoms and specify its placement. Only then could it link to the existing endpoint
+   `00.00.02.00.3l` (address is identity, so the SEE probe finds it) — by a parent-attach primitive that
+   does not exist (below) and a membership in its own label, with the unresolved association above.
+2. *Codepoint no endpoint covers.* U+0041 for ISO-8859-1 (parent = byte code `41`, `00.00.00.00.23`):
+   `endpoint_address` is defined (`00.00.02.00.13`) and nothing is there, so SEE misses and that encoding
+   would mint it with its own parent and label.
+3. *Why the address function is encoding-agnostic.* A function mirroring the substrate's layout has no
+   slot for U+0041 or surrogates, so a second encoding would have to extend it, changing what "address is
+   identity" means.
 
 **What caps one parent / one membership today (checked), and what to build later:**
 
@@ -377,8 +452,8 @@ byte couplet tables, and a hypothetical **ISO-8859-1**.
 | schema: `token_parent` PK `(token_id, ordinal)`, `token_child` PK `(parent, child)`, `member_of` PK `(token, group)` | **No.** Only PKs; no unique on notation, no cardinality check |
 | trigger | **No.** Sums over all parents (mass consequence, §8) |
 | `Controller::add_membership` | **No.** Idempotent, any number of groups |
-| `Controller::mint` | **Yes, in effect:** SEE returns before linking; there is no add-parent operation. A new one-level primitive `link_parent(token, parent)` (SEE the pair; insert `token_parent` at next free ordinal + `token_child`; inside the caller's `with_transaction`; trigger recomputes mass) is needed when a second table is built. **Not built here; named only.** |
-| `populate_endpoint` re-run check | **No**, by design: `combination ∈ parents_of(endpoint)` (§5), never `size()==1` |
+| `Controller::mint` | **Yes, in effect:** SEE returns before linking; there is no add-parent operation. A new one-level primitive `link_parent(token, parent)` (SEE the pair; insert `token_parent` at next free ordinal + `token_child`; inside the caller's `with_transaction`; trigger recomputes mass) is needed when a second table is built. **Not built here; named only.** (The parent/label association above is a prerequisite decision.) |
+| `populate_endpoint` re-run check | **No**, by design: `combination ∈ parents_of(endpoint)` plus whole-integrity (§5), never `size()==1` |
 | addressing | **No** once §1.2 is used |
 
 ## 0A. Decisions taken (this step)
