@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "codec.h"
@@ -138,10 +139,51 @@ class Controller {
   std::vector<codec::Address> gather(const codec::Address &from,
                                       const codec::Address &to);
 
+  // ---- Command transaction scope. ----
+  //
+  // A command (a logical unit: e.g. mint + add_membership, or a DECLARE with
+  // its nested mints) runs in ONE Postgres transaction: it commits only if
+  // fully valid, otherwise the whole command rolls back with no partial rows.
+  // begin() opens the scope (native BEGIN); while it is active, the write
+  // ops below (mint, add_membership, rekey, delete_pair) join it — they open
+  // and commit nothing of their own, and on error just throw, leaving the
+  // rollback to the scope. Standalone calls (no active scope) keep their own
+  // BEGIN/COMMIT, ROLLBACK on error. Scopes do not nest: begin() inside an
+  // active scope throws, as do commit()/rollback() with none active.
+  //
+  // After a failed statement inside a scope Postgres refuses further work
+  // until the transaction ends, so a caller that catches such an error must
+  // rollback() (with_transaction does this for any exception).
+  void begin();
+  void commit();
+  // Rolls the whole scope back. Never throws; a no-op with no active scope.
+  void rollback() noexcept;
+  bool in_transaction() const { return in_scope_; }
+
+  // Runs fn() inside one scope: commit() on return, rollback() and rethrow
+  // if fn throws. Returns fn's result.
+  template <typename Fn>
+  auto with_transaction(Fn &&fn) -> decltype(fn()) {
+    begin();
+    try {
+      if constexpr (std::is_void_v<decltype(fn())>) {
+        fn();
+        commit();
+      } else {
+        auto result = fn();
+        commit();
+        return result;
+      }
+    } catch (...) {
+      rollback();
+      throw;
+    }
+  }
+
   // ---- Write side: sole owner. ----
 
   // see-mint-link-wire, one atomic transaction (BEGIN/COMMIT, ROLLBACK on
-  // error). Returns true if the token_id already existed (idempotent no-op,
+  // error) — or part of the active command scope, see begin(). Returns true if the token_id already existed (idempotent no-op,
   // nothing written), false if it was freshly minted.
   //   SEE  probe token_id (PK lookup on token); if present, no-op.
   //   MINT insert the token row. token_text is the codec's dot-joined
@@ -214,7 +256,15 @@ class Controller {
   void delete_pair(const codec::Address &member, const codec::Address &group);
 
  private:
+  // Per-op transaction bracket: open/commit/abort their own transaction only
+  // when no command scope is active; inside a scope they do nothing (the
+  // scope owner commits or rolls back).
+  void op_begin();
+  void op_commit();
+  void op_abort() noexcept;
+
   pg_conn *conn_;
+  bool in_scope_ = false;
 };
 
 }  // namespace dbk

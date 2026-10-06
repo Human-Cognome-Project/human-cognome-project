@@ -1,5 +1,61 @@
 # HANDOFF — reload pointer for the next session
 
+> **⚠ CURRENT reload pointer (2026-10-06) — supersedes the pointers below for WHAT'S NEXT.**
+>
+> **UTF-8 encoding tables are BUILT and populated into `hcp_core`.** Above the nibble/byte
+> floor now sit the multi-byte character tables. `hcp_core` holds **1,112,215 tokens**:
+> 273 floor at `00.00.00.00.*` (16 nibble atoms mass 1, `0x` mass 0, 256 byte codes mass 2);
+> 6 labels at `00.00.01.00.0*` — `Nibbles` / `Byte Codes` / `Byte Code Groups` (relabelled
+> from Single Hex Code / Hex Couplets / Hex Code Patterns) plus `Two-Byte Codes` /
+> `Three-Byte Codes` / `Four-Byte Codes` (temporary placeholder mass 10); and **1,111,936
+> characters** = every valid codepoint U+0080–U+10FFFF (surrogates skipped), each minted
+> over its UTF-8 byte-code parents, `member_of` its byte-width category label, temp
+> `notation` = the UTF-8 bytes as hex (e.g. `C3A9`, **not** the character). token_parent
+> 4,382,976; token_child 4,333,104; members/member_of 1,112,213.
+>
+> **Structural mass is a database trigger.** `token_parent_structural_mass` (AFTER INSERT on
+> `token_parent`): sets `mass` = sum of direct parents' mass (one level, no cascade) and
+> rejects a NULL-mass parent. The authorized exception to the schema no-trigger rule
+> (`schema/schema.sql` + additive `schema/structural_mass_trigger.sql`, installed on
+> `hcp_core`). **Structural mass is the SEED; centroid masses (force centroids,
+> label/rollup centroids) are a separate CALCULATED layer — not built, not stored.** Label
+> masses are temporary placeholders until proper compilation.
+>
+> **Record-tier changes built for the populate:** #109 complete-parent mass guard in
+> `declare/` (no composing over an unknown-mass parent); #110 shared command transaction in
+> `controller/` (`with_transaction` — a per-character mint+membership is one atomic unit;
+> rollback leaves nothing). Driver: `kernels/database/bootstrap/`
+> (`populate_encoding <conninfo> sample|full`).
+>
+> **Addressing:** 2-byte chars `00.00.00.01.*`–`02.*`, 3-byte `…03.*`–`0z.*`, 4-byte
+> `…10.*`–`zz.*`; byte `b` → byte code at `00.00.00.00.<couplet 62+b>` (`…10`–`…57`).
+>
+> **Parent fields** pull by **value** and by **ordinal position** as two SEPARATE fields
+> (not a joint key); force whole-body by ordinal position; a connection-mechanics
+> simplification is flagged OPEN.
+>
+> **Snapshot:** `data/postgres/snapshots/2026-10-03-encoding-tables/` (Git LFS,
+> restore-verified) — supersedes the 2026-09-28 floor snapshot.
+>
+> **OPEN PRs (not merged; reviewer is Patrick as `patrick-handley-mccarthy` /
+> `VagariesOfFate` — authoritative):** **#111** `exec/encoding-floor` (the execution:
+> U1–U3 + driver + snapshot; each unit coder-built, independently adversary-verified,
+> reconciled; U1's commit carries a Sonnet attribution to normalize at squash) · **#108**
+> `docs/encoding-tables-plan` (the plan, the Taichi SNode research `engine/docs/taichi-snode-mechanics.md`,
+> and the parent-field value/position notes). The two edit `HANDOFF.md`/`NOTES.md`; reconcile
+> at merge.
+>
+> **NEXT (Patrick, 2026-10-06): continue assembling the core data.** Queued behind the
+> encoding build is the warm-cache schema + construction rules — how the cache manager
+> composes per-study SNode frameworks and how the engine harness reads them in
+> (`engine/docs/taichi-snode-mechanics.md`: a shared subtree is a schema/DB property, not
+> physical; the fixed pool is assignment-not-allocation; SNode ids reset per `Program`
+> instance, restart reclaims). Confirm the next slice with Patrick before building.
+>
+> **Discipline:** coder+adversary per unit, coordinator views only reconciled work (no
+> self-attestation); `hcp_core` writes gated; disposable DBs for anything that resets/drops;
+> real data only; never run reset/rollback tests against the retained core.
+
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
 > (`network/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as

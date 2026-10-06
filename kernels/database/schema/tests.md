@@ -61,8 +61,9 @@ Concrete checks to run after applying `schema.sql`, using `verify.sql`
    - This table is written by the write/mint controller ("fold AND wire"),
      not derived by SQL — nothing here computes its contents.
 
-7. **No triggers/functions.** Query 7 returns 0 rows across all five
-   objects — confirms no logic snuck into the schema layer.
+7. **Only the authorized trigger.** Query 7 returns exactly 1 row,
+   `token_parent_structural_mass` on `token_parent` (the structural-mass
+   trigger) — confirms no other logic snuck into the schema layer.
 
 8. **Address columns carry `COLLATE "C"` (firmed 2026-09-18).** Query 8's
    first check returns exactly 9 rows, ALL `collname` = `C`:
