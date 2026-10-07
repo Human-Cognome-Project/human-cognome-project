@@ -18,15 +18,16 @@ named but not yet explained.
 comes out of the storage construct, which is explicit at every level, and is
 carried into whatever the working construct projects.
 
-**What it is for.** It keeps the correct linear structure inside a compressed
-large-level-of-detail sphere. When a big structure is standing as one particle,
-the direct bonds are what hold its internal order, so that expanding it again
-yields the right shape rather than a bag of parts.
+**What it is for.** It preserves the defined ordered composition in a
+compressed representation, so expansion recovers the correct occurrences and
+relationships. It does not require a linear spatial string inside the sphere.
 
-**Where the shape comes from.** Parents are listed in order, and that ordered
-list *is* the connected shape the level of detail expands to. The ordering that
-gives a composite its identity is the same ordering that gives it its
-connectivity.
+**Operative geometry (Patrick, 2026-10-07).** Parent ordering carries composition
+and connectivity; molecular-level distances follow expressed LoD. The finest
+visible level defines one particle as one distance unit; less granular expressed
+levels expand by 64 or 128 (choice open), while compressed equivalences can skip
+steps. See the [system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+The contact mechanics below do not impose string geometry on a literal.
 
 **Mechanically.** Bonded particles **ignore the corona** and **slide freely in
 direct contact**. So a direct bond holds separation at contact while leaving
@@ -95,7 +96,7 @@ to link those positions**.
 
 So alignment is carried by the parent-predicated force lines already described:
 the lines listing which parent masses a force applies to and where along the
-linear placement of parent elements it acts. Where that structure links two
+operative placement of the ordered parent components it acts. Where that structure links two
 positions, they align. Where it does not, they still call on similarity, but
 not as a direct group.
 
@@ -107,8 +108,9 @@ next smaller construct. Each level is therefore built from one new element and
 the level below it, recursively, and expanding a level all the way down yields
 the linear byte sequence in order.
 
-That is what the direct bond holds together inside a compressed sphere: the
-chain is already there in the parent numbering, at every level.
+That is what the direct bond preserves in a compressed representation:
+composition order is recorded in parent numbering at every stored level.
+Recovering the ordered byte sequence does not require a spatial chain.
 
 ### Wrong bonds are displaced, not prevented
 

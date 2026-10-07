@@ -267,6 +267,22 @@ Consequences to hold (validate as it develops):
   per-analysis selection or derived; and how composition (inner particles) is
   represented against the dense fixed-slot layout.
 
+### Operative distance clarification (Patrick, 2026-10-07)
+
+The finest visible LoD defines one particle = one distance unit. Each less
+granular expressed level expands by 64 or 128 (choice open). This is an
+operative scale, not stored parent depth or SNode nesting depth. Compressed
+equivalences, including UTF endpoint to character in use, can omit a full
+distance step. Zooming into a finer operative LoD rebases the measurement;
+the previously viewed level moves up one factored unit equivalence.
+
+The earlier diameter-one statements are local-primary unit conventions.
+Convert positions, component offsets, centroid geometry and distances
+consistently into the current measurement frame. Ordered composition remains;
+a literal need not be a spatial string. No new force multiplier or mass rule
+is specified. This is design intent, not verified native implementation.
+See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
 ### The core interaction and the SNode roll-up (literal — the one formula)
 
 Patrick, verbatim: *"The active SNode hierarchy is not field effects, but

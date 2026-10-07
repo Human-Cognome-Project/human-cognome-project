@@ -78,7 +78,7 @@ particle joins:
 
 | | Participation | Applies to |
 |---|---|---|
-| **Parent** | The particle joins through a component | Specific positional masses, selected by linear placement |
+| **Parent** | The particle joins through a component | Specific ordered component masses, with operative positions expressed at the active LoD |
 | **Sibling** | The particle joins whole | The total mass of the particle |
 
 This is the same rule stated earlier from the other side: sibling relations act
@@ -138,7 +138,7 @@ particle's attached data. For each such force there is one line carrying:
 1. **Which force** it is.
 2. **Which parent mass or masses** it applies to. One line may reference more
    than one parent mass.
-3. **Where along the linear placement of parent elements** it takes effect.
+3. **Which ordered component position** it acts through; the operative offset must use the expressed LoD metric, not an assumed literal string.
 4. **The relative masses** at those placements.
 
 ## The Unicode hex example
@@ -212,6 +212,16 @@ positions participating separately because they hold different codes. A doubled
 couplet `AA` would then gather both positions into one participation at full
 mass rather than two at half, which is what the sibling sub-grouping rule
 predicted earlier.
+
+## Operative distance clarification (2026-10-07)
+
+Ordered parent positions preserve composition and distinct repeated effects.
+They do not prescribe a straight spatial string through literals. The finest
+visible LoD sets one particle to one distance unit; each less granular expressed
+level expands by 64 or 128 (choice open). Compressed equivalences skip a step,
+and zooming into finer operative detail rebases the measurement frame. See the
+[system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+This clarification is design intent, not implemented bridge behavior.
 
 ## Geometry and the grid
 

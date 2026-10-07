@@ -98,6 +98,45 @@ global store or another instance. A separately governed release path may share
 significant derived results; its safeguards, encryption, and key lifecycle
 remain to be designed. See [instance-local data](instance-local-data.md).
 
+## Operative distance follows expressed LoD (Patrick, 2026-10-07)
+
+**Settled model intent; not yet implemented or runtime-verified.** The most
+granular LoD visible in the current modeling operation defines **1 particle =
+1 unit of distance**. Each successively less granular LoD expressed in that
+operation is a factored expansion. The proposed factor is **64 or 128**
+(power-of-two); the choice between them remains open. For factor B, expressed
+scale steps k use B^k units relative to the finest visible baseline.
+
+Stored parent depth, address depth and SNode nesting do not automatically
+increment k. Compressed equivalences can omit a distance step. In particular,
+the UTF endpoint to the character in use is an equivalence: a name change of
+scale in measurement, not necessarily another full expansion.
+
+When the analyst zooms in to expose the next finer operative LoD, that level
+becomes the one-unit baseline and the previously viewed level moves up one
+unit equivalence (one factored scale step). This changes the measurement
+frame; it does not redefine cold identity or ordered composition.
+
+Literal composition preserves ordered parent occurrences, including repeats.
+It does **not** require a spatial string through the literals, a straight line
+of touching beads, or a chain folded inside a unit sphere. The model uses
+molecular-level operative distances and higher/lower attraction. Ordinal
+composition order remains data; it is not itself a distance coordinate.
+
+The C++ bridge and field evaluation must carry the expressed scale consistently
+through positions, component offsets, centroid geometry and operative distance.
+The existing inverse-square law remains the law; no additional force multiplier,
+mass rescaling, or zoom-dependent change to physical relationships is specified
+by this clarification. Exact conversion of the numerical state and movement
+units is implementation work to verify, not a formula supplied here.
+
+Implementation is tracked in [#115](https://github.com/Human-Cognome-Project/human-cognome-project/issues/115), with the C++ bridge in [#106](https://github.com/Human-Cognome-Project/human-cognome-project/issues/106).
+Whitespace discussion is tracked in [#116](https://github.com/Human-Cognome-Project/human-cognome-project/issues/116).
+
+Whitespace in storage and in the working model remains a separate, unresolved
+discussion. Do not infer that a recorded space becomes geometric separation,
+or remove/normalize whitespace as a consequence of dropping string geometry.
+
 ## Identity, fields, and traversal
 
 `token_id` is the base token identity and stored address; `particle_id` is an
@@ -192,6 +231,7 @@ record → WAL → cache-manager → model loop.
 
 | Area | In this repository now | Clarified intent / open seam |
 |---|---|---|
+| Operative LoD distance | No verified expressed-scale bridge or zoom conversion. | Finest visible LoD anchors one distance unit; less granular expressed levels expand by 64 or 128; compressed equivalences skip steps. Factor choice and implementation remain open. |
 | Native field engine | Taichi-backed C++ particle/group/edge kernels, inclusive seeded centroids, field force, integration/brake, end-of-tick centroid publication, full on-demand download. | Combined destination and brake reach; ordered parent reorientation without carried spin; automatic sibling groups; conditional mass/centroid/particle activity; selective readback. |
 | PostgreSQL records | Five-table direct reciprocal structure/membership schema, controller, command/dispatch and tier-2 fixture-driven DB-manager handler. | Study-root composition, warm view composer, provisional address handling, file-now/wire-later ownership, local private DB implementation. |
 | WAL | Fixture-fed report recognition, per-source monitor, durable obligation/History tables, local endpoint handler emitting owed identities. | Live logical-decoding adapter, privacy-aware routing, cache-manager deferred consumer, RECONCILE staging, recovery/replay. |

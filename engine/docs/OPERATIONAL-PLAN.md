@@ -40,7 +40,7 @@ his answer. Do not carry a resolved item as open.
 | Rotation | no running spin; `(share, offset)` kept, off-centre share translates — **SHIPPED (Unit B)** |
 | Brake target | destination = sum of the `m1·m2/d²` vectors = the resultant; reach = its magnitude — **SHIPPED (Unit C)** |
 | Momentum | carries between ticks (inertial, second-order) |
-| Sphere | diameter 1, unit, no per-sphere constants |
+| Sphere / distance scale | One particle at its primary LoD; finest visible LoD anchors one distance unit. Less granular expressed levels expand by 64 or 128 (choice open), with equivalence compression. Model clarification 2026-10-07; scale bridge not verified as built. |
 | Amalgamation | end-of-tick centroids ARE next tick's m2; force centroid == mass centroid (invariant) |
 | Universal centroid | one always-active field effect, **pegged to origin (0,0,0) by definition** (the single exception to computed centroids), mass = **total construct mass read as the TOP aggregation, each element once** (NOT the sum of nested/field centroids — that compounds mass); its orbital field pulls things into relative alignment; dampens runaway kinetics; establishes a locus of observation distinct from the commonality focal point |
 | Root of analysis / focus | the locus of observation, **placed or travelled relative to the universal centroid**; LoD aggregation established by **neighbourhood** of the root (near granular, far aggregated), demand-driven — mechanism settled, CPU-resident implementation is future |
@@ -202,6 +202,17 @@ Spatially 3D; the sole shape is the **perfect sphere (orb)**, **diameter 1** (ra
 exactly one particle = one sphere**. Composition is recursive (a particle may contain
 any number of inner particles); at the **bottom active LoD everything is an orb**.
 LoD is a hierarchy of nested spheres; "primary" is level-relative.
+
+**Distance clarification (Patrick, 2026-10-07).** Diameter 1 is a local-primary
+unit convention, not one unscaled global diameter across all visible levels.
+The finest visible LoD anchors one particle = one distance unit; each less
+granular expressed level expands by 64 or 128 (choice open). Stored depth is
+not scale depth: compressed equivalences, including UTF endpoint to character
+in use, can omit a full distance step. Zooming in makes the newly exposed finer
+level the baseline and moves the previously viewed level up one scale step.
+Use consistent scale conversion for operative distances and centroid geometry.
+Literal order does not require a spatial string. This is model intent, not a
+verified implementation. See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
 
 ### 3.3 The one law — and the universal field effect
 **Every interaction is `m1 · m2 / d²`**, one law without exception. **m2 is an
@@ -439,18 +450,14 @@ stretch connects. **Polarity does one narrow job: it meters how close the univer
 like-attraction can bring two particles** — it is not itself an attraction.
 
 **The three scenarios:**
-1. **Defined bond — the invariant identity bond.** A **read of a cell's parent
-   content from the DB**; the ordered chain (beads on a string) that is *what makes the
-   composite what it is* (Patrick's analogy: **body parts, not gear**). Two LoD
-   regimes: **as a composite (higher LoD)** it is a straight line, beads flush, no
-   gaps, and a pull on part moves the whole as **rotation + translation** (ordered-line
-   reorientation, **not** rigid-body spin); **at primary LoD** the beads stay connected
-   but the joints go **flexible** — trialled as the two faces **sliding directly, 
-   frictionless**, corona **suspended** across the bonded contact. It is an **invariant
-   connection**, so it needs its **own definition and a stronger gate**: it can be
-   **subject to shearing** and the gate must hold it in its defined order through
-   differential forces. **This is the one genuinely special definition** — it does not
-   emerge from proximity; it is declared standing structure.
+1. **Defined bond — the invariant identity bond.** A read of a cell's ordered
+   parent content from the DB preserves what makes the composite itself.
+   **Updated 2026-10-07:** this does not require beads on a string, a straight
+   line of touching literals, or flexible joints connecting that line. Preserve
+   ordered and repeated parent effects while expressing molecular-level operative
+   distances at the visible LoD scale (§3.2). Parent effects may reorient the whole;
+   ordinal order is not a prescribed spatial distance. Existing contact/corona
+   rules remain separate from the withdrawn string geometry.
 2. **Overlap bond — kind + aligned (mirror-matched) polarity.** Coronas **overlap**,
    the operative distance closes, and the one law delivers a bond that **climbs faster
    than distance alone would imply** (informally "exponential"; still `m1·m2/d²`,

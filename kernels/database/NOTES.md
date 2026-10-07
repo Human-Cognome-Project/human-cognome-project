@@ -71,6 +71,26 @@ records only. Canadian English.
 > stream, with the swarm/p2p layer preliminary and gated behind it. `HANDOFF.md` is the
 > reload pointer — read it first.
 
+## Operative LoD distance and literal composition (Patrick, 2026-10-07)
+
+The finest visible LoD in a modeling operation anchors one particle = one
+distance unit. Each less granular expressed level expands by 64 or 128
+(choice open). Stored composition depth and SNode nesting do not automatically
+add operative distance steps. Compressed equivalences can skip a step; UTF
+endpoint to character in use is such an equivalence. Zooming into finer
+operative detail rebases the measurement frame.
+
+Ordered parent occurrences, repeated parents and literal identity remain
+recorded. No spatial string through literals is required: working geometry
+uses molecular-level distances with higher/lower attraction. Text sequences
+and ordered address arrays are storage/composition data, not geometric spacing.
+The C++ bridge must carry the operative scale into the model; no cold-schema
+change or scale-aware implementation is claimed here.
+
+Whitespace storage and model treatment await discussion. No stripping,
+normalization, separator-particle, or geometric-gap policy has been authorized.
+See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
 ## Governing principle
 
 The DB is the **strictest form of the data protocol** — any system built on it

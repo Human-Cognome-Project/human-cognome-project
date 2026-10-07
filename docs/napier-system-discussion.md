@@ -132,6 +132,42 @@ working tree as a per-analysis compression. This clarification connects those
 mechanisms to the warm cache manager's assembly and to whether a construct is
 expandable for the active inquiry.
 
+### Operative distance follows expressed LoD (Patrick, 2026-10-07)
+
+**Settled model intent; not yet implemented or runtime-verified.** The most
+granular LoD visible in the current modeling operation defines **1 particle =
+1 unit of distance**. Each successively less granular LoD expressed in that
+operation is a factored expansion. The proposed factor is **64 or 128**
+(power-of-two); the choice between them remains open. For factor B, expressed
+scale steps k use B^k units relative to the finest visible baseline.
+
+Stored parent depth, address depth and SNode nesting do not automatically
+increment k. Compressed equivalences can omit a distance step. In particular,
+the UTF endpoint to the character in use is an equivalence: a name change of
+scale in measurement, not necessarily another full expansion.
+
+When the analyst zooms in to expose the next finer operative LoD, that level
+becomes the one-unit baseline and the previously viewed level moves up one
+unit equivalence (one factored scale step). This changes the measurement
+frame; it does not redefine cold identity or ordered composition.
+
+Literal composition preserves ordered parent occurrences, including repeats.
+It does **not** require a spatial string through the literals, a straight line
+of touching beads, or a chain folded inside a unit sphere. The model uses
+molecular-level operative distances and higher/lower attraction. Ordinal
+composition order remains data; it is not itself a distance coordinate.
+
+The C++ bridge and field evaluation must carry the expressed scale consistently
+through positions, component offsets, centroid geometry and operative distance.
+The existing inverse-square law remains the law; no additional force multiplier,
+mass rescaling, or zoom-dependent change to physical relationships is specified
+by this clarification. Exact conversion of the numerical state and movement
+units is implementation work to verify, not a formula supplied here.
+
+Whitespace in storage and in the working model remains a separate, unresolved
+discussion. Do not infer that a recorded space becomes geometric separation,
+or remove/normalize whitespace as a consequence of dropping string geometry.
+
 ### Parent and membership connections across LoD
 
 For a particle, **every exposed field it belongs to has an effect on some
@@ -202,10 +238,10 @@ shift the whole construct. At the internal scale, the ordered parent
 positions give the piece a **polarity-like ordering** for comparing it with
 like constructs; this is an analogy for oriented comparison, not a claim
 of identical physical polarity. The order can support a **rotary alignment
-expression** even when the parent effect cannot translate the whole. For
-this effect, the ordered parents act **as if they occupy a straight line
-across the particle**, with the construct able to reorient that line about
-its centre. Rotary effects can occur in a tick,
+expression** even when the parent effect cannot translate the whole. Ordered parent occurrences retain their distinct positional effects, but the
+2026-10-07 clarification removes the requirement that they occupy a straight
+line through the literal. Operative geometry follows expressed LoD scale;
+ordinal order alone does not prescribe a spatial string. Rotary effects can occur in a tick,
 but **rotary velocity is not preserved between ticks**. This does not prevent
 an orbit produced by the continuing field forces: the particle's position and
 translational motion can follow those forces over successive ticks. Parent-line

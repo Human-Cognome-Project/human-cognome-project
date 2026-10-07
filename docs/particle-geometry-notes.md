@@ -9,6 +9,15 @@ is mine and needs confirming. Nothing under "open" is filled in.
 2026-09-13. Companions: `parent-structure-notes.md`, `bonding-notes.md`,
 `field-physics-and-tick-notes.md`, `storage-and-working-split.md`.
 
+## Current distance clarification (2026-10-07)
+
+The finest visible LoD is the one-particle/one-distance-unit baseline. Each
+less granular expressed LoD expands by the proposed factor 64 or 128; the
+factor choice is open. Compressed equivalences need no full distance step.
+Zooming into a finer operative level rebases the measurement frame. See the
+[system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+This is model intent, not a verified feature of the native engine.
+
 ## Established
 
 **Every particle is a one unit sphere carrying a 0.5 unit corona, and that is
@@ -109,27 +118,22 @@ particle regardless of how large or complex its contents are. One particle
 means one unit across. A composite is not a bigger sphere; it is a sphere at
 its own level.
 
-**So the unit renormalizes with the level, and so does the metric.** One unit
-is one unit at whichever level is being looked at. A particle's contents are
-measured in the units of the level below, where each of them is itself one unit
-across. There is no single ruler spanning the levels, which is what lets a
-chain of contacting elements sit inside a sphere that is itself one unit: the
-chain's separations are not in the parent's units.
+**The metric is anchored to the finest visible LoD.** At its own primary LoD
+an object is one particle; in the current finest-visible measurement frame,
+each less granular expressed level is a factored expansion (64 or 128 per
+operative step). A common measurement frame therefore requires explicit scale
+conversion. Stored nesting and equivalence links do not necessarily add a step.
+There is no requirement to fit a contacting literal chain inside a unit sphere.
 
 **The corona is relative in the same way.** Half a unit of whatever the
 particle is at that level. It follows from the same statement, not from a
 separate rule.
 
-**The internal arrangement is the ordered parent list.** Parents are listed in
-order, and that ordered list is the connected shape the level of detail expands
-to. The direct bond holds that chain at contact separation, corona ignored, and
-it is read from parent numbering rather than stored. A share's offset therefore
-comes from where its position sits along that chain.
-
-**Moment of inertia follows.** The arrangement is known, the element masses are
-known and exact, so the second moment is computable once per token and shared
-by every instance, exactly as total mass is. It was never waiting on anything
-except the arrangement above.
+**Ordered composition is preserved; spatial string geometry is withdrawn.**
+The parent list retains identity, order and repeated occurrences. It does not
+by itself prescribe a chain at contact separation or an offset along a line.
+Use molecular-level operative distances at the expressed LoD. Do not derive
+component offsets or a moment of inertia from the withdrawn string arrangement.
 
 **Geometry does not vary with contents either.** One unit sphere, 0.5 unit
 corona, the only relevant size at any level of detail. Since that holds at
@@ -146,10 +150,9 @@ only as far as directed spin requires.
 
 Short, and about the next phase rather than about the last one.
 
-- How the ordered chain occupies the sphere: whether the linear structure lies
-  along one axis, folds, or takes its shape from the grid the pieces line up
-  into. Well posed only because the metric renormalizes per level; without
-  that, a chain of unit elements inside a unit sphere has no answer at all.
+- Implement the expressed-LoD distance conversion and molecular-level placement
+  without deriving a spatial string from parent ordinals. Select 64 or 128;
+  verify rebasing and equivalence compression without changing composition.
 - Nothing about the softening constant. It is not an open question; it is an
   import to delete from `engine/src/field/field.h`.
 - Whether any separation in commonality enters the force law, or whether the
