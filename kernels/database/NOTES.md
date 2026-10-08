@@ -223,8 +223,9 @@ already exists** — this only reads it completely.
   fields.
 - **Position = ordinal slot** (the 0-based slot index in the ordered parent list). What
   "position" means for ordered chains longer than a 2-parent couplet — the ordinal
-  slot, and how it relates to the existing "position vs the centre" note — is to
-  pin when the composition routine is designed; for the couplet it is unambiguous.
+  slot. The 2026-10-08 clarification removes internal positional response and
+  rotation: proportional contributions always act on the whole. Ordinals remain
+  composition/commonality data, not physical application offsets.
 - **Force is unchanged — whole-body.** A constituent's value and ordinal position
   inform **which fields it is in**; the resulting force is still applied over the
   **whole body** (whole-body-responds rule preserved — see
@@ -232,10 +233,9 @@ already exists** — this only reads it completely.
 - **Generalizes.** Treating value and ordinal position as separate commonalities
   covers any construct where ordering matters, in one rule rather than per-case
   grouping structures.
-- **OPEN (revisit later, do NOT design now):** this may also simplify connection
-  mechanics — §3.8 polarity is already derived from ordinal numbering, so an
-  ordinal-position field could subsume part of it. Noted only; leave connection
-  mechanics as-is until Patrick takes it up.
+- **Updated 2026-10-08:** scaled local attraction supplies intended cohesion;
+  no literal-string or separate shear-protective mechanics are required. Test
+  without corona spacing (#119). See the current system guide and #115/#118.
 
 ## UTF-8 encoding tables — build-out plan (rev. 2026-10-02)
 
@@ -252,7 +252,7 @@ Patrick's acceptance). Summary of the decisions it records:
   is MOVE/ADD_CONNECTION/DELETE_RECORD/DELETE_CONNECTION only), and `notation` is
   the temporary/debug column — so the relabel is a direct SQL edit, verified by
   re-query. Plus three new category labels — `Two-Byte Codes` /
-  `Three-Byte Codes` / `Four-Byte Codes` (names a PROPOSAL awaiting Patrick), each
+  `Three-Byte Codes` / `Four-Byte Codes` (names accepted by Patrick), each
   `member_of` `Byte Code Groups`, with each character `member_of` its category
   label.
 - **Addressing (locked), all under `00.00.00.*` so the `00.00.01.*` labels never

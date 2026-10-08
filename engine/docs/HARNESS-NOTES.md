@@ -940,6 +940,11 @@ Authoritative calling convention: `docs/api-reference/ir_builder_test.cpp`.
 
 ## Session clarifications (2026-09-28) — warm cache, SNode terms, positional commonality
 
+> **2026-10-08 clarification:** ordinal commonality does not impose an internal
+> force application point. Parent response remains proportional on the whole;
+> positional response and rotary alignment are removed. Current study focus
+> determines expressed LoD distance; see the governing system guide.
+
 Literal record of Patrick's clarifications this session. Engine mechanics are
 grounded and cited in the new `engine/docs/taichi-snode-mechanics.md`; this
 section keeps the model-level reading.

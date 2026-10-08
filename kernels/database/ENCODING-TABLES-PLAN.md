@@ -49,7 +49,7 @@ addresses, mass, and all `members`/`member_of` edges are untouched:
 | `Hex Couplets` | `Byte Codes` |
 | `Hex Code Patterns` | `Byte Code Groups` |
 
-**Three new category labels (PROPOSAL — awaiting Patrick's confirm on names):**
+**Three new category labels (names accepted by Patrick, 2026-10-03):**
 `Two-Byte Codes`, `Three-Byte Codes`, `Four-Byte Codes`, each a `member_of`
 `Byte Code Groups` (alongside `Nibbles` and `Byte Codes`); every character is a
 `member_of` its category label. As construction posts they carry prose `notation`
@@ -339,8 +339,8 @@ reconciled result). Order and dependencies:
 - **U4 — relabel.** Direct SQL `UPDATE` of the three `notation` cells (§2), verified
   by re-query.
 - **U5 — category labels.** Mint the three labels at their reserved, non-colliding
-  addresses (§2), `member_of` `Byte Code Groups`, provisional/incomplete mass, marked
-  unavailable as parent constituents (#109).
+  addresses (§2), `member_of` `Byte Code Groups`, known temporary mass **10**.
+  Naming/structure remains provisional; the mass is not NULL (#109).
 - **U6 — driver.** The byte-count-parameterized direct-mint driver (§7): codepoint
   walk → byte-code parents → sequential address → per-character command
   (`mint` + `add_membership`) on U2's transaction; additive only.
