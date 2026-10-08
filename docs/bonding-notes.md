@@ -43,6 +43,35 @@ or raw SNode nesting. Test 64 as the initial binary factor, then assess the
 multiples needed by each relationship kind; no per-kind values, field layout
 or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## 1. Direct bond
 
 **Defined from the database.** It is stored, not computed and not emergent. It
@@ -243,30 +272,14 @@ changes it only between the two particles it joins.
 **Closed.** Sliding applies to all particles, not only to the direct bond.
 Contact is frictionless everywhere.
 
-## Spin is scoped, and narrowly
+## Whole-particle response replaces rotation (2026-10-08)
 
-Particles can impact kinetically, but **spin serves no purpose beyond
-predicated, directed spin**. Rotation exists only where a force predicated on
-parent structure acts at a listed position and directs it. It does not arise
-from contact.
-
-Because sliding is free, an impact exchanges momentum without imparting any
-turn. That rules out a whole family of things by name, and they should not be
-reached for later: no friction coefficient, no restitution, no tangential
-contact force, no angular momentum transfer on collision, no contact solver.
-
-This is what the harness already does and should keep doing. Torque is
-accumulated only from a share sitting off the particle's centre, which is the
-predicated case exactly. Nothing else writes to it.
-
-**Closed, and it is small.** Momentum exchange is all an impact does. Because
-the field gathering is what places things, an impact is at most a chance for a
-structure to realign better. It is a perturbation on a settling process, not a
-force law of its own and not a second mechanism competing with the field.
-
-So there is nothing here to build a collision system around. The field
-gathering does the placing and the bond separations do the holding. An impact
-only lets a structure that has settled poorly get another go.
+Parent participation remains proportional and always affects the whole.
+No torque, positional response, rotation or rotary alignment is required.
+Exposed finer components operate normally; compressed objects are marble-shaped
+Markov blankets whose boundary inputs and outputs define the active interaction.
+The earlier claim that the harness should accumulate off-centre torque is
+superseded. Runtime reconciliation is separate from this documentation change.
 
 ## Not designed here, deliberately
 

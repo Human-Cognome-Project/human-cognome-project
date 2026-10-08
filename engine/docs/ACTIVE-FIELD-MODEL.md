@@ -9,6 +9,35 @@ model. The recovered [operational plan](OPERATIONAL-PLAN.md) and
 the remaining calculations. `field::Harness` is the native field-array/tick
 class, not the entire future analyst-facing harness.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## What is computed in the loaded model
 
 At each exposed field edge, a participant of effective mass `m1` at its
@@ -20,16 +49,17 @@ coincidence and a group consisting solely of this participation produce zero
 in the current code. Several fields can touch the same particle; the code
 adds their directed force vectors into `F_net`.
 
-The native edge representation stores `(particle slot, group slot, share,
-offset)`: `m1 = particle_mass * share`, and the participating position is
-`particle_position + offset`. The **whole** particle mass absorbs the summed
-force in integration. Parent occurrences with the same base characteristic
-should remain distinct operative contributions. In the intended model,
-ordered parent positions behave like a straight line across the particle:
-partial forces can reorient that line even when they cannot appreciably
-translate the whole. This is rotary *alignment*, without carried angular
-velocity or an automatic permanent spin. The current harness only translates
-on offset-edge force; no orientation state or reorientation formula is built.
+The recorded native edge representation stores `(particle slot, group slot,
+share, offset)`, with the participating point at `particle_position + offset`.
+The whole mass absorbs the summed force. This describes the implementation
+previously reviewed, not completion of the updated model.
+
+**2026-10-08 direction:** preserve proportional mass/share and repeated parent
+contributions, but apply every contribution to the whole particle without an
+internal offset, torque or rotary alignment. The planned orientation operation
+is withdrawn. Reconcile the existing offset-based centroid/force path and its
+tests with this rule. Exposed finer components use their own particle positions;
+compressed objects expose their Markov-blanket boundary inputs/outputs.
 
 `token_id` identifies a base token; `particle_id` identifies an allocated
 instance in the model. Every exposed instance of the same token should share

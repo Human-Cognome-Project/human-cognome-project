@@ -7,6 +7,35 @@ table below separates that intent from running code. The dated
 open alternatives. For the native build boundary, read
 [engine/ARCHITECTURE.md](../engine/ARCHITECTURE.md).
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## Purpose and division of work
 
 The project joins a lossless archive of reality **as humans can encode it**
@@ -124,7 +153,7 @@ molecular-level operative distances and higher/lower attraction. Ordinal
 composition order remains data; it is not itself a distance coordinate.
 
 The C++ bridge and field evaluation must carry the expressed scale consistently
-through positions, component offsets, centroid geometry and operative distance.
+through positions, centroid geometry and operative distance.
 The existing inverse-square law remains the law; no additional force multiplier,
 mass rescaling, or zoom-dependent change to physical relationships is specified
 by this clarification. Exact conversion of the numerical state and movement
@@ -207,7 +236,7 @@ The durable graph has two direct, reciprocal relationship axes:
 
 | Axis | Forward walk | Return walk | Role in a working model |
 |---|---|---|---|
-| Composition | Ordered `token_parent` occurrences, including each occurrence's mass; repeated parent identities keep separate positions. | `token_child` lists composites using a parent. | Parents provide the next possible LoD and, through their order, an orientation for comparing like pieces. |
+| Composition | Ordered `token_parent` occurrences, including each occurrence's mass; repeated parent identities keep separate positions. | `token_child` lists composites using a parent. | Parents provide the next possible LoD and proportional contributions acting on the whole particle. |
 | Group membership | `member_of` lists direct groups a token participates in. | `members` lists each group's direct participants. | Group centroid fields contribute at the exposed level; groups may themselves join higher groups. |
 
 The reverse lists make future n-dimensional traversal an address follow instead
@@ -215,9 +244,9 @@ of a search for unseen back edges. For example, byte value `01` may belong
 directly to several encoding tables; each table can belong to vendor/source
 and format groups. The value's direct memberships and each table's higher
 classifications are separate links. The cache manager composes them under the
-study root. Ordered duplicate parents remain distinct in the model's intended
-partial-force and rotary-alignment effects; the current field harness has no
-such orientation calculation. See the [database guide](../kernels/database/WORKING-SET-AND-LEDGER.md)
+study root. Repeated parents remain distinct proportional contributions to
+whole-particle response. Positional response and rotary alignment are removed
+from the intended model. See the [database guide](../kernels/database/WORKING-SET-AND-LEDGER.md)
 and [field model](../engine/docs/ACTIVE-FIELD-MODEL.md).
 
 ## From prepared view to numerical evaluation
@@ -289,7 +318,7 @@ record → WAL → cache-manager → model loop.
 | Area | In this repository now | Clarified intent / open seam |
 |---|---|---|
 | Operative LoD distance | No verified expressed-scale bridge or zoom conversion. | Finest visible LoD anchors one distance unit; less granular expressed levels expand by 64 or 128; compressed equivalences skip steps. Factor choice and implementation remain open. |
-| Native field engine | Taichi-backed C++ particle/group/edge kernels, inclusive seeded centroids, field force, integration/brake, end-of-tick centroid publication, full on-demand download. | Combined destination and brake reach; ordered parent reorientation without carried spin; automatic sibling groups; conditional mass/centroid/particle activity; selective readback. |
+| Native field engine | Taichi-backed C++ particle/group/edge kernels, inclusive seeded centroids, field force, integration/brake, end-of-tick centroid publication, full on-demand download. | Combined destination and brake reach; proportional whole-particle parent response without application offsets; automatic sibling groups; conditional mass/centroid/particle activity; selective readback. |
 | PostgreSQL records | Five-table direct reciprocal structure/membership schema, controller, command/dispatch and tier-2 fixture-driven DB-manager handler. | Study-root composition, warm view composer, provisional address handling, file-now/wire-later ownership, local private DB implementation. |
 | WAL | Fixture-fed report recognition, per-source monitor, durable obligation/History tables, local endpoint handler emitting owed identities. | Live logical-decoding adapter, privacy-aware routing, cache-manager deferred consumer, RECONCILE staging, recovery/replay. |
 | Network | In-memory boxes, endpoint registry, cooperative priority scheduler. | Runtime balancer, configuration/bridges, concurrency, swarm/tracker. |
@@ -297,7 +326,7 @@ record → WAL → cache-manager → model loop.
 
 The immediate design questions are how the field's directed vectors produce an
 effective **destination distance** for the brake; what motion ratio is
-significant at an active resolution; how ordered/repeated parents reorient;
+significant at an active resolution; how repeated parent contributions are retained;
 what makes a particle safely resolved and wakes it again; and how to measure
 the claimed calculation savings. The local DB release/encryption design and
 the exact live WAL adapter remain distinct design passes. The

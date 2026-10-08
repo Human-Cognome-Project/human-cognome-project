@@ -9,6 +9,35 @@ is mine and needs confirming. Nothing under "open" is filled in.
 2026-09-13. Companions: `parent-structure-notes.md`, `bonding-notes.md`,
 `field-physics-and-tick-notes.md`, `storage-and-working-split.md`.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## Current distance clarification (2026-10-07)
 
 The finest visible LoD is the one-particle/one-distance-unit baseline. Each
@@ -41,12 +70,9 @@ what they hold; mass counts structure, not content. Total mass is the
 cumulative, *exact* rollup of parent effects. So masses are integers, and the
 arithmetic on them does not drift.
 
-**A share of a particle sits somewhere.** Partial response acts at a position
-offset from the particle's centre: the share raises the force, the whole mass
-absorbs it, and whatever does not act through the centre becomes spin.
-
-**Spin is narrow.** Only predicated, directed spin exists. Contact produces
-none, because sliding is free for all particles.
+**Parent response is proportional and acts on the whole (2026-10-08).**
+The participating share raises its contribution; the whole particle absorbs it.
+There is no internal application offset, torque or spin.
 
 **Contact is frictionless and impacts are cheap.** An impact exchanges
 momentum, nothing else, and its only significance is giving a structure a
@@ -90,11 +116,9 @@ every calculation to cover a case already covered is the epsilon fudge the
 governing constraint rules out. It should come out of the harness, not be
 justified.
 
-**Established.** Rotation is ordinary: the drawn space is three dimensional, so
-rotation has three planes and does not gain one per position in a parent
-structure. The positions of a parent structure count dimensions of commonality,
-which are not axes of the drawn space. An earlier worry in the physics notes
-about rotation dimensionality was the two senses of "dimension" run together.
+**Rotation removed (2026-10-08).** Neither angular dynamics nor directed rotary
+alignment is required. Exposed components operate independently; compressed
+objects expose only their boundary inputs/outputs.
 
 ## Answered already, and previously mislisted as open
 
@@ -141,10 +165,8 @@ every level regardless of what is held, a particle's own geometry cannot vary
 with what it holds. An earlier version listed this as open; it was answered by
 the same statement that fixed the size.
 
-**Spin does not feed back.** Spin serves no purpose beyond predicated, directed
-spin. A spin that changed which positions face which neighbours would be a
-purpose beyond the predicated one, so there is none. Orientation is carried
-only as far as directed spin requires.
+**Orientation is not operative state.** The earlier directed-spin requirement
+is superseded by proportional response on the whole particle.
 
 ## Genuinely not yet stated
 

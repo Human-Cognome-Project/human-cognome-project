@@ -9,6 +9,35 @@ The overall flow below was described by Patrick; implementation details marked
 deferred have not been settled by this discussion. Do not infer that a named
 database or a swarm component has been built from its appearance here.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## Two linked parts
 
 - The long-term archive aims to preserve, losslessly, reality as humans can
@@ -158,7 +187,7 @@ molecular-level operative distances and higher/lower attraction. Ordinal
 composition order remains data; it is not itself a distance coordinate.
 
 The C++ bridge and field evaluation must carry the expressed scale consistently
-through positions, component offsets, centroid geometry and operative distance.
+through positions, centroid geometry and operative distance.
 The existing inverse-square law remains the law; no additional force multiplier,
 mass rescaling, or zoom-dependent change to physical relationships is specified
 by this clarification. Exact conversion of the numerical state and movement
@@ -229,34 +258,13 @@ The current schema and `Controller::add_membership` store reciprocal direct
 pairs but do not check composability to a named study root. The warm assembly
 and the point at which this qualification is checked remain to be developed.
 
-**Parent field effects and repetition (Patrick, 2026-09-25):** each exposed
-parent field acts on the mass of the parent occurrence it reaches. That
-partial force contributes to the total motion vector of the whole construct,
-distributed across its total mass. At the overall-construct scale, the
-movement question is whether that parent relationship has enough weight to
-shift the whole construct. At the internal scale, the ordered parent
-positions give the piece a **polarity-like ordering** for comparing it with
-like constructs; this is an analogy for oriented comparison, not a claim
-of identical physical polarity. The order can support a **rotary alignment
-expression** even when the parent effect cannot translate the whole. Ordered parent occurrences retain their distinct positional effects, but the
-2026-10-07 clarification removes the requirement that they occupy a straight
-line through the literal. Operative geometry follows expressed LoD scale;
-ordinal order alone does not prescribe a spatial string. Rotary effects can occur in a tick,
-but **rotary velocity is not preserved between ticks**. This does not prevent
-an orbit produced by the continuing field forces: the particle's position and
-translational motion can follow those forces over successive ticks. Parent-line
-alignment responds to the current interaction without retaining a separate
-spin that would keep the construct rotating on its own. If the same parent
-characteristic appears at two positions, both occurrences act **distinctly**:
-both contribute to the resultant vector and to alignment of the whole as
-units. They must not be collapsed into one operative occurrence simply
-because they share a token.
-
-**Chemical-structure analogy (Patrick, 2026-09-25):** constructs may contain
-the same parent elements and total mass yet yield very different behaviour
-when those elements are arranged differently, just as a chemical formula's
-inventory alone does not capture organisation. Parent ordinals and positions
-therefore belong to the operative comparison, not only the storage listing.
+**Parent field effects and repetition (updated 2026-10-08):** each parent
+occurrence contributes proportionally through its participating mass. The force
+always acts on the whole particle and is absorbed by its whole mass. Repeated
+occurrences remain distinct contributions. Parent order preserves composition;
+it supplies no internal application offset, torque or rotary alignment.
+Exposed components operate normally; compressed objects expose boundary inputs
+and outputs as marble-shaped Markov blankets.
 
 The database already preserves each ordinal and per-occurrence mass in
 `token_parent`, while `token_child` correctly keeps one reverse navigation
@@ -279,9 +287,10 @@ compose cold records into warm LoD aggregates. Separate edge entries can
 contribute separate force vectors to whole-mass translation, but the harness
 has **no rotary-alignment calculation or orientation state**. Its existing
 no-rotation comments and translation-only offset test therefore describe
-what is built, not the complete parent-field behaviour clarified here. The
-older drift audit rejects carried rigid-body spin; directed reorientation of
-the ordered parent configuration is a different, still-unbuilt operation.
+historical implementation behavior. The 2026-10-08 direction also removes
+offset-based positional response and the planned rotary-alignment operation;
+proportional participation remains. Reconcile the existing offset path without
+claiming that these documentation edits have changed the code.
 The harness uses particle array slots and group edges but stores no `token_id`
 for each allocated particle and creates no automatic same-token sibling group;
 its tests stage group edges explicitly. The active-set assembly still needs to
@@ -545,8 +554,7 @@ their behaviour for balanced, unequal and repeated fields before deciding.
 This algebra covers the attractive field pass; other contributions such as
 the contact pass need separate treatment when evaluating the whole motion.
 The current `field_force` accumulates only `kForceX/Y/Z`, while
-`field_integrate` uses `|F|` for its brake reach. Parent-line rotary
-alignment remains distinct work to implement.
+`field_integrate` uses `|F|` for its brake reach. Parent-line rotary alignment is superseded by the 2026-10-08 whole-particle rule.
 
 **Discretization brake (Patrick, 2026-09-25):** its purpose is to prevent
 kinetic shearing caused by finite simulation ticks. The fields are intended
@@ -638,9 +646,8 @@ particle-level no-movement test remains to be specified, and this note does
 not establish a complexity bound.
 
 **Exclusion implication:** zero or insufficient whole-construct translation
-does not alone prove a particle is resolved. A repeated parent characteristic
-may still call for rotary alignment, so the eventual no-movement test must
-also account for that expression before excluding the particle.
+does not alone prove a particle is resolved. Repeated parent contributions still count toward the whole-particle resultant;
+there is no remaining rotary-alignment requirement in that decision.
 
 **Resolved construct as a fixed point (Patrick, 2026-09-25):** the intended
 end state is that a fully resolved construct has no motion: its equations

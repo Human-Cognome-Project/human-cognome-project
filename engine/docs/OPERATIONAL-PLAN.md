@@ -24,6 +24,35 @@ Status date: 2026-09-14.
 
 ---
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## 0.1 Status ledger — the single source of what is settled vs open
 
 **Rule (the one this whole plan exists to enforce):** an item here is **RESOLVED** or
@@ -51,7 +80,7 @@ his answer. Do not carry a resolved item as open.
 | Particle pool | fixed `N` particles sized to the card, **allocated once**; unused = `0x`/null hex (no mass/presence/location), naturally inert (mass 0); claim/release as LoD needs change **converts allocation into declaration in the working space** — no live allocation; centroid virtual particles + LoD orbs drawn from it |
 | SNode tree = relative-LoD-by-perspective | pool → claim/release → **SNode tree** → viewport; the tree is the mechanic that **exposes LoD relative to the observation perspective** (near = fine, far = coarse), recomposing as the perspective travels — renders, does not store, a fixed hierarchy |
 | DB path-agnostic / SNode slices per focus | main DB **explicit, favours no path**; composed SNode tree **slices the data into the aggregation shape for the current focus**; **time is just a dimension** — temporal analysis = the SNode tree rolling up the time axis, same mechanism, not special-cased |
-| Participation | parents = predicates (mass ratio, offset); siblings = full-mass by kind; mass = force |
+| Participation | parents = proportional mass/share acting on the whole; no positional response or rotation (2026-10-08); siblings = full-mass by kind |
 | Siblings | also carry the base definitions (race/class) that configure body + gear |
 | Force activation | scalar launch argument; **NO json / config surface** |
 | Force set | Patrick knows many; set up when the DB connections are established |
@@ -420,9 +449,9 @@ The particle collapses to a **position + a set of field listings**, each carryin
 - **Parent relationship** — the **predicates**: internal predicate components,
   **partial by mass ratio**, tied to the particle's inner components; the field acts
   on the component's mass fraction and the **whole body responds in proportion**
-  (magnet-in-non-magnetic-material). A component can sit **off-centre**; its pull is
-  felt there while the whole body **translates** (no rotation — see §3.7/Unit B). The
-  ordered positions of parent components are the polarity source (§3.8).
+  (magnet-in-non-magnetic-material). The contribution always acts on the **whole body**. The 2026-10-08 rule
+  removes internal application offsets and rotational alignment; parent order
+  remains composition data.
 - **Sibling relationship** — full, equal participation by the **whole body**, keyed by
   **group name (kind)**. Does two jobs (§3.8): the base race/class **definitions** and
   the **kind** for emergent bonds.
@@ -467,8 +496,9 @@ emergent variance.
   0 at coincidence). **Not** epsilon-softening. **Shipped (Unit A).**
 - **No running rotation:** rigid-body spin was drift; stripped. The `(share, offset)`
   edge shape is kept — an off-centre share **translates** the whole body. **Shipped
-  (Unit B).** (The ordered-line "rotation" is the alignment expression of §3.8's
-  composite regime, not conserved angular momentum.)
+  (Unit B), historical implementation.** The 2026-10-08 direction also removes
+  positional response and ordered-line alignment; reconcile the retained offset
+  path without dropping proportional participation.
 - **The brake (discretization / overshoot correction):** the destination is the **sum
   of the `m1·m2/d²` vectors = the resultant**; the brake's **reach = the magnitude of
   that resultant** (the total distance being sought); the brake is **exponential to
@@ -518,7 +548,7 @@ like-attraction can bring two particles** — it is not itself an attraction.
    **Updated 2026-10-07:** this does not require beads on a string, a straight
    line of touching literals, or flexible joints connecting that line. Preserve
    ordered and repeated parent effects while expressing molecular-level operative
-   distances at the visible LoD scale (§3.2). Parent effects may reorient the whole;
+   distances at the visible LoD scale (§3.2). Parent effects contribute proportionally to whole-particle response;
    ordinal order is not a prescribed spatial distance. Existing contact/corona
    rules remain separate from the withdrawn string geometry.
 2. **Overlap bond — kind + aligned (mirror-matched) polarity.** Coronas **overlap**,
@@ -863,8 +893,9 @@ The subspace-level base mechanics are complete. Trial constants to calibrate: co
 radius/stiffnesses, `reach_strength`.
 
 **Mine now (translation, no new Patrick input needed):**
-- **Payload shape** — the edge list is already close to the model's `(field, participating
-  mass, offset) + position` shape; confirm/firm it rather than a rigid fixed-slot row.
+- **Payload shape (updated 2026-10-08)** — retain field and participating mass,
+  with response on the whole particle. Reconcile existing internal offsets;
+  do not add orientation or rotary-alignment state.
 - **Primary-kernel consolidation** — move toward Patrick's "one replicated kernel" for the
   *per-particle* primary work (sum → resultant → exp attenuation + d=0 gate → move). Honest
   constraint: force accumulation is a **per-edge reduction**, a legitimately separate pass;
