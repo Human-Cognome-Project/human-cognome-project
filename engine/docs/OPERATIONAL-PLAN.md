@@ -24,6 +24,25 @@ Status date: 2026-09-14.
 
 ---
 
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**
@@ -90,7 +109,7 @@ his answer. Do not carry a resolved item as open.
 | Sibling vs SNode rollup | a *selected* rollup; selection policy in the routines, not the controller |
 | DB incorporation | governed by instance flexibility (capacity budget + restart authority) |
 | Co-structure | = reduction on a plane; bond strength IS the analytical measurement |
-| Corona (what it is) | separator shell ~0.5; analytical separation + defined contact distances; NOT a brake or force term |
+| Corona | Historically built separator shell; current direction is a corona-disabled test retaining ordinary contact. Permanent removal awaits evidence. |
 | Polarity (what it is) | parent-predicated, from component numbering; reversed (like faces like, mirrored); meters closeness, not attraction |
 | Three scenarios (behaviour) | defined = invariant identity / body-parts; overlap = strong; abut = loose aggregation of like kinds |
 | Kinetic contact | simple force transfer; separate, needs nothing special |
@@ -507,7 +526,12 @@ emergent variance.
   only the discretization artifact, not the physics. The drifted second (weighted)
   accumulator was removed. **Shipped (Unit C).**
 
-### 3.8 Contact and bonding (Patrick, 2026-09-14 — IN PROGRESS)
+### 3.8 Contact and bonding — current experiment and historical baseline
+
+**Current direction (2026-10-08):** test with corona behavior disabled, retaining
+ordinary contact and letting competing field forces determine separation.
+The September mechanics below document the baseline for comparison and must
+not be treated as required behavior of the corona-disabled experiment.
 
 > **The corona effect is EXPLAINED and being implemented in C++ (code agent).** The
 > corona is *just a separator*: the **regime-gated standoff** the bond is suspended at.
@@ -923,13 +947,13 @@ class of analysis needs live.
 ## 6. Open (small) and deferred (Patrick-paced)
 
 **Patrick's to explain — NOT yet given, NOT mine to draft or build:**
-- The **corona-effect mechanism** — how the corona/polarity produce closeness and
+- **Historical, superseded for the current experiment:** the corona-effect mechanism — how corona/polarity produced closeness and
   bonding in the tick (§3.8). He has not finished explaining contact mechanics.
 - **Superseded 2026-10-08:** a separate shear-resistant defined-bond hold is no longer a required model mechanism. Validate LoD-scaled local cohesion and reconcile existing code; do not seek another protective gate.
 
 **Genuinely mine (translation, minor, not blockers):**
 - Final **payload shape** confirmation.
-- Corona **radius** value is a trial (0.5 vs 1) — but only once the mechanism exists.
+- **Current experiment:** disable corona spacing; radius tuning (0.5 vs 1) is no longer the immediate task. Evaluate contact/separation in larger connected structures.
 
 **Deferred by Patrick's pacing — do not build now:**
 - **DB source location** and other external inputs.

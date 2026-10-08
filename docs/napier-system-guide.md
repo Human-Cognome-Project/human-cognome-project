@@ -7,6 +7,25 @@ table below separates that intent from running code. The dated
 open alternatives. For the native build boundary, read
 [engine/ARCHITECTURE.md](../engine/ARCHITECTURE.md).
 
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**

@@ -43,6 +43,25 @@ or raw SNode nesting. Test 64 as the initial binary factor, then assess the
 multiples needed by each relationship kind; no per-kind values, field layout
 or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
 
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**
@@ -94,7 +113,7 @@ direct contact**. So a direct bond holds separation at contact while leaving
 tangential motion unconstrained. It is a contact relation, not a rigid one:
 bonded particles can move around each other, but not apart and not through.
 
-## 2. Discovered valid bond
+## 2. Historical corona baseline: discovered valid bond
 
 **Discovered, not stored.** Found in operation rather than read from the
 database, and it requires **both the field and the polarity to match**.
@@ -102,7 +121,7 @@ database, and it requires **both the field and the polarity to match**.
 **Separation.** The coronas overlap, and the pair maintains a half-particle
 distance between them.
 
-## 3. Cross-polarity field match
+## 3. Historical corona baseline: cross-polarity field match
 
 The field is drawing the particles together, but polarity prevents them from
 being a full match. So the attraction is real and unchanged; polarity sets a
@@ -204,7 +223,7 @@ the same shape the direct bond has, since that is read from parent numbering.
 **It engages the mass at that position**, which is the partial-response case,
 using the relative masses the force lines already carry.
 
-## The framework
+## Historical corona framework — disabled in the new test
 
 Two tests, and they classify everything:
 
@@ -259,7 +278,7 @@ way the calibration pair does, and the constant was fixed on the free case.
 
 That was an open item in `field-physics-and-tick-notes.md` and is now answered.
 
-## Readings, to confirm
+## Historical corona readings — superseded for the new test
 
 **Confirmed.** The direct bond needs no separate storage. It is read from
 parent numbering, so the connectivity is already present wherever the ordering
