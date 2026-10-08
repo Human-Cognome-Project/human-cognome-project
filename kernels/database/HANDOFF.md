@@ -1,5 +1,71 @@
 # HANDOFF — reload pointer for the next session
 
+> **⚠ CURRENT reload pointer (2026-09-28) — supersedes the 2026-09-22 pointer below for WHAT'S NEXT.**
+>
+> **Done since:** the hex encoding floor is seeded into `hcp_core` and dumped (PR #103) — 276 tokens
+> (16 hex atoms `00.00.00.00.00`–`0F` mass 1; `0x` at `…0G` mass 0; 256 hex couplets `…10`–`…57`,
+> `0H`–`0z` sparse, ordered nibble parents folded+wired to `token_child`, mass 2; 3 temporary label
+> anchors at `00.00.01.00.0*`). Snapshot: `data/postgres/snapshots/2026-09-28-encoding-floor/`.
+> Addressing model: `kernels/database/NOTES.md` "Addressing re-based to the `00` root" (2026-09-28).
+>
+> **Engine is MOUNTED and CUDA-green on the GTX 1070.** Wrapper built at `engine/build-cuda` against
+> the machine's matched Taichi tree at `/opt/project/taichi` (`-DENGINE_TAICHI_ROOT=/opt/project/taichi
+> -DENGINE_TAICHI_CUDA=ON`, clang-15 / llvm-15). **No CUDA toolkit needed** — `TI_WITH_CUDA` (backend)
+> is separate from `TI_WITH_CUDA_TOOLKIT` (off); it uses the driver API + vendored libdevice.
+> `engine_devices` binds the 1070; `ctest` 3/3 (engine_smoke_test, field_test, index_cap_test). The
+> prebuilt binary is NOT yet folded into `engine/taichi` (optional copy + gitignore; build dirs already
+> ignored via `.gitignore` `engine/build*/`, `engine/taichi/build*/`).
+>
+> **Design worked this session (Patrick, 2026-09-28, later):** two decisions landed.
+> (1) **SNode research done and grounded** — `engine/docs/taichi-snode-mechanics.md` (cited to live
+> Taichi source): the index into a container `SNode` is *proposed* as the particle id (a harness
+> mapping, not an intrinsic Taichi rule); `place`/`pointer` are per-container schema node types (a
+> `pointer` cell points to its own fixed-schema child block; an inactive null pointer is a runtime state,
+> a different layer from the `0x` data row); a shared
+> subtree is a schema/id and warm-cache/DB property, **not** physical storage (each active cell owns its
+> child); full materialization is expected assignment into the fixed pool, not a cost; node ids are
+> monotonic and **restart** (analyst → harness, or engine via harness) reclaims the budget.
+> (2) **The 32-label row/column insert is DROPPED** in favour of a parent-field refinement — parent
+> fields pull by **value** and by **ordinal position** as **two separate fields, each individually**
+> (not a joint (value, slot) key — corrected 2026-10-01), so a grid row/column is the overlap of two
+> fields, EMERGENT, no new labels/edges/data
+> (`kernels/database/NOTES.md` "Parent fields pull by value and by ordinal position, separately";
+> `engine/docs/HARNESS-NOTES.md` "Session clarifications (2026-09-28)"). Warm cache = composed `SNode` trees per line of study (volatile);
+> cold cache = master library spanning several DBs, of which `hcp_core` is the always-loaded core (not
+> the whole); the particle/particle-set is the instance assembled from
+> warm-cache pieces by the harness/analyst.
+>
+> **Drafted 2026-10-01, revised 2026-10-02 — the UTF-8 encoding-tables build-out PLAN:**
+> `kernels/database/ENCODING-TABLES-PLAN.md` (docs only, PLAN not built; up for review, #108). It
+> specifies the next cold-floor layer above the nibble/byte floor: relabel via direct SQL `UPDATE`
+> (`Nibbles`/`Byte Codes`/`Byte Code Groups` + three category labels), the multi-byte hierarchy (2/3/4
+> ordered byte-code parents), the addressing allocation (all under `00.00.00.*`; reserve generously —
+> re-addressing a populated block via `rekey` is NOT cheap), generation by walking codepoints
+> U+0080–U+10FFFF (skip surrogates) and UTF-8-encoding, populate-all-valid (~1.11M characters).
+> **Rev. 2026-10-02:** structural mass is set by an `AFTER INSERT` trigger on `token_parent`
+> (`mass = sum of parents`; removes it from the aggregation workstream; no cascade — structural mass is
+> invariant). **Authorized by Patrick as an explicit exception to the schema no-trigger rule**, with a
+> completeness invariant (parents mass-complete before use; mint-completion rule tracked in #109).
+> `token.mass` = structural seed, distinct from the calculated centroid layer; labels use
+> their structural value for meta-org and the centroid for component-org; the driver mints **directly
+> through the controller** (not `DECLARE`) and supplies no mass; the ~12.1M-row load is accepted
+> (payer's call). Each per-character command (`mint` + membership) is **one atomic unit that rolls back
+> on failure — no partial state** — via the shared command transaction (**#110**) with the **#109**
+> complete-parent mass guard, so a re-run just mints the characters not yet present (not a self-heal of
+> partials). See also `NOTES.md` "UTF-8 encoding tables — build-out plan (rev. 2026-10-02)".
+>
+> **NEXT: on acceptance, execute per the work division in `ENCODING-TABLES-PLAN.md` §8** — prerequisites
+> **U1** (#109 complete-parent guard) + **U2** (#110 shared command transaction) + **U3** (structural-mass
+> trigger) implemented AND verified before any population (**GATE 1**); then relabel → category labels →
+> direct-mint driver → **U7 sample stop-gate** (one valid token per byte-width tier + one rejected command
+> that leaves no writes) → full populate → verify counts + masses → re-dump snapshot + PR. **Then** draft
+> the warm-cache schema plan and construction
+> instructions for how the cache manager builds the warm-cache pieces and how the harness reads them
+> into the engine. Grounding: `engine/docs/taichi-snode-mechanics.md`; `engine/docs/OPERATIONAL-PLAN.md`
+> §3.11 pool → claim/release → SNode tree → viewport, §5 composed-tree construction; the built substrate
+> pattern `engine/tests/engine_smoke_test.cpp` `make_field()` → `Program::add_snode_tree`
+> (root→dense/pointer→place). All PLANNED, not built. Preserve BUILT vs planned.
+
 > **⚠ Reload pointer (2026-09-22).** The core-data-flows discussion HAPPENED and
 > produced the **new messaging system**: a monitored-endpoint activation substrate
 > (`network/endpoint/`, commit `b97034a`) plus the WAL manager wired onto it as

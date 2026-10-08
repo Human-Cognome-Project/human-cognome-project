@@ -968,6 +968,109 @@ Authoritative calling convention: `docs/api-reference/ir_builder_test.cpp`.
   a 3060 elsewhere, so the 1070 figures are dev reference — not chasing, per
   Patrick's no-over-polish). **The docs are now trustworthy to build against.**
 
+## Session clarifications (2026-09-28) — warm cache, SNode terms, positional commonality
+
+> **2026-10-08 clarification:** ordinal commonality does not impose an internal
+> force application point. Parent response remains proportional on the whole;
+> positional response and rotary alignment are removed. Current study focus
+> determines expressed LoD distance; see the governing system guide.
+
+Literal record of Patrick's clarifications this session. Engine mechanics are
+grounded and cited in the new `engine/docs/taichi-snode-mechanics.md`; this
+section keeps the model-level reading.
+
+- **Taichi is particle-based by design.** Particles are what the engine is for; a
+  field over an `SNode` tree is the native particle set, not a concept bolted on.
+  Use the software's own terms, never coined ones.
+- **Identity (proposed harness mapping).** The **index** into a container `SNode`
+  is *proposed* as the particle id (Patrick's term) — a harness mapping, not an
+  intrinsic Taichi rule; a `particle_id` is an allocated *instance* of a stored
+  `token_id` (`kernels/database/WORKING-SET-AND-LEDGER.md`), and carrying a stable
+  instance through tree recomposition is still design work. `place` and `pointer`
+  are per-**container** schema node types (chosen at schema time, not per index): a
+  `place` container's cells hold direct values; a `pointer` container's cell points
+  to *its own* fixed-schema child block, not an arbitrary nested warm-cache tree.
+  Patrick's "a slot is a direct value or a reference to nested SNode ids" is the
+  model intent; expressing it over Taichi's per-container types is open. An
+  inactive/null `pointer` cell is a runtime storage state; the `0x` token is a real
+  mass-zero row in `hcp_core` — related (both inert) but different layers. See
+  `engine/docs/taichi-snode-mechanics.md`.
+- **Value and ordinal position are two separate commonalities (corrected
+  2026-10-01).** Parents were already noted to have a positional effect (position
+  vs the centre; the polarity source, §3.8), but position was **not** part of the
+  basis of commonality. It is now — and value and ordinal position are **two
+  independent fields, each pulling individually**, NOT a joint `(value, ordinal
+  slot)` key (which was the wrong direction): a **value field** (same value pulls
+  to same value, any position) and an **ordinal-position field** (same slot pulls
+  to same slot — first to first, second to second — any value). Each constituent is
+  in both at once. The **force is unchanged** — whole-body (whole-body-responds
+  rule preserved); value and position inform which fields a constituent is in, not
+  a localization to the sub-part. This still drops the row/column labels — a grid
+  "row/column" is the overlap of a value field and an ordinal-position field, not a
+  stored group (see `kernels/database/NOTES.md`, "Parent fields pull by value and
+  by ordinal position, separately").
+- **Materialization is assignment, not a cost.** Claiming a particle is
+  **assignment of values** into a fixed-pool slot that already exists
+  (declaration), not allocation; unused = `0x`; release = zero back. Full
+  expansion creating all of a construct's leaves is the **expected, correct**
+  result of pulling in the whole construct at base LoD, bounded only by the
+  configured budget N. Sparsity (`pointer`/`bitmasked`) is only about **partial**
+  pulls, where the finer LoD is not brought in. (Taichi `pointer` activation itself
+  *allocates* — `node_pointer.h:41,56` — so how the fixed pool maps onto Taichi
+  containers is open; see `engine/docs/taichi-snode-mechanics.md`.)
+- **Restart is the id-budget reclaim.** Node ids are monotonic (never recycle);
+  the process separation exists so the analyst can restart the harness, or the
+  engine via the harness, to reclaim the spent node-id budget. Budget sensibly for
+  a session; restart reclaims it.
+- **Cold vs warm cache, and the instance.** The **cold cache** is the broad master
+  library of possible items, configurations and connections; it spans **several
+  databases** the cache manager connects to, with private local databases kept
+  separate. **`hcp_core` is the seeded core database** — an element of the cold
+  cache likely loaded all the time — **not** the whole cold cache, and the initial
+  dump is not the sole source of all cold content. The **warm cache** is the
+  library for one line of study — composed `SNode` trees, volatile — holding only
+  the elements that study can reach (the WoW library, not the Star Wars one). The
+  **particle / particle-set is the specific instance** assembled *from* the
+  warm-cache pieces by the harness/analyst. This is the storage → working →
+  resident tiering (§3.9), selection happening twice.
+- **Frameworks, endpoints, LoD reduction.** A framework is an `SNode` tree with a
+  mix of **defined and open endpoints**. An **open endpoint is a connection
+  socket** where another tree or data point attaches at assembly (e.g. an avatar's
+  arm style, chosen per instance). LoD reduction collapses a **satisfied
+  grouping** into one referenced node ("sword fighting grip" stands in for all the
+  finger detail below the relevant LoD, and expands when the user works at that
+  LoD); expanded members **stay distinct** — the collapse is a **lossless
+  reference, not a merge** (address-is-identity holds through the LoD change).
+  Low-adjustability fixed continuations (elbow, wrist) roll up into what Patrick
+  calls **"compound functions"** rather than being exposed as separate adjustable
+  endpoints.
+- **Shared subtree is a schema/DB property, not physical.** "Stored once, attached
+  by read, not a dupe" is real at the `SNode` schema/id level and the warm-cache/DB
+  level, but **not** at physical storage — each active cell owns its child. See
+  `engine/docs/taichi-snode-mechanics.md` for the cited verdict.
+- **Codepoint ≠ encoding (2026-10-01).** When input unspools, the intake works on
+  the **actual UTF-8 bytes**, never the codepoint digits: `é` = U+00E9 encodes to
+  `C3 A9`, not `00 E9`. Padded `U+XXXX` codepoint tables show a uniform ≥2-byte
+  form with leading `00`s that do not exist on the wire — a real source of
+  confusion. The encoding-tables build generates from the UTF-8 encoding, never a
+  codepoint table (`kernels/database/ENCODING-TABLES-PLAN.md`).
+- **Structural mass vs centroid, and alignment (2026-10-02).** A token's stored
+  `token.mass` is its **structural** mass — the sum of its direct parents' masses,
+  a fixed seed, maintained by a DB trigger (`ENCODING-TABLES-PLAN.md` §5). It is
+  invariant: composition is identity and the values ground in the fixed atom
+  seeds. The **centroid** masses are a separate **calculated** layer — the per-tick
+  force/mass centroids (§3.5) and the cache manager's label/rollup centroids;
+  structural *seeds* the centroid, it is not the centroid. A **label uses both**:
+  its own structural value (from its naming literal) for **meta-organization**, and
+  its centroid (of members) for **component-organization**. Structural value as a
+  **gross-alignment parameter** is a TENTATIVE, organizational idea (coarsely
+  arranging kin structures; the centroid layer refines within), **not** the force
+  law — under `m1·m2/d²` mass is magnitude, not closeness-attraction, so nearby
+  structural values do not cluster by the law. Factual only: the trigger makes
+  structural mass equal within a byte-width tier (2-byte 4, 3-byte 6, 4-byte 8);
+  whether that shared value is used as an arrangement or an added field rule is
+  Patrick's to steer.
+
 ## Open threads (pending Patrick's input)
 
 - **Tick spec (2026-09-13, updated):** the **next-tick setup IS the amalgamation
