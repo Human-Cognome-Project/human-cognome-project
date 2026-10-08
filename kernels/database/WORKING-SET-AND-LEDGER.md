@@ -7,6 +7,35 @@ composition, delayed reciprocal writes, and private stores are design work.
 Read [NOTES.md](NOTES.md) for the detailed record-tier rules and
 [API.md](API.md) for current commands.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## Cold graph and direct follows
 
 The database identifies a token by its arrayed `token_id` address. One
@@ -57,6 +86,25 @@ do not exist. A per-tick small-effect gate cannot alone justify indefinitely
 skipping a field: continued exclusion needs a predicate absolute for the
 defined scope and a complete invalidation path. See
 [active field model](../../engine/docs/ACTIVE-FIELD-MODEL.md).
+
+## Expressed scale in warm SNode definitions (2026-10-08)
+
+The most granular visible LoD anchors one distance unit; less granular expressed
+levels expand by a binary factor, testing 64 first and 128 if needed. Compressed
+equivalences need no full step. Local cohesion and shear resistance should arise
+from ordinary scaled attraction; distant dispersion is not a construct scope mask.
+
+**Monitor and discuss:** relationship kinds may need higher or lower distance
+multiples; one universal factor may not produce the needed effects everywhere.
+Those degrees of separation may need recording in warm-cache SNode object
+definitions. This does not mean graph-hop count or raw nesting depth. No field
+layout or per-relationship multiple is settled yet.
+Carry operative scale separately from raw stored depth, and validate local cohesion
+and universal effects as model extent grows (#115, #106).
+
+Whitespace is a gap in recorded representative positions. A warm/hot model may
+instantiate an inert separator solely for local lower/higher connection, without
+parent/child relationships, gathering mass or shared whitespace fields (#116).
 
 ## Compose the working projection
 

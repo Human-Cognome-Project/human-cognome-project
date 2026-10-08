@@ -71,6 +71,69 @@ records only. Canadian English.
 > stream, with the swarm/p2p layer preliminary and gated behind it. `HANDOFF.md` is the
 > reload pointer — read it first.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
+## Operative LoD distance and literal composition (Patrick, 2026-10-07)
+
+The finest visible LoD in a modeling operation anchors one particle = one
+distance unit. Each less granular expressed level expands by 64 or 128
+(choice open). Stored composition depth and SNode nesting do not automatically
+add operative distance steps. Compressed equivalences can skip a step; UTF
+endpoint to character in use is such an equivalence. Zooming into finer
+operative detail rebases the measurement frame.
+
+Ordered parent occurrences, repeated parents and literal identity remain
+recorded. No spatial string through literals is required: working geometry
+uses molecular-level distances with higher/lower attraction. Text sequences
+and ordered address arrays are storage/composition data, not geometric spacing.
+The C++ bridge must carry the operative scale into the model; no cold-schema
+change or scale-aware implementation is claimed here.
+
+Whitespace is excluded as a recorded token: retain representative positions,
+with empty positions recording spaces (including repeated spaces). Never compact
+the sequence when omitting whitespace values. In the model, an optional inert
+separator particle has only local lower/higher connecting participation, no
+parent/child relationships, no gathering-mass contribution and no field with
+other whitespace occurrences. See #116.
+
+**2026-10-08 followup:** scaled local attraction supplies intended cohesion and
+shear resistance without string mechanics or a separate protective gate.
+Dispersion and distance limit remote hex-code effects; do not impose a construct
+scope mask. Test binary factor 64 first, then 128 if needed, retaining universal
+effects as model extent grows. Monitor whether the number of degrees of
+separation needs to be included in warm-cache SNode object definitions (#115,
+#106): different relationship kinds may need higher or lower distance multiples,
+so one universal factor may not suffice. This is not graph-hop count or nesting
+depth. The per-kind multiples and definition layout remain for discussion.
+See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
 ## Governing principle
 
 The DB is the **strictest form of the data protocol** — any system built on it

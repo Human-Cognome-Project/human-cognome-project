@@ -24,6 +24,54 @@ Status date: 2026-09-14.
 
 ---
 
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## 0.1 Status ledger — the single source of what is settled vs open
 
 **Rule (the one this whole plan exists to enforce):** an item here is **RESOLVED** or
@@ -40,7 +88,7 @@ his answer. Do not carry a resolved item as open.
 | Rotation | no running spin; `(share, offset)` kept, off-centre share translates — **SHIPPED (Unit B)** |
 | Brake target | destination = sum of the `m1·m2/d²` vectors = the resultant; reach = its magnitude — **SHIPPED (Unit C)** |
 | Momentum | carries between ticks (inertial, second-order) |
-| Sphere | diameter 1, unit, no per-sphere constants |
+| Sphere / distance scale | One particle at its primary LoD; finest visible LoD anchors one distance unit. Less granular expressed levels expand by 64 or 128 (choice open), with equivalence compression. Model clarification 2026-10-07; scale bridge not verified as built. |
 | Amalgamation | end-of-tick centroids ARE next tick's m2; force centroid == mass centroid (invariant) |
 | Universal centroid | one always-active field effect, **pegged to origin (0,0,0) by definition** (the single exception to computed centroids), mass = **total construct mass read as the TOP aggregation, each element once** (NOT the sum of nested/field centroids — that compounds mass); its orbital field pulls things into relative alignment; dampens runaway kinetics; establishes a locus of observation distinct from the commonality focal point |
 | Root of analysis / focus | the locus of observation, **placed or travelled relative to the universal centroid**; LoD aggregation established by **neighbourhood** of the root (near granular, far aggregated), demand-driven — mechanism settled, CPU-resident implementation is future |
@@ -51,7 +99,7 @@ his answer. Do not carry a resolved item as open.
 | Particle pool | fixed `N` particles sized to the card, **allocated once**; unused = `0x`/null hex (no mass/presence/location), naturally inert (mass 0); claim/release as LoD needs change **converts allocation into declaration in the working space** — no live allocation; centroid virtual particles + LoD orbs drawn from it |
 | SNode tree = relative-LoD-by-perspective | pool → claim/release → **SNode tree** → viewport; the tree is the mechanic that **exposes LoD relative to the observation perspective** (near = fine, far = coarse), recomposing as the perspective travels — renders, does not store, a fixed hierarchy |
 | DB path-agnostic / SNode slices per focus | main DB **explicit, favours no path**; composed SNode tree **slices the data into the aggregation shape for the current focus**; **time is just a dimension** — temporal analysis = the SNode tree rolling up the time axis, same mechanism, not special-cased |
-| Participation | parents = predicates (mass ratio, offset); siblings = full-mass by kind; mass = force |
+| Participation | parents = proportional mass/share acting on the whole; no positional response or rotation (2026-10-08); siblings = full-mass by kind |
 | Siblings | also carry the base definitions (race/class) that configure body + gear |
 | Force activation | scalar launch argument; **NO json / config surface** |
 | Force set | Patrick knows many; set up when the DB connections are established |
@@ -61,7 +109,7 @@ his answer. Do not carry a resolved item as open.
 | Sibling vs SNode rollup | a *selected* rollup; selection policy in the routines, not the controller |
 | DB incorporation | governed by instance flexibility (capacity budget + restart authority) |
 | Co-structure | = reduction on a plane; bond strength IS the analytical measurement |
-| Corona (what it is) | separator shell ~0.5; analytical separation + defined contact distances; NOT a brake or force term |
+| Corona | Historically built separator shell; current direction is a corona-disabled test retaining ordinary contact. Permanent removal awaits evidence. |
 | Polarity (what it is) | parent-predicated, from component numbering; reversed (like faces like, mirrored); meters closeness, not attraction |
 | Three scenarios (behaviour) | defined = invariant identity / body-parts; overlap = strong; abut = loose aggregation of like kinds |
 | Kinetic contact | simple force transfer; separate, needs nothing special |
@@ -69,9 +117,11 @@ his answer. Do not carry a resolved item as open.
 **Corona effect — EXPLAINED and SHIPPED (2026-09-14).** The corona separator is built and
 verified (CPU + CUDA green, kernel read directly): regime-gated standoff (`d0` = flush for
 aligned/defined, `1 + 2·corona` for opposed), a finite separator push resisting closer
-approach, and the **defined-only invariant hold** (shear-resistant). The field provides the
-attraction; the corona is *just the separator*. Radius/stiffnesses are trial values to
-calibrate.
+approach, and the historically built **defined-only invariant hold**. The field
+provides attraction; the corona is the separator. **Current direction (2026-10-08):**
+scaled local attraction replaces the requirement for a separate shear-specific
+hold. Review and back-propagate this into existing mechanics after validating
+scaled cohesion; this documentation update does not remove code.
 
 **Universal centroid — EXPLAINED and SHIPPED (2026-09-14).** The inward `1/d²` pull toward
 the pegged origin (0,0,0) is **suspended** (kept, not deleted — may be reactivated) and
@@ -202,6 +252,76 @@ Spatially 3D; the sole shape is the **perfect sphere (orb)**, **diameter 1** (ra
 exactly one particle = one sphere**. Composition is recursive (a particle may contain
 any number of inner particles); at the **bottom active LoD everything is an orb**.
 LoD is a hierarchy of nested spheres; "primary" is level-relative.
+
+**Distance clarification (Patrick, 2026-10-07).** Diameter 1 is a local-primary
+unit convention, not one unscaled global diameter across all visible levels.
+The finest visible LoD anchors one particle = one distance unit; each less
+granular expressed level expands by 64 or 128 (choice open). Stored depth is
+not scale depth: compressed equivalences, including UTF endpoint to character
+in use, can omit a full distance step. Zooming in makes the newly exposed finer
+level the baseline and moves the previously viewed level up one scale step.
+Use consistent scale conversion for operative distances and centroid geometry.
+Literal order does not require a spatial string. This is model intent, not a
+verified implementation. See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
+### 3.2a Local cohesion, dispersion and calibration (Patrick, 2026-10-08)
+
+Distance scaling supplies the intended shear resistance at every expressed
+level. Component distances are multiplicatively smaller than macro distances,
+so their inverse-square attractive forces are correspondingly stronger.
+Ordered composition survives without beads on a string, flexible-joint
+machinery, or an additional shear-specific protective gate.
+
+**Limited scope is an effect of distance and dispersion, not a scope mask.**
+The fact that the entire model is composed of hex codes has no meaningful
+general effect on an individual hex code when those occurrences are dispersed;
+nearby configuration dominates at that scale. This repeats at each level up.
+Do not implement an artificial construct boundary or disable universal fields
+to achieve this. This is the intended model behavior to verify under load,
+not a claim that dispersion mathematically guarantees cancellation.
+
+A **binary (power-of-two) factor** is preferred for clean, fast arithmetic.
+Test **64** first; **128** is the next candidate if needed. The requirement is
+sufficient local force scaling while permitting universal effects. As the
+model grows, linear distance grows too; monitor both local cohesion and
+aggregate distant effects rather than calibrating on one small assembly.
+
+**Monitoring / discussion, not a schema decision:** degrees of separation
+means that different kinds of relationships may need higher or lower distance
+multiples to produce the needed effects. One universal factor may not suffice.
+Those relationship-dependent separations may need to be part of warm-cache
+definitions of SNode objects. This is not graph-hop count, parent/address depth
+or raw SNode nesting. Test 64 as the initial binary factor, then assess the
+multiples needed by each relationship kind; no per-kind values, field layout
+or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
+
+### 3.2b Whitespace: sparse recording and local connection (Patrick, 2026-10-07)
+
+**Storage rule settled:** whitespace is always excluded as a recorded token;
+it exists through gaps in the representation. Each represented token retains
+its representative place. Positions with no recorded value are spaces, so
+multiple empty positions preserve multiple spaces; excluding values must not
+compact the positional sequence.
+
+**Model rule settled; instantiation remains a choice:** a gap may be represented
+by an inert whitespace particle. It has no direct semantic value and is relevant
+as a separator/boundary condition on the internal structures it bridges.
+Its only attractive participation is lower/higher positioning within that
+particular string or construct: the connecting force that makes a molecule
+a molecule rather than a collection of atoms. It has no field effect with any
+other whitespace occurrence, including elsewhere in the same construct.
+
+Whitespace participates in no parent/child relationships and contributes no
+mass to any gathering. Do not add a shared whitespace identity field or a cold
+whitespace-token row to obtain this model behavior. If instantiated, the local
+connecting participation must remain distinct from structural parent/child
+participation. This settles its role, not an independent force formula or a
+numerical inertial mass for integration; do not assume mass-zero division is
+safe in existing kernels.
+
+The separator's operative distance uses the expressed LoD metric. Positional
+recording does not reinstate a straight spatial string through literals.
+Implementation and remaining representation details are tracked in #116.
 
 ### 3.3 The one law — and the universal field effect
 **Every interaction is `m1 · m2 / d²`**, one law without exception. **m2 is an
@@ -348,9 +468,9 @@ The particle collapses to a **position + a set of field listings**, each carryin
 - **Parent relationship** — the **predicates**: internal predicate components,
   **partial by mass ratio**, tied to the particle's inner components; the field acts
   on the component's mass fraction and the **whole body responds in proportion**
-  (magnet-in-non-magnetic-material). A component can sit **off-centre**; its pull is
-  felt there while the whole body **translates** (no rotation — see §3.7/Unit B). The
-  ordered positions of parent components are the polarity source (§3.8).
+  (magnet-in-non-magnetic-material). The contribution always acts on the **whole body**. The 2026-10-08 rule
+  removes internal application offsets and rotational alignment; parent order
+  remains composition data.
 - **Sibling relationship** — full, equal participation by the **whole body**, keyed by
   **group name (kind)**. Does two jobs (§3.8): the base race/class **definitions** and
   the **kind** for emergent bonds.
@@ -395,8 +515,9 @@ emergent variance.
   0 at coincidence). **Not** epsilon-softening. **Shipped (Unit A).**
 - **No running rotation:** rigid-body spin was drift; stripped. The `(share, offset)`
   edge shape is kept — an off-centre share **translates** the whole body. **Shipped
-  (Unit B).** (The ordered-line "rotation" is the alignment expression of §3.8's
-  composite regime, not conserved angular momentum.)
+  (Unit B), historical implementation.** The 2026-10-08 direction also removes
+  positional response and ordered-line alignment; reconcile the retained offset
+  path without dropping proportional participation.
 - **The brake (discretization / overshoot correction):** the destination is the **sum
   of the `m1·m2/d²` vectors = the resultant**; the brake's **reach = the magnitude of
   that resultant** (the total distance being sought); the brake is **exponential to
@@ -405,14 +526,21 @@ emergent variance.
   only the discretization artifact, not the physics. The drifted second (weighted)
   accumulator was removed. **Shipped (Unit C).**
 
-### 3.8 Contact and bonding (Patrick, 2026-09-14 — IN PROGRESS)
+### 3.8 Contact and bonding — current experiment and historical baseline
+
+**Current direction (2026-10-08):** test with corona behavior disabled, retaining
+ordinary contact and letting competing field forces determine separation.
+The September mechanics below document the baseline for comparison and must
+not be treated as required behavior of the corona-disabled experiment.
 
 > **The corona effect is EXPLAINED and being implemented in C++ (code agent).** The
 > corona is *just a separator*: the **regime-gated standoff** the bond is suspended at.
 > Like-attraction is the field effect (already built); the corona meters how close that
 > pull brings two like particles — aligned polarity → coronas overlap, standoff collapses
 > to flush → strong; opposed → coronas abut at the corona distance, loose and breakable;
-> defined → suspended (flush) and invariantly held (shear-resistant). "Kinetic contact"
+> defined → historically suspended (flush) and held. The 2026-10-08 direction
+> assigns shear resistance to ordinary LoD-scaled local attraction, not a new
+> protective gate. "Kinetic contact"
 > (simple force transfer) is the separate simple case.
 
 This is the **analytical form of the data expressed as contact.** Three
@@ -439,18 +567,14 @@ stretch connects. **Polarity does one narrow job: it meters how close the univer
 like-attraction can bring two particles** — it is not itself an attraction.
 
 **The three scenarios:**
-1. **Defined bond — the invariant identity bond.** A **read of a cell's parent
-   content from the DB**; the ordered chain (beads on a string) that is *what makes the
-   composite what it is* (Patrick's analogy: **body parts, not gear**). Two LoD
-   regimes: **as a composite (higher LoD)** it is a straight line, beads flush, no
-   gaps, and a pull on part moves the whole as **rotation + translation** (ordered-line
-   reorientation, **not** rigid-body spin); **at primary LoD** the beads stay connected
-   but the joints go **flexible** — trialled as the two faces **sliding directly, 
-   frictionless**, corona **suspended** across the bonded contact. It is an **invariant
-   connection**, so it needs its **own definition and a stronger gate**: it can be
-   **subject to shearing** and the gate must hold it in its defined order through
-   differential forces. **This is the one genuinely special definition** — it does not
-   emerge from proximity; it is declared standing structure.
+1. **Defined bond — the invariant identity bond.** A read of a cell's ordered
+   parent content from the DB preserves what makes the composite itself.
+   **Updated 2026-10-07:** this does not require beads on a string, a straight
+   line of touching literals, or flexible joints connecting that line. Preserve
+   ordered and repeated parent effects while expressing molecular-level operative
+   distances at the visible LoD scale (§3.2). Parent effects contribute proportionally to whole-particle response;
+   ordinal order is not a prescribed spatial distance. Existing contact/corona
+   rules remain separate from the withdrawn string geometry.
 2. **Overlap bond — kind + aligned (mirror-matched) polarity.** Coronas **overlap**,
    the operative distance closes, and the one law delivers a bond that **climbs faster
    than distance alone would imply** (informally "exponential"; still `m1·m2/d²`,
@@ -793,8 +917,9 @@ The subspace-level base mechanics are complete. Trial constants to calibrate: co
 radius/stiffnesses, `reach_strength`.
 
 **Mine now (translation, no new Patrick input needed):**
-- **Payload shape** — the edge list is already close to the model's `(field, participating
-  mass, offset) + position` shape; confirm/firm it rather than a rigid fixed-slot row.
+- **Payload shape (updated 2026-10-08)** — retain field and participating mass,
+  with response on the whole particle. Reconcile existing internal offsets;
+  do not add orientation or rotary-alignment state.
 - **Primary-kernel consolidation** — move toward Patrick's "one replicated kernel" for the
   *per-particle* primary work (sum → resultant → exp attenuation + d=0 gate → move). Honest
   constraint: force accumulation is a **per-edge reduction**, a legitimately separate pass;
@@ -822,13 +947,13 @@ class of analysis needs live.
 ## 6. Open (small) and deferred (Patrick-paced)
 
 **Patrick's to explain — NOT yet given, NOT mine to draft or build:**
-- The **corona-effect mechanism** — how the corona/polarity produce closeness and
+- **Historical, superseded for the current experiment:** the corona-effect mechanism — how corona/polarity produced closeness and
   bonding in the tick (§3.8). He has not finished explaining contact mechanics.
-- The **invariant defined-bond hold** (shear-resistant) — its definition is his.
+- **Superseded 2026-10-08:** a separate shear-resistant defined-bond hold is no longer a required model mechanism. Validate LoD-scaled local cohesion and reconcile existing code; do not seek another protective gate.
 
 **Genuinely mine (translation, minor, not blockers):**
 - Final **payload shape** confirmation.
-- Corona **radius** value is a trial (0.5 vs 1) — but only once the mechanism exists.
+- **Current experiment:** disable corona spacing; radius tuning (0.5 vs 1) is no longer the immediate task. Evaluate contact/separation in larger connected structures.
 
 **Deferred by Patrick's pacing — do not build now:**
 - **DB source location** and other external inputs.

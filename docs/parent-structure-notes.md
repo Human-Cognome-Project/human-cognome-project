@@ -3,8 +3,8 @@
 > **Later relationship clarification (2026-09-25):** This record uses
 > “sibling” for several broad memberships. The current schema stores direct
 > groups as `member_of`/`members`; the automatic sibling field groups exposed
-> instances with identical `token_id`. Ordered parent occurrences may reorient
-> a construct without carried spin. Read the
+> instances with identical `token_id`. Parent occurrences contribute proportionally to
+> whole-particle response; the 2026-10-08 clarification removes positional response and rotation. Read the
 > [database guide](../kernels/database/WORKING-SET-AND-LEDGER.md) and
 > [active field model](../engine/docs/ACTIVE-FIELD-MODEL.md) for those distinctions.
 
@@ -17,6 +17,35 @@ filled by inference. Nothing here has been built, and nothing here authorizes
 building.
 
 2026-09-12 — from the particle-structure discussion.
+
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
 
 ## What a particle is
 
@@ -78,7 +107,7 @@ particle joins:
 
 | | Participation | Applies to |
 |---|---|---|
-| **Parent** | The particle joins through a component | Specific positional masses, selected by linear placement |
+| **Parent** | The particle joins through a component | Participating component masses; response acts on the whole |
 | **Sibling** | The particle joins whole | The total mass of the particle |
 
 This is the same rule stated earlier from the other side: sibling relations act
@@ -96,9 +125,8 @@ the member take part, and at what relative mass.
 component participation whose selector covers every position and whose relative
 mass is one. On that reading there is a single edge shape, the force kernel
 never asks which kind it has, and the partial-response rule handles both: force
-divided by total mass either way, moment about the centre either way, which
-comes out as pure translation with no spin when participation is whole and
-centred. One structure, one code path, no branch — which is what the governing
+divided by total mass either way. Under the 2026-10-08 clarification,
+all parent contributions act on the whole, with no moment or positional response. One structure, one code path, no branch — which is what the governing
 constraint asks for.
 
 ## Sibling groups
@@ -138,7 +166,7 @@ particle's attached data. For each such force there is one line carrying:
 1. **Which force** it is.
 2. **Which parent mass or masses** it applies to. One line may reference more
    than one parent mass.
-3. **Where along the linear placement of parent elements** it takes effect.
+3. **Which ordered component occurrence** supplies the contribution; its response acts on the whole without an application offset.
 4. **The relative masses** at those placements.
 
 ## The Unicode hex example
@@ -212,6 +240,16 @@ positions participating separately because they hold different codes. A doubled
 couplet `AA` would then gather both positions into one participation at full
 mass rather than two at half, which is what the sibling sub-grouping rule
 predicted earlier.
+
+## Operative distance clarification (2026-10-07)
+
+Ordered parent positions preserve composition and distinct repeated effects.
+They do not prescribe a straight spatial string through literals. The finest
+visible LoD sets one particle to one distance unit; each less granular expressed
+level expands by 64 or 128 (choice open). Compressed equivalences skip a step,
+and zooming into finer operative detail rebases the measurement frame. See the
+[system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+This clarification is design intent, not implemented bridge behavior.
 
 ## Geometry and the grid
 

@@ -1,7 +1,8 @@
 > **Recovered design record (2026-09-24).** This note was authored during the native C++ engine/harness work before that local workspace was fully pushed. Statements about what was "not built", file locations, or open work reflect the date/context of the note. For current implementation status, read `engine/docs/README.md` and `engine/docs/OPERATIONAL-PLAN.md`; current repository policy is in `AGENTS.md` and `CONTRIBUTING.md`.
 
 > **Later formula clarification (2026-09-25):** The spin/angular-velocity
-> model described below is historical; the intended ordered-parent effect is
+> model described below is historical. The later 2026-10-08 rule supersedes even
+> directed rotary alignment. The earlier intended ordered-parent effect was
 > reorientation without carried angular velocity. The resultant pull is
 > built, but the combined destination/reach and active-set exclusion rules
 > need further derivation. See [active field model](../engine/docs/ACTIVE-FIELD-MODEL.md).
@@ -13,6 +14,35 @@ lines marked **derived** are mine and need confirming. Gaps are marked, not
 filled. Nothing has been built.
 
 2026-09-13 — companion to `parent-structure-notes.md`.
+
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
 
 ## The governing constraint
 
@@ -64,48 +94,17 @@ it.
 - It fits the sibling rule. A sibling relation applies to the particle's total
   mass, and there m1 is that total mass acting against the group's centroid.
 
-## Partial response, and where the force goes
+## Proportional response on the whole (updated 2026-10-08)
 
-Not every relation engages the whole particle. The couplet meets a bare hex
-code with the mass share of the matching position only. In that case:
+A parent relation engages its participating mass/share, which determines its
+contribution. The whole particle absorbs that force through its total mass.
+All such responses act on the whole: no positional application, torque,
+orientation, angular velocity or moment of inertia is required.
 
-**The total force is distributed across the total mass, reducing velocity or
-creating spin as appropriate.**
-
-So the responding share sets how much force is raised, and the whole particle
-then absorbs it. Two things follow, and they are the standard rigid-body split
-of an off-centre force:
-
-1. **Linear motion is damped relative to the responding share.** The force is
-   divided by the particle's total mass, not by the share that raised it. A
-   half-responding mass-2 particle accelerates as a mass-2 body, not a mass-1
-   one. Wide particles are sluggish against relations that touch only part of
-   them.
-2. **Off-centre force becomes spin.** A force raised at a position offset from
-   the particle's centre of mass carries a moment about that centre. Only the
-   component through the centre translates; the rest rotates.
-
-"As appropriate" is then geometry doing the deciding, not a policy: a relation
-that pulls symmetrically about the centre is pure translation, and the further
-off-centre the responding positions sit, the more of the response is rotation.
-
-### What this adds to particle state
-
-Position and velocity are no longer sufficient. A particle also carries
-**orientation and angular velocity**, and responds according to a **moment of
-inertia**.
-
-**Derived.** The moment of inertia is a static property of the token, not
-per-instance state. Internal layout is fixed by the token's own decomposition,
-element masses are known, so the second moment about the centre is computable
-once per distinct token and shared by every instance of it, exactly as total
-mass is.
-
-**Derived, and it reconciles two earlier statements.** Internal geometry is
-token-derived and needs no storage; the particle's *placement* is dynamic state.
-Element positions in the space are the particle's position plus its orientation
-applied to the token-derived internal offsets. The grid is where the internal
-arrangement comes from; position and orientation are what move.
+Expose finer components to operate on them as normal particles. A compressed
+object is a marble-shaped Markov blanket; only boundary inputs/outputs matter
+at the current resolution. Ordered and repeated parents remain composition
+data and proportional contributions, not internal application points.
 
 ## What a dimension is
 

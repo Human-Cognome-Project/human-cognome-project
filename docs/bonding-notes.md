@@ -12,28 +12,108 @@ this yet.
 Three kinds of bonding are required. All three are given below. Polarity is
 named but not yet explained.
 
+### Local cohesion, dispersion and calibration (Patrick, 2026-10-08)
+
+Distance scaling supplies the intended shear resistance at every expressed
+level. Component distances are multiplicatively smaller than macro distances,
+so their inverse-square attractive forces are correspondingly stronger.
+Ordered composition survives without beads on a string, flexible-joint
+machinery, or an additional shear-specific protective gate.
+
+**Limited scope is an effect of distance and dispersion, not a scope mask.**
+The fact that the entire model is composed of hex codes has no meaningful
+general effect on an individual hex code when those occurrences are dispersed;
+nearby configuration dominates at that scale. This repeats at each level up.
+Do not implement an artificial construct boundary or disable universal fields
+to achieve this. This is the intended model behavior to verify under load,
+not a claim that dispersion mathematically guarantees cancellation.
+
+A **binary (power-of-two) factor** is preferred for clean, fast arithmetic.
+Test **64** first; **128** is the next candidate if needed. The requirement is
+sufficient local force scaling while permitting universal effects. As the
+model grows, linear distance grows too; monitor both local cohesion and
+aggregate distant effects rather than calibrating on one small assembly.
+
+**Monitoring / discussion, not a schema decision:** degrees of separation
+means that different kinds of relationships may need higher or lower distance
+multiples to produce the needed effects. One universal factor may not suffice.
+Those relationship-dependent separations may need to be part of warm-cache
+definitions of SNode objects. This is not graph-hop count, parent/address depth
+or raw SNode nesting. Test 64 as the initial binary factor, then assess the
+multiples needed by each relationship kind; no per-kind values, field layout
+or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
+
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## 1. Direct bond
 
 **Defined from the database.** It is stored, not computed and not emergent. It
 comes out of the storage construct, which is explicit at every level, and is
 carried into whatever the working construct projects.
 
-**What it is for.** It keeps the correct linear structure inside a compressed
-large-level-of-detail sphere. When a big structure is standing as one particle,
-the direct bonds are what hold its internal order, so that expanding it again
-yields the right shape rather than a bag of parts.
+**What it is for.** It preserves the defined ordered composition in a
+compressed representation, so expansion recovers the correct occurrences and
+relationships. It does not require a linear spatial string inside the sphere.
 
-**Where the shape comes from.** Parents are listed in order, and that ordered
-list *is* the connected shape the level of detail expands to. The ordering that
-gives a composite its identity is the same ordering that gives it its
-connectivity.
+**Operative geometry (Patrick, 2026-10-07).** Parent ordering carries composition
+and connectivity; molecular-level distances follow expressed LoD. The finest
+visible level defines one particle as one distance unit; less granular expressed
+levels expand by 64 or 128 (choice open), while compressed equivalences can skip
+steps. See the [system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+The contact mechanics below do not impose string geometry on a literal.
 
 **Mechanically.** Bonded particles **ignore the corona** and **slide freely in
 direct contact**. So a direct bond holds separation at contact while leaving
 tangential motion unconstrained. It is a contact relation, not a rigid one:
 bonded particles can move around each other, but not apart and not through.
 
-## 2. Discovered valid bond
+## 2. Historical corona baseline: discovered valid bond
 
 **Discovered, not stored.** Found in operation rather than read from the
 database, and it requires **both the field and the polarity to match**.
@@ -41,7 +121,7 @@ database, and it requires **both the field and the polarity to match**.
 **Separation.** The coronas overlap, and the pair maintains a half-particle
 distance between them.
 
-## 3. Cross-polarity field match
+## 3. Historical corona baseline: cross-polarity field match
 
 The field is drawing the particles together, but polarity prevents them from
 being a full match. So the attraction is real and unchanged; polarity sets a
@@ -95,7 +175,7 @@ to link those positions**.
 
 So alignment is carried by the parent-predicated force lines already described:
 the lines listing which parent masses a force applies to and where along the
-linear placement of parent elements it acts. Where that structure links two
+operative placement of the ordered parent components it acts. Where that structure links two
 positions, they align. Where it does not, they still call on similarity, but
 not as a direct group.
 
@@ -107,8 +187,9 @@ next smaller construct. Each level is therefore built from one new element and
 the level below it, recursively, and expanding a level all the way down yields
 the linear byte sequence in order.
 
-That is what the direct bond holds together inside a compressed sphere: the
-chain is already there in the parent numbering, at every level.
+That is what the direct bond preserves in a compressed representation:
+composition order is recorded in parent numbering at every stored level.
+Recovering the ordered byte sequence does not require a spatial chain.
 
 ### Wrong bonds are displaced, not prevented
 
@@ -142,7 +223,7 @@ the same shape the direct bond has, since that is read from parent numbering.
 **It engages the mass at that position**, which is the partial-response case,
 using the relative masses the force lines already carry.
 
-## The framework
+## Historical corona framework — disabled in the new test
 
 Two tests, and they classify everything:
 
@@ -197,7 +278,7 @@ way the calibration pair does, and the constant was fixed on the free case.
 
 That was an open item in `field-physics-and-tick-notes.md` and is now answered.
 
-## Readings, to confirm
+## Historical corona readings — superseded for the new test
 
 **Confirmed.** The direct bond needs no separate storage. It is read from
 parent numbering, so the connectivity is already present wherever the ordering
@@ -210,30 +291,14 @@ changes it only between the two particles it joins.
 **Closed.** Sliding applies to all particles, not only to the direct bond.
 Contact is frictionless everywhere.
 
-## Spin is scoped, and narrowly
+## Whole-particle response replaces rotation (2026-10-08)
 
-Particles can impact kinetically, but **spin serves no purpose beyond
-predicated, directed spin**. Rotation exists only where a force predicated on
-parent structure acts at a listed position and directs it. It does not arise
-from contact.
-
-Because sliding is free, an impact exchanges momentum without imparting any
-turn. That rules out a whole family of things by name, and they should not be
-reached for later: no friction coefficient, no restitution, no tangential
-contact force, no angular momentum transfer on collision, no contact solver.
-
-This is what the harness already does and should keep doing. Torque is
-accumulated only from a share sitting off the particle's centre, which is the
-predicated case exactly. Nothing else writes to it.
-
-**Closed, and it is small.** Momentum exchange is all an impact does. Because
-the field gathering is what places things, an impact is at most a chance for a
-structure to realign better. It is a perturbation on a settling process, not a
-force law of its own and not a second mechanism competing with the field.
-
-So there is nothing here to build a collision system around. The field
-gathering does the placing and the bond separations do the holding. An impact
-only lets a structure that has settled poorly get another go.
+Parent participation remains proportional and always affects the whole.
+No torque, positional response, rotation or rotary alignment is required.
+Exposed finer components operate normally; compressed objects are marble-shaped
+Markov blankets whose boundary inputs and outputs define the active interaction.
+The earlier claim that the harness should accumulate off-centre torque is
+superseded. Runtime reconciliation is separate from this documentation change.
 
 ## Not designed here, deliberately
 

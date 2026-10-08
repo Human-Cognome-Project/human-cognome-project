@@ -11,6 +11,35 @@ Status: **design in progress.** The structure and constraints are settled
 (below). The core functions and formulas, and how they reach the GPU, are
 still to be given by Patrick — that is the next input. Do not invent them.
 
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
 ## Reload / fresh-context primer (read first on any reset)
 
 If this is a fresh context: everything needed is in the docs — the exploratory
@@ -267,6 +296,22 @@ Consequences to hold (validate as it develops):
   per-analysis selection or derived; and how composition (inner particles) is
   represented against the dense fixed-slot layout.
 
+### Operative distance clarification (Patrick, 2026-10-07)
+
+The finest visible LoD defines one particle = one distance unit. Each less
+granular expressed level expands by 64 or 128 (choice open). This is an
+operative scale, not stored parent depth or SNode nesting depth. Compressed
+equivalences, including UTF endpoint to character in use, can omit a full
+distance step. Zooming into a finer operative LoD rebases the measurement;
+the previously viewed level moves up one factored unit equivalence.
+
+The earlier diameter-one statements are local-primary unit conventions.
+Convert positions, centroid geometry and distances
+consistently into the current measurement frame. Ordered composition remains;
+a literal need not be a spatial string. No new force multiplier or mass rule
+is specified. This is design intent, not verified native implementation.
+See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
 ### The core interaction and the SNode roll-up (literal — the one formula)
 
 Patrick, verbatim: *"The active SNode hierarchy is not field effects, but
@@ -468,34 +513,19 @@ so any needed walk is pointer/index following, never a search.
    internal elements have a **fixed ordering**; they "are what they are because
    of that precise configuration" — the arrangement of the internal chain IS the
    construct's identity.
-2. **The parent table expresses that positional order,** and each internal
-   element **acts on the whole based on its position vs the center.** This
-   extends Parent (predicate, partial by mass ratio): the contribution depends
-   not only on the mass ratio but on the ordered position relative to the
-   construct's centre (e.g. an off-centre component).
+2. **The parent table preserves ordered occurrences.** Updated 2026-10-08:
+   each contribution remains proportional by mass and always acts on the whole.
+   Ordinal position no longer supplies an off-centre application point.
 3. **Numbering → analytical coupling, NOT direct bonding.** The ordinal
    numbering additionally provides benefits in **analytical coupling** — a
    coupling used in analysis, explicitly *not* direct/physical bonding. TBD.
 4. **(Separate) the 3D spatial location** — the Newtonian expression I fixated
    on. Its exact role in `d` awaits the next item.
 
-**The ball-vs-line image and the rotation ruling (Patrick, 2026-09-13).** From a
-contact / location perspective the parent predicates are "snarled up in a ball"
-in the sphere that represents the whole; but **operationally they are treated as
-a line across the middle of the sphere — the components in order, rotating on
-the middle.** The "rotation" is the orientation of that ordered line about the
-centre: an **ordering-and-alignment trick, NOT running rotational dynamics.** It
-sits in the ordering-and-connection family (with internal-ordering = identity
-and numbering → analytical coupling), and Patrick will discuss it **"as it is
-closer" — do not build it now.**
-
-- **Rotation ruling:** when Patrick earlier called torque "unnecessary" he meant
-  **as a running tick-to-tick concern** — nothing physically spins with conserved
-  angular momentum carried between ticks. So the degraded model's rigid-body
-  integration (inertia, torque → angular velocity, carried spin) is **drift** —
-  imported machinery filling this gap. "Position vs centre" is a component's
-  **ordered place along that diameter** (for alignment / coupling), not a lever
-  arm generating spin.
+**The ball-vs-line and rotation requirements are superseded (2026-10-08).**
+Parent mass shares contribute proportionally and always act on the whole.
+There is no internal positional response or rotary alignment. Exposed components
+operate normally; compressed objects are marble-shaped Markov blankets.
 
 **Coming next (Patrick): distance and contact mechanics** — will clarify how
 these senses of position/numbering resolve into `d` and into coupling vs bonding.

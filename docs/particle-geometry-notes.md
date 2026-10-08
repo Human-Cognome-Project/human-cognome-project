@@ -9,9 +9,66 @@ is mine and needs confirming. Nothing under "open" is filled in.
 2026-09-13. Companions: `parent-structure-notes.md`, `bonding-notes.md`,
 `field-physics-and-tick-notes.md`, `storage-and-working-split.md`.
 
+## Corona-disabled test direction (Patrick, 2026-10-08)
+
+Test with the **corona effect disabled**. Particles may come to rest in ordinary
+body contact; competing field forces should separate them where appropriate.
+Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
+from the experimental model. Retain ordinary contact.
+
+The proposed explanation for earlier difficulties is the limited size of the
+early modeled structures. Test that hypothesis in larger, more connected
+environments; it is not an established result. Assess settled contact,
+field-driven separation, cohesion, numerical stability and settling with the
+LoD-scaled, whole-particle response model.
+
+This is a test direction, not a claim that the native implementation has already
+changed or that permanent removal is validated. Historical corona implementation
+and results below describe the baseline only. The old corona separation ladder
+is not an acceptance requirement for the disabled experiment. Runtime work and
+comparative evidence are tracked in #119.
+
+## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
+
+**Settled model direction; implementation reconciliation remains pending.**
+Parents retain proportional participation: the participating parent mass/share
+sets its contribution, and that contribution always acts on the whole particle.
+Preserve ordered composition and repeated parent contributions. Remove positional
+response, internal application offsets, torque, rotation and rotary alignment
+from the requirements; there is no rotational reference to calculate against.
+
+When finer LoD is exposed, its components operate normally as particles.
+When it is compressed, the object is a **marble-shaped Markov blanket**:
+the boundary inputs and outputs are the relevant points of interaction.
+Do not calculate hidden internal geometry or orientation to apply a parent
+response. This does not remove proportional parent participation.
+
+**Distance is relative to the current focus of study.** An object distant in
+LoD from one perspective can be directly adjacent from another. Warm-cache
+SNode definitions and their composition must support this study-relative
+expression; a cold object identity does not have one universal fixed distance
+or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
+equivalence compression and consistent scale conversion within each view.
+
+The possible relationship-dependent distance multiples/degrees of separation
+must be interpreted within that focus. Test 64 initially, consider higher/lower
+multiples where needed, and monitor whether these belong in warm SNode
+definitions. Their exact representation remains open (#106, #115).
+Changing study focus must retain identity and proportional participation while
+recomposing the exposed relationships and their operative distances.
+
+## Current distance clarification (2026-10-07)
+
+The finest visible LoD is the one-particle/one-distance-unit baseline. Each
+less granular expressed LoD expands by the proposed factor 64 or 128; the
+factor choice is open. Compressed equivalences need no full distance step.
+Zooming into a finer operative level rebases the measurement frame. See the
+[system guide](napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+This is model intent, not a verified feature of the native engine.
+
 ## Established
 
-**Every particle is a one unit sphere carrying a 0.5 unit corona, and that is
+**Historical corona baseline (disabled in the new test): every particle is a one unit sphere carrying a 0.5 unit corona, and that was
 the only relevant size at any level of detail.** The sphere is one unit across;
 the corona reaches half a unit beyond its surface, so a particle's outer extent
 is two units. The corona is incorporated into the coupling rules. Nothing else
@@ -32,18 +89,15 @@ what they hold; mass counts structure, not content. Total mass is the
 cumulative, *exact* rollup of parent effects. So masses are integers, and the
 arithmetic on them does not drift.
 
-**A share of a particle sits somewhere.** Partial response acts at a position
-offset from the particle's centre: the share raises the force, the whole mass
-absorbs it, and whatever does not act through the centre becomes spin.
-
-**Spin is narrow.** Only predicated, directed spin exists. Contact produces
-none, because sliding is free for all particles.
+**Parent response is proportional and acts on the whole (2026-10-08).**
+The participating share raises its contribution; the whole particle absorbs it.
+There is no internal application offset, torque or spin.
 
 **Contact is frictionless and impacts are cheap.** An impact exchanges
 momentum, nothing else, and its only significance is giving a structure a
 chance to realign better.
 
-## The separation ladder
+## Historical corona separation ladder — not a requirement for the new test
 
 The operative geometry so far is what the three bonds hold:
 
@@ -81,11 +135,9 @@ every calculation to cover a case already covered is the epsilon fudge the
 governing constraint rules out. It should come out of the harness, not be
 justified.
 
-**Established.** Rotation is ordinary: the drawn space is three dimensional, so
-rotation has three planes and does not gain one per position in a parent
-structure. The positions of a parent structure count dimensions of commonality,
-which are not axes of the drawn space. An earlier worry in the physics notes
-about rotation dimensionality was the two senses of "dimension" run together.
+**Rotation removed (2026-10-08).** Neither angular dynamics nor directed rotary
+alignment is required. Exposed components operate independently; compressed
+objects expose only their boundary inputs/outputs.
 
 ## Answered already, and previously mislisted as open
 
@@ -109,27 +161,22 @@ particle regardless of how large or complex its contents are. One particle
 means one unit across. A composite is not a bigger sphere; it is a sphere at
 its own level.
 
-**So the unit renormalizes with the level, and so does the metric.** One unit
-is one unit at whichever level is being looked at. A particle's contents are
-measured in the units of the level below, where each of them is itself one unit
-across. There is no single ruler spanning the levels, which is what lets a
-chain of contacting elements sit inside a sphere that is itself one unit: the
-chain's separations are not in the parent's units.
+**The metric is anchored to the finest visible LoD.** At its own primary LoD
+an object is one particle; in the current finest-visible measurement frame,
+each less granular expressed level is a factored expansion (64 or 128 per
+operative step). A common measurement frame therefore requires explicit scale
+conversion. Stored nesting and equivalence links do not necessarily add a step.
+There is no requirement to fit a contacting literal chain inside a unit sphere.
 
 **The corona is relative in the same way.** Half a unit of whatever the
 particle is at that level. It follows from the same statement, not from a
 separate rule.
 
-**The internal arrangement is the ordered parent list.** Parents are listed in
-order, and that ordered list is the connected shape the level of detail expands
-to. The direct bond holds that chain at contact separation, corona ignored, and
-it is read from parent numbering rather than stored. A share's offset therefore
-comes from where its position sits along that chain.
-
-**Moment of inertia follows.** The arrangement is known, the element masses are
-known and exact, so the second moment is computable once per token and shared
-by every instance, exactly as total mass is. It was never waiting on anything
-except the arrangement above.
+**Ordered composition is preserved; spatial string geometry is withdrawn.**
+The parent list retains identity, order and repeated occurrences. It does not
+by itself prescribe a chain at contact separation or an offset along a line.
+Use molecular-level operative distances at the expressed LoD. Do not derive
+component offsets or a moment of inertia from the withdrawn string arrangement.
 
 **Geometry does not vary with contents either.** One unit sphere, 0.5 unit
 corona, the only relevant size at any level of detail. Since that holds at
@@ -137,19 +184,16 @@ every level regardless of what is held, a particle's own geometry cannot vary
 with what it holds. An earlier version listed this as open; it was answered by
 the same statement that fixed the size.
 
-**Spin does not feed back.** Spin serves no purpose beyond predicated, directed
-spin. A spin that changed which positions face which neighbours would be a
-purpose beyond the predicated one, so there is none. Orientation is carried
-only as far as directed spin requires.
+**Orientation is not operative state.** The earlier directed-spin requirement
+is superseded by proportional response on the whole particle.
 
 ## Genuinely not yet stated
 
 Short, and about the next phase rather than about the last one.
 
-- How the ordered chain occupies the sphere: whether the linear structure lies
-  along one axis, folds, or takes its shape from the grid the pieces line up
-  into. Well posed only because the metric renormalizes per level; without
-  that, a chain of unit elements inside a unit sphere has no answer at all.
+- Implement the expressed-LoD distance conversion and molecular-level placement
+  without deriving a spatial string from parent ordinals. Select 64 or 128;
+  verify rebasing and equivalence compression without changing composition.
 - Nothing about the softening constant. It is not an open question; it is an
   import to delete from `engine/src/field/field.h`.
 - Whether any separation in commonality enters the force law, or whether the
