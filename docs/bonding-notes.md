@@ -12,6 +12,37 @@ this yet.
 Three kinds of bonding are required. All three are given below. Polarity is
 named but not yet explained.
 
+### Local cohesion, dispersion and calibration (Patrick, 2026-10-08)
+
+Distance scaling supplies the intended shear resistance at every expressed
+level. Component distances are multiplicatively smaller than macro distances,
+so their inverse-square attractive forces are correspondingly stronger.
+Ordered composition survives without beads on a string, flexible-joint
+machinery, or an additional shear-specific protective gate.
+
+**Limited scope is an effect of distance and dispersion, not a scope mask.**
+The fact that the entire model is composed of hex codes has no meaningful
+general effect on an individual hex code when those occurrences are dispersed;
+nearby configuration dominates at that scale. This repeats at each level up.
+Do not implement an artificial construct boundary or disable universal fields
+to achieve this. This is the intended model behavior to verify under load,
+not a claim that dispersion mathematically guarantees cancellation.
+
+A **binary (power-of-two) factor** is preferred for clean, fast arithmetic.
+Test **64** first; **128** is the next candidate if needed. The requirement is
+sufficient local force scaling while permitting universal effects. As the
+model grows, linear distance grows too; monitor both local cohesion and
+aggregate distant effects rather than calibrating on one small assembly.
+
+**Monitoring / discussion, not a schema decision:** degrees of separation
+means that different kinds of relationships may need higher or lower distance
+multiples to produce the needed effects. One universal factor may not suffice.
+Those relationship-dependent separations may need to be part of warm-cache
+definitions of SNode objects. This is not graph-hop count, parent/address depth
+or raw SNode nesting. Test 64 as the initial binary factor, then assess the
+multiples needed by each relationship kind; no per-kind values, field layout
+or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
+
 ## 1. Direct bond
 
 **Defined from the database.** It is stored, not computed and not emergent. It

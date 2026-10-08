@@ -69,9 +69,11 @@ his answer. Do not carry a resolved item as open.
 **Corona effect — EXPLAINED and SHIPPED (2026-09-14).** The corona separator is built and
 verified (CPU + CUDA green, kernel read directly): regime-gated standoff (`d0` = flush for
 aligned/defined, `1 + 2·corona` for opposed), a finite separator push resisting closer
-approach, and the **defined-only invariant hold** (shear-resistant). The field provides the
-attraction; the corona is *just the separator*. Radius/stiffnesses are trial values to
-calibrate.
+approach, and the historically built **defined-only invariant hold**. The field
+provides attraction; the corona is the separator. **Current direction (2026-10-08):**
+scaled local attraction replaces the requirement for a separate shear-specific
+hold. Review and back-propagate this into existing mechanics after validating
+scaled cohesion; this documentation update does not remove code.
 
 **Universal centroid — EXPLAINED and SHIPPED (2026-09-14).** The inward `1/d²` pull toward
 the pegged origin (0,0,0) is **suspended** (kept, not deleted — may be reactivated) and
@@ -213,6 +215,65 @@ level the baseline and moves the previously viewed level up one scale step.
 Use consistent scale conversion for operative distances and centroid geometry.
 Literal order does not require a spatial string. This is model intent, not a
 verified implementation. See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
+
+### 3.2a Local cohesion, dispersion and calibration (Patrick, 2026-10-08)
+
+Distance scaling supplies the intended shear resistance at every expressed
+level. Component distances are multiplicatively smaller than macro distances,
+so their inverse-square attractive forces are correspondingly stronger.
+Ordered composition survives without beads on a string, flexible-joint
+machinery, or an additional shear-specific protective gate.
+
+**Limited scope is an effect of distance and dispersion, not a scope mask.**
+The fact that the entire model is composed of hex codes has no meaningful
+general effect on an individual hex code when those occurrences are dispersed;
+nearby configuration dominates at that scale. This repeats at each level up.
+Do not implement an artificial construct boundary or disable universal fields
+to achieve this. This is the intended model behavior to verify under load,
+not a claim that dispersion mathematically guarantees cancellation.
+
+A **binary (power-of-two) factor** is preferred for clean, fast arithmetic.
+Test **64** first; **128** is the next candidate if needed. The requirement is
+sufficient local force scaling while permitting universal effects. As the
+model grows, linear distance grows too; monitor both local cohesion and
+aggregate distant effects rather than calibrating on one small assembly.
+
+**Monitoring / discussion, not a schema decision:** degrees of separation
+means that different kinds of relationships may need higher or lower distance
+multiples to produce the needed effects. One universal factor may not suffice.
+Those relationship-dependent separations may need to be part of warm-cache
+definitions of SNode objects. This is not graph-hop count, parent/address depth
+or raw SNode nesting. Test 64 as the initial binary factor, then assess the
+multiples needed by each relationship kind; no per-kind values, field layout
+or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
+
+### 3.2b Whitespace: sparse recording and local connection (Patrick, 2026-10-07)
+
+**Storage rule settled:** whitespace is always excluded as a recorded token;
+it exists through gaps in the representation. Each represented token retains
+its representative place. Positions with no recorded value are spaces, so
+multiple empty positions preserve multiple spaces; excluding values must not
+compact the positional sequence.
+
+**Model rule settled; instantiation remains a choice:** a gap may be represented
+by an inert whitespace particle. It has no direct semantic value and is relevant
+as a separator/boundary condition on the internal structures it bridges.
+Its only attractive participation is lower/higher positioning within that
+particular string or construct: the connecting force that makes a molecule
+a molecule rather than a collection of atoms. It has no field effect with any
+other whitespace occurrence, including elsewhere in the same construct.
+
+Whitespace participates in no parent/child relationships and contributes no
+mass to any gathering. Do not add a shared whitespace identity field or a cold
+whitespace-token row to obtain this model behavior. If instantiated, the local
+connecting participation must remain distinct from structural parent/child
+participation. This settles its role, not an independent force formula or a
+numerical inertial mass for integration; do not assume mass-zero division is
+safe in existing kernels.
+
+The separator's operative distance uses the expressed LoD metric. Positional
+recording does not reinstate a straight spatial string through literals.
+Implementation and remaining representation details are tracked in #116.
 
 ### 3.3 The one law — and the universal field effect
 **Every interaction is `m1 · m2 / d²`**, one law without exception. **m2 is an
@@ -423,7 +484,9 @@ emergent variance.
 > Like-attraction is the field effect (already built); the corona meters how close that
 > pull brings two like particles — aligned polarity → coronas overlap, standoff collapses
 > to flush → strong; opposed → coronas abut at the corona distance, loose and breakable;
-> defined → suspended (flush) and invariantly held (shear-resistant). "Kinetic contact"
+> defined → historically suspended (flush) and held. The 2026-10-08 direction
+> assigns shear resistance to ordinary LoD-scaled local attraction, not a new
+> protective gate. "Kinetic contact"
 > (simple force transfer) is the separate simple case.
 
 This is the **analytical form of the data expressed as contact.** Three
@@ -831,7 +894,7 @@ class of analysis needs live.
 **Patrick's to explain — NOT yet given, NOT mine to draft or build:**
 - The **corona-effect mechanism** — how the corona/polarity produce closeness and
   bonding in the tick (§3.8). He has not finished explaining contact mechanics.
-- The **invariant defined-bond hold** (shear-resistant) — its definition is his.
+- **Superseded 2026-10-08:** a separate shear-resistant defined-bond hold is no longer a required model mechanism. Validate LoD-scaled local cohesion and reconcile existing code; do not seek another protective gate.
 
 **Genuinely mine (translation, minor, not blockers):**
 - Final **payload shape** confirmation.

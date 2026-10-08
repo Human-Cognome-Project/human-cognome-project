@@ -58,6 +58,25 @@ skipping a field: continued exclusion needs a predicate absolute for the
 defined scope and a complete invalidation path. See
 [active field model](../../engine/docs/ACTIVE-FIELD-MODEL.md).
 
+## Expressed scale in warm SNode definitions (2026-10-08)
+
+The most granular visible LoD anchors one distance unit; less granular expressed
+levels expand by a binary factor, testing 64 first and 128 if needed. Compressed
+equivalences need no full step. Local cohesion and shear resistance should arise
+from ordinary scaled attraction; distant dispersion is not a construct scope mask.
+
+**Monitor and discuss:** relationship kinds may need higher or lower distance
+multiples; one universal factor may not produce the needed effects everywhere.
+Those degrees of separation may need recording in warm-cache SNode object
+definitions. This does not mean graph-hop count or raw nesting depth. No field
+layout or per-relationship multiple is settled yet.
+Carry operative scale separately from raw stored depth, and validate local cohesion
+and universal effects as model extent grows (#115, #106).
+
+Whitespace is a gap in recorded representative positions. A warm/hot model may
+instantiate an inert separator solely for local lower/higher connection, without
+parent/child relationships, gathering mass or shared whitespace fields (#116).
+
 ## Compose the working projection
 
 The cache manager's future view spec combines system limits and an

@@ -133,9 +133,66 @@ units is implementation work to verify, not a formula supplied here.
 Implementation is tracked in [#115](https://github.com/Human-Cognome-Project/human-cognome-project/issues/115), with the C++ bridge in [#106](https://github.com/Human-Cognome-Project/human-cognome-project/issues/106).
 Whitespace discussion is tracked in [#116](https://github.com/Human-Cognome-Project/human-cognome-project/issues/116).
 
-Whitespace in storage and in the working model remains a separate, unresolved
-discussion. Do not infer that a recorded space becomes geometric separation,
-or remove/normalize whitespace as a consequence of dropping string geometry.
+### Local cohesion, dispersion and calibration (Patrick, 2026-10-08)
+
+Distance scaling supplies the intended shear resistance at every expressed
+level. Component distances are multiplicatively smaller than macro distances,
+so their inverse-square attractive forces are correspondingly stronger.
+Ordered composition survives without beads on a string, flexible-joint
+machinery, or an additional shear-specific protective gate.
+
+**Limited scope is an effect of distance and dispersion, not a scope mask.**
+The fact that the entire model is composed of hex codes has no meaningful
+general effect on an individual hex code when those occurrences are dispersed;
+nearby configuration dominates at that scale. This repeats at each level up.
+Do not implement an artificial construct boundary or disable universal fields
+to achieve this. This is the intended model behavior to verify under load,
+not a claim that dispersion mathematically guarantees cancellation.
+
+A **binary (power-of-two) factor** is preferred for clean, fast arithmetic.
+Test **64** first; **128** is the next candidate if needed. The requirement is
+sufficient local force scaling while permitting universal effects. As the
+model grows, linear distance grows too; monitor both local cohesion and
+aggregate distant effects rather than calibrating on one small assembly.
+
+**Monitoring / discussion, not a schema decision:** degrees of separation
+means that different kinds of relationships may need higher or lower distance
+multiples to produce the needed effects. One universal factor may not suffice.
+Those relationship-dependent separations may need to be part of warm-cache
+definitions of SNode objects. This is not graph-hop count, parent/address depth
+or raw SNode nesting. Test 64 as the initial binary factor, then assess the
+multiples needed by each relationship kind; no per-kind values, field layout
+or conversion formula are fixed yet. Track in #115 and the bridge issue #106.
+
+### Whitespace: sparse recording and local connection (Patrick, 2026-10-07)
+
+**Storage rule settled:** whitespace is always excluded as a recorded token;
+it exists through gaps in the representation. Each represented token retains
+its representative place. Positions with no recorded value are spaces, so
+multiple empty positions preserve multiple spaces; excluding values must not
+compact the positional sequence.
+
+**Model rule settled; instantiation remains a choice:** a gap may be represented
+by an inert whitespace particle. It has no direct semantic value and is relevant
+as a separator/boundary condition on the internal structures it bridges.
+Its only attractive participation is lower/higher positioning within that
+particular string or construct: the connecting force that makes a molecule
+a molecule rather than a collection of atoms. It has no field effect with any
+other whitespace occurrence, including elsewhere in the same construct.
+
+Whitespace participates in no parent/child relationships and contributes no
+mass to any gathering. Do not add a shared whitespace identity field or a cold
+whitespace-token row to obtain this model behavior. If instantiated, the local
+connecting participation must remain distinct from structural parent/child
+participation. This settles its role, not an independent force formula or a
+numerical inertial mass for integration; do not assume mass-zero division is
+safe in existing kernels.
+
+The separator's operative distance uses the expressed LoD metric. Positional
+recording does not reinstate a straight spatial string through literals.
+Implementation and remaining representation details are tracked in #116.
+
+
 
 ## Identity, fields, and traversal
 

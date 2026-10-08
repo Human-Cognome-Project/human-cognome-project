@@ -87,8 +87,22 @@ and ordered address arrays are storage/composition data, not geometric spacing.
 The C++ bridge must carry the operative scale into the model; no cold-schema
 change or scale-aware implementation is claimed here.
 
-Whitespace storage and model treatment await discussion. No stripping,
-normalization, separator-particle, or geometric-gap policy has been authorized.
+Whitespace is excluded as a recorded token: retain representative positions,
+with empty positions recording spaces (including repeated spaces). Never compact
+the sequence when omitting whitespace values. In the model, an optional inert
+separator particle has only local lower/higher connecting participation, no
+parent/child relationships, no gathering-mass contribution and no field with
+other whitespace occurrences. See #116.
+
+**2026-10-08 followup:** scaled local attraction supplies intended cohesion and
+shear resistance without string mechanics or a separate protective gate.
+Dispersion and distance limit remote hex-code effects; do not impose a construct
+scope mask. Test binary factor 64 first, then 128 if needed, retaining universal
+effects as model extent grows. Monitor whether the number of degrees of
+separation needs to be included in warm-cache SNode object definitions (#115,
+#106): different relationship kinds may need higher or lower distance multiples,
+so one universal factor may not suffice. This is not graph-hop count or nesting
+depth. The per-kind multiples and definition layout remain for discussion.
 See the [system guide](../../docs/napier-system-guide.md#operative-distance-follows-expressed-lod-patrick-2026-10-07).
 
 ## Governing principle
