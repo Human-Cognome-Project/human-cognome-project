@@ -81,8 +81,10 @@ though its `token_child` return link from `1` appears only once. The warm
 assembly follows that link and reads the couplet's ordered `token_parent`
 rows to recover the occurrences. **Do not key field identity by
 `(parent value, ordinal)`**: that would sever cross-position correlations.
-The precise positional motion rule remains separate work; this example does
-not install a new force formula or row/column labels.
+The 2026-10-08 rule retains proportional parent contributions on the whole;
+no positional response or rotary alignment is required. This example adds no
+force formula or row/column labels. Operative distance follows current study
+focus and expressed LoD; see the system guide and #115.
 
 ## Assembly walk, with built and planned boundaries
 
@@ -130,7 +132,7 @@ not install a new force formula or row/column labels.
    accepts particle, group and edge arrays, uploads them, seeds inclusive
    centroids, ticks, and downloads results. It does **not** yet load this
    database, build the warm SNode view, store `token_id` per particle, create
-   sibling groups, or apply the intended ordered-parent reorientation. A
+   sibling groups, or provide the full study-relative LoD bridge. A
    first assembly check can verify the `01`/`10`/`11` occurrences and the
    choice of hot slots without claiming a validated physical outcome.
 
@@ -141,8 +143,8 @@ not install a new force formula or row/column labels.
 - How `token_id` references and `particle_id` slots are represented in the
   hot C++ layout, including repeated instances and the mass-zero `0x` free
   state. The addressed `0x` row is distinct from an inactive Taichi pointer.
-- Initial positions and the exact use of ordered parent occurrences in
-  motion. The dump gives `token.mass`, but its couplet `token_parent.mass`
+- Initial positions and proportional whole-particle contributions from each
+  parent occurrence, using the current study's operative distance scale. The dump gives `token.mass`, but its couplet `token_parent.mass`
   values are SQL `NULL`; a numerical staging rule must not silently turn
   `NULL` into zero or assume that the per-occurrence mass is populated.
 
