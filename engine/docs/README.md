@@ -25,6 +25,15 @@ describe the context in which the note was written. They are not current Git
 or contribution instructions. Current contributor policy is in
 `/AGENTS.md` and `/CONTRIBUTING.md`.
 
+## Current realignment
+
+Start model/bridge changes with the [conversion and continuation plan](../../docs/model-realignment-plan.md)
+(2026-10-09). It distinguishes conceptual primary LoD from attached 1:1
+compression, records component-derived extent and sequences the response,
+scale, whitespace and contact conversions. It supersedes conflicting historical
+requirements without claiming the corresponding code has changed. Track
+#106, #115, #116, #118, #119 and #120 alongside the plan.
+
 ## Document roles
 
 - **[ASSEMBLY-BOOTSTRAP.md](ASSEMBLY-BOOTSTRAP.md)** — narrow, unimplemented

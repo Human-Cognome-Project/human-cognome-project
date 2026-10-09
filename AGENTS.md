@@ -6,7 +6,8 @@ This file is the operational entry point for AI coding/review agents working on 
 
 1. [REORGANIZATION.md](REORGANIZATION.md)
 2. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
-3. the README/plan/test files inside the component you will touch
+3. [Model realignment plan](docs/model-realignment-plan.md) for engine, geometry, LoD, warm-cache or ingestion work
+4. the README/plan/test files inside the component you will touch
 
 Do not infer architecture from historical folder placement. Several directories and branches were used as agent-isolation boundaries while the design was moving faster than the repository structure.
 
@@ -27,6 +28,32 @@ Do not infer architecture from historical folder placement. Several directories 
 The structural repository reconciliation is complete on `main`. Native engine recovery restored the C++ workspace and curated Taichi fork; hosted CI builds and tests the native CPU path from source. Further architecture and performance work is tracked separately from the reorganization.
 
 Branch new work from current `main` unless a specific recovery/integration branch is explicitly named for the task.
+
+## Current model realignment (2026-10-09)
+
+Follow the [conversion and continuation plan](docs/model-realignment-plan.md)
+for sequencing, dependencies and verification. Its dated decisions supersede
+conflicting historical model requirements; code still determines what is built.
+
+- Primary SNode structure expresses conceptual LoD. Attached secondary
+  compression structures inherit that scale at **1:1**, including nested
+  dedupe; storage depth alone never creates a conceptual scale step.
+- Component-derived spherical extent replaces universal fixed diameter.
+  Its exact enclosure calculation remains open (#120).
+- Parent response is proportional and whole-particle. No internal application
+  offsets, rotation, rotary alignment or beads-on-string requirement.
+- Test corona-disabled contact; scaled attraction supplies intended cohesion.
+  Keep ordinary body contact and verify outcomes rather than claiming the
+  simplification is already implemented.
+- Whitespace is recorded as positional gaps; optional model separators have
+  only local connecting participation, no structural relationships or gathering
+  mass, and no field with other whitespace occurrences.
+- Track bridge/identity in #106, distance calibration in #115, whitespace in
+  #116, response in #118, contact in #119 and extent in #120.
+- Dictionary structures and SNode assembly are the near-term objective.
+  English database creation and formal cross-database links await the next
+  design discussion. Existing record-integrity findings are not cleared by
+  documentation merges; check current PR/issue state before execution.
 
 ## Work discipline
 

@@ -9,7 +9,8 @@ HCP accepts code, research, testing, documentation and architecture critique. Th
 3. [README.md](README.md)
 4. [REORGANIZATION.md](REORGANIZATION.md)
 5. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
-6. the README/plan/tests for the subsystem you intend to change
+6. [Model realignment plan](docs/model-realignment-plan.md) for engine/cache/LoD/ingestion work
+7. the README/plan/tests for the subsystem you intend to change
 
 Agents should also read [AGENTS.md](AGENTS.md).
 
@@ -30,6 +31,15 @@ future analyst functions
 The harness is the physics engine's control surface. Analyst functions are future work and have not yet been designed.
 
 Database/cache/record/WAL kernels are separate autonomous components whose system role is to support the future analyst and keep its working surfaces current. Inbox/outbox endpoints and scheduling form common kernel-network infrastructure; configuration/topology, serialization bridges and thread management are later implementation work.
+
+## Current implementation sequence
+
+The [model realignment plan](docs/model-realignment-plan.md) records the current
+conceptual-LoD versus 1:1 compression contract, component-derived extents,
+whole-particle response and corona-disabled experiment. Follow its staged PRs
+and acceptance criteria. Historical fixed-size, positional-response and string
+geometry requirements are superseded; runtime conversion remains work to do.
+Related work: #106, #115, #116, #118, #119 and #120.
 
 ## Where work is currently useful
 
