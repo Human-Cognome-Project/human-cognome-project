@@ -11,6 +11,56 @@ Status: **design in progress.** The structure and constraints are settled
 (below). The core functions and formulas, and how they reach the GPU, are
 still to be given by Patrick — that is the next input. Do not invent them.
 
+## Conceptual LoD and compression depth (Patrick, 2026-10-09)
+
+Conceptual scale is tied to the **primary SNode structure** of the study.
+Secondary SNode structures attached within one conceptual LoD inherit that
+LoD's operative distance scale throughout their internal compression elements.
+Expanding a compression rollup is **1:1**: the environment retains its current
+granularity while that particular representation is expanded. It does not
+rebase the environment or introduce another 64/128 scale step.
+
+For example, a legal document literal can reference deduplicated boilerplate.
+All expansion steps of that boilerplate remain within the document literal's
+SNode object at the same conceptual distance scale, including nested dedupe.
+A conceptual transition is expressed through the primary study structure;
+storage depth, secondary-tree depth and the names paragraph/phrase/character
+do not independently create one.
+
+This settles the model distinction and structural direction. Mapping primary
+and secondary roles onto native Taichi layouts remains implementation work:
+SNode nesting and activation provide storage machinery, not an intrinsic
+conceptual-scale or physical-distance policy. A secondary attachment does not
+imply arbitrary shared physical subtree pointers in Taichi.
+
+The proposed variable-distance implementation gives compression-only
+transitions ratio 1 and conceptual transitions their calibrated scale factors.
+Whether those factors use a common scalar with view conversion or additional
+relationship-dependent multiples remains open (#106, #115).
+
+## Component-derived particle extent (Patrick, 2026-10-08)
+
+Particle sizes are relative: prepare an enclosing extent sufficient to hold
+the component elements without added gaps. This is primarily a setup
+calculation for each centroid/object, with reuse while its defining inputs
+remain unchanged. It supersedes the fixed-diameter-for-every-object rule;
+one represented particle need not have the same diameter as another.
+
+Patrick's intended example is that a single and double hex couplet have
+essentially the same extent, with a nominal radius adjustment for the centroid
+at the common point; triples and quadruples are larger. The exact radial
+construction and packing calculation remain to be specified and checked.
+Do not substitute a summed-volume formula or assert exact sphere tiling.
+
+Keep enclosing extent, structural mass and operative distance scale distinct.
+The finest-visible particle-unit convention anchors measurement; it no longer
+requires all represented objects to occupy identical physical extents.
+A compressed object remains a spherical Markov blanket with proportional
+whole-particle response. Computing its extent does not restore internal force
+application offsets or rotation.
+
+Conversion sequence and verification: [model realignment plan](../../docs/model-realignment-plan.md).
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**
@@ -268,10 +318,10 @@ Reading:
 - **Spatially 3D; the sole shape primitive is the perfect sphere (orb).** No
   other geometry exists in the model. This gives meaning to the earlier "pure
   sphere as the only operative shape."
-- **Fixed size (Patrick, 2026-09-13): every sphere is diameter 1 — one particle
-  across (radius 0.5).** No per-sphere size parameter and no stored constants; a
-  particle is a position carrying unit diameter. (Contact therefore occurs at
-  centre-distance 1 — sum of radii — feeding the pending contact mechanics.)
+- **Component-derived extent (Patrick, 2026-10-08)** supersedes fixed diameter 1.
+  Prepare each object's enclosing size; ordinary spherical contact uses the
+  participating radii in a common distance frame. Exact enclosure construction
+  remains open.
 - **At the LOD where an object is *primary*, it IS exactly one particle = one
   perfect sphere.** "Object (at its primary LOD)", "particle", and "orb/sphere"
   are the same thing at that level. One primary object ⇒ one sphere ⇒ one
@@ -305,7 +355,7 @@ equivalences, including UTF endpoint to character in use, can omit a full
 distance step. Zooming into a finer operative LoD rebases the measurement;
 the previously viewed level moves up one factored unit equivalence.
 
-The earlier diameter-one statements are local-primary unit conventions.
+The measurement baseline is distinct from component-derived object extent.
 Convert positions, centroid geometry and distances
 consistently into the current measurement frame. Ordered composition remains;
 a literal need not be a spatial string. No new force multiplier or mass rule
@@ -1096,10 +1146,9 @@ section keeps the model-level reading.
   arg/launch mechanics are documented (`api-reference/ir_builder_test.cpp`, the
   vetted seam) and building/naming/compiling/launching the kernel IR is harness
   translation work, not a Patrick input. Removed from the pending list.
-- **The sphere is RESOLVED (Patrick, 2026-09-13): diameter 1, one particle
-  across.** No parameterization and no per-sphere constants — a sphere is a
-  position with a fixed unit diameter (radius 0.5). Coheres with the 1:1 units
-  (1 force moves a 1-mass particle 1 space in 1 tick).
+- **Spherical shape remains; fixed size is superseded (2026-10-08).**
+  Component-derived extent requires a setup calculation and payload review;
+  do not infer identical diameter from one-particle representation.
 - REINSTATED (I had wrongly dropped this): the fast-vs-structural change
   contract IS central. Answered by Patrick: force *activation* is the live
   launch-argument surface (no restart); virtual-node promotion into the model

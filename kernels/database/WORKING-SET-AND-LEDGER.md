@@ -7,6 +7,56 @@ composition, delayed reciprocal writes, and private stores are design work.
 Read [NOTES.md](NOTES.md) for the detailed record-tier rules and
 [API.md](API.md) for current commands.
 
+## Conceptual LoD and compression depth (Patrick, 2026-10-09)
+
+Conceptual scale is tied to the **primary SNode structure** of the study.
+Secondary SNode structures attached within one conceptual LoD inherit that
+LoD's operative distance scale throughout their internal compression elements.
+Expanding a compression rollup is **1:1**: the environment retains its current
+granularity while that particular representation is expanded. It does not
+rebase the environment or introduce another 64/128 scale step.
+
+For example, a legal document literal can reference deduplicated boilerplate.
+All expansion steps of that boilerplate remain within the document literal's
+SNode object at the same conceptual distance scale, including nested dedupe.
+A conceptual transition is expressed through the primary study structure;
+storage depth, secondary-tree depth and the names paragraph/phrase/character
+do not independently create one.
+
+This settles the model distinction and structural direction. Mapping primary
+and secondary roles onto native Taichi layouts remains implementation work:
+SNode nesting and activation provide storage machinery, not an intrinsic
+conceptual-scale or physical-distance policy. A secondary attachment does not
+imply arbitrary shared physical subtree pointers in Taichi.
+
+The proposed variable-distance implementation gives compression-only
+transitions ratio 1 and conceptual transitions their calibrated scale factors.
+Whether those factors use a common scalar with view conversion or additional
+relationship-dependent multiples remains open (#106, #115).
+
+## Component-derived particle extent (Patrick, 2026-10-08)
+
+Particle sizes are relative: prepare an enclosing extent sufficient to hold
+the component elements without added gaps. This is primarily a setup
+calculation for each centroid/object, with reuse while its defining inputs
+remain unchanged. It supersedes the fixed-diameter-for-every-object rule;
+one represented particle need not have the same diameter as another.
+
+Patrick's intended example is that a single and double hex couplet have
+essentially the same extent, with a nominal radius adjustment for the centroid
+at the common point; triples and quadruples are larger. The exact radial
+construction and packing calculation remain to be specified and checked.
+Do not substitute a summed-volume formula or assert exact sphere tiling.
+
+Keep enclosing extent, structural mass and operative distance scale distinct.
+The finest-visible particle-unit convention anchors measurement; it no longer
+requires all represented objects to occupy identical physical extents.
+A compressed object remains a spherical Markov blanket with proportional
+whole-particle response. Computing its extent does not restore internal force
+application offsets or rotation.
+
+Conversion sequence and verification: [model realignment plan](../../docs/model-realignment-plan.md).
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**

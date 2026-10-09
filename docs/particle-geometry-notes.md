@@ -9,6 +9,56 @@ is mine and needs confirming. Nothing under "open" is filled in.
 2026-09-13. Companions: `parent-structure-notes.md`, `bonding-notes.md`,
 `field-physics-and-tick-notes.md`, `storage-and-working-split.md`.
 
+## Conceptual LoD and compression depth (Patrick, 2026-10-09)
+
+Conceptual scale is tied to the **primary SNode structure** of the study.
+Secondary SNode structures attached within one conceptual LoD inherit that
+LoD's operative distance scale throughout their internal compression elements.
+Expanding a compression rollup is **1:1**: the environment retains its current
+granularity while that particular representation is expanded. It does not
+rebase the environment or introduce another 64/128 scale step.
+
+For example, a legal document literal can reference deduplicated boilerplate.
+All expansion steps of that boilerplate remain within the document literal's
+SNode object at the same conceptual distance scale, including nested dedupe.
+A conceptual transition is expressed through the primary study structure;
+storage depth, secondary-tree depth and the names paragraph/phrase/character
+do not independently create one.
+
+This settles the model distinction and structural direction. Mapping primary
+and secondary roles onto native Taichi layouts remains implementation work:
+SNode nesting and activation provide storage machinery, not an intrinsic
+conceptual-scale or physical-distance policy. A secondary attachment does not
+imply arbitrary shared physical subtree pointers in Taichi.
+
+The proposed variable-distance implementation gives compression-only
+transitions ratio 1 and conceptual transitions their calibrated scale factors.
+Whether those factors use a common scalar with view conversion or additional
+relationship-dependent multiples remains open (#106, #115).
+
+## Component-derived particle extent (Patrick, 2026-10-08)
+
+Particle sizes are relative: prepare an enclosing extent sufficient to hold
+the component elements without added gaps. This is primarily a setup
+calculation for each centroid/object, with reuse while its defining inputs
+remain unchanged. It supersedes the fixed-diameter-for-every-object rule;
+one represented particle need not have the same diameter as another.
+
+Patrick's intended example is that a single and double hex couplet have
+essentially the same extent, with a nominal radius adjustment for the centroid
+at the common point; triples and quadruples are larger. The exact radial
+construction and packing calculation remain to be specified and checked.
+Do not substitute a summed-volume formula or assert exact sphere tiling.
+
+Keep enclosing extent, structural mass and operative distance scale distinct.
+The finest-visible particle-unit convention anchors measurement; it no longer
+requires all represented objects to occupy identical physical extents.
+A compressed object remains a spherical Markov blanket with proportional
+whole-particle response. Computing its extent does not restore internal force
+application offsets or rotation.
+
+Conversion sequence and verification: [model realignment plan](model-realignment-plan.md).
+
 ## Corona-disabled test direction (Patrick, 2026-10-08)
 
 Test with the **corona effect disabled**. Particles may come to rest in ordinary
@@ -147,7 +197,7 @@ malformed, which loses the predicate just as thoroughly. Recorded properly,
 because losing an established predicate — by re-asking it, or by ruling it out
 of order — is worse than not writing it down at all.
 
-**The size is stated, and it is one unit across.** A particle is a one unit
+**Historical size answer, superseded by component-derived extent:** A particle is a one unit
 sphere with a 0.5 unit corona. An earlier version of this file argued the
 question away — that asking whether the unit was a diameter or a radius
 imported an outside metre that did not exist — and that was wrong twice over.
@@ -156,10 +206,10 @@ declaring it malformed is the same way of losing a predicate the section
 heading above complains about. Everything is still expressed in particle units;
 the unit simply spans the sphere rather than half of it.
 
-**Size does not vary.** At its relative level of detail, everything is one
-particle regardless of how large or complex its contents are. One particle
-means one unit across. A composite is not a bigger sphere; it is a sphere at
-its own level.
+**Size is component-derived (2026-10-08).** A composite remains one particle
+when compressed, but its enclosing extent may vary with its components.
+The earlier universal fixed-size rule is superseded; see the current size
+section above.
 
 **The metric is anchored to the finest visible LoD.** At its own primary LoD
 an object is one particle; in the current finest-visible measurement frame,
@@ -168,7 +218,7 @@ operative step). A common measurement frame therefore requires explicit scale
 conversion. Stored nesting and equivalence links do not necessarily add a step.
 There is no requirement to fit a contacting literal chain inside a unit sphere.
 
-**The corona is relative in the same way.** Half a unit of whatever the
+**Historical corona rule, disabled for the current experiment:** Half a unit of whatever the
 particle is at that level. It follows from the same statement, not from a
 separate rule.
 
@@ -178,11 +228,9 @@ by itself prescribe a chain at contact separation or an offset along a line.
 Use molecular-level operative distances at the expressed LoD. Do not derive
 component offsets or a moment of inertia from the withdrawn string arrangement.
 
-**Geometry does not vary with contents either.** One unit sphere, 0.5 unit
-corona, the only relevant size at any level of detail. Since that holds at
-every level regardless of what is held, a particle's own geometry cannot vary
-with what it holds. An earlier version listed this as open; it was answered by
-the same statement that fixed the size.
+**Shape remains spherical; extent may vary with contents (2026-10-08).**
+Prepare the enclosure separately from whole-particle response. The corona
+is disabled for the current experiment.
 
 **Orientation is not operative state.** The earlier directed-spin requirement
 is superseded by proportional response on the whole particle.
