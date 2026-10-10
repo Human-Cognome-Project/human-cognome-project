@@ -20,9 +20,10 @@ view-independent (section 3.2), token location and claim generations are reopene
 decisions, groups and the harness-construction consequence are addressed, and gap
 observations are deferred to #116.
 
-Plan exit criteria for this step: a reviewed contract, the structural fixture
-design (with the legal document as its defining example), and explicit pool claim/release and recomposition rules. This document is the
-draft of all three; "reviewed" is not yet true.
+Plan exit criteria for this step: a reviewed contract, the legal-document
+fixture design (read here as structural fixtures, with the legal document as the
+defining in-place-nesting example), and explicit pool claim/release and recomposition
+rules. This document is the draft of all three; "reviewed" is not yet true.
 
 ## Location
 
@@ -135,7 +136,7 @@ ScaleFrame            -- one per primary boundary in a view (a boundary is the p
   equivalence_of      -- optional frame_id this frame names without a step (Δk = 0)
 
 Occurrence            -- one per exposed (or about-to-be-exposed) occurrence
-  occurrence_key      -- VIEW-INDEPENDENT identity, anchored in cold composition (see 3.2)
+  occurrence_key      -- VIEW-INDEPENDENT identity, anchored in the composition (see 3.2)
   token               -- reference to the cold token_id
   frame               -- ScaleFrame the occurrence lives in (view-scoped)
   parent_occurrence   -- enclosing composite occurrence in the cold composition
@@ -224,8 +225,9 @@ undecided (see `taichi-snode-mechanics.md:145-155`); this contract is valid for 
   (`kernels/database/schema/schema.sql:144-171`;
   `WORKING-SET-AND-LEDGER.md:97-99`). It stores no parent *occurrence*; the occurrence
   chain is derived from those rows plus the anchor. `schema.sql` also flags the ordinal
-  base (0 or 1) as an open test slot, so D6 and D12 must not assume a base. The anchor is a property of the warm composition (the
-  composed set of cold objects), never of the current focus, zoom or exposure. Two
+  base (0 or 1) as an open test slot, so D6 and D12 must not assume a base. The anchor
+  is a property of the warm composition (the composed set of objects the study
+  assembles, which may include composites that exist only in memory), never of the current focus, zoom or exposure. Two
   uses of one deduplicated definition therefore have different keys (different
   enclosing occurrence or ordinal), and repeated siblings are distinguished by
   ordinal. Focus, `step_k`, exposure state and frame never enter the key. How the
@@ -366,16 +368,20 @@ confused; they map onto the primary/secondary roles already defined, with no new
 
 - **Meta-structure LoD** acts on the meta, primary conceptual structure: the macro
   perspective and overall study framing. Primary boundaries and their frames express
-  it. Conceptual zoom or refocus, and the expressed-scale steps (`step_k`, `B^k`),
-  belong here, and they rebase the unit (C-SC3).
-- **In-place LoD** acts within a specific SNode sub-tree. Expanding a secondary
-  compression attachment is in-place LoD: it reveals deeper component depth locally,
-  at ratio 1, while the meta-structure LoD and the focus of the rest of the
-  composition are unchanged (C-SC6 to C-SC8).
+  it. Conceptual zoom, refocus and the expressed-scale steps (`step_k`, `B^k`) belong
+  here, and they act through the frames: zoom rebases the unit (C-SC3); refocus changes
+  exposure and frames.
+- **In-place LoD** acts within a specific SNode sub-tree: any exposure change (expand
+  or collapse) at an **unchanged** frame and `step_k`. Expanding a secondary
+  compression attachment is its defining example (Patrick's case): it reveals deeper
+  component depth locally, at ratio 1 (C-SC6 to C-SC8). Collapsing or expanding an
+  ordinary composite at a fixed frame (C-ID6) is also in-place LoD. The meta-structure
+  LoD and the focus of the rest of the composition are unchanged.
 
 Viewing different layers of component depth from a single macro perspective is
 in-place LoD inside a sub-tree while meta-structure LoD holds. An in-place LoD change
-never inserts a frame or alters a `step_k`; a meta-structure LoD change always acts
+never inserts a frame or alters a `step_k`, whether the composite is a secondary
+attachment or an ordinary one; a meta-structure LoD change always acts
 through the frames.
 
 ## 6. Collapse and expand publication
@@ -511,9 +517,9 @@ One may view different layers of component depth from the single macro perspecti
 This is **in-place LoD** (section 5.4): ratio-1 secondary-compression expansion within
 one SNode sub-tree (C-SC6 to C-SC8), with the **meta-structure LoD** held fixed. No
 frame is inserted and no `step_k` changes. The example illustrates in-place LoD, not a
-meta-structure LoD change. It is **distinct from conceptual zoom or refocus**, which is
-a meta-structure LoD operation that moves the viewpoint, rebases the unit and changes
-`step_k` (C-SC3). The plan's
+meta-structure LoD change. It is **distinct from zoom and refocus**, which are
+meta-structure LoD operations acting through the frames: zoom rebases the unit and
+changes `step_k` (C-SC3); refocus changes exposure and frames. The plan's
 Verification-matrix observation, that surrounding scale and coordinates are not rebased
 solely by expansion, is kept as an observation the structural fixtures below must
 satisfy.
@@ -527,6 +533,14 @@ floor, read-only. They cover nested-dedupe expansion at a fixed macro frame; the
 1, B, B^2 hierarchy; the equivalence case; refocus; and collapse/expand. The names
 `D1`, `D2` and `Def_A` to `Def_C` below are structural roles in those fixtures, standing
 in for the example's document and boilerplate; they are not legal text.
+
+The seeded floor is only two levels deep (16 hex atoms and 256 couplets,
+`kernels/database/HANDOFF.md:5-8`). The `Def_A` to `Def_C` nesting (depth 0 to 3) and
+the `D1`/`D2` composites therefore cannot exist cold without database writes, which
+this work does not make. They are **warm, in-memory study composition**, so the
+`occurrence_key` anchor for them is a warm-composition anchor (C-ID4, D12). The
+cold-chain part of a key (token and ordinal along `token_parent` rows) is exercised
+only to couplet depth against the seeded floor.
 
 ### 8.1 Structure
 
@@ -563,8 +577,8 @@ Partitions of the same expanded `D1` content:
 - **View 2 (zoom in):** `Lf` becomes the finest frame (`step_k = 0`); `Lm` moves to 1,
   `Lc` to 2 (a 1, B, B^2 hierarchy).
 - **View 3 (refocus):** the study is refocused on an occurrence of `Def_A` in `D2`
-  instead of `D1`, over the same cold objects. Occurrence keys are anchored in cold
-  composition (C-ID4), so every occurrence of a shared object keeps its key.
+  instead of `D1`, over the same composed objects. Occurrence keys are anchored in the
+  composition (C-ID4), not the view, so every occurrence of a shared object keeps its key.
 
 ### 8.3 Observations the structural fixtures must support
 
@@ -611,9 +625,9 @@ tradeoffs after.
 | D7 | Aggregation contract for a collapsed occurrence (its mass and boundary inputs/outputs). | Defer to the phase that implements collapse; this contract requires only structural mass accounting, once. | Needed before any claim that collapsed and exposed dynamics agree. |
 | D8 | Whether sparse SNodes stage optional LoD detail at all. | Not needed for this contract; decide in Phase 4 with a measurement of activation allocation. | Sparsity helps partial pulls but activation allocates (`node_pointer.h:56`) and is not the pool claim. |
 | D9 | Hot form and width of the token reference. | Defer; keep `token` an opaque reference in the contract. | Cold `token_id` is an address key (`docs/address-encoding-transition.md`); a compact hot handle may be wanted, which must not become a new identity. |
-| D10 | (Removed 2026-10-10, resolved by Patrick.) The legal document is an illustrative example, not ingested data, and the built fixtures use seeded encoding-floor tokens read-only. | n/a | n/a |
+| D10 | (Removed 2026-10-10, resolved by Patrick.) The legal document is an illustrative example, not ingested data, and the proposed fixtures would use seeded encoding-floor tokens read-only. | n/a | n/a |
 | D11 | Cache-key and schema for prepared views. | Keep open until this contract is reviewed (plan step 4). | None until chosen. |
-| D12 | Anchor composite for `occurrence_key`: which cold composite ends the chain, and what happens to keys when the composition itself changes (objects added, removed or re-parented) or a token has several cold parents. | The outermost cold composite(s) of the warm composition (here the document tokens), fixed for a composition revision; keys are re-derived only when that revision changes. | Keeps keys stable under focus, zoom and exposure; a composition change legitimately changes keys, so survival across such a change needs its own rule. |
+| D12 | Anchor composite for `occurrence_key`: which cold composite ends the chain, and what happens to keys when the composition itself changes (objects added, removed or re-parented) or a token has several cold parents. | The outermost cold composite(s) of the warm composition (here the document composites, which exist only as warm, in-memory composition in the fixtures), fixed for a composition revision; keys are re-derived only when that revision changes. | Keeps keys stable under focus, zoom and exposure; a composition change legitimately changes keys, so survival across such a change needs its own rule. |
 | D13 | Where the live `token_id` association lives: bridge-side table, or in the slot (`OPERATIONAL-PLAN.md` 3.11 versus `ACTIVE-FIELD-MODEL.md:133-139`). | Bridge-side table indexed by slot; device arrays unchanged. | A table avoids changing payload layout and staging; in-slot makes the pool self-describing and a free slot visible on device but changes the payload and its readers/writers together. |
 | D14 | How a collapsed aggregate and a composite centroid are represented: group, pooled particle, or both, and how groups are claimed and freed. | Decide with the aggregation contract (D7). | `OPERATIONAL-PLAN.md` 3.11 draws centroid virtual particles from the pool; the built harness holds centroids in a separate fixed group array. |
 
