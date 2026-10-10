@@ -20,8 +20,8 @@ view-independent (section 3.2), token location and claim generations are reopene
 decisions, groups and the harness-construction consequence are addressed, and gap
 observations are deferred to #116.
 
-Plan exit criteria for this step: a reviewed contract, a legal-document fixture
-design, and explicit pool claim/release and recomposition rules. This document is the
+Plan exit criteria for this step: a reviewed contract, the structural fixture
+design (with the legal document as its defining example), and explicit pool claim/release and recomposition rules. This document is the
 draft of all three; "reviewed" is not yet true.
 
 ## Location
@@ -359,6 +359,25 @@ not stored per particle.
   coarse and exposed-detail dynamics are equal; exposure may reveal interactions
   (plan, Verification matrix note).
 
+### 5.4 Two distinct LoD operations (Patrick, 2026-10-10)
+
+Two operations change level of detail. They are named here because they must not be
+confused; they map onto the primary/secondary roles already defined, with no new role.
+
+- **Meta-structure LoD** acts on the meta, primary conceptual structure: the macro
+  perspective and overall study framing. Primary boundaries and their frames express
+  it. Conceptual zoom or refocus, and the expressed-scale steps (`step_k`, `B^k`),
+  belong here, and they rebase the unit (C-SC3).
+- **In-place LoD** acts within a specific SNode sub-tree. Expanding a secondary
+  compression attachment is in-place LoD: it reveals deeper component depth locally,
+  at ratio 1, while the meta-structure LoD and the focus of the rest of the
+  composition are unchanged (C-SC6 to C-SC8).
+
+Viewing different layers of component depth from a single macro perspective is
+in-place LoD inside a sub-tree while meta-structure LoD holds. An in-place LoD change
+never inserts a frame or alters a `step_k`; a meta-structure LoD change always acts
+through the frames.
+
 ## 6. Collapse and expand publication
 
 Goal: an aggregate and its exposed parts never both contribute to mass, fields or
@@ -474,12 +493,40 @@ Rules that apply throughout:
   `occurrence_key`s (C-ID4), the same survivors; only view tables, frames and the
   affected slots change.
 
-## 8. Legal-document fixture design
+## 8. In-place nesting example and structural fixture design
 
-**Design only.** The fixture is not implemented, no data is inserted, and nothing is
-claimed to pass. It is constructed in C++ test memory (host side, no database writes).
-The leaf literals are drawn read-only from tokens that already exist; see decision D10
-on whether to use the seeded encoding floor or generated stand-in tokens.
+### 8.0 The legal document is an example, not a built artifact
+
+A legal document whose text references deduplicated boilerplate, itself nesting
+further boilerplate, is the **defining example** of in-place nesting. It is not
+something this work builds, and no legal text is ingested or sourced.
+
+The predicate (Patrick, 2026-10-10): expanding a compressed component in place reveals
+deeper **component depth** while the **macro perspective stays fixed**. The enclosing
+document keeps its focus and its scale; it does not slide out of focus or rescale.
+In Patrick's words: "if you were looking at a doc and needed to expand a compressed
+piece of boilerplate, you would not want the rest of the doc to slide out of focus."
+One may view different layers of component depth from the single macro perspective.
+
+This is **in-place LoD** (section 5.4): ratio-1 secondary-compression expansion within
+one SNode sub-tree (C-SC6 to C-SC8), with the **meta-structure LoD** held fixed. No
+frame is inserted and no `step_k` changes. The example illustrates in-place LoD, not a
+meta-structure LoD change. It is **distinct from conceptual zoom or refocus**, which is
+a meta-structure LoD operation that moves the viewpoint, rebases the unit and changes
+`step_k` (C-SC3). The plan's
+Verification-matrix observation, that surrounding scale and coordinates are not rebased
+solely by expansion, is kept as an observation the structural fixtures below must
+satisfy.
+
+### 8.0.1 What would be built
+
+**Design only.** Nothing here is implemented, no data is inserted, and nothing is
+claimed to pass. The Phase 1 fixtures are structural cases constructed in C++ test
+memory (host side, no database writes) over tokens already seeded in the encoding
+floor, read-only. They cover nested-dedupe expansion at a fixed macro frame; the
+1, B, B^2 hierarchy; the equivalence case; refocus; and collapse/expand. The names
+`D1`, `D2` and `Def_A` to `Def_C` below are structural roles in those fixtures, standing
+in for the example's document and boilerplate; they are not legal text.
 
 ### 8.1 Structure
 
@@ -519,14 +566,14 @@ Partitions of the same expanded `D1` content:
   instead of `D1`, over the same cold objects. Occurrence keys are anchored in cold
   composition (C-ID4), so every occurrence of a shared object keeps its key.
 
-### 8.3 Observations the fixture must support
+### 8.3 Observations the structural fixtures must support
 
 Each maps to a row of the plan's [Verification matrix](model-realignment-plan.md).
 Tolerances are declared per test at implementation time and are not fixed here.
 
 | Plan row | Fixture observation |
 |---|---|
-| Legal document with nested deduplicated boilerplate | In View 1, every occurrence expanded from `Def_A`, `Def_B`, `Def_C` carries the same `frame` and so the same `step_k` as the surrounding `D1` content, at nesting depth 0, 1, 2 and 3. Expansion alone leaves every `step_k` and all surrounding coordinates unchanged. |
+| Legal document with nested deduplicated boilerplate (the in-place nesting example, 8.0) | In View 1, expanding at a fixed macro perspective, every occurrence expanded from `Def_A`, `Def_B`, `Def_C` carries the same `frame` and so the same `step_k` as the surrounding `D1` content, at nesting depth 0, 1, 2 and 3. Expansion alone leaves every `step_k` and all surrounding coordinates unchanged: it is not a refocus. |
 | Same literal, different compression partitions | `P_nested`, `P_flat` and `P_shifted` expand to the same ordered sequence of exposed occurrences with the same order. Total mass and the universal sum are identical across partitions; no scale or mass inflation tracks nesting depth. |
 | Repeated boilerplate in one/two documents | `Def_A` appears twice in `D1` and once in `D2`: three distinct `occurrence_key`s, three disjoint slot sets, three independent edge sets. Changing the state of one occurrence leaves the other two unchanged. No slot is shared. |
 | Mixed primary and secondary hierarchy | Only the `Lf/Lm/Lc` boundaries change `step_k`. Inserting or removing a secondary level (for example wrapping `Def_C` in another dedupe layer) changes no `step_k`. |
@@ -537,7 +584,7 @@ Tolerances are declared per test at implementation time and are not fixed here.
 | CPU then available CUDA | The same observations are checked on CPU and, where a device exists, CUDA; unavailable device coverage is recorded as unavailable. |
 
 Rows for size examples and for small versus larger connected models belong to the
-extent (#120) and calibration phases and are not covered by this fixture.
+extent (#120) and calibration phases and are not covered by these fixtures.
 
 ### 8.4 Additional checks specific to this contract
 
@@ -546,7 +593,7 @@ extent (#120) and calibration phases and are not covered by this fixture.
 - Releasing all slots of a view returns the pool to all-`0x`, with the C-0X4 invariant
   holding throughout.
 - Free-slot numerical behaviour (section 4.3) is a precondition, not an observation of
-  this fixture.
+  these fixtures.
 
 ## Open decisions for review
 
@@ -564,7 +611,7 @@ tradeoffs after.
 | D7 | Aggregation contract for a collapsed occurrence (its mass and boundary inputs/outputs). | Defer to the phase that implements collapse; this contract requires only structural mass accounting, once. | Needed before any claim that collapsed and exposed dynamics agree. |
 | D8 | Whether sparse SNodes stage optional LoD detail at all. | Not needed for this contract; decide in Phase 4 with a measurement of activation allocation. | Sparsity helps partial pulls but activation allocates (`node_pointer.h:56`) and is not the pool claim. |
 | D9 | Hot form and width of the token reference. | Defer; keep `token` an opaque reference in the contract. | Cold `token_id` is an address key (`docs/address-encoding-transition.md`); a compact hot handle may be wanted, which must not become a new identity. |
-| D10 | Fixture data: seeded encoding-floor tokens (read-only) or generated stand-ins; and whether any real legal text is wanted. | Read-only use of already-seeded floor tokens, structural text only, no database writes. | Real text adds provenance and licensing questions; generated stand-ins risk being mistaken for real records, so they must stay in test memory only, be named as test fixtures, and never be written to any database. |
+| D10 | (Removed 2026-10-10, resolved by Patrick.) The legal document is an illustrative example, not ingested data, and the built fixtures use seeded encoding-floor tokens read-only. | n/a | n/a |
 | D11 | Cache-key and schema for prepared views. | Keep open until this contract is reviewed (plan step 4). | None until chosen. |
 | D12 | Anchor composite for `occurrence_key`: which cold composite ends the chain, and what happens to keys when the composition itself changes (objects added, removed or re-parented) or a token has several cold parents. | The outermost cold composite(s) of the warm composition (here the document tokens), fixed for a composition revision; keys are re-derived only when that revision changes. | Keeps keys stable under focus, zoom and exposure; a composition change legitimately changes keys, so survival across such a change needs its own rule. |
 | D13 | Where the live `token_id` association lives: bridge-side table, or in the slot (`OPERATIONAL-PLAN.md` 3.11 versus `ACTIVE-FIELD-MODEL.md:133-139`). | Bridge-side table indexed by slot; device arrays unchanged. | A table avoids changing payload layout and staging; in-slot makes the pool self-describing and a free slot visible on device but changes the payload and its readers/writers together. |
