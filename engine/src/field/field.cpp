@@ -1,6 +1,7 @@
 #include "field/field.h"
 
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 #include <string>
 
@@ -32,8 +33,7 @@ void accumulate(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &ind
   b.create_atomic_add(b.create_external_ptr(array, index), value);
 }
 
-// total_dim is 2 for the six {field, item} dense arrays (particle, group,
-// edge_float, edge_int, bond_float, bond_int), and 1 for universal/determined
+// total_dim is 2 for {field, item} dense arrays and 1 for universal/determined
 // (single-axis, indexed directly).
 ArgLoadStmt *array_param(IRBuilder &b, int id, DataType dt, int total_dim) {
   return b.create_ndarray_arg_load({id}, dt, total_dim, /*arg_depth=*/0);
@@ -43,8 +43,21 @@ Stmt *scalar_param(IRBuilder &b, int id, DataType dt) {
   return b.create_arg_load({id}, dt, /*is_ptr=*/false, /*arg_depth=*/0);
 }
 
-// Denominator guard applied to every division, never to some of them.
+// Empty-group centroid guard; particle/total-mass guards preserve positive
+// denominators exactly and substitute one only for a mass-zero free state.
 constexpr float kWeightFloor = 1e-20f;
+
+void validate_parameters(const Parameters &p) {
+  for (float value : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength}) {
+    if (!std::isfinite(value) || value < 0.0f) {
+      throw std::invalid_argument("field: parameters must be finite and non-negative");
+    }
+  }
+}
+
+std::size_t storage_size(int fields, int count) {
+  return std::size_t(fields) * std::size_t(std::max(count, 1));
+}
 
 }  // namespace
 
@@ -52,27 +65,22 @@ Harness::Harness(engine::Runtime &runtime,
                  int particle_count,
                  int group_count,
                  int edge_count,
-                 int bond_count)
+                 int contact_count)
     : runtime_(&runtime),
       particles_(particle_count),
       groups_(group_count),
       edges_(edge_count),
-      bonds_(bond_count) {
-  if (particle_count < 0 || group_count < 0 || edge_count < 0 || bond_count < 0) {
+      contacts_(contact_count) {
+  if (particle_count < 0 || group_count < 0 || edge_count < 0 || contact_count < 0) {
     throw std::invalid_argument("field::Harness: counts must be non-negative");
   }
-  particle_data.assign(std::size_t(particles_) * kParticleFieldCount, 0.0f);
-  group_data.assign(std::size_t(groups_) * kGroupFieldCount, 0.0f);
-  edge_float_data.assign(std::size_t(edges_) * kEdgeFloatFieldCount, 0.0f);
-  edge_int_data.assign(std::size_t(edges_) * kEdgeIntFieldCount, 0);
-  // Sized the same as the size-safe device arrays below (max(bonds_, 1)):
-  // a bonds_==0 upload of a zero-length host vector to that one-element
-  // device array is a 0-byte transfer, which the RHI layer rejects. The
-  // stride used by bond_float()/bond_int() is still the real bonds_, so a
-  // padded element is simply never addressed.
-  bond_float_data.assign(std::size_t(std::max(bonds_, 1)) * kBondFloatFieldCount,
-                         0.0f);
-  bond_int_data.assign(std::size_t(std::max(bonds_, 1)) * kBondIntFieldCount, 0);
+  // Empty logical arrays still need nonzero allocation/transfer sizes in
+  // the RHI. Their real loop counts and host accessor strides stay zero.
+  particle_data.assign(storage_size(kParticleFieldCount, particles_), 0.0f);
+  group_data.assign(storage_size(kGroupFieldCount, groups_), 0.0f);
+  edge_float_data.assign(storage_size(kEdgeFloatFieldCount, edges_), 0.0f);
+  edge_int_data.assign(storage_size(kEdgeIntFieldCount, edges_), 0);
+  contact_int_data.assign(storage_size(kContactIntFieldCount, contacts_), 0);
   determined_.assign(particles_, 0.0f);
   universal_data.assign(1, 0.0f);
 
@@ -86,26 +94,21 @@ Harness::Harness(engine::Runtime &runtime,
   Program &program = runtime.program();
   particle_array_ = std::make_unique<Ndarray>(
       &program, PrimitiveType::f32,
-      std::vector<int>{kParticleFieldCount, particles_});
+      std::vector<int>{kParticleFieldCount, std::max(particles_, 1)});
   group_array_ = std::make_unique<Ndarray>(
       &program, PrimitiveType::f32,
-      std::vector<int>{kGroupFieldCount, groups_});
+      std::vector<int>{kGroupFieldCount, std::max(groups_, 1)});
   edge_float_array_ = std::make_unique<Ndarray>(
       &program, PrimitiveType::f32,
-      std::vector<int>{kEdgeFloatFieldCount, edges_});
+      std::vector<int>{kEdgeFloatFieldCount, std::max(edges_, 1)});
   edge_int_array_ = std::make_unique<Ndarray>(
       &program, PrimitiveType::i32,
-      std::vector<int>{kEdgeIntFieldCount, edges_});
-  // Guard bonds_==0 with a size-safe allocation of at least one element; the
-  // kernel loop over zero bonds is a no-op either way.
-  bond_float_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::f32,
-      std::vector<int>{kBondFloatFieldCount, std::max(bonds_, 1)});
-  bond_int_array_ = std::make_unique<Ndarray>(
+      std::vector<int>{kEdgeIntFieldCount, std::max(edges_, 1)});
+  contact_int_array_ = std::make_unique<Ndarray>(
       &program, PrimitiveType::i32,
-      std::vector<int>{kBondIntFieldCount, std::max(bonds_, 1)});
+      std::vector<int>{kContactIntFieldCount, std::max(contacts_, 1)});
   determined_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
-                                                std::vector<int>{particles_});
+                                                std::vector<int>{std::max(particles_, 1)});
   // The universal mass: one cell, the total mass of the construct with each
   // particle counted exactly once, recomputed by the clear pass each tick.
   universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
@@ -188,27 +191,19 @@ Harness::Harness(engine::Runtime &runtime,
       auto *p = load(b, edge_i, at(b, kEdgeParticle, k));
       auto *grp = load(b, edge_i, at(b, kEdgeGroup, k));
       auto *share = load(b, edge_f, at(b, kShare, k));
-      auto *off_x = load(b, edge_f, at(b, kOffX, k));
-      auto *off_y = load(b, edge_f, at(b, kOffY, k));
-      auto *off_z = load(b, edge_f, at(b, kOffZ, k));
 
       auto *cx = load(b, particles, at(b, kPosX, p));
       auto *cy = load(b, particles, at(b, kPosY, p));
       auto *cz = load(b, particles, at(b, kPosZ, p));
-
-      // The share acts where it sits, not at the particle's centre.
-      auto *sx = b.create_add(cx, off_x);
-      auto *sy = b.create_add(cy, off_y);
-      auto *sz = b.create_add(cz, off_z);
 
       auto *gx = load(b, groups, at(b, kCenX, grp));
       auto *gy = load(b, groups, at(b, kCenY, grp));
       auto *gz = load(b, groups, at(b, kCenZ, grp));
       auto *gm = load(b, groups, at(b, kCenM, grp));
 
-      auto *dx = b.create_sub(gx, sx);
-      auto *dy = b.create_sub(gy, sy);
-      auto *dz = b.create_sub(gz, sz);
+      auto *dx = b.create_sub(gx, cx);
+      auto *dy = b.create_sub(gy, cy);
+      auto *dz = b.create_sub(gz, cz);
 
       // Exact squared separation: the one law is m1*m2/d^2, with no epsilon
       // added to any interaction. The singularity at d==0 is closed by an
@@ -258,182 +253,51 @@ Harness::Harness(engine::Runtime &runtime,
          engine::Param::scalar(PrimitiveType::f32)});
   }
 
-  // Contact: one thread per bond edge. This is the corona SEPARATOR, not a
-  // second attraction -- the field kernel above already supplies the
-  // like-attraction, and superposition does the rest. Here the corona is
-  // the regime-gated standoff a bonded pair is held at: aligned or defined
-  // bonds stand off flush (d0 == 1.0, unit spheres in flush contact);
-  // opposed bonds stand off at the corona distance (d0 == 1.0 + 2*corona,
-  // coronas abutting rather than overlapping). The separator resists the
-  // pair closing inside d0 -- a finite push apart, breakable by stronger
-  // surrounding forces, never a hard constraint. A defined bond additionally
-  // carries the invariant hold: resist the pair being pulled apart past d0,
-  // a pull back together, which is what makes a defined bond shear-
-  // resistant. An opposed or aligned bond has no such hold and can be
-  // pulled free. No attraction is added here.
+  // Finite ordinary contact, one thread per explicit pair. There is no
+  // attraction above r_a+r_b and no directional choice at coincidence.
   {
     IRBuilder b;
-    auto *bond_i = array_param(b, 0, PrimitiveType::i32, /*total_dim=*/2);
-    auto *bond_f = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
-    auto *particles = array_param(b, 2, PrimitiveType::f32, /*total_dim=*/2);
-    auto *n = scalar_param(b, 3, PrimitiveType::i32);
-    auto *bcount = scalar_param(b, 4, PrimitiveType::i32);
-    auto *corona = scalar_param(b, 5, PrimitiveType::f32);
-    auto *sep_stiffness = scalar_param(b, 6, PrimitiveType::f32);
-    auto *hold_stiffness = scalar_param(b, 7, PrimitiveType::f32);
-    (void)n;
-
-    auto *loop = b.create_range_for(b.get_int32(0), bcount, false, threads);
+    auto *pairs = array_param(b, 0, PrimitiveType::i32, /*total_dim=*/2);
+    auto *particles = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
+    auto *count = scalar_param(b, 2, PrimitiveType::i32);
+    auto *stiffness = scalar_param(b, 3, PrimitiveType::f32);
+    auto *loop = b.create_range_for(b.get_int32(0), count, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *k = b.get_loop_index(loop);
-
-      auto *a = load(b, bond_i, at(b, kBondA, k));
-      auto *bp = load(b, bond_i, at(b, kBondB, k));
-      auto *defined = load(b, bond_i, at(b, kBondDefined, k));
-      auto *align = load(b, bond_f, at(b, kBondAlign, k));
-
-      auto *ax = load(b, particles, at(b, kPosX, a));
-      auto *ay = load(b, particles, at(b, kPosY, a));
-      auto *az = load(b, particles, at(b, kPosZ, a));
-      auto *bx = load(b, particles, at(b, kPosX, bp));
-      auto *by = load(b, particles, at(b, kPosY, bp));
-      auto *bz = load(b, particles, at(b, kPosZ, bp));
-
-      auto *dx = b.create_sub(bx, ax);
-      auto *dy = b.create_sub(by, ay);
-      auto *dz = b.create_sub(bz, az);
-
-      // Exact squared separation, the same exact d==0 gate the force kernel
-      // uses: zero contact force at coincidence, never a softened law.
+      auto *a = load(b, pairs, at(b, kContactA, k));
+      auto *bp = load(b, pairs, at(b, kContactB, k));
+      auto *dx = b.create_sub(load(b, particles, at(b, kPosX, bp)),
+                              load(b, particles, at(b, kPosX, a)));
+      auto *dy = b.create_sub(load(b, particles, at(b, kPosY, bp)),
+                              load(b, particles, at(b, kPosY, a)));
+      auto *dz = b.create_sub(load(b, particles, at(b, kPosZ, bp)),
+                              load(b, particles, at(b, kPosZ, a)));
       auto *d2 = b.create_add(
           b.create_add(b.create_mul(dx, dx), b.create_mul(dy, dy)),
           b.create_mul(dz, dz));
       auto *live = b.create_sgn(d2);
-      auto *safe =
-          b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
+      auto *safe = b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
       auto *inv = b.create_rsqrt(safe);
-      // Distance: safe * inv == sqrt(d2) for d2>0 (and == 1 at d2==0, where
-      // live gates every downstream term to zero anyway).
       auto *d = b.create_mul(safe, inv);
-
-      // Unit direction from a to b.
-      auto *ux = b.create_mul(dx, inv);
-      auto *uy = b.create_mul(dy, inv);
-      auto *uz = b.create_mul(dz, inv);
-
-      // Regime, branchless: abut (not defined, not aligned -- the opposed
-      // case) is the only regime whose standoff is not flush.
-      auto *defined_f = b.create_cast(defined, PrimitiveType::f32);
-      auto *aligned = b.create_max(b.create_sgn(align), b.get_float32(0.0f));
-      auto *abut = b.create_mul(b.create_sub(b.get_float32(1.0f), defined_f),
-                                b.create_sub(b.get_float32(1.0f), aligned));
-      auto *d0 = b.create_add(
-          b.get_float32(1.0f),
-          b.create_mul(b.create_mul(b.get_float32(2.0f), corona), abut));
-
-      // Separator: a finite push apart while the pair is closer than d0.
-      auto *pen = b.create_max(b.create_sub(d0, d), b.get_float32(0.0f));
-      auto *sep = b.create_mul(b.create_mul(sep_stiffness, pen), live);
-
-      // Invariant hold: defined bonds only, a pull back together while the
-      // pair has stretched past d0.
-      auto *stretch = b.create_max(b.create_sub(d, d0), b.get_float32(0.0f));
-      auto *hold = b.create_mul(
-          b.create_mul(b.create_mul(hold_stiffness, stretch), defined_f),
-          live);
-
-      // Net radial magnitude toward b: hold pulls together, sep pushes
-      // apart.
-      auto *mag = b.create_sub(hold, sep);
-      auto *fx = b.create_mul(ux, mag);
-      auto *fy = b.create_mul(uy, mag);
-      auto *fz = b.create_mul(uz, mag);
-      // Equal and opposite onto the two endpoints, so this composes by
-      // superposition with the field force already accumulated there. A
-      // particle may sit in more than one bond, so this is an atomic
-      // accumulation, not a plain store.
-      accumulate(b, particles, at(b, kForceX, a), fx);
-      accumulate(b, particles, at(b, kForceY, a), fy);
-      accumulate(b, particles, at(b, kForceZ, a), fz);
-      accumulate(b, particles, at(b, kForceX, bp), b.create_neg(fx));
-      accumulate(b, particles, at(b, kForceY, bp), b.create_neg(fy));
-      accumulate(b, particles, at(b, kForceZ, bp), b.create_neg(fz));
+      auto *sum_radii = b.create_add(load(b, particles, at(b, kRadius, a)),
+                                     load(b, particles, at(b, kRadius, bp)));
+      auto *penetration = b.create_max(b.create_sub(sum_radii, d),
+                                       b.get_float32(0.0f));
+      // Negative magnitude along A->B pushes A away and B oppositely.
+      auto *scale = b.create_neg(b.create_mul(
+          b.create_mul(stiffness, penetration), b.create_mul(live, inv)));
+      for (int axis = 0; axis < 3; ++axis) {
+        auto *delta = axis == 0 ? dx : (axis == 1 ? dy : dz);
+        auto *force = b.create_mul(scale, delta);
+        accumulate(b, particles, at(b, kForceX + axis, a), force);
+        accumulate(b, particles, at(b, kForceX + axis, bp), b.create_neg(force));
+      }
     }
     contact_ = engine::CompiledKernel(
         runtime, "field_contact", b.extract_ir(),
         {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::f32),
-         engine::Param::scalar(PrimitiveType::f32),
-         engine::Param::scalar(PrimitiveType::f32)});
-  }
-
-  // Universal: a virtual particle pegged at the origin by definition -- its
-  // position is never computed -- carrying the aggregation of the centroid
-  // masses already published (kCenM summed into the single universal cell).
-  // Every particle is pulled toward it by the same one law, m1*m2/d^2, with
-  // the origin as target: it is one more valid centroid in the particle's
-  // calculation, just one whose position needs no lookup. One thread per
-  // particle.
-  //
-  // SUSPENDED, not removed: tick() no longer calls launch_universal, so this
-  // inward pull does not run. It is kept intact -- kernel, launcher, and the
-  // universal-mass sum in field_clear that feeds it -- because it may be
-  // re-activated later. Runaway kinetics are now bounded instead by the
-  // radial velocity dampening in integrate, which reads the same universal
-  // mass cell for its reach scale.
-  {
-    IRBuilder b;
-    auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *universal = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/1);
-    auto *n = scalar_param(b, 2, PrimitiveType::i32);
-    auto *gravity = scalar_param(b, 3, PrimitiveType::f32);
-
-    auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
-    {
-      auto guard = b.get_loop_guard(loop);
-      auto *i = b.get_loop_index(loop);
-
-      auto *px = load(b, particles, at(b, kPosX, i));
-      auto *py = load(b, particles, at(b, kPosY, i));
-      auto *pz = load(b, particles, at(b, kPosZ, i));
-      auto *mass = load(b, particles, at(b, kMass, i));
-
-      // Exact squared distance to the origin, the same exact d==0 gate the
-      // force kernel uses: zero pull at the origin, never a softened law.
-      auto *d2 = b.create_add(
-          b.create_add(b.create_mul(px, px), b.create_mul(py, py)),
-          b.create_mul(pz, pz));
-      auto *live = b.create_sgn(d2);
-      auto *safe =
-          b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
-      auto *inv = b.create_rsqrt(safe);
-      auto *inv3 = b.create_mul(inv, b.create_mul(inv, inv));
-
-      auto *m_universal = load(b, universal, {b.get_int32(0)});
-
-      auto *scale = b.create_mul(
-          b.create_mul(b.create_mul(gravity, mass), m_universal),
-          b.create_mul(inv3, live));
-
-      // Pull toward the origin, i.e. along (0 - pos): composes by
-      // superposition with the field and contact forces already
-      // accumulated this tick.
-      accumulate(b, particles, at(b, kForceX, i),
-                b.create_neg(b.create_mul(scale, px)));
-      accumulate(b, particles, at(b, kForceY, i),
-                b.create_neg(b.create_mul(scale, py)));
-      accumulate(b, particles, at(b, kForceZ, i),
-                b.create_neg(b.create_mul(scale, pz)));
-    }
-    universal_ = engine::CompiledKernel(
-        runtime, "field_universal", b.extract_ir(),
-        {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::scalar(PrimitiveType::f32)});
   }
@@ -460,7 +324,10 @@ Harness::Harness(engine::Runtime &runtime,
       auto *fz = load(b, particles, at(b, kForceZ, i));
 
       // The whole mass absorbs the force the share raised.
-      auto *step_over_mass = b.create_div(dt, mass);
+      auto *mass_live = b.create_sgn(mass);
+      auto *safe_mass = b.create_add(
+          mass, b.create_sub(b.get_float32(1.0f), mass_live));
+      auto *step_over_mass = b.create_div(b.create_mul(dt, mass_live), safe_mass);
       auto *vx = b.create_add(load(b, particles, at(b, kVelX, i)),
                               b.create_mul(fx, step_over_mass));
       auto *vy = b.create_add(load(b, particles, at(b, kVelY, i)),
@@ -524,9 +391,12 @@ Harness::Harness(engine::Runtime &runtime,
       auto *ruz = b.create_mul(pz, pinv);
 
       auto *m_universal = load(b, universal, {b.get_int32(0)});
+      auto *total_live = b.create_sgn(m_universal);
+      auto *safe_total = b.create_add(
+          m_universal, b.create_sub(b.get_float32(1.0f), total_live));
       // reach_ratio == reach_strength / (M/d2) == threshold / field-strength.
       auto *reach_ratio =
-          b.create_div(b.create_mul(reach_strength, pd2), m_universal);
+          b.create_div(b.create_mul(reach_strength, pd2), safe_total);
       auto *excess =
           b.create_max(b.create_sub(reach_ratio, b.get_float32(1.0f)),
                        b.get_float32(0.0f));
@@ -618,9 +488,7 @@ Harness::Harness(engine::Runtime &runtime,
       auto *share = load(b, edge_f, at(b, kShare, k));
       auto *m = b.create_mul(load(b, particles, at(b, kMass, p)), share);
       for (int pair : {0, 1, 2}) {
-        auto *pos = b.create_add(
-            load(b, particles, at(b, kPosX + pair, p)),
-            load(b, edge_f, at(b, kOffX + pair, k)));
+        auto *pos = load(b, particles, at(b, kPosX + pair, p));
         accumulate(b, groups, at(b, kAccX + pair, grp),
                    b.create_mul(m, pos));
       }
@@ -662,7 +530,35 @@ Harness::Harness(engine::Runtime &runtime,
   }
 }
 
-void Harness::validate_indices() const {
+void Harness::validate_staging() const {
+  if (particle_data.size() != storage_size(kParticleFieldCount, particles_) ||
+      group_data.size() != storage_size(kGroupFieldCount, groups_) ||
+      edge_float_data.size() != storage_size(kEdgeFloatFieldCount, edges_) ||
+      edge_int_data.size() != storage_size(kEdgeIntFieldCount, edges_) ||
+      contact_int_data.size() != storage_size(kContactIntFieldCount, contacts_)) {
+    throw std::invalid_argument("field::Harness::upload: staging size mismatch");
+  }
+  for (const auto *data : {&particle_data, &group_data, &edge_float_data}) {
+    for (float value : *data) {
+      if (!std::isfinite(value)) {
+        throw std::invalid_argument("field::Harness::upload: non-finite staging");
+      }
+    }
+  }
+  for (int i = 0; i < particles_; ++i) {
+    const float mass = particle_data[offset(kMass, particles_, i)];
+    const float radius = particle_data[offset(kRadius, particles_, i)];
+    if (mass < 0.0f || radius < 0.0f) {
+      throw std::invalid_argument("field::Harness::upload: negative mass or radius");
+    }
+    if (mass == 0.0f) {
+      for (int f = 0; f < kParticleFieldCount; ++f) {
+        if (particle_data[offset(f, particles_, i)] != 0.0f) {
+          throw std::invalid_argument("field::Harness::upload: free slot must be zero");
+        }
+      }
+    }
+  }
   // The kernels address device memory directly with these indices; an
   // out-of-range one would read or write past the array, not fail.
   for (int e = 0; e < edges_; ++e) {
@@ -672,19 +568,42 @@ void Harness::validate_indices() const {
       throw std::out_of_range("field::Harness::upload: edge " + std::to_string(e) +
                               " names a particle or group out of range");
     }
+    const float share = edge_float_data[offset(kShare, edges_, e)];
+    if (particle_data[offset(kMass, particles_, p)] == 0.0f ||
+        share <= 0.0f || share > 1.0f) {
+      throw std::invalid_argument("field::Harness::upload: invalid participation");
+    }
   }
-  for (int k = 0; k < bonds_; ++k) {
-    const int a = bond_int_data[offset(kBondA, bonds_, k)];
-    const int b = bond_int_data[offset(kBondB, bonds_, k)];
+  for (int k = 0; k < contacts_; ++k) {
+    const int a = contact_int_data[offset(kContactA, contacts_, k)];
+    const int b = contact_int_data[offset(kContactB, contacts_, k)];
     if (a < 0 || a >= particles_ || b < 0 || b >= particles_) {
-      throw std::out_of_range("field::Harness::upload: bond " + std::to_string(k) +
+      throw std::out_of_range("field::Harness::upload: contact " + std::to_string(k) +
                               " names a particle out of range");
+    }
+    if (a == b || particle_data[offset(kMass, particles_, a)] == 0.0f ||
+        particle_data[offset(kMass, particles_, b)] == 0.0f) {
+      throw std::invalid_argument("field::Harness::upload: invalid contact endpoints");
     }
   }
 }
 
+void Harness::invalidate() {
+  ready_ = false;
+  uploaded_ = false;
+  runtime_->synchronize();
+}
+
+void Harness::publish(const Parameters &p) {
+  invalidate();
+  validate_parameters(p);
+  upload();
+  seed_centroids(p);
+}
+
 void Harness::upload() {
-  validate_indices();
+  invalidate();
+  validate_staging();
   engine::upload(*particle_array_, particle_data.data(),
                  particle_data.size() * sizeof(float));
   engine::upload(*group_array_, group_data.data(),
@@ -693,10 +612,9 @@ void Harness::upload() {
                  edge_float_data.size() * sizeof(float));
   engine::upload(*edge_int_array_, edge_int_data.data(),
                  edge_int_data.size() * sizeof(int));
-  engine::upload(*bond_float_array_, bond_float_data.data(),
-                 bond_float_data.size() * sizeof(float));
-  engine::upload(*bond_int_array_, bond_int_data.data(),
-                 bond_int_data.size() * sizeof(int));
+  engine::upload(*contact_int_array_, contact_int_data.data(),
+                 contact_int_data.size() * sizeof(int));
+  uploaded_ = true;
 }
 
 void Harness::download() {
@@ -705,8 +623,10 @@ void Harness::download() {
                    particle_data.size() * sizeof(float));
   engine::readback(*group_array_, group_data.data(),
                    group_data.size() * sizeof(float));
-  engine::readback(*determined_array_, determined_.data(),
-                   determined_.size() * sizeof(float));
+  if (particles_ > 0) {
+    engine::readback(*determined_array_, determined_.data(),
+                     determined_.size() * sizeof(float));
+  }
 }
 
 void Harness::launch_clear() {
@@ -734,24 +654,11 @@ void Harness::launch_force(const Parameters &p) {
 
 void Harness::launch_contact(const Parameters &p) {
   auto ctx = contact_.make_context();
-  ctx.set_arg_ndarray({0}, *bond_int_array_);
-  ctx.set_arg_ndarray({1}, *bond_float_array_);
-  ctx.set_arg_ndarray({2}, *particle_array_);
-  ctx.set_arg_int({3}, particles_);
-  ctx.set_arg_int({4}, bonds_);
-  ctx.set_arg_float({5}, p.corona);
-  ctx.set_arg_float({6}, p.sep_stiffness);
-  ctx.set_arg_float({7}, p.hold_stiffness);
+  ctx.set_arg_ndarray({0}, *contact_int_array_);
+  ctx.set_arg_ndarray({1}, *particle_array_);
+  ctx.set_arg_int({2}, contacts_);
+  ctx.set_arg_float({3}, p.contact_stiffness);
   contact_.launch(ctx);
-}
-
-void Harness::launch_universal(const Parameters &p) {
-  auto ctx = universal_.make_context();
-  ctx.set_arg_ndarray({0}, *particle_array_);
-  ctx.set_arg_ndarray({1}, *universal_array_);
-  ctx.set_arg_int({2}, particles_);
-  ctx.set_arg_float({3}, p.gravity);
-  universal_.launch(ctx);
 }
 
 void Harness::launch_integrate(const Parameters &p) {
@@ -793,17 +700,26 @@ void Harness::launch_centroid(const Parameters &) {
 }
 
 void Harness::seed_centroids(const Parameters &p) {
+  ready_ = false;
+  if (!uploaded_) {
+    throw std::logic_error("field::Harness: upload required before centroid seeding");
+  }
+  validate_parameters(p);
   launch_clear();
   launch_centroid(p);
+  launch_determine();
   runtime_->synchronize();
+  ready_ = true;
 }
 
 void Harness::tick(const Parameters &p) {
+  if (!ready_) {
+    throw std::logic_error("field::Harness: successful publication required before tick");
+  }
+  validate_parameters(p);
   launch_clear();
   launch_force(p);
   launch_contact(p);
-  // universal inward pull suspended (not removed) -- replaced by the radial
-  // velocity dampening in integrate; may be re-activated later.
   launch_integrate(p);
   launch_determine();
   launch_centroid(p);
