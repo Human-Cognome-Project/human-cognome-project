@@ -1,6 +1,7 @@
 # Engine corrections for first-stage data objects
 
-Status: **PROPOSED for approval, implementation not started.**
+Status: **ACCEPTED in PR #124; runtime implementation not started.**
+Execution details: [implementation plan](engine-object-implementation-plan.md).
 
 This proposal translates the agreed physics simplifications into corrections
 needed by the objects that will be completed in the first data-modeling stage.
