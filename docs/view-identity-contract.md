@@ -139,7 +139,7 @@ Occurrence            -- one per exposed (or about-to-be-exposed) occurrence
   occurrence_key      -- VIEW-INDEPENDENT identity, anchored in the composition (see 3.2)
   token               -- reference to the cold token_id
   frame               -- ScaleFrame the occurrence lives in (view-scoped)
-  parent_occurrence   -- enclosing composite occurrence in the cold composition
+  parent_occurrence   -- enclosing composite occurrence in the composition
   ordinal             -- composition position under that parent (data, not a distance)
   state               -- exposed (has a live slot) | collapsed-into-aggregate | not exposed
   slot                -- engine index, valid only while exposed
@@ -218,9 +218,9 @@ undecided (see `taichi-snode-mechanics.md:145-155`); this contract is valid for 
 - **C-ID3.** `SNode::id` and the tree id never appear as `token_id`, `particle_id`,
   or an edge/bond endpoint.
 - **C-ID4.** Occurrence identity (`occurrence_key`) is **view-independent**. It is
-  anchored in cold composition coordinates: the cold `token_id` of the occurrence plus
-  its position along the chain of enclosing cold composites up to an **anchor
-  composite**. The cold `token_parent` table is type-level: each row stores a composite
+  anchored in cold or warm composition coordinates: the cold `token_id` of the
+  occurrence plus its position along the chain of enclosing cold or warm composites up
+  to an **anchor composite**. The cold `token_parent` table is type-level: each row stores a composite
   `token_id`, an `ordinal` and the constituent (`parent_token_id`) at that position
   (`kernels/database/schema/schema.sql:144-171`;
   `WORKING-SET-AND-LEDGER.md:97-99`). It stores no parent *occurrence*; the occurrence
