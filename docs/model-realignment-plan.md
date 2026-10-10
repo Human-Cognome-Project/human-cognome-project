@@ -4,6 +4,15 @@ Status: 2026-10-09. Approved model directions are recorded below; this document
 plans their implementation and verification. No runtime or database migration
 is executed by this documentation change.
 
+**Implementation update (2026-10-10):** The bounded engine object-support
+slice approved in #124/#125 is implemented and passes native CPU checks.
+[Results](../engine/docs/OBJECT-SUPPORT-RESULTS.md) record whole-particle
+response, supplied-layout enclosure, variable-radius contact and fixed-study
+publication. The [first-stage object model](first-stage-data-object-model.md)
+carries those records forward. General recomposition, packing examples,
+DECLARE and persistent insertion retain their separate scope. The dated
+source audit and broader sequence below describe the preceding baseline.
+
 ## Goal and scope
 
 Prepare the native C++ model and warm-cache bridge to assemble language base

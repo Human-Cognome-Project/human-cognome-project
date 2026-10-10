@@ -18,6 +18,9 @@ reconciliation.
 4. **Engine harness** — the control structure around the physics engine. It is
    the surface the future analyst will use to compose working state, add/remove
    or adjust elements, run/reset analysis, and inspect engine state.
+   `src/assembly/` now provides the bounded fixed-study preparation/publication
+   part, as a separate `study_assembly` target linking `field_core`. It does
+   not supply general recomposition or the future analyst control surface.
 5. **Analyst functions** — future work. No analyst reasoning implementation
    exists yet.
 

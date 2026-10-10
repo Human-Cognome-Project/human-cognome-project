@@ -27,6 +27,11 @@ or contribution instructions. Current contributor policy is in
 
 ## Current realignment
 
+The accepted 2026-10-10 object-support slice is implemented and tested:
+[OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md). It includes proportional
+centre response, supplied-geometry enclosure, ordinary contact and fixed-study
+publication. The broader roadmap below still contains future work.
+
 Start model/bridge changes with the [conversion and continuation plan](../../docs/model-realignment-plan.md)
 (2026-10-09). It distinguishes conceptual primary LoD from attached 1:1
 compression, records component-derived extent and sequences the response,
@@ -36,10 +41,10 @@ requirements without claiming the corresponding code has changed. Track
 
 ## Document roles
 
-- **[ASSEMBLY-BOOTSTRAP.md](ASSEMBLY-BOOTSTRAP.md)** — narrow, unimplemented
-  translation example from the retained encoding floor to a Taichi C++
-  layout. Preserves shared parent-value fields across ordered positions and
-  marks the additional choices needed before an end-to-end numerical run.
+- **[ASSEMBLY-BOOTSTRAP.md](ASSEMBLY-BOOTSTRAP.md)** — preserved encoding-floor
+  translation guide with a current pointer to the built fixed-study slice.
+- **[OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md)** — executed native
+  object-support checks, fixture settings and payload migration boundaries.
 - **[ACTIVE-FIELD-MODEL.md](ACTIVE-FIELD-MODEL.md)** — current integrated field
   and tick explanation, distinguishing built passes from the later active-set
   and revised destination/brake questions. Read with the

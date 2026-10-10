@@ -1,6 +1,8 @@
 # Implementation plan: engine support for first-stage data objects
 
-Status: **Planning complete; runtime implementation not started.**
+Status: **Implemented and verified on native CPU (2026-10-10).**
+Execution evidence: [object-support results](../engine/docs/OBJECT-SUPPORT-RESULTS.md).
+Continuation: [first-stage data-object model](first-stage-data-object-model.md).
 Scope approved in [PR #124](https://github.com/Human-Cognome-Project/human-cognome-project/pull/124),
 merged as `99fa4c03a804d533f7c8601adb1216dd9402c641`.
 The [accepted proposal](engine-object-support-corrections.md) and its maintainer

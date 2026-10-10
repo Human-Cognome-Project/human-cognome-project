@@ -1,150 +1,101 @@
 # Active field model and tick dependencies
 
-**Status (2026-09-26):** Field-model explanation for the
-[NAPIER system guide](../../docs/napier-system-guide.md). This note distinguishes
-[`field.cpp`](../src/field/field.cpp) from the intended selective working
-model. The recovered [operational plan](OPERATIONAL-PLAN.md) and
-[drift audit](DRIFT-AUDIT.md) preserve earlier decisions; the
-[September discussion](../../docs/napier-system-discussion.md) clarifies
-the remaining calculations. `field::Harness` is the native field-array/tick
-class, not the entire future analyst-facing harness.
+**Status (2026-10-10):** The native object-support corrections approved in
+[#124](https://github.com/Human-Cognome-Project/human-cognome-project/pull/124)
+and [#125](https://github.com/Human-Cognome-Project/human-cognome-project/pull/125)
+are implemented. See [OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md)
+for executed checks and settings. The recovered
+[operational plan](OPERATIONAL-PLAN.md) and [drift audit](DRIFT-AUDIT.md)
+retain historical mechanics. `field::Harness` owns field arrays and ticks;
+`assembly::FixedStudy` supplies a bounded native preparation/publication path.
 
-## Conceptual LoD and compression depth (Patrick, 2026-10-09)
+## Fixed-study SNode scale mapping
 
-Conceptual scale is tied to the **primary SNode structure** of the study.
-Secondary SNode structures attached within one conceptual LoD inherit that
-LoD's operative distance scale throughout their internal compression elements.
-Expanding a compression rollup is **1:1**: the environment retains its current
-granularity while that particular representation is expanded. It does not
-rebase the environment or introduce another 64/128 scale step.
+Preparation binds a designated study root and its native SNode children to
+explicit roles. The root uses unit scale; an expressed primary step multiplies
+spatial units by 64. Secondary compression and naming equivalence inherit 1:1,
+including nested compression. Raw depth, axis size and schema id have no
+scale policy. Bindings follow actual SNode child relationships.
 
-For example, a legal document literal can reference deduplicated boilerplate.
-All expansion steps of that boilerplate remain within the document literal's
-SNode object at the same conceptual distance scale, including nested dedupe.
-A conceptual transition is expressed through the primary study structure;
-storage depth, secondary-tree depth and the names paragraph/phrase/character
-do not independently create one.
+The caller owns the layout and keeps it alive for preparation and supported
+refreshes. Host records retain these bindings and occurrence-to-slot mappings;
+hot kernels use the existing ndarrays and cached operative values. This is a
+fixed-study bridge, not general shared-subtree storage, zoom/recomposition,
+or the complete cache manager/analyst. Positions, velocities and radii convert
+together; inclusive centroids are seeded from those converted positions.
+Time units, mass and identity are unchanged. Equivalent trajectories across
+focus changes are not claimed.
 
-This settles the model distinction and structural direction. Mapping primary
-and secondary roles onto native Taichi layouts remains implementation work:
-SNode nesting and activation provide storage machinery, not an intrinsic
-conceptual-scale or physical-distance policy. A secondary attachment does not
-imply arbitrary shared physical subtree pointers in Taichi.
+## Prepared extent and ordinary body contact
 
-The proposed variable-distance implementation gives compression-only
-transitions ratio 1 and conceptual transitions their calibrated scale factors.
-Whether those factors use a common scalar with view conversion or additional
-relationship-dependent multiples remains open (#106, #115).
+The definition supplies an object centroid and component spheres. Preparation
+computes `max(distance(component centre, centroid) + component radius)`,
+then converts the radius into the operative frame, rounding outward to f32.
+Finite coordinates and non-negative radii are required. Mass is independent
+of radius. Preparation repeats on publication; ticks reuse prepared geometry.
 
-## Component-derived particle extent (Patrick, 2026-10-08)
+This helper encloses a supplied layout. Packing, a movable minimum-sphere
+centre and exact single/double/triple/quadruple sizes remain open. Fixture
+coordinates in the results are explicit experimental inputs.
 
-Particle sizes are relative: prepare an enclosing extent sufficient to hold
-the component elements without added gaps. This is primarily a setup
-calculation for each centroid/object, with reuse while its defining inputs
-remain unchanged. It supersedes the fixed-diameter-for-every-object rule;
-one represented particle need not have the same diameter as another.
+The contact payload contains only two endpoint slots for each explicit pair.
+At nonzero centre separation `d`, penetration resistance has magnitude
+`contact_stiffness * max(r_a + r_b - d, 0)` with equal and opposite forces.
+There is no corona spacing, alignment regime, defined-bond hold or attraction
+above contact. Field participation supplies attraction. Contact is finite
+resistance, not a hard non-overlap guarantee. At exact coincidence the
+direction gate produces finite zero force and does not separate the centres.
+Contact discovery remains caller-supplied; there is no all-pairs pass.
 
-Patrick's intended example is that a single and double hex couplet have
-essentially the same extent, with a nominal radius adjustment for the centroid
-at the common point; triples and quadruples are larger. The exact radial
-construction and packing calculation remain to be specified and checked.
-Do not substitute a summed-volume formula or assert exact sphere tiling.
+## Whole-particle response and object records
 
-Keep enclosing extent, structural mass and operative distance scale distinct.
-The finest-visible particle-unit convention anchors measurement; it no longer
-requires all represented objects to occupy identical physical extents.
-A compressed object remains a spherical Markov blanket with proportional
-whole-particle response. Computing its extent does not restore internal force
-application offsets or rotation.
+Every edge carries `(particle slot, group slot, share)`. Force and centroid
+accumulation both use the particle centre. The participating mass is total
+mass times share; total particle mass absorbs the sum of forces. The inclusive
+centroid, inverse-square law and exact coincidence/single-member gates remain.
+No internal application-offset or rotational payload remains.
 
-Conversion sequence and verification: [model realignment plan](../../docs/model-realignment-plan.md).
+Preparation keeps reusable definition identity, distinct occurrence identity,
+slot, parent value, ordinal and exact structural counts on the host. A
+parent-value field spans ordinal positions, with a separate edge for every
+repeated parent occurrence. Exact counts produce the hot float shares; those
+shares are not archival count authority. Same-definition instances also share
+an automatically prepared whole-mass sibling field using the same law.
 
-## Corona-disabled test direction (Patrick, 2026-10-08)
+Exposure selections choose an aggregate or its declared parts, preserving
+exact total mass and excluding the other representation. This bounded path
+uses disjoint selections and preassigned distinct slots. It does not establish
+#123's unresolved general recomposition contract.
 
-Test with the **corona effect disabled**. Particles may come to rest in ordinary
-body contact; competing field forces should separate them where appropriate.
-Remove imposed corona spacing, overlap/abut regimes and corona-derived gaps
-from the experimental model. Retain ordinary contact.
+## Publication and inert slots
 
-The proposed explanation for earlier difficulties is the limited size of the
-early modeled structures. Test that hypothesis in larger, more connected
-environments; it is not an established result. Assess settled contact,
-field-driven separation, cohesion, numerical stability and settling with the
-LoD-scaled, whole-particle response model.
+`FixedStudy` synchronizes prior work, prepares and validates a complete
+target, stages/uploads it, seeds inclusive centroids and initial determiner
+state, and then marks the field ready. Supported refreshes preserve array
+counts and restage the supplied target state; they do not automatically carry
+forward old moving state. Failed publication records its exception and leaves
+ticks disabled until explicit successful republication. Multi-array transfer
+is not atomic and there is no rollback protocol.
 
-This is a test direction, not a claim that the native implementation has already
-changed or that permanent removal is validated. Historical corona implementation
-and results below describe the baseline only. The old corona separation ladder
-is not an acceptance requirement for the disabled experiment. Runtime work and
-comparative evidence are tracked in #119.
+Direct field callers can use `publish(parameters)` or `upload()` followed by
+`seed_centroids(parameters)`; upload alone cannot tick. Numerical staging and
+interaction indices are checked before transfer. Unused slots have mass zero,
+zero state and no field/contact reference. Particle-mass and all-free
+total-mass divisions are guarded. Empty arrays have size-safe storage while
+logical loop counts remain zero.
 
-## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
-
-**Settled model direction; implementation reconciliation remains pending.**
-Parents retain proportional participation: the participating parent mass/share
-sets its contribution, and that contribution always acts on the whole particle.
-Preserve ordered composition and repeated parent contributions. Remove positional
-response, internal application offsets, torque, rotation and rotary alignment
-from the requirements; there is no rotational reference to calculate against.
-
-When finer LoD is exposed, its components operate normally as particles.
-When it is compressed, the object is a **marble-shaped Markov blanket**:
-the boundary inputs and outputs are the relevant points of interaction.
-Do not calculate hidden internal geometry or orientation to apply a parent
-response. This does not remove proportional parent participation.
-
-**Distance is relative to the current focus of study.** An object distant in
-LoD from one perspective can be directly adjacent from another. Warm-cache
-SNode definitions and their composition must support this study-relative
-expression; a cold object identity does not have one universal fixed distance
-or permanently assigned operative LoD. Preserve the finest-visible unit baseline,
-equivalence compression and consistent scale conversion within each view.
-
-The possible relationship-dependent distance multiples/degrees of separation
-must be interpreted within that focus. Test 64 initially, consider higher/lower
-multiples where needed, and monitor whether these belong in warm SNode
-definitions. Their exact representation remains open (#106, #115).
-Changing study focus must retain identity and proportional participation while
-recomposing the exposed relationships and their operative distances.
-
-## What is computed in the loaded model
-
-At each exposed field edge, a participant of effective mass `m1` at its
-participating position reads its group's **last published** centroid of mass
-`m2` and position `c`. The group includes the subject itself. For nonzero
-separation `d`, the directed attraction has magnitude proportional to
-`m1*m2/d²` and points toward `c` (with the active field constant). An exact
-coincidence and a group consisting solely of this participation produce zero
-in the current code. Several fields can touch the same particle; the code
-adds their directed force vectors into `F_net`.
-
-The recorded native edge representation stores `(particle slot, group slot,
-share, offset)`, with the participating point at `particle_position + offset`.
-The whole mass absorbs the summed force. This describes the implementation
-previously reviewed, not completion of the updated model.
-
-**2026-10-08 direction:** preserve proportional mass/share and repeated parent
-contributions, but apply every contribution to the whole particle without an
-internal offset, torque or rotary alignment. The planned orientation operation
-is withdrawn. Reconcile the existing offset-based centroid/force path and its
-tests with this rule. Exposed finer components use their own particle positions;
-compressed objects expose their Markov-blanket boundary inputs/outputs.
-
-`token_id` identifies a base token; `particle_id` identifies an allocated
-instance in the model. Every exposed instance of the same token should share
-an automatic whole-mass sibling field using **this same** interaction law.
-The current arrays have no per-particle token mapping or generated sibling
-field. Study-rooted nested/compressed SNodes and the active fields they
-expose are an assembly task for the future cache manager and analyst, not
-code in `field::Harness`.
+The dormant universal-attraction kernel and launcher were removed. Total
+mass is still counted once per particle each tick for radial damping.
+Integration, its brake and radial damping otherwise retain their prior
+behavior; the focused checks did not require retuning.
 
 ## Tick order and the proposed activity gate
 
 | Phase | Built `field::Harness::tick()` | Intended selective path |
 |---|---|---|
-| Load | `upload()` stages arrays; `seed_centroids()` publishes inclusive group positions before first force tick. | Assemble a study-specific base; initialize mass/geometry and wake all exposed work needed to establish it. |
+| Load | Fixed-study publication prepares records, uploads arrays, seeds centroids and enables ticking. | Assemble a study-specific base; initialize mass/geometry and wake all exposed work needed to establish it. |
 | Force | Clear accumulators; force per **every** loaded edge; separate contact pass. | Evaluate every active field of each unresolved particle, sum its forces, and use the bidirectional movement ratio at that interaction to flag any centroid it would effectively move. |
-| Motion | Integrate every particle with carried velocity, brake and separate outward radial dampening; run determiner. | Apply combined motive force and brake to active particles; account also for parent-line reorientation before declaring a particle resolved. |
+| Motion | Integrate every particle with carried velocity, brake and separate outward radial dampening; free slots are inert; run determiner. | Apply combined motive force and brake to active particles before declaring a particle resolved. |
 | Publish | Reduce **every** loaded edge to group mass/weighted position; publish all centroids. | After motion, reduce positions **once** for each centroid flagged by any interaction; reuse unchanged group mass; publish new positions for the next tick and wake connected work as needed. |
 
 The interaction only needs to decide **whether** a centroid is effectively

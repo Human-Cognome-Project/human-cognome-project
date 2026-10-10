@@ -1,6 +1,17 @@
 # Bootstrap guide: encoding-floor records into a Taichi working layout
 
-**Status (2026-10-04):** A small, reviewable assembly example, not a built
+**Current status (2026-10-10):** The bounded native fixed-study path is built in
+[`assembly/study.h`](../src/assembly/study.h), with executed
+[`assembly_test.cpp`](../tests/assembly_test.cpp) coverage for this couplet
+example, exact parent counts, occurrence identity, SNode scale bindings,
+aggregate/part exclusion and centroid publication. See
+[OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md) and the
+[first-stage object model](../../docs/first-stage-data-object-model.md).
+The database loader, full warm-cache composition, general recomposition and
+persistent insertion remain separate work. The numerical fixture supplies its
+geometry; it does not settle the open hex packing examples.
+
+**Preserved guide (2026-10-04):** A small, reviewable assembly example, not a built
 cache-manager protocol or a final SNode schema. It uses the retained
 [`hcp_core` encoding-floor snapshot](../../data/postgres/snapshots/2026-09-28-encoding-floor/MANIFEST.md)
 on `main`. No database change or extra seed is required for this example.
