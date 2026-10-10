@@ -218,9 +218,13 @@ undecided (see `taichi-snode-mechanics.md:145-155`); this contract is valid for 
   or an edge/bond endpoint.
 - **C-ID4.** Occurrence identity (`occurrence_key`) is **view-independent**. It is
   anchored in cold composition coordinates: the cold `token_id` of the occurrence plus
-  its position (parent occurrence and ordinal, the data `token_parent` already stores,
-  `WORKING-SET-AND-LEDGER.md:97-99`) along the chain of enclosing cold composites up to
-  an **anchor composite**. The anchor is a property of the warm composition (the
+  its position along the chain of enclosing cold composites up to an **anchor
+  composite**. The cold `token_parent` table is type-level: each row stores a composite
+  `token_id`, an `ordinal` and the constituent (`parent_token_id`) at that position
+  (`kernels/database/schema/schema.sql:144-171`;
+  `WORKING-SET-AND-LEDGER.md:97-99`). It stores no parent *occurrence*; the occurrence
+  chain is derived from those rows plus the anchor. `schema.sql` also flags the ordinal
+  base (0 or 1) as an open test slot, so D6 and D12 must not assume a base. The anchor is a property of the warm composition (the
   composed set of cold objects), never of the current focus, zoom or exposure. Two
   uses of one deduplicated definition therefore have different keys (different
   enclosing occurrence or ordinal), and repeated siblings are distinguished by
@@ -230,7 +234,7 @@ undecided (see `taichi-snode-mechanics.md:145-155`); this contract is valid for 
 - **C-ID5.** A particle **survives** a refocus if and only if an occurrence with the
   same `occurrence_key` is exposed in the new view (refocusing changes the view's
   focus, not the keys). It keeps its slot, its claim
-  generation, and its dynamic state (velocity, force accumulators reset per tick as
+  generation (if the D2 design uses them), and its dynamic state (velocity, force accumulators reset per tick as
   usual), and its position is converted into the new frame (section 5). Mass is not
   rescaled.
 - **C-ID6.** A particle is **replaced** when the same occurrence's exposure state
@@ -441,8 +445,8 @@ sequence for one published view change (refocus, zoom, expand or collapse):
    reportable condition to the harness, not a reason to allocate beyond the pool. What
    the harness then does is not specified here.
 4. **Stage on the host:** survivors keep slots, with positions converted for any
-   frame change; released slots are zeroed to `0x`; claimed slots receive token, position, velocity and the structural/component mass
-   of the token they hold (aggregate mass is not set here: it awaits the aggregation
+   frame change; released slots are zeroed to `0x`; claimed slots receive token, position,
+   velocity and the structural/component mass of the token they hold (aggregate mass is not set here: it awaits the aggregation
    contract, D7); edges and bonds, and group assignments (C-PUB9), are rebuilt for the
    new exposure.
 5. **Validate** the staged state (range check of endpoints as in
@@ -573,7 +577,7 @@ Noted only; none are acted on here.
 - `engine/src/field/field.h:44-47` still describes edge offsets and off-centre pull,
   which the intended model withdraws (#118).
 - The field arrays carry no token mapping and no sibling-field generation
-  (`ACTIVE-FIELD-MODEL.md:133-139`); the bridge-side token table in C-ID2 is where that
+  (`ACTIVE-FIELD-MODEL.md:133-139`); the recommended bridge-side token table (C-ID2, pending D13) is where that
   gap would be bridged.
 - `field.cpp:155-158` accumulates universal mass over the whole pool each tick,
   independent of occupancy; relevant to the pool budget measurement already planned.
