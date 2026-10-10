@@ -1,0 +1,530 @@
+# View and identity contract (Phase 1)
+
+Status: 2026-10-10. **PROPOSED / DRAFT contract, pending review.** Design intent
+only. Nothing in this document is built, and no runtime, Taichi source, database or
+saved-state change accompanies it. Where a choice belongs to Patrick it is listed
+under [Open decisions for review](#open-decisions-for-review) with a recommendation,
+not settled here.
+
+Implements step 1 ("Establish the view and identity contract") of the
+[model realignment plan](model-realignment-plan.md). Tracked in
+[#106](https://github.com/Human-Cognome-Project/human-cognome-project/issues/106)
+(data bridge, pool identity) and
+[#115](https://github.com/Human-Cognome-Project/human-cognome-project/issues/115)
+(operative scale, zoom rebasing). The plan's Governing model, Source audit and
+Verification matrix are inherited unchanged; this document does not re-decide
+anything they settle.
+
+Plan exit criteria for this step: a reviewed contract, a legal-document fixture
+design, and explicit pool claim/release and recomposition rules. This document is the
+draft of all three; "reviewed" is not yet true.
+
+## Location
+
+`docs/` is used because the contract spans three components that
+[AGENTS.md](../AGENTS.md) keeps distinct (the engine's field/pool, the warm-cache
+bridge, and the Taichi substrate) and sits beside its governing plan. Component docs
+that depend on it (`engine/docs/ACTIVE-FIELD-MODEL.md`,
+`kernels/database/WORKING-SET-AND-LEDGER.md`) should link here once it is reviewed.
+
+## Boundaries of this contract
+
+- It defines roles, identifiers and rules. It does not define a final C++ API, a
+  cache-key or schema, a conversion formula, or a calibrated factor.
+- It adds no new Taichi node type and requires no change to the Taichi compiler.
+- It adds no force law, no mass derived from volume or radius, no torque, rotation or
+  rotary alignment, and no compensation multiplier. The inverse-square law is
+  unchanged.
+- The harness (control interface), the cache/database manager, the WAL manager and the
+  Taichi substrate remain separate. Where this contract names a "bridge", that is the
+  warm-to-hot data bridge tracked in #106, not any of those components.
+- Analyst functions do not exist; none are specified or assumed.
+- Whitespace separators (#116), component-derived extent (#120), whole-particle
+  response (#118) and contact (#119) are separate plan steps. Only their interfaces
+  to this contract are noted.
+
+## Source audit
+
+Read at branch `docs/view-identity-contract`, based on main `dc0db21`. The plan
+audited main `8c81231`; the seams below were rechecked here. Status column uses the
+repository's BUILT / planned / open vocabulary.
+
+| Seam | Evidence | Status |
+|---|---|---|
+| Particle payload is packed SoA: positions, velocity, mass, force; element `f` of item `i` at `f * count + i` | `engine/src/field/field.h:24-30`, `:111-118` | BUILT |
+| Hot field arrays are Taichi `Ndarray`s, not an SNode tree | `engine/src/field/field.h:157-164` | BUILT |
+| Particle, group, edge and bond counts are fixed at `Harness` construction | `engine/src/field/field.h:87-91`, `:93-96` | BUILT |
+| An edge is `(kEdgeParticle, kEdgeGroup)` ints plus `kShare` and `kOffX/Y/Z` floats; the particle reference is a bare array index | `engine/src/field/field.h:41-52` | BUILT; offsets are withdrawn from the intended model (#118) |
+| Edge and bond indices are range-checked at upload | `engine/src/field/field.cpp:665-681` | BUILT |
+| The centroid pass weights position (plus offset) by `mass * share` per edge | `engine/src/field/field.cpp:616-625` | BUILT; offset path pending #118 |
+| Universal mass sums `kMass` over every pooled particle each tick | `engine/src/field/field.cpp:155-158` | BUILT |
+| Integration divides `dt` by `kMass` with no mass-zero gate | `engine/src/field/field.cpp:463` | BUILT; see [0x hazard](#4-the-0x-slot-in-the-fixed-pool) (from reading, not run) |
+| Group publication guards its divisor with `kWeightFloor` | `engine/src/field/field.cpp:47`, `:645-656` | BUILT |
+| Contact is the corona separator plus the defined-bond stretch hold, driven from bond edges | `engine/src/field/field.cpp:261-275`, `:293`, `:343` | BUILT; superseded direction (#119) |
+| No per-particle `token_id` and no generated sibling field in the field arrays | `engine/docs/ACTIVE-FIELD-MODEL.md:133-139`; `kernels/database/WORKING-SET-AND-LEDGER.md:112-115`; no `token_id`/`particle_id` in `engine/src/field/` | open |
+| `SNode::id` is a schema node id from a counter; `depth` is structural depth | `engine/taichi/taichi/ir/snode.h:88-90`; `snode.cpp:12`, `:220` | BUILT (upstream) |
+| Child insertion creates a child at `depth + 1` | `engine/taichi/taichi/ir/snode.cpp:14-17` | BUILT (upstream) |
+| Tree id is separate from node id | `engine/taichi/taichi/ir/snode.h:342`, `:353` | BUILT (upstream) |
+| `pointer` and `place` are fixed per-container schema types; `need_activation()` marks `pointer`, `hash`, `bitmasked`, `dynamic` | `engine/taichi/taichi/ir/snode.h:166`, `:264`; `snode.cpp:268` | BUILT (upstream) |
+| Pointer activation allocates a child block; deactivation recycles it; an inactive cell reads the ambient element | `engine/taichi/taichi/runtime/llvm/runtime_module/node_pointer.h:41-60`, `:77`, `:90-96` | BUILT (upstream) |
+| Smoke test exercises separate live trees and scattered pointer activation | `engine/tests/engine_smoke_test.cpp:90-99`, `:167-200` | BUILT |
+| Nothing exercises conceptual zoom, dedupe, shared subtrees, pool claim/release or scale invariance | absence of any such case in `engine/tests/engine_smoke_test.cpp` (`check_one_arch`, `check_sparse`, `check_configuration`); `engine/tests/field_test.cpp` not audited line-by-line for this | open |
+| Fixed particle pool, claim/release as declaration, `0x` as inert null | `engine/docs/OPERATIONAL-PLAN.md` section 3.11 | model intent; not implemented as a pool allocator |
+| Shared subtree is a schema/DB property; each active cell owns its child storage | `engine/docs/taichi-snode-mechanics.md:101-128` | reference |
+
+Limits of this audit: the `0x` mass-zero consequence at `field.cpp:463` and the
+absence of a pool-claim test were established by reading, not by running a kernel or
+searching every test file exhaustively.
+
+## 1. Identifiers and roles
+
+Four things are kept distinct. None may stand in for another.
+
+| Term | What it is | Scope and lifetime | Where it lives |
+|---|---|---|---|
+| `token_id` | Reusable represented object in the record library (cold identity). Many particles may share one. | Permanent in the cold store. | Cold store; carried by the bridge as a reference. |
+| `particle_id` | One active instance of a token in the working model. | One claim of one pool slot (see section 3). | Bridge tables; its engine index is the slot index in the hot arrays. |
+| `SNode::id` | Taichi's structural (schema) node identifier. | Monotonic within a `Program` lifetime; spent by recomposition. | Taichi substrate only. |
+| SNode tree id | Taichi's identifier for a registered tree. | Recycled on `destroy_snode_tree`. | Taichi substrate only. |
+
+Two further model terms are introduced as **roles**, not as Taichi node types and not
+as new schema:
+
+- **Primary boundary:** a point in the study's primary structure at which the
+  conceptual level changes (or is declared an equivalence). It owns a **scale frame**.
+- **Secondary attachment:** a compression/dedupe definition referenced from within one
+  scale frame. It owns no scale of its own.
+
+An **exposed occurrence** is one place in the study where a token is live, either as a
+claimed particle or as part of an expanded definition about to be claimed. An
+occurrence is the unit the bridge resolves.
+
+## 2. Minimal C++ representation
+
+### 2.1 Principle
+
+Primary and secondary roles are recorded in plain C++ tables prepared by the
+warm-cache side for a study (struct-of-arrays, in the same idiom as `field.h`), not in
+Taichi node types. An SNode tree may be used wherever a layout is wanted for storage;
+it is never the carrier of conceptual scale, and `SNode::depth`, `SNode::id` and tree
+nesting are never read to derive scale (plan, governing model: storage depth does not
+create a scale step).
+
+Rationale for tables over SNode-as-model:
+
+- Taichi gives no conceptual-scale policy (`snode.cpp:14-17` only increments
+  structural depth).
+- Taichi cannot alias one physical subtree under several parents
+  (`taichi-snode-mechanics.md:101-128`), so a reusable definition cannot be a shared
+  physical subtree anyway; it must be a warm definition referenced by tables and
+  materialized per occurrence.
+- No compiler change is required.
+
+### 2.2 Records (illustrative shape, not an API)
+
+```text
+ScaleFrame            -- one per primary boundary in a view
+  frame_id            -- bridge-local, view-scoped
+  step_k              -- integer: expressed conceptual steps above the finest visible frame
+  equivalence_of      -- optional frame_id this frame names without a step (Δk = 0)
+
+Occurrence            -- one per exposed (or about-to-be-exposed) occurrence
+  occurrence_key      -- stable identity of the occurrence (see 3.2)
+  token               -- reference to the cold token_id
+  frame               -- ScaleFrame the occurrence lives in
+  parent_occurrence   -- enclosing composite occurrence (or none at the study root)
+  ordinal             -- composition position under that parent
+  state               -- exposed (has a live slot) | collapsed-into-aggregate | not exposed
+  slot                -- engine index, valid only while exposed
+
+SecondaryAttachment   -- one per use of a deduplicated definition
+  attached_frame      -- the frame whose scale it inherits; never a step of its own
+  definition          -- reference to the warm/cold definition (reused, not copied)
+  storage_depth       -- diagnostic only; must not be read by any scale calculation
+```
+
+`token` is a reference to the cold `token_id`; its hot width and form are open
+(decision D9). `step_k` is an integer, not a stored `B^k`: the factor `B` (64 first,
+128 candidate) is a view parameter, so changing the candidate factor edits no
+per-occurrence data.
+
+### 2.3 Explicit fields versus derived-from-structure
+
+Compared for each of the four quantities the bridge must resolve per exposed
+occurrence. "Traversal" is cost to answer the question with no stored value.
+
+| Quantity | Explicit per occurrence | Derived from structure | Recommendation |
+|---|---|---|---|
+| Cold identity (`token_id`) | One token reference per occurrence. Required anyway: the sibling field groups live occurrences by token and the field arrays hold none (`WORKING-SET-AND-LEDGER.md:112-115`). | Not derivable once a definition is reused: the definition names its content but not which live occurrence is which. | **Explicit.** |
+| Live particle identity (`particle_id`) | A slot index per exposed occurrence. | Not derivable: it is claim state. | **Explicit** (this is the engine index; section 3). |
+| Enclosing conceptual scale | One frame reference (a small integer) per occurrence, resolved to `step_k` by one lookup in the few frame records. | Walk up parents to the nearest primary boundary: cost proportional to storage/secondary depth, which is exactly the quantity that must not matter, and it would make nested dedupe look costly. | **Explicit frame reference; `step_k` held once per frame, not per particle.** Zoom rebasing then edits the frame records (few), not every occurrence. |
+| Composition position | Parent occurrence plus ordinal per occurrence. | Re-derive from the definition and the path: cheap for one occurrence but needs the reused definition and path every time, and repeated occurrences differ only by ordinal. | **Explicit parent and ordinal**, because they are already stored cold (`token_parent` carries ordinal, `WORKING-SET-AND-LEDGER.md:97-99`) and are small. |
+
+Reuse: explicit `frame` is what makes a deduplicated definition reusable at any scale
+frame; the definition itself holds no scale. Memory: the explicit set is about four
+small integers per occurrence (token reference, slot, frame, parent plus ordinal),
+independent of dedupe depth. Traversal: scale resolution is O(1); no per-tick
+recursive content walk (cf. the plan's extent exit criterion).
+
+Hybrid recommendation, stated plainly: **explicit identity and position, explicit
+frame reference, frame-held scale.** Pure derivation of scale by walking is rejected
+because its cost tracks the quantity that must not influence scale.
+
+The cache key and schema for prepared views stay **open** (plan step 4).
+
+## 3. Particle identity across recomposition
+
+### 3.1 Why the engine index is stable
+
+In the built harness, particle state lives in packed arrays indexed by slot, and edges
+and bonds name particles by that slot (`field.h:24-30`, `:52`, `:57`). These arrays
+are `Ndarray`s created once (`field.h:157-164`); registering, replacing or destroying
+SNode trees (`add_snode_tree`) does not move them. So **the engine index of a claimed
+particle is independent of SNode-tree recomposition.** SNode schema ids and tree ids
+change under recomposition and are therefore never used as a particle's identity or
+as a reference stored in edges.
+
+If a future pool is backed by a dense SNode container instead of the `Ndarray`s, the
+same rule holds: a particle is addressed by its cell index in the preallocated
+container, not by the container's `SNode::id` or tree id. Which backing is used is
+undecided (see `taichi-snode-mechanics.md:145-155`); this contract is valid for both.
+
+### 3.2 Contract
+
+- **C-ID1.** `particle_id` is the pool slot index for the duration of one claim. A
+  claim is paired with a claim generation held in bridge tables (not in the device
+  arrays), so a stale reference to a released-and-reclaimed slot is detectable.
+  Recommended; the indirection alternative is decision D2.
+- **C-ID2.** `token_id` is held per live particle in a bridge-side table indexed by
+  slot. The device arrays are not extended for it.
+- **C-ID3.** `SNode::id` and the tree id never appear as `token_id`, `particle_id`,
+  or an edge/bond endpoint.
+- **C-ID4.** Occurrence identity (`occurrence_key`) is the path of
+  `(token_id, ordinal)` pairs from the study root through every enclosing occurrence.
+  Two uses of one deduplicated definition therefore have different keys, and repeated
+  siblings are distinguished by ordinal. Key choice is decision D6.
+- **C-ID5.** A particle **survives** a refocus if and only if an occurrence with the
+  same `occurrence_key` is exposed in the new view. It keeps its slot, its claim
+  generation, and its dynamic state (velocity, force accumulators reset per tick as
+  usual), and its position is converted into the new frame (section 5). Mass is not
+  rescaled.
+- **C-ID6.** A particle is **replaced** when the same occurrence's exposure state
+  changes (collapse to aggregate, or expand into parts). The old claim is released
+  and the new claims are made in one publication (section 6); no slot is reinterpreted
+  in place as a different occurrence.
+- **C-ID7.** **Reference remapping.** Because survivors keep their slots, edges and
+  bonds between survivors need no remapping. Edges and bonds touching released slots
+  are removed; new edges name new slots. If a pool is ever re-laid-out, a single
+  `old_slot -> new_slot` map is applied to all edge and bond endpoints in one step and
+  validated with the same range check as `validate_indices` (`field.cpp:665-681`).
+  Re-layout is not part of normal recomposition and is not designed here.
+- **C-ID8.** Stable cold identity is preserved by construction: recomposition changes
+  bridge tables and slot claims; `token_id` records are not rewritten and no cold
+  write is implied.
+
+## 4. The 0x slot in the fixed pool
+
+Model (Patrick, issue #106; `OPERATIONAL-PLAN.md` section 3.11): an unused pool slot
+is `0x`, mass zero, with no inherent presence or location; claiming assigns values to
+an existing slot, and releasing zeroes them back.
+
+### 4.1 Representation
+
+- **C-0X1.** A free slot is a slot whose bridge-side token reference is the `0x`
+  token and whose device mass is exactly zero. The two are one state viewed at two
+  layers; the bridge table is authoritative for *which* token, the device mass is the
+  physical consequence.
+- **C-0X2.** The free set is a bridge-side structure (a free list or bitmap). It is
+  not discovered by scanning device arrays.
+- **C-0X3.** Release zeroes position, velocity and force and sets mass to zero, and
+  removes edges and bonds naming the slot. Claim assigns token reference, mass,
+  position and velocity into the slot. Both are value assignment into storage that
+  already exists: no allocation, no schema change, no change in array size.
+- **C-0X4.** An invariant is tested at upload: device mass is zero if and only if the
+  bridge token is `0x`. A claimed real token has nonzero structural mass (the seeded
+  encoding floor assigns mass 1 to hex atoms and mass 0 only to `0x`;
+  `kernels/database/HANDOFF.md:5-8`).
+
+### 4.2 Distinct from an inactive Taichi sparse pointer
+
+| | `0x` pool slot | Inactive `pointer` cell |
+|---|---|---|
+| Layer | Model/data state in a fixed preallocated pool | Taichi runtime storage state |
+| Has an index and storage | Yes, always; visited by every particle loop | No child block; reads resolve to the shared ambient element (`node_pointer.h:90-96`) |
+| Becoming live | Assign values to the existing slot (declaration) | `Pointer_activate` calls `alloc->allocate()` for a child block (`node_pointer.h:56`) |
+| Becoming free | Assign zeros | `Pointer_deactivate` recycles the block (`node_pointer.h:77`) |
+| Identity | Slot index (`particle_id` while claimed) | None as an instance |
+| Cost model | Declaration, near-free | Real allocation per activation |
+
+Consequences: pool claim/release must not be expressed as pointer activation;
+sparse containers, if used at all, are a separate layer (decision D8) whose
+allocation cost must be accounted for or measured at the time, which this contract
+does not do.
+
+### 4.3 Requirement on the field kernels (from reading, not run)
+
+The model says nulls are inert with no special-casing (`OPERATIONAL-PLAN.md` 3.11).
+In the built integration pass, the mass divide `dt / kMass` has no mass-zero gate
+(`field.cpp:463`); a free slot read there appears to yield non-finite velocity. Every
+particle loop also runs over the whole pool (e.g. `field.cpp:155-158`). The contract
+therefore requires that a later phase make zero mass numerically inert in the same
+branchless-gate style the force kernel already uses for zero separation
+(`field.cpp:224-231`), and add a test, **before** any free slot is held in a live
+pool. This document does not change the kernel.
+
+## 5. Operative scale, carried separately
+
+### 5.1 Representation
+
+Operative scale is the integer `step_k` held on each `ScaleFrame`, resolved through
+the occurrence's frame reference. It is separate from `parent_occurrence`/`ordinal`
+(composition), from address/storage depth, and from SNode nesting; none of those is
+an input to `step_k`.
+
+Per #115: the finest visible frame has `step_k = 0` (one particle is one distance
+unit); each less granular expressed frame is a factored expansion, so a frame at
+`step_k = k` has operative scale `B^k` with `B = 64` first and `128` a candidate.
+Conversion of the numerical state is derived from `step_k` and `B` in Phase 4; it is
+not stored per particle.
+
+### 5.2 Rules
+
+- **C-SC1. Conceptual boundary.** A primary boundary between two frames increases
+  `step_k` by one toward the coarser frame.
+- **C-SC2. Equivalence boundary.** A primary boundary declared an equivalence
+  (UTF endpoint to character in use is the defining example) increases `step_k` by
+  zero. It is recorded (`equivalence_of`) so the naming change is retained, but it
+  creates no scale step.
+- **C-SC3. Zoom rebase.** Exposing a finer level inserts a new frame at `step_k = 0`
+  and adds one to every existing frame's `step_k`. Because scale lives on frames,
+  this touches the frame records only. Identity, composition (`parent_occurrence`,
+  `ordinal`) and cold identity are unchanged. Conversion of surviving particles'
+  positions, centroids, radii and movement is Phase 4 work; mass, identity and
+  composition are not rescaled (plan step 4).
+- **C-SC4. Scale is view state.** `step_k` belongs to the view, never to a cold
+  object or to a particle's identity, so two study perspectives over the same cold
+  objects can assign different values to the same object. This is the study-relative
+  distance required by #106.
+- **C-SC5. The multiplier is not fixed here.** Whether the factor between frames is
+  one common scalar converted through the view, or additionally depends on
+  relationship kind (degrees of separation), is open in #115. The contract reserves
+  the place for it (a frame-to-frame factor, optionally qualified by relationship
+  kind, resolved at the frame boundary) and fixes no values, no layout and no
+  formula (decision D5).
+
+### 5.3 Secondary compression inherits 1:1
+
+- **C-SC6.** A `SecondaryAttachment` has no `step_k`. Every occurrence produced by
+  expanding it, at any nesting of dedupe, receives the `frame` of the occurrence it is
+  attached under.
+- **C-SC7.** `storage_depth` and secondary-tree depth are diagnostic. No scale,
+  distance, mass or force computation may read them. A test must be able to vary
+  nesting depth with identical results (section 8).
+- **C-SC8.** Expanding or collapsing a secondary attachment changes representation and
+  exposure only. It does not insert or rebase a frame, and does not alter any existing
+  `step_k`. Names such as paragraph, phrase or character create a boundary only if the
+  primary structure explicitly declares one.
+- **C-SC9.** The 1:1 rule concerns the distance frame. It does not promise that
+  coarse and exposed-detail dynamics are equal; exposure may reveal interactions
+  (plan, Verification matrix note).
+
+## 6. Collapse and expand publication
+
+Goal: an aggregate and its exposed parts never both contribute to mass, fields or
+sibling participation; repeated occurrences stay distinct; reused definitions never
+share mutable particle state.
+
+### 6.1 Exposure states
+
+Each composite occurrence is in exactly one state in any published view:
+
+- **Exposed:** its parts hold slots and act as ordinary particles; the composite
+  holds no slot of its own.
+- **Collapsed:** one aggregate holds a slot (a marble-shaped Markov blanket whose
+  boundary inputs and outputs are the interaction points); its descendants hold no
+  slots.
+- **Not exposed:** neither holds a slot and nothing contributes.
+
+### 6.2 Rules
+
+- **C-PUB1. Exactly one contributor per occurrence.** Mass reaches the universal sum
+  (`field.cpp:155-158`), group centroids (`field.cpp:616-625`) and sibling groups
+  from the occurrence's *current-state* slots only. Never from both the aggregate and
+  its parts.
+- **C-PUB2. Atomic at the tick boundary.** Claims, releases and edge/bond changes for
+  a state change are staged on the host and uploaded together (`Harness::upload`,
+  `field.h:122`), so no tick reads a half-published state. State changes take effect
+  between ticks only.
+- **C-PUB3. Release-then-claim in one staging.** For a collapse: parts' slots are
+  released (section 4) and the aggregate claimed; for an expand: the aggregate is
+  released and the parts claimed. Both appear in the same staged state, with edges
+  and bonds of released slots removed and new ones created for claimed slots.
+- **C-PUB4. Sibling participation counts live occurrences.** The automatic
+  same-token sibling field (`WORKING-SET-AND-LEDGER.md:112-115`) includes each
+  *exposed* occurrence once, by its own slot. A collapsed occurrence's hidden
+  descendants are not members. A repeated occurrence is a separate member.
+- **C-PUB5. Repeated occurrences are distinct contributions.** Each occurrence has its
+  own slot, `occurrence_key`, mass contribution and edges, even when it expands the
+  same definition. Ordered parent occurrences remain distinct and repeated parent
+  contributions remain separate edges.
+- **C-PUB6. Reuse is of the definition, not the state.** A deduplicated definition is
+  referenced from the warm definition (membership, order, gaps). Materializing an
+  occurrence creates new slots with fresh state. No two occurrences address the same
+  slot, and no mutable particle state is aliased between them. This matches Taichi:
+  there is no mechanism to share one physical child subtree among parent cells
+  (`taichi-snode-mechanics.md:101-128`).
+- **C-PUB7. Collapse then expand is deterministic.** Re-expanding reconstructs the
+  same set of `occurrence_key`s, order and gaps from the definition, with valid
+  references and no leftover slot. Dynamic state of re-expanded parts is not claimed
+  to equal their pre-collapse state: that needs an explicit aggregation contract
+  (plan, Verification matrix), which is open (decision D7). Mass accounting is
+  structural, not derived from volume or radius.
+- **C-PUB8. Edge and bond capacity.** The edge and bond counts are fixed at harness
+  construction (`field.h:87-91`). Whether publication rebuilds the arrays or pads
+  them with inert entries is decision D4; either must satisfy C-PUB1 to C-PUB3.
+
+## 7. Pool claim, release and recomposition
+
+Claim and release are declaration into the preallocated pool (section 4). The numbered
+sequence for one published view change (refocus, zoom, expand or collapse):
+
+1. **Prepare the target view** on the warm side: frames with `step_k`, the occurrence
+   set with `occurrence_key`, `token`, `frame`, `parent_occurrence`, `ordinal` and
+   exposure states. Cold records are read-only.
+2. **Diff by `occurrence_key`:** survive (same key, still exposed), release (exposed
+   before, not exposed or changed state now), claim (newly exposed).
+3. **Check capacity:** claims must not exceed the free set. Exceeding the budget is a
+   reportable condition to the harness, not a reason to allocate beyond the pool. What
+   the harness then does is not specified here.
+4. **Stage on the host:** survivors keep slots, with positions converted for any
+   frame change; released slots are zeroed to `0x`; claimed slots receive token,
+   mass, position and velocity; edges and bonds are rebuilt for the new exposure.
+5. **Validate** the staged state (range check of endpoints as in
+   `field.cpp:665-681`, the C-0X4 invariant, and C-PUB1: no occurrence has both
+   aggregate and part slots).
+6. **Upload at a tick boundary** (C-PUB2), advance claim generations for slots that
+   were released or reclaimed, and retire the old view's frame records.
+7. **Taichi side:** if any SNode tree is registered or destroyed to serve storage,
+   that is substrate bookkeeping. It spends the monotonic node-id budget
+   (`taichi-snode-mechanics.md:157-184`) and may recycle tree ids, but it changes no
+   `particle_id`, `token_id` or edge endpoint (C-ID3).
+
+Rules that apply throughout:
+
+- **C-POOL1.** No allocation happens on claim or release. The pool is allocated once.
+- **C-POOL2.** A claimed slot is never reinterpreted as another occurrence without an
+  intervening release (C-ID6).
+- **C-POOL3.** Release never changes cold data. Nothing here writes to, resets, drops
+  or truncates a database (AGENTS.md work discipline).
+- **C-POOL4.** A refocus that exposes different primary relationships over the same
+  cold objects reuses the same `token_id`s and survivors; only view tables, frames and
+  the affected slots change.
+
+## 8. Legal-document fixture design
+
+**Design only.** The fixture is not implemented, no data is inserted, and nothing is
+claimed to pass. It is constructed in C++ test memory (host side, no database writes).
+The leaf literals are drawn read-only from tokens that already exist; see decision D10
+on whether to use the seeded encoding floor or generated stand-in tokens.
+
+### 8.1 Structure
+
+Primary boundaries (explicit, model roles):
+
+- `Lf` finest conceptual level.
+- `Lm` the next level, composed of `Lf` elements.
+- `Lc` the document-set level, composed of `Lm` content.
+- Optional equivalence `Lf'` that names `Lf` differently (the UTF-endpoint to
+  character case), declared with no scale step.
+
+Secondary definitions (compression only, **no scale boundaries**):
+
+- `Def_C`: a literal run.
+- `Def_B`: a literal run, one gap, and a reference to `Def_C`.
+- `Def_A`: a literal run and two references (to `Def_B` and, directly, to `Def_C`).
+
+Documents:
+
+- `D1`: references `Def_A` twice and `Def_B` once directly, with its own literal runs
+  and one leading, one internal and one trailing gap.
+- `D2`: references `Def_A` once and has its own text.
+
+Partitions of the same expanded `D1` content:
+
+- `P_nested`: as above (dedupe nesting depth up to 3).
+- `P_flat`: no dedupe; the same content written inline.
+- `P_shifted`: definition boundaries moved so `Def_B`-like runs cut at different
+  points.
+
+### 8.2 Views
+
+- **View 1:** `Lm` is the finest visible frame (`step_k = 0`); `D1` content exposed;
+  `D2` collapsed to an aggregate; `Lc` at `step_k = 1`.
+- **View 2 (zoom in):** `Lf` becomes the finest frame (`step_k = 0`); `Lm` moves to 1,
+  `Lc` to 2 (a 1, B, B^2 hierarchy).
+- **View 3 (refocus):** the study is refocused on an occurrence of `Def_A` in `D2`
+  instead of `D1`, over the same cold objects.
+
+### 8.3 Observations the fixture must support
+
+Each maps to a row of the plan's [Verification matrix](model-realignment-plan.md).
+Tolerances are declared per test at implementation time and are not fixed here.
+
+| Plan row | Fixture observation |
+|---|---|
+| Legal document with nested deduplicated boilerplate | In View 1, every occurrence expanded from `Def_A`, `Def_B`, `Def_C` carries the same `frame` and so the same `step_k` as the surrounding `D1` content, at nesting depth 0, 1, 2 and 3. Expansion alone leaves every `step_k` and all surrounding coordinates unchanged. |
+| Same literal, different compression partitions | `P_nested`, `P_flat` and `P_shifted` expand to the same ordered sequence of exposed occurrences with the same gaps. Total mass and the universal sum are identical across partitions; no scale or mass inflation tracks nesting depth. |
+| Repeated boilerplate in one/two documents | `Def_A` appears twice in `D1` and once in `D2`: three distinct `occurrence_key`s, three disjoint slot sets, three independent edge sets. Changing the state of one occurrence leaves the other two unchanged. No slot is shared. |
+| Mixed primary and secondary hierarchy | Only the `Lf/Lm/Lc` boundaries change `step_k`. Inserting or removing a secondary level (for example wrapping `Def_C` in another dedupe layer) changes no `step_k`. |
+| UTF endpoint / character equivalence | The `Lf'` equivalence yields `Δk = 0` and no distance step; the naming change is retained in the frame record. |
+| Conceptual zoom and two study focuses | View 1 to View 2 shows `step_k` values 0,1 become 1,2 on `Lm`, `Lc` (plus 0 for the new `Lf`) with identity, ordinal and `token_id` retained and survivors keeping slots. View 1 to View 3 retains identity of shared objects, with different exposure and `step_k`. State is compared in a canonical common frame within declared tolerances. |
+| Collapse then expand | Collapse a `Def_A` occurrence and re-expand it: exactly one of aggregate or parts ever holds slots in any published state (C-PUB1); the same `occurrence_key`s are rebuilt in the same order with the same gaps; all edge and bond endpoints are valid. No claim of identical force or dynamics. |
+| Whitespace | Leading, internal and trailing gaps in `D1` and the gap in `Def_B` are present after compression, expansion, collapse and refocus, as position data and without inserted whitespace tokens. Separator particles are not part of this fixture (#116). |
+| CPU then available CUDA | The same observations are checked on CPU and, where a device exists, CUDA; unavailable device coverage is recorded as unavailable. |
+
+Rows for size examples and for small versus larger connected models belong to the
+extent (#120) and calibration phases and are not covered by this fixture.
+
+### 8.4 Additional checks specific to this contract
+
+- Varying dedupe nesting depth changes no scale-dependent output (C-SC7).
+- A forced re-run of the publication with no state change produces no slot churn.
+- Releasing all slots of a view returns the pool to all-`0x`, with the C-0X4 invariant
+  holding throughout.
+- Free-slot numerical behaviour (section 4.3) is a precondition, not an observation of
+  this fixture.
+
+## Open decisions for review
+
+Each needs Patrick unless a later phase's evidence settles it. Recommendation first,
+tradeoffs after.
+
+| # | Decision | Recommendation | Tradeoffs |
+|---|---|---|---|
+| D1 | Explicit versus derived resolution of identity, scale and position (plan step 1). | Hybrid in section 2.3: explicit token, slot, parent, ordinal and a frame reference; scale held once per frame. | Derivation by walking is smaller but its cost tracks storage depth, the quantity that must not matter. Explicit costs a few integers per occurrence. |
+| D2 | Is `particle_id` the pool slot (plus generation), or an id with an indirection table to slot? | Slot plus claim generation (C-ID1). | Indirection allows slot compaction or relocation but adds a lookup on every reference and a remap on every change. The pool is fixed, so relocation is not expected. |
+| D3 | How free (`0x`) slots are made numerically inert (the `field.cpp:463` divide, whole-pool loops). | A branchless arithmetic gate consistent with the force kernel, plus a test, in the first behavioural PR that holds free slots. | Alternative is an active-range or compaction scheme, which changes loop bounds and may conflict with the planned wake model. |
+| D4 | Edge/bond capacity at publication: rebuild the arrays or pad with inert entries. | Rebuild at refocus/zoom; consider padding only if hot collapse/expand cycling shows rebuild cost. | Rebuild is simple and low-frequency but reallocates; padding avoids reallocation but carries inert edges through every pass. |
+| D5 | Frame-to-frame factor: common scalar through view conversion, or relationship-kind multiples. | Leave open (#115). Reserve the lookup place only; test 64 first. | Fixing either now would pre-empt the calibration evidence #115 asks for. |
+| D6 | Definition of `occurrence_key`. | Path of `(token_id, ordinal)` from the study root. | Stable across dedupe and refocus, but long for deep paths; a bridge-local compact handle may be needed (still derived from the path). |
+| D7 | Aggregation contract for a collapsed occurrence (its mass and boundary inputs/outputs). | Defer to the phase that implements collapse; this contract requires only structural mass accounting, once. | Needed before any claim that collapsed and exposed dynamics agree. |
+| D8 | Whether sparse SNodes stage optional LoD detail at all. | Not needed for this contract; decide in Phase 4 with a measurement of activation allocation. | Sparsity helps partial pulls but activation allocates (`node_pointer.h:56`) and is not the pool claim. |
+| D9 | Hot form and width of the token reference. | Defer; keep `token` an opaque reference in the contract. | Cold `token_id` is an address key (`docs/address-encoding-transition.md`); a compact hot handle may be wanted, which must not become a new identity. |
+| D10 | Fixture data: seeded encoding-floor tokens (read-only) or generated stand-ins; and whether any real legal text is wanted. | Read-only use of already-seeded floor tokens, structural text only, no database writes. | Real text adds provenance and licensing questions; stand-ins risk looking like fabricated records, so they must stay in test memory and unlabelled as data. |
+| D11 | Cache-key and schema for prepared views. | Keep open until this contract is reviewed (plan step 4). | None until chosen. |
+
+## Adjacent observations
+
+Noted only; none are acted on here.
+
+- `engine/src/field/field.h:44-47` still describes edge offsets and off-centre pull,
+  which the intended model withdraws (#118).
+- The field arrays carry no token mapping and no sibling-field generation
+  (`ACTIVE-FIELD-MODEL.md:133-139`); the bridge-side token table in C-ID2 is where that
+  gap would be bridged.
+- `field.cpp:155-158` accumulates universal mass over the whole pool each tick,
+  independent of occupancy; relevant to the pool budget measurement already planned.
+- `engine/tests/field_test.cpp` was not audited line by line for mass-zero cases.
+- Open PR #111 findings are untouched and unrelated to this contract.
+- `docs/README.md` indexes system-map documents; a link to this contract could be
+  added after review.
