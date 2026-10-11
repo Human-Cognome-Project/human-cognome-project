@@ -17,10 +17,12 @@ source audit and broader sequence below describe the preceding baseline.
 
 Prepare the native C++ model and warm-cache bridge to assemble language base
 structures and recorded combinations for dictionary ingestion. Preserve the
-retained core and usable existing runtime throughout conversion. The next
-discussion will define the first English database and formal cross-database
-connections; it is a separate design/write decision, not an instruction to
-create that database now.
+retained core and usable existing runtime throughout conversion. The
+[language component plan](language-component-unicode-plan.md), accepted in
+PR #127 and clarified on 2026-10-11, establishes a shared multilingual
+Linguistics base at `02`. Its membership hierarchy and distinct grouping
+centroids guide the source-driven inventory slice. Persistent cross-store
+connections remain a separate design/write slice.
 
 ## Governing model
 
@@ -251,18 +253,29 @@ not clear them. Accepted plans #108 and #112 are merged, not evidence that
 their executions are complete. Previously acknowledged cross-encoding coverage
 work stays deferred for MVP.
 
-For the English/cross-database discussion, prepare decisions on:
+The 2026-10-11 decisions supersede the earlier English `01` / common `01.00`
+and language-per-database proposal. Use membership for language aggregation:
+shared characters join each applicable language and alphabet/punctuation
+grouping; English variants join English; English joins broader groups. Each
+grouping requires its own centroid representation. Literal parent/child links
+remain construction-only. Detailed allocations follow the reviewed write
+slice; membership does not assign additional address-couplet meanings.
 
-- English store scope, provenance and first bounded dictionary source;
+For the shared-Linguistics/cross-store continuation, prepare decisions on:
+
+- source-driven language inventories, provenance and the first English pilot
+  within the shared Linguistics scope;
 - reuse of core encoding identities and qualification/routing of references
   across databases without accidental local/global privacy crossover;
 - ownership of forward/reciprocal links, command transaction boundaries,
   deferred WAL obligations and idempotent retry/reconciliation;
-- language base structures and recorded combinations to assemble first;
+- shared character identities, reciprocal membership trees, separate alphabet/
+  punctuation grouping centroids and recorded literal combinations to assemble;
 - a read-only core inventory and a reviewable additive first-ingestion plan,
   including restore/recovery evidence and validation totals.
 
-Do not open or populate English, choose a final cross-database schema, or
-create formal cross-database links from this document alone. These are the
-next discussion. Model calibration need not prevent that discussion, but
-durable writes need the relevant record-integrity prerequisites.
+The importer/read-only validation slice is approved independently of PR #111
+fixes. Persistent Linguistics writes follow the reviewed owning-store/
+reference/reciprocal-write/retry contract and relevant record-integrity work.
+This document alone does not authorize population or a final cross-store
+schema. Model calibration does not impose another gate on this data work.

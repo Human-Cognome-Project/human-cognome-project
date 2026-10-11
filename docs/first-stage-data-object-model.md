@@ -27,6 +27,16 @@ formal cross-database routing. Occurrence ids are study-local identities, slots
 are numerical addresses, and SNode ids identify schema nodes. No lifetime
 across general recomposition is implied. The caller keeps bound layouts alive.
 
+The [language component plan](language-component-unicode-plan.md) supplies the
+next data layer. Language aggregation uses `members` / `member_of`: shared
+characters join applicable language and alphabet/punctuation groups; English
+variants join English, which joins broader groups. Each grouping has its own
+centroid representation, distinct for alphabet and punctuation. These
+membership edges are separate from the ordered literal parent occurrences
+above. The bounded preparation API does not yet implement grouping-centroid
+aggregation; that remains cache-manager work. A shared character's literal
+definition is reused across language memberships.
+
 Preparation generates one whole-mass sibling field per definition and one
 parent field per parent value. Parent fields span ordinal positions. Each
 ordered parent occurrence produces its own edge and numerical share
@@ -86,6 +96,7 @@ The native tests cover initial/refreshed first force, cross-position fields,
 repeated instances, 1:1 compression, aggregate/part exclusion, contact and inert
 free slots. [Results and settings](../engine/docs/OBJECT-SUPPORT-RESULTS.md)
 are recorded. This establishes the engine-facing object record slice needed
-for the next data-modeling work. Completing the naming/language definitions,
-English store scope and formal cross-database links remains the intended
-discussion before additive persistent insertion.
+for the next data-modeling work. The next approved slice is the source-driven
+inventory and read-only validator for the shared `02` Linguistics base.
+Group naming definitions, centroid preparation and formal cross-store
+membership writes follow the reviewed population/assembly slices.
