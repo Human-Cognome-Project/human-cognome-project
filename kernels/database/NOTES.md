@@ -71,6 +71,26 @@ records only. Canadian English.
 > stream, with the swarm/p2p layer preliminary and gated behind it. `HANDOFF.md` is the
 > reload pointer — read it first.
 
+## Linguistic membership and group centroids (Patrick, 2026-10-11)
+
+**Settled data-model direction; importer and warm aggregation remain planned.**
+Follow [the language component plan](../../docs/language-component-unicode-plan.md).
+Shared characters retain one identity and are members of each applicable
+language and alphabet/punctuation grouping. Language subdivisions aggregate
+by membership too: English variants are members of English, which is a member
+of broader groups. Write both directions through `members` / `member_of`.
+
+Every grouping has its own centroid representation; alphabet and punctuation
+have distinct groupings and centroids. The cache manager uses membership
+trees and literal value trees to assemble the language-appropriate warm
+objects over byte structures. Literal parents/children remain actual
+construction only. Group membership does not mint another single-character
+definition or replace its structural mass with a centroid aggregate.
+The shared Linguistics root is `02`, superseding English `01` / common
+`01.00`; no new meaning for the held `01` is assigned. Concrete centroid
+preparation and persistent cross-store membership writes remain separate
+implementation slices, not built by this note.
+
 ## Whole-particle response and focus-relative distance (Patrick, 2026-10-08)
 
 **Settled model direction; implementation reconciliation remains pending.**

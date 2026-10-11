@@ -56,7 +56,15 @@ conflicting historical model requirements; code still determines what is built.
   Linguistics base, with `02.FS.LR.00.*` reserved for language-frame word
   components. Patrick confirmed this supersedes English `01` / common `01.00`
   on 2026-10-11. No new meaning for `01` is assigned here. Formal cross-store
-  writes still require the plan's bounded reference/write implementation. Existing record-integrity findings are not cleared by
+  writes still require the plan's bounded reference/write implementation.
+- Linguistic aggregation uses reciprocal `members` / `member_of` links.
+  Shared characters retain one identity and join each applicable language and
+  alphabet/punctuation grouping. English variants belong to English, which
+  belongs to its broader groups. Each grouping has its own centroid
+  representation; alphabet and punctuation groups are distinct. Literal
+  `parent` / `child` links describe construction only. Do not mint a separate
+  single-character token per language or encode group containment as parents.
+  Existing record-integrity findings are not cleared by
   documentation merges; check current PR/issue state before execution.
 
 ## Work discipline
