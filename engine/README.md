@@ -19,8 +19,9 @@ engine/taichi/
 |---|---|
 | `src/engine/` | Thin native wrapper around the Taichi runtime: instance lifetime, kernel compile/launch, devices, transfers. |
 | `src/field/` | Native C++ field/tick implementation. |
+| `src/assembly/` | Fixed-study host preparation, identity/scale mapping and publication. |
 | `apps/` | Device/runtime inspection utilities. |
-| `tests/` | Native smoke, field and >2^31 dense-index regression tests. |
+| `tests/` | Native smoke, field, preparation, assembly and >2^31 dense-index regressions. |
 | `cmake/` | Locates the matching Taichi source/build/runtime set. |
 | `scripts/` | Native runtime environment helpers. |
 | `docs/` | Recovered design, vetting, configuration and measurement record. |
@@ -106,6 +107,11 @@ See [docs/BUILD-VETTING.md](docs/BUILD-VETTING.md) for the CPU/GPU/load
 qualification ladder.
 
 ## Current status
+
+The 2026-10-10 object-support corrections add whole-particle parent response,
+supplied-geometry radii, ordinary finite contact and a fixed-study native
+publication path. All five native CPU suites pass; settings, results and
+remaining boundaries are in [docs/OBJECT-SUPPORT-RESULTS.md](docs/OBJECT-SUPPORT-RESULTS.md).
 
 The native workspace was recovered from a local development branch on
 2026-09-24 after the repository had already been reorganized around an

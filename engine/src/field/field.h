@@ -10,11 +10,10 @@
 
 // A basic harness for the field model: one law, applied without exception.
 //
-// Every interaction is mass times mass over separation squared, evaluated
+// Field attraction is mass times mass over separation squared, evaluated
 // against a group centroid rather than against another particle. A group's
 // centroid always includes the subject. Parent and sibling participation are
-// one edge shape: whole participation is component participation whose share
-// is one and whose offset is zero.
+// one edge shape: proportional participation acts at the particle centre.
 //
 // Nothing here decides what the data means. It moves state through one tick.
 namespace field {
@@ -24,7 +23,7 @@ namespace field {
 enum ParticleField {
   kPosX = 0, kPosY, kPosZ,
   kVelX, kVelY, kVelZ,
-  kMass,
+  kMass, kRadius,
   kForceX, kForceY, kForceZ,
   kParticleFieldCount
 };
@@ -42,20 +41,13 @@ enum EdgeFloatField {
   // Share of the particle's total mass taking part. One for whole
   // participation, a fraction for a component.
   kShare = 0,
-  // Where that share sits relative to the particle's centre. Zero for whole
-  // participation; a component sits off-centre, and its pull is felt there
-  // while the whole body translates in response (no rotation in the model).
-  kOffX, kOffY, kOffZ,
   kEdgeFloatFieldCount
 };
 
 enum EdgeIntField { kEdgeParticle = 0, kEdgeGroup, kEdgeIntFieldCount };
 
-// A pairwise ledgered connection between two particles of the same kind. Not
-// a second force -- the one law still governs; a bond only sets how strongly
-// this pair is coupled by it.
-enum BondIntField { kBondA = 0, kBondB, kBondDefined, kBondIntFieldCount };
-enum BondFloatField { kBondAlign = 0, kBondFloatFieldCount };
+// Explicit ledgered body-contact coverage; no all-pairs discovery pass.
+enum ContactIntField { kContactA = 0, kContactB, kContactIntFieldCount };
 
 struct Parameters {
   // Calibration: two unconstrained mass-1 particles at separation 1 overlap at
@@ -66,12 +58,10 @@ struct Parameters {
   // One tick is one time unit; the brake is what makes a step that coarse
   // safe.
   float dt{1.0f};
-  // Separator shell radius: the corona shell each particle carries.
-  float corona{0.5f};
-  // Corona separator push stiffness (a trial value, calibrate later).
-  float sep_stiffness{1.0f};
-  // Defined-bond invariant hold stiffness (a trial value, calibrate later).
-  float hold_stiffness{1.0f};
+  // Finite resistance to penetration of the summed spherical radii.
+  // This is not a hard non-overlap constraint. At exact coincidence the
+  // direction gate gives zero force, without separating the centres.
+  float contact_stiffness{1.0f};
   // Radial velocity dampening reach: the field-strength threshold M/d^2 at
   // which the reach sits. Inside the reach (M/d^2 above this threshold) the
   // dampening is inert; beyond it, outward radial velocity is bled off. A
@@ -88,39 +78,44 @@ class Harness {
           int particle_count,
           int group_count,
           int edge_count,
-          int bond_count = 0);
+          int contact_count = 0);
 
   int particle_count() const { return particles_; }
   int group_count() const { return groups_; }
   int edge_count() const { return edges_; }
-  int bond_count() const { return bonds_; }
+  int contact_count() const { return contacts_; }
+  bool ready() const { return ready_; }
 
   // Host staging, in the packed layout above.
   std::vector<float> particle_data;
   std::vector<float> group_data;
   std::vector<float> edge_float_data;
   std::vector<int> edge_int_data;
-  std::vector<float> bond_float_data;
-  std::vector<int> bond_int_data;
+  std::vector<int> contact_int_data;
   // The universal mass: the total mass of the construct, each particle
-  // counted exactly once, held in the single cell every particle's
-  // universal pull reads. Written on-device each tick by the clear pass;
+  // counted exactly once, used by radial velocity damping.
+  // Written on-device each tick by the clear pass;
   // not staged from the host.
   std::vector<float> universal_data;
 
   // Offsets are computed in size_t: f * count overflows int once the item
   // count passes ~2^31 / field count.
   float &particle(int f, int i) { return particle_data[offset(f, particles_, i)]; }
+  float particle(int f, int i) const { return particle_data[offset(f, particles_, i)]; }
   float &group(int f, int i) { return group_data[offset(f, groups_, i)]; }
+  float group(int f, int i) const { return group_data[offset(f, groups_, i)]; }
   float &edge_float(int f, int i) { return edge_float_data[offset(f, edges_, i)]; }
   int &edge_int(int f, int i) { return edge_int_data[offset(f, edges_, i)]; }
-  float &bond_float(int f, int i) { return bond_float_data[offset(f, bonds_, i)]; }
-  int &bond_int(int f, int i) { return bond_int_data[offset(f, bonds_, i)]; }
+  int &contact_int(int f, int i) { return contact_int_data[offset(f, contacts_, i)]; }
 
   // Throws std::out_of_range, before transferring anything, if a staged
-  // edge or bond names a particle or group outside this harness's counts.
+  // edge or contact names a particle or group outside this harness's counts.
+  // Malformed numerical staging and references to mass-zero free slots are
+  // also refused. Upload invalidates readiness until centroids are seeded.
   void upload();
   void download();
+  void invalidate();
+  void publish(const Parameters &p);
 
   // Build the centroids once from the staged state, so the first tick reads a
   // consistent field rather than zeros.
@@ -138,12 +133,11 @@ class Harness {
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
   }
-  void validate_indices() const;
+  void validate_staging() const;
 
   void launch_clear();
   void launch_force(const Parameters &p);
   void launch_contact(const Parameters &p);
-  void launch_universal(const Parameters &p);
   void launch_integrate(const Parameters &p);
   void launch_determine();
   void launch_centroid(const Parameters &p);
@@ -152,14 +146,15 @@ class Harness {
   int particles_;
   int groups_;
   int edges_;
-  int bonds_;
+  int contacts_;
+  bool uploaded_{false};
+  bool ready_{false};
 
   std::unique_ptr<taichi::lang::Ndarray> particle_array_;
   std::unique_ptr<taichi::lang::Ndarray> group_array_;
   std::unique_ptr<taichi::lang::Ndarray> edge_float_array_;
   std::unique_ptr<taichi::lang::Ndarray> edge_int_array_;
-  std::unique_ptr<taichi::lang::Ndarray> bond_float_array_;
-  std::unique_ptr<taichi::lang::Ndarray> bond_int_array_;
+  std::unique_ptr<taichi::lang::Ndarray> contact_int_array_;
   std::unique_ptr<taichi::lang::Ndarray> determined_array_;
   std::unique_ptr<taichi::lang::Ndarray> universal_array_;
 
@@ -168,7 +163,6 @@ class Harness {
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;
-  engine::CompiledKernel universal_;
   engine::CompiledKernel integrate_;
   engine::CompiledKernel determine_;
   engine::CompiledKernel centroid_;

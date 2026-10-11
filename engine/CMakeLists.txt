@@ -30,6 +30,12 @@ target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
+# Fixed-study host preparation/control, separate from the field kernels.
+add_library(study_assembly STATIC src/assembly/study.cpp)
+target_include_directories(study_assembly PUBLIC src)
+target_link_libraries(study_assembly PUBLIC field_core)
+target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
 add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
@@ -47,6 +53,15 @@ target_link_libraries(field_test PRIVATE field_core)
 add_test(NAME field_test COMMAND field_test)
 set_tests_properties(field_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+
+foreach(suite preparation_test assembly_test)
+  add_executable(${suite} tests/${suite}.cpp)
+  target_include_directories(${suite} PRIVATE tests)
+  target_link_libraries(${suite} PRIVATE study_assembly)
+  add_test(NAME ${suite} COMMAND ${suite})
+  set_tests_properties(${suite} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+endforeach()
 
 # Proves the >2^31 flattened-index cap is lifted: a 2-axis dense ndarray
 # with N chosen so a single cell's flattened offset clears 2^31, written and

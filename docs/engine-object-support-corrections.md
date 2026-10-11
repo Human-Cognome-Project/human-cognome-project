@@ -1,6 +1,7 @@
 # Engine corrections for first-stage data objects
 
-Status: **ACCEPTED in PR #124; runtime implementation not started.**
+Status: **ACCEPTED in PR #124; implemented and verified on native CPU.**
+Execution evidence: [object-support results](../engine/docs/OBJECT-SUPPORT-RESULTS.md).
 Execution details: [implementation plan](engine-object-implementation-plan.md).
 
 This proposal translates the agreed physics simplifications into corrections
