@@ -1,0 +1,18 @@
+{
+  "provenance": "docs/language-component-unicode-plan.md: Patrick's reviewed bootstrap membership examples; provisional, no address allocations",
+  "groups": {
+    "language:en": {"label": "English", "kind": "language"},
+    "language:en_AU": {"label": "Australian English", "kind": "language-subgroup"},
+    "language:en_GB": {"label": "UK English", "kind": "language-subgroup"},
+    "language:en_CA": {"label": "Canadian English", "kind": "language-subgroup"},
+    "family:germanic": {"label": "Germanic", "kind": "broader-language-group"},
+    "family:indo-european": {"label": "Indo-European", "kind": "broader-language-group"}
+  },
+  "memberships": [
+    ["language:en_AU", "language:en"],
+    ["language:en_GB", "language:en"],
+    ["language:en_CA", "language:en"],
+    ["language:en", "family:germanic"],
+    ["family:germanic", "family:indo-european"]
+  ]
+}

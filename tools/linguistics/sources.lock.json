@@ -1,0 +1,36 @@
+{
+  "cldr_version": "48.2",
+  "cldr_commit": "11299982335beb974c1c63c45265184e759c0f41",
+  "unicode_version": "17.0.0",
+  "icu_version": "78.1",
+  "files": {
+    "cldr.tar.gz": {
+      "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/11299982335beb974c1c63c45265184e759c0f41",
+      "sha256": "8805841621aada9df6da4d7335c5c75e23c0e64e686d6e3fca37f54fb3750fef"
+    },
+    "icu4j.jar": {
+      "url": "https://repo.maven.apache.org/maven2/com/ibm/icu/icu4j/78.1/icu4j-78.1.jar",
+      "sha256": "bbb70d3be23110d7295823eee0c2e896ac3b619b3c0f26168f65eb972df51d2a"
+    },
+    "UnicodeData.txt": {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt",
+      "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c"
+    },
+    "Scripts.txt": {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/Scripts.txt",
+      "sha256": "9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf"
+    },
+    "ScriptExtensions.txt": {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/ScriptExtensions.txt",
+      "sha256": "ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6"
+    },
+    "PropertyValueAliases.txt": {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/PropertyValueAliases.txt",
+      "sha256": "64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a"
+    },
+    "SpecialCasing.txt": {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/SpecialCasing.txt",
+      "sha256": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588"
+    }
+  }
+}

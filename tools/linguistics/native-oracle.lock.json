@@ -1,0 +1,26 @@
+{
+  "source": "PR #111 pure address/UTF-8 derivation only; no integration of its controller or population path",
+  "commit": "5120ee6e6316bf76b6cd7a91ec51913054464877",
+  "files": {
+    "kernels/database/bootstrap/encoding_populate.cpp": {
+      "url": "https://raw.githubusercontent.com/Human-Cognome-Project/human-cognome-project/5120ee6e6316bf76b6cd7a91ec51913054464877/kernels/database/bootstrap/encoding_populate.cpp",
+      "sha256": "0afde4467f5ed3c6880700ac8b3dd2e987a33c880385eca9d36901010d6cadfe"
+    },
+    "kernels/database/bootstrap/encoding_populate.h": {
+      "url": "https://raw.githubusercontent.com/Human-Cognome-Project/human-cognome-project/5120ee6e6316bf76b6cd7a91ec51913054464877/kernels/database/bootstrap/encoding_populate.h",
+      "sha256": "5ea0ff198480d216676a4d0721235dbca879ef23c3e879a50b4d9015c81c607b"
+    },
+    "kernels/database/controller/controller.h": {
+      "url": "https://raw.githubusercontent.com/Human-Cognome-Project/human-cognome-project/5120ee6e6316bf76b6cd7a91ec51913054464877/kernels/database/controller/controller.h",
+      "sha256": "a962475e750d006ef5fca2565d74dcb507329aa486932d791e335e5db57391a1"
+    },
+    "kernels/database/codec/codec.cpp": {
+      "url": "https://raw.githubusercontent.com/Human-Cognome-Project/human-cognome-project/5120ee6e6316bf76b6cd7a91ec51913054464877/kernels/database/codec/codec.cpp",
+      "sha256": "017dc0766456a444bd665297deb6b9a01cc371207fe4a312527dc30451168645"
+    },
+    "kernels/database/codec/codec.h": {
+      "url": "https://raw.githubusercontent.com/Human-Cognome-Project/human-cognome-project/5120ee6e6316bf76b6cd7a91ec51913054464877/kernels/database/codec/codec.h",
+      "sha256": "341bea15ca4b66fa8253b9eb5c34466e0f2b15f2ad34c06d02bddc7e4e423043"
+    }
+  }
+}

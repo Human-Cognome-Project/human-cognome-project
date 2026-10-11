@@ -1,0 +1,29 @@
+{
+  "database_writes": 0,
+  "errors": [],
+  "expected_tokens": 286,
+  "export_sha256": "1bd7a8b073c4b1fe4acdf248c4811275d5da6b9b95817003b92568a05449bc6d",
+  "missing_endpoints_or_dependencies": [
+    "00.00.00.01.0d",
+    "00.00.00.04.bM",
+    "00.00.00.04.bN",
+    "00.00.00.04.bP",
+    "00.00.00.04.bQ",
+    "00.00.00.04.bU",
+    "00.00.00.04.bV",
+    "00.00.00.04.bY",
+    "00.00.00.04.bZ",
+    "00.00.00.04.bc",
+    "00.00.00.04.bd",
+    "00.00.00.04.bi",
+    "00.00.00.04.bu",
+    "00.00.00.04.bv"
+  ],
+  "null_parent_mass_cells": 512,
+  "null_parent_mass_policy": "retained as deferred; verified constituent token.mass supplies expected mass",
+  "present_tokens": 272,
+  "scope": "referenced endpoints and dependencies in supplied export, not a live database",
+  "status": "partial",
+  "validated_floor_bytes": 256,
+  "validated_tokens": 272
+}

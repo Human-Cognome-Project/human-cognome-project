@@ -1,9 +1,9 @@
 # Language memberships over shared Unicode value trees
 
 Status: **Plan accepted in PR #127, with Patrick's membership clarification,
-2026-10-11.** Source research and a read-only mapping preview have been
-completed. The reusable importer, persistent memberships and general warm
-aggregation are not implemented by this documentation change.
+2026-10-11.** The [reusable offline importer and read-only export validator](../tools/linguistics/README.md)
+are now implemented, with reproducible source/manifest evidence. Persistent
+memberships and general warm aggregation remain planned.
 
 ## Intended result
 
@@ -229,6 +229,20 @@ existence/integrity of every row in a current live core store. No database was
 connected, created, restored or populated for either check.
 
 ## Phased execution
+
+**Offline slice built:** `tools/linguistics/` pins CLDR 48.2, UCD 17.0.0 and
+ICU4J 78.1, resolves source inheritance/aliases and emits shared values,
+symbolic group descriptions, deduplicated reciprocal membership candidates
+and coverage. Its English pilot references 84 existing values. The expanded
+six-locale run preserves the 771 source memberships while separating casing
+candidates and actual group edges. Index exemplars remain evidence only;
+multi-scalar case mappings do not fabricate literal constructions. The
+[checked-in evidence](../data/linguistics/previews) is regenerated and compared
+in CI. The validator inspects supplied plain/gzip COPY exports without SQL
+execution or restoration. The retained floor export has 14 missing English
+punctuation endpoints and is reported as partial; this is not a claim about
+the current live core. No persistent membership or centroid assembly is
+implemented by this offline slice.
 
 1. **Script and manifest:** implement the reusable source importer and
    read-only target-core validator; generate per-language inventories and
