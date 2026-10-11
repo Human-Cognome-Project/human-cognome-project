@@ -1,6 +1,6 @@
 # Language component trees over core Unicode endpoints
 
-Status: **PROPOSAL for approval, 2026-10-11.** Source research and a read-only
+Status: **ACCEPTED by maintainer review in PR #127, 2026-10-11.** Source research and a read-only
 mapping preview have been completed. This PR changes documentation only;
 database creation, population and runtime changes follow approved slices.
 
@@ -22,6 +22,12 @@ be reused, with language/region differences stored as deltas and references.
 This work focuses on iconographic structure and word commonality. Ideographic
 modeling follows the `concept_db` work; the first major lexical ingestion
 still targets every available Kaikki language.
+
+**Addressing supersession (Patrick confirmed, 2026-10-11):** the shared
+`02` Linguistics base replaces the earlier proposed English `01` / common
+`01.00` allocation. Do not implement that earlier language-per-database layout.
+Remaining allocations follow this plan's reviewed write slice; this change
+does not assign a new meaning to `01`.
 
 ## Construction contract
 
