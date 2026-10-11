@@ -51,8 +51,12 @@ conflicting historical model requirements; code still determines what is built.
 - Track bridge/identity in #106, distance calibration in #115, whitespace in
   #116, response in #118, contact in #119 and extent in #120.
 - Dictionary structures and SNode assembly are the near-term objective.
-  English database creation and formal cross-database links await the next
-  design discussion. Existing record-integrity findings are not cleared by
+  Follow the [language component plan](docs/language-component-unicode-plan.md):
+  `00` is the common computational core; `02` is the shared multilingual
+  Linguistics base, with `02.FS.LR.00.*` reserved for language-frame word
+  components. Patrick confirmed this supersedes English `01` / common `01.00`
+  on 2026-10-11. No new meaning for `01` is assigned here. Formal cross-store
+  writes still require the plan's bounded reference/write implementation. Existing record-integrity findings are not cleared by
   documentation merges; check current PR/issue state before execution.
 
 ## Work discipline
