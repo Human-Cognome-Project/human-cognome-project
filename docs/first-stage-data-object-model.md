@@ -28,14 +28,17 @@ are numerical addresses, and SNode ids identify schema nodes. No lifetime
 across general recomposition is implied. The caller keeps bound layouts alive.
 
 The [language component plan](language-component-unicode-plan.md) supplies the
-next data layer. Language aggregation uses `members` / `member_of`: shared
-characters join applicable language and alphabet/punctuation groups; English
+next data layer. Each language-letter/punctuation endpoint has its own
+linguistic identity and ordered shared core character parents, with additive
+reciprocal child entries on those core endpoints (2026-10-12 correction).
+Language aggregation uses `members` / `member_of`: linguistic endpoints
+join their language and alphabet/punctuation groups; English
 variants join English, which joins broader groups. Each grouping has its own
 centroid representation, distinct for alphabet and punctuation. These
 membership edges are separate from the ordered literal parent occurrences
 above. The bounded preparation API does not yet implement grouping-centroid
-aggregation; that remains cache-manager work. A shared character's literal
-definition is reused across language memberships.
+aggregation; that remains cache-manager work. Shared core character definitions
+are reused as parents of the distinct linguistic endpoints.
 
 Preparation generates one whole-mass sibling field per definition and one
 parent field per parent value. Parent fields span ordinal positions. Each
