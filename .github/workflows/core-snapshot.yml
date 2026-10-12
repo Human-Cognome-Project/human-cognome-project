@@ -1,0 +1,47 @@
+name: Core UTF-8 snapshot
+
+on:
+  pull_request:
+    paths:
+      - "data/postgres/snapshots/**"
+      - ".github/workflows/core-snapshot.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/postgres/snapshots/**"
+      - ".github/workflows/core-snapshot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch only the two retained snapshots
+        run: |
+          git lfs fetch --include='data/postgres/snapshots/2026-09-28-encoding-floor/hcp_core.sql.gz,data/postgres/snapshots/2026-10-03-encoding-tables/hcp_core.sql.gz' --exclude='' origin HEAD
+      - name: Verify complete UTF-8 coverage and exact report
+        run: |
+          hcp_utf8_export="$(git rev-parse --git-common-dir)/lfs/objects/44/08/4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8"
+          python data/postgres/snapshots/2026-10-03-encoding-tables/verify_utf8_snapshot.py "$hcp_utf8_export" --out /tmp/hcp-core-utf8-coverage.json
+          cmp /tmp/hcp-core-utf8-coverage.json data/postgres/snapshots/2026-10-03-encoding-tables/COVERAGE.json
+      - name: Ensure the old byte floor fails complete-coverage validation
+        run: |
+          python - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          common = Path(subprocess.check_output(['git', 'rev-parse', '--git-common-dir'], text=True).strip())
+          old = common / 'lfs/objects/1b/d7/1bd7a8b073c4b1fe4acdf248c4811275d5da6b9b95817003b92568a05449bc6d'
+          report = Path('/tmp/hcp-core-old-floor-coverage.json')
+          result = subprocess.run([sys.executable, 'data/postgres/snapshots/2026-10-03-encoding-tables/verify_utf8_snapshot.py', str(old), '--out', str(report)], check=False)
+          assert result.returncode == 2
+          data = json.loads(report.read_text())
+          assert data['status'] == 'invalid'
+          assert data['byte_values'] == 256
+          assert data['missing_valid_scalars'] == 1111936
+          PY

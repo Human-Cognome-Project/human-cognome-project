@@ -1,0 +1,21 @@
+{
+  "byte_values": 256,
+  "database_writes": 0,
+  "error_count": 0,
+  "errors": [],
+  "export_sha256": "4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8",
+  "missing_valid_scalars": 0,
+  "nibble_values": 16,
+  "non_ascii_endpoints": 1111936,
+  "placeholder_labels": 6,
+  "row_totals": {
+    "member_of": 1112213,
+    "members": 1112213,
+    "token": 1112215,
+    "token_child": 4333104,
+    "token_parent": 4382976
+  },
+  "scope": "complete endpoint coverage, exact UTF-8 notation and whole mass; relationship row totals only",
+  "status": "valid",
+  "valid_scalar_endpoints": 1112064
+}
