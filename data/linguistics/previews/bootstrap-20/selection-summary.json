@@ -1,0 +1,286 @@
+{
+  "bundle_sha256": "af4cb2aa223d07638eea287578521c8e357d73ed0b33311727f8e507e5488007",
+  "counts": {
+    "boundary_memberships": 2811,
+    "core_construction_definitions": 484,
+    "groups": 12,
+    "membership_edges": 876,
+    "multi_scalar_literals": 0,
+    "values": 394
+  },
+  "encoding": "UTF-8",
+  "groups": [
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:alphabet:el",
+        "state": "native-assembly-pending"
+      },
+      "key": "alphabet:el",
+      "kind": "alphabet",
+      "label": "Alphabet (el)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:alphabet:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "alphabet:en",
+      "kind": "alphabet",
+      "label": "Alphabet (en)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:alphabet:he",
+        "state": "native-assembly-pending"
+      },
+      "key": "alphabet:he",
+      "kind": "alphabet",
+      "label": "Alphabet (he)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:el",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:el",
+      "kind": "language",
+      "label": "el",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en",
+      "kind": "language",
+      "label": "English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_AU",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_AU",
+      "kind": "language-subgroup",
+      "label": "Australian English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_CA",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_CA",
+      "kind": "language-subgroup",
+      "label": "Canadian English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_GB",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_GB",
+      "kind": "language-subgroup",
+      "label": "UK English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:he",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:he",
+      "kind": "language",
+      "label": "he",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:punctuation:el",
+        "state": "native-assembly-pending"
+      },
+      "key": "punctuation:el",
+      "kind": "punctuation",
+      "label": "Punctuation (el)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:punctuation:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "punctuation:en",
+      "kind": "punctuation",
+      "label": "Punctuation (en)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:punctuation:he",
+        "state": "native-assembly-pending"
+      },
+      "key": "punctuation:he",
+      "kind": "punctuation",
+      "label": "Punctuation (he)",
+      "store": "linguistics"
+    }
+  ],
+  "sample_constructions": [
+    {
+      "address": "00.00.00.00.4e",
+      "key": "core:00.00.00.00.4e",
+      "parents": [
+        {
+          "ordinal": 0,
+          "structural_count_derived": 1,
+          "value": "core:00.00.00.00.0E"
+        },
+        {
+          "ordinal": 1,
+          "structural_count_derived": 1,
+          "value": "core:00.00.00.00.02"
+        }
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2
+    },
+    {
+      "address": "00.00.00.04.bi",
+      "key": "core:00.00.00.04.bi",
+      "parents": [
+        {
+          "ordinal": 0,
+          "structural_count_derived": 2,
+          "value": "core:00.00.00.00.4e"
+        },
+        {
+          "ordinal": 1,
+          "structural_count_derived": 2,
+          "value": "core:00.00.00.00.34"
+        },
+        {
+          "ordinal": 2,
+          "structural_count_derived": 2,
+          "value": "core:00.00.00.00.3g"
+        }
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6
+    }
+  ],
+  "sample_values": [
+    {
+      "address": "00.00.00.00.23",
+      "form": "A",
+      "key": "core:00.00.00.00.23",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0041"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
+    },
+    {
+      "address": "00.00.00.01.Cf",
+      "form": "Α",
+      "key": "core:00.00.00.01.Cf",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "GREEK CAPITAL LETTER ALPHA",
+          "script": "Greek",
+          "script_extensions": [
+            "Greek"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0391"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 4,
+      "utf8_hex": "CE 91"
+    },
+    {
+      "address": "00.00.00.01.Lw",
+      "form": "א",
+      "key": "core:00.00.00.01.Lw",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lo",
+          "name": "HEBREW LETTER ALEF",
+          "script": "Hebrew",
+          "script_extensions": [
+            "Hebrew"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+05D0"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 4,
+      "utf8_hex": "D7 90"
+    },
+    {
+      "address": "00.00.00.04.bi",
+      "form": "…",
+      "key": "core:00.00.00.04.bi",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    }
+  ],
+  "selectors": [
+    "language:el",
+    "language:en",
+    "language:he"
+  ],
+  "source_manifest_sha256": "2c3ee6a468abe7ffbb8d3ef385c97f26a1d5f2d3a74b47c8cd02c6165ecd48d5",
+  "status": "offline-bundle-native-assembly-pending"
+}

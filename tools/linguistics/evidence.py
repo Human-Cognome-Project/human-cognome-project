@@ -9,6 +9,7 @@ from manifest import generate, write_json
 from sources import Sources, HERE, DEFAULT_CACHE
 from unicode_values import UnicodeData
 from validate_core import validate_export
+from selection import inventory_index, select_components, selection_summary
 
 EVIDENCE = HERE.parents[1] / 'data/linguistics/previews'
 
@@ -19,9 +20,19 @@ def selected_values(manifest):
             for value in manifest['values'] if value['form'] in forms]
 
 
-def reproduce(sources, floor_export=None, utf8_export=None):
+def reproduce(sources, floor_export=None, utf8_export=None, bootstrap_only=False):
     cldr, icu, ucd = Cldr(sources.cldr_files()), Icu(sources), UnicodeData(sources)
     hierarchy = json.loads((HERE / 'bootstrap-groups.json').read_text())
+    if bootstrap_only:
+        profile = json.loads((HERE / 'bootstrap-locales.json').read_text())
+        manifest, coverage = generate(sources, cldr, icu, ucd, profile['locales'], ROLES, hierarchy)
+        index = inventory_index(manifest)
+        selection = select_components(manifest, ['language:el', 'language:en', 'language:he'])
+        results = {'bootstrap-20/coverage.json': coverage, 'bootstrap-20/inventories.json': index,
+                   'bootstrap-20/selection-summary.json': selection_summary(selection)}
+        if utf8_export:
+            results['bootstrap-20/utf8-validation.json'] = validate_export(utf8_export, manifest)
+        return results
     en, en_report = generate(sources, cldr, icu, ucd, ['en'], ['main', 'punctuation'], hierarchy)
     # A new resolver avoids unrelated used-source hashes leaking between runs.
     six, six_report = generate(sources, Cldr(cldr.files), icu, ucd,
@@ -43,8 +54,9 @@ if __name__ == '__main__':
     parser.add_argument('--write', action='store_true', help='replace local evidence files for a reviewed change')
     parser.add_argument('--core-export', type=Path, help='also reproduce floor report from its retained export')
     parser.add_argument('--utf8-export', type=Path, help='also reproduce English/six-locale reports from the full UTF-8 export')
+    parser.add_argument('--bootstrap-only', action='store_true', help='reproduce the 20-language bootstrap evidence')
     args = parser.parse_args()
-    results = reproduce(Sources(args.cache), args.core_export, args.utf8_export)
+    results = reproduce(Sources(args.cache), args.core_export, args.utf8_export, args.bootstrap_only)
     for name, result in results.items():
         path = EVIDENCE / name
         if args.write:

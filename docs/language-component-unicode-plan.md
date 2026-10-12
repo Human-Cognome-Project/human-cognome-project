@@ -249,6 +249,24 @@ validate 286 and 492 endpoints/dependencies respectively, using the supplied
 export without connecting to a live core. No persistent membership or centroid
 assembly is implemented by this offline slice.
 
+**Multilingual bootstrap selection built offline, 2026-10-12:** the initial
+profile now covers 20 languages across Latin, Greek, Cyrillic, Hebrew, Arabic,
+Armenian and Georgian scripts. It has 913 applicable iconographic values,
+65 group descriptions and 5,460 membership edges, with no source gaps. All
+1,082 referenced core endpoints/dependencies pass the current export check.
+The generic membership selector exports applicable values and complete
+construction expectations for any supplied group/locale, supports combined
+selections and narrowing, and preserves shared identities and boundary links.
+This supplies the data for selected-area population; native centroid/geometry/
+placement and persistent owning-store operations follow separately.
+
+The objective is functional bootstrapping: create an initial connected
+framework around which further structure can form. UTF-8 is the encoding
+target for now. Once sufficient density supports viable physics, subsequent
+material and other encoding-table qualification come through standard methods.
+This stage does not assign a new analyst architecture or impose another
+general physics qualification gate.
+
 1. **Script and manifest:** implement the reusable source importer and
    read-only target-core validator; generate per-language inventories and
    report missing sources. Begin with English's 52 ASCII letters and 32
