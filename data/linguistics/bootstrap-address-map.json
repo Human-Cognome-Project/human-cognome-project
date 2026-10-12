@@ -1,0 +1,63 @@
+{
+  "status": "proposal-not-allocated",
+  "scope": "Initial alphabetic-language bootstrap; numeric assignments require review before population.",
+  "namespace": "02",
+  "layers": ["major_family", "subfamily", "language", "regional_delta"],
+  "family_codes": {
+    "0": "Indo-European",
+    "1": "Afro-Asiatic",
+    "2": "Turkic",
+    "3": "Kartvelian"
+  },
+  "subfamily_codes": {
+    "00": "Germanic",
+    "01": "Romance",
+    "02": "Slavic",
+    "03": "Hellenic",
+    "04": "Indo-Iranian",
+    "05": "Armenian",
+    "10": "Semitic",
+    "20": "Oghuz",
+    "30": "Georgian"
+  },
+  "language_prefixes": {
+    "en": "02.00.00",
+    "de": "02.00.10",
+    "nl": "02.00.20",
+    "fr": "02.01.00",
+    "es": "02.01.10",
+    "pt": "02.01.20",
+    "it": "02.01.30",
+    "ru": "02.02.00",
+    "uk": "02.02.10",
+    "bg": "02.02.20",
+    "sr": "02.02.30",
+    "cs": "02.02.40",
+    "el": "02.03.00",
+    "fa": "02.04.00",
+    "ur": "02.04.10",
+    "hy": "02.05.00",
+    "ar": "02.10.00",
+    "he": "02.10.10",
+    "tr": "02.20.00",
+    "ka": "02.30.00",
+    "en_GB": "02.00.01",
+    "en_CA": "02.00.02",
+    "en_AU": "02.00.03"
+  },
+  "broader_group_addresses": {
+    "family:germanic": "02.00.zz.00.00",
+    "family:indo-european": "02.0z.zz.00.00"
+  },
+  "word_component_couplet": "00",
+  "reserved_component_slots": {
+    "language": "00",
+    "alphabet": "01",
+    "punctuation": "02"
+  },
+  "first_component_slot": "03",
+  "initial_component_order": "Alphabet members first, then remaining punctuation members; exact Unicode scalar sequence within each set. This is bootstrap slot order, not linguistic collation.",
+  "extension_policy": "Retain every assigned address in a ledger; append new components into unused slots. Never renumber existing endpoints on rerun.",
+  "regional_scope": "Only the existing English variant group placeholders are mapped. No regional letter inventory or lexical fallback is added.",
+  "classification_scope": "Practical provisional groupings for this batch, not a claim that these are all human language families or a finalized evolutionary tree. Other families and scripts remain unallocated."
+}
