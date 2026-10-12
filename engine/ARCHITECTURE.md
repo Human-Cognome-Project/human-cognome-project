@@ -27,8 +27,9 @@ reconciliation.
 The production path is C++. Python is not an HCP engine or data-layer
 implementation language. Python present inside the Taichi fork is upstream
 frontend/build/test material; HCP bypasses that abstraction operationally.
-Project Python is permitted only where it provides convenient bootstrap,
-migration, import/export, or other offline I/O.
+Project Python is authorized only for bulk database population during
+bootstrap, including preparation and validation of those batches. Offline
+operation alone does not authorize Python components.
 
 ## Naming note: field::Harness
 

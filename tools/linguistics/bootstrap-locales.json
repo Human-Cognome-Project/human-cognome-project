@@ -1,4 +1,4 @@
 {
-  "description": "Representative UTF-8 iconographic bootstrap; the importer and selector also accept other supplied language inventories.",
+  "description": "Twenty-language UTF-8 bulk bootstrap population preparation batch.",
   "locales": ["ar", "bg", "cs", "de", "el", "en", "es", "fa", "fr", "he", "hy", "it", "ka", "nl", "pt", "ru", "sr", "tr", "uk", "ur"]
 }

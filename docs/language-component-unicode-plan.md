@@ -143,8 +143,8 @@ summary with explicitly incomplete coverage, so it cannot drive this import.
 
 The first implementation is an offline bootstrap/import script. It emits a
 deterministic candidate manifest and a coverage report before writing data.
-Python is appropriate for offline I/O under `AGENTS.md`; database/kernel and
-warm-cache runtime changes continue through the native C++ boundaries.
+Python here is restricted to bulk bootstrap population and preparation/checks
+of those batches. Offline operation alone does not authorize Python components.
 
 The candidate manifest separates reusable values, group descriptions and
 membership edges. Each source record retains its language/locale, script
@@ -249,16 +249,17 @@ validate 286 and 492 endpoints/dependencies respectively, using the supplied
 export without connecting to a live core. No persistent membership or centroid
 assembly is implemented by this offline slice.
 
-**Multilingual bootstrap selection built offline, 2026-10-12:** the initial
+**Multilingual bulk seed preparation, 2026-10-12:** the initial
 profile now covers 20 languages across Latin, Greek, Cyrillic, Hebrew, Arabic,
 Armenian and Georgian scripts. It has 913 applicable iconographic values,
 65 group descriptions and 5,460 membership edges, with no source gaps. All
 1,082 referenced core endpoints/dependencies pass the current export check.
-The generic membership selector exports applicable values and complete
-construction expectations for any supplied group/locale, supports combined
-selections and narrowing, and preserves shared identities and boundary links.
-This supplies the data for selected-area population; native centroid/geometry/
-placement and persistent owning-store operations follow separately.
+The batch retains shared identities, exact forms and reciprocal memberships
+for database seed review. A flat catalog lists the complete batch's alphabet
+and punctuation memberships. Persistent population and unchanged-rerun checks
+remain to be completed. The generic Python selector and its working-area
+bundle format were removed; this work is limited to database seeding.
+The current test objects are individual letters in each language.
 
 The objective is functional bootstrapping: create an initial connected
 framework around which further structure can form. UTF-8 is the encoding

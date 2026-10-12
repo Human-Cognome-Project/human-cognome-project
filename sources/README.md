@@ -37,4 +37,4 @@ This is a **source inventory**, not an engine or schema specification. Historica
 - Preserve provenance and ordering.
 - Do not embed credentials or private source locations in source manifests.
 - Do not turn a source-specific representation into a canonical HCP structure merely because an importer uses it.
-- Acquisition helpers may use Python or shell where convenient; source acquisition is offline/bootstrap I/O, not an engine hot path.
+- Python source acquisition is permitted only as preparation for bulk database population during bootstrap; offline acquisition alone does not authorize a Python component.

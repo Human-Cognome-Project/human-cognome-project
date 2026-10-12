@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline source importer and read-only export validator. No database writer."""
+"""Bulk bootstrap population preparation and validation. No database writer."""
 import argparse
 import json
 from pathlib import Path
@@ -10,7 +10,6 @@ from manifest import generate, validate_manifest, write_json
 from sources import Sources, DEFAULT_CACHE, HERE
 from unicode_values import UnicodeData
 from validate_core import validate_export
-from selection import select_components
 
 
 def main():
@@ -26,10 +25,6 @@ def main():
     preview.add_argument('--hierarchy', type=Path, default=HERE / 'bootstrap-groups.json')
     preview.add_argument('--out', type=Path, required=True)
     preview.add_argument('--allow-gaps', action='store_true', help='retain gaps but permit a successful preview exit')
-    selection = commands.add_parser('select', help='export a membership-selected iconographic component bundle')
-    selection.add_argument('--manifest', type=Path, required=True)
-    selection.add_argument('--groups', nargs='+', required=True, help='symbolic group keys from the manifest')
-    selection.add_argument('--out', type=Path, required=True)
     validate = commands.add_parser('validate-core', help='inspect COPY export without restoring it')
     validate.add_argument('--manifest', type=Path, required=True)
     validate.add_argument('--export', type=Path, required=True)
@@ -54,11 +49,6 @@ def main():
             print(json.dumps(coverage['counts'], sort_keys=True))
             return 0 if args.allow_gaps or not coverage['counts']['coverage_gaps'] else 2
         manifest = json.loads(args.manifest.read_text())
-        if args.command == 'select':
-            bundle = select_components(manifest, args.groups)
-            write_json(args.out, bundle)
-            print(json.dumps(bundle['counts'], sort_keys=True))
-            return 0 if bundle['counts']['values'] else 2
         validate_manifest(manifest)
         report = validate_export(args.export, manifest)
         write_json(args.out, report)

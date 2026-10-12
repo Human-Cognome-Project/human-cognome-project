@@ -1,9 +1,10 @@
-# Offline linguistic inventory importer
+# Bulk linguistic bootstrap preparation
 
 **BUILT:** pinned Unicode/CLDR acquisition, ICU UnicodeSet parsing and locale
 casing, source inheritance/aliases, shared-value candidate manifests, symbolic
 groups, reciprocal memberships, coverage reports and a read-only COPY-export
-validator. This is bootstrap/import I/O, outside the native runtime.
+validator. This Python tooling prepares and checks bulk bootstrap population
+data only. Offline operation alone is not a Python exception.
 
 **PLANNED:** final group/new-literal addresses, persistent cross-store links,
 owning-controller writes/retries and native group-centroid assembly. Group
@@ -15,8 +16,8 @@ The purpose is functional bootstrapping: seed a connected representational
 framework around which subsequent structure can form. UTF-8 is the encoding
 target for this stage. Once sufficient density supports viable interaction,
 further material and other encoding-table qualification follow the standard
-methods. This offline work supplies definitions and memberships for that
-handoff; native centroid/geometry/placement preparation remains separate.
+methods. The current test objects are individual letters in each language;
+this work supplies their bulk seed definitions and memberships.
 
 The [accepted plan](../../docs/language-component-unicode-plan.md) defines the
 membership/construction contract. Single scalars reference existing `hcp_core`
@@ -68,45 +69,6 @@ as gaps. An absent/empty main inventory never becomes a complete alphabet
 by borrowing root punctuation. CLDR coverage is not every Kaikki language
 or historical orthography; eventual Kaikki ingestion still needs additional
 machine-readable inventory sources and observed-form coverage.
-
-## Membership-selected iconographic bundles
-
-**BUILT offline:** select one or more supplied language, alphabet or punctuation
-groups to export their iconographic values and construction expectations:
-
-```bash
-python tools/linguistics/import_inventory.py select \
-  --manifest sources/data/linguistics/bootstrap-20/manifest.json \
-  --groups language:en language:el language:he \
-  --out sources/data/linguistics/bootstrap-20/selected-bundle.json
-python tools/linguistics/import_inventory.py select \
-  --manifest sources/data/linguistics/bootstrap-20/selected-bundle.json \
-  --groups punctuation:en \
-  --out sources/data/linguistics/bootstrap-20/punctuation-en.json
-```
-
-Selection follows membership downward into applicable groups and shared values.
-A combined selection keeps one reusable definition for a shared value. Further
-narrowing preserves boundary membership references to the larger view without
-activating those outside groups. Each bundle retains exact visible forms,
-scalar sequences, UTF-8 bytes, source references and separate group-centroid
-requirements. It also carries closed construction expectations through the
-character/byte/nibble layers with ordered positive structural counts. Those
-dependencies do not become additional alphabet/punctuation members.
-
-Any supplied locale inventory can use the same selector. The twenty-language
-profile is a demonstration covering English, French, German, Spanish,
-Portuguese, Italian, Dutch, Czech, Turkish, Greek, Russian, Ukrainian,
-Bulgarian, Serbian, Hebrew, Arabic, Persian, Urdu, Armenian and Georgian.
-Only groups populated by source inventories supply iconographic entries;
-unknown selectors fail, and known unpopulated groups produce an explicit
-empty-selection result (exit 2). Selection is a membership view, with lexical
-fallback and regional delta rules retaining their separate scope.
-
-The bundle supplies data for later population of a selected working area.
-Native cache-manager assembly will provide group centroids, geometry, live
-occurrence identities, slots and study-node placement. This exporter creates
-no runtime fields, cold allocations or persistent records.
 
 ## Candidate output
 
@@ -211,9 +173,9 @@ multi-scalar forms), 65 groups and 5,460 membership edges; 913 values receive
 alphabet/punctuation memberships. All 1,082 referenced core endpoints and
 dependencies pass against the full UTF-8 snapshot. The checked-in compact
 inventory catalog gives each language's alphabet/punctuation member keys and
-exact forms. A selection summary includes representative value trees and a
-digest covering the complete English/Greek/Hebrew bundle, keeping the larger
-generated manifests in the ignored working cache.
+exact forms. The full generated bulk candidate manifest stays in the ignored
+working cache. This batch is database seed preparation; the generic Python
+membership selector and working-area bundle format have been removed.
 
 ```bash
 python -m unittest discover -s tools/linguistics/tests -v
@@ -230,7 +192,7 @@ default. `--write` regenerates those files for a reviewed source/behavior
 change. **`--utf8-export PATH`** also compares the two current validation
 reports; supply the full snapshot gzip blob identified by SHA256
 `4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8`.
-Use `--bootstrap-only --utf8-export PATH` to compare all four twenty-language
+Use `--bootstrap-only --utf8-export PATH` to compare all three twenty-language
 evidence files, including the current-core validation report.
 CI fetches the snapshot alone from its pinned extraction commit and runs
 this comparison; it does not check out or execute the runtime work in #111.

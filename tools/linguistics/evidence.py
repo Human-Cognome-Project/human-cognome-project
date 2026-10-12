@@ -9,7 +9,6 @@ from manifest import generate, write_json
 from sources import Sources, HERE, DEFAULT_CACHE
 from unicode_values import UnicodeData
 from validate_core import validate_export
-from selection import inventory_index, select_components, selection_summary
 
 EVIDENCE = HERE.parents[1] / 'data/linguistics/previews'
 
@@ -26,10 +25,18 @@ def reproduce(sources, floor_export=None, utf8_export=None, bootstrap_only=False
     if bootstrap_only:
         profile = json.loads((HERE / 'bootstrap-locales.json').read_text())
         manifest, coverage = generate(sources, cldr, icu, ucd, profile['locales'], ROLES, hierarchy)
-        index = inventory_index(manifest)
-        selection = select_components(manifest, ['language:el', 'language:en', 'language:he'])
-        results = {'bootstrap-20/coverage.json': coverage, 'bootstrap-20/inventories.json': index,
-                   'bootstrap-20/selection-summary.json': selection_summary(selection)}
+        # A flat review catalog of the entire bulk population candidate batch.
+        rows = []
+        for locale in sorted(profile['locales']):
+            rows.append({'locale': locale, 'language': 'language:' + locale,
+                         'alphabet': manifest['members'].get('alphabet:' + locale, []),
+                         'punctuation': manifest['members'].get('punctuation:' + locale, [])})
+        applicable = {v for row in rows for role in ('alphabet', 'punctuation') for v in row[role]}
+        catalog = {'encoding': 'UTF-8', 'inventories': rows,
+                   'values': [{'key': v['key'], 'form': v['form'], 'scalars': v['scalars'],
+                               'utf8_hex': v['utf8_hex']} for v in manifest['values']
+                              if v['key'] in applicable]}
+        results = {'bootstrap-20/coverage.json': coverage, 'bootstrap-20/inventories.json': catalog}
         if utf8_export:
             results['bootstrap-20/utf8-validation.json'] = validate_export(utf8_export, manifest)
         return results

@@ -15,7 +15,7 @@ Do not infer architecture from historical folder placement. Several directories 
 
 - The modified Taichi **runtime/compiler substrate**, HCP **physics engine**, and HCP **engine harness** are distinct concepts.
 - The canonical engine path is native **C++**. Taichi's Python frontend is upstream/vendor tooling, not the HCP runtime surface.
-- Project Python is restricted to convenient bootstrap, migration, import/export, or other offline I/O. Do not implement physics, database/WAL kernels, endpoint/network infrastructure, or analyst runtime behavior in Python.
+- Project Python is authorized only for bulk database population scripts during bootstrap. Their source preparation and validation stay within that population workflow. Offline operation alone does not authorize Python. Do not implement reusable selection/assembly components, physics, database/WAL kernels, endpoint/network infrastructure, or analyst behavior in Python.
 - The **engine harness is the control interface for the physics engine**. It is not the DB manager, WAL manager, messaging system, topology system or thread manager.
 - **Analyst functions do not exist yet.** Do not invent an analyst architecture or implement speculative analyst behaviour.
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.

@@ -56,7 +56,7 @@ Related work: #106, #115, #116, #118, #119 and #120.
 - **Tests on behavioural changes.** Native engine changes should retain CPU/backend equivalence and model-anchored regression checks where applicable. C++ kernel modules should remain independently testable where their existing contracts require it.
 - **Location blindness.** Kernel logic should not branch on whether a counterpart is local or remote; that belongs to topology/bridge infrastructure.
 - **No speculative analyst implementation.** Interfaces may expose future analyst-facing seams, but the analyst layer itself is not yet defined.
-- **Compiled runtime path.** HCP engine/data/network hot paths are C++. Python is permitted only for bootstrap, migration, import/export, build/test assistance, or comparable offline convenience.
+- **Compiled implementation path.** HCP engine/data/network components are C++. Project Python is authorized only for bulk database population during bootstrap, including preparation and validation of those batches. Offline operation alone is not an exception.
 - **Database safety.** Existing disposable test-database conventions must stay explicit. Do not run reset/drop operations against persistent project data.
 - **Secrets stay out of Git.** Snapshot manifests may describe provenance/version context but not credentials or private data.
 - **Generated data is not automatically source.** Keep reproducibility artifacts, test fixtures and authored code distinguishable.
