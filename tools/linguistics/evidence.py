@@ -33,9 +33,10 @@ def reproduce(sources, floor_export=None, utf8_export=None, bootstrap_only=False
                          'punctuation': manifest['members'].get('punctuation:' + locale, [])})
         applicable = {v for row in rows for role in ('alphabet', 'punctuation') for v in row[role]}
         catalog = {'encoding': 'UTF-8', 'inventories': rows,
-                   'values': [{'key': v['key'], 'form': v['form'], 'scalars': v['scalars'],
-                               'utf8_hex': v['utf8_hex']} for v in manifest['values']
-                              if v['key'] in applicable]}
+                   'values': [{k: v[k] for k in ('key', 'locale', 'form', 'scalars', 'utf8_hex',
+                                                'source_value', 'store', 'address', 'parents', 'structural_mass_derived')}
+                              for v in manifest['values'] if v['key'] in applicable],
+                   'core_child_updates': manifest['core_child_updates']}
         results = {'bootstrap-20/coverage.json': coverage, 'bootstrap-20/inventories.json': catalog}
         if utf8_export:
             results['bootstrap-20/utf8-validation.json'] = validate_export(utf8_export, manifest)

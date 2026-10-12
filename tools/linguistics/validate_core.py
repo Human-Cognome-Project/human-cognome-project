@@ -55,7 +55,7 @@ def expected_definitions(manifest, all_floor_bytes=True):
     if all_floor_bytes:
         for b in range(256):
             byte(b)
-    for value in manifest['values']:
+    for value in manifest.get('source_values', manifest['values']):
         for c in value['form']:
             cp = ord(c)
             identity = character_address(cp)

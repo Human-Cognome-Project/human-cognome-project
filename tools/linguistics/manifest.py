@@ -1,12 +1,17 @@
-"""Candidate shared values, symbolic groups and reciprocal memberships. No writes."""
+"""Bulk linguistic seed endpoints, core child additions and memberships. No writes."""
 from collections import defaultdict
 import json
 from sources import sha256
 from cldr import ROLES, locale_id
-from unicode_values import key
+from unicode_values import character_address, key
 
 ALPHABET_ROLES = {'main', 'auxiliary'}
 PUNCTUATION_ROLES = {'punctuation', 'punctuation-auxiliary'}
+
+
+def component_key(locale, form):
+    key(form)  # Reject empty forms and invalid scalars before making a seed key.
+    return 'linguistics:' + locale_id(locale) + ':' + '-'.join(f'{ord(c):04X}' for c in form)
 
 
 def write_json(path, value):
@@ -15,9 +20,13 @@ def write_json(path, value):
 
 
 def validate_manifest(manifest):
+    if manifest.get('format') != 'hcp-language-inventory-v2':
+        raise ValueError('Expected language endpoint seed format v2')
+    source_values = {v['key']: v for v in manifest['source_values']}
     values = {v['key']: v for v in manifest['values']}
     groups = {g['key']: g for g in manifest['groups']}
-    if len(values) != len(manifest['values']) or len(groups) != len(manifest['groups']):
+    if (len(source_values) != len(manifest['source_values'])
+            or len(values) != len(manifest['values']) or len(groups) != len(manifest['groups'])):
         raise ValueError('Duplicate value/group identity')
     if values.keys() & groups.keys():
         raise ValueError('Value and group identities overlap')
@@ -52,26 +61,66 @@ def validate_manifest(manifest):
             raise ValueError('Group needs its distinct pending centroid representation')
         if 'parents' in descriptor or 'structural_mass_derived' in descriptor:
             raise ValueError('Group containment must not create literal parents/mass')
-    for value in values.values():
+    for value in source_values.values():
         if value['key'] != key(value['form']):
             raise ValueError('Shared value identity conflicts with exact form')
         raw = value['form'].encode('utf-8')
+        if value['scalars'] != [f'U+{ord(c):04X}' for c in value['form']]:
+            raise ValueError('Source scalar sequence conflicts with exact form')
         if value['utf8_hex'] != raw.hex(' ').upper() or value['structural_mass_derived'] != 2 * len(raw):
             raise ValueError('Literal byte/mass mismatch')
         if len(value['form']) == 1:
             if value['kind'] != 'existing-core-value' or 'parents' in value:
                 raise ValueError('Single character must reference existing core value')
-            from unicode_values import character_address
             if value.get('store') != 'hcp_core' or value.get('address') != character_address(ord(value['form'])):
                 raise ValueError('Core reference conflicts with scalar identity')
         else:
-            from unicode_values import character_address
             expected = [{'ordinal': i, 'store': 'hcp_core', 'address': character_address(ord(c))}
                         for i, c in enumerate(value['form'])]
             if value.get('parents') != expected:
                 raise ValueError('Literal parent order/repetition mismatch')
-            if value.get('address') is not None:
-                raise ValueError('New literal addresses are not allocated by this preview')
+            if value.get('kind') != 'source-sequence' or value.get('store') is not None or value.get('address') is not None:
+                raise ValueError('Source sequences are evidence, not shared linguistic endpoints')
+    expected_children = set()
+    for value in values.values():
+        locale, form = value['locale'], value['form']
+        if value['key'] != component_key(locale, form):
+            raise ValueError('Language endpoint identity conflicts with locale/form')
+        if (value.get('kind') != 'language-component-candidate'
+                or value.get('store') != 'linguistics' or value.get('address') is not None):
+            raise ValueError('Language endpoint needs its own unallocated linguistic identity')
+        source_value = source_values.get(value.get('source_value'))
+        fields = ('form', 'scalars', 'utf8_hex', 'structural_mass_derived', 'scalar_metadata')
+        if source_value is None or any(value[field] != source_value[field] for field in fields):
+            raise ValueError('Language endpoint conflicts with source form')
+        expected = [{'ordinal': i, 'store': 'hcp_core', 'address': character_address(ord(c))}
+                    for i, c in enumerate(form)]
+        if value.get('parents') != expected:
+            raise ValueError('Language endpoint core parent order/repetition mismatch')
+        language, alphabet, punctuation = 'language:' + locale, 'alphabet:' + locale, 'punctuation:' + locale
+        memberships = up[value['key']]
+        if (language not in memberships or not memberships & {alphabet, punctuation}
+                or memberships - {language, alphabet, punctuation}):
+            raise ValueError('Language endpoint has incorrect language/group membership')
+        expected_children.update((p['address'], value['key']) for p in expected)
+    children, core_addresses = set(), set()
+    for update in manifest['core_child_updates']:
+        if update.get('store') != 'hcp_core' or update.get('mode') != 'add':
+            raise ValueError('Core child updates must be additive to existing listings')
+        address = update['address']
+        if address in core_addresses or not update['children']:
+            raise ValueError('Duplicate or empty core child update')
+        core_addresses.add(address)
+        for child in update['children']:
+            target = values.get(child.get('key'))
+            if target is None or child.get('store') != 'linguistics' or child.get('address') != target['address']:
+                raise ValueError('Core child update references an unknown language endpoint')
+            edge = address, child['key']
+            if edge in children:
+                raise ValueError('Duplicate core child edge')
+            children.add(edge)
+    if children != expected_children:
+        raise ValueError('Core child reciprocal mismatch with language endpoint parents')
 
 
 def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
@@ -108,7 +157,7 @@ def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
             if inventory['role'] in ALPHABET_ROLES:
                 forms_for_case.append((inventory, form))
     case_sets = icu.batch([('CASE', i['locale'], f) for i, f in forms_for_case])
-    groups, values, edges = {}, {}, defaultdict(set)
+    groups, source_values, values, edges = {}, {}, {}, defaultdict(set)
     def group(identity, label, kind):
         descriptor = {'key': identity, 'label': label, 'kind': kind, 'store': 'linguistics',
                       'address': None, 'centroid': {'key': 'centroid:' + identity,
@@ -119,9 +168,9 @@ def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
     def value(form):
         identity = key(form)
         candidate = ucd.value(form)
-        if identity in values and values[identity] != candidate:
+        if identity in source_values and source_values[identity] != candidate:
             raise ValueError('Conflicting shared construction: ' + identity)
-        values[identity] = candidate
+        source_values[identity] = candidate
         return identity
     for identity, descriptor in hierarchy['groups'].items():
         group(identity, descriptor['label'], descriptor['kind'])
@@ -141,6 +190,17 @@ def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
             kind = 'punctuation'
         else:
             return  # Index forms retain evidence without creating alphabet membership.
+        source = source_values[identity]
+        identity = component_key(locale, source['form'])
+        candidate = {field: source[field] for field in ('form', 'scalars', 'utf8_hex',
+                                                        'structural_mass_derived', 'scalar_metadata')}
+        candidate.update(key=identity, locale=locale, source_value=source['key'],
+                         kind='language-component-candidate', store='linguistics', address=None,
+                         parents=[{'ordinal': i, 'store': 'hcp_core', 'address': character_address(ord(c))}
+                                  for i, c in enumerate(source['form'])])
+        if identity in values and values[identity] != candidate:
+            raise ValueError('Conflicting language endpoint construction: ' + identity)
+        values[identity] = candidate
         language, grouping = 'language:' + locale, kind + ':' + locale
         group(grouping, kind.capitalize() + ' (' + locale + ')', kind)
         edges[grouping, language].add('inventory-group:' + inventory['id'])
@@ -176,13 +236,24 @@ def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
     for member, parent in edges:
         up[member].add(parent)
         down[parent].add(member)
-    manifest = {'format': 'hcp-language-inventory-v1', 'status': 'candidate-no-persistent-writes',
+    core_children = defaultdict(set)
+    for candidate in values.values():
+        for parent in candidate['parents']:
+            core_children[parent['address']].add(candidate['key'])
+    child_updates = [{'store': 'hcp_core', 'address': address, 'mode': 'add',
+                      'children': [{'key': identity, 'store': 'linguistics', 'address': values[identity]['address']}
+                                   for identity in sorted(children)]}
+                     for address, children in sorted(core_children.items())]
+    manifest = {'format': 'hcp-language-inventory-v2', 'status': 'candidate-no-persistent-writes',
                 'core_validation': 'not-run', 'provenance': sources.provenance(),
                 'cldr_files_sha256': dict(sorted(cldr.used.items())),
                 'hierarchy_provenance': hierarchy['provenance'],
                 'hierarchy_sha256': sha256(json.dumps(hierarchy, sort_keys=True).encode('utf-8')),
                 'inventories': inventories, 'source_forms': source_forms,
-                'case_candidates': case_candidates, 'values': [values[k] for k in sorted(values)],
+                'case_candidates': case_candidates,
+                'source_values': [source_values[k] for k in sorted(source_values)],
+                'values': [values[k] for k in sorted(values)],
+                'core_child_updates': child_updates,
                 'groups': [groups[k] for k in sorted(groups)],
                 'memberships': [{'member': m, 'group': g, 'evidence': sorted(edges[m, g])}
                                 for m, g in sorted(edges)],
@@ -199,11 +270,16 @@ def generate(sources, cldr, icu, ucd, locales, roles, hierarchy):
                    direct_value_memberships=len([m for m in down['language:' + locale] if m in values]),
                    case_expanded_candidates=sum(c['inventory'].startswith(locale + ':') for c in case_candidates),
                    observed_scripts=sorted({meta['script'] for v in originals
-                                            for meta in values[v]['scalar_metadata']}))
+                                            for meta in source_values[v]['scalar_metadata']}))
     counts = {'source_memberships': len(source_forms), 'distinct_source_sequences': len({r['value'] for r in source_forms}),
-              'shared_values_including_case_candidates': len(values), 'groups': len(groups),
+              'source_values_including_case_candidates': len(source_values),
+              'language_component_endpoints': len(values), 'groups': len(groups),
               'membership_edges': len(edges), 'case_expanded_candidates': len(case_candidates),
-              'multi_scalar_values': sum(len(v['form']) > 1 for v in values.values()),
+              'multi_scalar_source_values': sum(len(v['form']) > 1 for v in source_values.values()),
+              'multi_scalar_language_endpoints': sum(len(v['form']) > 1 for v in values.values()),
+              'ordered_core_parent_occurrences': sum(len(v['parents']) for v in values.values()),
+              'core_child_edges': sum(len(c) for c in core_children.values()),
+              'core_endpoints_receiving_children': len(core_children),
               'coverage_gaps': sum(bool(row['issues']) for row in coverage)}
     report = {'format': manifest['format'], 'counts': counts, 'coverage': coverage,
               'core_validation': 'not-run', 'database_writes': 0,

@@ -75,8 +75,11 @@ records only. Canadian English.
 
 **Settled data-model direction; importer and warm aggregation remain planned.**
 Follow [the language component plan](../../docs/language-component-unicode-plan.md).
-Shared characters retain one identity and are members of each applicable
-language and alphabet/punctuation grouping. Language subdivisions aggregate
+Shared core characters retain one identity. **Correction (Patrick, 2026-10-12):**
+each language's letter/punctuation endpoint has its own linguistic identity,
+ordered core character parents and reciprocal additions to those core
+endpoints' child listings. These linguistic endpoints are members of the
+applicable language and alphabet/punctuation grouping. Language subdivisions aggregate
 by membership too: English variants are members of English, which is a member
 of broader groups. Write both directions through `members` / `member_of`.
 
@@ -84,8 +87,10 @@ Every grouping has its own centroid representation; alphabet and punctuation
 have distinct groupings and centroids. The cache manager uses membership
 trees and literal value trees to assemble the language-appropriate warm
 objects over byte structures. Literal parents/children remain actual
-construction only. Group membership does not mint another single-character
-definition or replace its structural mass with a centroid aggregate.
+construction only. A language-letter endpoint does not duplicate its core
+character value. Group membership does not replace structural mass with a
+centroid aggregate. Core child additions are part of the same seed batch as
+the linguistic endpoint's parents, separate from membership reciprocals.
 The shared Linguistics root is `02`, superseding English `01` / common
 `01.00`; no new meaning for the held `01` is assigned. Concrete centroid
 preparation and persistent cross-store membership writes remain separate

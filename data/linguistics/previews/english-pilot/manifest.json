@@ -213,8 +213,1018 @@
     "common/main/en.xml": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
     "common/supplemental/supplementalData.xml": "cd2af39aef82fdbfba4d591c87548203350538ad2318486d104b3b38b8d62f1a"
   },
+  "core_child_updates": [
+    {
+      "address": "00.00.00.00.1X",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0021",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1Y",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0022",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1Z",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0023",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1c",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0026",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1d",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0027",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1e",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0028",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1f",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0029",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1g",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:002A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1i",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:002C",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1j",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:002D",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1k",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:002E",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1l",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:002F",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1w",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:003A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.1x",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:003B",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.21",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:003F",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.22",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0040",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.23",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0041",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.24",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0042",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.25",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0043",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.26",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0044",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.27",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0045",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.28",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0046",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.29",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0047",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2A",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0048",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2B",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0049",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2C",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2D",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004B",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2E",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004C",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2F",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004D",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2G",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004E",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2H",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:004F",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2I",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0050",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2J",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0051",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2K",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0052",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2L",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0053",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2M",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0054",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2N",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0055",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2O",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0056",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2P",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0057",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2Q",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0058",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2R",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0059",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2S",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:005A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2T",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:005B",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2V",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:005D",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2Z",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0061",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2a",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0062",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2b",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0063",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2c",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0064",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2d",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0065",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2e",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0066",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2f",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0067",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2g",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0068",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2h",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0069",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2i",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2j",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006B",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2k",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006C",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2l",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006D",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2m",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006E",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2n",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:006F",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2o",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0070",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2p",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0071",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2q",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0072",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2r",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0073",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2s",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0074",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2t",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0075",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2u",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0076",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2v",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0077",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2w",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0078",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2x",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:0079",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.00.2y",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:007A",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.01.0d",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:00A7",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bM",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2010",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bN",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2011",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bP",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2013",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bQ",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2014",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bU",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2018",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bV",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2019",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bY",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:201C",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bZ",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:201D",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bc",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2020",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bd",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2021",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bi",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2026",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bu",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2032",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    },
+    {
+      "address": "00.00.00.04.bv",
+      "children": [
+        {
+          "address": null,
+          "key": "linguistics:en:2033",
+          "store": "linguistics"
+        }
+      ],
+      "mode": "add",
+      "store": "hcp_core"
+    }
+  ],
   "core_validation": "not-run",
-  "format": "hcp-language-inventory-v1",
+  "format": "hcp-language-inventory-v2",
   "groups": [
     {
       "address": null,
@@ -407,342 +1417,6 @@
     "alphabet:en": [
       "language:en"
     ],
-    "core:00.00.00.00.1X": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1Y": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1Z": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1c": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1d": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1e": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1f": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1g": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1i": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1j": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1k": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1l": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1w": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.1x": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.21": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.22": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.23": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.24": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.25": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.26": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.27": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.28": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.29": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2A": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2B": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2C": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2D": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2E": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2F": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2G": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2H": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2I": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2J": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2K": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2L": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2M": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2N": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2O": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2P": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2Q": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2R": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2S": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2T": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.2V": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.00.2Z": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2a": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2b": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2c": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2d": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2e": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2f": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2g": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2h": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2i": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2j": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2k": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2l": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2m": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2n": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2o": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2p": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2q": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2r": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2s": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2t": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2u": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2v": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2w": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2x": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.00.2y": [
-      "alphabet:en",
-      "language:en"
-    ],
-    "core:00.00.00.01.0d": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bM": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bN": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bP": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bQ": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bU": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bV": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bY": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bZ": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bc": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bd": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bi": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bu": [
-      "language:en",
-      "punctuation:en"
-    ],
-    "core:00.00.00.04.bv": [
-      "language:en",
-      "punctuation:en"
-    ],
     "family:germanic": [
       "family:indo-european"
     ],
@@ -758,64 +1432,400 @@
     "language:en_GB": [
       "language:en"
     ],
+    "linguistics:en:0021": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0022": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0023": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0026": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0027": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0028": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0029": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:002A": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:002C": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:002D": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:002E": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:002F": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:003A": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:003B": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:003F": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0040": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0041": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0042": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0043": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0044": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0045": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0046": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0047": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0048": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0049": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004A": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004B": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004C": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004D": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004E": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:004F": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0050": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0051": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0052": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0053": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0054": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0055": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0056": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0057": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0058": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0059": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:005A": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:005B": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:005D": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:0061": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0062": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0063": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0064": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0065": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0066": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0067": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0068": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0069": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006A": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006B": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006C": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006D": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006E": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:006F": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0070": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0071": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0072": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0073": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0074": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0075": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0076": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0077": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0078": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:0079": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:007A": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "linguistics:en:00A7": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2010": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2011": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2013": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2014": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2018": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2019": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:201C": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:201D": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2020": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2021": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2026": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2032": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "linguistics:en:2033": [
+      "language:en",
+      "punctuation:en"
+    ],
     "punctuation:en": [
       "language:en"
     ]
   },
   "members": {
     "alphabet:en": [
-      "core:00.00.00.00.23",
-      "core:00.00.00.00.24",
-      "core:00.00.00.00.25",
-      "core:00.00.00.00.26",
-      "core:00.00.00.00.27",
-      "core:00.00.00.00.28",
-      "core:00.00.00.00.29",
-      "core:00.00.00.00.2A",
-      "core:00.00.00.00.2B",
-      "core:00.00.00.00.2C",
-      "core:00.00.00.00.2D",
-      "core:00.00.00.00.2E",
-      "core:00.00.00.00.2F",
-      "core:00.00.00.00.2G",
-      "core:00.00.00.00.2H",
-      "core:00.00.00.00.2I",
-      "core:00.00.00.00.2J",
-      "core:00.00.00.00.2K",
-      "core:00.00.00.00.2L",
-      "core:00.00.00.00.2M",
-      "core:00.00.00.00.2N",
-      "core:00.00.00.00.2O",
-      "core:00.00.00.00.2P",
-      "core:00.00.00.00.2Q",
-      "core:00.00.00.00.2R",
-      "core:00.00.00.00.2S",
-      "core:00.00.00.00.2Z",
-      "core:00.00.00.00.2a",
-      "core:00.00.00.00.2b",
-      "core:00.00.00.00.2c",
-      "core:00.00.00.00.2d",
-      "core:00.00.00.00.2e",
-      "core:00.00.00.00.2f",
-      "core:00.00.00.00.2g",
-      "core:00.00.00.00.2h",
-      "core:00.00.00.00.2i",
-      "core:00.00.00.00.2j",
-      "core:00.00.00.00.2k",
-      "core:00.00.00.00.2l",
-      "core:00.00.00.00.2m",
-      "core:00.00.00.00.2n",
-      "core:00.00.00.00.2o",
-      "core:00.00.00.00.2p",
-      "core:00.00.00.00.2q",
-      "core:00.00.00.00.2r",
-      "core:00.00.00.00.2s",
-      "core:00.00.00.00.2t",
-      "core:00.00.00.00.2u",
-      "core:00.00.00.00.2v",
-      "core:00.00.00.00.2w",
-      "core:00.00.00.00.2x",
-      "core:00.00.00.00.2y"
+      "linguistics:en:0041",
+      "linguistics:en:0042",
+      "linguistics:en:0043",
+      "linguistics:en:0044",
+      "linguistics:en:0045",
+      "linguistics:en:0046",
+      "linguistics:en:0047",
+      "linguistics:en:0048",
+      "linguistics:en:0049",
+      "linguistics:en:004A",
+      "linguistics:en:004B",
+      "linguistics:en:004C",
+      "linguistics:en:004D",
+      "linguistics:en:004E",
+      "linguistics:en:004F",
+      "linguistics:en:0050",
+      "linguistics:en:0051",
+      "linguistics:en:0052",
+      "linguistics:en:0053",
+      "linguistics:en:0054",
+      "linguistics:en:0055",
+      "linguistics:en:0056",
+      "linguistics:en:0057",
+      "linguistics:en:0058",
+      "linguistics:en:0059",
+      "linguistics:en:005A",
+      "linguistics:en:0061",
+      "linguistics:en:0062",
+      "linguistics:en:0063",
+      "linguistics:en:0064",
+      "linguistics:en:0065",
+      "linguistics:en:0066",
+      "linguistics:en:0067",
+      "linguistics:en:0068",
+      "linguistics:en:0069",
+      "linguistics:en:006A",
+      "linguistics:en:006B",
+      "linguistics:en:006C",
+      "linguistics:en:006D",
+      "linguistics:en:006E",
+      "linguistics:en:006F",
+      "linguistics:en:0070",
+      "linguistics:en:0071",
+      "linguistics:en:0072",
+      "linguistics:en:0073",
+      "linguistics:en:0074",
+      "linguistics:en:0075",
+      "linguistics:en:0076",
+      "linguistics:en:0077",
+      "linguistics:en:0078",
+      "linguistics:en:0079",
+      "linguistics:en:007A"
     ],
     "family:germanic": [
       "language:en"
@@ -825,128 +1835,128 @@
     ],
     "language:en": [
       "alphabet:en",
-      "core:00.00.00.00.1X",
-      "core:00.00.00.00.1Y",
-      "core:00.00.00.00.1Z",
-      "core:00.00.00.00.1c",
-      "core:00.00.00.00.1d",
-      "core:00.00.00.00.1e",
-      "core:00.00.00.00.1f",
-      "core:00.00.00.00.1g",
-      "core:00.00.00.00.1i",
-      "core:00.00.00.00.1j",
-      "core:00.00.00.00.1k",
-      "core:00.00.00.00.1l",
-      "core:00.00.00.00.1w",
-      "core:00.00.00.00.1x",
-      "core:00.00.00.00.21",
-      "core:00.00.00.00.22",
-      "core:00.00.00.00.23",
-      "core:00.00.00.00.24",
-      "core:00.00.00.00.25",
-      "core:00.00.00.00.26",
-      "core:00.00.00.00.27",
-      "core:00.00.00.00.28",
-      "core:00.00.00.00.29",
-      "core:00.00.00.00.2A",
-      "core:00.00.00.00.2B",
-      "core:00.00.00.00.2C",
-      "core:00.00.00.00.2D",
-      "core:00.00.00.00.2E",
-      "core:00.00.00.00.2F",
-      "core:00.00.00.00.2G",
-      "core:00.00.00.00.2H",
-      "core:00.00.00.00.2I",
-      "core:00.00.00.00.2J",
-      "core:00.00.00.00.2K",
-      "core:00.00.00.00.2L",
-      "core:00.00.00.00.2M",
-      "core:00.00.00.00.2N",
-      "core:00.00.00.00.2O",
-      "core:00.00.00.00.2P",
-      "core:00.00.00.00.2Q",
-      "core:00.00.00.00.2R",
-      "core:00.00.00.00.2S",
-      "core:00.00.00.00.2T",
-      "core:00.00.00.00.2V",
-      "core:00.00.00.00.2Z",
-      "core:00.00.00.00.2a",
-      "core:00.00.00.00.2b",
-      "core:00.00.00.00.2c",
-      "core:00.00.00.00.2d",
-      "core:00.00.00.00.2e",
-      "core:00.00.00.00.2f",
-      "core:00.00.00.00.2g",
-      "core:00.00.00.00.2h",
-      "core:00.00.00.00.2i",
-      "core:00.00.00.00.2j",
-      "core:00.00.00.00.2k",
-      "core:00.00.00.00.2l",
-      "core:00.00.00.00.2m",
-      "core:00.00.00.00.2n",
-      "core:00.00.00.00.2o",
-      "core:00.00.00.00.2p",
-      "core:00.00.00.00.2q",
-      "core:00.00.00.00.2r",
-      "core:00.00.00.00.2s",
-      "core:00.00.00.00.2t",
-      "core:00.00.00.00.2u",
-      "core:00.00.00.00.2v",
-      "core:00.00.00.00.2w",
-      "core:00.00.00.00.2x",
-      "core:00.00.00.00.2y",
-      "core:00.00.00.01.0d",
-      "core:00.00.00.04.bM",
-      "core:00.00.00.04.bN",
-      "core:00.00.00.04.bP",
-      "core:00.00.00.04.bQ",
-      "core:00.00.00.04.bU",
-      "core:00.00.00.04.bV",
-      "core:00.00.00.04.bY",
-      "core:00.00.00.04.bZ",
-      "core:00.00.00.04.bc",
-      "core:00.00.00.04.bd",
-      "core:00.00.00.04.bi",
-      "core:00.00.00.04.bu",
-      "core:00.00.00.04.bv",
       "language:en_AU",
       "language:en_CA",
       "language:en_GB",
+      "linguistics:en:0021",
+      "linguistics:en:0022",
+      "linguistics:en:0023",
+      "linguistics:en:0026",
+      "linguistics:en:0027",
+      "linguistics:en:0028",
+      "linguistics:en:0029",
+      "linguistics:en:002A",
+      "linguistics:en:002C",
+      "linguistics:en:002D",
+      "linguistics:en:002E",
+      "linguistics:en:002F",
+      "linguistics:en:003A",
+      "linguistics:en:003B",
+      "linguistics:en:003F",
+      "linguistics:en:0040",
+      "linguistics:en:0041",
+      "linguistics:en:0042",
+      "linguistics:en:0043",
+      "linguistics:en:0044",
+      "linguistics:en:0045",
+      "linguistics:en:0046",
+      "linguistics:en:0047",
+      "linguistics:en:0048",
+      "linguistics:en:0049",
+      "linguistics:en:004A",
+      "linguistics:en:004B",
+      "linguistics:en:004C",
+      "linguistics:en:004D",
+      "linguistics:en:004E",
+      "linguistics:en:004F",
+      "linguistics:en:0050",
+      "linguistics:en:0051",
+      "linguistics:en:0052",
+      "linguistics:en:0053",
+      "linguistics:en:0054",
+      "linguistics:en:0055",
+      "linguistics:en:0056",
+      "linguistics:en:0057",
+      "linguistics:en:0058",
+      "linguistics:en:0059",
+      "linguistics:en:005A",
+      "linguistics:en:005B",
+      "linguistics:en:005D",
+      "linguistics:en:0061",
+      "linguistics:en:0062",
+      "linguistics:en:0063",
+      "linguistics:en:0064",
+      "linguistics:en:0065",
+      "linguistics:en:0066",
+      "linguistics:en:0067",
+      "linguistics:en:0068",
+      "linguistics:en:0069",
+      "linguistics:en:006A",
+      "linguistics:en:006B",
+      "linguistics:en:006C",
+      "linguistics:en:006D",
+      "linguistics:en:006E",
+      "linguistics:en:006F",
+      "linguistics:en:0070",
+      "linguistics:en:0071",
+      "linguistics:en:0072",
+      "linguistics:en:0073",
+      "linguistics:en:0074",
+      "linguistics:en:0075",
+      "linguistics:en:0076",
+      "linguistics:en:0077",
+      "linguistics:en:0078",
+      "linguistics:en:0079",
+      "linguistics:en:007A",
+      "linguistics:en:00A7",
+      "linguistics:en:2010",
+      "linguistics:en:2011",
+      "linguistics:en:2013",
+      "linguistics:en:2014",
+      "linguistics:en:2018",
+      "linguistics:en:2019",
+      "linguistics:en:201C",
+      "linguistics:en:201D",
+      "linguistics:en:2020",
+      "linguistics:en:2021",
+      "linguistics:en:2026",
+      "linguistics:en:2032",
+      "linguistics:en:2033",
       "punctuation:en"
     ],
     "punctuation:en": [
-      "core:00.00.00.00.1X",
-      "core:00.00.00.00.1Y",
-      "core:00.00.00.00.1Z",
-      "core:00.00.00.00.1c",
-      "core:00.00.00.00.1d",
-      "core:00.00.00.00.1e",
-      "core:00.00.00.00.1f",
-      "core:00.00.00.00.1g",
-      "core:00.00.00.00.1i",
-      "core:00.00.00.00.1j",
-      "core:00.00.00.00.1k",
-      "core:00.00.00.00.1l",
-      "core:00.00.00.00.1w",
-      "core:00.00.00.00.1x",
-      "core:00.00.00.00.21",
-      "core:00.00.00.00.22",
-      "core:00.00.00.00.2T",
-      "core:00.00.00.00.2V",
-      "core:00.00.00.01.0d",
-      "core:00.00.00.04.bM",
-      "core:00.00.00.04.bN",
-      "core:00.00.00.04.bP",
-      "core:00.00.00.04.bQ",
-      "core:00.00.00.04.bU",
-      "core:00.00.00.04.bV",
-      "core:00.00.00.04.bY",
-      "core:00.00.00.04.bZ",
-      "core:00.00.00.04.bc",
-      "core:00.00.00.04.bd",
-      "core:00.00.00.04.bi",
-      "core:00.00.00.04.bu",
-      "core:00.00.00.04.bv"
+      "linguistics:en:0021",
+      "linguistics:en:0022",
+      "linguistics:en:0023",
+      "linguistics:en:0026",
+      "linguistics:en:0027",
+      "linguistics:en:0028",
+      "linguistics:en:0029",
+      "linguistics:en:002A",
+      "linguistics:en:002C",
+      "linguistics:en:002D",
+      "linguistics:en:002E",
+      "linguistics:en:002F",
+      "linguistics:en:003A",
+      "linguistics:en:003B",
+      "linguistics:en:003F",
+      "linguistics:en:0040",
+      "linguistics:en:005B",
+      "linguistics:en:005D",
+      "linguistics:en:00A7",
+      "linguistics:en:2010",
+      "linguistics:en:2011",
+      "linguistics:en:2013",
+      "linguistics:en:2014",
+      "linguistics:en:2018",
+      "linguistics:en:2019",
+      "linguistics:en:201C",
+      "linguistics:en:201D",
+      "linguistics:en:2020",
+      "linguistics:en:2021",
+      "linguistics:en:2026",
+      "linguistics:en:2032",
+      "linguistics:en:2033"
     ]
   },
   "memberships": [
@@ -956,1182 +1966,6 @@
       ],
       "group": "language:en",
       "member": "alphabet:en"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1X"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1X"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1X"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1X"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1Y"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1Y"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1Y"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1Y"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1Z"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1Z"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1Z"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1Z"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1c"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1c"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1c"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1c"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1d"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1d"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1d"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1d"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1e"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1e"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1e"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1e"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1f"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1f"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1f"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1f"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1g"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1g"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1g"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1g"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1i"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1i"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1i"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1i"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1j"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1j"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1j"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1j"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1k"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1k"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1k"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1k"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1l"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1l"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1l"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1l"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1w"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1w"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1w"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1w"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1x"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.1x"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.1x"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.1x"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.21"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.21"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.21"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.21"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.22"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.22"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.22"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.22"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2Z"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.23"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2Z"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.23"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2a"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.24"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2a"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.24"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2b"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.25"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2b"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.25"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2c"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.26"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2c"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.26"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2d"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.27"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2d"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.27"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2e"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.28"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2e"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.28"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2f"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.29"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2f"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.29"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2g"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2A"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2g"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2A"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2h"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2B"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2h"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2B"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2i"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2C"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2i"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2C"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2j"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2D"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2j"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2D"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2k"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2E"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2k"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2E"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2l"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2F"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2l"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2F"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2m"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2G"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2m"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2G"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2n"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2H"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2n"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2H"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2o"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2I"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2o"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2I"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2p"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2J"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2p"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2J"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2q"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2K"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2q"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2K"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2r"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2L"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2r"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2L"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2s"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2M"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2s"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2M"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2t"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2N"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2t"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2N"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2u"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2O"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2u"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2O"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2v"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2P"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2v"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2P"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2w"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2Q"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2w"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2Q"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2x"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2R"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2x"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2R"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2y"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2S"
-    },
-    {
-      "evidence": [
-        "case:en:main:core:00.00.00.00.2y"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2S"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.2T"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2T"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.2T"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.2T"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.2V"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2V"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.00.2V"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.00.2V"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2Z"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2Z"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2Z"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2Z"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2a"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2a"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2a"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2a"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2b"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2b"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2b"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2b"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2c"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2c"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2c"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2c"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2d"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2d"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2d"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2d"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2e"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2e"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2e"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2e"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2f"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2f"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2f"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2f"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2g"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2g"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2g"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2g"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2h"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2h"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2h"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2h"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2i"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2i"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2i"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2i"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2j"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2j"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2j"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2j"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2k"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2k"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2k"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2k"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2l"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2l"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2l"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2l"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2m"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2m"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2m"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2m"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2n"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2n"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2n"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2n"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2o"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2o"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2o"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2o"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2p"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2p"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2p"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2p"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2q"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2q"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2q"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2q"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2r"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2r"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2r"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2r"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2s"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2s"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2s"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2s"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2t"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2t"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2t"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2t"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2u"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2u"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2u"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2u"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2v"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2v"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2v"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2v"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2w"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2w"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2w"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2w"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2x"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2x"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2x"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2x"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2y"
-      ],
-      "group": "alphabet:en",
-      "member": "core:00.00.00.00.2y"
-    },
-    {
-      "evidence": [
-        "source:en:main:core:00.00.00.00.2y"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.00.2y"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.01.0d"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.01.0d"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.01.0d"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.01.0d"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bM"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bM"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bM"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bM"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bN"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bN"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bN"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bN"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bP"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bP"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bP"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bP"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bQ"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bQ"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bQ"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bQ"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bU"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bU"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bU"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bU"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bV"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bV"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bV"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bV"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bY"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bY"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bY"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bY"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bZ"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bZ"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bZ"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bZ"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bc"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bc"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bc"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bc"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bd"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bd"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bd"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bd"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bi"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bi"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bi"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bi"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bu"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bu"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bu"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bu"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bv"
-      ],
-      "group": "language:en",
-      "member": "core:00.00.00.04.bv"
-    },
-    {
-      "evidence": [
-        "source:en:punctuation:core:00.00.00.04.bv"
-      ],
-      "group": "punctuation:en",
-      "member": "core:00.00.00.04.bv"
     },
     {
       "evidence": [
@@ -2167,6 +2001,1182 @@
       ],
       "group": "language:en",
       "member": "language:en_GB"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1X"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0021"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1X"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0021"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Y"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0022"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Y"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0022"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Z"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0023"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Z"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0023"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1c"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0026"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1c"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0026"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1d"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0027"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1d"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0027"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1e"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0028"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1e"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0028"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1f"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0029"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1f"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0029"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1g"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:002A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1g"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:002A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1i"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:002C"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1i"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:002C"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1j"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:002D"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1j"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:002D"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1k"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:002E"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1k"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:002E"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1l"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:002F"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1l"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:002F"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1w"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:003A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1w"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:003A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1x"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:003B"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1x"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:003B"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.21"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:003F"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.21"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:003F"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.22"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0040"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.22"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:0040"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0041"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0041"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0042"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0042"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0043"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0043"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0044"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0044"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0045"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0045"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0046"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0046"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0047"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0047"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0048"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0048"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0049"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0049"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004A"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004A"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004B"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004B"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004C"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004C"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004D"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004D"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004E"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004E"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:004F"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:004F"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0050"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0050"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0051"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0051"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0052"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0052"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0053"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0053"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0054"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0054"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0055"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0055"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0056"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0056"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0057"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0057"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0058"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0058"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0059"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0059"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:005A"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:005A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2T"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:005B"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2T"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:005B"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2V"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:005D"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2V"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:005D"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0061"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0061"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0062"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0062"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0063"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0063"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0064"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0064"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0065"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0065"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0066"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0066"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0067"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0067"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0068"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0068"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0069"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0069"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006A"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006A"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006B"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006B"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006C"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006C"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006D"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006D"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006E"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006E"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:006F"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:006F"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0070"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0070"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0071"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0071"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0072"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0072"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0073"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0073"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0074"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0074"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0075"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0075"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0076"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0076"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0077"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0077"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0078"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0078"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:0079"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:0079"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "alphabet:en",
+      "member": "linguistics:en:007A"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:007A"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.01.0d"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:00A7"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.01.0d"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:00A7"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bM"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2010"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bM"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2010"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bN"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2011"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bN"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2011"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bP"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2013"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bP"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2013"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bQ"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2014"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bQ"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2014"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bU"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2018"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bU"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2018"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bV"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2019"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bV"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2019"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bY"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:201C"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bY"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:201C"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bZ"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:201D"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bZ"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:201D"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bc"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2020"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bc"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2020"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bd"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2021"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bd"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2021"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bi"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2026"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bi"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2026"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bu"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2032"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bu"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2032"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bv"
+      ],
+      "group": "language:en",
+      "member": "linguistics:en:2033"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bv"
+      ],
+      "group": "punctuation:en",
+      "member": "linguistics:en:2033"
     },
     {
       "evidence": [
@@ -2446,8 +3456,7 @@
       "value": "core:00.00.00.04.bv"
     }
   ],
-  "status": "candidate-no-persistent-writes",
-  "values": [
+  "source_values": [
     {
       "address": "00.00.00.00.1X",
       "form": "!",
@@ -4293,6 +5302,2613 @@
         "U+2033"
       ],
       "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 B3"
+    }
+  ],
+  "status": "candidate-no-persistent-writes",
+  "values": [
+    {
+      "address": null,
+      "form": "!",
+      "key": "linguistics:en:0021",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1X",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "EXCLAMATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0021"
+      ],
+      "source_value": "core:00.00.00.00.1X",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "21"
+    },
+    {
+      "address": null,
+      "form": "\"",
+      "key": "linguistics:en:0022",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1Y",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0022"
+      ],
+      "source_value": "core:00.00.00.00.1Y",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "22"
+    },
+    {
+      "address": null,
+      "form": "#",
+      "key": "linguistics:en:0023",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1Z",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "NUMBER SIGN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0023"
+      ],
+      "source_value": "core:00.00.00.00.1Z",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "23"
+    },
+    {
+      "address": null,
+      "form": "&",
+      "key": "linguistics:en:0026",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1c",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "AMPERSAND",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0026"
+      ],
+      "source_value": "core:00.00.00.00.1c",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "26"
+    },
+    {
+      "address": null,
+      "form": "'",
+      "key": "linguistics:en:0027",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1d",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "APOSTROPHE",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0027"
+      ],
+      "source_value": "core:00.00.00.00.1d",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "27"
+    },
+    {
+      "address": null,
+      "form": "(",
+      "key": "linguistics:en:0028",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1e",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ps",
+          "name": "LEFT PARENTHESIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0028"
+      ],
+      "source_value": "core:00.00.00.00.1e",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "28"
+    },
+    {
+      "address": null,
+      "form": ")",
+      "key": "linguistics:en:0029",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1f",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pe",
+          "name": "RIGHT PARENTHESIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0029"
+      ],
+      "source_value": "core:00.00.00.00.1f",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "29"
+    },
+    {
+      "address": null,
+      "form": "*",
+      "key": "linguistics:en:002A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1g",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "ASTERISK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002A"
+      ],
+      "source_value": "core:00.00.00.00.1g",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2A"
+    },
+    {
+      "address": null,
+      "form": ",",
+      "key": "linguistics:en:002C",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1i",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COMMA",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002C"
+      ],
+      "source_value": "core:00.00.00.00.1i",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2C"
+    },
+    {
+      "address": null,
+      "form": "-",
+      "key": "linguistics:en:002D",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1j",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "HYPHEN-MINUS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002D"
+      ],
+      "source_value": "core:00.00.00.00.1j",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2D"
+    },
+    {
+      "address": null,
+      "form": ".",
+      "key": "linguistics:en:002E",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1k",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "FULL STOP",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002E"
+      ],
+      "source_value": "core:00.00.00.00.1k",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2E"
+    },
+    {
+      "address": null,
+      "form": "/",
+      "key": "linguistics:en:002F",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1l",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SOLIDUS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002F"
+      ],
+      "source_value": "core:00.00.00.00.1l",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2F"
+    },
+    {
+      "address": null,
+      "form": ":",
+      "key": "linguistics:en:003A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1w",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COLON",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003A"
+      ],
+      "source_value": "core:00.00.00.00.1w",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3A"
+    },
+    {
+      "address": null,
+      "form": ";",
+      "key": "linguistics:en:003B",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.1x",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SEMICOLON",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003B"
+      ],
+      "source_value": "core:00.00.00.00.1x",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3B"
+    },
+    {
+      "address": null,
+      "form": "?",
+      "key": "linguistics:en:003F",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.21",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "QUESTION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003F"
+      ],
+      "source_value": "core:00.00.00.00.21",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3F"
+    },
+    {
+      "address": null,
+      "form": "@",
+      "key": "linguistics:en:0040",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.22",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COMMERCIAL AT",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0040"
+      ],
+      "source_value": "core:00.00.00.00.22",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "40"
+    },
+    {
+      "address": null,
+      "form": "A",
+      "key": "linguistics:en:0041",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.23",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0041"
+      ],
+      "source_value": "core:00.00.00.00.23",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
+    },
+    {
+      "address": null,
+      "form": "B",
+      "key": "linguistics:en:0042",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.24",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER B",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0042"
+      ],
+      "source_value": "core:00.00.00.00.24",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "42"
+    },
+    {
+      "address": null,
+      "form": "C",
+      "key": "linguistics:en:0043",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.25",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER C",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0043"
+      ],
+      "source_value": "core:00.00.00.00.25",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "43"
+    },
+    {
+      "address": null,
+      "form": "D",
+      "key": "linguistics:en:0044",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.26",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER D",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0044"
+      ],
+      "source_value": "core:00.00.00.00.26",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "44"
+    },
+    {
+      "address": null,
+      "form": "E",
+      "key": "linguistics:en:0045",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.27",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER E",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0045"
+      ],
+      "source_value": "core:00.00.00.00.27",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "45"
+    },
+    {
+      "address": null,
+      "form": "F",
+      "key": "linguistics:en:0046",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.28",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER F",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0046"
+      ],
+      "source_value": "core:00.00.00.00.28",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "46"
+    },
+    {
+      "address": null,
+      "form": "G",
+      "key": "linguistics:en:0047",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.29",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER G",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0047"
+      ],
+      "source_value": "core:00.00.00.00.29",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "47"
+    },
+    {
+      "address": null,
+      "form": "H",
+      "key": "linguistics:en:0048",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2A",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER H",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0048"
+      ],
+      "source_value": "core:00.00.00.00.2A",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "48"
+    },
+    {
+      "address": null,
+      "form": "I",
+      "key": "linguistics:en:0049",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2B",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER I",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0049"
+      ],
+      "source_value": "core:00.00.00.00.2B",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "49"
+    },
+    {
+      "address": null,
+      "form": "J",
+      "key": "linguistics:en:004A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2C",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER J",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004A"
+      ],
+      "source_value": "core:00.00.00.00.2C",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4A"
+    },
+    {
+      "address": null,
+      "form": "K",
+      "key": "linguistics:en:004B",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2D",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER K",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004B"
+      ],
+      "source_value": "core:00.00.00.00.2D",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4B"
+    },
+    {
+      "address": null,
+      "form": "L",
+      "key": "linguistics:en:004C",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2E",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER L",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004C"
+      ],
+      "source_value": "core:00.00.00.00.2E",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4C"
+    },
+    {
+      "address": null,
+      "form": "M",
+      "key": "linguistics:en:004D",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2F",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER M",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004D"
+      ],
+      "source_value": "core:00.00.00.00.2F",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4D"
+    },
+    {
+      "address": null,
+      "form": "N",
+      "key": "linguistics:en:004E",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2G",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER N",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004E"
+      ],
+      "source_value": "core:00.00.00.00.2G",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4E"
+    },
+    {
+      "address": null,
+      "form": "O",
+      "key": "linguistics:en:004F",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2H",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER O",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004F"
+      ],
+      "source_value": "core:00.00.00.00.2H",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4F"
+    },
+    {
+      "address": null,
+      "form": "P",
+      "key": "linguistics:en:0050",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2I",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER P",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0050"
+      ],
+      "source_value": "core:00.00.00.00.2I",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "50"
+    },
+    {
+      "address": null,
+      "form": "Q",
+      "key": "linguistics:en:0051",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2J",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Q",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0051"
+      ],
+      "source_value": "core:00.00.00.00.2J",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "51"
+    },
+    {
+      "address": null,
+      "form": "R",
+      "key": "linguistics:en:0052",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2K",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER R",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0052"
+      ],
+      "source_value": "core:00.00.00.00.2K",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "52"
+    },
+    {
+      "address": null,
+      "form": "S",
+      "key": "linguistics:en:0053",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2L",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER S",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0053"
+      ],
+      "source_value": "core:00.00.00.00.2L",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "53"
+    },
+    {
+      "address": null,
+      "form": "T",
+      "key": "linguistics:en:0054",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2M",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER T",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0054"
+      ],
+      "source_value": "core:00.00.00.00.2M",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "54"
+    },
+    {
+      "address": null,
+      "form": "U",
+      "key": "linguistics:en:0055",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2N",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER U",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0055"
+      ],
+      "source_value": "core:00.00.00.00.2N",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "55"
+    },
+    {
+      "address": null,
+      "form": "V",
+      "key": "linguistics:en:0056",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2O",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER V",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0056"
+      ],
+      "source_value": "core:00.00.00.00.2O",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "56"
+    },
+    {
+      "address": null,
+      "form": "W",
+      "key": "linguistics:en:0057",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2P",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER W",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0057"
+      ],
+      "source_value": "core:00.00.00.00.2P",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "57"
+    },
+    {
+      "address": null,
+      "form": "X",
+      "key": "linguistics:en:0058",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2Q",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER X",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0058"
+      ],
+      "source_value": "core:00.00.00.00.2Q",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "58"
+    },
+    {
+      "address": null,
+      "form": "Y",
+      "key": "linguistics:en:0059",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2R",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Y",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0059"
+      ],
+      "source_value": "core:00.00.00.00.2R",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "59"
+    },
+    {
+      "address": null,
+      "form": "Z",
+      "key": "linguistics:en:005A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2S",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Z",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005A"
+      ],
+      "source_value": "core:00.00.00.00.2S",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5A"
+    },
+    {
+      "address": null,
+      "form": "[",
+      "key": "linguistics:en:005B",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2T",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ps",
+          "name": "LEFT SQUARE BRACKET",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005B"
+      ],
+      "source_value": "core:00.00.00.00.2T",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5B"
+    },
+    {
+      "address": null,
+      "form": "]",
+      "key": "linguistics:en:005D",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2V",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pe",
+          "name": "RIGHT SQUARE BRACKET",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005D"
+      ],
+      "source_value": "core:00.00.00.00.2V",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5D"
+    },
+    {
+      "address": null,
+      "form": "a",
+      "key": "linguistics:en:0061",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2Z",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0061"
+      ],
+      "source_value": "core:00.00.00.00.2Z",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "61"
+    },
+    {
+      "address": null,
+      "form": "b",
+      "key": "linguistics:en:0062",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2a",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER B",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0062"
+      ],
+      "source_value": "core:00.00.00.00.2a",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "62"
+    },
+    {
+      "address": null,
+      "form": "c",
+      "key": "linguistics:en:0063",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2b",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER C",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0063"
+      ],
+      "source_value": "core:00.00.00.00.2b",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "63"
+    },
+    {
+      "address": null,
+      "form": "d",
+      "key": "linguistics:en:0064",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2c",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER D",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0064"
+      ],
+      "source_value": "core:00.00.00.00.2c",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "64"
+    },
+    {
+      "address": null,
+      "form": "e",
+      "key": "linguistics:en:0065",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2d",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER E",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0065"
+      ],
+      "source_value": "core:00.00.00.00.2d",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "65"
+    },
+    {
+      "address": null,
+      "form": "f",
+      "key": "linguistics:en:0066",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2e",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER F",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0066"
+      ],
+      "source_value": "core:00.00.00.00.2e",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "66"
+    },
+    {
+      "address": null,
+      "form": "g",
+      "key": "linguistics:en:0067",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2f",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER G",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0067"
+      ],
+      "source_value": "core:00.00.00.00.2f",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "67"
+    },
+    {
+      "address": null,
+      "form": "h",
+      "key": "linguistics:en:0068",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2g",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER H",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0068"
+      ],
+      "source_value": "core:00.00.00.00.2g",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "68"
+    },
+    {
+      "address": null,
+      "form": "i",
+      "key": "linguistics:en:0069",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2h",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER I",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0069"
+      ],
+      "source_value": "core:00.00.00.00.2h",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "69"
+    },
+    {
+      "address": null,
+      "form": "j",
+      "key": "linguistics:en:006A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2i",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER J",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006A"
+      ],
+      "source_value": "core:00.00.00.00.2i",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6A"
+    },
+    {
+      "address": null,
+      "form": "k",
+      "key": "linguistics:en:006B",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2j",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER K",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006B"
+      ],
+      "source_value": "core:00.00.00.00.2j",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6B"
+    },
+    {
+      "address": null,
+      "form": "l",
+      "key": "linguistics:en:006C",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2k",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER L",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006C"
+      ],
+      "source_value": "core:00.00.00.00.2k",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6C"
+    },
+    {
+      "address": null,
+      "form": "m",
+      "key": "linguistics:en:006D",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2l",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER M",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006D"
+      ],
+      "source_value": "core:00.00.00.00.2l",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6D"
+    },
+    {
+      "address": null,
+      "form": "n",
+      "key": "linguistics:en:006E",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2m",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER N",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006E"
+      ],
+      "source_value": "core:00.00.00.00.2m",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6E"
+    },
+    {
+      "address": null,
+      "form": "o",
+      "key": "linguistics:en:006F",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2n",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER O",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006F"
+      ],
+      "source_value": "core:00.00.00.00.2n",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6F"
+    },
+    {
+      "address": null,
+      "form": "p",
+      "key": "linguistics:en:0070",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2o",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER P",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0070"
+      ],
+      "source_value": "core:00.00.00.00.2o",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "70"
+    },
+    {
+      "address": null,
+      "form": "q",
+      "key": "linguistics:en:0071",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2p",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Q",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0071"
+      ],
+      "source_value": "core:00.00.00.00.2p",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "71"
+    },
+    {
+      "address": null,
+      "form": "r",
+      "key": "linguistics:en:0072",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2q",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER R",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0072"
+      ],
+      "source_value": "core:00.00.00.00.2q",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "72"
+    },
+    {
+      "address": null,
+      "form": "s",
+      "key": "linguistics:en:0073",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2r",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER S",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0073"
+      ],
+      "source_value": "core:00.00.00.00.2r",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "73"
+    },
+    {
+      "address": null,
+      "form": "t",
+      "key": "linguistics:en:0074",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2s",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER T",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0074"
+      ],
+      "source_value": "core:00.00.00.00.2s",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "74"
+    },
+    {
+      "address": null,
+      "form": "u",
+      "key": "linguistics:en:0075",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2t",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER U",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0075"
+      ],
+      "source_value": "core:00.00.00.00.2t",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "75"
+    },
+    {
+      "address": null,
+      "form": "v",
+      "key": "linguistics:en:0076",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2u",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER V",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0076"
+      ],
+      "source_value": "core:00.00.00.00.2u",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "76"
+    },
+    {
+      "address": null,
+      "form": "w",
+      "key": "linguistics:en:0077",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2v",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER W",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0077"
+      ],
+      "source_value": "core:00.00.00.00.2v",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "77"
+    },
+    {
+      "address": null,
+      "form": "x",
+      "key": "linguistics:en:0078",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2w",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER X",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0078"
+      ],
+      "source_value": "core:00.00.00.00.2w",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "78"
+    },
+    {
+      "address": null,
+      "form": "y",
+      "key": "linguistics:en:0079",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2x",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Y",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0079"
+      ],
+      "source_value": "core:00.00.00.00.2x",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "79"
+    },
+    {
+      "address": null,
+      "form": "z",
+      "key": "linguistics:en:007A",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.2y",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Z",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+007A"
+      ],
+      "source_value": "core:00.00.00.00.2y",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "7A"
+    },
+    {
+      "address": null,
+      "form": "§",
+      "key": "linguistics:en:00A7",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.01.0d",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SECTION SIGN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+00A7"
+      ],
+      "source_value": "core:00.00.00.01.0d",
+      "store": "linguistics",
+      "structural_mass_derived": 4,
+      "utf8_hex": "C2 A7"
+    },
+    {
+      "address": null,
+      "form": "‐",
+      "key": "linguistics:en:2010",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bM",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "HYPHEN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2010"
+      ],
+      "source_value": "core:00.00.00.04.bM",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 90"
+    },
+    {
+      "address": null,
+      "form": "‑",
+      "key": "linguistics:en:2011",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bN",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "NON-BREAKING HYPHEN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2011"
+      ],
+      "source_value": "core:00.00.00.04.bN",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 91"
+    },
+    {
+      "address": null,
+      "form": "–",
+      "key": "linguistics:en:2013",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bP",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "EN DASH",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2013"
+      ],
+      "source_value": "core:00.00.00.04.bP",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 93"
+    },
+    {
+      "address": null,
+      "form": "—",
+      "key": "linguistics:en:2014",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bQ",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "EM DASH",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2014"
+      ],
+      "source_value": "core:00.00.00.04.bQ",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 94"
+    },
+    {
+      "address": null,
+      "form": "‘",
+      "key": "linguistics:en:2018",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bU",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pi",
+          "name": "LEFT SINGLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2018"
+      ],
+      "source_value": "core:00.00.00.04.bU",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 98"
+    },
+    {
+      "address": null,
+      "form": "’",
+      "key": "linguistics:en:2019",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bV",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pf",
+          "name": "RIGHT SINGLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2019"
+      ],
+      "source_value": "core:00.00.00.04.bV",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 99"
+    },
+    {
+      "address": null,
+      "form": "“",
+      "key": "linguistics:en:201C",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bY",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pi",
+          "name": "LEFT DOUBLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+201C"
+      ],
+      "source_value": "core:00.00.00.04.bY",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 9C"
+    },
+    {
+      "address": null,
+      "form": "”",
+      "key": "linguistics:en:201D",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bZ",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Pf",
+          "name": "RIGHT DOUBLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+201D"
+      ],
+      "source_value": "core:00.00.00.04.bZ",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 9D"
+    },
+    {
+      "address": null,
+      "form": "†",
+      "key": "linguistics:en:2020",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bc",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DAGGER",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2020"
+      ],
+      "source_value": "core:00.00.00.04.bc",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A0"
+    },
+    {
+      "address": null,
+      "form": "‡",
+      "key": "linguistics:en:2021",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bd",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DOUBLE DAGGER",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2021"
+      ],
+      "source_value": "core:00.00.00.04.bd",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A1"
+    },
+    {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:en:2026",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    },
+    {
+      "address": null,
+      "form": "′",
+      "key": "linguistics:en:2032",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bu",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "PRIME",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2032"
+      ],
+      "source_value": "core:00.00.00.04.bu",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 B2"
+    },
+    {
+      "address": null,
+      "form": "″",
+      "key": "linguistics:en:2033",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bv",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DOUBLE PRIME",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2033"
+      ],
+      "source_value": "core:00.00.00.04.bv",
+      "store": "linguistics",
       "structural_mass_derived": 6,
       "utf8_hex": "E2 80 B3"
     }

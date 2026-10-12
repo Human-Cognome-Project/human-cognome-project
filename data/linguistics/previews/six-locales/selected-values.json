@@ -1,106 +1,22 @@
 [
   {
     "groups": [
-      "alphabet:cs",
-      "alphabet:en",
-      "alphabet:tr",
-      "language:cs",
-      "language:en",
-      "language:tr"
-    ],
-    "value": {
-      "address": "00.00.00.00.23",
-      "form": "A",
-      "key": "core:00.00.00.00.23",
-      "kind": "existing-core-value",
-      "scalar_metadata": [
-        {
-          "category": "Lu",
-          "name": "LATIN CAPITAL LETTER A",
-          "script": "Latin",
-          "script_extensions": [
-            "Latin"
-          ]
-        }
-      ],
-      "scalars": [
-        "U+0041"
-      ],
-      "store": "hcp_core",
-      "structural_mass_derived": 2,
-      "utf8_hex": "41"
-    }
-  },
-  {
-    "groups": [
-      "alphabet:tr",
-      "language:tr"
-    ],
-    "value": {
-      "address": "00.00.00.01.2q",
-      "form": "İ",
-      "key": "core:00.00.00.01.2q",
-      "kind": "existing-core-value",
-      "scalar_metadata": [
-        {
-          "category": "Lu",
-          "name": "LATIN CAPITAL LETTER I WITH DOT ABOVE",
-          "script": "Latin",
-          "script_extensions": [
-            "Latin"
-          ]
-        }
-      ],
-      "scalars": [
-        "U+0130"
-      ],
-      "store": "hcp_core",
-      "structural_mass_derived": 4,
-      "utf8_hex": "C4 B0"
-    }
-  },
-  {
-    "groups": [
-      "alphabet:tr",
-      "language:tr"
-    ],
-    "value": {
-      "address": "00.00.00.01.2r",
-      "form": "ı",
-      "key": "core:00.00.00.01.2r",
-      "kind": "existing-core-value",
-      "scalar_metadata": [
-        {
-          "category": "Ll",
-          "name": "LATIN SMALL LETTER DOTLESS I",
-          "script": "Latin",
-          "script_extensions": [
-            "Latin"
-          ]
-        }
-      ],
-      "scalars": [
-        "U+0131"
-      ],
-      "store": "hcp_core",
-      "structural_mass_derived": 4,
-      "utf8_hex": "C4 B1"
-    }
-  },
-  {
-    "groups": [
       "language:ar",
-      "language:fa",
-      "language:ur",
-      "punctuation:ar",
-      "punctuation:fa",
-      "punctuation:ur"
+      "punctuation:ar"
     ],
     "value": {
-      "address": "00.00.00.01.ND",
+      "address": null,
       "form": "؟",
-      "key": "core:00.00.00.01.ND",
-      "kind": "existing-core-value",
+      "key": "linguistics:ar:061F",
+      "kind": "language-component-candidate",
+      "locale": "ar",
+      "parents": [
+        {
+          "address": "00.00.00.01.ND",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
       "scalar_metadata": [
         {
           "category": "Po",
@@ -121,7 +37,8 @@
       "scalars": [
         "U+061F"
       ],
-      "store": "hcp_core",
+      "source_value": "core:00.00.00.01.ND",
+      "store": "linguistics",
       "structural_mass_derived": 4,
       "utf8_hex": "D8 9F"
     }
@@ -129,17 +46,21 @@
   {
     "groups": [
       "alphabet:ar",
-      "alphabet:fa",
-      "alphabet:ur",
-      "language:ar",
-      "language:fa",
-      "language:ur"
+      "language:ar"
     ],
     "value": {
-      "address": "00.00.00.04.bI",
+      "address": null,
       "form": "‌",
-      "key": "core:00.00.00.04.bI",
-      "kind": "existing-core-value",
+      "key": "linguistics:ar:200C",
+      "kind": "language-component-candidate",
+      "locale": "ar",
+      "parents": [
+        {
+          "address": "00.00.00.04.bI",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
       "scalar_metadata": [
         {
           "category": "Cf",
@@ -153,7 +74,8 @@
       "scalars": [
         "U+200C"
       ],
-      "store": "hcp_core",
+      "source_value": "core:00.00.00.04.bI",
+      "store": "linguistics",
       "structural_mass_derived": 6,
       "utf8_hex": "E2 80 8C"
     }
@@ -161,17 +83,21 @@
   {
     "groups": [
       "alphabet:ar",
-      "alphabet:fa",
-      "alphabet:ur",
-      "language:ar",
-      "language:fa",
-      "language:ur"
+      "language:ar"
     ],
     "value": {
-      "address": "00.00.00.04.bJ",
+      "address": null,
       "form": "‍",
-      "key": "core:00.00.00.04.bJ",
-      "kind": "existing-core-value",
+      "key": "linguistics:ar:200D",
+      "kind": "language-component-candidate",
+      "locale": "ar",
+      "parents": [
+        {
+          "address": "00.00.00.04.bJ",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
       "scalar_metadata": [
         {
           "category": "Cf",
@@ -185,7 +111,8 @@
       "scalars": [
         "U+200D"
       ],
-      "store": "hcp_core",
+      "source_value": "core:00.00.00.04.bJ",
+      "store": "linguistics",
       "structural_mass_derived": 6,
       "utf8_hex": "E2 80 8D"
     }
@@ -193,23 +120,21 @@
   {
     "groups": [
       "language:ar",
-      "language:cs",
-      "language:en",
-      "language:fa",
-      "language:tr",
-      "language:ur",
-      "punctuation:ar",
-      "punctuation:cs",
-      "punctuation:en",
-      "punctuation:fa",
-      "punctuation:tr",
-      "punctuation:ur"
+      "punctuation:ar"
     ],
     "value": {
-      "address": "00.00.00.04.bi",
+      "address": null,
       "form": "…",
-      "key": "core:00.00.00.04.bi",
-      "kind": "existing-core-value",
+      "key": "linguistics:ar:2026",
+      "kind": "language-component-candidate",
+      "locale": "ar",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
       "scalar_metadata": [
         {
           "category": "Po",
@@ -223,42 +148,34 @@
       "scalars": [
         "U+2026"
       ],
-      "store": "hcp_core",
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
       "structural_mass_derived": 6,
       "utf8_hex": "E2 80 A6"
     }
   },
   {
-    "groups": [],
+    "groups": [
+      "alphabet:cs",
+      "language:cs"
+    ],
     "value": {
       "address": null,
-      "form": "CH",
-      "key": "sequence:0043-0048",
-      "kind": "shared-literal-candidate",
+      "form": "A",
+      "key": "linguistics:cs:0041",
+      "kind": "language-component-candidate",
+      "locale": "cs",
       "parents": [
         {
-          "address": "00.00.00.00.25",
+          "address": "00.00.00.00.23",
           "ordinal": 0,
-          "store": "hcp_core"
-        },
-        {
-          "address": "00.00.00.00.2A",
-          "ordinal": 1,
           "store": "hcp_core"
         }
       ],
       "scalar_metadata": [
         {
           "category": "Lu",
-          "name": "LATIN CAPITAL LETTER C",
-          "script": "Latin",
-          "script_extensions": [
-            "Latin"
-          ]
-        },
-        {
-          "category": "Lu",
-          "name": "LATIN CAPITAL LETTER H",
+          "name": "LATIN CAPITAL LETTER A",
           "script": "Latin",
           "script_extensions": [
             "Latin"
@@ -266,12 +183,12 @@
         }
       ],
       "scalars": [
-        "U+0043",
-        "U+0048"
+        "U+0041"
       ],
+      "source_value": "core:00.00.00.00.23",
       "store": "linguistics",
-      "structural_mass_derived": 4,
-      "utf8_hex": "43 48"
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
     }
   },
   {
@@ -282,8 +199,9 @@
     "value": {
       "address": null,
       "form": "ch",
-      "key": "sequence:0063-0068",
-      "kind": "shared-literal-candidate",
+      "key": "linguistics:cs:0063-0068",
+      "kind": "language-component-candidate",
+      "locale": "cs",
       "parents": [
         {
           "address": "00.00.00.00.2b",
@@ -318,9 +236,579 @@
         "U+0063",
         "U+0068"
       ],
+      "source_value": "sequence:0063-0068",
       "store": "linguistics",
       "structural_mass_derived": 4,
       "utf8_hex": "63 68"
+    }
+  },
+  {
+    "groups": [
+      "language:cs",
+      "punctuation:cs"
+    ],
+    "value": {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:cs:2026",
+      "kind": "language-component-candidate",
+      "locale": "cs",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "value": {
+      "address": null,
+      "form": "A",
+      "key": "linguistics:en:0041",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.00.23",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0041"
+      ],
+      "source_value": "core:00.00.00.00.23",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
+    }
+  },
+  {
+    "groups": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "value": {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:en:2026",
+      "kind": "language-component-candidate",
+      "locale": "en",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    }
+  },
+  {
+    "groups": [
+      "language:fa",
+      "punctuation:fa"
+    ],
+    "value": {
+      "address": null,
+      "form": "؟",
+      "key": "linguistics:fa:061F",
+      "kind": "language-component-candidate",
+      "locale": "fa",
+      "parents": [
+        {
+          "address": "00.00.00.01.ND",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "ARABIC QUESTION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Adlam",
+            "Arabic",
+            "Garay",
+            "Nko",
+            "Hanifi_Rohingya",
+            "Syriac",
+            "Thaana",
+            "Yezidi"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+061F"
+      ],
+      "source_value": "core:00.00.00.01.ND",
+      "store": "linguistics",
+      "structural_mass_derived": 4,
+      "utf8_hex": "D8 9F"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:fa",
+      "language:fa"
+    ],
+    "value": {
+      "address": null,
+      "form": "‌",
+      "key": "linguistics:fa:200C",
+      "kind": "language-component-candidate",
+      "locale": "fa",
+      "parents": [
+        {
+          "address": "00.00.00.04.bI",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Cf",
+          "name": "ZERO WIDTH NON-JOINER",
+          "script": "Inherited",
+          "script_extensions": [
+            "Inherited"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+200C"
+      ],
+      "source_value": "core:00.00.00.04.bI",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 8C"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:fa",
+      "language:fa"
+    ],
+    "value": {
+      "address": null,
+      "form": "‍",
+      "key": "linguistics:fa:200D",
+      "kind": "language-component-candidate",
+      "locale": "fa",
+      "parents": [
+        {
+          "address": "00.00.00.04.bJ",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Cf",
+          "name": "ZERO WIDTH JOINER",
+          "script": "Inherited",
+          "script_extensions": [
+            "Inherited"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+200D"
+      ],
+      "source_value": "core:00.00.00.04.bJ",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 8D"
+    }
+  },
+  {
+    "groups": [
+      "language:fa",
+      "punctuation:fa"
+    ],
+    "value": {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:fa:2026",
+      "kind": "language-component-candidate",
+      "locale": "fa",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:tr",
+      "language:tr"
+    ],
+    "value": {
+      "address": null,
+      "form": "A",
+      "key": "linguistics:tr:0041",
+      "kind": "language-component-candidate",
+      "locale": "tr",
+      "parents": [
+        {
+          "address": "00.00.00.00.23",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0041"
+      ],
+      "source_value": "core:00.00.00.00.23",
+      "store": "linguistics",
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:tr",
+      "language:tr"
+    ],
+    "value": {
+      "address": null,
+      "form": "İ",
+      "key": "linguistics:tr:0130",
+      "kind": "language-component-candidate",
+      "locale": "tr",
+      "parents": [
+        {
+          "address": "00.00.00.01.2q",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER I WITH DOT ABOVE",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0130"
+      ],
+      "source_value": "core:00.00.00.01.2q",
+      "store": "linguistics",
+      "structural_mass_derived": 4,
+      "utf8_hex": "C4 B0"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:tr",
+      "language:tr"
+    ],
+    "value": {
+      "address": null,
+      "form": "ı",
+      "key": "linguistics:tr:0131",
+      "kind": "language-component-candidate",
+      "locale": "tr",
+      "parents": [
+        {
+          "address": "00.00.00.01.2r",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER DOTLESS I",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0131"
+      ],
+      "source_value": "core:00.00.00.01.2r",
+      "store": "linguistics",
+      "structural_mass_derived": 4,
+      "utf8_hex": "C4 B1"
+    }
+  },
+  {
+    "groups": [
+      "language:tr",
+      "punctuation:tr"
+    ],
+    "value": {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:tr:2026",
+      "kind": "language-component-candidate",
+      "locale": "tr",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    }
+  },
+  {
+    "groups": [
+      "language:ur",
+      "punctuation:ur"
+    ],
+    "value": {
+      "address": null,
+      "form": "؟",
+      "key": "linguistics:ur:061F",
+      "kind": "language-component-candidate",
+      "locale": "ur",
+      "parents": [
+        {
+          "address": "00.00.00.01.ND",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "ARABIC QUESTION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Adlam",
+            "Arabic",
+            "Garay",
+            "Nko",
+            "Hanifi_Rohingya",
+            "Syriac",
+            "Thaana",
+            "Yezidi"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+061F"
+      ],
+      "source_value": "core:00.00.00.01.ND",
+      "store": "linguistics",
+      "structural_mass_derived": 4,
+      "utf8_hex": "D8 9F"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:ur",
+      "language:ur"
+    ],
+    "value": {
+      "address": null,
+      "form": "‌",
+      "key": "linguistics:ur:200C",
+      "kind": "language-component-candidate",
+      "locale": "ur",
+      "parents": [
+        {
+          "address": "00.00.00.04.bI",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Cf",
+          "name": "ZERO WIDTH NON-JOINER",
+          "script": "Inherited",
+          "script_extensions": [
+            "Inherited"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+200C"
+      ],
+      "source_value": "core:00.00.00.04.bI",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 8C"
+    }
+  },
+  {
+    "groups": [
+      "alphabet:ur",
+      "language:ur"
+    ],
+    "value": {
+      "address": null,
+      "form": "‍",
+      "key": "linguistics:ur:200D",
+      "kind": "language-component-candidate",
+      "locale": "ur",
+      "parents": [
+        {
+          "address": "00.00.00.04.bJ",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Cf",
+          "name": "ZERO WIDTH JOINER",
+          "script": "Inherited",
+          "script_extensions": [
+            "Inherited"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+200D"
+      ],
+      "source_value": "core:00.00.00.04.bJ",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 8D"
+    }
+  },
+  {
+    "groups": [
+      "language:ur",
+      "punctuation:ur"
+    ],
+    "value": {
+      "address": null,
+      "form": "…",
+      "key": "linguistics:ur:2026",
+      "kind": "language-component-candidate",
+      "locale": "ur",
+      "parents": [
+        {
+          "address": "00.00.00.04.bi",
+          "ordinal": 0,
+          "store": "hcp_core"
+        }
+      ],
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "source_value": "core:00.00.00.04.bi",
+      "store": "linguistics",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
     }
   }
 ]

@@ -12,13 +12,18 @@
   "core_validation": "not-run",
   "counts": {
     "case_expanded_candidates": 213,
+    "core_child_edges": 782,
+    "core_endpoints_receiving_children": 292,
     "coverage_gaps": 0,
     "distinct_source_sequences": 249,
     "groups": 23,
+    "language_component_endpoints": 781,
     "membership_edges": 1579,
-    "multi_scalar_values": 2,
-    "shared_values_including_case_candidates": 294,
-    "source_memberships": 771
+    "multi_scalar_language_endpoints": 1,
+    "multi_scalar_source_values": 2,
+    "ordered_core_parent_occurrences": 782,
+    "source_memberships": 771,
+    "source_values_including_case_candidates": 294
   },
   "coverage": [
     {
@@ -344,7 +349,7 @@
     }
   ],
   "database_writes": 0,
-  "format": "hcp-language-inventory-v1",
+  "format": "hcp-language-inventory-v2",
   "requested_locales": [
     "ar",
     "cs",
