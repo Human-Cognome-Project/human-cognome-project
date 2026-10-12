@@ -120,7 +120,7 @@ class UnicodeData:
         if len(cps) == 1:
             result.update(kind='existing-core-value', store='hcp_core', address=character_address(cps[0]))
         else:
-            result.update(kind='shared-literal-candidate', store='linguistics', address=None,
+            result.update(kind='source-sequence', store=None, address=None,
                           parents=[{'ordinal': i, 'store': 'hcp_core', 'address': character_address(cp)}
                                    for i, cp in enumerate(cps)])
         return result

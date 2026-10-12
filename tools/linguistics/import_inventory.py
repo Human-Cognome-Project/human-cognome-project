@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline source importer and read-only export validator. No database writer."""
+"""Bulk bootstrap population preparation and validation. No database writer."""
 import argparse
 import json
 from pathlib import Path
@@ -18,7 +18,9 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('fetch', help='fetch and verify pinned public inputs')
     preview = commands.add_parser('preview', help='emit candidate manifest and coverage, without DB writes')
-    preview.add_argument('--locales', nargs='+', required=True)
+    locale_input = preview.add_mutually_exclusive_group(required=True)
+    locale_input.add_argument('--locales', nargs='+')
+    locale_input.add_argument('--profile', type=Path, help='JSON profile with a locales list')
     preview.add_argument('--roles', nargs='+', default=list(ROLES), choices=ROLES)
     preview.add_argument('--hierarchy', type=Path, default=HERE / 'bootstrap-groups.json')
     preview.add_argument('--out', type=Path, required=True)
@@ -35,8 +37,12 @@ def main():
             return 0
         if args.command == 'preview':
             sources = Sources(args.cache)
+            profile = json.loads(args.profile.read_text()) if args.profile else None
+            locales = (profile.get('locales') if isinstance(profile, dict) else None) if args.profile else args.locales
+            if not isinstance(locales, list) or not locales or not all(isinstance(x, str) for x in locales):
+                raise ValueError('Profile locales must be a nonempty list of locale IDs')
             manifest, coverage = generate(sources, Cldr(sources.cldr_files()), Icu(sources),
-                                          UnicodeData(sources), args.locales, args.roles,
+                                          UnicodeData(sources), locales, args.roles,
                                           json.loads(args.hierarchy.read_text()))
             write_json(args.out / 'manifest.json', manifest)
             write_json(args.out / 'coverage.json', coverage)

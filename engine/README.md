@@ -37,9 +37,10 @@ our formulas and working structures are simple enough to be expressed directly
 in C++.
 
 Python in the Taichi fork is vendor frontend/build/test material. Project
-Python should be limited to convenient bootstrap, migration, import/export or
-other offline I/O. It must not become the physics engine, runtime harness,
-database kernel, WAL kernel, or kernel-network implementation.
+Python is authorized only for bulk database population during bootstrap,
+including preparation and validation of those batches. It must not become the
+physics engine, runtime harness, database kernel, WAL kernel, or kernel-network
+implementation.
 
 The previous planner-generated Python field engine has been archived under
 `archive/2026-09-planner-field-python/`.

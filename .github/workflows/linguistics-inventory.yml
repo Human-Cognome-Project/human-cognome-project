@@ -47,6 +47,7 @@ jobs:
           git lfs fetch --include='data/postgres/snapshots/2026-10-03-encoding-tables/hcp_core.sql.gz' --exclude='' origin "$hcp_snapshot_commit"
           hcp_utf8_export="$(git rev-parse --git-common-dir)/lfs/objects/44/08/4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8"
           python tools/linguistics/evidence.py --utf8-export "$hcp_utf8_export"
+          python tools/linguistics/evidence.py --bootstrap-only --utf8-export "$hcp_utf8_export"
       - name: Compare every Unicode scalar with pinned native derivation
         run: |
           python tools/linguistics/audit_addresses.py --out sources/data/linguistics/native-audit.json

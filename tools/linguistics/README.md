@@ -1,9 +1,11 @@
-# Offline linguistic inventory importer
+# Bulk linguistic bootstrap preparation
 
 **BUILT:** pinned Unicode/CLDR acquisition, ICU UnicodeSet parsing and locale
-casing, source inheritance/aliases, shared-value candidate manifests, symbolic
-groups, reciprocal memberships, coverage reports and a read-only COPY-export
-validator. This is bootstrap/import I/O, outside the native runtime.
+casing, source inheritance/aliases, distinct linguistic endpoint candidates,
+ordered core parents and reciprocal child additions, symbolic groups,
+reciprocal memberships, coverage reports and a read-only COPY-export
+validator. This Python tooling prepares and checks bulk bootstrap population
+data only. Offline operation alone is not a Python exception.
 
 **PLANNED:** final group/new-literal addresses, persistent cross-store links,
 owning-controller writes/retries and native group-centroid assembly. Group
@@ -11,10 +13,18 @@ centroid descriptions are requirements with pending state; no coordinates or
 aggregate masses are calculated here. The manifest is a proposal, not a
 write-ready population batch.
 
+The purpose is functional bootstrapping: seed a connected representational
+framework around which subsequent structure can form. UTF-8 is the encoding
+target for this stage. Once sufficient density supports viable interaction,
+further material and other encoding-table qualification follow the standard
+methods. The current test objects are individual letters in each language;
+this work supplies their bulk seed definitions and memberships.
+
 The [accepted plan](../../docs/language-component-unicode-plan.md) defines the
-membership/construction contract. Single scalars reference existing `hcp_core`
-identities. Source-defined multi-scalar forms retain exact ordered endpoint
-parents and unallocated shared-literal identities. Repetitions, case and
+membership/construction contract. Each language's letter/punctuation endpoint
+has its own linguistic identity and ordered `hcp_core` character parents,
+including single-scalar letters. Each core parent receives the corresponding
+language endpoints in its child listing. Repetitions, case and
 combining sequences are preserved, without normalization. Each alphabet and
 punctuation grouping has its own pending centroid description. Language
 hierarchy edges are explicit reviewed bootstrap metadata, separate from CLDR
@@ -48,6 +58,9 @@ python tools/linguistics/import_inventory.py preview \
 python tools/linguistics/import_inventory.py preview \
   --locales en cs tr ar fa ur \
   --out sources/data/linguistics/six-locales
+python tools/linguistics/import_inventory.py preview \
+  --profile tools/linguistics/bootstrap-locales.json \
+  --out sources/data/linguistics/bootstrap-20
 ```
 
 `--cache PATH` is a global option before the subcommand. Fetch once and subsequent
@@ -61,10 +74,19 @@ machine-readable inventory sources and observed-form coverage.
 
 ## Candidate output
 
-`manifest.json` separates:
+The v2 `manifest.json` separates:
 
-- Shared `values`: one canonical core reference per scalar; exact, unallocated
-  multi-scalar constructions such as Czech `ch` have ordered core parents.
+- `source_values`: shared core character references and source sequence
+  evidence. Index-only forms stay here without becoming linguistic endpoints.
+- `values`: distinct language-scoped letter/punctuation endpoints, with exact
+  forms, source references and ordered core character parents. English `A` and
+  French `A` have distinct seed keys and the same existing core `A` parent.
+- `core_child_updates`: additive child listings for every referenced core
+  character. Each listing names its distinct linguistic children and their
+  destination store. Repeated parents retain their ordinals in `values`, with
+  one reciprocal child edge per core/linguistic endpoint pair. Existing core
+  child listings are preserved. Missing, duplicate or unrelated additions,
+  replacement updates and omitted letter parents fail seed validation.
 - `groups`: symbolic language/subgroup, alphabet and punctuation descriptions,
   plus reviewed broader groupings from `bootstrap-groups.json`. A group has
   its distinct pending centroid, without literal constituent parents.
@@ -84,10 +106,12 @@ membership or order. Locale-aware lower/upper/title variants of scalar forms
 supply additional candidate memberships (e.g. English `a` -> `A`, Turkish
 `i` -> `İ`). Multi-scalar case expansions remain review evidence only and do
 not create additional literal constructions or memberships. No three-period
-ellipsis is fabricated; `…` remains the single U+2026 endpoint.
+ellipsis is fabricated; a language's `…` endpoint has the single core U+2026
+endpoint as its parent.
 
-`coverage.json` keeps source memberships, distinct source sequences, shared
-values including applied casing, actual membership edges and case candidates
+`coverage.json` keeps source memberships, distinct source sequences, source
+values including applied casing, linguistic endpoints, parent occurrences,
+core child edges, actual membership edges and case candidates
 as separate counts. Missing inventories, empty main inventories and source
 resolution errors remain visible. Preview exits **2** for coverage gaps;
 `--allow-gaps` permits a successful preview exit while retaining those gaps.
@@ -122,7 +146,9 @@ multibyte endpoints have byte parents. Deferred NULL parent-row mass cells
 stay NULL; verified constituent token masses supply their expected values.
 NULL/incorrect whole mass and incorrect non-NULL parent mass fail validation.
 Generated memberships are checked for reciprocal agreement and group cycles;
-persisted Linguistics memberships are outside this slice.
+candidate core child additions are checked against all linguistic parents.
+The supplied export validates the existing core construction; it does not
+claim that the new linguistic child entries have already been persisted.
 
 Exit **0** means valid within the supplied export, **2** means partial
 (missing values) or invalid (conflicting definitions), and **1** means a
@@ -135,12 +161,14 @@ remain subject to the owning-store/reference/reciprocal-write/retry contract.
 [Checked-in previews](../../data/linguistics/previews) contain the full English
 pilot, six-locale coverage and selected cross-language values, validation
 against the current full UTF-8 snapshot, the historical floor report, and the
-native address audit. The English pilot references
-**84 values**: 52 ASCII letters and 32 punctuation forms, giving 175 deduplicated
-membership edges including group/hierarchy edges. The full six-locale preview
+native address audit. The English pilot has
+**84 linguistic endpoints**: 52 ASCII letters and 32 punctuation forms, each
+with its existing core character parent and reciprocal child addition, giving
+175 deduplicated membership edges including group/hierarchy edges. The full six-locale preview
 preserves **771 source memberships**, 249 distinct source sequences (247 scalar
-endpoints plus `ch`/`CH`), 294 shared values including applied case variants,
-and 1,579 membership edges. Case candidate counts include unapplied multi-scalar
+source forms plus `ch`/`CH`), 294 source values including applied case variants,
+781 linguistic endpoints, 782 core child additions and 1,579 membership edges.
+Case candidate counts include unapplied multi-scalar
 mappings and are not new-object counts.
 
 The current retained export is the **2026-10-03 full UTF-8 snapshot**, extracted
@@ -156,9 +184,22 @@ contains only nibbles/bytes and predates the Unicode endpoint population.
 It supplies a floor baseline; use the October 3 dump for current inventory
 validation. Neither operation connects to a live database.
 
+The **20-language bootstrap** has no inventory-source gaps and preserves
+2,387 source memberships and 914 source values (27 multi-scalar forms).
+It has **2,707 language-scoped endpoints**, 65 groups and 5,460 membership
+edges. **2,741 ordered core parent occurrences** have **2,741 reciprocal child
+additions** across 890 core endpoints. All 1,082 referenced core endpoints and
+dependencies pass against the full UTF-8 snapshot. The checked-in compact
+inventory catalog gives each language's alphabet/punctuation member keys,
+exact forms, parents and additive core child updates. The full generated bulk
+candidate manifest stays in the ignored
+working cache. This batch is database seed preparation; the generic Python
+membership selector and working-area bundle format have been removed.
+
 ```bash
 python -m unittest discover -s tools/linguistics/tests -v
 python tools/linguistics/evidence.py
+python tools/linguistics/evidence.py --bootstrap-only
 python tools/linguistics/audit_addresses.py \
   --out sources/data/linguistics/native-audit.json
 cmp sources/data/linguistics/native-audit.json \
@@ -170,6 +211,8 @@ default. `--write` regenerates those files for a reviewed source/behavior
 change. **`--utf8-export PATH`** also compares the two current validation
 reports; supply the full snapshot gzip blob identified by SHA256
 `4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8`.
+Use `--bootstrap-only --utf8-export PATH` to compare all three twenty-language
+evidence files, including the current-core validation report.
 CI fetches the snapshot alone from its pinned extraction commit and runs
 this comparison; it does not check out or execute the runtime work in #111.
 `--core-export PATH` additionally compares the historical floor report, using

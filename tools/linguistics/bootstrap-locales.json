@@ -1,0 +1,4 @@
+{
+  "description": "Twenty-language UTF-8 bulk bootstrap population preparation batch.",
+  "locales": ["ar", "bg", "cs", "de", "el", "en", "es", "fa", "fr", "he", "hy", "it", "ka", "nl", "pt", "ru", "sr", "tr", "uk", "ur"]
+}

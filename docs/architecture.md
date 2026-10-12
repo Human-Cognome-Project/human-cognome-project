@@ -107,7 +107,7 @@ flux between them, and treat an unresolvable differential as the detection of an
 
 ## Engine substrate
 
-The foundation is the project's **modified Taichi fork**, retained for its mathematical/particle execution machinery and portable backend compiler/device layer. The HCP runtime path is now explicitly native C++: the recovered `engine_support` layer links directly against the fork, while Taichi's upstream Python frontend remains vendor/build/test material rather than an HCP engine interface. Project Python is limited to bootstrap, migration, import/export and comparable offline I/O. The active native engine boundary is documented under [`engine/`](../engine/).
+The foundation is the project's **modified Taichi fork**, retained for its mathematical/particle execution machinery and portable backend compiler/device layer. The HCP runtime path is now explicitly native C++: the recovered `engine_support` layer links directly against the fork, while Taichi's upstream Python frontend remains vendor/build/test material rather than an HCP engine interface. Project Python is authorized only for bulk database population during bootstrap, including preparation and validation of those batches. Offline operation alone is not an exception. The active native engine boundary is documented under [`engine/`](../engine/).
 
 Engineering practice carried from the previous era, mandated for every kernel: **oracle-first
 validation** — a portable CPU reference as deterministic oracle, the GPU kernel as its mirror, an

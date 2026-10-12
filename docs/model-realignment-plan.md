@@ -255,11 +255,17 @@ work stays deferred for MVP.
 
 The 2026-10-11 decisions supersede the earlier English `01` / common `01.00`
 and language-per-database proposal. Use membership for language aggregation:
-shared characters join each applicable language and alphabet/punctuation
-grouping; English variants join English; English joins broader groups. Each
+each language-letter/punctuation endpoint joins its language and alphabet/
+punctuation grouping; English variants join English; English joins broader groups. Each
 grouping requires its own centroid representation. Literal parent/child links
 remain construction-only. Detailed allocations follow the reviewed write
 slice; membership does not assign additional address-couplet meanings.
+Patrick's 2026-10-12 correction gives each linguistic endpoint its own identity,
+ordered shared core character parents, and additive reciprocal entries in
+those core endpoints' child listings. The shared core values are not duplicated.
+Python is limited to early bulk database bootstrapping and preparation/validation
+of those seed batches; offline operation does not authorize operational Python
+selection or assembly components.
 
 For the shared-Linguistics/cross-store continuation, prepare decisions on:
 
@@ -269,7 +275,8 @@ For the shared-Linguistics/cross-store continuation, prepare decisions on:
   across databases without accidental local/global privacy crossover;
 - ownership of forward/reciprocal links, command transaction boundaries,
   deferred WAL obligations and idempotent retry/reconciliation;
-- shared character identities, reciprocal membership trees, separate alphabet/
+- shared core identities, distinct language endpoints with reciprocal core child
+  additions, reciprocal membership trees, separate alphabet/
   punctuation grouping centroids and recorded literal combinations to assemble;
 - a read-only core inventory and a reviewable additive first-ingestion plan,
   including restore/recovery evidence and validation totals.

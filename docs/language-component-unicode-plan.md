@@ -1,17 +1,24 @@
-# Language memberships over shared Unicode value trees
+# Language letter endpoints over shared Unicode value trees
 
 Status: **Plan accepted in PR #127, with Patrick's membership clarification,
-2026-10-11.** The [reusable offline importer and read-only export validator](../tools/linguistics/README.md)
+2026-10-11; language-letter endpoints and core child listings corrected by
+Patrick on 2026-10-12.** The [bulk bootstrap preparation and read-only export validator](../tools/linguistics/README.md)
 are now implemented, with reproducible source/manifest evidence. Persistent
 memberships and general warm aggregation remain planned.
 
 ## Intended result
 
-Shared character values retain one identity. A character used across several
-languages is a member of each applicable language, and of the appropriate
-alphabet or punctuation groupings. A language's component inventory is
-expressed through those memberships. Referencing an existing character does
-not require constructing another single-character token for that language.
+Shared core character values retain one identity. Each language's letter or
+punctuation endpoint has its own identity in Linguistics, with ordered parents
+referencing those core character values. Even a one-scalar letter has a core
+character parent. Each referenced core endpoint receives the language endpoint
+in its child listing. The language endpoint joins its language and applicable
+alphabet/punctuation groupings through memberships.
+
+Individual letters in each language are the current test objects. The seed
+data must include their definitions, core parent/child links and membership
+reciprocals together. Reusing a core reference as the linguistic endpoint,
+with memberships alone, is incomplete.
 
 Language subdivisions use the same membership axis: English variant groups
 are members of English, and English is a member of its broader groupings.
@@ -57,10 +64,10 @@ Common membership in English and the practical lexical fallback route are
 separate: Australia's usual UK-first lookup preference does not require its
 group to be nested under UK English. Base/delta storage remains as discussed.
 
-The same shared `A` value can belong to English and French, with its applicable
-alphabet memberships. The shared `…` value can belong to their punctuation
-groupings. In each language context, alphabet and punctuation use distinct
-groupings, each with its own centroid representation for warm aggregation.
+English `A` and French `A` are distinct linguistic endpoints. Both have the
+existing core `A` as their parent, and core `A` lists both as children. Each
+linguistic endpoint joins its own language/alphabet groups. Punctuation uses
+the same construction/link discipline and separate punctuation groupings.
 
 **Parents describe literal construction.** Store ordered constituents through
 `token_parent` / `token_child`:
@@ -68,13 +75,13 @@ groupings, each with its own centroid representation for warm aggregation.
 ```text
 multibyte Unicode character endpoint -> ordered byte codes -> ordered nibbles
 ASCII character endpoint = existing byte code -> ordered nibbles
-source-defined multi-character form -> ordered Unicode character endpoints
+language-letter/punctuation endpoint -> ordered Unicode character endpoint(s)
 ```
 
 ASCII character endpoints reuse the existing byte-code tokens. A multibyte
 character is one existing endpoint even though several bytes construct it.
-For example, the ellipsis `…` is `U+2026`, encoded as `E2 80 A6`: alphabet/
-punctuation membership refers directly to that **one** character endpoint.
+For example, the ellipsis `…` is `U+2026`, encoded as `E2 80 A6`: a language's
+ellipsis endpoint has that **one** core character endpoint as its parent.
 Constructed three-period ellipses are deferred to later engine discovery work.
 
 A source-defined form containing multiple Unicode scalars retains one ordered
@@ -83,11 +90,12 @@ UTF-8 reconstruction. Preserve source sequences rather than normalizing,
 folding case or replacing them with visually similar forms. Case-related
 forms require source evidence and language-appropriate casing rules.
 
-A source-defined multi-character construction can itself have several language
-memberships. Reuse its complete literal definition when applicable, preserving
-its actual ordered parents. Single-character memberships need no such new
-construction. Source inventory roles remain evidence for applicable groups;
-an index exemplar is not automatically an alphabet member.
+A source-defined form has a distinct endpoint in each language where it is
+used, preserving its actual ordered core parents. Repeated core parents retain
+separate ordinals; a core child listing includes a given language endpoint
+once. Child updates add to the existing listings, preserving existing core
+relationships. Source inventory roles remain evidence for applicable groups;
+an index exemplar is not automatically an alphabet member or a seeded endpoint.
 
 The active language's memberships and base/delta references determine which
 values are assembled. The grouping centroid is a calculated/cache aggregation
@@ -143,22 +151,26 @@ summary with explicitly incomplete coverage, so it cannot drive this import.
 
 The first implementation is an offline bootstrap/import script. It emits a
 deterministic candidate manifest and a coverage report before writing data.
-Python is appropriate for offline I/O under `AGENTS.md`; database/kernel and
-warm-cache runtime changes continue through the native C++ boundaries.
+Python here is restricted to bulk bootstrap population and preparation/checks
+of those batches. Offline operation alone does not authorize Python components.
 
-The candidate manifest separates reusable values, group descriptions and
-membership edges. Each source record retains its language/locale, script
+The v2 candidate manifest separates source values, language endpoints, core
+child additions, group descriptions and membership edges. Each source record
+retains its language/locale, script
 context where available, inventory role, exact scalar sequence and pinned
-provenance. A single-scalar value references its existing canonical core
-identity and store context. A genuinely new multi-character literal carries
-ordered endpoint parents. Group descriptions distinguish languages, their
+provenance. Each language endpoint carries ordered core character parents,
+including single-scalar letters. Core child additions carry each referenced
+endpoint's complete set of language children for this batch. Source sequences
+are evidence, not an extra set of shared linguistic tokens. Group descriptions
+distinguish languages, their
 subgroups, alphabet groupings and punctuation groupings, including the required
 centroid representation without inventing centroid coordinates.
 
 Deduplicate memberships by exact member/group identity, retaining their source
 evidence. Preserve literal repetitions at separate parent ordinals. Report
-source memberships, unique shared values, actual group memberships and any
-case-expanded candidates as separate counts. UTF-8 bytes and derived structural
+source memberships, unique source values, language endpoints, parent occurrences,
+core child edges, actual group memberships and case-expanded candidates as
+separate counts. UTF-8 bytes and derived structural
 counts remain validation evidence. Source keys are preview identifiers;
 final group and new-literal addresses have not been allocated.
 
@@ -170,6 +182,9 @@ Before a batch is accepted, verify automatically:
    ASCII byte-token endpoints, ordered byte parents for multibyte endpoints.
    Missing or inconsistent endpoints produce a report rather than a core edit.
 3. Ordinals are contiguous and repeated parents remain separate occurrences.
+   Each language-to-core parent has a matching core-to-language child entry;
+   duplicate, missing or unrelated child entries fail validation. Core child
+   updates must be additive, preserving existing listings.
 4. Language, language-subgroup, alphabet and punctuation memberships use
    `members` / `member_of`; both directions agree with their owning records.
    Every grouping has its distinct centroid representation. Group containment
@@ -231,9 +246,10 @@ connected, created, restored or populated for either check.
 ## Phased execution
 
 **Offline slice built:** `tools/linguistics/` pins CLDR 48.2, UCD 17.0.0 and
-ICU4J 78.1, resolves source inheritance/aliases and emits shared values,
-symbolic group descriptions, deduplicated reciprocal membership candidates
-and coverage. Its English pilot references 84 existing values. The expanded
+ICU4J 78.1, resolves source inheritance/aliases and emits distinct language
+endpoints, core child additions, symbolic group descriptions, deduplicated
+reciprocal membership candidates and coverage. Its English pilot has 84
+linguistic endpoints referencing 84 existing core character values. The expanded
 six-locale run preserves the 771 source memberships while separating casing
 candidates and actual group edges. Index exemplars remain evidence only;
 multi-scalar case mappings do not fabricate literal constructions. The
@@ -249,23 +265,46 @@ validate 286 and 492 endpoints/dependencies respectively, using the supplied
 export without connecting to a live core. No persistent membership or centroid
 assembly is implemented by this offline slice.
 
+**Multilingual bulk seed preparation, 2026-10-12:** the initial
+profile now covers 20 languages across Latin, Greek, Cyrillic, Hebrew, Arabic,
+Armenian and Georgian scripts. It has 2,707 linguistic component endpoints,
+65 group descriptions and 5,460 membership edges, with no source gaps. Its
+2,741 ordered core parent references have 2,741 reciprocal child additions
+on 890 core endpoints. All
+1,082 referenced core endpoints/dependencies pass the current export check.
+The batch retains shared core identities, distinct language endpoint identities,
+exact forms and both construction/membership reciprocals for database seed
+review. A flat catalog lists the complete batch's alphabet/punctuation
+endpoints, parents and additive core child updates. Persistent population and
+unchanged-rerun checks
+remain to be completed. The generic Python selector and its working-area
+bundle format were removed; this work is limited to database seeding.
+The current test objects are individual letters in each language.
+
+The objective is functional bootstrapping: create an initial connected
+framework around which further structure can form. UTF-8 is the encoding
+target for now. Once sufficient density supports viable physics, subsequent
+material and other encoding-table qualification come through standard methods.
+This stage does not assign a new analyst architecture or impose another
+general physics qualification gate.
+
 1. **Script and manifest:** implement the reusable source importer and
    read-only target-core validator; generate per-language inventories and
    report missing sources. Begin with English's 52 ASCII letters and 32
    CLDR punctuation forms, including the single-character ellipsis. These
-   are 84 referenced existing values to assign applicable language/alphabet/
-   punctuation memberships, not 84 new single-character definitions. Emit
+   are 84 linguistic endpoints with core character parents, reciprocal core
+   child additions and applicable language/alphabet/punctuation memberships. Emit
    the language/alphabet/punctuation grouping descriptions and English's
    broader-group membership evidence. Then add auxiliary inventories/locales.
 2. **Persistent link slice:** finalize grouping/new-literal allocation and the
    bounded cross-store reference/write contract, then add the reviewed
    memberships and any required group naming constructions through the owning
    controller. Validate shared identities, membership reciprocals, distinct
-   group centroid representations and an unchanged rerun. Only genuinely new
-   literal forms require new character-endpoint parent lists.
+   group centroid representations and an unchanged rerun. Every language
+   endpoint's parent list and its core child additions belong to this batch.
 3. **Warm assembly:** feed the pilot memberships and value trees to the
    cache-manager/native preparation boundary. Check that an English selection
-   assembles the applicable shared character objects and distinct alphabet/
+   assembles the distinct language-letter objects and distinct alphabet/
    punctuation group centroid representations over the exact byte structures.
    Follow English variant -> English -> broader-group membership links. This is
    data/assembly validation, without reopening general physics qualification.
@@ -276,9 +315,9 @@ assembly is implemented by this offline slice.
 The current controller resolves references in one PostgreSQL connection, and
 the schema's parent/member foreign keys target its local `token` table.
 Those keys cannot directly reference a separate Linguistics database. The
-generated manifest can carry core-value references and intended membership
-edges now. Cross-store membership reciprocals need the owning-store/write/
-retry contract even when no new single-character literal is required. The
+generated manifest carries the linguistic endpoint definitions, core-value
+parent references, reciprocal core child additions and membership edges.
+Persistent population must cover both stores and both reciprocal pairs. The
 native cross-store boundary must be agreed and implemented before persistent links.
 Core inventories are reused rather than repopulated as a side effect.
 Previously identified record-integrity work in PR #111 remains separate and

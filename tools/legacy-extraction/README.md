@@ -17,6 +17,6 @@ The toolkit was carried forward from `src/hcp/` and `scripts/wiktionary/` during
 2. O/o legacy-address correction is an extraction concern only; current address rules live with the active database codec under `../../kernels/database/codec/`.
 3. Sentinels from old stores are migration flags, not current addresses.
 4. Do not add new runtime dependencies on this toolkit.
-5. Python is acceptable here because this is offline migration/source tooling, not a hot path.
+5. These retained historical Python tools do not provide a general migration/source-tooling exception. Active project Python is authorized only for bulk database population during bootstrap.
 
 If a migration utility becomes necessary for the active system, promote that function deliberately into an appropriate current tools area rather than treating this directory as canonical application code.

@@ -9,7 +9,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cldr import Cldr, ROLES
 from icu import Icu
-from manifest import generate, validate_manifest
+from manifest import component_key, generate, validate_manifest
 from sources import Sources, HERE
 from unicode_values import UnicodeData, character_address, byte_address, nibble_address, key
 from validate_core import expected_definitions, validate_export
@@ -174,17 +174,20 @@ class PinnedInventoryTests(unittest.TestCase):
         self.assertNotEqual(self.report['counts']['membership_edges'], 771)
         self.assertEqual(self.report['counts']['coverage_gaps'], 0)
 
-    def test_shared_scalar_has_one_identity_across_languages(self):
-        identity = key('A')
-        self.assertEqual(sum(v['key'] == identity for v in self.manifest['values']), 1)
-        self.assertTrue({'language:en', 'language:cs', 'language:tr'}.issubset(self.manifest['member_of'][identity]))
-        self.assertNotIn('parents', next(v for v in self.manifest['values'] if v['key'] == identity))
+    def test_language_letters_share_core_parent_but_have_distinct_endpoints(self):
+        self.assertEqual(sum(v['key'] == key('A') for v in self.manifest['source_values']), 1)
+        values = {v['key']: v for v in self.manifest['values']}
+        identities = [component_key(locale, 'A') for locale in ('en', 'cs', 'tr')]
+        self.assertEqual(len(set(identities)), 3)
+        for locale, identity in zip(('en', 'cs', 'tr'), identities):
+            self.assertIn('language:' + locale, self.manifest['member_of'][identity])
+            self.assertEqual(values[identity]['parents'],
+                             [{'ordinal': 0, 'store': 'hcp_core', 'address': character_address(0x41)}])
 
     def test_ellipsis_is_one_endpoint(self):
-        value = next(v for v in self.manifest['values'] if v['form'] == '…')
-        self.assertEqual(value['address'], '00.00.00.04.bi')
+        value = next(v for v in self.manifest['values'] if v['key'] == component_key('en', '…'))
+        self.assertEqual(value['parents'], [{'ordinal': 0, 'store': 'hcp_core', 'address': '00.00.00.04.bi'}])
         self.assertEqual(value['utf8_hex'], 'E2 80 A6')
-        self.assertNotIn('parents', value)
         self.assertFalse(any(v['form'] == '...' for v in self.manifest['values']))
 
     def test_literal_order_repetition_and_no_normalization(self):
@@ -200,8 +203,8 @@ class PinnedInventoryTests(unittest.TestCase):
         manifest, _ = generate(self.sources, Cldr(self.files), self.icu, self.ucd, ['tr'],
                                 ['main', 'index'], self.hierarchy)
         for form in ('Q', 'W', 'X'):
-            self.assertIn(key(form), [v['key'] for v in manifest['values']])
-            self.assertNotIn('alphabet:tr', manifest['member_of'].get(key(form), []))
+            self.assertIn(key(form), [v['key'] for v in manifest['source_values']])
+            self.assertNotIn(component_key('tr', form), {v['key'] for v in manifest['values']})
 
     def test_distinct_centroids_and_hierarchy_memberships(self):
         groups = {g['key']: g for g in self.manifest['groups']}
@@ -224,7 +227,7 @@ class PinnedInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'reciprocal'):
             validate_manifest(bad)
         bad = copy.deepcopy(self.manifest)
-        next(v for v in bad['values'] if v['form'] == 'A')['address'] = byte_address(66)
+        next(v for v in bad['source_values'] if v['form'] == 'A')['address'] = byte_address(66)
         with self.assertRaisesRegex(ValueError, 'scalar identity'):
             validate_manifest(bad)
 
@@ -233,7 +236,7 @@ class PinnedInventoryTests(unittest.TestCase):
         manifest, _ = generate(self.sources, cldr, self.icu, self.ucd, ['de'], ['main'], self.hierarchy)
         ss = next(c for c in manifest['case_candidates'] if c['form'] == 'SS')
         self.assertFalse(ss['membership_candidate'])
-        self.assertNotIn(key('SS'), {v['key'] for v in manifest['values']})
+        self.assertNotIn(component_key('de', 'SS'), {v['key'] for v in manifest['values']})
 
 
 def export_fixture(definitions, mutation=None, compressed=False):

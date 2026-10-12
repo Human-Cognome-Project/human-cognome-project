@@ -1,0 +1,1179 @@
+{
+  "cldr_files_sha256": {
+    "common/main/ar.xml": "94b2fea65038e61fa34b9b3efd728ab55e12c77644e61d283e63464ff57e13b7",
+    "common/main/bg.xml": "05bcf474ad3dc89fbc0216955a3a6279d1aad884e916cade8ff36a22dbca95b7",
+    "common/main/cs.xml": "151aa6e1d2e24c75e03b0332a8c41d7481fdc994c9b5b04c9e92da48142da063",
+    "common/main/de.xml": "15dbc0a59d188b243b9bd781ae245267f700ec8cd1b1d93ed760e5dd1b3cc1c6",
+    "common/main/el.xml": "54726ba13bd4a441d71c63971595b96507719d977f1f37030d12d2afff90aeef",
+    "common/main/en.xml": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
+    "common/main/es.xml": "727d29597d9e0e4f7a1951ebb26aca2f063f89d07190c933ee56451c01334d27",
+    "common/main/fa.xml": "f71b3b72c6713a4963213f2f1e7452131fa3a4f31201a6d9d6339bb3b340c8f5",
+    "common/main/fr.xml": "ebc67e303a56940609c892ededb3697e3b291466cf9622dd2c389ad48872e98f",
+    "common/main/he.xml": "7ad7f3e74991ad8f1114af6a17b282e6293a930479ff64c8198ea74786f125ac",
+    "common/main/hy.xml": "2969da48d175030ebb1f734630400f95b6604ccb6e89e085cbffb31d593c0d5d",
+    "common/main/it.xml": "cf1e21c333efa6b61c769be824f8a410503f210f60ee157fa40ed12950dcd632",
+    "common/main/ka.xml": "43be430b7ad4fbe09c73344efbbc074cb69a4d27942e6e992c812c76cb3db380",
+    "common/main/nl.xml": "34f1b135e0d5a27a8059c9a4183b54fc548e2b14a8211437d9717fff719203d0",
+    "common/main/pt.xml": "8e8bf8174c5b9138f32f6851a337877d175ca171e1a664f758f27f5d12e68b4f",
+    "common/main/root.xml": "f69ab139130793ab721b6d1be8c1385b9a051e0b7c5893615533bcfa7bab0448",
+    "common/main/ru.xml": "a90f5d3e76d18e00ee430c369809a1e19f3a1bdf32f86abc0cb3a5f416de18fb",
+    "common/main/sr.xml": "a2778298b40581863c38973d248ef5092a0ae7b8d57f463c24614c89e3a16f50",
+    "common/main/tr.xml": "97a18c0727e1e34c297b3fc08ce5d1470ef1b87558fc0e81bdee3336d0241910",
+    "common/main/uk.xml": "e1f8b87b56985273082d496cbcf783c9085af854a8c0ed28d698b48e08d7b443",
+    "common/main/ur.xml": "4e8a57befb8ac8b2902fe5cc764aecd1d7db44134d49fb8ce0bab40e7ae8e214",
+    "common/supplemental/supplementalData.xml": "cd2af39aef82fdbfba4d591c87548203350538ad2318486d104b3b38b8d62f1a"
+  },
+  "core_validation": "not-run",
+  "counts": {
+    "case_expanded_candidates": 1049,
+    "core_child_edges": 2741,
+    "core_endpoints_receiving_children": 890,
+    "coverage_gaps": 0,
+    "distinct_source_sequences": 720,
+    "groups": 65,
+    "language_component_endpoints": 2707,
+    "membership_edges": 5460,
+    "multi_scalar_language_endpoints": 33,
+    "multi_scalar_source_values": 27,
+    "ordered_core_parent_occurrences": 2741,
+    "source_memberships": 2387,
+    "source_values_including_case_candidates": 914
+  },
+  "coverage": [
+    {
+      "case_expanded_candidates": 0,
+      "direct_value_memberships": 83,
+      "distinct_source_sequences": 83,
+      "issues": [],
+      "locale": "ar",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Arabic",
+        "Common",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ar",
+          "source_memberships": 18,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ar",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ar",
+          "source_memberships": 45,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ar",
+          "source_memberships": 20,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "ar"
+      },
+      "source_memberships": 111
+    },
+    {
+      "case_expanded_candidates": 43,
+      "direct_value_memberships": 108,
+      "distinct_source_sequences": 99,
+      "issues": [],
+      "locale": "bg",
+      "multi_scalar_source_memberships": 6,
+      "observed_scripts": [
+        "Common",
+        "Cyrillic",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "bg",
+          "source_memberships": 13,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "bg",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "bg",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "bg",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "bg"
+      },
+      "source_memberships": 99
+    },
+    {
+      "case_expanded_candidates": 79,
+      "direct_value_memberships": 179,
+      "distinct_source_sequences": 133,
+      "issues": [],
+      "locale": "cs",
+      "multi_scalar_source_memberships": 2,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "cs",
+          "source_memberships": 36,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "cs",
+          "source_memberships": 31,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "cs",
+          "source_memberships": 42,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "cs",
+          "source_memberships": 24,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "cs"
+      },
+      "source_memberships": 133
+    },
+    {
+      "case_expanded_candidates": 70,
+      "direct_value_memberships": 170,
+      "distinct_source_sequences": 130,
+      "issues": [],
+      "locale": "de",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "de",
+          "source_memberships": 39,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "de",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "de",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "de",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "contributed",
+          "inherited": false,
+          "source_locale": "de",
+          "source_memberships": 3,
+          "status": "present"
+        }
+      },
+      "script_context": {
+        "language": "de"
+      },
+      "source_memberships": 130
+    },
+    {
+      "case_expanded_candidates": 170,
+      "direct_value_memberships": 206,
+      "distinct_source_sequences": 147,
+      "issues": [],
+      "locale": "el",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Greek"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "el",
+          "source_memberships": 63,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "el",
+          "source_memberships": 24,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "el",
+          "source_memberships": 36,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "el",
+          "source_memberships": 24,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "el"
+      },
+      "source_memberships": 147
+    },
+    {
+      "case_expanded_candidates": 64,
+      "direct_value_memberships": 160,
+      "distinct_source_sequences": 122,
+      "issues": [],
+      "locale": "en",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "en"
+      },
+      "source_memberships": 122
+    },
+    {
+      "case_expanded_candidates": 65,
+      "direct_value_memberships": 169,
+      "distinct_source_sequences": 131,
+      "issues": [],
+      "locale": "es",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "es",
+          "source_memberships": 34,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "es",
+          "source_memberships": 27,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "es",
+          "source_memberships": 33,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "es",
+          "source_memberships": 37,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "es"
+      },
+      "source_memberships": 131
+    },
+    {
+      "case_expanded_candidates": 0,
+      "direct_value_memberships": 85,
+      "distinct_source_sequences": 85,
+      "issues": [],
+      "locale": "fa",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Arabic",
+        "Common",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fa",
+          "source_memberships": 15,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fa",
+          "source_memberships": 33,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fa",
+          "source_memberships": 43,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fa",
+          "source_memberships": 23,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fa",
+          "source_memberships": 5,
+          "status": "present"
+        }
+      },
+      "script_context": {
+        "language": "fa"
+      },
+      "source_memberships": 119
+    },
+    {
+      "case_expanded_candidates": 66,
+      "direct_value_memberships": 158,
+      "distinct_source_sequences": 121,
+      "issues": [],
+      "locale": "fr",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fr",
+          "source_memberships": 23,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fr",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fr",
+          "source_memberships": 42,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "fr",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "fr"
+      },
+      "source_memberships": 121
+    },
+    {
+      "case_expanded_candidates": 0,
+      "direct_value_memberships": 67,
+      "distinct_source_sequences": 67,
+      "issues": [],
+      "locale": "he",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Hebrew"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "he",
+          "source_memberships": 20,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "he",
+          "source_memberships": 22,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "he",
+          "source_memberships": 27,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "he",
+          "source_memberships": 21,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "he"
+      },
+      "source_memberships": 90
+    },
+    {
+      "case_expanded_candidates": 40,
+      "direct_value_memberships": 89,
+      "distinct_source_sequences": 89,
+      "issues": [],
+      "locale": "hy",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Armenian",
+        "Common"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "hy",
+          "source_memberships": 1,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "hy",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "hy",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "hy",
+          "source_memberships": 12,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "hy"
+      },
+      "source_memberships": 89
+    },
+    {
+      "case_expanded_candidates": 57,
+      "direct_value_memberships": 141,
+      "distinct_source_sequences": 112,
+      "issues": [],
+      "locale": "it",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "it",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "it",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "it",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "it",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "it"
+      },
+      "source_memberships": 112
+    },
+    {
+      "case_expanded_candidates": 81,
+      "direct_value_memberships": 199,
+      "distinct_source_sequences": 118,
+      "issues": [],
+      "locale": "ka",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Georgian"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ka",
+          "source_memberships": 48,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ka",
+          "source_memberships": 33,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ka",
+          "source_memberships": 33,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ka",
+          "source_memberships": 37,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "ka"
+      },
+      "source_memberships": 151
+    },
+    {
+      "case_expanded_candidates": 55,
+      "direct_value_memberships": 140,
+      "distinct_source_sequences": 113,
+      "issues": [],
+      "locale": "nl",
+      "multi_scalar_source_memberships": 2,
+      "observed_scripts": [
+        "Common",
+        "Inherited",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "nl",
+          "source_memberships": 17,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "nl",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "nl",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "nl",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "nl"
+      },
+      "source_memberships": 113
+    },
+    {
+      "case_expanded_candidates": 65,
+      "direct_value_memberships": 164,
+      "distinct_source_sequences": 125,
+      "issues": [],
+      "locale": "pt",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "pt",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "pt",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "pt",
+          "source_memberships": 39,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "pt",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "pt"
+      },
+      "source_memberships": 125
+    },
+    {
+      "case_expanded_candidates": 42,
+      "direct_value_memberships": 114,
+      "distinct_source_sequences": 112,
+      "issues": [],
+      "locale": "ru",
+      "multi_scalar_source_memberships": 9,
+      "observed_scripts": [
+        "Common",
+        "Cyrillic",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ru",
+          "source_memberships": 9,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ru",
+          "source_memberships": 31,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ru",
+          "source_memberships": 33,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ru",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ru",
+          "source_memberships": 7,
+          "status": "present"
+        }
+      },
+      "script_context": {
+        "language": "ru"
+      },
+      "source_memberships": 112
+    },
+    {
+      "case_expanded_candidates": 35,
+      "direct_value_memberships": 88,
+      "distinct_source_sequences": 88,
+      "issues": [],
+      "locale": "sr",
+      "multi_scalar_source_memberships": 5,
+      "observed_scripts": [
+        "Common",
+        "Cyrillic",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "sr",
+          "source_memberships": 5,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "sr",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "sr",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "sr",
+          "source_memberships": 23,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "sr"
+      },
+      "source_memberships": 88
+    },
+    {
+      "case_expanded_candidates": 70,
+      "direct_value_memberships": 167,
+      "distinct_source_sequences": 131,
+      "issues": [],
+      "locale": "tr",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "tr",
+          "source_memberships": 39,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "tr",
+          "source_memberships": 31,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "tr",
+          "source_memberships": 30,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "tr",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "tr"
+      },
+      "source_memberships": 132
+    },
+    {
+      "case_expanded_candidates": 47,
+      "direct_value_memberships": 113,
+      "distinct_source_sequences": 108,
+      "issues": [],
+      "locale": "uk",
+      "multi_scalar_source_memberships": 10,
+      "observed_scripts": [
+        "Common",
+        "Cyrillic",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "uk",
+          "source_memberships": 14,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "uk",
+          "source_memberships": 32,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "uk",
+          "source_memberships": 34,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "uk",
+          "source_memberships": 28,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": true,
+          "source_locale": "root",
+          "source_memberships": 0,
+          "status": "empty"
+        }
+      },
+      "script_context": {
+        "language": "uk"
+      },
+      "source_memberships": 108
+    },
+    {
+      "case_expanded_candidates": 0,
+      "direct_value_memberships": 107,
+      "distinct_source_sequences": 107,
+      "issues": [],
+      "locale": "ur",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Arabic",
+        "Common",
+        "Inherited"
+      ],
+      "roles": {
+        "auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ur",
+          "source_memberships": 35,
+          "status": "present"
+        },
+        "index": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ur",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ur",
+          "source_memberships": 38,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ur",
+          "source_memberships": 13,
+          "status": "present"
+        },
+        "punctuation-auxiliary": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "ur",
+          "source_memberships": 30,
+          "status": "present"
+        }
+      },
+      "script_context": {
+        "language": "ur"
+      },
+      "source_memberships": 154
+    }
+  ],
+  "database_writes": 0,
+  "format": "hcp-language-inventory-v2",
+  "requested_locales": [
+    "ar",
+    "bg",
+    "cs",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fa",
+    "fr",
+    "he",
+    "hy",
+    "it",
+    "ka",
+    "nl",
+    "pt",
+    "ru",
+    "sr",
+    "tr",
+    "uk",
+    "ur"
+  ],
+  "requested_roles": [
+    "main",
+    "auxiliary",
+    "index",
+    "punctuation",
+    "punctuation-auxiliary"
+  ],
+  "source_pins": {
+    "cldr_commit": "11299982335beb974c1c63c45265184e759c0f41",
+    "cldr_version": "48.2",
+    "files": {
+      "PropertyValueAliases.txt": {
+        "sha256": "64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/PropertyValueAliases.txt"
+      },
+      "ScriptExtensions.txt": {
+        "sha256": "ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/ScriptExtensions.txt"
+      },
+      "Scripts.txt": {
+        "sha256": "9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/Scripts.txt"
+      },
+      "SpecialCasing.txt": {
+        "sha256": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/SpecialCasing.txt"
+      },
+      "UnicodeData.txt": {
+        "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
+      },
+      "cldr.tar.gz": {
+        "sha256": "8805841621aada9df6da4d7335c5c75e23c0e64e686d6e3fca37f54fb3750fef",
+        "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/11299982335beb974c1c63c45265184e759c0f41"
+      },
+      "icu4j.jar": {
+        "sha256": "bbb70d3be23110d7295823eee0c2e896ac3b619b3c0f26168f65eb972df51d2a",
+        "url": "https://repo.maven.apache.org/maven2/com/ibm/icu/icu4j/78.1/icu4j-78.1.jar"
+      }
+    },
+    "icu_version": "78.1",
+    "unicode_version": "17.0.0"
+  }
+}

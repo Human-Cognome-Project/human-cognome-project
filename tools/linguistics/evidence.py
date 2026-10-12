@@ -19,9 +19,28 @@ def selected_values(manifest):
             for value in manifest['values'] if value['form'] in forms]
 
 
-def reproduce(sources, floor_export=None, utf8_export=None):
+def reproduce(sources, floor_export=None, utf8_export=None, bootstrap_only=False):
     cldr, icu, ucd = Cldr(sources.cldr_files()), Icu(sources), UnicodeData(sources)
     hierarchy = json.loads((HERE / 'bootstrap-groups.json').read_text())
+    if bootstrap_only:
+        profile = json.loads((HERE / 'bootstrap-locales.json').read_text())
+        manifest, coverage = generate(sources, cldr, icu, ucd, profile['locales'], ROLES, hierarchy)
+        # A flat review catalog of the entire bulk population candidate batch.
+        rows = []
+        for locale in sorted(profile['locales']):
+            rows.append({'locale': locale, 'language': 'language:' + locale,
+                         'alphabet': manifest['members'].get('alphabet:' + locale, []),
+                         'punctuation': manifest['members'].get('punctuation:' + locale, [])})
+        applicable = {v for row in rows for role in ('alphabet', 'punctuation') for v in row[role]}
+        catalog = {'encoding': 'UTF-8', 'inventories': rows,
+                   'values': [{k: v[k] for k in ('key', 'locale', 'form', 'scalars', 'utf8_hex',
+                                                'source_value', 'store', 'address', 'parents', 'structural_mass_derived')}
+                              for v in manifest['values'] if v['key'] in applicable],
+                   'core_child_updates': manifest['core_child_updates']}
+        results = {'bootstrap-20/coverage.json': coverage, 'bootstrap-20/inventories.json': catalog}
+        if utf8_export:
+            results['bootstrap-20/utf8-validation.json'] = validate_export(utf8_export, manifest)
+        return results
     en, en_report = generate(sources, cldr, icu, ucd, ['en'], ['main', 'punctuation'], hierarchy)
     # A new resolver avoids unrelated used-source hashes leaking between runs.
     six, six_report = generate(sources, Cldr(cldr.files), icu, ucd,
@@ -43,8 +62,9 @@ if __name__ == '__main__':
     parser.add_argument('--write', action='store_true', help='replace local evidence files for a reviewed change')
     parser.add_argument('--core-export', type=Path, help='also reproduce floor report from its retained export')
     parser.add_argument('--utf8-export', type=Path, help='also reproduce English/six-locale reports from the full UTF-8 export')
+    parser.add_argument('--bootstrap-only', action='store_true', help='reproduce the 20-language bootstrap evidence')
     args = parser.parse_args()
-    results = reproduce(Sources(args.cache), args.core_export, args.utf8_export)
+    results = reproduce(Sources(args.cache), args.core_export, args.utf8_export, args.bootstrap_only)
     for name, result in results.items():
         path = EVIDENCE / name
         if args.write:

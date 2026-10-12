@@ -15,7 +15,7 @@ Do not infer architecture from historical folder placement. Several directories 
 
 - The modified Taichi **runtime/compiler substrate**, HCP **physics engine**, and HCP **engine harness** are distinct concepts.
 - The canonical engine path is native **C++**. Taichi's Python frontend is upstream/vendor tooling, not the HCP runtime surface.
-- Project Python is restricted to convenient bootstrap, migration, import/export, or other offline I/O. Do not implement physics, database/WAL kernels, endpoint/network infrastructure, or analyst runtime behavior in Python.
+- Project Python is authorized only for bulk database population scripts during bootstrap. Their source preparation and validation stay within that population workflow. Offline operation alone does not authorize Python. Do not implement reusable selection/assembly components, physics, database/WAL kernels, endpoint/network infrastructure, or analyst behavior in Python.
 - The **engine harness is the control interface for the physics engine**. It is not the DB manager, WAL manager, messaging system, topology system or thread manager.
 - **Analyst functions do not exist yet.** Do not invent an analyst architecture or implement speculative analyst behaviour.
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
@@ -58,12 +58,15 @@ conflicting historical model requirements; code still determines what is built.
   on 2026-10-11. No new meaning for `01` is assigned here. Formal cross-store
   writes still require the plan's bounded reference/write implementation.
 - Linguistic aggregation uses reciprocal `members` / `member_of` links.
-  Shared characters retain one identity and join each applicable language and
-  alphabet/punctuation grouping. English variants belong to English, which
+  Shared core character values retain one identity. Each language's letter or
+  punctuation endpoint has its own linguistic identity, with ordered core
+  character parents and matching additions to those core endpoints' child
+  listings (Patrick clarified 2026-10-12). The linguistic endpoints join their
+  language and alphabet/punctuation groupings. English variants belong to English, which
   belongs to its broader groups. Each grouping has its own centroid
   representation; alphabet and punctuation groups are distinct. Literal
-  `parent` / `child` links describe construction only. Do not mint a separate
-  single-character token per language or encode group containment as parents.
+  `parent` / `child` links describe construction only. Do not duplicate the
+  underlying core character values or encode group containment as parents.
   Existing record-integrity findings are not cleared by
   documentation merges; check current PR/issue state before execution.
 
