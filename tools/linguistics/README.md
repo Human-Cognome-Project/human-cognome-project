@@ -133,8 +133,9 @@ remain subject to the owning-store/reference/reciprocal-write/retry contract.
 ## Reproducible evidence and checks
 
 [Checked-in previews](../../data/linguistics/previews) contain the full English
-pilot, six-locale coverage and selected cross-language values, the retained
-floor report, and the native address audit. The English pilot references
+pilot, six-locale coverage and selected cross-language values, validation
+against the current full UTF-8 snapshot, the historical floor report, and the
+native address audit. The English pilot references
 **84 values**: 52 ASCII letters and 32 punctuation forms, giving 175 deduplicated
 membership edges including group/hierarchy edges. The full six-locale preview
 preserves **771 source memberships**, 249 distinct source sequences (247 scalar
@@ -142,10 +143,18 @@ endpoints plus `ch`/`CH`), 294 shared values including applied case variants,
 and 1,579 membership edges. Case candidate counts include unapplied multi-scalar
 mappings and are not new-object counts.
 
-The 2026-09-28 floor export validates all 256 bytes and 16 nibbles. Fourteen
-English punctuation endpoints are absent from that historical export, so its
-report is **partial**, with no observed structural conflicts. It does not
-describe the user's more recent core population.
+The current retained export is the **2026-10-03 full UTF-8 snapshot**, extracted
+from PR #111 into [snapshot PR #130](https://github.com/Human-Cognome-Project/human-cognome-project/pull/130).
+Patrick confirmed it is current on 2026-10-12. All **286** English pilot
+endpoints/dependencies and all **492** six-locale endpoints/dependencies pass
+construction, whole-mass and child-reciprocal validation against its exact
+payload. Both reports are **valid**, with zero missing values or observed
+conflicts. All 14 English punctuation endpoints are present.
+
+The historical 2026-09-28 floor report remains **partial**, because that export
+contains only nibbles/bytes and predates the Unicode endpoint population.
+It supplies a floor baseline; use the October 3 dump for current inventory
+validation. Neither operation connects to a live database.
 
 ```bash
 python -m unittest discover -s tools/linguistics/tests -v
@@ -158,8 +167,13 @@ cmp sources/data/linguistics/native-audit.json \
 
 `evidence.py` compares newly generated output to repository evidence by
 default. `--write` regenerates those files for a reviewed source/behavior
-change. `--core-export PATH` also checks/recreates the floor report; supply the
-retained gzip blob identified by SHA256
+change. **`--utf8-export PATH`** also compares the two current validation
+reports; supply the full snapshot gzip blob identified by SHA256
+`4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8`.
+CI fetches the snapshot alone from its pinned extraction commit and runs
+this comparison; it does not check out or execute the runtime work in #111.
+`--core-export PATH` additionally compares the historical floor report, using
+the September 28 gzip blob identified by SHA256
 `1bd7a8b073c4b1fe4acdf248c4811275d5da6b9b95817003b92568a05449bc6d`.
 Reruns are deterministic; no timestamps or absolute source paths are emitted.
 

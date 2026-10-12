@@ -1,0 +1,14 @@
+{
+  "database_writes": 0,
+  "errors": [],
+  "expected_tokens": 492,
+  "export_sha256": "4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8",
+  "missing_endpoints_or_dependencies": [],
+  "null_parent_mass_cells": 973,
+  "null_parent_mass_policy": "retained as deferred; verified constituent token.mass supplies expected mass",
+  "present_tokens": 492,
+  "scope": "referenced endpoints and dependencies in supplied export, not a live database",
+  "status": "valid",
+  "validated_floor_bytes": 256,
+  "validated_tokens": 492
+}

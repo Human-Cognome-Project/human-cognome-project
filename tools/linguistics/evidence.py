@@ -19,16 +19,22 @@ def selected_values(manifest):
             for value in manifest['values'] if value['form'] in forms]
 
 
-def reproduce(sources):
+def reproduce(sources, floor_export=None, utf8_export=None):
     cldr, icu, ucd = Cldr(sources.cldr_files()), Icu(sources), UnicodeData(sources)
     hierarchy = json.loads((HERE / 'bootstrap-groups.json').read_text())
     en, en_report = generate(sources, cldr, icu, ucd, ['en'], ['main', 'punctuation'], hierarchy)
     # A new resolver avoids unrelated used-source hashes leaking between runs.
     six, six_report = generate(sources, Cldr(cldr.files), icu, ucd,
                                ['en', 'cs', 'tr', 'ar', 'fa', 'ur'], ROLES, hierarchy)
-    return {'english-pilot/manifest.json': en, 'english-pilot/coverage.json': en_report,
-            'six-locales/coverage.json': six_report,
-            'six-locales/selected-values.json': selected_values(six)}
+    results = {'english-pilot/manifest.json': en, 'english-pilot/coverage.json': en_report,
+               'six-locales/coverage.json': six_report,
+               'six-locales/selected-values.json': selected_values(six)}
+    if floor_export:
+        results['english-pilot/floor-validation.json'] = validate_export(floor_export, en)
+    if utf8_export:
+        results['english-pilot/utf8-validation.json'] = validate_export(utf8_export, en)
+        results['six-locales/utf8-validation.json'] = validate_export(utf8_export, six)
+    return results
 
 
 if __name__ == '__main__':
@@ -36,11 +42,9 @@ if __name__ == '__main__':
     parser.add_argument('--cache', type=Path, default=DEFAULT_CACHE)
     parser.add_argument('--write', action='store_true', help='replace local evidence files for a reviewed change')
     parser.add_argument('--core-export', type=Path, help='also reproduce floor report from its retained export')
+    parser.add_argument('--utf8-export', type=Path, help='also reproduce English/six-locale reports from the full UTF-8 export')
     args = parser.parse_args()
-    results = reproduce(Sources(args.cache))
-    if args.core_export:
-        results['english-pilot/floor-validation.json'] = validate_export(
-            args.core_export, results['english-pilot/manifest.json'])
+    results = reproduce(Sources(args.cache), args.core_export, args.utf8_export)
     for name, result in results.items():
         path = EVIDENCE / name
         if args.write:

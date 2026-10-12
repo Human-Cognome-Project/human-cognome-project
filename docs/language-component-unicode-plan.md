@@ -239,10 +239,15 @@ candidates and actual group edges. Index exemplars remain evidence only;
 multi-scalar case mappings do not fabricate literal constructions. The
 [checked-in evidence](../data/linguistics/previews) is regenerated and compared
 in CI. The validator inspects supplied plain/gzip COPY exports without SQL
-execution or restoration. The retained floor export has 14 missing English
-punctuation endpoints and is reported as partial; this is not a claim about
-the current live core. No persistent membership or centroid assembly is
-implemented by this offline slice.
+execution or restoration. The current **2026-10-03 full UTF-8 export**, extracted
+from #111 into [snapshot PR #130](https://github.com/Human-Cognome-Project/human-cognome-project/pull/130),
+passes the English and six-locale endpoint checks with zero missing values or
+observed construction conflicts. The September 28 floor remains historical
+evidence and is correctly reported as partial; its 14 missing English
+punctuation endpoints are present in the current export. Current reports
+validate 286 and 492 endpoints/dependencies respectively, using the supplied
+export without connecting to a live core. No persistent membership or centroid
+assembly is implemented by this offline slice.
 
 1. **Script and manifest:** implement the reusable source importer and
    read-only target-core validator; generate per-language inventories and
