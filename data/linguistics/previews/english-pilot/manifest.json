@@ -1,0 +1,4300 @@
+{
+  "case_candidates": [
+    {
+      "form": "A",
+      "from": "core:00.00.00.00.2Z",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.23"
+    },
+    {
+      "form": "B",
+      "from": "core:00.00.00.00.2a",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.24"
+    },
+    {
+      "form": "C",
+      "from": "core:00.00.00.00.2b",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.25"
+    },
+    {
+      "form": "D",
+      "from": "core:00.00.00.00.2c",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.26"
+    },
+    {
+      "form": "E",
+      "from": "core:00.00.00.00.2d",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.27"
+    },
+    {
+      "form": "F",
+      "from": "core:00.00.00.00.2e",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.28"
+    },
+    {
+      "form": "G",
+      "from": "core:00.00.00.00.2f",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.29"
+    },
+    {
+      "form": "H",
+      "from": "core:00.00.00.00.2g",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2A"
+    },
+    {
+      "form": "I",
+      "from": "core:00.00.00.00.2h",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2B"
+    },
+    {
+      "form": "J",
+      "from": "core:00.00.00.00.2i",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2C"
+    },
+    {
+      "form": "K",
+      "from": "core:00.00.00.00.2j",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2D"
+    },
+    {
+      "form": "L",
+      "from": "core:00.00.00.00.2k",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2E"
+    },
+    {
+      "form": "M",
+      "from": "core:00.00.00.00.2l",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2F"
+    },
+    {
+      "form": "N",
+      "from": "core:00.00.00.00.2m",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2G"
+    },
+    {
+      "form": "O",
+      "from": "core:00.00.00.00.2n",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2H"
+    },
+    {
+      "form": "P",
+      "from": "core:00.00.00.00.2o",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2I"
+    },
+    {
+      "form": "Q",
+      "from": "core:00.00.00.00.2p",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2J"
+    },
+    {
+      "form": "R",
+      "from": "core:00.00.00.00.2q",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2K"
+    },
+    {
+      "form": "S",
+      "from": "core:00.00.00.00.2r",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2L"
+    },
+    {
+      "form": "T",
+      "from": "core:00.00.00.00.2s",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2M"
+    },
+    {
+      "form": "U",
+      "from": "core:00.00.00.00.2t",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2N"
+    },
+    {
+      "form": "V",
+      "from": "core:00.00.00.00.2u",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2O"
+    },
+    {
+      "form": "W",
+      "from": "core:00.00.00.00.2v",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2P"
+    },
+    {
+      "form": "X",
+      "from": "core:00.00.00.00.2w",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2Q"
+    },
+    {
+      "form": "Y",
+      "from": "core:00.00.00.00.2x",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2R"
+    },
+    {
+      "form": "Z",
+      "from": "core:00.00.00.00.2y",
+      "inventory": "en:main",
+      "membership_candidate": true,
+      "rule": "ICU locale lower/upper/title, exact sequence preserved",
+      "value": "core:00.00.00.00.2S"
+    }
+  ],
+  "cldr_files_sha256": {
+    "common/main/en.xml": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
+    "common/supplemental/supplementalData.xml": "cd2af39aef82fdbfba4d591c87548203350538ad2318486d104b3b38b8d62f1a"
+  },
+  "core_validation": "not-run",
+  "format": "hcp-language-inventory-v1",
+  "groups": [
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:alphabet:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "alphabet:en",
+      "kind": "alphabet",
+      "label": "Alphabet (en)",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:family:germanic",
+        "state": "native-assembly-pending"
+      },
+      "key": "family:germanic",
+      "kind": "broader-language-group",
+      "label": "Germanic",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:family:indo-european",
+        "state": "native-assembly-pending"
+      },
+      "key": "family:indo-european",
+      "kind": "broader-language-group",
+      "label": "Indo-European",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en",
+      "kind": "language",
+      "label": "English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_AU",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_AU",
+      "kind": "language-subgroup",
+      "label": "Australian English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_CA",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_CA",
+      "kind": "language-subgroup",
+      "label": "Canadian English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:language:en_GB",
+        "state": "native-assembly-pending"
+      },
+      "key": "language:en_GB",
+      "kind": "language-subgroup",
+      "label": "UK English",
+      "store": "linguistics"
+    },
+    {
+      "address": null,
+      "centroid": {
+        "key": "centroid:punctuation:en",
+        "state": "native-assembly-pending"
+      },
+      "key": "punctuation:en",
+      "kind": "punctuation",
+      "label": "Punctuation (en)",
+      "store": "linguistics"
+    }
+  ],
+  "hierarchy_provenance": "docs/language-component-unicode-plan.md: Patrick's reviewed bootstrap membership examples; provisional, no address allocations",
+  "hierarchy_sha256": "8d3221eb8bbfd7169dd1379761de8303e10c85c7f0c116b3bf2bf001c3d13673",
+  "inventories": [
+    {
+      "attributes": {},
+      "draft": "approved",
+      "forms": [
+        "core:00.00.00.00.2Z",
+        "core:00.00.00.00.2a",
+        "core:00.00.00.00.2b",
+        "core:00.00.00.00.2c",
+        "core:00.00.00.00.2d",
+        "core:00.00.00.00.2e",
+        "core:00.00.00.00.2f",
+        "core:00.00.00.00.2g",
+        "core:00.00.00.00.2h",
+        "core:00.00.00.00.2i",
+        "core:00.00.00.00.2j",
+        "core:00.00.00.00.2k",
+        "core:00.00.00.00.2l",
+        "core:00.00.00.00.2m",
+        "core:00.00.00.00.2n",
+        "core:00.00.00.00.2o",
+        "core:00.00.00.00.2p",
+        "core:00.00.00.00.2q",
+        "core:00.00.00.00.2r",
+        "core:00.00.00.00.2s",
+        "core:00.00.00.00.2t",
+        "core:00.00.00.00.2u",
+        "core:00.00.00.00.2v",
+        "core:00.00.00.00.2w",
+        "core:00.00.00.00.2x",
+        "core:00.00.00.00.2y"
+      ],
+      "id": "en:main",
+      "locale": "en",
+      "path": "/ldml/characters/exemplarCharacters",
+      "pattern": "[a b c d e f g h i j k l m n o p q r s t u v w x y z]",
+      "role": "main",
+      "script_context": {
+        "language": "en"
+      },
+      "source_locale": "en",
+      "source_sha256": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
+      "trace": []
+    },
+    {
+      "attributes": {
+        "type": "punctuation"
+      },
+      "draft": "approved",
+      "forms": [
+        "core:00.00.00.00.1X",
+        "core:00.00.00.00.1Y",
+        "core:00.00.00.00.1Z",
+        "core:00.00.00.00.1c",
+        "core:00.00.00.00.1d",
+        "core:00.00.00.00.1e",
+        "core:00.00.00.00.1f",
+        "core:00.00.00.00.1g",
+        "core:00.00.00.00.1i",
+        "core:00.00.00.00.1j",
+        "core:00.00.00.00.1k",
+        "core:00.00.00.00.1l",
+        "core:00.00.00.00.1w",
+        "core:00.00.00.00.1x",
+        "core:00.00.00.00.21",
+        "core:00.00.00.00.22",
+        "core:00.00.00.00.2T",
+        "core:00.00.00.00.2V",
+        "core:00.00.00.01.0d",
+        "core:00.00.00.04.bM",
+        "core:00.00.00.04.bN",
+        "core:00.00.00.04.bP",
+        "core:00.00.00.04.bQ",
+        "core:00.00.00.04.bU",
+        "core:00.00.00.04.bV",
+        "core:00.00.00.04.bY",
+        "core:00.00.00.04.bZ",
+        "core:00.00.00.04.bc",
+        "core:00.00.00.04.bd",
+        "core:00.00.00.04.bi",
+        "core:00.00.00.04.bu",
+        "core:00.00.00.04.bv"
+      ],
+      "id": "en:punctuation",
+      "locale": "en",
+      "path": "/ldml/characters/exemplarCharacters[@type='punctuation']",
+      "pattern": "[\\- ‐‑ – — , ; \\: ! ? . … '‘’ \"“” ( ) \\[ \\] § @ * / \\& # † ‡ ′ ″]",
+      "role": "punctuation",
+      "script_context": {
+        "language": "en"
+      },
+      "source_locale": "en",
+      "source_sha256": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
+      "trace": []
+    }
+  ],
+  "member_of": {
+    "alphabet:en": [
+      "language:en"
+    ],
+    "core:00.00.00.00.1X": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1Y": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1Z": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1c": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1d": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1e": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1f": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1g": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1i": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1j": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1k": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1l": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1w": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.1x": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.21": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.22": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.23": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.24": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.25": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.26": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.27": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.28": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.29": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2A": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2B": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2C": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2D": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2E": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2F": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2G": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2H": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2I": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2J": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2K": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2L": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2M": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2N": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2O": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2P": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2Q": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2R": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2S": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2T": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.2V": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.00.2Z": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2a": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2b": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2c": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2d": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2e": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2f": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2g": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2h": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2i": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2j": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2k": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2l": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2m": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2n": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2o": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2p": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2q": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2r": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2s": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2t": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2u": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2v": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2w": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2x": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.00.2y": [
+      "alphabet:en",
+      "language:en"
+    ],
+    "core:00.00.00.01.0d": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bM": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bN": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bP": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bQ": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bU": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bV": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bY": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bZ": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bc": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bd": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bi": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bu": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "core:00.00.00.04.bv": [
+      "language:en",
+      "punctuation:en"
+    ],
+    "family:germanic": [
+      "family:indo-european"
+    ],
+    "language:en": [
+      "family:germanic"
+    ],
+    "language:en_AU": [
+      "language:en"
+    ],
+    "language:en_CA": [
+      "language:en"
+    ],
+    "language:en_GB": [
+      "language:en"
+    ],
+    "punctuation:en": [
+      "language:en"
+    ]
+  },
+  "members": {
+    "alphabet:en": [
+      "core:00.00.00.00.23",
+      "core:00.00.00.00.24",
+      "core:00.00.00.00.25",
+      "core:00.00.00.00.26",
+      "core:00.00.00.00.27",
+      "core:00.00.00.00.28",
+      "core:00.00.00.00.29",
+      "core:00.00.00.00.2A",
+      "core:00.00.00.00.2B",
+      "core:00.00.00.00.2C",
+      "core:00.00.00.00.2D",
+      "core:00.00.00.00.2E",
+      "core:00.00.00.00.2F",
+      "core:00.00.00.00.2G",
+      "core:00.00.00.00.2H",
+      "core:00.00.00.00.2I",
+      "core:00.00.00.00.2J",
+      "core:00.00.00.00.2K",
+      "core:00.00.00.00.2L",
+      "core:00.00.00.00.2M",
+      "core:00.00.00.00.2N",
+      "core:00.00.00.00.2O",
+      "core:00.00.00.00.2P",
+      "core:00.00.00.00.2Q",
+      "core:00.00.00.00.2R",
+      "core:00.00.00.00.2S",
+      "core:00.00.00.00.2Z",
+      "core:00.00.00.00.2a",
+      "core:00.00.00.00.2b",
+      "core:00.00.00.00.2c",
+      "core:00.00.00.00.2d",
+      "core:00.00.00.00.2e",
+      "core:00.00.00.00.2f",
+      "core:00.00.00.00.2g",
+      "core:00.00.00.00.2h",
+      "core:00.00.00.00.2i",
+      "core:00.00.00.00.2j",
+      "core:00.00.00.00.2k",
+      "core:00.00.00.00.2l",
+      "core:00.00.00.00.2m",
+      "core:00.00.00.00.2n",
+      "core:00.00.00.00.2o",
+      "core:00.00.00.00.2p",
+      "core:00.00.00.00.2q",
+      "core:00.00.00.00.2r",
+      "core:00.00.00.00.2s",
+      "core:00.00.00.00.2t",
+      "core:00.00.00.00.2u",
+      "core:00.00.00.00.2v",
+      "core:00.00.00.00.2w",
+      "core:00.00.00.00.2x",
+      "core:00.00.00.00.2y"
+    ],
+    "family:germanic": [
+      "language:en"
+    ],
+    "family:indo-european": [
+      "family:germanic"
+    ],
+    "language:en": [
+      "alphabet:en",
+      "core:00.00.00.00.1X",
+      "core:00.00.00.00.1Y",
+      "core:00.00.00.00.1Z",
+      "core:00.00.00.00.1c",
+      "core:00.00.00.00.1d",
+      "core:00.00.00.00.1e",
+      "core:00.00.00.00.1f",
+      "core:00.00.00.00.1g",
+      "core:00.00.00.00.1i",
+      "core:00.00.00.00.1j",
+      "core:00.00.00.00.1k",
+      "core:00.00.00.00.1l",
+      "core:00.00.00.00.1w",
+      "core:00.00.00.00.1x",
+      "core:00.00.00.00.21",
+      "core:00.00.00.00.22",
+      "core:00.00.00.00.23",
+      "core:00.00.00.00.24",
+      "core:00.00.00.00.25",
+      "core:00.00.00.00.26",
+      "core:00.00.00.00.27",
+      "core:00.00.00.00.28",
+      "core:00.00.00.00.29",
+      "core:00.00.00.00.2A",
+      "core:00.00.00.00.2B",
+      "core:00.00.00.00.2C",
+      "core:00.00.00.00.2D",
+      "core:00.00.00.00.2E",
+      "core:00.00.00.00.2F",
+      "core:00.00.00.00.2G",
+      "core:00.00.00.00.2H",
+      "core:00.00.00.00.2I",
+      "core:00.00.00.00.2J",
+      "core:00.00.00.00.2K",
+      "core:00.00.00.00.2L",
+      "core:00.00.00.00.2M",
+      "core:00.00.00.00.2N",
+      "core:00.00.00.00.2O",
+      "core:00.00.00.00.2P",
+      "core:00.00.00.00.2Q",
+      "core:00.00.00.00.2R",
+      "core:00.00.00.00.2S",
+      "core:00.00.00.00.2T",
+      "core:00.00.00.00.2V",
+      "core:00.00.00.00.2Z",
+      "core:00.00.00.00.2a",
+      "core:00.00.00.00.2b",
+      "core:00.00.00.00.2c",
+      "core:00.00.00.00.2d",
+      "core:00.00.00.00.2e",
+      "core:00.00.00.00.2f",
+      "core:00.00.00.00.2g",
+      "core:00.00.00.00.2h",
+      "core:00.00.00.00.2i",
+      "core:00.00.00.00.2j",
+      "core:00.00.00.00.2k",
+      "core:00.00.00.00.2l",
+      "core:00.00.00.00.2m",
+      "core:00.00.00.00.2n",
+      "core:00.00.00.00.2o",
+      "core:00.00.00.00.2p",
+      "core:00.00.00.00.2q",
+      "core:00.00.00.00.2r",
+      "core:00.00.00.00.2s",
+      "core:00.00.00.00.2t",
+      "core:00.00.00.00.2u",
+      "core:00.00.00.00.2v",
+      "core:00.00.00.00.2w",
+      "core:00.00.00.00.2x",
+      "core:00.00.00.00.2y",
+      "core:00.00.00.01.0d",
+      "core:00.00.00.04.bM",
+      "core:00.00.00.04.bN",
+      "core:00.00.00.04.bP",
+      "core:00.00.00.04.bQ",
+      "core:00.00.00.04.bU",
+      "core:00.00.00.04.bV",
+      "core:00.00.00.04.bY",
+      "core:00.00.00.04.bZ",
+      "core:00.00.00.04.bc",
+      "core:00.00.00.04.bd",
+      "core:00.00.00.04.bi",
+      "core:00.00.00.04.bu",
+      "core:00.00.00.04.bv",
+      "language:en_AU",
+      "language:en_CA",
+      "language:en_GB",
+      "punctuation:en"
+    ],
+    "punctuation:en": [
+      "core:00.00.00.00.1X",
+      "core:00.00.00.00.1Y",
+      "core:00.00.00.00.1Z",
+      "core:00.00.00.00.1c",
+      "core:00.00.00.00.1d",
+      "core:00.00.00.00.1e",
+      "core:00.00.00.00.1f",
+      "core:00.00.00.00.1g",
+      "core:00.00.00.00.1i",
+      "core:00.00.00.00.1j",
+      "core:00.00.00.00.1k",
+      "core:00.00.00.00.1l",
+      "core:00.00.00.00.1w",
+      "core:00.00.00.00.1x",
+      "core:00.00.00.00.21",
+      "core:00.00.00.00.22",
+      "core:00.00.00.00.2T",
+      "core:00.00.00.00.2V",
+      "core:00.00.00.01.0d",
+      "core:00.00.00.04.bM",
+      "core:00.00.00.04.bN",
+      "core:00.00.00.04.bP",
+      "core:00.00.00.04.bQ",
+      "core:00.00.00.04.bU",
+      "core:00.00.00.04.bV",
+      "core:00.00.00.04.bY",
+      "core:00.00.00.04.bZ",
+      "core:00.00.00.04.bc",
+      "core:00.00.00.04.bd",
+      "core:00.00.00.04.bi",
+      "core:00.00.00.04.bu",
+      "core:00.00.00.04.bv"
+    ]
+  },
+  "memberships": [
+    {
+      "evidence": [
+        "inventory-group:en:main"
+      ],
+      "group": "language:en",
+      "member": "alphabet:en"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1X"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1X"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1X"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1X"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Y"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1Y"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Y"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1Y"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Z"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1Z"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1Z"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1Z"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1c"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1c"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1c"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1c"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1d"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1d"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1d"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1d"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1e"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1e"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1e"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1e"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1f"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1f"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1f"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1f"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1g"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1g"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1g"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1g"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1i"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1i"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1i"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1i"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1j"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1j"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1j"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1j"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1k"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1k"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1k"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1k"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1l"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1l"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1l"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1l"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1w"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1w"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1w"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1w"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1x"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.1x"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.1x"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.1x"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.21"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.21"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.21"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.21"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.22"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.22"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.22"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.22"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.23"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.23"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.24"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.24"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.25"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.25"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.26"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.26"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.27"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.27"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.28"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.28"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.29"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.29"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2A"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2A"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2B"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2B"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2C"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2C"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2D"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2D"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2E"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2E"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2F"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2F"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2G"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2G"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2H"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2H"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2I"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2I"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2J"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2J"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2K"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2K"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2L"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2L"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2M"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2M"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2N"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2N"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2O"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2O"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2P"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2P"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2Q"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2Q"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2R"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2R"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2S"
+    },
+    {
+      "evidence": [
+        "case:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2S"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2T"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2T"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2T"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.2T"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2V"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2V"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.00.2V"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.00.2V"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2Z"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2Z"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2Z"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2a"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2a"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2a"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2b"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2b"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2b"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2c"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2c"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2c"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2d"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2d"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2d"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2e"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2e"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2e"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2f"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2f"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2f"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2g"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2g"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2g"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2h"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2h"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2h"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2i"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2i"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2i"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2j"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2j"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2j"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2k"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2k"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2k"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2l"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2l"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2l"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2m"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2m"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2m"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2n"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2n"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2n"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2o"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2o"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2o"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2p"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2p"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2p"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2q"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2q"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2q"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2r"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2r"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2r"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2s"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2s"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2s"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2t"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2t"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2t"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2u"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2u"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2u"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2v"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2v"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2v"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2w"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2w"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2w"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2x"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2x"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2x"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "alphabet:en",
+      "member": "core:00.00.00.00.2y"
+    },
+    {
+      "evidence": [
+        "source:en:main:core:00.00.00.00.2y"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.00.2y"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.01.0d"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.01.0d"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.01.0d"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.01.0d"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bM"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bM"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bM"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bM"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bN"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bN"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bN"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bN"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bP"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bP"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bP"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bP"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bQ"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bQ"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bQ"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bQ"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bU"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bU"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bU"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bU"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bV"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bV"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bV"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bV"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bY"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bY"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bY"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bY"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bZ"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bZ"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bZ"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bZ"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bc"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bc"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bc"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bc"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bd"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bd"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bd"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bd"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bi"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bi"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bi"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bi"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bu"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bu"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bu"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bu"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bv"
+      ],
+      "group": "language:en",
+      "member": "core:00.00.00.04.bv"
+    },
+    {
+      "evidence": [
+        "source:en:punctuation:core:00.00.00.04.bv"
+      ],
+      "group": "punctuation:en",
+      "member": "core:00.00.00.04.bv"
+    },
+    {
+      "evidence": [
+        "bootstrap-hierarchy"
+      ],
+      "group": "family:indo-european",
+      "member": "family:germanic"
+    },
+    {
+      "evidence": [
+        "bootstrap-hierarchy"
+      ],
+      "group": "family:germanic",
+      "member": "language:en"
+    },
+    {
+      "evidence": [
+        "bootstrap-hierarchy"
+      ],
+      "group": "language:en",
+      "member": "language:en_AU"
+    },
+    {
+      "evidence": [
+        "bootstrap-hierarchy"
+      ],
+      "group": "language:en",
+      "member": "language:en_CA"
+    },
+    {
+      "evidence": [
+        "bootstrap-hierarchy"
+      ],
+      "group": "language:en",
+      "member": "language:en_GB"
+    },
+    {
+      "evidence": [
+        "inventory-group:en:punctuation"
+      ],
+      "group": "language:en",
+      "member": "punctuation:en"
+    }
+  ],
+  "provenance": {
+    "cldr_commit": "11299982335beb974c1c63c45265184e759c0f41",
+    "cldr_version": "48.2",
+    "files": {
+      "PropertyValueAliases.txt": {
+        "sha256": "64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/PropertyValueAliases.txt"
+      },
+      "ScriptExtensions.txt": {
+        "sha256": "ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/ScriptExtensions.txt"
+      },
+      "Scripts.txt": {
+        "sha256": "9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/Scripts.txt"
+      },
+      "SpecialCasing.txt": {
+        "sha256": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/SpecialCasing.txt"
+      },
+      "UnicodeData.txt": {
+        "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
+      },
+      "cldr.tar.gz": {
+        "sha256": "8805841621aada9df6da4d7335c5c75e23c0e64e686d6e3fca37f54fb3750fef",
+        "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/11299982335beb974c1c63c45265184e759c0f41"
+      },
+      "icu4j.jar": {
+        "sha256": "bbb70d3be23110d7295823eee0c2e896ac3b619b3c0f26168f65eb972df51d2a",
+        "url": "https://repo.maven.apache.org/maven2/com/ibm/icu/icu4j/78.1/icu4j-78.1.jar"
+      }
+    },
+    "icu_version": "78.1",
+    "unicode_version": "17.0.0"
+  },
+  "source_forms": [
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2Z"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2a"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2b"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2c"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2d"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2e"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2f"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2g"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2h"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2i"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2j"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2k"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2l"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2m"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2n"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2o"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2p"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2q"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2r"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2s"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2t"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2u"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2v"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2w"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2x"
+    },
+    {
+      "inventory": "en:main",
+      "value": "core:00.00.00.00.2y"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1X"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1Y"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1Z"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1c"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1d"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1e"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1f"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1g"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1i"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1j"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1k"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1l"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1w"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.1x"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.21"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.22"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.2T"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.00.2V"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.01.0d"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bM"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bN"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bP"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bQ"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bU"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bV"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bY"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bZ"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bc"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bd"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bi"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bu"
+    },
+    {
+      "inventory": "en:punctuation",
+      "value": "core:00.00.00.04.bv"
+    }
+  ],
+  "status": "candidate-no-persistent-writes",
+  "values": [
+    {
+      "address": "00.00.00.00.1X",
+      "form": "!",
+      "key": "core:00.00.00.00.1X",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "EXCLAMATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0021"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "21"
+    },
+    {
+      "address": "00.00.00.00.1Y",
+      "form": "\"",
+      "key": "core:00.00.00.00.1Y",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0022"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "22"
+    },
+    {
+      "address": "00.00.00.00.1Z",
+      "form": "#",
+      "key": "core:00.00.00.00.1Z",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "NUMBER SIGN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0023"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "23"
+    },
+    {
+      "address": "00.00.00.00.1c",
+      "form": "&",
+      "key": "core:00.00.00.00.1c",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "AMPERSAND",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0026"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "26"
+    },
+    {
+      "address": "00.00.00.00.1d",
+      "form": "'",
+      "key": "core:00.00.00.00.1d",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "APOSTROPHE",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0027"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "27"
+    },
+    {
+      "address": "00.00.00.00.1e",
+      "form": "(",
+      "key": "core:00.00.00.00.1e",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ps",
+          "name": "LEFT PARENTHESIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0028"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "28"
+    },
+    {
+      "address": "00.00.00.00.1f",
+      "form": ")",
+      "key": "core:00.00.00.00.1f",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pe",
+          "name": "RIGHT PARENTHESIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0029"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "29"
+    },
+    {
+      "address": "00.00.00.00.1g",
+      "form": "*",
+      "key": "core:00.00.00.00.1g",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "ASTERISK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2A"
+    },
+    {
+      "address": "00.00.00.00.1i",
+      "form": ",",
+      "key": "core:00.00.00.00.1i",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COMMA",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002C"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2C"
+    },
+    {
+      "address": "00.00.00.00.1j",
+      "form": "-",
+      "key": "core:00.00.00.00.1j",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "HYPHEN-MINUS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002D"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2D"
+    },
+    {
+      "address": "00.00.00.00.1k",
+      "form": ".",
+      "key": "core:00.00.00.00.1k",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "FULL STOP",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002E"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2E"
+    },
+    {
+      "address": "00.00.00.00.1l",
+      "form": "/",
+      "key": "core:00.00.00.00.1l",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SOLIDUS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+002F"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "2F"
+    },
+    {
+      "address": "00.00.00.00.1w",
+      "form": ":",
+      "key": "core:00.00.00.00.1w",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COLON",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3A"
+    },
+    {
+      "address": "00.00.00.00.1x",
+      "form": ";",
+      "key": "core:00.00.00.00.1x",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SEMICOLON",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003B"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3B"
+    },
+    {
+      "address": "00.00.00.00.21",
+      "form": "?",
+      "key": "core:00.00.00.00.21",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "QUESTION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+003F"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "3F"
+    },
+    {
+      "address": "00.00.00.00.22",
+      "form": "@",
+      "key": "core:00.00.00.00.22",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "COMMERCIAL AT",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0040"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "40"
+    },
+    {
+      "address": "00.00.00.00.23",
+      "form": "A",
+      "key": "core:00.00.00.00.23",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0041"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "41"
+    },
+    {
+      "address": "00.00.00.00.24",
+      "form": "B",
+      "key": "core:00.00.00.00.24",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER B",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0042"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "42"
+    },
+    {
+      "address": "00.00.00.00.25",
+      "form": "C",
+      "key": "core:00.00.00.00.25",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER C",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0043"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "43"
+    },
+    {
+      "address": "00.00.00.00.26",
+      "form": "D",
+      "key": "core:00.00.00.00.26",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER D",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0044"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "44"
+    },
+    {
+      "address": "00.00.00.00.27",
+      "form": "E",
+      "key": "core:00.00.00.00.27",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER E",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0045"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "45"
+    },
+    {
+      "address": "00.00.00.00.28",
+      "form": "F",
+      "key": "core:00.00.00.00.28",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER F",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0046"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "46"
+    },
+    {
+      "address": "00.00.00.00.29",
+      "form": "G",
+      "key": "core:00.00.00.00.29",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER G",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0047"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "47"
+    },
+    {
+      "address": "00.00.00.00.2A",
+      "form": "H",
+      "key": "core:00.00.00.00.2A",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER H",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0048"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "48"
+    },
+    {
+      "address": "00.00.00.00.2B",
+      "form": "I",
+      "key": "core:00.00.00.00.2B",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER I",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0049"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "49"
+    },
+    {
+      "address": "00.00.00.00.2C",
+      "form": "J",
+      "key": "core:00.00.00.00.2C",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER J",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4A"
+    },
+    {
+      "address": "00.00.00.00.2D",
+      "form": "K",
+      "key": "core:00.00.00.00.2D",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER K",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004B"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4B"
+    },
+    {
+      "address": "00.00.00.00.2E",
+      "form": "L",
+      "key": "core:00.00.00.00.2E",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER L",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004C"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4C"
+    },
+    {
+      "address": "00.00.00.00.2F",
+      "form": "M",
+      "key": "core:00.00.00.00.2F",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER M",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004D"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4D"
+    },
+    {
+      "address": "00.00.00.00.2G",
+      "form": "N",
+      "key": "core:00.00.00.00.2G",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER N",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004E"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4E"
+    },
+    {
+      "address": "00.00.00.00.2H",
+      "form": "O",
+      "key": "core:00.00.00.00.2H",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER O",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+004F"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "4F"
+    },
+    {
+      "address": "00.00.00.00.2I",
+      "form": "P",
+      "key": "core:00.00.00.00.2I",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER P",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0050"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "50"
+    },
+    {
+      "address": "00.00.00.00.2J",
+      "form": "Q",
+      "key": "core:00.00.00.00.2J",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Q",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0051"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "51"
+    },
+    {
+      "address": "00.00.00.00.2K",
+      "form": "R",
+      "key": "core:00.00.00.00.2K",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER R",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0052"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "52"
+    },
+    {
+      "address": "00.00.00.00.2L",
+      "form": "S",
+      "key": "core:00.00.00.00.2L",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER S",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0053"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "53"
+    },
+    {
+      "address": "00.00.00.00.2M",
+      "form": "T",
+      "key": "core:00.00.00.00.2M",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER T",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0054"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "54"
+    },
+    {
+      "address": "00.00.00.00.2N",
+      "form": "U",
+      "key": "core:00.00.00.00.2N",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER U",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0055"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "55"
+    },
+    {
+      "address": "00.00.00.00.2O",
+      "form": "V",
+      "key": "core:00.00.00.00.2O",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER V",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0056"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "56"
+    },
+    {
+      "address": "00.00.00.00.2P",
+      "form": "W",
+      "key": "core:00.00.00.00.2P",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER W",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0057"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "57"
+    },
+    {
+      "address": "00.00.00.00.2Q",
+      "form": "X",
+      "key": "core:00.00.00.00.2Q",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER X",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0058"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "58"
+    },
+    {
+      "address": "00.00.00.00.2R",
+      "form": "Y",
+      "key": "core:00.00.00.00.2R",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Y",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0059"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "59"
+    },
+    {
+      "address": "00.00.00.00.2S",
+      "form": "Z",
+      "key": "core:00.00.00.00.2S",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Lu",
+          "name": "LATIN CAPITAL LETTER Z",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5A"
+    },
+    {
+      "address": "00.00.00.00.2T",
+      "form": "[",
+      "key": "core:00.00.00.00.2T",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ps",
+          "name": "LEFT SQUARE BRACKET",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005B"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5B"
+    },
+    {
+      "address": "00.00.00.00.2V",
+      "form": "]",
+      "key": "core:00.00.00.00.2V",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pe",
+          "name": "RIGHT SQUARE BRACKET",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+005D"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "5D"
+    },
+    {
+      "address": "00.00.00.00.2Z",
+      "form": "a",
+      "key": "core:00.00.00.00.2Z",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER A",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0061"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "61"
+    },
+    {
+      "address": "00.00.00.00.2a",
+      "form": "b",
+      "key": "core:00.00.00.00.2a",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER B",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0062"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "62"
+    },
+    {
+      "address": "00.00.00.00.2b",
+      "form": "c",
+      "key": "core:00.00.00.00.2b",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER C",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0063"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "63"
+    },
+    {
+      "address": "00.00.00.00.2c",
+      "form": "d",
+      "key": "core:00.00.00.00.2c",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER D",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0064"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "64"
+    },
+    {
+      "address": "00.00.00.00.2d",
+      "form": "e",
+      "key": "core:00.00.00.00.2d",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER E",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0065"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "65"
+    },
+    {
+      "address": "00.00.00.00.2e",
+      "form": "f",
+      "key": "core:00.00.00.00.2e",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER F",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0066"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "66"
+    },
+    {
+      "address": "00.00.00.00.2f",
+      "form": "g",
+      "key": "core:00.00.00.00.2f",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER G",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0067"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "67"
+    },
+    {
+      "address": "00.00.00.00.2g",
+      "form": "h",
+      "key": "core:00.00.00.00.2g",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER H",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0068"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "68"
+    },
+    {
+      "address": "00.00.00.00.2h",
+      "form": "i",
+      "key": "core:00.00.00.00.2h",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER I",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0069"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "69"
+    },
+    {
+      "address": "00.00.00.00.2i",
+      "form": "j",
+      "key": "core:00.00.00.00.2i",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER J",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6A"
+    },
+    {
+      "address": "00.00.00.00.2j",
+      "form": "k",
+      "key": "core:00.00.00.00.2j",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER K",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006B"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6B"
+    },
+    {
+      "address": "00.00.00.00.2k",
+      "form": "l",
+      "key": "core:00.00.00.00.2k",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER L",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006C"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6C"
+    },
+    {
+      "address": "00.00.00.00.2l",
+      "form": "m",
+      "key": "core:00.00.00.00.2l",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER M",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006D"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6D"
+    },
+    {
+      "address": "00.00.00.00.2m",
+      "form": "n",
+      "key": "core:00.00.00.00.2m",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER N",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006E"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6E"
+    },
+    {
+      "address": "00.00.00.00.2n",
+      "form": "o",
+      "key": "core:00.00.00.00.2n",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER O",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+006F"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "6F"
+    },
+    {
+      "address": "00.00.00.00.2o",
+      "form": "p",
+      "key": "core:00.00.00.00.2o",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER P",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0070"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "70"
+    },
+    {
+      "address": "00.00.00.00.2p",
+      "form": "q",
+      "key": "core:00.00.00.00.2p",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Q",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0071"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "71"
+    },
+    {
+      "address": "00.00.00.00.2q",
+      "form": "r",
+      "key": "core:00.00.00.00.2q",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER R",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0072"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "72"
+    },
+    {
+      "address": "00.00.00.00.2r",
+      "form": "s",
+      "key": "core:00.00.00.00.2r",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER S",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0073"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "73"
+    },
+    {
+      "address": "00.00.00.00.2s",
+      "form": "t",
+      "key": "core:00.00.00.00.2s",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER T",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0074"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "74"
+    },
+    {
+      "address": "00.00.00.00.2t",
+      "form": "u",
+      "key": "core:00.00.00.00.2t",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER U",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0075"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "75"
+    },
+    {
+      "address": "00.00.00.00.2u",
+      "form": "v",
+      "key": "core:00.00.00.00.2u",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER V",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0076"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "76"
+    },
+    {
+      "address": "00.00.00.00.2v",
+      "form": "w",
+      "key": "core:00.00.00.00.2v",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER W",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0077"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "77"
+    },
+    {
+      "address": "00.00.00.00.2w",
+      "form": "x",
+      "key": "core:00.00.00.00.2w",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER X",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0078"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "78"
+    },
+    {
+      "address": "00.00.00.00.2x",
+      "form": "y",
+      "key": "core:00.00.00.00.2x",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Y",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+0079"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "79"
+    },
+    {
+      "address": "00.00.00.00.2y",
+      "form": "z",
+      "key": "core:00.00.00.00.2y",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Ll",
+          "name": "LATIN SMALL LETTER Z",
+          "script": "Latin",
+          "script_extensions": [
+            "Latin"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+007A"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 2,
+      "utf8_hex": "7A"
+    },
+    {
+      "address": "00.00.00.01.0d",
+      "form": "§",
+      "key": "core:00.00.00.01.0d",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "SECTION SIGN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+00A7"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 4,
+      "utf8_hex": "C2 A7"
+    },
+    {
+      "address": "00.00.00.04.bM",
+      "form": "‐",
+      "key": "core:00.00.00.04.bM",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "HYPHEN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2010"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 90"
+    },
+    {
+      "address": "00.00.00.04.bN",
+      "form": "‑",
+      "key": "core:00.00.00.04.bN",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "NON-BREAKING HYPHEN",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2011"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 91"
+    },
+    {
+      "address": "00.00.00.04.bP",
+      "form": "–",
+      "key": "core:00.00.00.04.bP",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "EN DASH",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2013"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 93"
+    },
+    {
+      "address": "00.00.00.04.bQ",
+      "form": "—",
+      "key": "core:00.00.00.04.bQ",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pd",
+          "name": "EM DASH",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2014"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 94"
+    },
+    {
+      "address": "00.00.00.04.bU",
+      "form": "‘",
+      "key": "core:00.00.00.04.bU",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pi",
+          "name": "LEFT SINGLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2018"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 98"
+    },
+    {
+      "address": "00.00.00.04.bV",
+      "form": "’",
+      "key": "core:00.00.00.04.bV",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pf",
+          "name": "RIGHT SINGLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2019"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 99"
+    },
+    {
+      "address": "00.00.00.04.bY",
+      "form": "“",
+      "key": "core:00.00.00.04.bY",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pi",
+          "name": "LEFT DOUBLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+201C"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 9C"
+    },
+    {
+      "address": "00.00.00.04.bZ",
+      "form": "”",
+      "key": "core:00.00.00.04.bZ",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Pf",
+          "name": "RIGHT DOUBLE QUOTATION MARK",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+201D"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 9D"
+    },
+    {
+      "address": "00.00.00.04.bc",
+      "form": "†",
+      "key": "core:00.00.00.04.bc",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DAGGER",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2020"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A0"
+    },
+    {
+      "address": "00.00.00.04.bd",
+      "form": "‡",
+      "key": "core:00.00.00.04.bd",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DOUBLE DAGGER",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2021"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A1"
+    },
+    {
+      "address": "00.00.00.04.bi",
+      "form": "…",
+      "key": "core:00.00.00.04.bi",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "HORIZONTAL ELLIPSIS",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2026"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 A6"
+    },
+    {
+      "address": "00.00.00.04.bu",
+      "form": "′",
+      "key": "core:00.00.00.04.bu",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "PRIME",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2032"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 B2"
+    },
+    {
+      "address": "00.00.00.04.bv",
+      "form": "″",
+      "key": "core:00.00.00.04.bv",
+      "kind": "existing-core-value",
+      "scalar_metadata": [
+        {
+          "category": "Po",
+          "name": "DOUBLE PRIME",
+          "script": "Common",
+          "script_extensions": [
+            "Common"
+          ]
+        }
+      ],
+      "scalars": [
+        "U+2033"
+      ],
+      "store": "hcp_core",
+      "structural_mass_derived": 6,
+      "utf8_hex": "E2 80 B3"
+    }
+  ]
+}

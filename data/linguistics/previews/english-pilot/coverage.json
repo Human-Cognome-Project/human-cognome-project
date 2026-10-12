@@ -1,0 +1,96 @@
+{
+  "cldr_files_sha256": {
+    "common/main/en.xml": "67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd",
+    "common/supplemental/supplementalData.xml": "cd2af39aef82fdbfba4d591c87548203350538ad2318486d104b3b38b8d62f1a"
+  },
+  "core_validation": "not-run",
+  "counts": {
+    "case_expanded_candidates": 26,
+    "coverage_gaps": 0,
+    "distinct_source_sequences": 58,
+    "groups": 8,
+    "membership_edges": 175,
+    "multi_scalar_values": 0,
+    "shared_values_including_case_candidates": 84,
+    "source_memberships": 58
+  },
+  "coverage": [
+    {
+      "case_expanded_candidates": 26,
+      "direct_value_memberships": 84,
+      "distinct_source_sequences": 58,
+      "issues": [],
+      "locale": "en",
+      "multi_scalar_source_memberships": 0,
+      "observed_scripts": [
+        "Common",
+        "Latin"
+      ],
+      "roles": {
+        "main": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 26,
+          "status": "present"
+        },
+        "punctuation": {
+          "draft": "approved",
+          "inherited": false,
+          "source_locale": "en",
+          "source_memberships": 32,
+          "status": "present"
+        }
+      },
+      "script_context": {
+        "language": "en"
+      },
+      "source_memberships": 58
+    }
+  ],
+  "database_writes": 0,
+  "format": "hcp-language-inventory-v1",
+  "requested_locales": [
+    "en"
+  ],
+  "requested_roles": [
+    "main",
+    "punctuation"
+  ],
+  "source_pins": {
+    "cldr_commit": "11299982335beb974c1c63c45265184e759c0f41",
+    "cldr_version": "48.2",
+    "files": {
+      "PropertyValueAliases.txt": {
+        "sha256": "64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/PropertyValueAliases.txt"
+      },
+      "ScriptExtensions.txt": {
+        "sha256": "ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/ScriptExtensions.txt"
+      },
+      "Scripts.txt": {
+        "sha256": "9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/Scripts.txt"
+      },
+      "SpecialCasing.txt": {
+        "sha256": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/SpecialCasing.txt"
+      },
+      "UnicodeData.txt": {
+        "sha256": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c",
+        "url": "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
+      },
+      "cldr.tar.gz": {
+        "sha256": "8805841621aada9df6da4d7335c5c75e23c0e64e686d6e3fca37f54fb3750fef",
+        "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/11299982335beb974c1c63c45265184e759c0f41"
+      },
+      "icu4j.jar": {
+        "sha256": "bbb70d3be23110d7295823eee0c2e896ac3b619b3c0f26168f65eb972df51d2a",
+        "url": "https://repo.maven.apache.org/maven2/com/ibm/icu/icu4j/78.1/icu4j-78.1.jar"
+      }
+    },
+    "icu_version": "78.1",
+    "unicode_version": "17.0.0"
+  }
+}

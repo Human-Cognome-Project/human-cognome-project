@@ -1,0 +1,53 @@
+name: Linguistics inventory
+
+on:
+  pull_request:
+    paths:
+      - "tools/linguistics/**"
+      - "data/linguistics/**"
+      - "docs/language-component-unicode-plan.md"
+      - ".github/workflows/linguistics-inventory.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tools/linguistics/**"
+      - "data/linguistics/**"
+      - "docs/language-component-unicode-plan.md"
+      - ".github/workflows/linguistics-inventory.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/cache@v4
+        with:
+          path: sources/data/linguistics
+          key: linguistics-sources-${{ hashFiles('tools/linguistics/*lock.json') }}
+      - name: Verify pinned inputs
+        run: python tools/linguistics/import_inventory.py fetch
+      - name: Test source parsing, memberships and read-only validation
+        run: python -m unittest discover -s tools/linguistics/tests -v
+      - name: Reproduce pilot and six-locale evidence
+        run: python tools/linguistics/evidence.py
+      - name: Reproduce validation against the current full UTF-8 snapshot
+        run: |
+          hcp_snapshot_commit=4235c7252302e87375f185218489c3cfef28e74a
+          git fetch --no-tags --depth=1 origin "$hcp_snapshot_commit"
+          git lfs fetch --include='data/postgres/snapshots/2026-10-03-encoding-tables/hcp_core.sql.gz' --exclude='' origin "$hcp_snapshot_commit"
+          hcp_utf8_export="$(git rev-parse --git-common-dir)/lfs/objects/44/08/4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8"
+          python tools/linguistics/evidence.py --utf8-export "$hcp_utf8_export"
+      - name: Compare every Unicode scalar with pinned native derivation
+        run: |
+          python tools/linguistics/audit_addresses.py --out sources/data/linguistics/native-audit.json
+          cmp sources/data/linguistics/native-audit.json data/linguistics/previews/native-address-audit.json
