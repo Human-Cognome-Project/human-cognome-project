@@ -71,6 +71,17 @@ records only. Canadian English.
 > stream, with the swarm/p2p layer preliminary and gated behind it. `HANDOFF.md` is the
 > reload pointer — read it first.
 
+## Reverse child storage direction (Patrick, 2026-10-13)
+
+Accept exact address ranges and singleton entries for child traversal listings;
+the current per-pair schema is not yet converted. Frequent forms may have
+low document-entry traversal value while their complete reverse relationships
+remain necessary for integrity. See [the working-set contract](WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13)
+and [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134).
+Measure current runs first; preserve logical reciprocals, stable identities and
+ordered parent occurrences. This is native storage work, not a Python selector
+or a new gate on the accepted seed population.
+
 ## Linguistic membership and group centroids (Patrick, 2026-10-11)
 
 **Settled data-model direction; importer and warm aggregation remain planned.**
