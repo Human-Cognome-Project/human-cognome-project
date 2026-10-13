@@ -40,6 +40,12 @@ measurements. Common words may have low traversal value but retain complete
 cold references. Range storage is not built and does not change #132's current
 row-based population contract. See [the detailed direction](kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13).
 
+**Warm-cache planning:** [Root-addressed layout proposal](docs/warm-knowledge-cache-layout.md)
+records the PostgreSQL multi-writer direction: cache-manager preparation plus
+analyst temporary construction and personal-source integration, governed by
+root ownership. Logical records and publication rules are proposed for plan
+development, not an implemented analyst or cache manager.
+
 ## Reading paths
 
 This is the canonical onboarding map, shared by README, CONTRIBUTING and the

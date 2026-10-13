@@ -4,6 +4,12 @@ Start with the [current state](../AGENTS.md#current-state) and
 [canonical reading paths](../AGENTS.md#reading-paths). This index supplies
 references, not another mandatory reading sequence.
 
+## Warm-cache plan development
+
+- [Root-addressed warm knowledge cache layout](warm-knowledge-cache-layout.md) —
+  proposal for PostgreSQL multi-writer ownership, temporary/personal integration,
+  and native letter/byte assembly. Implementation details remain for review.
+
 ## Active implementation plans and built results
 
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
