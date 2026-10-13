@@ -114,6 +114,53 @@ identity grouping using the same field law; **there is no stored
 `token_sibling_group` table**. The present field harness does not store
 `token_id` per allocated particle or synthesize this group.
 
+## Range-compressed reverse child listings (Patrick, 2026-10-13)
+
+**Accepted storage direction; implementation pending in [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134).**
+Child listings are reverse traversal references. Store exact contiguous runs
+as inclusive address ranges and isolated children as singleton entries. A run
+can represent millions of logical references with one physical entry. The
+current `token_child` schema still stores one row per distinct pair.
+
+Ranges must decode to exactly the actual direct children, with destination-store
+context and canonical address ordering. Gaps and unrelated addresses break
+runs. The implementation must define adjacency, reserved-slot handling and
+range bounds, preserve additive updates, coalesce adjoining runs and split on
+removal. A broad "starts with" span is not automatically a complete child set.
+Future allocation into gaps must never create an unintended relationship.
+
+Dictionary-order word keys are intended to improve locality for prefixes and
+common letters. Preserve exact forms and existing identities; choose an explicit
+ordering for each intake, without silently normalizing or renumbering records.
+The current letter seed map retains its accepted scalar-order allocation.
+Compression benefit depends on actual child-address runs, not frequency alone.
+
+Very common forms such as "the" and "and" may be functionally unhelpful as direct
+entry points into documents. Their complete cold child listings are retained
+for data integrity even when rarely traversed or not resident in warm working
+data. This is not a stopword deletion rule or a declaration that those words
+have no semantic value, mass or field participation. No new selection policy
+or analyst function is specified here.
+
+Later phrase/string deduplication can move direct word-to-document relationships
+to word-to-shared-string relationships, with documents reached through those
+intermediates. That requires the corresponding composition rewrite and
+reciprocal updates; index compression alone changes no graph relationships.
+Ordered parent occurrences, including repetition, remain intact. Range encoding
+creates neither live particles nor a conceptual LoD step.
+
+Start with read-only run-size/byte measurements on the retained core and
+addressed linguistic seed additions. Compare decoded ranges with every logical
+child pair and exercise gaps, store boundaries, insert/coalesce and delete/split.
+Report logical edge counts separately from physical interval entries and bytes.
+Operational representation/read-write support is native C++; Python remains
+limited to early bootstrap population preparation and validation.
+
+This work can use current data and proceed as a bounded follow-up. It does not
+silently alter the in-flight #132 population writer, schema or acceptance totals;
+coordinate a reviewed representation change before applying it to persistent
+stores.
+
 ## The pairwise discovery ledger
 
 Discovering direct commonality and its effects pays a pairwise cost once.
