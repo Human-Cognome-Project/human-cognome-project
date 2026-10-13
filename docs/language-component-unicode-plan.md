@@ -3,8 +3,10 @@
 Status: **Plan accepted in PR #127, with Patrick's membership clarification,
 2026-10-11; language-letter endpoints and core child listings corrected by
 Patrick on 2026-10-12.** The [bulk bootstrap preparation and read-only export validator](../tools/linguistics/README.md)
-are now implemented, with reproducible source/manifest evidence. Persistent
-memberships and general warm aggregation remain planned.
+are now implemented, with reproducible source/manifest evidence. The accepted
+bounded writer adds isolated persistent memberships and reciprocal construction
+links. Existing-store population awaits implementation review and explicit
+targets; general warm aggregation remains planned.
 
 ## Intended result
 
@@ -172,7 +174,7 @@ source memberships, unique source values, language endpoints, parent occurrences
 core child edges, actual group memberships and case-expanded candidates as
 separate counts. UTF-8 bytes and derived structural
 counts remain validation evidence. Source keys are preview identifiers;
-final group and new-literal addresses have not been allocated.
+the initial group and new-literal addresses now have a retained bootstrap ledger.
 
 Before a batch is accepted, verify automatically:
 
@@ -247,8 +249,10 @@ connected, created, restored or populated for either check.
 
 The [accepted letter population plan](linguistic-bootstrap-population-plan.md)
 defines the initial numeric frame map and bounded two-store bootstrap work.
-PR #132 accepts implementation and isolated validation; it does not claim a
-writer is built or that existing user stores have been populated.
+PR #132 accepts implementation and isolated validation. The
+[bounded writer](letter-population-writer.md) now has isolated PostgreSQL
+population, recovery and unchanged-rerun evidence. Existing user stores remain
+unmodified pending implementation/schema review and explicit target selection.
 
 **Offline slice built:** `tools/linguistics/` pins CLDR 48.2, UCD 17.0.0 and
 ICU4J 78.1, resolves source inheritance/aliases and emits distinct language
@@ -280,9 +284,9 @@ on 890 core endpoints. All
 The batch retains shared core identities, distinct language endpoint identities,
 exact forms and both construction/membership reciprocals for database seed
 review. A flat catalog lists the complete batch's alphabet/punctuation
-endpoints, parents and additive core child updates. Persistent population and
-unchanged-rerun checks
-remain to be completed. The generic Python selector and its working-area
+endpoints, parents and additive core child updates. The accepted address ledger
+and isolated population now retain these records; the full-snapshot load and
+unchanged rerun pass exact read-back. The generic Python selector and its working-area
 bundle format were removed; this work is limited to database seeding.
 The current test objects are individual letters in each language.
 
@@ -323,7 +327,8 @@ Those keys cannot directly reference a separate Linguistics database. The
 generated manifest carries the linguistic endpoint definitions, core-value
 parent references, reciprocal core child additions and membership edges.
 Persistent population must cover both stores and both reciprocal pairs. The
-native cross-store boundary must be agreed and implemented before persistent links.
+bounded bootstrap boundary is implemented in the accepted-scope population writer;
+the unchanged native controller remains excluded from mutation of these stores.
 Core inventories are reused rather than repopulated as a side effect.
 Previously identified record-integrity work in PR #111 remains separate and
 is not cleared by the derivation check. Appropriate source/data/native checks

@@ -1,10 +1,11 @@
 # Letter seed population
 
 Status: **Accepted for bounded bootstrap implementation, 2026-10-13 (PR #132).**
-The numeric map is accepted for this initial seed batch; it is not evidence
-of allocated records. Implement the writer and demonstrate the checks below
-in isolated databases. Review its schema changes and population evidence before
-applying it to an existing user store. No retained core has been modified.
+The numeric map is accepted for this initial seed batch. The
+[writer and isolated validation](letter-population-writer.md) now implement this
+plan, with retained addresses, paired data exports and unchanged-rerun evidence.
+Review those schema changes and population evidence before applying the writer
+to an existing user store. Existing user stores and the source snapshot remain unchanged.
 
 The current test objects are individual letters in each language. Populate
 their distinct linguistic endpoints, ordered core character parents, reciprocal
@@ -88,7 +89,9 @@ ALTER TABLE public.token_parent
   DROP CONSTRAINT token_parent_parent_token_id_fkey;
 ```
 
-These statements are a proposal, not an instruction to run them now. Removing
+The bounded writer applies these statements only to explicitly selected bootstrap
+targets; isolated validation is complete. Existing-store execution still awaits
+implementation review and target selection. Removing
 the local destination keys changes where their integrity is enforced. The
 bootstrap writer must validate local as well as external destinations and
 reject missing or conflicting endpoint definitions before committing. Native
