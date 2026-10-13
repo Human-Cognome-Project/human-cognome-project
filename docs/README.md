@@ -1,5 +1,20 @@
 # Documentation
 
+Start with the [current state](../AGENTS.md#current-state) and
+[canonical reading paths](../AGENTS.md#reading-paths). This index supplies
+references, not another mandatory reading sequence.
+
+## Active implementation plans and built results
+
+- [Model realignment plan](model-realignment-plan.md) — settled directions,
+  built bounded support and remaining work; #123 is held for revision.
+- [Language component plan](language-component-unicode-plan.md) — distinct
+  linguistic endpoints, shared core parents and reciprocal seed links.
+- [First-stage data object model](first-stage-data-object-model.md) — built
+  native preparation boundary and its limits.
+- [Object-support results](../engine/docs/OBJECT-SUPPORT-RESULTS.md) — what
+  the bounded engine slice implements and how it was checked.
+
 ## Current system map
 
 - **[address-encoding-transition.md](address-encoding-transition.md)** —
@@ -22,7 +37,7 @@
 
 ## Foundations and recovered notes
 
-Read in order:
+Reference material; consult the sections relevant to your component:
 
 1. **[physics-basis.md](physics-basis.md)** — what was determined, the principles the project runs
    on, lineage, and the open problems. The primary research sources are

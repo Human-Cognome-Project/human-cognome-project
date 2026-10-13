@@ -4,15 +4,9 @@ HCP accepts code, research, testing, documentation and architecture critique. Th
 
 ## Start here
 
-1. [Covenant](covenant.md)
-2. [Charter](charter.md)
-3. [README.md](README.md)
-4. [REORGANIZATION.md](REORGANIZATION.md)
-5. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
-6. [Model realignment plan](docs/model-realignment-plan.md) for engine/cache/LoD/ingestion work
-7. the README/plan/tests for the subsystem you intend to change
-
-Agents should also read [AGENTS.md](AGENTS.md).
+Follow the [canonical reading paths](AGENTS.md#reading-paths), including the
+Covenant and Charter. Check the [current state](AGENTS.md#current-state)
+before selecting work. Agents read AGENTS.md in full.
 
 ## Current architecture
 
@@ -38,10 +32,14 @@ The [model realignment plan](docs/model-realignment-plan.md) records the current
 conceptual-LoD versus 1:1 compression contract, component-derived extents,
 whole-particle response and corona-disabled experiment. Follow its staged PRs
 and acceptance criteria. Historical fixed-size, positional-response and string
-geometry requirements are superseded; runtime conversion remains work to do.
+geometry requirements are superseded. The [bounded object-support slice](engine/docs/OBJECT-SUPPORT-RESULTS.md)
+is built. General view/recomposition contract #123 remains held for revision;
+that hold does not reopen accepted bounded work or block data bootstrap.
 Related work: #106, #115, #116, #118, #119 and #120.
 
 ## Where work is currently useful
+
+- **Language seed data — current priority.** Complete language-letter and punctuation endpoints in shared Linguistics (`02`), with ordered core parents, additive core child listings and membership reciprocals, following the [language plan](docs/language-component-unicode-plan.md). Individual letters are the initial test objects. Address/population proposals require their own review; native object-library assembly follows its accepted contracts.
 
 - **Native engine validation and harness evolution.** Preserve the C++ `engine_support` / `field_core` boundary, vet the recovered native field implementation against the settled design record, and continue developing the wider harness as the future analyst's engine control surface. The planner Python prototype is archived and must not become runtime code.
 - **Kernel-network build/test work.** Keep `kernels/database/`, `kernels/wal/`, and `network/endpoint/` independently buildable while their interfaces stabilize.

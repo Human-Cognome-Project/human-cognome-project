@@ -13,6 +13,14 @@ carries those records forward. General recomposition, packing examples,
 DECLARE and persistent insertion retain their separate scope. The dated
 source audit and broader sequence below describe the preceding baseline.
 
+**Contract status (2026-10-13):** [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123)
+is held for revision and is not an accepted general view/identity contract.
+Do not implement its proposed identity, pool or publication rules until the
+maintainer findings are resolved and that contract is accepted. The separately
+accepted bounded support in #124–#126 remains built and usable; data bootstrap
+does not depend on closing every general recomposition question. See the
+[current state](../AGENTS.md#current-state) for the live-work summary.
+
 ## Goal and scope
 
 Prepare the native C++ model and warm-cache bridge to assemble language base
@@ -78,6 +86,10 @@ separate. Do not implement speculative analyst behaviour.
 ## Conversion sequence
 
 ### 1. Establish the view and identity contract — #106, #115
+
+**General contract still pending:** #123 is held for revision. This stage is
+not an instruction to implement that draft or a new prerequisite for the
+already accepted bounded object-support and bootstrap work.
 
 Specify a minimal C++ representation of primary conceptual boundaries and
 secondary compression attachments. The names are model roles, not new Taichi
