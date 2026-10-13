@@ -16,8 +16,8 @@ a merge or review changes these statuses; other entry points link here.
 |---|---|
 | Built | Native C++ engine and bounded object support: whole-particle response, supplied-layout enclosure, variable-radius contact and fixed-study publication. See [results](engine/docs/OBJECT-SUPPORT-RESULTS.md) and [object model](docs/first-stage-data-object-model.md). General recomposition and group-centroid assembly remain planned. |
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
-| Built bootstrap preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Final addresses and persistent population are not yet implemented. |
-| Proposed | [#132](https://github.com/Human-Cognome-Project/human-cognome-project/pull/132): seed address allocation and reciprocal population plan. Numeric map, schema changes and writer are not accepted by the earlier bootstrap merges. |
+| Built bootstrap preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. No seed records have been persistently allocated or populated. |
+| Accepted plan; implementation pending | [#132](https://github.com/Human-Cognome-Project/human-cognome-project/pull/132): initial seed map and bounded reciprocal population plan. Writer, schema implementation and recovery tests are next; existing-store population awaits their review and explicit target selection. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
@@ -32,7 +32,7 @@ is introduced here.
 **Settled roots:** `00` = common computational core; `02` = shared multilingual
 Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
 Current plans assign no new meaning to `01`; the old English `01` /
-common `01.00` layout is superseded. Detailed allocations remain separate proposals.
+common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
 
 ## Reading paths
 
