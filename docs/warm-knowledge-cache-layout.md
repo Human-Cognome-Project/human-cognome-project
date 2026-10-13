@@ -135,6 +135,38 @@ and available language/family memberships. Extend to the retained inventory
 after the assembly contract is demonstrated. Source coverage is the populated
 batch, not every language by assertion.
 
+### Projection contract required before implementation
+
+Stage B must supply an exposure matrix specifying what
+`Definition.parents[].value` identifies at letter, character and byte exposure.
+Choose and review either source-character parent identities with a derived byte
+view, or byte identities in the byte-exposed native definition with a retained
+character provenance map. Do not leave this choice to separate implementers.
+Stored cold character-parent edges remain unchanged in either design.
+
+Structural mass is the sum of verified character-parent masses, counting each
+recorded occurrence, or the verified definition mass consistent with that sum.
+A byte projection must conserve that mass; it is not an additional contribution
+on top of the character aggregate. Comparing the projected-byte sum with the
+character sum is a valid conservation check. Unknown mass remains unknown, not
+zero. For Dutch `íj́`, one linguistic identity has three ordered scalar parents:
+whole-value identity differs from each constituent, while structural mass
+remains additive. Exposure must neither collapse identity nor double mass.
+
+B and C must publish a shared vocabulary and mapping before D starts:
+
+| Identity | Required distinction |
+|---|---|
+| Source definition | Root-qualified address and pinned revision; reusable across live uses. |
+| Study-local occurrence key | One selected live use, distinct from its definition and GPU slot; repeated uses receive distinct keys. |
+| Projection path | Character ordinal and byte ordinal within that occurrence, sufficient to round-trip the selected construction. |
+| Target field key | The particular membership, parent-value or sibling field; deduplication uses this key together with the live occurrence key. |
+
+The bounded plan must name concrete key fields and their scope. D consumes
+B/C's keys and projection maps directly instead of re-deriving composition.
+This does not promise occurrence survival across arbitrary focus changes,
+general recomposition or other held #123 behaviour.
+
 ## Multiple writers and warm publication
 
 Proposed ownership: cache-manager writes refresh source-backed prepared
@@ -148,6 +180,13 @@ revision and its dependency set. A competing update to the same publication
 must detect an unexpected prior revision rather than silently overwrite it.
 Different roots/objects can prepare concurrently. Decide the precise lock or
 compare-and-publish mechanism in the plan.
+
+For the first letter study, propose a publication unit covering the selected
+letter definitions, their core/byte dependency closure and the membership links
+and group references used by that study. Pin the exact revisions together.
+Publication does not require refreshing the entire Linguistics root. The plan
+must specify how shared dependencies are reused and how a changed dependency
+invalidates affected study publications.
 
 Readers acquire one coherent publication. They must not combine a new parent
 list with old masses, geometry or membership preparation. Retain a pinned old
@@ -179,6 +218,11 @@ centroids before the first force pass and distinguish tools-ready, hot-ready
 and failed/non-runnable outcomes. General rollback, count-changing refresh and
 occurrence survival remain outside this slice unless separately accepted;
 held #123 supplies no authority to assume them.
+
+The engine's equal-count refresh restriction does not constrain warm publication
+size. A warm revision can be complete even when it cannot refresh a particular
+existing hot study; the consumer must report that boundary explicitly. No
+count-changing hot refresh is authorized by accepting a warm revision.
 
 ## Personal integration and reciprocal boundaries
 
@@ -218,6 +262,13 @@ markers, direct-follow references, publication granularity and a concrete
 concurrency mechanism without adding a general runtime framework. Unresolved
 numeric roots stay explicit. Tests can act as analyst clients.
 
+Stage A acceptance must also show unknown/conflicting root bindings rejected,
+`01` left unassigned, and no invented numeric private/temporary roots in examples
+or fixtures. Test the directory rules without silently allocating a namespace.
+Show that ordered lexical or “starts with” range child sets remain exact
+navigation sets and never produce live particles. Native range storage remains
+the separate #134 follow-up, not a prerequisite for this layout.
+
 B and C can use agreed fixtures while A is built, but their contracts must
 agree before D integrates them. The implementation work items should link to
 this shared plan and list their inputs/outputs and exits. No additional physics
@@ -227,7 +278,7 @@ framework is required.
 Open decisions: private/temporary roots and instance qualification; whether
 writer ownership is root-wide or delegated within a root; dependency revision
 markers; geometry inputs; nested membership participation; stale-use and
-reclamation policy; physical schema and publication granularity.
+reclamation policy; physical schema and the proposed study-scoped publication mechanism.
 
 This is plan-development input, not authorization to implement all open
 interfaces or modify existing stores. Operational code is C++; Python remains

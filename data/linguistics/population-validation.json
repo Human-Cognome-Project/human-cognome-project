@@ -1,0 +1,259 @@
+{
+  "address_map_sha256": "194f9e8bc8c1068479a7785f3908a63f65e445b91e191d844edbc1bc6088996b",
+  "checks": [
+    {
+      "check": "english-sample-core-trigger-preserved",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 610,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed"
+    },
+    {
+      "check": "twenty-language-subset",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 2741,
+        "group_mass": "NULL",
+        "groups": 65,
+        "language_components": 2707,
+        "member_of": 5460,
+        "members": 5460,
+        "ordered_parents": 2741,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 19174,
+        "tokens": 2772,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed"
+    },
+    {
+      "check": "repeated-ordered-core-parent",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 85,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 85,
+        "member_of": 177,
+        "members": 177,
+        "ordered_parents": 86,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 618,
+        "tokens": 93,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed"
+    },
+    {
+      "check": "pre-existing-conflict",
+      "data_and_schema": "unchanged",
+      "status": "passed"
+    },
+    {
+      "check": "unexpected-linguistic-trigger",
+      "status": "passed",
+      "trigger": "preserved enabled"
+    },
+    {
+      "check": "invalid-core-mass",
+      "data_and_schema": "unchanged",
+      "status": "passed"
+    },
+    {
+      "check": "other-writable-login-role",
+      "data_and_schema": "unchanged",
+      "status": "passed"
+    },
+    {
+      "check": "unsupported-two-phase-configuration",
+      "data_and_schema": "unchanged",
+      "status": "passed"
+    },
+    {
+      "check": "crash-core-prepared",
+      "decision_recovery": "abort then same-batch retry",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 610,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed",
+      "wrong_input_recovery": "rejected"
+    },
+    {
+      "check": "crash-both-prepared",
+      "decision_recovery": "abort then same-batch retry",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 610,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed",
+      "wrong_input_recovery": "rejected"
+    },
+    {
+      "check": "crash-commit-decided",
+      "decision_recovery": "complete original commit decision",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 0,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed",
+      "wrong_input_recovery": "rejected"
+    },
+    {
+      "check": "crash-core-committed",
+      "decision_recovery": "complete original commit decision",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 0,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed",
+      "wrong_input_recovery": "rejected"
+    },
+    {
+      "check": "crash-linguistics-committed",
+      "decision_recovery": "complete original commit decision",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 0,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed",
+      "wrong_input_recovery": "rejected"
+    },
+    {
+      "check": "automatic-abort-retry",
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 84,
+        "group_mass": "NULL",
+        "groups": 8,
+        "language_components": 84,
+        "member_of": 175,
+        "members": 175,
+        "ordered_parents": 84,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 610,
+        "tokens": 92,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed"
+    },
+    {
+      "check": "full-retained-core-twenty-language-load",
+      "core_after_counts": {
+        "member_of": 1112213,
+        "members": 1112213,
+        "token": 1112215,
+        "token_child": 4335845,
+        "token_parent": 4382976
+      },
+      "core_before_counts": {
+        "member_of": 1112213,
+        "members": 1112213,
+        "token": 1112215,
+        "token_child": 4333104,
+        "token_parent": 4382976
+      },
+      "rerun_rows_added": 0,
+      "result": {
+        "core_child_additions": 2741,
+        "group_mass": "NULL",
+        "groups": 65,
+        "language_components": 2707,
+        "member_of": 5460,
+        "members": 5460,
+        "ordered_parents": 2741,
+        "parent_mass_cells": "NULL",
+        "pre_existing_core": "unchanged",
+        "readback": "exact",
+        "rows_added": 19174,
+        "tokens": 2772,
+        "whole_mass": "sum of verified core masses per ordered occurrence"
+      },
+      "status": "passed"
+    }
+  ],
+  "format": "hcp-letter-population-acceptance-v1",
+  "isolation": "fresh owned fixture databases; no existing user store writes",
+  "manifest_sha256": "185bde5e28cbf67aeb9f5c5a17a0f71c5e2c9388f6854c1e85efb02c72e20125",
+  "postgres_major": 16,
+  "snapshot_sha256": "4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8"
+}

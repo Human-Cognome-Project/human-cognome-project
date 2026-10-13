@@ -16,18 +16,19 @@ a merge or review changes these statuses; other entry points link here.
 |---|---|
 | Built | Native C++ engine and bounded object support: whole-particle response, supplied-layout enclosure, variable-radius contact and fixed-study publication. See [results](engine/docs/OBJECT-SUPPORT-RESULTS.md) and [object model](docs/first-stage-data-object-model.md). General recomposition and group-centroid assembly remain planned. |
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
-| Built bootstrap preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. No seed records have been persistently allocated or populated. |
-| Accepted plan; implementation pending | [#132](https://github.com/Human-Cognome-Project/human-cognome-project/pull/132): initial seed map and bounded reciprocal population plan. Writer, schema implementation and recovery tests are next; existing-store population awaits their review and explicit target selection. |
+| Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
+| Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
+| Draft planning input | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137): warm PostgreSQL toolbox, native construction projection, membership fields and bounded hot handoff. Shared interfaces require review before implementation work items proceed. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
 
-**Active data priority:** seed language-letter and punctuation endpoints in
-Linguistics, with ordered core parents, additive reverse child listings and
-membership reciprocals. Individual letters are the current test objects.
-Native object-library/cache assembly follows through its accepted component
-contracts; no new analyst implementation or general physics qualification gate
-is introduced here.
+**Active data priority:** use the retained language-letter/punctuation endpoints,
+ordered core parents and membership reciprocals to define the first native
+letter/byte assembly and warm-cache handoff. Individual letters are the current
+test objects. The initial seed batch is populated; broader coverage and native
+cache assembly remain follow-up work. No new analyst implementation or general
+physics qualification gate is introduced here.
 
 **Settled roots:** `00` = common computational core; `02` = shared multilingual
 Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
