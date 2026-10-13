@@ -4,6 +4,12 @@ The Human Cognome Project is an open-source experimental architecture for digita
 
 The September repository reconciliation is complete, and a subsequent recovery pass restored the native C++ engine workspace that had remained local. See [REORGANIZATION.md](REORGANIZATION.md) for the provenance and recovery map.
 
+## Start here
+
+Use the [current state](AGENTS.md#current-state) and
+[role-based reading paths](AGENTS.md#reading-paths) for built, proposed and held
+work, settled address roots and the active data priority.
+
 ## Current system shape
 
 ```text
@@ -54,29 +60,11 @@ Each kernel is intended to operate at its own cadence. Counterparts communicate 
 - **[tools/legacy-extraction/](tools/legacy-extraction/)** — retained read-only migration/source tooling from earlier storage generations; not runtime code.
 - **[archive/](archive/)** and **[review/](review/)** — preserved prior generations and the August 2026 rebase record.
 
-## Read first
+## Reading and reference
 
-For the overall NAPIER flow, component roles, and what is built versus still
-under discussion, start with the [NAPIER system guide](docs/napier-system-guide.md).
-Its component notes are linked from [the documentation index](docs/README.md).
-The [paired-address decision](docs/address-encoding-transition.md) records
-the byte-ordered Base62 alphabet, literal `text[]` pairs, the reversal of
-the proposed numeric key, and the shared-root compression rationale.
-
-For current development:
-
-1. [REORGANIZATION.md](REORGANIZATION.md)
-2. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
-3. [engine/README.md](engine/README.md) + [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md), or [kernels/README.md](kernels/README.md), depending on the work
-4. the local module README/plan/test files for the component being changed
-
-For the research basis and project context:
-
-- [docs/physics-basis.md](docs/physics-basis.md)
-- [docs/architecture.md](docs/architecture.md)
-- [docs/data-protocol.md](docs/data-protocol.md)
-- [research/](research/)
-- [MANIFESTO.md](MANIFESTO.md)
+Follow the [canonical reading paths](AGENTS.md#reading-paths).
+The [documentation index](docs/README.md) links active plans and historical
+research; [REORGANIZATION.md](REORGANIZATION.md) records repository provenance.
 
 ## Repository status
 
@@ -84,7 +72,9 @@ The September 2026 repository reconciliation was carried through `integration/ke
 
 The current tree is the canonical starting point for new work. The native C++ engine recovery and curated Taichi fork are layered onto that reconciled history. CI builds and tests the native CPU engine from source; the engine has also run on development hardware. Earlier and off-direction generations remain under `archive/` and through Git history.
 
-**Review queue (2026-09-26):** [Draft PR #73](https://github.com/Human-Cognome-Project/human-cognome-project/pull/73) proposes endpoint slot-recycling, scheduler exception-handling and field-harness index-safety fixes. It is still open and needs careful code and test review against the current contracts before integration. It does not implement the [new address alphabet decision](docs/address-encoding-transition.md).
+The review queue and acceptance boundaries are maintained in the
+[current state](AGENTS.md#current-state); consult current PR reviews
+before implementing a proposal.
 
 ## Governance
 

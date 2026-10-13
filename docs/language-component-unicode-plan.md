@@ -245,10 +245,10 @@ connected, created, restored or populated for either check.
 
 ## Phased execution
 
-The [proposed letter population plan](linguistic-bootstrap-population-plan.md)
-contains numeric frame assignments and the cross-store data changes needed
-next. It is a review proposal; those addresses and writes are not approved by
-the earlier seed-preparation PR.
+The [accepted letter population plan](linguistic-bootstrap-population-plan.md)
+defines the initial numeric frame map and bounded two-store bootstrap work.
+PR #132 accepts implementation and isolated validation; it does not claim a
+writer is built or that existing user stores have been populated.
 
 **Offline slice built:** `tools/linguistics/` pins CLDR 48.2, UCD 17.0.0 and
 ICU4J 78.1, resolves source inheritance/aliases and emits distinct language

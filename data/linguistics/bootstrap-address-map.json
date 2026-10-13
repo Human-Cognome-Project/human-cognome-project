@@ -1,8 +1,13 @@
 {
-  "status": "proposal-not-allocated",
-  "scope": "Initial alphabetic-language bootstrap; numeric assignments require review before population.",
+  "status": "accepted-for-bootstrap-implementation-not-populated",
+  "scope": "Initial alphabetic-language bootstrap map accepted in PR #132. No persistent records allocated by the map; writer/schema implementation and target-store population evidence remain separately reviewed.",
   "namespace": "02",
-  "layers": ["major_family", "subfamily", "language", "regional_delta"],
+  "layers": [
+    "major_family",
+    "subfamily",
+    "language",
+    "regional_delta"
+  ],
   "family_codes": {
     "0": "Indo-European",
     "1": "Afro-Asiatic",
@@ -10,15 +15,15 @@
     "3": "Kartvelian"
   },
   "subfamily_codes": {
+    "10": "Semitic",
+    "20": "Oghuz",
+    "30": "Georgian",
     "00": "Germanic",
     "01": "Romance",
     "02": "Slavic",
     "03": "Hellenic",
     "04": "Indo-Iranian",
-    "05": "Armenian",
-    "10": "Semitic",
-    "20": "Oghuz",
-    "30": "Georgian"
+    "05": "Armenian"
   },
   "language_prefixes": {
     "en": "02.00.00",

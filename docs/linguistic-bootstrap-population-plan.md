@@ -1,8 +1,10 @@
 # Letter seed population
 
-Status: **Proposed continuation of merged PR #131.** This plan and its numeric
-address map require review before population. No linguistic address is assigned
-by this documentation, and no retained core database has been modified.
+Status: **Accepted for bounded bootstrap implementation, 2026-10-13 (PR #132).**
+The numeric map is accepted for this initial seed batch; it is not evidence
+of allocated records. Implement the writer and demonstrate the checks below
+in isolated databases. Review its schema changes and population evidence before
+applying it to an existing user store. No retained core has been modified.
 
 The current test objects are individual letters in each language. Populate
 their distinct linguistic endpoints, ordered core character parents, reciprocal
@@ -10,10 +12,10 @@ core child listings and language/alphabet memberships. Preserve the punctuation
 inventory already prepared. This work does not implement object or SNode
 assembly, cache-manager functions, runtime routing or analyst behavior.
 
-## Proposed address allocation
+## Accepted bootstrap address allocation
 
 [bootstrap-address-map.json](../data/linguistics/bootstrap-address-map.json)
-gives a concrete proposal for the 20 source locales and the three existing
+gives the accepted bootstrap map for the 20 source locales and the three existing
 English variant group placeholders. The four characters after `02` express
 major family, subfamily, language and regional delta. These are practical
 bootstrap groupings, not a complete human-language taxonomy or a final claim
@@ -53,6 +55,9 @@ Broader group anchors use reserved frames: Germanic at `02.00.zz.00.00` and
 Indo-European at `02.0z.zz.00.00`. Their membership links stay separate from
 literal construction. Group anchors retain unknown structural mass until their
 own naming construction is defined; no grouping centroid is calculated here.
+Reserve these broader-group frames in the ledger so later language/regional
+allocation cannot consume them. Existing assigned addresses never shift to
+reflect a revised linguistic classification.
 
 ## Cross-store data requirement
 
@@ -90,6 +95,31 @@ reject missing or conflicting endpoint definitions before committing. Native
 record operations remain unchanged and receive no new cross-store behavior
 from this bootstrap work. Existing PR #111 integrity findings remain separate.
 
+### Schema, mass and writer boundary
+
+Create Linguistics from the reviewed table/key schema, not by cloning the
+populated core dump with its local-parent mass trigger. That trigger resolves
+parents in its own database and cannot derive a linguistic endpoint's mass
+from a core parent. Preserve the existing core trigger and core definitions.
+
+For this bootstrap, validate each parent against the selected core and compute
+the linguistic endpoint's whole mass as the sum of those verified parent
+masses, once per ordered occurrence. Write that mass explicitly and compare it
+with the seed evidence. New parent-row mass cells remain NULL under the current
+deferred-cell convention; do not reinterpret NULL as zero. Group anchors retain
+NULL whole mass until their naming constructions are supplied. Read back these
+distinct mass policies along with exact source notation and rendered addresses.
+Reject an unexpected destination schema/trigger configuration before writing;
+do not disable triggers globally to make the load succeed.
+
+Dropping a destination FK affects subsequent writers too. Run the bounded load
+with exclusive write access to both selected stores, protecting validation
+through commit/recovery. After cross-store links exist, keep mutations on these
+populated stores restricted to the reviewed bootstrap procedure; the unchanged
+native controller does not preserve remote reciprocals during mint/rekey/delete.
+Read-only inspection remains available. This restriction does not request a new
+runtime router or cross-store controller in this slice.
+
 ## Bulk population cycle
 
 Use Python solely for this early bulk population and its preparation/checks.
@@ -110,6 +140,14 @@ ledger, with explicitly selected core and Linguistics PostgreSQL connections.
    batches are prepared, complete both or recover the same recorded batch;
    do not report population complete from only one store's commit. This is a
    bounded bootstrap operation, not a new runtime WAL or database kernel.
+   Persist the batch identity, input/ledger hashes, selected store identities
+   and commit/abort decision before they are needed for recovery. A crash after
+   one store prepares or commits must be distinguishable from an unrelated
+   partial/conflicting pre-existing batch: recover the recorded batch rather
+   than rejecting it as an ordinary rerun conflict. Do not roll back one side
+   after a commit decision. Refuse unsupported transaction configuration before
+   any schema/data changes. Implement this as a bounded bootstrap procedure,
+   with no standing coordinator service or runtime work queue.
 4. Read back the records from both stores. Verify exact notation, mass,
    ordered parent occurrences, separate membership reciprocals and every
    language endpoint in each corresponding core child listing. Preserve all
@@ -139,6 +177,9 @@ First exercise the population procedure in explicitly created, isolated
 PostgreSQL 16 databases. Use the retained UTF-8 snapshot as the source for
 verified core data; never reset an existing database. Check a successful
 letter sample, an invalid sample that writes nothing, the complete batch,
-read-back integrity and an unchanged rerun. Persistent population of an
+read-back integrity and an unchanged rerun. Inject interruption after the first
+store prepares, after both prepare, and between store commits; recover the same
+batch, preserving all prior data and leaving no unresolved transaction from it.
+Include the schema changes in rollback/recovery checks, not just inserted rows. Persistent population of an
 existing user store waits for the reviewed map, schema change, writer and
 explicit target connection. No assembly or physics test is part of this slice.

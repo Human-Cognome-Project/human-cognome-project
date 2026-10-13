@@ -2,14 +2,52 @@
 
 This file is the operational entry point for AI coding/review agents working on HCP.
 
-## Read before changing code
+## Current state
 
-1. [REORGANIZATION.md](REORGANIZATION.md)
-2. [engine/ARCHITECTURE.md](engine/ARCHITECTURE.md)
-3. [Model realignment plan](docs/model-realignment-plan.md) for engine, geometry, LoD, warm-cache or ingestion work
-4. the README/plan/test files inside the component you will touch
+Last checked: **2026-10-13**.
 
-Do not infer architecture from historical folder placement. Several directories and branches were used as agent-isolation boundaries while the design was moving faster than the repository structure.
+This is the repository's onboarding status snapshot. Code and executable tests
+determine what is built; accepted decisions govern intent. Check the
+[open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls)
+and their latest review comments before starting work. Update this section when
+a merge or review changes these statuses; other entry points link here.
+
+| State | Scope and evidence |
+|---|---|
+| Built | Native C++ engine and bounded object support: whole-particle response, supplied-layout enclosure, variable-radius contact and fixed-study publication. See [results](engine/docs/OBJECT-SUPPORT-RESULTS.md) and [object model](docs/first-stage-data-object-model.md). General recomposition and group-centroid assembly remain planned. |
+| Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
+| Built bootstrap preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. No seed records have been persistently allocated or populated. |
+| Accepted plan; implementation pending | [#132](https://github.com/Human-Cognome-Project/human-cognome-project/pull/132): initial seed map and bounded reciprocal population plan. Writer, schema implementation and recovery tests are next; existing-store population awaits their review and explicit target selection. |
+| Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
+| Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
+| Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
+
+**Active data priority:** seed language-letter and punctuation endpoints in
+Linguistics, with ordered core parents, additive reverse child listings and
+membership reciprocals. Individual letters are the current test objects.
+Native object-library/cache assembly follows through its accepted component
+contracts; no new analyst implementation or general physics qualification gate
+is introduced here.
+
+**Settled roots:** `00` = common computational core; `02` = shared multilingual
+Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
+Current plans assign no new meaning to `01`; the old English `01` /
+common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
+
+## Reading paths
+
+This is the canonical onboarding map, shared by README, CONTRIBUTING and the
+documentation index. Read the common path, then the row relevant to your work.
+Agents also read this file in full. Component-specific instructions still apply.
+
+| Audience | Read in order |
+|---|---|
+| Everyone | [Covenant](covenant.md) → [Charter](charter.md) → current state above → [NAPIER system guide](docs/napier-system-guide.md), observing built/planned labels. |
+| Agents | This file → [model realignment plan](docs/model-realignment-plan.md) → component README, accepted plan and tests. |
+| Engine / geometry / LoD | [Engine architecture](engine/ARCHITECTURE.md) → [active field model](engine/docs/ACTIVE-FIELD-MODEL.md) → [realignment plan](docs/model-realignment-plan.md) → [built results](engine/docs/OBJECT-SUPPORT-RESULTS.md). Check #123's latest disposition for general identity/recomposition work. |
+| Data / linguistics | [Language component plan](docs/language-component-unicode-plan.md) → [first-stage object model](docs/first-stage-data-object-model.md) → [working set and ledger](kernels/database/WORKING-SET-AND-LEDGER.md) → component README/tests. Check the status of population proposals before implementing their allocations or writes. |
+| Reviewers | Current state above → changed component's accepted plan and code → PR description, latest review findings and applicable acceptance criteria. |
+| Repository structure | [Reorganization record](REORGANIZATION.md) → relevant component architecture. Historical folder placement is not an architecture contract. |
 
 ## Architecture invariants
 
@@ -22,6 +60,17 @@ Do not infer architecture from historical folder placement. Several directories 
 - Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
 - The future configuration routine resolves endpoint paths; the future thread manager handles lower-frequency/system-facing bridge activation.
 - `kernels/database/`, `kernels/wal/`, and `network/endpoint/` are peers. Do not collapse WAL or shared endpoint infrastructure back under the database/cache hierarchy.
+
+## Do not reintroduce
+
+- Do not infer conceptual scale from raw SNode depth or secondary compression nesting.
+- Do not implement the superseded English `01` / per-language database layout.
+- Do not substitute a shared core character for a language-letter endpoint: the linguistic endpoint has its own identity and ordered core parents.
+- Do not materialize reverse DB child-reference listings as live particles. They support navigation/assembly; ordered parent occurrences and separately prepared fields determine live participation.
+- Do not extend Python beyond early bulk database bootstrap population and its preparation/validation. Offline operation alone is no exception; operational selection and assembly are native.
+- Do not invent analyst behaviour or treat held #123 proposals as an accepted contract.
+- Do not restore universal fixed diameter, beads-on-string geometry, positional parent offsets or rotation.
+- Do not reset/drop persistent databases as routine validation.
 
 ## Current development state
 
@@ -39,12 +88,12 @@ conflicting historical model requirements; code still determines what is built.
   compression structures inherit that scale at **1:1**, including nested
   dedupe; storage depth alone never creates a conceptual scale step.
 - Component-derived spherical extent replaces universal fixed diameter.
-  Its exact enclosure calculation remains open (#120).
+  Supplied-layout enclosure is built; packing and broader extent questions remain open (#120).
 - Parent response is proportional and whole-particle. No internal application
   offsets, rotation, rotary alignment or beads-on-string requirement.
-- Test corona-disabled contact; scaled attraction supplies intended cohesion.
-  Keep ordinary body contact and verify outcomes rather than claiming the
-  simplification is already implemented.
+- Corona-disabled variable-radius contact is built in the bounded object-support
+  slice. Scaled attraction supplies intended cohesion; broader calibration
+  remains empirical.
 - Whitespace is recorded as positional gaps; optional model separators have
   only local connecting participation, no structural relationships or gathering
   mass, and no field with other whitespace occurrences.
