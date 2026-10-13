@@ -1,17 +1,20 @@
-# Bulk linguistic bootstrap preparation
+# Bulk linguistic bootstrap
 
 **BUILT:** pinned Unicode/CLDR acquisition, ICU UnicodeSet parsing and locale
 casing, source inheritance/aliases, distinct linguistic endpoint candidates,
 ordered core parents and reciprocal child additions, symbolic groups,
 reciprocal memberships, coverage reports and a read-only COPY-export
-validator. This Python tooling prepares and checks bulk bootstrap population
-data only. Offline operation alone is not a Python exception.
+validator. The bounded population writer now implements the accepted initial
+address map, explicit whole masses, additive core child listings, two-store
+prepared transactions and durable same-batch recovery. This Python tooling
+only prepares, populates and checks early bulk bootstrap data.
 
-**PLANNED:** final group/new-literal addresses, persistent cross-store links,
-owning-controller writes/retries and native group-centroid assembly. Group
+**REVIEW BOUNDARY:** existing user stores await concrete implementation/schema
+review and explicit target connections. Native group-centroid assembly remains
+planned. Group
 centroid descriptions are requirements with pending state; no coordinates or
 aggregate masses are calculated here. The manifest is a proposal, not a
-write-ready population batch.
+write-ready population batch until its retained ledger and selected core are verified.
 
 The purpose is functional bootstrapping: seed a connected representational
 framework around which subsequent structure can form. UTF-8 is the encoding
@@ -29,7 +32,7 @@ combining sequences are preserved, without normalization. Each alphabet and
 punctuation grouping has its own pending centroid description. Language
 hierarchy edges are explicit reviewed bootstrap metadata, separate from CLDR
 source inheritance and lexical fallback preference. Concrete linguistic
-addresses remain unallocated in the shared `02` scope.
+addresses are retained in [letter-seed-ledger.json](../../data/linguistics/letter-seed-ledger.json).
 
 ## Requirements and pinned sources
 
@@ -37,7 +40,11 @@ Use Python 3.10+ and a JDK 21+ with its source-file launcher. The importer uses
 the standard library and the pinned ICU4J 78.1 jar; it does not use the host's
 Python/system Unicode tables. The native derivation audit additionally needs
 `c++` with C++17 and GNU-compatible section garbage collection (Linux).
-No PostgreSQL service or credentials are needed.
+Source preparation needs no PostgreSQL service or credentials. Population needs
+PostgreSQL 16, `psql`, two explicit databases in the same cluster, a durable
+private journal directory and `max_prepared_transactions >= 2`. The test helper
+uses pinned PostgreSQL 16.15 through Docker, Unix sockets and peer authentication;
+it exposes no network listener.
 
 [sources.lock.json](sources.lock.json) pins Unicode 17.0.0 data, CLDR 48.2 at
 commit `11299982335beb974c1c63c45265184e759c0f41`, and ICU4J 78.1 to exact
@@ -228,3 +235,15 @@ in the ignored cache. This preserves the original independent preview check
 without integrating that unmerged PR's population path or clearing its
 record-integrity findings. CI runs the same offline checks and exact evidence
 comparison; tests use synthetic exports and never reset a database.
+
+## Persistent bootstrap validation
+
+The [writer instructions](../../docs/letter-population-writer.md) explain explicit
+target selection, the two destination foreign-key changes, mass policy, offline
+mutation restriction and durable recovery. The
+[isolated acceptance report](../../data/linguistics/population-validation.json)
+includes the full retained core load, exact read-back, a zero-row rerun, conflict
+rejection and prepare/commit interruption recovery. The
+[paired exports](../../data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md)
+preserve the populated test stores. Existing user stores have not been changed.
+Hosted CI also reproduces the isolated PostgreSQL load; no database reset is used.

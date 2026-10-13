@@ -6,6 +6,8 @@ on:
       - "tools/linguistics/**"
       - "data/linguistics/**"
       - "docs/language-component-unicode-plan.md"
+      - "docs/linguistic-bootstrap-population-plan.md"
+      - "docs/letter-population-writer.md"
       - ".github/workflows/linguistics-inventory.yml"
   push:
     branches: [main]
@@ -13,6 +15,8 @@ on:
       - "tools/linguistics/**"
       - "data/linguistics/**"
       - "docs/language-component-unicode-plan.md"
+      - "docs/linguistic-bootstrap-population-plan.md"
+      - "docs/letter-population-writer.md"
       - ".github/workflows/linguistics-inventory.yml"
 
 permissions:
@@ -52,3 +56,22 @@ jobs:
         run: |
           python tools/linguistics/audit_addresses.py --out sources/data/linguistics/native-audit.json
           cmp sources/data/linguistics/native-audit.json data/linguistics/previews/native-address-audit.json
+      - name: Validate bounded letter population and interrupted batch recovery
+        run: |
+          python tools/linguistics/import_inventory.py preview \
+            --profile tools/linguistics/bootstrap-locales.json \
+            --out sources/data/linguistics/population-input
+          bash tools/linguistics/start_validation_postgres.sh sources/data/linguistics/postgres-tools
+          hcp_utf8_export="$(git rev-parse --git-common-dir)/lfs/objects/44/08/4408fd55e8884efa6a1b575b7e317aea17bdea922b09fab193cf9f7f65456dc8"
+          python tools/linguistics/populate.py allocate \
+            --manifest sources/data/linguistics/population-input/manifest.json \
+            --ledger sources/data/linguistics/population-input/ledger.json
+          cmp sources/data/linguistics/population-input/ledger.json data/linguistics/letter-seed-ledger.json
+          python tools/linguistics/verify_population.py \
+            --psql "$PWD/sources/data/linguistics/postgres-tools/psql-prepared" \
+            --unsupported-psql "$PWD/sources/data/linguistics/postgres-tools/psql-unsupported" \
+            --snapshot "$hcp_utf8_export" \
+            --manifest sources/data/linguistics/population-input/manifest.json \
+            --work sources/data/linguistics/population-checks \
+            --out sources/data/linguistics/population-checks/acceptance.json --full-restore
+          cmp sources/data/linguistics/population-checks/acceptance.json data/linguistics/population-validation.json

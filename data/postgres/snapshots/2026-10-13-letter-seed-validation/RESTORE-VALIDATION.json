@@ -1,0 +1,40 @@
+{
+  "core_counts": {
+    "member_of": 1112213,
+    "members": 1112213,
+    "token": 1112215,
+    "token_child": 4335845,
+    "token_parent": 4382976
+  },
+  "core_row_digests": "match COUNTS.json exactly",
+  "export_sha256": {
+    "core": "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121",
+    "linguistics": "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296"
+  },
+  "format": "hcp-letter-paired-export-restore-v1",
+  "linguistics_counts": {
+    "member_of": 5460,
+    "members": 5460,
+    "token": 2772,
+    "token_child": 0,
+    "token_parent": 2741
+  },
+  "postgres_version": "16.15",
+  "readback": {
+    "core_child_additions": 2741,
+    "group_mass": "NULL",
+    "groups": 65,
+    "language_components": 2707,
+    "member_of": 5460,
+    "members": 5460,
+    "ordered_parents": 2741,
+    "parent_mass_cells": "NULL",
+    "pre_existing_core": "unchanged",
+    "readback": "exact",
+    "tokens": 2772,
+    "whole_mass": "sum of verified core masses per ordered occurrence"
+  },
+  "schema": "Exact reviewed keys and mass policy, original core trigger preserved, no Linguistics user triggers.",
+  "scope": "Both retained dumps restored into newly created owned empty databases; no existing user-store writes.",
+  "status": "passed"
+}
