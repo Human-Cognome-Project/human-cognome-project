@@ -34,6 +34,12 @@ Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
 Current plans assign no new meaning to `01`; the old English `01` /
 common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
 
+**Near-term storage follow-up:** [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134)
+tracks exact ranges for reverse child listings, starting with current-data
+measurements. Common words may have low traversal value but retain complete
+cold references. Range storage is not built and does not change #132's current
+row-based population contract. See [the detailed direction](kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13).
+
 ## Reading paths
 
 This is the canonical onboarding map, shared by README, CONTRIBUTING and the

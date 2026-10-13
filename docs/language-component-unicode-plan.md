@@ -117,6 +117,18 @@ use is the previously identified 1:1 equivalence; storage/composition depth does
 create an extra conceptual LoD step. General cache-manager assembly remains
 planned; the bounded native preparation API is already built.
 
+## Reverse child storage follow-up
+
+The [range-compressed child-list direction](../kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13)
+is accepted for follow-up in #134. Dictionary-order word allocation should
+improve locality for later lexical ingestion; it does not replace the accepted
+scalar ordering or stable ledger for current letter seeds. Keep low-value
+traversal references for common words complete, even when they are rarely used
+to enter documents. Future string dedupe may shorten direct listings through
+real composition rewrites. Logical reciprocal counts remain distinct from
+physical range-entry counts. Current manifests still enumerate individual
+child additions until the representation is implemented and reviewed.
+
 ## Machine-readable sources
 
 Use a scripted import with pinned inputs and source hashes:

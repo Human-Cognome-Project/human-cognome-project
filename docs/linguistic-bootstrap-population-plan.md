@@ -165,6 +165,16 @@ each membership direction, and 2,741 additive child rows in the core. The full
 retained core's 4,333,104 existing child rows would become 4,335,845; its token,
 parent and membership data must remain unchanged.
 
+## Child-range follow-up
+
+[#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134)
+records the accepted direction to compress exact child-address runs. This
+population slice retains its current per-pair schema and counts unless a
+coordinated representation change is separately reviewed. Its retained core and
+addressed seed additions provide immediate read-only measurement inputs.
+Future range storage must preserve the same logical pairs; physical row totals
+will then be reported separately. This follow-up does not block this writer.
+
 ## Validation boundary
 
 The proposal covers all 20 source locales with 23 unique base/variant frames;
