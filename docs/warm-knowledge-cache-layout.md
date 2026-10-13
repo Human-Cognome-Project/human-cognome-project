@@ -11,8 +11,16 @@ this document.
 The warm knowledge cache is expected to use PostgreSQL and permit multiple
 writers. The cache manager supplies prepared primary-feed objects ahead of
 analyst demand or in response to an analyst request. The analyst may also use
-the same working store for temporary object construction and integration of
-personal databases. This is more than multiple cache-manager workers.
+this toolbox to prepare temporary tool definitions and integrate personal
+databases. This is more than multiple cache-manager workers.
+
+**Warm is the toolbox; hot is the active working object store.** PostgreSQL
+retains prepared definitions/components and reconstructible assembly descriptions.
+Selected live instances and their active state belong to the hot assembly,
+materialized in a fast memory layout for direct GPU feeding. The concrete hot
+memory backend remains open. A stored assembly description is not that live
+working store. Root ownership and private provenance are independent of
+cold/warm/hot residence.
 
 Use root-addressing protocols to distinguish owning sources and working
 namespaces. Shared-source, personal-source and temporary objects use the same
@@ -35,7 +43,7 @@ invent family edges absent from the seed data.
 | Shared core `00` | Existing computational/encoding identities | Cache manager prepares source-backed definitions. |
 | Shared Linguistics `02` | Existing language endpoint/group identities | Cache manager prepares letter objects and grouping relationships. |
 | Instance-private source root/block | Allocation remains unspecified; includes personal databases | Integrate source-backed personal objects locally while retaining their source identity. |
-| Working/temporary root/block | Allocation and lifetime remain unspecified | Analyst constructions receive their own identities and reference shared/private definitions. |
+| Working/temporary root/block | Allocation and lifetime remain unspecified | Analyst-prepared temporary definitions receive their own identities and reference shared/private definitions; live uses belong to hot assembly. |
 
 No new meaning is assigned to `01`. Do not choose private or temporary numeric
 roots in implementation merely to fill examples.
@@ -63,9 +71,9 @@ keys in the implementation plan.
 | Prepared definition | Full object address, prepared revision, source dependency references, exact structural mass when known, preparation completeness | Reusable object description; shared and personal source identities are retained. |
 | Ordered construction | Owning definition/revision, ordinal, referenced constituent identity/revision, exact contribution | Preserve repetitions and reconstruct the selected base structure. |
 | Membership links | Owning object/group references and their direct reciprocal lists | Keep language/family organization separate from literal construction. |
-| Study assembly description | Study/working root, selected definitions/revisions, primary boundaries, equivalence/compression attachments and exposure choices | Express a particular focus without assigning permanent LoD to a cold identity. |
+| Study assembly description | Study/working root, selected definitions/revisions, primary boundaries, equivalence/compression attachments and exposure choices | Reconstructible recipe for a focus, not live working state or permanent LoD on a cold identity. |
 | Prepared geometry/field data | Supplied component layout, enclosing extent, grouping identities and preparation inputs | Feed native preparation; distinguish literal mass from group aggregation. |
-| Publication/dependency bookkeeping | Complete available revision, expected previous revision, pinned dependencies and unresolved preparation | Let readers acquire a coherent assembly while writers prepare updates. |
+| Publication/dependency bookkeeping | Complete available revision, expected previous revision, pinned dependencies and unresolved preparation | Let consumers acquire a coherent warm toolbox revision while writers prepare updates. |
 
 Reverse child listings remain navigation data. Preserve the logical child sets;
 range representation follows [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134).
@@ -89,29 +97,45 @@ not settled by this layout or by held PR #123.
    uses the byte endpoint; do not insert a duplicate byte object. Keep nibble
    construction followable as underlying source detail, without requiring
    it to be exposed in this letter/byte study.
-3. Preserve byte order and repeated occurrences. Resolve contribution masses
-   from verified definitions; a NULL parent-row mass is not zero.
+3. Preserve the source character-parent ordinals and a mapping from each
+   projected byte occurrence back to its character ordinal and byte ordinal.
+   Native `assembly::prepare` derives parent fields from
+   `Definition.parents[].value`; its exact contribution counts must account for
+   whole mass. The plan must specify the study-facing projection explicitly,
+   including whether parent fields refer to character values or projected byte
+   values at each exposure. Do not overwrite stored character-parent edges or
+   count both projected bytes and their character aggregate as constituents at
+   once. Resolve masses from verified definitions; NULL is not zero.
 4. Bind the language-letter object as the primary study level, core-character
-   naming equivalence at 1:1, and bytes as the underlying level. The finest
+   naming equivalence at 1:1 where it represents the same complete value, and
+   bytes as the underlying level. A multi-scalar component is not equivalent
+   to each individual character that constitutes it. Same-scale composition
+   does not imply identical values. The finest
    exposed level anchors distance units; changing exposure must use explicit
    scale roles, not raw SNode depth.
 5. Follow direct language/alphabet/punctuation memberships and available
    broader-group links. Retain distinct group representations. Define how
-   nested membership fields select/count live participants without counting
-   the same occurrence twice through multiple paths. This preparation is
+   nested membership fields select/count live participants. Deduplicate paths
+   by target field and live occurrence: English A reaching English directly
+   and through its alphabet contributes once to the English field. Its English,
+   alphabet, parent-value and sibling fields remain distinct participations;
+   distinct live occurrences of A also remain distinct. Warm records retain the
+   source membership graph; hot preparation derives this participation. This is
    still to be implemented; group anchors with NULL naming mass are not
    fabricated massive literal particles.
-6. Supply geometry through the existing native enclosure boundary, then publish
-   a complete prepared object/study for consumption. No rotation, positional
+6. Supply geometry through the existing native enclosure boundary. Publishing
+   prepared warm tools and materializing a runnable hot study are separate
+   handoffs, with the failure boundaries below. No rotation, positional
    parent offsets, string geometry or new force law is implied.
 
 Initially exercise a small connected selection: distinct language endpoints
-sharing a core character, one multibyte letter, a repeated-constituent fixture
+sharing a core character, one multibyte letter, the actual multi-scalar Dutch
+component `íj́` (U+00ED U+006A U+0301), a repeated-constituent fixture
 and available language/family memberships. Extend to the retained inventory
 after the assembly contract is demonstrated. Source coverage is the populated
 batch, not every language by assertion.
 
-## Multiple writers and publication
+## Multiple writers and warm publication
 
 Proposed ownership: cache-manager writes refresh source-backed prepared
 definitions; analyst writes own temporary constructions under the working
@@ -131,12 +155,30 @@ publication until its consumers release it; define stale-use policy explicitly
 rather than promising that a completed cache entry is perpetually current.
 A failed preparation leaves the last complete version available and reports
 the requested version as incomplete; it must not signal ready for partial work.
+This preserves warm availability, not rollback of an already modified engine.
 
 A request uses an existing suitable publication or causes preparation before
 the requested handoff. Proactive cache-manager work follows the same publication
-rules. Preserve the existing cache-manager DONE meaning: the requested view is
-ready, not that all cold-store/deferred work is globally finished. Define this
-contract without implementing analyst reasoning or a new scheduler.
+rules. Cache-manager DONE means the requested prepared tools/view are ready
+for consumption, not that all cold-store work is finished or that a live engine
+has been materialized. Define this contract without implementing analyst
+reasoning or a new scheduler.
+
+## Hot materialization and engine readiness
+
+A native consumer pins the warm definitions, creates the selected working
+instances and prepares the engine-facing data. Hot readiness is a separate
+outcome from warm publication. The layout does not choose an arena, buffer
+format or other hot memory backend.
+
+The existing bounded `FixedStudy::publish` invalidates its live harness before
+preparation. A failed publication leaves it non-runnable, and refresh rejects
+changed array counts. Keeping an old warm revision does not restore the old
+live engine state. The initial plan must respect these limits, seed valid
+centroids before the first force pass and distinguish tools-ready, hot-ready
+and failed/non-runnable outcomes. General rollback, count-changing refresh and
+occurrence survival remain outside this slice unless separately accepted;
+held #123 supplies no authority to assume them.
 
 ## Personal integration and reciprocal boundaries
 
@@ -159,23 +201,28 @@ No encryption scheme or result-release mechanism is chosen here.
 
 ## Handoff for plan development
 
-Develop one bounded native C++/PostgreSQL plan from this layout:
+Keep #137 as one coherent plan draft until the interfaces below are reviewed.
+Then create linked implementation work items and focused PRs. Do not open four
+independent design efforts that each choose their own identities or readiness
+semantics.
 
-1. Specify root resolution, reserved working/private allocation and writer
-   ownership. Keep unresolved numeric assignments explicit.
-2. Map the logical records onto a minimal warm schema and direct-follow access
-   contract, including source refresh markers and reference closure.
-3. Specify transaction/publication and lifetime behavior for concurrent manager
-   refresh and analyst construction. Choose a concrete mechanism rather than
-   adding a general versioning or transaction framework.
-4. Define native letter-to-byte SNode materialization and membership-field
-   preparation using the accepted bounded engine API. Identify extensions
-   needed for grouping; do not assume they already exist.
-5. Demonstrate exact construction, repeated occurrences, equivalence scaling,
-   distinct language objects, group participation, coherent concurrent reads,
-   failed-publication recovery, preservation of temporary objects during source
-   refresh and inward-only personal integration. Tests can act as clients;
-   no analyst implementation is required.
+| Stage | Deliverable and boundary | Depends on | Acceptance evidence |
+|---|---|---|---|
+| A. Warm toolbox storage | Minimal PostgreSQL logical/physical layout, root resolution, writer ownership, temporary/private definitions, dependency revisions and coherent publication. No live engine state. | Reviewed shared identity and root contract. | Concurrent refresh/construction, complete reads, failed warm publication, retained temporary definitions, inward-only personal integration. |
+| B. Native construction projection | Letter/character/byte projection, retained source ordinals, exact masses and explicit scale roles; mapping to bounded native records. | Definition/reference interface from A; fixtures may precede DB integration. | ASCII, multibyte, Dutch multi-scalar component, repeated constituents and shared core parents without identity collapse or double-counting. |
+| C. Membership-field preparation | Preserve warm membership records; derive hot participation per target field/live occurrence and distinct group representations. | A's membership interface and B's occurrence/contribution contract. | Direct-plus-alphabet paths count once in English; different target fields and distinct instances remain separate. NULL group naming mass is not invented literal mass. |
+| D. Hot materialization and handoff | Consume pinned tools, materialize working instances and publish through the bounded engine interface. Specify the minimum fast memory layout needed in this stage's plan. | A–C interfaces and outputs. | Warm-ready versus hot-ready, seeded first-force data, supported equal-count refresh and non-runnable failure; no assumed live rollback. |
+
+Plan development should specify private/temporary allocation, source refresh
+markers, direct-follow references, publication granularity and a concrete
+concurrency mechanism without adding a general runtime framework. Unresolved
+numeric roots stay explicit. Tests can act as analyst clients.
+
+B and C can use agreed fixtures while A is built, but their contracts must
+agree before D integrates them. The implementation work items should link to
+this shared plan and list their inputs/outputs and exits. No additional physics
+qualification, speculative analyst implementation or general hot-storage
+framework is required.
 
 Open decisions: private/temporary roots and instance qualification; whether
 writer ownership is root-wide or delegated within a root; dependency revision

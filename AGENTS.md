@@ -42,8 +42,10 @@ row-based population contract. See [the detailed direction](kernels/database/WOR
 
 **Warm-cache planning:** [Root-addressed layout proposal](docs/warm-knowledge-cache-layout.md)
 records the PostgreSQL multi-writer direction: cache-manager preparation plus
-analyst temporary construction and personal-source integration, governed by
-root ownership. Logical records and publication rules are proposed for plan
+analyst temporary tool preparation and personal-source integration, governed by
+root ownership. Warm is the toolbox; hot holds selected live working instances
+in a fast GPU-feeding layout. Warm publication is not hot-engine readiness.
+Logical records and publication rules are proposed for plan
 development, not an implemented analyst or cache manager.
 
 ## Reading paths

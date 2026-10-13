@@ -207,7 +207,11 @@ parent/child relationships, gathering mass or shared whitespace fields (#116).
 
 The warm knowledge cache is expected to be multi-writer PostgreSQL: cache-manager
 preparation runs ahead of or is requested by the analyst, which can also write
-temporary constructions and integrate personal databases. Root-addressing
+temporary tool definitions and integrate personal databases. Warm is the
+toolbox of prepared components; hot is the selected active working object store
+in a fast memory layout for GPU feeding. PostgreSQL assembly descriptions are
+reconstructible recipes, not the live store. Warm-tool readiness and hot-engine
+readiness/failure are separate. Root-addressing
 protocols distinguish source/working ownership and propagation boundaries.
 The [layout proposal](../../docs/warm-knowledge-cache-layout.md) carries this
 into concrete logical records and questions for plan development. No runtime
