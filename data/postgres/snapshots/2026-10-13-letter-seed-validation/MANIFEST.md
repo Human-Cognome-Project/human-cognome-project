@@ -46,8 +46,37 @@ Read-only reproduction can restore the pair into **new empty databases**. Do not
 restore over existing data or use the unchanged native mutation paths on these
 cross-linked fixtures. These dumps are not an instruction to modify a user store.
 New target population still awaits concrete implementation/schema review and
-explicit target selection. The private execution journal is intentionally not
+explicit target selection when using the writer. Patrick will load these paired
+exports locally after review; no external cloud connection is needed for that
+handoff. The private execution journal is intentionally not
 published: it belongs to its original database identities. Preserve the original
 journal for recovery there; a restored copy is evidence, not the same transaction.
+
+## Verified local restore
+
+[RESTORE-VALIDATION.json](RESTORE-VALIDATION.json) records a successful restore
+of both exact compressed payloads into new empty PostgreSQL 16.15 databases.
+Counts, whole masses, NULL cells, ordered parents, membership reciprocals,
+core child links, schema/trigger definitions and core row digests pass read-back.
+
+Use PostgreSQL/psql 16.15 or newer. From the repository root, these example names
+create new databases without replacing an existing installation:
+
+```bash
+set -euo pipefail
+git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
+createdb --template=template0 --encoding=UTF8 hcp_core_seed
+createdb --template=template0 --encoding=UTF8 hcp_linguistics_seed
+gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_core.sql.gz \
+  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_core_seed
+gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_linguistics.sql.gz \
+  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_linguistics_seed
+```
+
+The two databases may use different local names; their token addresses are
+unchanged. Fetch the Git LFS payloads before restoring. These exports already
+contain the seed data and the two reviewed foreign-key changes; do not rerun the
+population writer just to load the pair. The bootstrap-only mutation restriction
+described above continues to apply to the restored cross-linked stores.
 
 See [writer and validation instructions](../../../../docs/letter-population-writer.md).
