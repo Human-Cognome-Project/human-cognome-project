@@ -12,7 +12,11 @@ references, not another mandatory reading sequence.
 - [Concrete warm toolbox implementation proposal](warm-toolbox-implementation-plan.md) —
   proposed PostgreSQL publication, persisted initial recipes, source-preserving
   byte exposure and normalized scale, membership preparation and existing
-  packed-SoA hot handoff; includes stage exits and the `y*` / `z*` reservations.
+  packed-SoA hot handoff; accepted in #137, with staged work tracked by #139.
+- [Stage A native warm storage](../kernels/database/warm/README.md) — implemented
+  for review under #140; supplied normalized recipe storage and 69 PostgreSQL
+  acceptance checks. Projection, membership fields and hot materialization remain
+  subsequent stages.
 
 ## Active implementation plans and built results
 

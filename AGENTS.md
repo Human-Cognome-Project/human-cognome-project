@@ -18,7 +18,8 @@ a merge or review changes these statuses; other entry points link here.
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
 | Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
 | Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
-| Draft planning input | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137): warm PostgreSQL toolbox, native construction projection, membership fields and bounded hot handoff. Shared interfaces require review before implementation work items proceed. |
+| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. Stage A is authorized in #140; B–D remain queued until their stage prerequisites are accepted. Contextual membership response on exposed parts is accepted for this bounded study. |
+| Stage A implemented for review | [Native warm storage](kernels/database/warm/README.md): separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [69 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes. Production projection, membership fields and hot materialization remain unbuilt. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
@@ -45,20 +46,15 @@ measurements. Common words may have low traversal value but retain complete
 cold references. Range storage is not built and does not change #132's current
 row-based population contract. See [the detailed direction](kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13).
 
-**Warm-cache planning:** [Root-addressed layout proposal](docs/warm-knowledge-cache-layout.md)
-records the PostgreSQL multi-writer direction: cache-manager preparation plus
-analyst temporary tool preparation and personal-source integration, governed by
-root ownership. Warm is the toolbox; hot holds selected live working instances
-in a fast GPU-feeding layout. Warm publication is not hot-engine readiness.
-Logical records and publication rules are proposed for plan
-development, not an implemented analyst or cache manager.
-The [concrete A–D proposal](docs/warm-toolbox-implementation-plan.md) now supplies
-reviewable storage/publication, persisted initial occurrence recipes, exposed-scale
-normalization, membership and existing-SoA choices. It carries the accepted
-personal/temporary family reservations; concrete bindings still require explicit
-authorization. Their deferred internal layout does not block the shared `00` /
-`02` letter milestone. #137 remains draft pending acceptance of the corrected
-contract, including organizational response on exposed byte parts.
+**Warm-cache implementation:** The [accepted A–D contract](docs/warm-toolbox-implementation-plan.md)
+and [layout](docs/warm-knowledge-cache-layout.md) preserve warm as the toolbox and
+hot as the selected live working object store. Stage A stores and validates
+supplied normalized recipe fixtures; it does not call or duplicate B's production
+projection, C's field generation or D's SNode/engine materialization. Native test
+clients exercise multi-writer and personal/temporary storage without implementing
+an analyst or cache-manager scheduler. Warm publication is not hot-engine readiness.
+The accepted `y*` / `z*` reservations still require explicitly authorized concrete
+bindings, and their internal production layout remains deferred.
 [#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
 tracks endpoint sub-classification and numeric/operator coverage/placement as a
 separate follow-up, preserving seed identities and adding no gate on that milestone.

@@ -1,10 +1,16 @@
 # Warm knowledge cache: root-addressed layout
 
-Status: **Layout proposal for implementation-plan development, 2026-10-13.**
-Patrick's directions below are the design basis. The logical layout and
-publication mechanism proposed here need refinement into a bounded native
-implementation plan; no schema, cache manager or analyst is implemented by
-this document.
+**2026-10-15 status:** Accepted through merged #137 and staged in #139. Native
+[Stage A storage](../kernels/database/warm/README.md) is implemented for review
+under #140; production projection, membership fields and hot handoff remain
+queued. The proposal wording below records the design's origin; the accepted
+[implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
+govern execution. No cold data migration or analyst implementation is included.
+
+Originally proposed on 2026-10-13; Patrick's directions below are the design
+basis. The bounded implementation contract now supplies the physical storage
+and publication choices. Stage A's implementation is separate from this design
+record; no cache-manager scheduler or analyst is built by it.
 
 ## Purpose and settled directions
 
@@ -183,7 +189,8 @@ client's memory. These are initial inputs, not a snapshot of mutable hot state.
 The proposal specifies letter-only units 1 even with declared inactive byte
 alternatives; exposed-byte studies use byte units 1 and letter units 64. Exposure
 is normalized before native `prepare`, which does not infer that rule itself.
-These choices are proposed, not implemented or accepted merely by appearing here.
+These choices were accepted in #137. Stage A stores supplied fixtures; production
+normalization/projection and hot materialization remain subsequent stages.
 
 ## Multiple writers and warm publication
 
@@ -261,12 +268,11 @@ Temporary-root expiry must respect active readers and dependent constructions.
 Define reclamation and source invalidation separately from cold deletion.
 No encryption scheme or result-release mechanism is chosen here.
 
-## Handoff for plan development
+## Staged implementation handoff
 
-Keep #137 as one coherent plan draft until the interfaces below are reviewed.
-Then create linked implementation work items and focused PRs. Do not open four
-independent design efforts that each choose their own identities or readiness
-semantics.
+The interfaces below were accepted together in #137. Tracker #139 authorizes
+Stage A through #140; B–D remain queued until their prerequisites are accepted.
+Use these shared identities and readiness semantics in focused stage PRs.
 
 | Stage | Deliverable and boundary | Depends on | Acceptance evidence |
 |---|---|---|---|

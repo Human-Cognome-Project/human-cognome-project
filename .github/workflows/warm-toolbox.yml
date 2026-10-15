@@ -1,0 +1,67 @@
+name: Native warm toolbox
+
+on:
+  pull_request:
+    paths:
+      - "kernels/database/warm/**"
+      - "kernels/database/codec/**"
+      - ".github/workflows/warm-toolbox.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernels/database/warm/**"
+      - "kernels/database/codec/**"
+      - ".github/workflows/warm-toolbox.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-acceptance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native storage and acceptance client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+          cmake -S kernels/database/warm -B /tmp/hcp-warm-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/hcp-warm-build -j 2
+      - name: Fetch and verify the retained paired exports
+        run: |
+          git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
+          cd data/postgres/snapshots/2026-10-13-letter-seed-validation
+          printf '%s  %s\n' \
+            f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121 hcp_core.sql.gz \
+            9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296 hcp_linguistics.sql.gz \
+            | sha256sum --check -
+      - name: Restore into new owned cold fixtures and exercise warm storage
+        run: |
+          set -euo pipefail
+          hcp_warm_image=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+          hcp_warm_container="hcp-warm-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker run -d --name "$hcp_warm_container" --network none --user postgres \
+            --volume "$hcp_warm_container:/var/lib/postgresql/data" \
+            --entrypoint bash "$hcp_warm_image" -c \
+            'set -e; initdb -D "$PGDATA" --encoding=UTF8 --locale=C.UTF-8 --auth-local=peer --auth-host=scram-sha-256 >/tmp/initdb.log; exec postgres -D "$PGDATA" -c listen_addresses=""'
+          hcp_warm_ready=false
+          for hcp_warm_attempt in {1..30}; do
+            if docker exec --user postgres "$hcp_warm_container" psql -X -At --dbname postgres -c 'SELECT 1' >/dev/null 2>&1; then
+              hcp_warm_ready=true
+              break
+            fi
+            sleep 1
+          done
+          test "$hcp_warm_ready" = true
+          for hcp_warm_db in core linguistics; do
+            docker exec --user postgres "$hcp_warm_container" createdb "hcp_$hcp_warm_db"
+            gzip -dc "data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_$hcp_warm_db.sql.gz" \
+              | docker exec -i --user postgres "$hcp_warm_container" psql -X -q -v ON_ERROR_STOP=1 --dbname "hcp_$hcp_warm_db"
+          done
+          bash kernels/database/warm/run_container_acceptance.sh /tmp/hcp-warm-build \
+            "$hcp_warm_container" hcp_core hcp_linguistics
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: warm-toolbox-acceptance
+          path: /tmp/hcp-warm-build/acceptance-*/
