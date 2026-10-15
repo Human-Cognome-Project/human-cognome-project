@@ -34,6 +34,10 @@ physics qualification gate is introduced here.
 Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
 Current plans assign no new meaning to `01`; the old English `01` /
 common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
+Patrick reserved `y*` for personal data and `z*` for temporary objects on
+2026-10-15 in #137. These name first-symbol prefix families, not stored wildcards
+or concrete object allocations. Internal subdivisions, delegation and eventual
+lifetime remain deferred; no additional expansion blocks are assigned.
 
 **Near-term storage follow-up:** [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134)
 tracks exact ranges for reverse child listings, starting with current-data
@@ -49,9 +53,15 @@ in a fast GPU-feeding layout. Warm publication is not hot-engine readiness.
 Logical records and publication rules are proposed for plan
 development, not an implemented analyst or cache manager.
 The [concrete A–D proposal](docs/warm-toolbox-implementation-plan.md) now supplies
-reviewable storage/publication, exposure, membership and existing-SoA choices.
-Private/temporary numeric root bindings remain a maintainer allocation; they
-do not block planning the shared `00` / `02` letter milestone.
+reviewable storage/publication, persisted initial occurrence recipes, exposed-scale
+normalization, membership and existing-SoA choices. It carries the accepted
+personal/temporary family reservations; concrete bindings still require explicit
+authorization. Their deferred internal layout does not block the shared `00` /
+`02` letter milestone. #137 remains draft pending acceptance of the corrected
+contract, including organizational response on exposed byte parts.
+[#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
+tracks endpoint sub-classification and numeric/operator coverage/placement as a
+separate follow-up, preserving seed identities and adding no gate on that milestone.
 
 ## Reading paths
 

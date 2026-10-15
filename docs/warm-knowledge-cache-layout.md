@@ -42,11 +42,15 @@ invent family edges absent from the seed data.
 |---|---|---|
 | Shared core `00` | Existing computational/encoding identities | Cache manager prepares source-backed definitions. |
 | Shared Linguistics `02` | Existing language endpoint/group identities | Cache manager prepares letter objects and grouping relationships. |
-| Instance-private source root/block | Allocation remains unspecified; includes personal databases | Integrate source-backed personal objects locally while retaining their source identity. |
-| Working/temporary root/block | Allocation and lifetime remain unspecified | Analyst-prepared temporary definitions receive their own identities and reference shared/private definitions; live uses belong to hot assembly. |
+| Personal prefix family `y*` | Reserved by Patrick on 2026-10-15; internal subdivisions remain deferred | Integrate source-backed personal objects locally while retaining their source identity. |
+| Temporary prefix family `z*` | Reserved by Patrick on 2026-10-15; internal subdivisions and eventual lifetime remain deferred | Analyst-prepared temporary definitions receive their own identities and reference shared/private definitions; live uses belong to hot assembly. |
 
-No new meaning is assigned to `01`. Do not choose private or temporary numeric
-roots in implementation merely to fill examples.
+Here `*` describes the first-symbol prefix family; it is never a character stored
+in a concrete object address. Actual identities and authorized bindings contain
+full codec-valid couplets within the reserved family. A reservation does not
+allocate an object or delegate writing. No new meaning is assigned to `01`, and
+no additional personal expansion blocks are assigned. The personal family leaves
+room to consider further allocation later without assigning it now.
 
 Propose a configuration-level root directory: address prefix, owning instance
 where applicable, source binding, allowed writer role(s), lifetime rule and
@@ -54,10 +58,12 @@ outward-propagation rule. Specify unambiguous prefix resolution and reject
 unknown or conflicting bindings. Physical source bindings belong behind the
 cache-manager boundary; object records remain location-blind.
 
-Resolve whether private blocks are globally unique or qualified by an instance
-context. A cache-local revision/publication key must not silently replace the
-object's address identity. Preparing a shared object in a private warm cache
-does not allocate another shared identity or authorize writing back to its source.
+The concrete proposal qualifies private/temporary addresses by owning instance
+UUID, while shared identities retain shared scope. This is an implementation
+choice for review, separate from the accepted prefix reservations. A cache-local
+revision/publication key must not silently replace the object's address identity.
+Preparing a shared object in a private warm cache does not allocate another shared
+identity or authorize writing back to its source.
 
 ## Proposed logical records
 
@@ -170,8 +176,14 @@ general recomposition or other held #123 behaviour.
 The [concrete A–D proposal](warm-toolbox-implementation-plan.md) chooses the
 first exposure matrix, PostgreSQL publication procedure and existing SoA hot
 layout for review. It preserves repeated parent contributions in the same
-parent-value field. These choices are proposed, not implemented or accepted
-merely by appearing in this layout.
+parent-value field. Its bounded persisted recipe includes repeated request entries,
+aggregate/part choices, normalized logical nodes, initial positions/velocities,
+geometry and contacts, so a fresh client can reconstruct it without the preparing
+client's memory. These are initial inputs, not a snapshot of mutable hot state.
+The proposal specifies letter-only units 1 even with declared inactive byte
+alternatives; exposed-byte studies use byte units 1 and letter units 64. Exposure
+is normalized before native `prepare`, which does not infer that rule itself.
+These choices are proposed, not implemented or accepted merely by appearing here.
 
 ## Multiple writers and warm publication
 
@@ -263,14 +275,16 @@ semantics.
 | C. Membership-field preparation | Preserve warm membership records; derive hot participation per target field/live occurrence and distinct group representations. | A's membership interface and B's occurrence/contribution contract. | Direct-plus-alphabet paths count once in English; different target fields and distinct instances remain separate. NULL group naming mass is not invented literal mass. |
 | D. Hot materialization and handoff | Consume pinned tools, materialize working instances and publish through the bounded engine interface. Specify the minimum fast memory layout needed in this stage's plan. | A–C interfaces and outputs. | Warm-ready versus hot-ready, seeded first-force data, supported equal-count refresh and non-runnable failure; no assumed live rollback. |
 
-Plan development should specify private/temporary allocation, source refresh
-markers, direct-follow references, publication granularity and a concrete
-concurrency mechanism without adding a general runtime framework. Unresolved
-numeric roots stay explicit. Tests can act as analyst clients.
+Plan development should respect the `y*` / `z*` reservations while keeping internal
+allocation/delegation deferred. Specify source refresh markers, direct-follow
+references, publication granularity and a concrete concurrency mechanism without
+adding a general runtime framework. Tests can act as analyst clients.
 
 Stage A acceptance must also show unknown/conflicting root bindings rejected,
-`01` left unassigned, and no invented numeric private/temporary roots in examples
-or fixtures. Test the directory rules without silently allocating a namespace.
+`01` left unchanged, and reservation metadata kept distinct from concrete
+bindings/identities. Isolated fixture configuration may explicitly authorize
+codec-valid bindings inside `y*` / `z*`; these are not production subdivisions.
+Reject wildcards as object identities and reject reservation-only writes.
 Show that ordered lexical or “starts with” range child sets remain exact
 navigation sets and never produce live particles. Native range storage remains
 the separate #134 follow-up, not a prerequisite for this layout.
@@ -282,10 +296,11 @@ qualification, speculative analyst implementation or general hot-storage
 framework is required.
 
 The concrete proposal supplies reviewable defaults for identity qualification,
-writer ownership, source epochs, geometry inputs, participation, publication,
-stale reads and retention. Private/temporary numeric root allocations still
-require a maintainer decision before those writes can be enabled. Shared-root
-letter work can use the existing `00` / `02` bindings.
+writer ownership, source epochs, persisted initial recipes, exposed-scale
+normalization, geometry inputs, participation, publication, stale reads and
+retention. The top-level personal/temporary prefix choice is resolved. Internal
+allocation, writer delegation and eventual lifetime remain deferred; shared-root
+letter work uses the existing `00` / `02` bindings without waiting for them.
 
 This is plan-development input, not authorization to implement all open
 interfaces or modify existing stores. Operational code is C++; Python remains

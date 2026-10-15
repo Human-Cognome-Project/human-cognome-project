@@ -10,9 +10,9 @@ references, not another mandatory reading sequence.
   proposal for PostgreSQL multi-writer ownership, temporary/personal integration,
   and native letter/byte assembly. Implementation details remain for review.
 - [Concrete warm toolbox implementation proposal](warm-toolbox-implementation-plan.md) —
-  proposed PostgreSQL publication, source-preserving byte exposure, membership
-  preparation and existing packed-SoA hot handoff; includes stage exits and
-  the remaining private/temporary root allocation decision.
+  proposed PostgreSQL publication, persisted initial recipes, source-preserving
+  byte exposure and normalized scale, membership preparation and existing
+  packed-SoA hot handoff; includes stage exits and the `y*` / `z*` reservations.
 
 ## Active implementation plans and built results
 

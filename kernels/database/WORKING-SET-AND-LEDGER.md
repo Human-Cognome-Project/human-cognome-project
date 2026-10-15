@@ -215,7 +215,12 @@ readiness/failure are separate. Root-addressing
 protocols distinguish source/working ownership and propagation boundaries.
 The [layout proposal](../../docs/warm-knowledge-cache-layout.md) carries this
 into concrete logical records and questions for plan development. No runtime
-implementation or numeric private/temporary root allocation is made here.
+implementation is made here. Patrick's subsequent 2026-10-15 decision reserves
+`y*` for personal data and `z*` for temporary objects; these are prefix families,
+not stored wildcard identities or concrete object allocations. Internal allocation,
+delegation and eventual lifetime remain deferred. The concrete proposal now
+persists the bounded initial occurrence/exposure recipe and explicitly normalizes
+scale from exposed detail; neither describes persistence of mutable hot state.
 
 ## Compose the working projection
 
