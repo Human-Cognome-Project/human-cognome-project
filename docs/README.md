@@ -9,6 +9,10 @@ references, not another mandatory reading sequence.
 - [Root-addressed warm knowledge cache layout](warm-knowledge-cache-layout.md) —
   proposal for PostgreSQL multi-writer ownership, temporary/personal integration,
   and native letter/byte assembly. Implementation details remain for review.
+- [Concrete warm toolbox implementation proposal](warm-toolbox-implementation-plan.md) —
+  proposed PostgreSQL publication, source-preserving byte exposure, membership
+  preparation and existing packed-SoA hot handoff; includes stage exits and
+  the remaining private/temporary root allocation decision.
 
 ## Active implementation plans and built results
 

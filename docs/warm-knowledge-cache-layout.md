@@ -160,12 +160,18 @@ B and C must publish a shared vocabulary and mapping before D starts:
 | Source definition | Root-qualified address and pinned revision; reusable across live uses. |
 | Study-local occurrence key | One selected live use, distinct from its definition and GPU slot; repeated uses receive distinct keys. |
 | Projection path | Character ordinal and byte ordinal within that occurrence, sufficient to round-trip the selected construction. |
-| Target field key | The particular membership, parent-value or sibling field; deduplication uses this key together with the live occurrence key. |
+| Target field key | The particular membership, parent-value or sibling field. Duplicate membership paths use this key together with the live occurrence key. Parent contributions retain their ordinal/projection path and exact count, even when their field and live occurrence are the same. |
 
 The bounded plan must name concrete key fields and their scope. D consumes
 B/C's keys and projection maps directly instead of re-deriving composition.
 This does not promise occurrence survival across arbitrary focus changes,
 general recomposition or other held #123 behaviour.
+
+The [concrete A–D proposal](warm-toolbox-implementation-plan.md) chooses the
+first exposure matrix, PostgreSQL publication procedure and existing SoA hot
+layout for review. It preserves repeated parent contributions in the same
+parent-value field. These choices are proposed, not implemented or accepted
+merely by appearing in this layout.
 
 ## Multiple writers and warm publication
 
@@ -275,10 +281,11 @@ this shared plan and list their inputs/outputs and exits. No additional physics
 qualification, speculative analyst implementation or general hot-storage
 framework is required.
 
-Open decisions: private/temporary roots and instance qualification; whether
-writer ownership is root-wide or delegated within a root; dependency revision
-markers; geometry inputs; nested membership participation; stale-use and
-reclamation policy; physical schema and the proposed study-scoped publication mechanism.
+The concrete proposal supplies reviewable defaults for identity qualification,
+writer ownership, source epochs, geometry inputs, participation, publication,
+stale reads and retention. Private/temporary numeric root allocations still
+require a maintainer decision before those writes can be enabled. Shared-root
+letter work can use the existing `00` / `02` bindings.
 
 This is plan-development input, not authorization to implement all open
 interfaces or modify existing stores. Operational code is C++; Python remains

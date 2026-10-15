@@ -4,7 +4,7 @@ This file is the operational entry point for AI coding/review agents working on 
 
 ## Current state
 
-Last checked: **2026-10-13**.
+Last checked: **2026-10-15**.
 
 This is the repository's onboarding status snapshot. Code and executable tests
 determine what is built; accepted decisions govern intent. Check the
@@ -48,6 +48,10 @@ root ownership. Warm is the toolbox; hot holds selected live working instances
 in a fast GPU-feeding layout. Warm publication is not hot-engine readiness.
 Logical records and publication rules are proposed for plan
 development, not an implemented analyst or cache manager.
+The [concrete A–D proposal](docs/warm-toolbox-implementation-plan.md) now supplies
+reviewable storage/publication, exposure, membership and existing-SoA choices.
+Private/temporary numeric root bindings remain a maintainer allocation; they
+do not block planning the shared `00` / `02` letter milestone.
 
 ## Reading paths
 
