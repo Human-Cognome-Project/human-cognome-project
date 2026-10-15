@@ -203,6 +203,25 @@ Whitespace is a gap in recorded representative positions. A warm/hot model may
 instantiate an inert separator solely for local lower/higher connection, without
 parent/child relationships, gathering mass or shared whitespace fields (#116).
 
+## Warm PostgreSQL ownership direction (2026-10-13)
+
+The warm knowledge cache is expected to be multi-writer PostgreSQL: cache-manager
+preparation runs ahead of or is requested by the analyst, which can also write
+temporary tool definitions and integrate personal databases. Warm is the
+toolbox of prepared components; hot is the selected active working object store
+in a fast memory layout for GPU feeding. PostgreSQL assembly descriptions are
+reconstructible recipes, not the live store. Warm-tool readiness and hot-engine
+readiness/failure are separate. Root-addressing
+protocols distinguish source/working ownership and propagation boundaries.
+The [layout proposal](../../docs/warm-knowledge-cache-layout.md) carries this
+into concrete logical records and questions for plan development. No runtime
+implementation is made here. Patrick's subsequent 2026-10-15 decision reserves
+`y*` for personal data and `z*` for temporary objects; these are prefix families,
+not stored wildcard identities or concrete object allocations. Internal allocation,
+delegation and eventual lifetime remain deferred. The concrete proposal now
+persists the bounded initial occurrence/exposure recipe and explicitly normalizes
+scale from exposed detail; neither describes persistence of mutable hot state.
+
 ## Compose the working projection
 
 The cache manager's future view spec combines system limits and an

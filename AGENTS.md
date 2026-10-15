@@ -4,7 +4,7 @@ This file is the operational entry point for AI coding/review agents working on 
 
 ## Current state
 
-Last checked: **2026-10-13**.
+Last checked: **2026-10-15**.
 
 This is the repository's onboarding status snapshot. Code and executable tests
 determine what is built; accepted decisions govern intent. Check the
@@ -17,28 +17,51 @@ a merge or review changes these statuses; other entry points link here.
 | Built | Native C++ engine and bounded object support: whole-particle response, supplied-layout enclosure, variable-radius contact and fixed-study publication. See [results](engine/docs/OBJECT-SUPPORT-RESULTS.md) and [object model](docs/first-stage-data-object-model.md). General recomposition and group-centroid assembly remain planned. |
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
 | Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
-| Implemented; local handoff awaits review | [#132's accepted plan](https://github.com/Human-Cognome-Project/human-cognome-project/pull/132) now has a [bounded writer and recovery checks](docs/letter-population-writer.md) in [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136). Isolated PostgreSQL population supplies 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back and a zero-row rerun. Existing user stores remain unmodified. Patrick will load the [paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) locally after review; no external cloud target selection is needed for that handoff. |
+| Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
+| Draft planning input | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137): warm PostgreSQL toolbox, native construction projection, membership fields and bounded hot handoff. Shared interfaces require review before implementation work items proceed. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
 
-**Active data priority:** seed language-letter and punctuation endpoints in
-Linguistics, with ordered core parents, additive reverse child listings and
-membership reciprocals. Individual letters are the current test objects.
-Native object-library/cache assembly follows through its accepted component
-contracts; no new analyst implementation or general physics qualification gate
-is introduced here.
+**Active data priority:** use the retained language-letter/punctuation endpoints,
+ordered core parents and membership reciprocals to define the first native
+letter/byte assembly and warm-cache handoff. Individual letters are the current
+test objects. The initial seed batch is populated; broader coverage and native
+cache assembly remain follow-up work. No new analyst implementation or general
+physics qualification gate is introduced here.
 
 **Settled roots:** `00` = common computational core; `02` = shared multilingual
 Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
 Current plans assign no new meaning to `01`; the old English `01` /
 common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
+Patrick reserved `y*` for personal data and `z*` for temporary objects on
+2026-10-15 in #137. These name first-symbol prefix families, not stored wildcards
+or concrete object allocations. Internal subdivisions, delegation and eventual
+lifetime remain deferred; no additional expansion blocks are assigned.
 
 **Near-term storage follow-up:** [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134)
 tracks exact ranges for reverse child listings, starting with current-data
 measurements. Common words may have low traversal value but retain complete
 cold references. Range storage is not built and does not change #132's current
 row-based population contract. See [the detailed direction](kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13).
+
+**Warm-cache planning:** [Root-addressed layout proposal](docs/warm-knowledge-cache-layout.md)
+records the PostgreSQL multi-writer direction: cache-manager preparation plus
+analyst temporary tool preparation and personal-source integration, governed by
+root ownership. Warm is the toolbox; hot holds selected live working instances
+in a fast GPU-feeding layout. Warm publication is not hot-engine readiness.
+Logical records and publication rules are proposed for plan
+development, not an implemented analyst or cache manager.
+The [concrete A–D proposal](docs/warm-toolbox-implementation-plan.md) now supplies
+reviewable storage/publication, persisted initial occurrence recipes, exposed-scale
+normalization, membership and existing-SoA choices. It carries the accepted
+personal/temporary family reservations; concrete bindings still require explicit
+authorization. Their deferred internal layout does not block the shared `00` /
+`02` letter milestone. #137 remains draft pending acceptance of the corrected
+contract, including organizational response on exposed byte parts.
+[#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
+tracks endpoint sub-classification and numeric/operator coverage/placement as a
+separate follow-up, preserving seed identities and adding no gate on that milestone.
 
 ## Reading paths
 
