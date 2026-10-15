@@ -305,15 +305,20 @@ int main() {
     auto race = fresh(base);
     retag(race, "concurrent-new-tools");
     std::promise<void> gate;
+    std::promise<void> ready1, ready2;
     auto start = gate.get_future().share();
     std::atomic<int> wins{0}, conflicts{0};
     std::exception_ptr failure1, failure2;
-    auto compete = [&](Context context, std::exception_ptr &failure) {
+    auto compete = [&](Context context, std::exception_ptr &failure,
+                       std::promise<void> &ready) {
+      bool signalled = false;
       try {
         Toolbox client(connection, context);
         auto request = race;
         request.ref.revision = new_uuid();
         auto candidate = client.prepare(request);
+        ready.set_value();
+        signalled = true;
         start.wait();
         try {
           client.publish(candidate, {});
@@ -323,10 +328,15 @@ int main() {
         }
       } catch (...) {
         failure = std::current_exception();
+        if (!signalled) ready.set_value();
       }
     };
-    std::thread a(compete, manager, std::ref(failure1)),
-        b(compete, second, std::ref(failure2));
+    std::thread a(compete, manager, std::ref(failure1), std::ref(ready1)),
+        b(compete, second, std::ref(failure2), std::ref(ready2));
+    // Both independent connections have prepared against the same directory
+    // before either publication is allowed to start.
+    ready1.get_future().wait();
+    ready2.get_future().wait();
     gate.set_value();
     a.join();
     b.join();
