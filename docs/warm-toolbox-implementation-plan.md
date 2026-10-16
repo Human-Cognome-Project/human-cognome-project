@@ -3,7 +3,7 @@
 Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
 governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
-implemented for review under #140, with 69 native PostgreSQL acceptance checks.
+implemented for review under #140, with 90 native PostgreSQL acceptance checks.
 B–D remain queued. No cold-store modification is part of Stage A.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
@@ -82,6 +82,14 @@ creator's address. It references shared tools without overwriting them. Base SQL
 credentials belong only to the native store owner, and ordinary clients use
 the scoped native operations. This is a bounded API authority contract, not an
 analyst authentication or network protocol implementation.
+
+Creation/retry by supplying a body is separate from explicitly referencing an
+already published `ToolRef`. Stage A's `prepare(recipe, existing_roots)` loads
+that immutable dependency closure under read scope and preserves its authors,
+revisions and original address claims. Another same-instance writer may reference
+it unchanged without claiming the creator's address. New constructions still
+require their own authorized addresses; a supplied body cannot replace a reference
+or contradict one of its pinned dependencies.
 
 Shared tool bodies may depend only on shared definitions. Instance-scoped
 tools may depend on shared definitions or that same instance's definitions;
@@ -448,9 +456,11 @@ Their new integration acceptance cases above remain planned, not executed.
 ## Stage A execution
 
 [Native acceptance evidence](../kernels/database/warm/acceptance.json)
-records 69 passing PostgreSQL 16.15 checks, full fresh-client recipe recovery,
+records 90 passing PostgreSQL 16.15 checks, full fresh-client recipe recovery,
 concurrent publication/rollback, exact source closure and reciprocals, source-pair
 epoch/policy checks, owned retained pins and positive personal/temporary cases.
+Review regressions cover cross-writer immutable temporary references/composition
+and finite subnormals across coordinates, velocities, centroids and radii.
 Complete data-only hashes of both retained cold stores match before and after.
 Stage A executes storage/recipe fixtures only; B–D engine integration cases remain
 planned. See [build/reproduction instructions](../kernels/database/warm/README.md).

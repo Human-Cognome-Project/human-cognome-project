@@ -4,7 +4,7 @@ This file is the operational entry point for AI coding/review agents working on 
 
 ## Current state
 
-Last checked: **2026-10-15**.
+Last checked: **2026-10-16**.
 
 This is the repository's onboarding status snapshot. Code and executable tests
 determine what is built; accepted decisions govern intent. Check the
@@ -19,7 +19,7 @@ a merge or review changes these statuses; other entry points link here.
 | Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
 | Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
 | Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. Stage A is authorized in #140; B–D remain queued until their stage prerequisites are accepted. Contextual membership response on exposed parts is accepted for this bounded study. |
-| Stage A implemented for review | [Native warm storage](kernels/database/warm/README.md): separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [69 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes. Production projection, membership fields and hot materialization remain unbuilt. |
+| Stage A implemented for review | [Native warm storage](kernels/database/warm/README.md), PR #141: separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [90 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes, including explicit cross-writer temporary references and finite-subnormal round-trips. Production projection, membership fields and hot materialization remain unbuilt. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |

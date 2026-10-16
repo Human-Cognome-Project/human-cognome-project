@@ -1,9 +1,9 @@
 {
   "contract": "PR #137, merged 50bd968f489a1a4db515309a3cb1aa8804a7acfa",
   "stage": "A",
-  "checked_on": "2026-10-15",
+  "checked_on": "2026-10-16",
   "postgresql": "16.15",
-  "native_checks_passed": 69,
+  "native_checks_passed": 90,
   "source_definitions_read": 27,
   "source_exports_sha256": {
     "core": "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121",
@@ -19,6 +19,9 @@
   "fresh_client_full_initial_recipe_round_trip": true,
   "late_failure_rolls_back_tools_revisions_and_heads": true,
   "positive_personal_and_temporary_fixtures": true,
+  "cross_writer_existing_temporary_reference_and_composition": true,
+  "existing_references_preserve_mixed_author_closure_and_claims": true,
+  "finite_subnormal_all_real_fields_and_pinned_read_round_trip": true,
   "cold_data_unchanged": true,
   "remaining_stages": ["B: production projection/normalization", "C: membership field generation", "D: hot materialization"],
   "engine_or_gpu_execution_claimed": false

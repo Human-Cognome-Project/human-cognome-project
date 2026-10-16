@@ -2,8 +2,10 @@
 
 #include <libpq-fe.h>
 
+#include <charconv>
 #include <cmath>
 #include <iomanip>
+#include <locale>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -141,6 +143,7 @@ inline std::optional<std::uint64_t> mass(const Result &r, int row, int col) {
 inline std::string real(double d) {
   if (!std::isfinite(d)) throw Error("non-finite initial value");
   std::ostringstream out;
+  out.imbue(std::locale::classic());
   out << std::setprecision(17) << d;
   return out.str();
 }
@@ -149,9 +152,18 @@ inline void append(Params &p, Point v) {
   p.push_back(real(v.y));
   p.push_back(real(v.z));
 }
+inline double real_value(const std::string &text) {
+  double value{};
+  const auto parsed =
+      std::from_chars(text.data(), text.data() + text.size(), value);
+  if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
+      !std::isfinite(value))
+    throw Error("invalid or out-of-range stored finite double");
+  return value;
+}
 inline Point point(const Result &r, int row, int col) {
-  return {std::stod(cell(r, row, col)), std::stod(cell(r, row, col + 1)),
-          std::stod(cell(r, row, col + 2))};
+  return {real_value(cell(r, row, col)), real_value(cell(r, row, col + 1)),
+          real_value(cell(r, row, col + 2))};
 }
 inline std::string path_array(const std::vector<std::uint32_t> &path) {
   std::string out = "{";

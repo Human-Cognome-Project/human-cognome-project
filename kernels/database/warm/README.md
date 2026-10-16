@@ -36,6 +36,13 @@ Never apply this schema to either retained cold database.
   complete recipe and captures binding versions in a coherent read transaction.
   The embedding owner creates these contexts and retains SQL credentials;
   this is not an analyst authentication or network service.
+- `prepare(recipe, existing_roots)` explicitly reuses published `ToolRef`s.
+  Omit those roots' bodies from the supplied recipe: the store reads their exact
+  immutable dependency closure, preserves each original author and checks read
+  scope. Any overlapping supplied dependency must match the pinned revision/body.
+  Publication does not claim these addresses or retarget their heads. A different
+  same-instance writer can publish a new bundle or authorized new tool referencing
+  them; supplying a temporary body for creation/retry still requires its creator.
 - `publish` rechecks binding/policy/epoch snapshots under shared row locks,
   serializes object preparation in sorted object order, reuses identical tools,
   then compares/locks the selection head. All tools, relationships, recipe rows,
@@ -72,6 +79,10 @@ missing/repeated recipe parts, inconsistent dependency revisions, non-finite
 initial values and embedded NUL text are rejected. Geometry receives structural
 and finite-value checks here; engine enclosure/numerical conversion and hot-ready
 validation remain D's boundary.
+Finite real values, including subnormals and the smallest representable positive
+double, survive publication and fresh reads. Coordinates, velocities, centroids
+and radii share locale-independent serialization/parsing; invalid text, actual
+overflow/underflow beyond the representable range, NaN and infinity are rejected.
 
 ## Read-only cold boundary
 
@@ -116,13 +127,18 @@ Without Docker, create the new database/schema explicitly and run
 `warm_postgres_test` with `HCP_WARM_TEST_CONNINFO`, `HCP_CORE_TEST_CONNINFO` and
 `HCP_LING_TEST_CONNINFO` set through your connection configuration.
 
-[acceptance.json](acceptance.json) records **69 passing checks** on PostgreSQL
+[acceptance.json](acceptance.json) records **90 passing checks** on PostgreSQL
 16.15 against 27 retained source definitions, including real Dutch repeated
 nibble construction and source NULLs. Cases cover two native writers with one
 same-head winner/conflict, independent publications, late contact failure rollback,
 fresh-client recovery of two English A uses with different exposures and complete
 initial inputs, paired epoch adoption/staleness, retained owned pins, normalized
 fixture validation, uint64 entry IDs, and positive scoped private/temporary use.
+The review regressions cover a manager reusing another writer's temporary tool
+without address creation rights, an authorized second temporary writer composing
+a new tool from it, mixed-author dependency closure and protected original claims.
+Very small finite values round-trip through every persisted real field and pinned
+reads, including the smallest positive subnormal; invalid numeric text is rejected.
 The cold data hashes match before/after. Engine/GPU execution is not part of A.
 
 The [hosted workflow](../../../.github/workflows/warm-toolbox.yml) builds native

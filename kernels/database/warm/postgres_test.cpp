@@ -490,6 +490,40 @@ int main() {
                   .entry == UINT64_MAX,
           "uint64 request-entry maximum round-trips losslessly");
 
+    // Every finite native double is a permitted warm input, including
+    // subnormals that std::stod rejects on some libcs. Exercise every persisted
+    // real field.
+    auto small = fresh(base);
+    const auto denormal = std::numeric_limits<double>::denorm_min();
+    const Point tiny{denormal, 1e-310, -1e-310};
+    for (auto &o : small.occurrences) {
+      o.position = tiny;
+      o.velocity = {-denormal, -1e-310, std::numeric_limits<double>::min()};
+    }
+    for (auto &g : small.geometry) {
+      g.centroid = tiny;
+      for (auto &sphere : g.spheres) {
+        sphere.centre = {-1e-310, denormal, 1e-310};
+        sphere.radius = denormal;
+      }
+    }
+    writer.publish(writer.prepare(small), {});
+    {
+      Toolbox small_reader(connection, {actor, instance, WriterRole::Reader});
+      const auto small_consumer = new_uuid();
+      const auto recovered =
+          small_reader.acquire(small.ref.selection, small_consumer);
+      compare_recipe(recovered.bundle, small);
+      check(small_reader.read_pinned(small.ref, small_consumer)
+                    .bundle.occurrences[0]
+                    .position.x == denormal,
+            "smallest finite subnormal survives fresh acquire and pinned read");
+    }
+    for (const auto &invalid : {"1e9999", "1e-9999", "nan", "inf", "1.0junk"})
+      rejects(
+          [&] { detail::real_value(invalid); },
+          "numeric parser rejects nonrepresentable/non-finite/invalid text");
+
     auto policy_candidate = writer.prepare(fresh(base));
     directory[0].policy = new_uuid();
     admin.configure(directory);
@@ -643,7 +677,100 @@ int main() {
           another_creator.publish(
               another_creator.prepare(fresh(private_bundle)), {});
         },
-        "temporary address cannot be adopted by another authorized creator");
+        "another creator cannot claim a supplied temporary body, even "
+        "unchanged");
+    auto no_creation_rights = directory;
+    no_creation_rights.back().policy = new_uuid();
+    admin.configure(no_creation_rights);
+
+    // A's temporary-writer tool is a reference, not a creation/retry request by
+    // B. B needs read scope for it, not permission to claim A's address.
+    auto reuse = fresh(base);
+    auto reuse_ref = another_creator.publish(
+        another_creator.prepare(reuse, {local.ref}), {});
+    Toolbox reader_b(connection, {actor2, instance, WriterRole::Reader});
+    auto reused = reader_b.acquire(reuse_ref.selection, new_uuid());
+    const auto &referenced = find(reused.bundle, local.ref.object);
+    check(referenced.ref == local.ref && referenced.author == actor &&
+              tool_body(referenced) == tool_body(local) &&
+              reused.bundle.creator == actor2,
+          "B references A's temporary-writer tool unchanged without address "
+          "creation rights");
+
+    auto ambiguous = fresh(base);
+    auto changed_reference = local;
+    changed_reference.notation = "changed";
+    ambiguous.tools.push_back(changed_reference);
+    rejects([&] { another_creator.prepare(ambiguous, {local.ref}); },
+            "an existing reference cannot also supply a replacement body");
+    auto changed_dependency = fresh(base);
+    find(changed_dependency, letter.ref.object).notation = "changed dependency";
+    rejects<Conflict>(
+        [&] { another_creator.prepare(changed_dependency, {local.ref}); },
+        "a supplied dependency cannot replace the existing reference's pinned "
+        "body");
+    auto missing_ref = local.ref;
+    missing_ref.revision = new_uuid();
+    rejects([&] { another_creator.prepare(fresh(base), {missing_ref}); },
+            "existing reference must name a committed revision");
+    auto foreign_ref = local.ref;
+    foreign_ref.object.scope = new_uuid();
+    rejects<Unauthorized>(
+        [&] { another_creator.prepare(fresh(base), {foreign_ref}); },
+        "explicit existing reference cannot cross instance scope");
+
+    auto composed = fresh(base);
+    Tool composition{{object("z0.02", instance), new_uuid()},
+                     epoch,
+                     "cross-writer-composition",
+                     {},
+                     4,
+                     {{local.ref, 0, {}, 2}, {temporary_tool.ref, 1, {}, 2}},
+                     {},
+                     actor2};
+    composed.tools.push_back(composition);
+    rejects<Unauthorized>(
+        [&] {
+          another_creator.publish(
+              another_creator.prepare(composed,
+                                      {local.ref, temporary_tool.ref}),
+              {});
+        },
+        "immutable reference access does not authorize a new temporary "
+        "address");
+    auto allowed_composition = no_creation_rights;
+    allowed_composition.back().writers.push_back(actor2);
+    allowed_composition.back().policy = new_uuid();
+    admin.configure(allowed_composition);
+    Toolbox temporary_b(connection, {actor2, instance, WriterRole::Temporary});
+    auto composed_ref = temporary_b.publish(
+        temporary_b.prepare(composed, {local.ref, temporary_tool.ref}), {});
+    auto composed_read = reader_b.acquire(composed_ref.selection, new_uuid());
+    const auto &created = find(composed_read.bundle, composition.ref.object);
+    check(
+        created.author == actor2 && created.parents[0].target == local.ref &&
+            created.parents[1].target == temporary_tool.ref &&
+            find(composed_read.bundle, local.ref.object).author == actor &&
+            find(composed_read.bundle, temporary_object).author == actor &&
+            find(composed_read.bundle, personal_object).ref == private_tool.ref,
+        "authorized B composes a new tool from A's tools with exact transitive "
+        "private dependencies");
+    auto nested_ref =
+        writer.publish(writer.prepare(fresh(base), {created.ref}), {});
+    auto nested_read = fresh_reader.acquire(nested_ref.selection, new_uuid());
+    check(find(nested_read.bundle, created.ref.object).author == actor2 &&
+              find(nested_read.bundle, local.ref.object).author == actor &&
+              find(nested_read.bundle, temporary_object).author == actor,
+          "referencing a composed tool preserves mixed-author temporary "
+          "dependency closure");
+    auto claim = sql.query(
+        "SELECT creator,temporary_revision FROM warm_toolbox.object_slot "
+        "WHERE scope=$1 AND address=$2",
+        detail::params(local.ref.object));
+    check(Uuid(detail::cell(claim, 0, 0)) == actor &&
+              Uuid(detail::cell(claim, 0, 1)) == local.ref.revision,
+          "cross-writer reference reuse preserves original creator and address "
+          "claim");
     check(fresh_reader.read_pinned(private_ref, private_consumer)
                   .bundle.tools.size() == private_bundle.tools.size(),
           "private pinned revision remains available through policy changes");

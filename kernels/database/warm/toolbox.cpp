@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <iomanip>
 #include <map>
 #include <set>
@@ -173,22 +174,59 @@ std::vector<Binding> Toolbox::used_bindings(const Bundle &b) {
   for (const auto &[unused, root] : unique) out.push_back(root);
   return out;
 }
-Prepared Toolbox::prepare(Bundle request) {
+Prepared Toolbox::prepare(Bundle request,
+                          const std::vector<ToolRef> &existing_roots) {
   if (context_.role == WriterRole::Reader)
     throw Unauthorized("read-only client cannot prepare");
   if (!request.owner.nil() && request.owner != context_.instance)
     throw Unauthorized("bundle owner");
   request.owner = context_.instance;
   request.creator = context_.actor;
-  for (auto &t : request.tools) {
-    read_authority(t.ref.object);
-    t.author = context_.actor;
-  }
-  validate(request);
   Prepared candidate;
-  candidate.bundle_ = std::move(request);
   candidate.preparer_ = context_;
   Transaction tx(*pg_, true);
+  std::map<ObjectKey, std::size_t> supplied;
+  for (std::size_t i = 0; i < request.tools.size(); ++i) {
+    const auto &t = request.tools[i];
+    read_authority(t.ref.object);
+    need(supplied.emplace(t.ref.object, i).second, "duplicate supplied object");
+  }
+  std::set<ObjectKey> roots;
+  for (const auto &ref : existing_roots) {
+    read_authority(ref.object);
+    nonnil(ref.revision);
+    need(!supplied.count(ref.object) && roots.insert(ref.object).second,
+         "existing roots must be distinct from supplied bodies and each other");
+  }
+  std::function<void(const ToolRef &)> follow = [&](const ToolRef &ref) {
+    read_authority(ref.object);
+    nonnil(ref.revision);
+    const auto pinned = candidate.references_.find(ref.object);
+    if (pinned != candidate.references_.end()) {
+      if (!(pinned->second == ref))
+        throw Conflict("existing references pin inconsistent revisions");
+      return;
+    }
+    auto stored = read_tool(ref);
+    const auto input = supplied.find(ref.object);
+    if (input != supplied.end()) {
+      auto &body = request.tools[input->second];
+      if (!(body.ref == ref) || tool_body(body) != tool_body(stored))
+        throw Conflict("supplied dependency differs from existing reference");
+      body = stored;
+    } else {
+      supplied.emplace(ref.object, request.tools.size());
+      request.tools.push_back(stored);
+    }
+    candidate.references_.emplace(ref.object, ref);
+    for (const auto &parent : stored.parents) follow(parent.target);
+    for (const auto &group : stored.member_of) follow(group);
+  };
+  for (const auto &ref : existing_roots) follow(ref);
+  for (auto &t : request.tools)
+    if (!candidate.references_.count(t.ref.object)) t.author = context_.actor;
+  validate(request);
+  candidate.bundle_ = std::move(request);
   candidate.bindings_ = used_bindings(candidate.bundle_);
   bool can_prepare = false;
   for (const auto &root : candidate.bindings_) {
@@ -275,6 +313,16 @@ BundleRef Toolbox::publish(Prepared candidate,
         candidate.bindings_.begin(), candidate.bindings_.end(),
         [&](const auto &r) { return contains(r.prefix, t.ref.object); });
     roots.emplace(key(t.ref.object), root);
+    const auto reference = candidate.references_.find(t.ref.object);
+    if (reference != candidate.references_.end()) {
+      // Exact immutable reuse: no object-slot claim, creator check, head lookup
+      // or retargeting. The complete stored dependency closure is pinned too.
+      read_authority(t.ref.object);
+      need(t.ref == reference->second, "existing reference changed");
+      resolved.emplace(key(t.ref.object), reference->second);
+      exists.emplace(key(t.ref.object), true);
+      continue;
+    }
     auto p = params(t.ref.object);
     p.push_back(context_.actor.str());
     insert(*pg_, "object_slot", "scope,address,creator", p,
@@ -539,7 +587,7 @@ Acquired Toolbox::read_bundle(const BundleRef &ref) {
           gp);
       for (int j = 0; j < PQntuples(spheres.get()); ++j)
         g.spheres.push_back(
-            {point(spheres, j, 0), std::stod(cell(spheres, j, 3))});
+            {point(spheres, j, 0), real_value(cell(spheres, j, 3))});
       b.geometry.push_back(std::move(g));
     }
   }

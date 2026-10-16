@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -26,6 +27,7 @@ class Prepared {
   Prepared() = default;
   Bundle bundle_;
   std::vector<Binding> bindings_;
+  std::map<ObjectKey, ToolRef> references_;
   Context preparer_;
 };
 
@@ -47,7 +49,11 @@ class Toolbox {
   Toolbox(const std::string &conninfo, Context trusted_context);
   ~Toolbox();
   Binding resolve(const ObjectKey &object);
-  Prepared prepare(Bundle supplied_recipe);
+  // Existing roots and their stored dependency closure are read, never claimed.
+  // Omit their bodies from supplied_recipe; any overlapping supplied dependency
+  // must agree with the exact stored revision/body. Authors remain unchanged.
+  Prepared prepare(Bundle supplied_recipe,
+                   const std::vector<ToolRef> &existing_roots = {});
   BundleRef publish(Prepared candidate, std::optional<Uuid> expected_head);
   Acquired acquire(const Uuid &selection, const Uuid &consumer);
   Acquired read_pinned(const BundleRef &bundle, const Uuid &consumer);
