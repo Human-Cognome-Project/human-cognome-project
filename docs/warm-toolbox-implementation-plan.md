@@ -4,9 +4,11 @@ Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
 governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
 accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
-[Stage B](../engine/docs/LETTER-PROJECTION.md) is implemented for review under
-#142, with 53 pure and 38 native preparation checks. C/D remain queued.
-Neither stage modifies cold stores.
+[Stage B](../engine/docs/LETTER-PROJECTION.md) is accepted and merged in #143
+at `6ccd5a3`, with 53 pure and 38 native preparation checks.
+[Stage C](../engine/docs/MEMBERSHIP-FIELDS.md) is implemented for review under
+#144, with 25 pure and 44 native checks. D remains queued.
+None of these stages modifies cold stores.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
 Warm PostgreSQL stores reusable tools and reconstructible recipes. The hot
@@ -322,7 +324,8 @@ fixed array counts starts a new fixed study, not an in-place resize.
 
 ## C. Membership fields
 
-Propose a minimal extension to `assembly::StudyInput`: explicit membership
+Implemented for review under #144: a minimal extension to `assembly::StudyInput`,
+explicit membership
 requests `(occurrence_id, group_ObjectKey)` and `GroupKind::Membership`.
 Preparation validates the selected active occurrence and generates a whole-mass
 participation with share 1. Group naming anchors remain metadata, not live
@@ -386,8 +389,9 @@ cross-study occurrence survival or concurrent device mutation is promised.
 ## Implementation sequence and exits
 
 These interfaces were accepted together in #137. Tracker #139 records A accepted
-and merged in #141 and B released in #142. B's focused implementation is ready
-for review; C/D remain sequenced follow-ups. All stages consume A's shared values
+and merged in #141 and B accepted/merged in #143. C is released in #144 and
+implemented for review; D remains a sequenced follow-up. All stages consume A's
+shared values
 rather than defining competing identities or publication rules.
 
 | Stage | Planned code boundary | Required acceptance |
@@ -430,8 +434,8 @@ The top-level personal/temporary reservation decision is supplied: `y*` / `z*`.
 Do not request it again or treat the deferred internal layout as a gate on shared
 `00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
 organizational response on exposed byte parts were accepted together in #137.
-Stage A's implementation is accepted in #141; review B under #142 before
-releasing C through #139. No additional cold data
+Stages A/B are accepted in #141/#143; review C under #144 before
+releasing D through #139. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
 
@@ -476,4 +480,17 @@ source identity, caller-supplied geometry/state and numerical overflow rejection
 Both new suites and existing preparation/CPU assembly tests pass. B uses A's
 engine-independent values and returns normalized recipes plus bounded native
 input values; no PostgreSQL dependency or database mutation is introduced.
-Membership fields and the full database-to-hot adapter remain unbuilt C/D work.
+Stage B is accepted in merged #143. Membership fields are now implemented for
+review in C; the full database-to-hot adapter remains unbuilt D work.
+
+## Stage C execution
+
+[Membership evidence and reproduction](../engine/docs/MEMBERSHIP-FIELDS.md)
+record 25 pure fixture checks and 44 native checks: pinned upward traversal,
+duplicate-path handling per target/live occurrence, contextual byte inheritance,
+NULL naming anchors, preserved parent ordinals/counts and separate field kinds.
+Native CPU fixtures verify seeded centroid data and membership response through
+the existing FixedStudy/field boundary in letter-only, byte-only and mixed
+exposure. Existing field, preparation, assembly and projection suites pass.
+No source memberships, database tables or field laws change. Full warm pin and
+database-to-hot materialization remains Stage D, queued until C acceptance.

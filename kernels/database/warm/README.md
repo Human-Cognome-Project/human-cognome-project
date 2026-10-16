@@ -5,8 +5,10 @@ and [#140](https://github.com/Human-Cognome-Project/human-cognome-project/issues
 Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
 storage and the shared value interface for supplied normalized recipes.
 [Production projection/normalization (B)](../../../engine/docs/LETTER-PROJECTION.md)
-is implemented for review under #142. Membership field generation (C) and full
-engine materialization (D) remain queued in #139.
+is accepted and merged in #143 at `6ccd5a3`.
+[Membership field generation (C)](../../../engine/docs/MEMBERSHIP-FIELDS.md)
+is implemented for review under #144; full engine materialization (D) remains
+queued in #139.
 
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,

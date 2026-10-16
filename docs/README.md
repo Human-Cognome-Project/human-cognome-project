@@ -16,8 +16,10 @@ references, not another mandatory reading sequence.
 - [Stage A native warm storage](../kernels/database/warm/README.md) — accepted
   and merged in #141; supplied normalized recipe storage and 90 PostgreSQL checks.
 - [Stage B native letter/byte projection](../engine/docs/LETTER-PROJECTION.md) —
-  implemented for review under #142; 53 pure and 38 native preparation checks.
-  Membership fields and full hot materialization remain queued.
+  accepted and merged in #143; 53 pure and 38 native preparation checks.
+- [Stage C contextual membership fields](../engine/docs/MEMBERSHIP-FIELDS.md) —
+  implemented for review under #144; 25 pure and 44 native checks, including CPU
+  seeded response in all exposure profiles. Full hot materialization remains queued.
 
 ## Active implementation plans and built results
 
