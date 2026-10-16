@@ -9,6 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(Threads REQUIRED)
+include(src/assembly/letter_projection.cmake)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FindTaichiEngine)
 
@@ -62,6 +63,17 @@ foreach(suite preparation_test assembly_test)
   set_tests_properties(${suite} PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 endforeach()
+
+add_executable(letter_projection_test tests/letter_projection_test.cpp)
+target_link_libraries(letter_projection_test PRIVATE letter_projection)
+add_test(NAME letter_projection_test COMMAND letter_projection_test)
+
+add_executable(letter_projection_native_test tests/letter_projection_native_test.cpp)
+target_include_directories(letter_projection_native_test PRIVATE tests)
+target_link_libraries(letter_projection_native_test PRIVATE letter_projection study_assembly)
+add_test(NAME letter_projection_native_test COMMAND letter_projection_native_test)
+set_tests_properties(letter_projection_native_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 60)
 
 # Proves the >2^31 flattened-index cap is lifted: a 2-axis dense ndarray
 # with N chosen so a single cell's flattened offset clears 2^31, written and

@@ -3,8 +3,10 @@
 Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
 governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
-implemented for review under #140, with 90 native PostgreSQL acceptance checks.
-B–D remain queued. No cold-store modification is part of Stage A.
+accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
+[Stage B](../engine/docs/LETTER-PROJECTION.md) is implemented for review under
+#142, with 53 pure and 38 native preparation checks. C/D remain queued.
+Neither stage modifies cold stores.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
 Warm PostgreSQL stores reusable tools and reconstructible recipes. The hot
@@ -383,10 +385,10 @@ cross-study occurrence survival or concurrent device mutation is promised.
 
 ## Implementation sequence and exits
 
-These interfaces were accepted together in #137. Tracker #139 releases only A
-through #140 now; B–D remain sequenced follow-ups. Stage A's focused implementation
-is ready for review; later stages consume its shared values rather than defining
-competing identities or publication rules.
+These interfaces were accepted together in #137. Tracker #139 records A accepted
+and merged in #141 and B released in #142. B's focused implementation is ready
+for review; C/D remain sequenced follow-ups. All stages consume A's shared values
+rather than defining competing identities or publication rules.
 
 | Stage | Planned code boundary | Required acceptance |
 |---|---|---|
@@ -428,8 +430,8 @@ The top-level personal/temporary reservation decision is supplied: `y*` / `z*`.
 Do not request it again or treat the deferred internal layout as a gate on shared
 `00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
 organizational response on exposed byte parts were accepted together in #137.
-Review Stage A's implementation under #140 before releasing subsequent stages
-through #139. No additional cold data
+Stage A's implementation is accepted in #141; review B under #142 before
+releasing C through #139. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
 
@@ -462,5 +464,16 @@ epoch/policy checks, owned retained pins and positive personal/temporary cases.
 Review regressions cover cross-writer immutable temporary references/composition
 and finite subnormals across coordinates, velocities, centroids and radii.
 Complete data-only hashes of both retained cold stores match before and after.
-Stage A executes storage/recipe fixtures only; B–D engine integration cases remain
-planned. See [build/reproduction instructions](../kernels/database/warm/README.md).
+Stage A executes storage/recipe fixtures only; its merge does not assert full
+engine integration. See [build/reproduction instructions](../kernels/database/warm/README.md).
+
+## Stage B execution
+
+[Projection evidence and reproduction](../engine/docs/LETTER-PROJECTION.md)
+record 53 pure fixture checks and 38 checks through native preparation, including
+the exposure matrix, exact UTF-8, ordered repeated parents, full occurrence and
+source identity, caller-supplied geometry/state and numerical overflow rejection.
+Both new suites and existing preparation/CPU assembly tests pass. B uses A's
+engine-independent values and returns normalized recipes plus bounded native
+input values; no PostgreSQL dependency or database mutation is introduced.
+Membership fields and the full database-to-hot adapter remain unbuilt C/D work.

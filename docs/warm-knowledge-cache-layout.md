@@ -1,9 +1,10 @@
 # Warm knowledge cache: root-addressed layout
 
-**2026-10-15 status:** Accepted through merged #137 and staged in #139. Native
-[Stage A storage](../kernels/database/warm/README.md) is implemented for review
-under #140; production projection, membership fields and hot handoff remain
-queued. The proposal wording below records the design's origin; the accepted
+**2026-10-16 status:** Accepted through merged #137 and staged in #139. Native
+[Stage A storage](../kernels/database/warm/README.md) is accepted and merged
+in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)
+is implemented for review under #142; membership fields and full hot handoff
+remain queued. The proposal wording below records the design's origin; the accepted
 [implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
 govern execution. No cold data migration or analyst implementation is included.
 
@@ -189,8 +190,8 @@ client's memory. These are initial inputs, not a snapshot of mutable hot state.
 The proposal specifies letter-only units 1 even with declared inactive byte
 alternatives; exposed-byte studies use byte units 1 and letter units 64. Exposure
 is normalized before native `prepare`, which does not infer that rule itself.
-These choices were accepted in #137. Stage A stores supplied fixtures; production
-normalization/projection and hot materialization remain subsequent stages.
+These choices were accepted in #137. Stage A stores supplied fixtures; B supplies
+normalization/projection for review. Full hot materialization remains a later stage.
 
 ## Multiple writers and warm publication
 
@@ -270,8 +271,9 @@ No encryption scheme or result-release mechanism is chosen here.
 
 ## Staged implementation handoff
 
-The interfaces below were accepted together in #137. Tracker #139 authorizes
-Stage A through #140; B–D remain queued until their prerequisites are accepted.
+The interfaces below were accepted together in #137. Tracker #139 records Stage A
+accepted/merged in #141 and B implemented for review under #142. C/D remain
+queued until their prerequisites are accepted.
 Use these shared identities and readiness semantics in focused stage PRs.
 
 | Stage | Deliverable and boundary | Depends on | Acceptance evidence |

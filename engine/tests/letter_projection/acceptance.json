@@ -1,0 +1,21 @@
+{
+  "stage": "B",
+  "status": "implemented_for_review",
+  "issue": 142,
+  "date_utc": "2026-10-16",
+  "pure_fixture_checks": 53,
+  "native_preparation_checks": 38,
+  "passed_suites": [
+    "letter_projection_test",
+    "letter_projection_native_test",
+    "preparation_test",
+    "assembly_test"
+  ],
+  "standalone_compiler": "GNU C++ 14.2.0",
+  "native_compiler": "Clang 15.0.6",
+  "storage_build": "warm_toolbox and warm_postgres_test linked against shared warm_values",
+  "source_data": "Pure bounded fixtures; no database mutation",
+  "full_warm_to_hot_adapter": false,
+  "membership_fields": false,
+  "gpu_executed": false
+}

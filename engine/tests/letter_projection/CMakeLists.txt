@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.18)
+project(hcp_letter_projection LANGUAGES CXX)
+include(../../src/assembly/letter_projection.cmake)
+enable_testing()
+add_executable(letter_projection_test ../letter_projection_test.cpp)
+target_link_libraries(letter_projection_test PRIVATE letter_projection)
+add_test(NAME letter_projection_test COMMAND letter_projection_test)
