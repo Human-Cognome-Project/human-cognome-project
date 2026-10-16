@@ -2,9 +2,11 @@
 
 Implements the storage slice of the [accepted #137 contract](../../../docs/warm-toolbox-implementation-plan.md)
 and [#140](https://github.com/Human-Cognome-Project/human-cognome-project/issues/140).
-This branch supplies native C++/libpq storage and the shared value interface for
-supplied normalized recipes. Production projection/normalization (B), membership
-field generation (C) and engine materialization (D) remain queued in #139.
+Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
+storage and the shared value interface for supplied normalized recipes.
+[Production projection/normalization (B)](../../../engine/docs/LETTER-PROJECTION.md)
+is implemented for review under #142. Membership field generation (C) and full
+engine materialization (D) remain queued in #139.
 
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,
@@ -12,7 +14,9 @@ geometry and initial occurrences/selections/contacts. A bundle does not contain
 live GPU slots or mutable engine state. The accepted version-1 layout is Root for
 letter-only exposure, or Root plus its primary letter child when bytes are exposed.
 Stage A checks that a supplied recipe follows that contract; it does not generate
-the recipe, geometry, placement or an SNode layout.
+the recipe, geometry, placement or an SNode layout. The shared `warm_values`
+CMake target (`values.cmake`) contains only values/codec and is reused by B
+without linking libpq or introducing an engine dependency into storage.
 
 ## Storage and operations
 

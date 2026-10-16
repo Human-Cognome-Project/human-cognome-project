@@ -5,64 +5,16 @@
 #include <string>
 #include <vector>
 
+#include "assembly/study_input.h"
 #include "field/field.h"
 
 // Native preparation for one fixed study. No database access, pool lifecycle,
 // general recomposition protocol or analyst policy is implemented here.
 namespace assembly {
 
-struct Point { double x{0}, y{0}, z{0}; };
-struct Sphere { Point centre; double radius{0}; };
-
 // The caller supplies the centroid and component layout. This does not solve
 // packing or move the centroid to find a minimum enclosing sphere.
 double enclosing_radius(Point centroid, const std::vector<Sphere> &components);
-
-enum class ScaleRole { Root, PrimaryStep, SecondaryCompression, NamingEquivalent };
-struct StudyNode {
-  const taichi::lang::SNode *layout{nullptr};
-  int parent{-1};
-  ScaleRole role{ScaleRole::Root};
-};
-struct ScaleBinding { StudyNode node; double units{1}; };
-
-struct ParentOccurrence {
-  std::string value;
-  std::uint32_t ordinal{0};
-  std::uint64_t count{0};
-};
-struct Definition {
-  std::string id;
-  std::uint64_t mass{0};
-  Point centroid;
-  std::vector<Sphere> components;
-  std::vector<ParentOccurrence> parents;
-};
-struct Occurrence {
-  std::string id;
-  std::string definition;
-  int slot{-1};
-  int study_node{-1};
-  Point position;
-  // In this node's spatial units per tick-time unit, converted with position.
-  // No time conversion or cross-focus trajectory equivalence is claimed.
-  Point velocity;
-};
-enum class Exposure { Aggregate, Parts };
-struct Selection {
-  std::string aggregate;
-  std::vector<std::string> parts;
-  Exposure exposure{Exposure::Aggregate};
-};
-struct Contact { std::string a, b; };
-struct StudyInput {
-  int capacity{0};
-  std::vector<StudyNode> nodes;
-  std::vector<Definition> definitions;
-  std::vector<Occurrence> occurrences;
-  std::vector<Selection> selections;
-  std::vector<Contact> contacts;
-};
 
 struct PreparedParticle {
   Occurrence occurrence;
@@ -70,7 +22,6 @@ struct PreparedParticle {
   Point position, velocity;
   float mass{0}, radius{0};
 };
-enum class GroupKind { SiblingDefinition, ParentValue };
 struct Group { GroupKind kind; std::string value; };
 struct Participation {
   std::string occurrence;

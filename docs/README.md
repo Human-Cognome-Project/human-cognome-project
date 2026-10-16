@@ -13,10 +13,11 @@ references, not another mandatory reading sequence.
   proposed PostgreSQL publication, persisted initial recipes, source-preserving
   byte exposure and normalized scale, membership preparation and existing
   packed-SoA hot handoff; accepted in #137, with staged work tracked by #139.
-- [Stage A native warm storage](../kernels/database/warm/README.md) — implemented
-  for review under #140; supplied normalized recipe storage and 90 PostgreSQL
-  acceptance checks. Projection, membership fields and hot materialization remain
-  subsequent stages.
+- [Stage A native warm storage](../kernels/database/warm/README.md) — accepted
+  and merged in #141; supplied normalized recipe storage and 90 PostgreSQL checks.
+- [Stage B native letter/byte projection](../engine/docs/LETTER-PROJECTION.md) —
+  implemented for review under #142; 53 pure and 38 native preparation checks.
+  Membership fields and full hot materialization remain queued.
 
 ## Active implementation plans and built results
 
