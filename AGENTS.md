@@ -18,9 +18,11 @@ a merge or review changes these statuses; other entry points link here.
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
 | Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
 | Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
-| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. Stage A is accepted/merged; B is released in #142 and implemented for review. C/D remain queued until their prerequisites are accepted. Contextual membership response on exposed parts is accepted for this bounded study. |
+| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. A/B are accepted and merged. C is implemented in #146 with no code blockers and nine green hosted checks, pending maintainer acceptance/merge. D also requires the separate pre-D design review in #145 and explicit release; C acceptance alone does not release D. |
 | Stage A accepted/merged | [Native warm storage](kernels/database/warm/README.md), PR #141 merged at `e7acdea`: separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [90 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes, including explicit cross-writer temporary references and finite-subnormal round-trips. |
-| Stage B implemented for review | [Native letter/byte projection](engine/docs/LETTER-PROJECTION.md), [#142](https://github.com/Human-Cognome-Project/human-cognome-project/issues/142): Stage A values, exact UTF-8/ordered parents, distinct occurrence paths, explicit exposure normalization and bounded native input handoff. [53 pure and 38 native preparation checks](engine/tests/letter_projection/acceptance.json) pass, plus existing preparation/CPU assembly suites. Membership fields (C) and full warm-to-hot materialization (D) remain unbuilt. |
+| Stage B accepted/merged | [Native letter/byte projection](engine/docs/LETTER-PROJECTION.md), PR #143 merged at `6ccd5a3`: Stage A values, exact UTF-8/ordered parents, distinct occurrence paths, explicit exposure normalization and bounded native input handoff. [53 pure and 38 native preparation checks](engine/tests/letter_projection/acceptance.json) pass. |
+| Stage C implemented for review | [#146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146), head `8508ee3`: contextual memberships per live occurrence, byte-owner inheritance, exact contributions and distinct field kinds through the existing kernel. 25 pure and 44 native checks pass, with CPU seeded response in all exposure profiles; existing regression suites and all nine hosted checks pass. Not yet merged. |
+| Pre-D design for review | [Host workbench design](docs/pre-d-hot-workbench-design.md) under [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145): separate assembly/compile/runtime inputs, portable allocation/transfer, personal/local ownership, rollup field density and component restart. Source inspection is complete; allocator comparisons, host pinning, broader rollups and full warm-to-hot integration remain unbuilt. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
@@ -49,12 +51,28 @@ row-based population contract. See [the detailed direction](kernels/database/WOR
 
 **Warm-cache implementation:** The [accepted A–D contract](docs/warm-toolbox-implementation-plan.md)
 and [layout](docs/warm-knowledge-cache-layout.md) preserve warm as the toolbox and
-hot as the selected live working object store. Stage A stores and validates
-supplied normalized recipe fixtures. B now supplies pure production projection
-and normalized values using the same interface; C's field generation and D's
-SNode/engine materialization remain queued. Native test
-clients exercise multi-writer and personal/temporary storage without implementing
-an analyst or cache-manager scheduler. Warm publication is not hot-engine readiness.
+hot as the host workbench where objects and relationships are assembled; backend
+execution memory is where their numerical projection runs together. Stage A
+stores supplied recipes; B supplies projection/normalization; C is implemented
+for review in #146. D awaits C acceptance, the separate pre-D design review and
+explicit release. Ordinary vectors do not establish pinned GPU transfer.
+
+**Private/local boundary (Patrick, 2026-10-16):** the analyst alone supplies its
+private/local information at active hot assembly. The cache manager has no role
+in accessing those DB codes/data or publishing, acquiring or refreshing them in
+warm storage. Exclude private namespaces/handles from the manager's authorized
+request/source path and reject attempted private scopes **before source lookup**;
+do not read and then filter, redact or classify. This protects model/entity
+private stores; public entity knowledge can remain shared. Joint numerical
+reporting returns to the analyst-owned workbench, with no private-source or joint
+result propagation through manager reporting. Use supplied private fixtures;
+analyst reasoning and real private DB access are not implemented here.
+
+A's isolated scoped-storage tests are built capabilities, not authority to route
+private data through the manager. That earlier plan wording is superseded; no
+blanket change to `z*` temporary ownership or retained fixtures is authorized.
+Warm publication, workbench assembly completeness and execution readiness are
+separate outcomes. Native test clients do not implement an analyst or scheduler.
 The accepted `y*` / `z*` reservations still require explicitly authorized concrete
 bindings, and their internal production layout remains deferred.
 [#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
@@ -83,6 +101,7 @@ Agents also read this file in full. Component-specific instructions still apply.
 - Project Python is authorized only for bulk database population scripts during bootstrap. Their source preparation and validation stay within that population workflow. Offline operation alone does not authorize Python. Do not implement reusable selection/assembly components, physics, database/WAL kernels, endpoint/network infrastructure, or analyst behavior in Python.
 - The **engine harness is the control interface for the physics engine**. It is not the DB manager, WAL manager, messaging system, topology system or thread manager.
 - **Analyst functions do not exist yet.** Do not invent an analyst architecture or implement speculative analyst behaviour.
+- Warm is the shared tool/part box; hot is the analyst-owned host assembly workbench; GPU memory is the execution surface. Private/local inputs enter only through the analyst-owned active input boundary. The cache manager must not access private DB codes/data, including for content inspection or filtering.
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
 - Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
 - The future configuration routine resolves endpoint paths; the future thread manager handles lower-frequency/system-facing bridge activation.

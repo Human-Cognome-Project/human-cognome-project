@@ -7,8 +7,8 @@ references, not another mandatory reading sequence.
 ## Warm-cache plan development
 
 - [Root-addressed warm knowledge cache layout](warm-knowledge-cache-layout.md) —
-  proposal for PostgreSQL multi-writer ownership, temporary/personal integration,
-  and native letter/byte assembly. Implementation details remain for review.
+  PostgreSQL shared toolbox, host assembly workbench and separate execution
+  surface; reconciled with the analyst-owned active-only private boundary.
 - [Concrete warm toolbox implementation proposal](warm-toolbox-implementation-plan.md) —
   proposed PostgreSQL publication, persisted initial recipes, source-preserving
   byte exposure and normalized scale, membership preparation and existing
@@ -16,8 +16,13 @@ references, not another mandatory reading sequence.
 - [Stage A native warm storage](../kernels/database/warm/README.md) — accepted
   and merged in #141; supplied normalized recipe storage and 90 PostgreSQL checks.
 - [Stage B native letter/byte projection](../engine/docs/LETTER-PROJECTION.md) —
-  implemented for review under #142; 53 pure and 38 native preparation checks.
-  Membership fields and full hot materialization remain queued.
+  accepted/merged in #143; 53 pure and 38 native preparation checks.
+- [Stage C PR #146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146) —
+  reviewed with no code blockers and all nine checks green, pending acceptance/merge.
+- [Pre-D host workbench design](pre-d-hot-workbench-design.md) — proposed under
+  #145; compilation/value boundaries, private/local active input, portable
+  allocation/transfer, restart and dense-field rollups. D requires this separate
+  review and explicit release; no new runtime implementation is included.
 
 ## Active implementation plans and built results
 

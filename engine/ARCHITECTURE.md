@@ -24,6 +24,17 @@ reconciliation.
 5. **Analyst functions** — future work. No analyst reasoning implementation
    exists yet.
 
+**Pre-D clarification (Patrick, 2026-10-16):** warm is the shared tool/part box;
+hot is the analyst-owned host workbench where objects and relationships are
+assembled; GPU memory is where prepared numerical objects run together. Private/
+local inputs enter only at active hot assembly, through a separate analyst-owned
+boundary. The cache manager must not access private DB codes/data or route them
+through warm publication/refresh/reporting; reject private scopes before source
+lookup, without content inspection. See the proposed [pre-D design](../docs/pre-d-hot-workbench-design.md).
+It investigates native compilation/value boundaries, portable host staging,
+field density and restartable Taichi within the continuously operating system.
+C acceptance alone does not release D; none of these new adapters is built here.
+
 The production path is C++. Python is not an HCP engine or data-layer
 implementation language. Python present inside the Taichi fork is upstream
 frontend/build/test material; HCP bypasses that abstraction operationally.

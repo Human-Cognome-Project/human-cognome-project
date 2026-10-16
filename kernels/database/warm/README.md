@@ -5,8 +5,20 @@ and [#140](https://github.com/Human-Cognome-Project/human-cognome-project/issues
 Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
 storage and the shared value interface for supplied normalized recipes.
 [Production projection/normalization (B)](../../../engine/docs/LETTER-PROJECTION.md)
-is implemented for review under #142. Membership field generation (C) and full
-engine materialization (D) remain queued in #139.
+is accepted/merged in #143. C is reviewed with nine green checks in #146,
+pending acceptance/merge. D requires the separate #145 pre-D design review and
+explicit #139 release.
+
+**Ownership correction (Patrick, 2026-10-16):** the cache manager handles shared
+tools only. Analyst-private/local inputs enter active hot assembly through a
+separate boundary and never use manager source lookup, warm publication,
+acquisition, refresh or reporting. Exclude private DB codes/handles from the
+manager's request/source scope; reject attempts before lookup, without content
+inspection/filtering or private-content/code logging. Generic personal-storage
+operations/tests below are built capabilities, not authority for a manager
+private-data pipeline. Temporary ownership and retained fixtures are unchanged.
+The manager-facing gate and analyst-input integration remain unbuilt; see the
+[pre-D design](../../../docs/pre-d-hot-workbench-design.md).
 
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,
@@ -71,7 +83,9 @@ Never apply this schema to either retained cold database.
 
 Shared tools may reference only shared tools. Instance tools may reference shared
 tools or the same instance. Bundles always have a local owner, including all-shared
-studies. Personal/temporary reciprocals stay in the warm projection; no API writes
+studies. In the generic scoped-storage capability tests, personal/temporary
+reciprocals stay in that isolated warm projection; this does not authorize
+manager private-data integration. No API writes
 them into a shared source or promotes a private tool to a shared root. A temporary
 writer can reuse cached shared dependencies but cannot create source-backed tools.
 

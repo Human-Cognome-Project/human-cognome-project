@@ -18,7 +18,7 @@ local records are not automatically shared with the cold shard swarm.
 | Dimension | Meaning | Example |
 |---|---|---|
 | Local vs global | Address scope and allowed visibility. | An instance's relationship note vs a shared encoding-table definition. |
-| Cold vs warm vs hot | Persistence, preparation, and current engine residence. | A local record can inform a private warm view without becoming a shared record. |
+| Cold vs warm vs hot | Source persistence, shared toolbox preparation and active assembly. | Analyst-local data joins shared tools only at the hot workbench, outside the cache manager's warm path. |
 
 The instance's willingness to share does not automatically grant permission
 to expose information about other people or authorize a global write. A
@@ -56,3 +56,27 @@ questions separate from the immediate local record/WAL/cache loop. The
 [NAPIER guide](napier-system-guide.md) shows how this boundary fits the larger
 system; the [discussion record](napier-system-discussion.md) retains the
 original context.
+
+## Active-only private input clarification — 2026-10-16
+
+Patrick's clarification in #145/#139 supersedes private warm-view wording:
+private/local information belongs to the analyst and enters consideration only
+at the active hot workbench. The cache manager has no role in handling it.
+Exclude private DB codes/handles from the manager's authorized request/source
+path and reject attempted private scopes before lookup, without inspecting,
+classifying, filtering, redacting or logging private contents/code values.
+This protects both model/entity private stores; public entity knowledge can
+still belong in the shared cache.
+
+The analyst combines supplied local inputs with shared cached tools on its
+workbench. No manager warm publication/acquisition/refresh or manager reporting
+path carries private data or joint results. The original private source DB can
+remain persistent. Existing generic scoped-storage capability and `y*` / `z*`
+reservations confer no private-data access authority on the manager.
+
+The [pre-D design](pre-d-hot-workbench-design.md) specifies scoped provenance,
+active buffers, separate reporting/restart ownership and supplied-input tests.
+Its access gate and private-input adapter remain unbuilt; no analyst reasoning
+or real private DB integration is authorized. Earlier WAL notes above describe
+unbuilt routing seams, not permission to forward private work to a cache-manager
+out-box.
