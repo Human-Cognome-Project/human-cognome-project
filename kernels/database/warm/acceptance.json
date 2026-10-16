@@ -1,0 +1,28 @@
+{
+  "contract": "PR #137, merged 50bd968f489a1a4db515309a3cb1aa8804a7acfa",
+  "stage": "A",
+  "checked_on": "2026-10-16",
+  "postgresql": "16.15",
+  "native_checks_passed": 90,
+  "source_definitions_read": 27,
+  "source_exports_sha256": {
+    "core": "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121",
+    "linguistics": "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296"
+  },
+  "complete_cold_data_dump_sha256_before_and_after": {
+    "core": "2a65efd49639a321c01361d3402582230faa9d08d1aa961cc6bf80b6a4d75f04",
+    "linguistics": "bc76d8aff36d2afbc3718808e3f42e65caf101c55a775a29d17e11f7feb89544"
+  },
+  "dump_hash_normalization": "pg_dump --data-only --no-owner --no-privileges, omit session restrict/unrestrict nonce lines only",
+  "same_head_native_writers": {"published": 1, "conflict": 1},
+  "unrelated_native_writers": {"published": 2},
+  "fresh_client_full_initial_recipe_round_trip": true,
+  "late_failure_rolls_back_tools_revisions_and_heads": true,
+  "positive_personal_and_temporary_fixtures": true,
+  "cross_writer_existing_temporary_reference_and_composition": true,
+  "existing_references_preserve_mixed_author_closure_and_claims": true,
+  "finite_subnormal_all_real_fields_and_pinned_read_round_trip": true,
+  "cold_data_unchanged": true,
+  "remaining_stages": ["B: production projection/normalization", "C: membership field generation", "D: hot materialization"],
+  "engine_or_gpu_execution_claimed": false
+}

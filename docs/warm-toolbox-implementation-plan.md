@@ -1,8 +1,10 @@
 # First warm toolbox and hot letter study
 
-Status: **Concrete implementation proposal for #137, 2026-10-15.**
-This completes the shared A–D design choices for review. No new runtime code,
-warm schema or cold-store modification is installed by this document.
+Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
+[#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
+governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
+implemented for review under #140, with 90 native PostgreSQL acceptance checks.
+B–D remain queued. No cold-store modification is part of Stage A.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
 Warm PostgreSQL stores reusable tools and reconstructible recipes. The hot
@@ -11,7 +13,7 @@ objects are language letters and the existing punctuation components, using
 #136's populated pair. Analyst requests are exercised by native test clients;
 no analyst behavior, general scheduler or new field law is implemented.
 
-## Proposed decisions
+## Accepted shared decisions
 
 | Question | Choice for this slice |
 |---|---|
@@ -81,6 +83,14 @@ credentials belong only to the native store owner, and ordinary clients use
 the scoped native operations. This is a bounded API authority contract, not an
 analyst authentication or network protocol implementation.
 
+Creation/retry by supplying a body is separate from explicitly referencing an
+already published `ToolRef`. Stage A's `prepare(recipe, existing_roots)` loads
+that immutable dependency closure under read scope and preserves its authors,
+revisions and original address claims. Another same-instance writer may reference
+it unchanged without claiming the creator's address. New constructions still
+require their own authorized addresses; a supplied body cannot replace a reference
+or contradict one of its pinned dependencies.
+
 Shared tool bodies may depend only on shared definitions. Instance-scoped
 tools may depend on shared definitions or that same instance's definitions;
 cross-instance private references are rejected. Every bundle/geometry recipe
@@ -91,7 +101,7 @@ into shared source identity. Shared source ownership grants no release right.
 
 ## A. PostgreSQL storage and coherent publication
 
-Proposed physical tables follow. `T` below expands to the three non-null
+Stage A's physical tables follow. `T` below expands to the three non-null
 `ToolRef` columns `(scope_uuid uuid, address text[] COLLATE "C", revision_uuid uuid)`;
 `B` expands to `(selection_uuid uuid, revision_uuid uuid)`. Reference columns
 use the same types/collations as their targets. All lookups use the listed
@@ -101,6 +111,7 @@ primary keys or their leading prefixes; no reverse-search indexes are added.
 |---|---|---|
 | `root_binding` | `(scope_uuid, prefix)` | Source handle, epoch, policy version, permitted actors, ownership/lifetime rules. Runtime configuration supplies prefixes. |
 | `tool_head` | `(scope_uuid, address, input_epoch, recipe_key)` | Nullable revision UUID during creation; resolved `T` references `tool_revision`. Cache lookup/reuse by known address and preparation recipe. |
+| `object_slot` | `(scope_uuid, address)` | Sorted per-object publication lock and creator-bound permanent temporary revision claim. Prevents create-only address rules being bypassed through another recipe key. |
 | `tool_revision` | `T` | Binding prefix FK, input epoch and optional source snapshot hash, recipe key, optional notation and `bigint` whole mass, author actor. No live state or object-type column. |
 | `tool_parent` | `(T, ordinal)` | Referenced parent `T` FK, original nullable parent-row mass and separately resolved exact contribution. Both values retain their meanings. |
 | `tool_member_of` | `(member T, group T)` | Direct source membership edges for the requested linguistic graph; both endpoint references are FKs. |
@@ -139,6 +150,13 @@ lifetime, so a different body cannot evade the create-only address check by
 claiming a new external source epoch.
 
 ### Persisted recipe and fresh-client reconstruction
+
+Stage A validates and round-trips **supplied normalized fixtures** through its
+engine-independent C++ value interface. Production projection/normalization is B;
+runtime SNode reconstruction/materialization is D. A does not call B, avoiding an
+A→B→A implementation dependency. Source binding attestation is trusted
+configuration: the owner supplies previously validated immutable installations
+and their paired epoch/export hashes; A enforces consistency and changes.
 
 The request supplies ordered entry IDs and letter keys, an exposure per entry,
 geometry for every declared live-capable definition, and initial placements and
@@ -320,7 +338,7 @@ mass once to each field. Their combined membership mass equals the replaced
 letter's mass. Repeated byte positions and repeated uses of the letter remain
 distinct. This preserves organizational fields across exposure without also
 activating the aggregate or inventing source memberships on the byte definition.
-This is a proposed exposed-LoD behavior requiring conscious review: it distributes
+This exposed-LoD behavior was accepted in #137's maintainer review: it distributes
 organizational response across active parts. Conserving field mass does not claim
 the same force distribution or trajectory as the aggregate representation.
 
@@ -365,8 +383,10 @@ cross-study occurrence survival or concurrent device mutation is promised.
 
 ## Implementation sequence and exits
 
-Keep these interfaces together in #137 until reviewed. Then create linked work
-items and focused implementation PRs; do not start four independent designs.
+These interfaces were accepted together in #137. Tracker #139 releases only A
+through #140 now; B–D remain sequenced follow-ups. Stage A's focused implementation
+is ready for review; later stages consume its shared values rather than defining
+competing identities or publication rules.
 
 | Stage | Planned code boundary | Required acceptance |
 |---|---|---|
@@ -406,10 +426,10 @@ exit, even if the shared-letter milestone is delivered first.
 
 The top-level personal/temporary reservation decision is supplied: `y*` / `z*`.
 Do not request it again or treat the deferred internal layout as a gate on shared
-`00` / `02` letter work. Review the corrected persisted recipe, exposed-scale rules
-and the explicit proposal to apply organizational response to exposed byte parts
-as one shared contract. Keep #137 draft until those choices are accepted, then
-open linked implementation work items and focused PRs. No additional cold data
+`00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
+organizational response on exposed byte parts were accepted together in #137.
+Review Stage A's implementation under #140 before releasing subsequent stages
+through #139. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
 
@@ -418,12 +438,12 @@ tracks membership sub-classification and digit/operator coverage and layer
 placement. That follow-up preserves existing seed identities and is not a new
 gate on the initial warm letter study; this proposal allocates no concept root.
 
-## Validation of this proposal
+## Design-time validation before Stage A
 
 The existing CPU `assembly_test` passed on 2026-10-15, including repeated parent
 contributions, exposure exclusion, explicit scale bindings, seeded first force
 and fail-closed publication. This verifies the native boundary being reused;
-the proposed new storage, projection and membership code is not implemented.
+the new storage, projection and membership code was not implemented at that point.
 Read-only queries against #136's retained populated pair confirmed distinct
 English/French `A` records of mass 2 and Dutch `íj́` of mass 10, with ordered
 character parents of masses 4, 2 and 4 and the expected five-byte construction.
@@ -432,3 +452,15 @@ no proposed warm schema was installed during these checks.
 The subsequent recipe/scale corrections were checked against the native
 `StudyInput`, `Selection`, `scale_bindings` and `FixedStudy` source contracts.
 Their new integration acceptance cases above remain planned, not executed.
+
+## Stage A execution
+
+[Native acceptance evidence](../kernels/database/warm/acceptance.json)
+records 90 passing PostgreSQL 16.15 checks, full fresh-client recipe recovery,
+concurrent publication/rollback, exact source closure and reciprocals, source-pair
+epoch/policy checks, owned retained pins and positive personal/temporary cases.
+Review regressions cover cross-writer immutable temporary references/composition
+and finite subnormals across coordinates, velocities, centroids and radii.
+Complete data-only hashes of both retained cold stores match before and after.
+Stage A executes storage/recipe fixtures only; B–D engine integration cases remain
+planned. See [build/reproduction instructions](../kernels/database/warm/README.md).
