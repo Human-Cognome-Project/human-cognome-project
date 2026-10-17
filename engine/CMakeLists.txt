@@ -37,6 +37,29 @@ target_include_directories(study_assembly PUBLIC src)
 target_link_libraries(study_assembly PUBLIC field_core)
 target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
+add_library(active_workbench STATIC src/assembly/active_workbench.cpp)
+target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)
+target_compile_options(active_workbench PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
+add_executable(active_workbench_test tests/active_workbench_test.cpp)
+target_link_libraries(active_workbench_test PRIVATE active_workbench)
+add_test(NAME active_workbench_test COMMAND active_workbench_test)
+set_tests_properties(active_workbench_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+
+add_executable(active_transfer_experiment tests/active_transfer_experiment.cpp)
+target_link_libraries(active_transfer_experiment PRIVATE active_workbench)
+add_test(NAME active_transfer_experiment COMMAND active_transfer_experiment)
+set_tests_properties(active_transfer_experiment PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 240)
+
+option(HCP_WITH_WARM_INTEGRATION "Build PostgreSQL warm-to-active integration client" OFF)
+if(HCP_WITH_WARM_INTEGRATION)
+  include(../kernels/database/warm/toolbox.cmake)
+  add_executable(warm_active_integration tests/warm_active_integration.cpp)
+  target_link_libraries(warm_active_integration PRIVATE active_workbench warm_toolbox)
+endif()
+
 add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
