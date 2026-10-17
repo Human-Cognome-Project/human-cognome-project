@@ -62,6 +62,16 @@ repeated parent occurrence. Exact counts produce the hot float shares; those
 shares are not archival count authority. Same-definition instances also share
 an automatically prepared whole-mass sibling field using the same law.
 
+**Stage C accepted in #146 (2026-10-17, `43f418a`):** Explicit membership
+requests add a distinct membership field kind through that same edge shape and
+kernel. Each active occurrence contributes its whole mass once per target.
+[Contextual preparation](MEMBERSHIP-FIELDS.md) follows pinned upward memberships
+of the owning letter, deduplicating paths and inheriting those groups on exposed
+byte occurrences. Parent ordinals/counts remain separate. NULL group naming
+masses remain metadata, without creating group particles or changing source
+memberships. Native CPU seeded-response checks pass; full warm-to-hot integration
+remains queued as D.
+
 Exposure selections choose an aggregate or its declared parts, preserving
 exact total mass and excluding the other representation. This bounded path
 uses disjoint selections and preassigned distinct slots. It does not establish

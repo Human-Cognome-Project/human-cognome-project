@@ -4,7 +4,7 @@ Accepted and merged in [#143](https://github.com/Human-Cognome-Project/human-cog
 at `6ccd5a3`, closing #142,
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).
 Stage A is accepted and merged in #141 at `e7acdea`. C in #146 is reviewed with
-all nine hosted checks green, pending acceptance/merge. D requires the separate
+all nine hosted checks green, accepted and merged at `43f418a`. D requires the separate
 [#145 pre-D workbench design review](../../docs/pre-d-hot-workbench-design.md)
 and explicit #139 release. C acceptance alone does not release D.
 
@@ -57,7 +57,8 @@ byte owner/character reference/ordinals. Complete-character equivalence is
 recorded only for a single-scalar whole. `ParentContribution` retains the live
 occurrence, typed parent-value field, source ordinal and exact contribution;
 repeated parents remain distinct edges to the same field. Membership graphs are
-preserved as source values but generate no membership fields in this stage.
+preserved as source values but generate no membership fields in B. Stage C
+separately derives contextual membership fields from these same pinned values.
 
 | Profile | Root units | Letter binding |
 |---|---|---|

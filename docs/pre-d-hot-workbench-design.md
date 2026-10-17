@@ -1,9 +1,9 @@
 # Pre-D design: host workbench and native execution handoff
 
-**Proposed for review, 2026-10-16.** Governing updates:
+**Design accepted in #147, 2026-10-17; implementation remains unreleased.** Governing updates:
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139),
 [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145)
-and Patrick's clarifications in this session. C acceptance alone does not
+and Patrick's recorded 2026-10-16 clarifications. C acceptance alone does not
 release D. This document changes no runtime, allocator, database or field law.
 The allocation/transfer choices below are candidates with explicit experiments;
 no measured optimal surface or implemented GPU pinning is claimed.
@@ -312,7 +312,7 @@ is local/cooperative and provides no process bridge or supervisor. Building
 those facilities is a separately reviewed integration task, not hidden D code.
 Controlled restart can be tested in the bounded native client; it must not be
 reported as proven process-failure isolation. This explicit recovery limit is a
-design decision for review under #145.
+accepted design limit under #145/#147; process-failure isolation remains unbuilt.
 
 ## 9. Rollup density and relevant component fields
 
@@ -416,7 +416,7 @@ Acceptance separates exact contracts from numerical coherence:
   readiness rather than falling back to the manager. Original local sources
   remain analyst-owned; no deletion or private hot-state persistence is implied.
 
-After this design is reviewed, #139 must explicitly release the bounded D work.
+With this design accepted in #147, #139 must explicitly release the bounded D work.
 Its first integration still includes fresh-client warm recipe recovery, native
 letter/membership assembly, seeded execution, supported refresh/failure and cold
 stores unchanged. Allocation experiments and restart limits must be reported

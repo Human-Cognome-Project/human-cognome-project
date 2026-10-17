@@ -9,7 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(Threads REQUIRED)
-include(src/assembly/letter_projection.cmake)
+include(src/assembly/membership_fields.cmake)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FindTaichiEngine)
 
@@ -74,6 +74,16 @@ target_link_libraries(letter_projection_native_test PRIVATE letter_projection st
 add_test(NAME letter_projection_native_test COMMAND letter_projection_native_test)
 set_tests_properties(letter_projection_native_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 60)
+
+add_executable(membership_fields_test tests/membership_fields_test.cpp)
+target_link_libraries(membership_fields_test PRIVATE membership_fields)
+add_test(NAME membership_fields_test COMMAND membership_fields_test)
+
+add_executable(membership_fields_native_test tests/membership_fields_native_test.cpp)
+target_link_libraries(membership_fields_native_test PRIVATE membership_fields study_assembly)
+add_test(NAME membership_fields_native_test COMMAND membership_fields_native_test)
+set_tests_properties(membership_fields_native_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
 
 # Proves the >2^31 flattened-index cap is lifted: a 2-axis dense ndarray
 # with N chosen so a single cell's flattened offset clears 2^31, written and

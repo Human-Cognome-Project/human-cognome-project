@@ -1,6 +1,8 @@
 {
   "stage": "B",
-  "status": "implemented_for_review",
+  "status": "accepted_merged",
+  "pull_request": 143,
+  "merge_commit": "6ccd5a3dda24896b5d781c5761199e68608ab8f3",
   "issue": 142,
   "date_utc": "2026-10-16",
   "pure_fixture_checks": 53,

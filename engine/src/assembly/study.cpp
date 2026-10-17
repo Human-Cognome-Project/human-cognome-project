@@ -192,6 +192,18 @@ PreparedStudy prepare(const StudyInput &input) {
                                      parent.ordinal, parent.count, share});
     }
   }
+  std::set<std::pair<std::string, std::string>> memberships;
+  for (const auto &membership : input.memberships) {
+    require(!membership.group.empty() && active_slots.count(membership.occurrence),
+            "assembly: membership needs a named field and active occurrence");
+    if (!memberships.emplace(membership.occurrence, membership.group).second)
+      continue;
+    const auto &occurrence = occurrence_at(membership.occurrence);
+    const auto mass = definitions.at(occurrence.definition)->mass;
+    const int group = group_for(GroupKind::Membership, membership.group);
+    target.participation.push_back({occurrence.id, occurrence.slot, group, "", 0,
+                                   mass, 1.0f});
+  }
   std::set<std::pair<int, int>> pairs;
   for (const auto &contact : input.contacts) {
     require(active_slots.count(contact.a) && active_slots.count(contact.b),

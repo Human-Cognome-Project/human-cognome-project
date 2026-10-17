@@ -6,7 +6,7 @@ governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
 accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
 [Stage B](../engine/docs/LETTER-PROJECTION.md) is accepted/merged in #143 at
 `6ccd5a3`. C is implemented in #146 with 25 pure / 44 native checks and all nine
-hosted checks green, pending maintainer acceptance/merge. D additionally requires
+hosted checks green, accepted and merged at `43f418a`. D additionally requires
 the separate [pre-D design review](pre-d-hot-workbench-design.md) in #145 and
 explicit release under #139. C acceptance alone does not release D.
 None of this work modifies cold stores.
@@ -354,7 +354,8 @@ fixed array counts starts a new fixed study, not an in-place resize.
 
 ## C. Membership fields
 
-Propose a minimal extension to `assembly::StudyInput`: explicit membership
+Accepted and merged in #146 at `43f418a`: a minimal extension to `assembly::StudyInput`,
+explicit membership
 requests `(occurrence_id, group_ObjectKey)` and `GroupKind::Membership`.
 Preparation validates the selected active occurrence and generates a whole-mass
 participation with share 1. Group naming anchors remain metadata, not live
@@ -383,8 +384,8 @@ fields by ordinal or rewrite the warm/cold source membership graph.
 
 ## D. Host workbench and native execution handoff
 
-**Unreleased:** A–C acceptance is necessary; the expanded #145 design review and
-explicit #139 release are also required. The [pre-D design](pre-d-hot-workbench-design.md)
+**Unreleased:** A–C and the expanded #145 design (#147) are accepted.
+Explicit #139 implementation release is still required. The [pre-D design](pre-d-hot-workbench-design.md)
 records the current source trace, candidate interfaces and unexecuted experiments.
 
 The host workbench assembles objects and relationships from shared pinned tools
@@ -439,7 +440,7 @@ unproven process-failure isolation are distinguished in the pre-D design.
 
 These interfaces were accepted together in #137. Tracker #139 records A accepted
 and merged in #141 and B accepted/merged in #143. C is reviewed with green CI in
-#146, pending acceptance/merge. D additionally requires reviewed #145 design
+#146, accepted and merged at `43f418a`. D additionally requires reviewed #145 design
 and explicit release. All stages consume the shared value vocabulary
 rather than defining competing identities or publication rules.
 
@@ -492,7 +493,7 @@ Do not request it again or treat the deferred internal layout as a gate on share
 `00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
 organizational response on exposed byte parts were accepted together in #137.
 Stages A/B are accepted in #141/#143. C in #146 has no code blockers and all
-checks green, pending acceptance/merge. Review the expanded pre-D design under
+checks green, accepted and merged at `43f418a`. Review the expanded pre-D design under
 #145 before any explicit D release through #139. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
@@ -538,6 +539,19 @@ source identity, caller-supplied geometry/state and numerical overflow rejection
 Both new suites and existing preparation/CPU assembly tests pass. B uses A's
 engine-independent values and returns normalized recipes plus bounded native
 input values; no PostgreSQL dependency or database mutation is introduced.
-Membership fields are implemented for review in #146; all nine hosted checks
+Membership fields are accepted and merged in #146; all nine hosted checks
 are green. Full workbench/backend handoff, private-input access gating, host
 pinning and component recovery remain unbuilt and require the pre-D review.
+
+
+## Stage C execution
+
+[Membership evidence and reproduction](../engine/docs/MEMBERSHIP-FIELDS.md)
+record 25 pure fixture checks and 44 native checks: pinned upward traversal,
+duplicate-path handling per target/live occurrence, contextual byte inheritance,
+NULL naming anchors, preserved parent ordinals/counts and separate field kinds.
+Native CPU fixtures verify seeded centroid data and membership response through
+the existing FixedStudy/field boundary in letter-only, byte-only and mixed
+exposure. Existing field, preparation, assembly and projection suites pass.
+No source memberships, database tables or field laws change. Full warm pin and
+database-to-hot materialization remains Stage D, awaiting explicit release after the accepted #147 pre-D design.

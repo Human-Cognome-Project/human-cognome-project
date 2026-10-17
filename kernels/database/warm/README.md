@@ -6,7 +6,7 @@ Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
 storage and the shared value interface for supplied normalized recipes.
 [Production projection/normalization (B)](../../../engine/docs/LETTER-PROJECTION.md)
 is accepted/merged in #143. C is reviewed with nine green checks in #146,
-pending acceptance/merge. D requires the separate #145 pre-D design review and
+accepted and merged at `43f418a`. D requires the separate #145 pre-D design review and
 explicit #139 release.
 
 **Ownership correction (Patrick, 2026-10-16):** the cache manager handles shared

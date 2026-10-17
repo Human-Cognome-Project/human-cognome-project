@@ -17,12 +17,11 @@ references, not another mandatory reading sequence.
   and merged in #141; supplied normalized recipe storage and 90 PostgreSQL checks.
 - [Stage B native letter/byte projection](../engine/docs/LETTER-PROJECTION.md) —
   accepted/merged in #143; 53 pure and 38 native preparation checks.
-- [Stage C PR #146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146) —
-  reviewed with no code blockers and all nine checks green, pending acceptance/merge.
-- [Pre-D host workbench design](pre-d-hot-workbench-design.md) — proposed under
+- [Stage C evidence](../engine/docs/MEMBERSHIP-FIELDS.md), [PR #146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146) —
+  reviewed with no code blockers and all nine checks green, accepted and merged at `43f418a`.
+- [Pre-D host workbench design](pre-d-hot-workbench-design.md) — accepted in #147 under
   #145; compilation/value boundaries, private/local active input, portable
-  allocation/transfer, restart and dense-field rollups. D requires this separate
-  review and explicit release; no new runtime implementation is included.
+  allocation/transfer, restart and dense-field rollups. D still requires explicit release; no new runtime implementation is included.
 
 ## Active implementation plans and built results
 

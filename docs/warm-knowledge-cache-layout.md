@@ -4,9 +4,9 @@
 [Stage A storage](../kernels/database/warm/README.md) is accepted and merged
 in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)
 is accepted/merged in #143 at `6ccd5a3`. C is implemented in #146, with no code
-blockers and all nine hosted checks green, pending acceptance/merge. D remains
-unreleased pending C acceptance and the separate [pre-D design review](pre-d-hot-workbench-design.md)
-under #145/#139. The proposal wording below records the design's origin; the accepted
+blockers and all nine hosted checks green, accepted and merged at `43f418a`. D remains
+unreleased pending explicit #139 assignment. The [pre-D design](pre-d-hot-workbench-design.md)
+is accepted in #147 under #145. The proposal wording below records the design's origin; the accepted
 [implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
 govern execution. No cold data migration or analyst implementation is included.
 
@@ -201,7 +201,7 @@ The proposal specifies letter-only units 1 even with declared inactive byte
 alternatives; exposed-byte studies use byte units 1 and letter units 64. Exposure
 is normalized before native `prepare`, which does not infer that rule itself.
 These choices were accepted in #137. Stage A stores supplied fixtures; B supplies
-normalization/projection for review. Full hot materialization remains a later stage.
+accepted normalization/projection, and C supplies accepted contextual membership fields. Full hot materialization remains a later stage.
 
 ## Multiple writers and warm publication
 
@@ -288,8 +288,8 @@ No encryption scheme or result-release mechanism is chosen here.
 
 The interfaces below were accepted together in #137. Tracker #139 records Stage A
 accepted/merged in #141 and B accepted/merged in #143. C is reviewed with green CI
-in #146, pending acceptance/merge. D additionally requires the expanded #145
-design review and explicit release in #139; C acceptance alone is insufficient.
+in #146, accepted and merged at `43f418a`. The expanded #145 design is accepted in #147; D still requires
+explicit release in #139; C acceptance alone is insufficient.
 Use these shared identities and readiness semantics in focused stage PRs.
 
 | Stage | Deliverable and boundary | Depends on | Acceptance evidence |
