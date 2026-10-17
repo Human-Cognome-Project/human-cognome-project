@@ -21,7 +21,10 @@ references, not another mandatory reading sequence.
   reviewed with no code blockers and all nine checks green, accepted and merged at `43f418a`.
 - [Pre-D host workbench design](pre-d-hot-workbench-design.md) — accepted in #147 under
   #145; compilation/value boundaries, private/local active input, portable
-  allocation/transfer, restart and dense-field rollups. D still requires explicit release; no new runtime implementation is included.
+  allocation/transfer, restart and dense-field rollups. Bounded D is released in #148.
+- [Stage D active workbench](../engine/docs/ACTIVE-WORKBENCH.md) — native shared-only
+  recovery, separate supplied local inputs, seeded execution and controlled restart;
+  CPU copy/direct-host density evidence, with GPU pinning tracked separately in #145.
 
 ## Active implementation plans and built results
 

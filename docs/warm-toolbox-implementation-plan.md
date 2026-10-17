@@ -6,9 +6,10 @@ governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
 accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
 [Stage B](../engine/docs/LETTER-PROJECTION.md) is accepted/merged in #143 at
 `6ccd5a3`. C is implemented in #146 with 25 pure / 44 native checks and all nine
-hosted checks green, accepted and merged at `43f418a`. D additionally requires
-the separate [pre-D design review](pre-d-hot-workbench-design.md) in #145 and
-explicit release under #139. C acceptance alone does not release D.
+hosted checks green, accepted and merged at `43f418a`. The separate
+[pre-D design](pre-d-hot-workbench-design.md) is accepted/merged in #147.
+Issue #148 explicitly releases bounded D under #139; its
+[implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md) is submitted for review.
 None of this work modifies cold stores.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
@@ -28,7 +29,7 @@ no analyst behavior, general scheduler or new field law is implemented.
 | Warm concurrency | Build outside the write transaction; lock/check bindings and publication head, then atomically insert the complete revision and advance its head. A stale expected head is a conflict. |
 | Exposure | Letter definitions retain character parent identities. A derived byte view creates byte occurrences; it does not replace the letter's parents with byte parents. |
 | Membership | Deduplicate membership paths per field/live occurrence. Preserve each ordered parent contribution separately. |
-| Hot memory | Host workbench assembles objects/relationships; its numerical projection runs in backend execution memory. Existing SoA/Ndarrays are the comparison baseline. Portable host allocation/pinning, direct assembly, compiler fit and restart require pre-D #145 design review before implementation. |
+| Hot memory | Host workbench assembles objects/relationships; its numerical projection runs in backend execution memory. D implements the existing SoA/Ndarray baseline and a bounded CPU direct-host comparison after design #147 acceptance. GPU pinning/registration and broader allocation qualification remain in #145. |
 | Geometry | Caller-supplied, versioned component spheres and centroids, checked by the existing enclosure API. No inferred packing or universal radius. |
 | Private/temporary roots | Patrick reserved `y*` for personal data and `z*` for temporary objects on 2026-10-15. These are prefix families, not concrete object allocations. Instance-qualified identities and explicitly authorized full-couplet bindings remain required. |
 
@@ -384,9 +385,11 @@ fields by ordinal or rewrite the warm/cold source membership graph.
 
 ## D. Host workbench and native execution handoff
 
-**Unreleased:** A–C and the expanded #145 design (#147) are accepted.
-Explicit #139 implementation release is still required. The [pre-D design](pre-d-hot-workbench-design.md)
-records the current source trace, candidate interfaces and unexecuted experiments.
+**Released in #148, implemented for review:** A–C and design #147 are accepted.
+The [implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md) covers the
+bounded CPU/PostgreSQL handoff and controlled restart. The
+[pre-D design](pre-d-hot-workbench-design.md) also records allocation/transfer
+experiments still open in #145; CPU completion does not qualify GPU pinning.
 
 The host workbench assembles objects and relationships from shared pinned tools
 plus a separate analyst-owned private/local input boundary. Pure scoped identity,
@@ -440,8 +443,8 @@ unproven process-failure isolation are distinguished in the pre-D design.
 
 These interfaces were accepted together in #137. Tracker #139 records A accepted
 and merged in #141 and B accepted/merged in #143. C is reviewed with green CI in
-#146, accepted and merged at `43f418a`. D additionally requires reviewed #145 design
-and explicit release. All stages consume the shared value vocabulary
+#146, accepted and merged at `43f418a`. D is released in #148 after #147 design
+acceptance. All stages consume the shared value vocabulary
 rather than defining competing identities or publication rules.
 
 | Stage | Planned code boundary | Required acceptance |
@@ -540,8 +543,8 @@ Both new suites and existing preparation/CPU assembly tests pass. B uses A's
 engine-independent values and returns normalized recipes plus bounded native
 input values; no PostgreSQL dependency or database mutation is introduced.
 Membership fields are accepted and merged in #146; all nine hosted checks
-are green. Full workbench/backend handoff, private-input access gating, host
-pinning and component recovery remain unbuilt and require the pre-D review.
+are green. The bounded workbench/backend handoff, private-input access gate and
+controlled recovery are implemented for review in D; host pinning remains open.
 
 
 ## Stage C execution
@@ -554,4 +557,4 @@ Native CPU fixtures verify seeded centroid data and membership response through
 the existing FixedStudy/field boundary in letter-only, byte-only and mixed
 exposure. Existing field, preparation, assembly and projection suites pass.
 No source memberships, database tables or field laws change. Full warm pin and
-database-to-hot materialization remains Stage D, awaiting explicit release after the accepted #147 pre-D design.
+database-to-hot materialization is implemented for review in Stage D under #148.
