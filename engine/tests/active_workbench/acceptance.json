@@ -32,5 +32,6 @@
   "executed": ["fresh-client shared recovery", "supplied local primitives/context/geometry/placements", "scope and owner rejection", "two independent studies", "seeded centroids and first force", "16 nonzero-dt steps", "equal-count refresh and fail-closed recovery", "controlled Program teardown/recreation", "stale handle/report rejection", "paired epoch/policy rotation", "expected-head rejection preserves existing leases", "CPU copy/direct density comparison"],
   "unexecuted_or_unbuilt": ["GPU execution", "host pinning/registration", "GPU bandwidth/async completion", "backend argument-buffer allocation instrumentation", "compiler cache-hit attribution", "balanced performance trials", "general rollups", "process-fatal fault isolation"],
   "hardware_followup": "https://github.com/Human-Cognome-Project/human-cognome-project/issues/145",
-  "hosted_ci": "pending PR execution"
+  "hosted_ci": "all nine checks passed at d0f3ebc890adb2722e712550003e58df0c5bc26f",
+  "gpu_handoff": "held pending #91 bidirectional effective-motion touch/wake, focal-origin math and per-tick demand counts with CPU validation; D baseline acceptance is separate"
 }

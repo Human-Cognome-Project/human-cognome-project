@@ -4,6 +4,15 @@ Implemented for review under [#148](https://github.com/Human-Cognome-Project/hum
 after A/B/C and [design #147](../../docs/pre-d-hot-workbench-design.md) acceptance.
 This is native C++ integration using supplied requests, not an analyst or scheduler.
 
+**GPU handoff held (Patrick, 2026-10-17):** all nine hosted checks pass on
+`d0f3ebc`, but [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91)
+must implement and CPU-validate bidirectional effective-motion touch/wake,
+the mathematical focal origin and per-tick demand counts before local GPU
+testing. This D baseline still evaluates all loaded force edges and recomputes
+all centroids; its speed determiner is not a sleep/wake predicate. Bounded D
+review can complete independently. The command examples below preserve the
+reproduction path and do not clear the new handoff requirement.
+
 `warm::SharedManager` wraps a dedicated shared-only Stage A store. Its public
 source directory delegates only `00`/`02` prefixes. A non-shared scope is refused
 before prefix/source resolution; all recipe keys are gated before storage
@@ -136,7 +145,8 @@ store is reset, dropped or truncated. The client uses fresh connections, owned
 pins and a coherent paired epoch/policy rotation. The hosted CPU job restores
 verified paired exports only into new cold fixtures and runs the same client.
 
-For Patrick's GPU run, build against a CUDA-enabled matched fork and use the
+After #91's required math/CPU validation, for Patrick's GPU run build against
+a CUDA-enabled matched fork and use the
 existing connection configuration to supply `HCP_WARM_TEST_CONNINFO` naming a
 **new empty warm DB with schema.sql installed**, and the two retained read-only
 source conninfos `HCP_CORE_TEST_CONNINFO`/`HCP_LING_TEST_CONNINFO`:
