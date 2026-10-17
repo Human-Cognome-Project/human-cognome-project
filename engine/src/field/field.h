@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,21 +19,41 @@
 // Nothing here decides what the data means. It moves state through one tick.
 namespace field {
 
+enum class HostPath { BulkCopy, CpuDirect };
+struct PhaseTimes {
+  double allocation_ms{0}, compilation_ms{0}, upload_ms{0}, seed_ms{0},
+      kernel_ms{0}, report_ms{0};
+  std::size_t upload_bytes{0}, download_bytes{0};
+};
+
 // Packed structure of arrays. Element f of item i lives at f * count + i, so
 // every pass reads one contiguous run per field.
 enum ParticleField {
-  kPosX = 0, kPosY, kPosZ,
-  kVelX, kVelY, kVelZ,
-  kMass, kRadius,
-  kForceX, kForceY, kForceZ,
+  kPosX = 0,
+  kPosY,
+  kPosZ,
+  kVelX,
+  kVelY,
+  kVelZ,
+  kMass,
+  kRadius,
+  kForceX,
+  kForceY,
+  kForceZ,
   kParticleFieldCount
 };
 
 enum GroupField {
   // Read by the force pass: the centroid as of the end of the previous tick.
-  kCenX = 0, kCenY, kCenZ, kCenM,
+  kCenX = 0,
+  kCenY,
+  kCenZ,
+  kCenM,
   // Written by the centroid pass: the centroid the next tick will read.
-  kAccX, kAccY, kAccZ, kAccM,
+  kAccX,
+  kAccY,
+  kAccZ,
+  kAccM,
   kGroupFieldCount
 };
 
@@ -74,17 +95,16 @@ struct Parameters {
 // same packed layout as the device arrays.
 class Harness {
  public:
-  Harness(engine::Runtime &runtime,
-          int particle_count,
-          int group_count,
-          int edge_count,
-          int contact_count = 0);
+  Harness(engine::Runtime &runtime, int particle_count, int group_count,
+          int edge_count, int contact_count = 0,
+          HostPath path = HostPath::BulkCopy);
 
   int particle_count() const { return particles_; }
   int group_count() const { return groups_; }
   int edge_count() const { return edges_; }
   int contact_count() const { return contacts_; }
   bool ready() const { return ready_; }
+  const PhaseTimes &timings() const { return timings_; }
 
   // Host staging, in the packed layout above.
   std::vector<float> particle_data;
@@ -100,19 +120,30 @@ class Harness {
 
   // Offsets are computed in size_t: f * count overflows int once the item
   // count passes ~2^31 / field count.
-  float &particle(int f, int i) { return particle_data[offset(f, particles_, i)]; }
-  float particle(int f, int i) const { return particle_data[offset(f, particles_, i)]; }
+  float &particle(int f, int i) {
+    return particle_data[offset(f, particles_, i)];
+  }
+  float particle(int f, int i) const {
+    return particle_data[offset(f, particles_, i)];
+  }
   float &group(int f, int i) { return group_data[offset(f, groups_, i)]; }
   float group(int f, int i) const { return group_data[offset(f, groups_, i)]; }
-  float &edge_float(int f, int i) { return edge_float_data[offset(f, edges_, i)]; }
+  float &edge_float(int f, int i) {
+    return edge_float_data[offset(f, edges_, i)];
+  }
   int &edge_int(int f, int i) { return edge_int_data[offset(f, edges_, i)]; }
-  int &contact_int(int f, int i) { return contact_int_data[offset(f, contacts_, i)]; }
+  int &contact_int(int f, int i) {
+    return contact_int_data[offset(f, contacts_, i)];
+  }
 
   // Throws std::out_of_range, before transferring anything, if a staged
   // edge or contact names a particle or group outside this harness's counts.
   // Malformed numerical staging and references to mass-zero free slots are
   // also refused. Upload invalidates readiness until centroids are seeded.
   void upload();
+  // Diagnostic scalar bit comparison before seeding; not a reporting/refresh
+  // path and not included in timed payload transfer measurements.
+  bool uploaded_payload_matches();
   void download();
   void invalidate();
   void publish(const Parameters &p);
@@ -134,6 +165,10 @@ class Harness {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
   }
   void validate_staging() const;
+  template <class T>
+  void bind(taichi::lang::LaunchContextBuilder &ctx, int argument,
+            const taichi::lang::Ndarray *array, std::vector<T> &values,
+            std::vector<int> shape);
 
   void launch_clear();
   void launch_force(const Parameters &p);
@@ -149,6 +184,9 @@ class Harness {
   int contacts_;
   bool uploaded_{false};
   bool ready_{false};
+  HostPath path_;
+  std::uint64_t generation_{0};
+  PhaseTimes timings_;
 
   std::unique_ptr<taichi::lang::Ndarray> particle_array_;
   std::unique_ptr<taichi::lang::Ndarray> group_array_;
@@ -159,6 +197,7 @@ class Harness {
   std::unique_ptr<taichi::lang::Ndarray> universal_array_;
 
   std::vector<float> determined_;
+  std::vector<float> empty_determined_{0.0f};
 
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;

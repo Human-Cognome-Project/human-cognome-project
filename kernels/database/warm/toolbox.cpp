@@ -677,7 +677,8 @@ Acquired Toolbox::read_bundle(const BundleRef &ref) {
   validate(b);
   return out;
 }
-Acquired Toolbox::acquire(const Uuid &selection, const Uuid &consumer) {
+Acquired Toolbox::acquire(const Uuid &selection, const Uuid &consumer,
+                         std::optional<Uuid> expected_revision) {
   nonnil(selection);
   nonnil(consumer);
   auto head = pg_->query(
@@ -686,6 +687,8 @@ Acquired Toolbox::acquire(const Uuid &selection, const Uuid &consumer) {
   need(PQntuples(head.get()) == 1 && !PQgetisnull(head.get(), 0, 0),
        "selection not published");
   const BundleRef ref{selection, Uuid(cell(head, 0, 0))};
+  if (expected_revision && ref.revision != *expected_revision)
+    throw Stale("publication head differs from requested revision");
   // Revisions are immutable and retained. Discover direct binding references
   // before locking, then lock bindings before the head in publication order.
   auto out = read_bundle(ref);

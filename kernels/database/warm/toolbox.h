@@ -55,7 +55,10 @@ class Toolbox {
   Prepared prepare(Bundle supplied_recipe,
                    const std::vector<ToolRef> &existing_roots = {});
   BundleRef publish(Prepared candidate, std::optional<Uuid> expected_head);
-  Acquired acquire(const Uuid &selection, const Uuid &consumer);
+  // Optional exact head guard refuses before acquiring a different revision's
+  // lease. Existing owned pins are never released to undo an unexpected read.
+  Acquired acquire(const Uuid &selection, const Uuid &consumer,
+                   std::optional<Uuid> expected_revision = {});
   Acquired read_pinned(const BundleRef &bundle, const Uuid &consumer);
   void release(const BundleRef &bundle, const Uuid &consumer);
 

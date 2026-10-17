@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - "engine/**"
-      - "kernels/database/warm/values*"
+      - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
@@ -13,7 +13,7 @@ on:
       - "main"
     paths:
       - "engine/**"
-      - "kernels/database/warm/values*"
+      - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
@@ -30,7 +30,7 @@ jobs:
           cmake --build /tmp/hcp-projection -j 2
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-cpu:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
       - name: Install recovered native toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y             clang-15 llvm-15-dev ninja-build libx11-dev
+          sudo apt-get install -y clang-15 llvm-15-dev ninja-build libx11-dev libpq-dev
 
       - name: Configure CPU-only Taichi fork
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Configure HCP native engine against CPU Taichi
         run: |
-          cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF
+          cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF -DHCP_WITH_WARM_INTEGRATION=ON
 
       - name: Build HCP native engine
         run: |
@@ -90,7 +90,43 @@ jobs:
 
       - name: Run native CPU functional suite
         run: |
-          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test|preparation_test|assembly_test|letter_projection_test|letter_projection_native_test|membership_fields_test|membership_fields_native_test|index_cap_test)$'
+          ctest --test-dir engine/build --output-on-failure
+
+      - name: Restore new cold fixtures and run native PostgreSQL-to-active integration
+        run: |
+          set -euo pipefail
+          git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
+          hcp_active_snapshots=data/postgres/snapshots/2026-10-13-letter-seed-validation
+          (cd "$hcp_active_snapshots" && printf '%s  %s\n' \
+            f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121 hcp_core.sql.gz \
+            9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296 hcp_linguistics.sql.gz \
+            | sha256sum --check -)
+          hcp_active_image=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+          hcp_active_container="hcp-active-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker run -d --name "$hcp_active_container" --network none --user postgres \
+            --volume "$hcp_active_container:/var/lib/postgresql/data" \
+            --entrypoint bash "$hcp_active_image" -c \
+            'set -e; initdb -D "$PGDATA" --encoding=UTF8 --locale=C.UTF-8 --auth-local=peer --auth-host=scram-sha-256 > /tmp/init.log; exec postgres -D "$PGDATA" -c listen_addresses=""'
+          for hcp_active_attempt in {1..60}; do
+            if docker exec --user postgres "$hcp_active_container" pg_isready >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          for hcp_active_source in core linguistics; do
+            docker exec --user postgres "$hcp_active_container" createdb "hcp_$hcp_active_source"
+            gzip -dc "$hcp_active_snapshots/hcp_$hcp_active_source.sql.gz" \
+              | docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 --dbname "hcp_$hcp_active_source"
+          done
+          bash engine/scripts/run_warm_active_acceptance.sh engine/build \
+            "$hcp_active_container" hcp_core hcp_linguistics
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-active-workbench-evidence
+          path: |
+            engine/build/acceptance-*/native-checks.txt
+            engine/build/acceptance-*/cold-*.sha256
+            engine/build/Testing/Temporary/LastTest.log
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

@@ -76,7 +76,8 @@ reservations confer no private-data access authority on the manager.
 
 The [pre-D design](pre-d-hot-workbench-design.md) specifies scoped provenance,
 active buffers, separate reporting/restart ownership and supplied-input tests.
-Its access gate and private-input adapter remain unbuilt; no analyst reasoning
-or real private DB integration is authorized. Earlier WAL notes above describe
+The bounded [D adapter](../engine/docs/ACTIVE-WORKBENCH.md), released in #148,
+implements that access gate and supplied local fixtures for review; no analyst
+reasoning or real private DB integration is included. Earlier WAL notes above describe
 unbuilt routing seams, not permission to forward private work to a cache-manager
 out-box.

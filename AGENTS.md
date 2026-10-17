@@ -18,11 +18,13 @@ a merge or review changes these statuses; other entry points link here.
 | Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
 | Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
 | Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
-| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. A/B are accepted and merged. C is implemented in #146 with no code blockers and nine green hosted checks, accepted and merged at `43f418a`. The pre-D design is accepted in #147; D still requires explicit release through #139; C acceptance alone does not release D. |
+| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. A/B/C are accepted and merged (#141/#143/#146). Pre-D design #147 merged at `dfa2fcc`; [#148](https://github.com/Human-Cognome-Project/human-cognome-project/issues/148) explicitly releases bounded D. |
 | Stage A accepted/merged | [Native warm storage](kernels/database/warm/README.md), PR #141 merged at `e7acdea`: separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [90 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes, including explicit cross-writer temporary references and finite-subnormal round-trips. |
 | Stage B accepted/merged | [Native letter/byte projection](engine/docs/LETTER-PROJECTION.md), PR #143 merged at `6ccd5a3`: Stage A values, exact UTF-8/ordered parents, distinct occurrence paths, explicit exposure normalization and bounded native input handoff. [53 pure and 38 native preparation checks](engine/tests/letter_projection/acceptance.json) pass. |
 | Stage C accepted/merged | [Membership evidence](engine/docs/MEMBERSHIP-FIELDS.md), [#146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146), head `8508ee3`: contextual memberships per live occurrence, byte-owner inheritance, exact contributions and distinct field kinds through the existing kernel. 25 pure and 44 native checks pass, with CPU seeded response in all exposure profiles; existing regression suites and all nine hosted checks pass. Merged in #146 at `43f418a`. |
-| Pre-D design accepted | [Host workbench design](docs/pre-d-hot-workbench-design.md) under [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145): separate assembly/compile/runtime inputs, portable allocation/transfer, personal/local ownership, rollup field density and component restart. Source inspection is complete; allocator comparisons, host pinning, broader rollups and full warm-to-hot integration remain unbuilt. |
+| Stage D implemented for review | [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149), code head `d0f3ebc`: all nine hosted checks pass, including native CPU and PostgreSQL integration. [Active workbench](engine/docs/ACTIVE-WORKBENCH.md), assigned in #148, covers shared recovery, separate local inputs, seeded execution, fail-closed refresh and controlled restart. Maintainer acceptance remains separate. |
+| Required before GPU handoff | [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91), Patrick's 2026-10-17 sequencing update: bidirectional effective-motion touch/wake, mathematical focal origin and observable per-tick demand counts need implementation and CPU validation. Current all-edge force/centroid loops and speed determiner do not implement this. Green #149 checks permit bounded D review, not GPU handoff. #75 is optional. |
+| Pre-D design accepted | [Host workbench design](docs/pre-d-hot-workbench-design.md), #147: separate assembly/compile/runtime inputs and private ownership. [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145) remains open for host pinning/registration and actual GPU measurements. Broader rollups, analyst reasoning and process-failure hosting remain unbuilt. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
@@ -53,8 +55,25 @@ row-based population contract. See [the detailed direction](kernels/database/WOR
 and [layout](docs/warm-knowledge-cache-layout.md) preserve warm as the toolbox and
 hot as the host workbench where objects and relationships are assembled; backend
 execution memory is where their numerical projection runs together. Stage A
-stores supplied recipes; B supplies projection/normalization; C is accepted and merged in #146. The pre-D design is accepted in #147;
-D awaits explicit release. Ordinary vectors do not establish pinned GPU transfer.
+stores supplied recipes; B/C supply projection and contextual fields. D was
+released in #148 after #147 acceptance and is implemented for review. It adds
+supplied active inputs and controlled session lifetime, not analyst reasoning,
+general rollups or process-failure isolation. Ordinary vectors are not pinned;
+GPU allocation/transfer qualification remains open in #145.
+
+**GPU handoff sequencing (Patrick, 2026-10-17):** complete and CPU-validate
+#91's effective-motion mechanism first. A changed centroid alone does not wake
+all dependents; test the combined positional effect, and evaluate every connected
+field of a woken particle. Combine centroid would-move flags with any-active,
+then place each flagged centroid once including sleeping members. Preserve
+carried motion and changed-input invalidation, and account for collective effects.
+Selected focal fields define the mathematical origin by ordinary centroid
+calculation, including the origin-dependent radial dampener. Report actual force
+evaluations separately from gate/adjacency visits, skipped/woken particles and
+flagged/recomputed centroids. The precise motion/resolution predicates must be
+stated; no arbitrary global epsilon or observed-zero-speed sleep rule is implied.
+Stage D review proceeds independently; its GPU command examples are held until
+this separate requirement is ready.
 
 **Private/local boundary (Patrick, 2026-10-16):** the analyst alone supplies its
 private/local information at active hot assembly. The cache manager has no role

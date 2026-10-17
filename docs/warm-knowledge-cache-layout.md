@@ -4,8 +4,9 @@
 [Stage A storage](../kernels/database/warm/README.md) is accepted and merged
 in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)
 is accepted/merged in #143 at `6ccd5a3`. C is implemented in #146, with no code
-blockers and all nine hosted checks green, accepted and merged at `43f418a`. D remains
-unreleased pending explicit #139 assignment. The [pre-D design](pre-d-hot-workbench-design.md)
+blockers and all nine hosted checks green, accepted and merged at `43f418a`.
+D is released in #148 and [implemented for review](../engine/docs/ACTIVE-WORKBENCH.md).
+The [pre-D design](pre-d-hot-workbench-design.md)
 is accepted in #147 under #145. The proposal wording below records the design's origin; the accepted
 [implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
 govern execution. No cold data migration or analyst implementation is included.
