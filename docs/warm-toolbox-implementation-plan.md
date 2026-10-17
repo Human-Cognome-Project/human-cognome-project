@@ -4,11 +4,12 @@ Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
 governs staged implementation. [Stage A](../kernels/database/warm/README.md) is
 accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
-[Stage B](../engine/docs/LETTER-PROJECTION.md) is accepted and merged in #143
-at `6ccd5a3`, with 53 pure and 38 native preparation checks.
-[Stage C](../engine/docs/MEMBERSHIP-FIELDS.md) is implemented for review under
-#144, with 25 pure and 44 native checks. D remains queued.
-None of these stages modifies cold stores.
+[Stage B](../engine/docs/LETTER-PROJECTION.md) is accepted/merged in #143 at
+`6ccd5a3`. C is implemented in #146 with 25 pure / 44 native checks and all nine
+hosted checks green, accepted and merged at `43f418a`. D additionally requires
+the separate [pre-D design review](pre-d-hot-workbench-design.md) in #145 and
+explicit release under #139. C acceptance alone does not release D.
+None of this work modifies cold stores.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
 Warm PostgreSQL stores reusable tools and reconstructible recipes. The hot
@@ -27,11 +28,33 @@ no analyst behavior, general scheduler or new field law is implemented.
 | Warm concurrency | Build outside the write transaction; lock/check bindings and publication head, then atomically insert the complete revision and advance its head. A stale expected head is a conflict. |
 | Exposure | Letter definitions retain character parent identities. A derived byte view creates byte occurrences; it does not replace the letter's parents with byte parents. |
 | Membership | Deduplicate membership paths per field/live occurrence. Preserve each ordered parent contribution separately. |
-| Hot memory | Reuse the existing packed SoA host vectors and matching Taichi Ndarrays in `field::Harness`, with native occurrence/provenance metadata. No new arena or zero-copy backend. |
+| Hot memory | Host workbench assembles objects/relationships; its numerical projection runs in backend execution memory. Existing SoA/Ndarrays are the comparison baseline. Portable host allocation/pinning, direct assembly, compiler fit and restart require pre-D #145 design review before implementation. |
 | Geometry | Caller-supplied, versioned component spheres and centroids, checked by the existing enclosure API. No inferred packing or universal radius. |
 | Private/temporary roots | Patrick reserved `y*` for personal data and `z*` for temporary objects on 2026-10-15. These are prefix families, not concrete object allocations. Instance-qualified identities and explicitly authorized full-couplet bindings remain required. |
 
-## Identity and ownership shared by A–D
+## Current ownership correction — 2026-10-16
+
+Warm is the shared tool/part box; hot is the analyst-owned host workbench where
+objects and relationships are assembled; GPU memory runs the prepared numerical
+projection. Personal/local information enters only through a separate
+analyst-owned active input boundary. It must never pass through cache-manager
+source reads, warm publication/acquisition/refresh or manager reporting.
+
+Protect both model and interacting entities' private stores by **access scope
+before lookup**, not by manager-side content reading/filtering/redaction. Private
+DB codes and data are absent from normal manager requests and source directories;
+reject attempted private scopes before source resolution without inspecting or
+logging private contents/codes. Public/shared knowledge about an entity can
+still use the shared cache. The [pre-D design](pre-d-hot-workbench-design.md)
+specifies supplied private fixtures, active ownership, reporting and reconstruction.
+
+This supersedes earlier proposals to integrate personal definitions/recipes
+through the manager's warm toolbox. A's existing scoped storage and tests remain
+capability evidence, not authorization for that pipeline. No stored fixture is
+reset or deleted, no new address is allocated, and no blanket temporary-object
+ownership change follows from this clarification. Analyst reasoning is unbuilt.
+
+## Identity vocabulary and recorded Stage A capabilities
 
 Use `codec::Address` without wildcards for an object address. Its PostgreSQL
 representation remains `text[] COLLATE "C"`, one Base62 couplet per element.
@@ -48,34 +71,41 @@ Never use notation, source byte text or a GPU slot as the object's identity.
 | Parent edge | `(OccurrenceKey, FieldKey, source/projection ordinal path)`, with exact integer contribution. Repeated parents retain distinct edges. |
 | Membership edge | `(OccurrenceKey, Membership FieldKey)`, once despite multiple paths through the membership graph. |
 
-Within one bundle/study, each `ObjectKey` resolves to exactly one `ToolRef`.
+Within one warm bundle, each `ObjectKey` resolves to exactly one `ToolRef`.
 Conflicting revisions of the same object are rejected; different studies may
 pin different revisions. Native opaque IDs encode the full object/occurrence
-keys losslessly; CPU-side maps retain typed keys and provenance.
+keys losslessly; CPU-side maps retain typed keys and provenance. Analyst-local
+inputs retain the same scoped object identity with their own immutable local
+source/version provenance; they are not given a fictitious warm publication.
+Each object resolves to one coherent source revision in a workbench generation.
 
 Root resolution uses a validated configuration directory. A binding names the
 scope, address prefix, source handle, source epoch, policy version and permitted
 writer actors. Reject overlapping prefixes within a scope, unknown prefixes,
 wildcards in concrete bindings and an incorrect instance context. Source handles
-resolve connections outside object records. The initial source directory contains
-shared `00` and `02`. Configuration also records the personal `y*` and temporary
-`z*` family reservations: the first symbol of the first couplet is `y` or `z`.
+resolve connections outside object records. The manager source directory contains
+shared `00` and `02`, with no private/local codes or handles. The personal `y*`
+and temporary `z*` family reservations are separate ownership metadata: the
+first symbol of the first couplet is `y` or `z`.
 The asterisk is descriptive prefix notation, never a stored address symbol.
 It gives `01` no meaning and assigns no internal subdivisions or expansion blocks.
-Personal/temporary `root_binding.prefix` values contain only full codec-valid
-couplets under the appropriate family. Reservation alone grants no object address
-or writer authority; a concrete
-binding/allocation must be supplied explicitly before private/temporary writes.
+Stage A's generic personal/temporary `root_binding.prefix` capability uses full
+codec-valid couplets under the appropriate family. Reservation alone grants no
+object address or writer authority; concrete bindings were supplied explicitly
+for its isolated scoped-storage tests.
+That capability does not permit manager private writes or reads. Analyst-private
+inputs bypass this warm path entirely. Temporary ownership remains under its
+separately accepted binding rules.
 Internal subdivision, writer delegation and eventual lifetime policy remain for
 later discussion; the bounded retention policy below does not settle those choices.
 The initial `00` / `02` bindings share one validated pair-deployment epoch UUID,
 with the separate export hashes retained on their binding records. Adopting a
 new pair changes both bindings in one warm transaction. Do not combine independently
 installed source epochs that have not been validated as a compatible pair.
-Private prefixes must not shadow shared prefixes. Source references to `00` /
-`02` resolve in shared scope; other source references require the source
-instance's explicitly configured binding. Private prefixes can be reused in
-different instance scopes without conflating their identities.
+Source references to `00` / `02` resolve in shared scope. Analyst-local references
+resolve only at the separate active input boundary, never via a manager fallback.
+Private prefixes can be reused in different instance scopes without conflating
+their identities; they must not shadow shared identity.
 
 Trusted configuration creates writer contexts; a request cannot grant itself
 an actor or role. Manager writers prepare shared source-backed tools. A temporary
@@ -95,13 +125,13 @@ it unchanged without claiming the creator's address. New constructions still
 require their own authorized addresses; a supplied body cannot replace a reference
 or contradict one of its pinned dependencies.
 
-Shared tool bodies may depend only on shared definitions. Instance-scoped
-tools may depend on shared definitions or that same instance's definitions;
-cross-instance private references are rejected. Every bundle/geometry recipe
-has a local owning instance even when all its tools are shared. A trusted reader
-context must match that owner and be authorized for every private dependency.
-No publication operation exports a bundle or promotes private-derived tools
-into shared source identity. Shared source ownership grants no release right.
+Shared tool bodies may depend only on shared definitions. Every shared bundle
+has a local consumer owner even when all tools are shared; that owner field does
+not authorize private payloads in the manager. The generic A API also enforces
+same-instance dependencies for scoped tools in isolated capability tests. Those
+checks are not a production private integration path. Private-derived active
+assemblies are never published through the manager, and shared source ownership
+grants no release right for a joint study or its results.
 
 ## A. PostgreSQL storage and coherent publication
 
@@ -324,7 +354,7 @@ fixed array counts starts a new fixed study, not an in-place resize.
 
 ## C. Membership fields
 
-Implemented for review under #144: a minimal extension to `assembly::StudyInput`,
+Accepted and merged in #146 at `43f418a`: a minimal extension to `assembly::StudyInput`,
 explicit membership
 requests `(occurrence_id, group_ObjectKey)` and `GroupKind::Membership`.
 Preparation validates the selected active occurrence and generates a whole-mass
@@ -352,20 +382,32 @@ occurrence. Parent edges retain ordinal paths/counts; sibling participation
 remains once per active occurrence. Do not merge field kinds, split parent
 fields by ordinal or rewrite the warm/cold source membership graph.
 
-## D. Hot working object store and handoff
+## D. Host workbench and native execution handoff
 
-Use a fixed-study native owner for the lifetime of the initial study:
+**Unreleased:** A–C and the expanded #145 design (#147) are accepted.
+Explicit #139 implementation release is still required. The [pre-D design](pre-d-hot-workbench-design.md)
+records the current source trace, candidate interfaces and unexecuted experiments.
 
-- Pinned `BundleRef`, typed definition/occurrence/projection maps and exact
-  counts on the CPU; a slot is not an identity.
-- Packed SoA host vectors already defined in `field/field.h`, indexed
-  `field * item_count + item`, with i32 edge/contact indices and f32 numerical
-  fields. Exact integers and provenance stay in native CPU metadata.
-- Matching existing Taichi `{fields, max(items,1)}` Ndarrays. Stage through
-  `FixedStudy`/`Harness::publish`; the GPU never queries PostgreSQL.
-- The caller keeps SNode layouts and bundle pins alive until study teardown
-  and completion of outstanding device work. Host positions/velocities are
-  staging or last-downloaded values; the device is authoritative while ticking.
+The host workbench assembles objects and relationships from shared pinned tools
+plus a separate analyst-owned private/local input boundary. Pure scoped identity,
+exact contributions, geometry and logical layout live outside a particular
+Taichi Program. SNode pointers, executable bindings and device memory belong to
+a restartable session. A slot is not identity. The manager never sees private
+inputs, codes or joint reports.
+
+Compare the existing scalar SoA `{field_count,max(items,1)}` ABI with reusable
+stable native views that assembly can fill directly. CPU direct binding and
+backend-appropriate pinned bulk GPU transfer need explicit ownership, alignment,
+completion and evidence. Ordinary vectors, mapped storage, managed allocation
+and pinned staging are distinct capabilities. Existing packed arrays are a
+candidate, not a proven optimum; LMDB is dropped from the default path.
+
+Separate compile-time type/rank/layout/IR specialization from runtime values,
+buffer binding and allocation. Preserve `FixedStudy`'s bounded publication and
+field law while designing that seam. Count particles, fields, edges, degree
+distribution and update volume, including few-particle/high-field-density rollups.
+Secondary compression stays 1:1; hidden component fields can participate through
+an explicit exposed projection without making every hidden component a particle.
 
 Reconstruct the persisted initial recipe from the pinned bundle, then prepare
 native definitions, projections, membership edges, contacts and supplied geometry
@@ -376,22 +418,30 @@ Warm group anchors with NULL naming mass can still name membership fields.
 
 Use the existing enclosure function on supplied centroids/spheres, then the
 existing conversion/publication path to seed centroids before the first force
-pass. Warm-ready means a complete pinned tool bundle is available. Hot-ready
-additionally requires successful native staging, transfer and centroid seeding.
-Database commit success alone cannot signal hot-ready.
+pass. Shared tools available, a coherent workbench assembly and execution-ready
+are separate outcomes. Execution-ready requires completed native staging/transfer
+and centroid seeding. Neither a warm commit nor assembly completeness establishes
+that the backend is ready.
 
 An equal-count refresh uses the existing fail-closed `FixedStudy::publish`.
 On failure the model is non-runnable; recovery supplies a valid target through
 that supported path or creates a new fixed study. New counts require a new
 fixed study with a new study UUID. No live rollback, automatic state transfer,
 cross-study occurrence survival or concurrent device mutation is promised.
+Rebuild a restarted session from coherent logical inputs: shared pins plus
+separate analyst-owned local snapshots. Missing private inputs leave the joint
+study incomplete rather than causing a manager lookup. Mathematical coherence
+uses explicit fixture invariants/tolerances across sessions/backends; dynamic
+byte identity or equal trajectories are not required. Exact identities, counts
+and initial transfer integrity remain exact contracts. Controlled restart and
+unproven process-failure isolation are distinguished in the pre-D design.
 
 ## Implementation sequence and exits
 
 These interfaces were accepted together in #137. Tracker #139 records A accepted
-and merged in #141 and B accepted/merged in #143. C is released in #144 and
-implemented for review; D remains a sequenced follow-up. All stages consume A's
-shared values
+and merged in #141 and B accepted/merged in #143. C is reviewed with green CI in
+#146, accepted and merged at `43f418a`. D additionally requires reviewed #145 design
+and explicit release. All stages consume the shared value vocabulary
 rather than defining competing identities or publication rules.
 
 | Stage | Planned code boundary | Required acceptance |
@@ -399,7 +449,7 @@ rather than defining competing identities or publication rules.
 | A | `kernels/database/warm/` native `toolbox`, read-only `cold_reader` and separate `schema.sql`, with codec/libpq dependencies | Isolated new DB, two native writer connections, same-head race (one winner/one conflict), unrelated selections, full rollback on a late relationship/recipe failure, exact reciprocal/closure and complete recipe read-back, pin/epoch behavior and no cold writes. |
 | B | `engine/src/assembly/letter_projection.{h,cpp}` pure native projection records/function; no PG dependency | English/French `A` retain distinct linguistic keys and shared core parent, a multibyte letter, Dutch `íj́`, repeated `aá`, exact conservation and ordinal round-trip, aggregate/parts exclusion; letter-only units 1 with inactive byte alternatives, byte-only units 1, mixed byte 1 / letter 64, and converted geometry/initial coordinates. |
 | C | Small explicit membership input/kind extension in `engine/src/assembly/`, using the existing field kernel | English duplicate paths count once per target/live occurrence; two uses remain distinct; repeated parents still produce two contributions; byte/letter membership mass agrees and seeded response acts on the selected parts; NULL naming anchors never become live masses. No aggregate/part trajectory-equivalence assertion. |
-| D | Fixed-study adapter/test application consuming A–C and existing packed host/device layouts | Fresh-client recipe round-trip described below, source closure to warm publication to hot-ready, deterministic record checks and seeded first force, independent mutable instances, supported equal-count refresh/failure, no SQL in tick and cold source tables unchanged. |
+| D | Host workbench/adapter consuming A–C after reviewed #145 design; portable native allocation and execution boundary | Shared fresh-client recovery plus separate supplied private-input join/access gate, compilation/value/transfer ownership, seeded force, density-aware measurements, bounded restart/refresh/failure, mathematical coherence, no SQL in tick or cold source mutation. |
 
 The A–D round-trip fixture publishes two entries of the **same English `A`**:
 entry 0 selects the aggregate and entry 1 selects its byte part. Both retain their
@@ -414,19 +464,27 @@ initial state and seeded first force. Ticking the hot study must leave the store
 recipe unchanged. Failure injected after a recipe row insertion must expose no
 partial new bundle or head advancement.
 
+That persisted fixture contains shared inputs only. An additional private-context
+fixture must join at the analyst-owned active boundary; it cannot be recovered
+from or sent into the manager's warm recipe. Manager access-scope rejection must
+precede source lookup, while numerical joint results return to the active owner.
+Private-derived geometry/placements/context stay active even if their tool keys
+are shared; the manager request is not a serialization of the joint study.
+
 Use new uniquely named fixture databases; never reset/drop/truncate a retained
 database. Integration uses the accepted seed pair read-only. Tests can run the
 existing native CPU backend; retain the same engine path for a later actual
 GPU run and report it separately. No unexecuted GPU result is claimed.
 
-Private/temporary writer acceptance uses explicitly authorized concrete bindings
+Stage A's executed scoped-storage acceptance used explicitly authorized concrete bindings
 inside `y*` / `z*`, supplied in isolated fixture configuration rather than allocated
 as production subdivisions by the implementation. Test both family reservations,
 reject a wildcard as an object identity, and reject writes with only a reservation
 but no binding (`UnboundRoot`). Initial shared-letter work and B–D fixtures need
-no internal personal/temporary allocation. Do not mark private integration accepted
-from rejection-only tests. Multi-writer/private coverage remains part of A's full
-exit, even if the shared-letter milestone is delivered first.
+no internal personal/temporary allocation. Those tests validate generic storage
+capabilities; they do not authorize private data in a production manager cache.
+The current private join/access/restart acceptance is the distinct active-only
+boundary in #145, using supplied inputs without implementing an analyst.
 
 ## Maintainer actions
 
@@ -434,8 +492,9 @@ The top-level personal/temporary reservation decision is supplied: `y*` / `z*`.
 Do not request it again or treat the deferred internal layout as a gate on shared
 `00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
 organizational response on exposed byte parts were accepted together in #137.
-Stages A/B are accepted in #141/#143; review C under #144 before
-releasing D through #139. No additional cold data
+Stages A/B are accepted in #141/#143. C in #146 has no code blockers and all
+checks green, accepted and merged at `43f418a`. Review the expanded pre-D design under
+#145 before any explicit D release through #139. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
 
@@ -480,8 +539,10 @@ source identity, caller-supplied geometry/state and numerical overflow rejection
 Both new suites and existing preparation/CPU assembly tests pass. B uses A's
 engine-independent values and returns normalized recipes plus bounded native
 input values; no PostgreSQL dependency or database mutation is introduced.
-Stage B is accepted in merged #143. Membership fields are now implemented for
-review in C; the full database-to-hot adapter remains unbuilt D work.
+Membership fields are accepted and merged in #146; all nine hosted checks
+are green. Full workbench/backend handoff, private-input access gating, host
+pinning and component recovery remain unbuilt and require the pre-D review.
+
 
 ## Stage C execution
 
@@ -493,4 +554,4 @@ Native CPU fixtures verify seeded centroid data and membership response through
 the existing FixedStudy/field boundary in letter-only, byte-only and mixed
 exposure. Existing field, preparation, assembly and projection suites pass.
 No source memberships, database tables or field laws change. Full warm pin and
-database-to-hot materialization remains Stage D, queued until C acceptance.
+database-to-hot materialization remains Stage D, awaiting explicit release after the accepted #147 pre-D design.

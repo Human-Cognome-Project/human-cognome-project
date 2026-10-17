@@ -1,6 +1,6 @@
 # Contextual membership fields — Stage C
 
-Implemented for review under [#144](https://github.com/Human-Cognome-Project/human-cognome-project/issues/144),
+Accepted and merged in #146 at `43f418a`, closing [#144](https://github.com/Human-Cognome-Project/human-cognome-project/issues/144),
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).
 Stage B is accepted and merged in #143 at `6ccd5a3`. The full database-to-hot
 adapter (D) remains queued in #139.

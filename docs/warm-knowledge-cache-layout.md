@@ -3,10 +3,10 @@
 **2026-10-16 status:** Accepted through merged #137 and staged in #139. Native
 [Stage A storage](../kernels/database/warm/README.md) is accepted and merged
 in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)
-is accepted and merged in #143 at `6ccd5a3`.
-[Stage C membership fields](../engine/docs/MEMBERSHIP-FIELDS.md) are implemented
-for review under #144; full hot handoff remains queued. The proposal wording
-below records the design's origin; the accepted
+is accepted/merged in #143 at `6ccd5a3`. C is implemented in #146, with no code
+blockers and all nine hosted checks green, accepted and merged at `43f418a`. D remains
+unreleased pending explicit #139 assignment. The [pre-D design](pre-d-hot-workbench-design.md)
+is accepted in #147 under #145. The proposal wording below records the design's origin; the accepted
 [implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
 govern execution. No cold data migration or analyst implementation is included.
 
@@ -17,26 +17,31 @@ record; no cache-manager scheduler or analyst is built by it.
 
 ## Purpose and settled directions
 
-The warm knowledge cache is expected to use PostgreSQL and permit multiple
-writers. The cache manager supplies prepared primary-feed objects ahead of
-analyst demand or in response to an analyst request. The analyst may also use
-this toolbox to prepare temporary tool definitions and integrate personal
-databases. This is more than multiple cache-manager workers.
+The warm knowledge cache uses PostgreSQL and permits multiple writers. The cache
+manager supplies shared prepared tools/parts ahead of demand or on request.
+Patrick's 2026-10-16 clarification supersedes earlier manager/private-tool wording:
+private/local information belongs to the analyst and joins only in active hot
+assembly. It never enters the manager's warm publication/acquisition/refresh
+path. Existing generic scoped storage and `y*` reservation do not authorize it.
 
-**Warm is the toolbox; hot is the active working object store.** PostgreSQL
-retains prepared definitions/components and reconstructible assembly descriptions.
-Selected live instances and their active state belong to the hot assembly,
-materialized in a fast memory layout for direct GPU feeding. The concrete hot
-memory backend remains open. A stored assembly description is not that live
-working store. Root ownership and private provenance are independent of
-cold/warm/hot residence.
+**Warm is the tool/part box; hot is the host workbench; GPU memory runs the
+prepared objects together.** The workbench holds objects and relationships in
+progress and prepared generations, combining shared tools with analyst-owned
+local inputs. Its numerical projection feeds the execution surface. Backend-
+appropriate pinned host transfer is a design requirement under #145, with
+ordinary vectors as the existing baseline. GPU reporting returns to the active
+owner; it grants no permission to propagate private data to the cache manager.
 
 Use root-addressing protocols to distinguish owning sources and working
 namespaces. Shared-source, personal-source and temporary objects use the same
 structural representation; their origins do not require separate object types
 or a copy of every shared definition. Root rules govern writer authority,
 lifetime and permitted propagation. Addresses identify those rules; actual
-write paths must enforce them.
+write paths must enforce them. Exclude private database namespaces/handles from
+manager requests and authorized source resolution before any content lookup.
+Do not implement manager-side reading followed by filtering, classification or
+redaction. Public/shared knowledge about an entity remains a shared-cache concern;
+its private records are outside the manager's access scope.
 
 For the first study, language letters are the primary object LoD; their defining
 UTF-8 bytes are the underlying base level. The intervening core-character
@@ -47,11 +52,11 @@ invent family edges absent from the seed data.
 
 ## Root protocol
 
-| Root role | Identity and ownership | Warm-cache use |
+| Root role | Identity and ownership | Pipeline use |
 |---|---|---|
 | Shared core `00` | Existing computational/encoding identities | Cache manager prepares source-backed definitions. |
 | Shared Linguistics `02` | Existing language endpoint/group identities | Cache manager prepares letter objects and grouping relationships. |
-| Personal prefix family `y*` | Reserved by Patrick on 2026-10-15; internal subdivisions remain deferred | Integrate source-backed personal objects locally while retaining their source identity. |
+| Personal prefix family `y*` | Reserved by Patrick on 2026-10-15; internal subdivisions remain deferred | Analyst-owned private inputs enter active hot assembly only; no cache-manager access or warm integration. |
 | Temporary prefix family `z*` | Reserved by Patrick on 2026-10-15; internal subdivisions and eventual lifetime remain deferred | Analyst-prepared temporary definitions receive their own identities and reference shared/private definitions; live uses belong to hot assembly. |
 
 Here `*` describes the first-symbol prefix family; it is never a character stored
@@ -64,15 +69,18 @@ room to consider further allocation later without assigning it now.
 Propose a configuration-level root directory: address prefix, owning instance
 where applicable, source binding, allowed writer role(s), lifetime rule and
 outward-propagation rule. Specify unambiguous prefix resolution and reject
-unknown or conflicting bindings. Physical source bindings belong behind the
-cache-manager boundary; object records remain location-blind.
+unknown or conflicting bindings. Shared physical sources belong behind the
+cache-manager boundary; private/local bindings belong solely to the separate
+analyst input boundary. Object records remain location-blind. Never give the
+manager private DB codes to inspect before deciding whether they are private.
 
 The concrete proposal qualifies private/temporary addresses by owning instance
 UUID, while shared identities retain shared scope. This is an implementation
 choice for review, separate from the accepted prefix reservations. A cache-local
 revision/publication key must not silently replace the object's address identity.
-Preparing a shared object in a private warm cache does not allocate another shared
-identity or authorize writing back to its source.
+Shared cached revisions do not allocate another shared identity or authorize
+source writes. Earlier private warm-cache integration wording is superseded by
+the analyst-owned active boundary; scoped identities remain useful there.
 
 ## Proposed logical records
 
@@ -83,7 +91,7 @@ keys in the implementation plan.
 | Record group | Required content | Role |
 |---|---|---|
 | Root bindings | Root/prefix and the rules above | Resolve ownership, allowed writes and source context. |
-| Prepared definition | Full object address, prepared revision, source dependency references, exact structural mass when known, preparation completeness | Reusable object description; shared and personal source identities are retained. |
+| Prepared definition | Full shared object address, prepared revision, source dependency references, exact structural mass when known, preparation completeness | Reusable shared warm tool. Analyst-local definitions retain their separate source/version at the hot input boundary. |
 | Ordered construction | Owning definition/revision, ordinal, referenced constituent identity/revision, exact contribution | Preserve repetitions and reconstruct the selected base structure. |
 | Membership links | Owning object/group references and their direct reciprocal lists | Keep language/family organization separate from literal construction. |
 | Study assembly description | Study/working root, selected definitions/revisions, primary boundaries, equivalence/compression attachments and exposure choices | Reconstructible recipe for a focus, not live working state or permanent LoD on a cold identity. |
@@ -193,16 +201,16 @@ The proposal specifies letter-only units 1 even with declared inactive byte
 alternatives; exposed-byte studies use byte units 1 and letter units 64. Exposure
 is normalized before native `prepare`, which does not infer that rule itself.
 These choices were accepted in #137. Stage A stores supplied fixtures; B supplies
-accepted normalization/projection, and C supplies contextual membership fields
-for review. Full hot materialization remains a later stage.
+accepted normalization/projection, and C supplies accepted contextual membership fields. Full hot materialization remains a later stage.
 
 ## Multiple writers and warm publication
 
-Proposed ownership: cache-manager writes refresh source-backed prepared
-definitions; analyst writes own temporary constructions under the working
-root. Integrating a personal object does not entitle either writer to overwrite
-its source or another writer's working object. If the analyst needs to vary a
-shared definition, construct a working-root object referencing it.
+Cache-manager writes refresh shared source-backed tools. Analyst-owned private
+constructions remain at active hot assembly and do not pass through warm
+publication. Generic temporary writer concurrency remains a built Stage A
+capability under its accepted bindings; this clarification does not assign a
+new policy to every `z*` object. Shared source definitions remain unchanged when
+the analyst adds local context or working relationships.
 
 Propose staged revisions followed by transactional publication of the ready
 revision and its dependency set. A competing update to the same publication
@@ -234,10 +242,12 @@ reasoning or a new scheduler.
 
 ## Hot materialization and engine readiness
 
-A native consumer pins the warm definitions, creates the selected working
-instances and prepares the engine-facing data. Hot readiness is a separate
-outcome from warm publication. The layout does not choose an arena, buffer
-format or other hot memory backend.
+The analyst-owned workbench consumes pinned shared warm tools and separately
+supplied local fixtures/inputs, assembles working instances and prepares native
+compiler/layout inputs plus numerical execution values. Tools-ready, assembly
+completeness and execution-ready are separate outcomes. The [pre-D design](pre-d-hot-workbench-design.md)
+compares portable host surfaces, direct assembly, transfer and restart lifetimes;
+it is not implemented or released merely by C acceptance.
 
 The existing bounded `FixedStudy::publish` invalidates its live harness before
 preparation. A failed publication leaves it non-runnable, and refresh rejects
@@ -255,16 +265,18 @@ count-changing hot refresh is authorized by accepting a warm revision.
 
 ## Personal integration and reciprocal boundaries
 
-A temporary object can reference both shared and personal objects without
-copying their identities. Its working root remains instance-local. Any reverse
-links created for that construction live in the local warm projection; they
-must not become writes into a global core merely because the parent has a
-shared root. Distinguish projected warm reciprocals from source-store records.
+At active hot assembly, an analyst-owned construction can reference shared and
+local objects without copying their identities. Contextual/reciprocal links
+belong to that instance-owned workbench, not the manager's warm projection or
+source stores. No shared-core write is implied by referencing a core parent.
+The analyst's private source database can remain persistent; active-only entry
+in this pipeline does not mean deletion of its source records.
 
 Shared-root ownership is not a release permission for a mixed/private-derived
-assembly. Root rules and dependency provenance must prevent private material
-from being laundered through a shared cache entry. Refreshing a shared dependency
-must preserve the analyst's construction and its private boundaries.
+assembly. Private DB codes/data are absent from the manager's normal workload;
+attempted private-scope requests must fail before source lookup. A shared refresh
+delivers new shared tools to the active owner, which retains responsibility for
+its private inputs, local context, joint assembly and reports.
 No automatic outward promotion is introduced. The existing
 [instance-local boundary](instance-local-data.md) remains governing.
 
@@ -275,16 +287,17 @@ No encryption scheme or result-release mechanism is chosen here.
 ## Staged implementation handoff
 
 The interfaces below were accepted together in #137. Tracker #139 records Stage A
-accepted/merged in #141 and B accepted/merged in #143. C is implemented for
-review under #144; D remains queued until C acceptance.
+accepted/merged in #141 and B accepted/merged in #143. C is reviewed with green CI
+in #146, accepted and merged at `43f418a`. The expanded #145 design is accepted in #147; D still requires
+explicit release in #139; C acceptance alone is insufficient.
 Use these shared identities and readiness semantics in focused stage PRs.
 
 | Stage | Deliverable and boundary | Depends on | Acceptance evidence |
 |---|---|---|---|
-| A. Warm toolbox storage | Minimal PostgreSQL logical/physical layout, root resolution, writer ownership, temporary/private definitions, dependency revisions and coherent publication. No live engine state. | Reviewed shared identity and root contract. | Concurrent refresh/construction, complete reads, failed warm publication, retained temporary definitions, inward-only personal integration. |
+| A. Warm toolbox storage | Built PostgreSQL layout, scoped storage capabilities, dependency revisions and coherent publication. Production manager handles shared tools only. No live engine state. | Reviewed identity/root contract, with private active-only correction above. | Existing concurrency/publication/pin evidence remains; isolated personal-storage tests are capability evidence, not authority for a manager private-data path. |
 | B. Native construction projection | Letter/character/byte projection, retained source ordinals, exact masses and explicit scale roles; mapping to bounded native records. | Definition/reference interface from A; fixtures may precede DB integration. | ASCII, multibyte, Dutch multi-scalar component, repeated constituents and shared core parents without identity collapse or double-counting. |
 | C. Membership-field preparation | Preserve warm membership records; derive hot participation per target field/live occurrence and distinct group representations. | A's membership interface and B's occurrence/contribution contract. | Direct-plus-alphabet paths count once in English; different target fields and distinct instances remain separate. NULL group naming mass is not invented literal mass. |
-| D. Hot materialization and handoff | Consume pinned tools, materialize working instances and publish through the bounded engine interface. Specify the minimum fast memory layout needed in this stage's plan. | A–C interfaces and outputs. | Warm-ready versus hot-ready, seeded first-force data, supported equal-count refresh and non-runnable failure; no assumed live rollback. |
+| D. Host workbench and execution handoff | Consume shared tools plus separate analyst-owned supplied local inputs, assemble objects/relationships and prepare the backend surface. | A–C acceptance, reviewed #145 pre-D design and explicit #139 release. | Exact ownership/access boundary, native format and lifetime, density-aware comparisons, mathematical coherence, seeded execution and bounded restart/refresh/failure; no assumed live rollback. |
 
 Plan development should respect the `y*` / `z*` reservations while keeping internal
 allocation/delegation deferred. Specify source refresh markers, direct-follow

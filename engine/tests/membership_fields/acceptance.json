@@ -1,6 +1,6 @@
 {
   "stage": "C",
-  "status": "implemented_for_review",
+  "status": "accepted_merged",
   "issue": 144,
   "date_utc": "2026-10-16",
   "pure_fixture_checks": 25,
@@ -17,8 +17,14 @@
   "standalone_compiler": "GNU C++ 14.2.0",
   "native_compiler": "Clang 15.0.6",
   "native_backend": "CPU",
-  "cpu_exposure_profiles": ["letter_only", "byte_only", "mixed"],
+  "cpu_exposure_profiles": [
+    "letter_only",
+    "byte_only",
+    "mixed"
+  ],
   "source_data": "Pure bounded fixtures; no database mutation",
   "full_warm_to_hot_adapter": false,
-  "gpu_executed": false
+  "gpu_executed": false,
+  "pull_request": 146,
+  "merge_commit": "43f418a104b241a0c67a3bbe89a84026cc3fa965"
 }

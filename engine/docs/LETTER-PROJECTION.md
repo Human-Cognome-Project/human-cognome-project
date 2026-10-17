@@ -3,9 +3,10 @@
 Accepted and merged in [#143](https://github.com/Human-Cognome-Project/human-cognome-project/pull/143)
 at `6ccd5a3`, closing #142,
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).
-Stage A is accepted and merged in #141 at `e7acdea`.
-[Membership field generation (C)](MEMBERSHIP-FIELDS.md) is implemented for review
-under #144; the full database-to-hot adapter (D) remains queued in #139.
+Stage A is accepted and merged in #141 at `e7acdea`. C in #146 is reviewed with
+all nine hosted checks green, accepted and merged at `43f418a`. D requires the separate
+[#145 pre-D workbench design review](../../docs/pre-d-hot-workbench-design.md)
+and explicit #139 release. C acceptance alone does not release D.
 
 `assembly/letter_projection.{h,cpp}` consumes Stage A's `warm::ToolRef`, ordered
 `Parent`, geometry and normalized `Bundle` values. It has no PostgreSQL or Taichi

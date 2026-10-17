@@ -62,7 +62,7 @@ repeated parent occurrence. Exact counts produce the hot float shares; those
 shares are not archival count authority. Same-definition instances also share
 an automatically prepared whole-mass sibling field using the same law.
 
-**Stage C implementation for review (#144, 2026-10-16):** Explicit membership
+**Stage C accepted in #146 (2026-10-17, `43f418a`):** Explicit membership
 requests add a distinct membership field kind through that same edge shape and
 kernel. Each active occurrence contributes its whole mass once per target.
 [Contextual preparation](MEMBERSHIP-FIELDS.md) follows pinned upward memberships
