@@ -60,6 +60,11 @@ struct Selection {
 struct Contact {
   std::string a, b;
 };
+// Explicit field names, encoded losslessly from ObjectKey by typed callers.
+// Group anchors need no live Definition, geometry, slot or naming mass.
+struct Membership {
+  std::string occurrence, group;
+};
 struct StudyInput {
   int capacity{0};
   std::vector<StudyNode> nodes;
@@ -67,6 +72,7 @@ struct StudyInput {
   std::vector<Occurrence> occurrences;
   std::vector<Selection> selections;
   std::vector<Contact> contacts;
+  std::vector<Membership> memberships;
 };
-enum class GroupKind { SiblingDefinition, ParentValue };
+enum class GroupKind { SiblingDefinition, ParentValue, Membership };
 }  // namespace assembly

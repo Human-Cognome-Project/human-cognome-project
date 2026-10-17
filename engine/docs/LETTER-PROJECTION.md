@@ -1,9 +1,11 @@
 # Native letter/byte projection — Stage B
 
-Implemented for review under [#142](https://github.com/Human-Cognome-Project/human-cognome-project/issues/142),
+Accepted and merged in [#143](https://github.com/Human-Cognome-Project/human-cognome-project/pull/143)
+at `6ccd5a3`, closing #142,
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).
-Stage A is accepted and merged in #141 at `e7acdea`. Membership field generation
-(C) and the full database-to-hot adapter (D) remain queued in #139.
+Stage A is accepted and merged in #141 at `e7acdea`.
+[Membership field generation (C)](MEMBERSHIP-FIELDS.md) is implemented for review
+under #144; the full database-to-hot adapter (D) remains queued in #139.
 
 `assembly/letter_projection.{h,cpp}` consumes Stage A's `warm::ToolRef`, ordered
 `Parent`, geometry and normalized `Bundle` values. It has no PostgreSQL or Taichi
@@ -54,7 +56,8 @@ byte owner/character reference/ordinals. Complete-character equivalence is
 recorded only for a single-scalar whole. `ParentContribution` retains the live
 occurrence, typed parent-value field, source ordinal and exact contribution;
 repeated parents remain distinct edges to the same field. Membership graphs are
-preserved as source values but generate no membership fields in this stage.
+preserved as source values but generate no membership fields in B. Stage C
+separately derives contextual membership fields from these same pinned values.
 
 | Profile | Root units | Letter binding |
 |---|---|---|

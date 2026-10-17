@@ -1,0 +1,6 @@
+include(${CMAKE_CURRENT_LIST_DIR}/letter_projection.cmake)
+if(NOT TARGET membership_fields)
+  add_library(membership_fields STATIC ${CMAKE_CURRENT_LIST_DIR}/membership_fields.cpp)
+  target_link_libraries(membership_fields PUBLIC letter_projection)
+  target_compile_options(membership_fields PRIVATE -Wall -Wextra -Wpedantic)
+endif()

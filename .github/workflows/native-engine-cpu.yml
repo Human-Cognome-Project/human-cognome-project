@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test projection without PostgreSQL or Taichi
+      - name: Build and test projection and membership values without PostgreSQL or Taichi
         run: |
           cmake -S engine/tests/letter_projection -B /tmp/hcp-projection
           cmake --build /tmp/hcp-projection -j 2
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run native CPU functional suite
         run: |
-          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test|preparation_test|assembly_test|letter_projection_test|letter_projection_native_test|index_cap_test)$'
+          ctest --test-dir engine/build             --output-on-failure             -R '^(engine_smoke_test|field_test|preparation_test|assembly_test|letter_projection_test|letter_projection_native_test|membership_fields_test|membership_fields_native_test|index_cap_test)$'
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |
