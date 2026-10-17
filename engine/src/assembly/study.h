@@ -39,6 +39,7 @@ struct PreparedStudy {
   std::vector<Group> groups;
   std::vector<Participation> participation;
   std::vector<ContactSlots> contacts;
+  std::vector<int> focal_groups;
 };
 
 // Recomputes derived geometry/scale on publication. An unchanged prepared
@@ -55,6 +56,8 @@ class FixedStudy {
   void publish(const StudyInput &input, const field::Parameters &parameters);
   void tick(const field::Parameters &parameters) { fields_->tick(parameters); }
   void download() { fields_->download(); }
+  void set_tick_mode(field::TickMode mode) { fields_->set_tick_mode(mode); }
+  const field::Demand &demand() const { return fields_->demand(); }
   bool ready() const { return fields_->ready(); }
   const std::string &error() const { return error_; }
   const PreparedStudy &prepared() const { return prepared_; }

@@ -80,13 +80,14 @@ struct Param {
 
 // A kernel built from engine IR, compiled once and launched many times.
 // Argument ids follow the declaration order of |params|.
+enum class MathMode { Default, Strict };
 class CompiledKernel {
  public:
   CompiledKernel() = default;
-  CompiledKernel(Runtime &runtime,
-                 const std::string &name,
+  CompiledKernel(Runtime &runtime, const std::string &name,
                  std::unique_ptr<taichi::lang::Block> body,
-                 const std::vector<Param> &params);
+                 const std::vector<Param> &params,
+                 MathMode math = MathMode::Default);
 
   taichi::lang::LaunchContextBuilder make_context();
   void launch(taichi::lang::LaunchContextBuilder &ctx);

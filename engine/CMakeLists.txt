@@ -26,7 +26,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
-add_library(field_core STATIC src/field/field.cpp)
+add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -54,6 +54,21 @@ target_link_libraries(field_test PRIVATE field_core)
 add_test(NAME field_test COMMAND field_test)
 set_tests_properties(field_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+
+add_executable(activity_test tests/activity_test.cpp)
+target_include_directories(activity_test PRIVATE tests)
+target_link_libraries(activity_test PRIVATE field_core)
+add_test(NAME activity_test COMMAND activity_test)
+add_test(NAME activity_parallel_test COMMAND activity_test --parallel)
+set_tests_properties(activity_test activity_parallel_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+
+add_executable(activity_assembly_test tests/activity_assembly_test.cpp)
+target_include_directories(activity_assembly_test PRIVATE tests)
+target_link_libraries(activity_assembly_test PRIVATE membership_fields study_assembly)
+add_test(NAME activity_assembly_test COMMAND activity_assembly_test)
+set_tests_properties(activity_assembly_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 
 foreach(suite preparation_test assembly_test)
   add_executable(${suite} tests/${suite}.cpp)

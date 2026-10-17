@@ -1,6 +1,8 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,6 +20,27 @@
 // Nothing here decides what the data means. It moves state through one tick.
 namespace field {
 
+namespace detail {
+class Activity;
+}
+enum class TickMode { Selective, AllLoaded };
+struct Demand {
+  std::uint64_t particles_loaded{0}, particles_exposed{0}, fields_loaded{0},
+      fields_exposed{0}, edges_loaded{0}, edges_exposed{0};
+  std::uint64_t particles_evaluated{0}, particles_skipped{0},
+      particles_moved{0}, particles_woken{0};
+  std::uint64_t force_requests{0}, force_evaluations{0}, force_zero_response{0},
+      force_skipped{0}, contact_evaluations{0};
+  std::uint64_t gate_checks{0}, gate_rejected{0}, geometry_rejected{0};
+  std::uint64_t touch_adjacency_visits{0}, force_mask_visits{0},
+      centroid_mask_visits{0};
+  std::uint64_t centroid_gate_visits{0};
+  std::uint64_t centroid_touch_edges{0}, centroid_reduction_edges{0};
+  std::uint64_t centroids_flagged{0}, centroids_recomputed{0};
+  std::array<float, 3> focal_origin{};
+  double tick_ms{0};
+};
+
 // Packed structure of arrays. Element f of item i lives at f * count + i, so
 // every pass reads one contiguous run per field.
 enum ParticleField {
@@ -30,9 +53,16 @@ enum ParticleField {
 
 enum GroupField {
   // Read by the force pass: the centroid as of the end of the previous tick.
-  kCenX = 0, kCenY, kCenZ, kCenM,
-  // Written by the centroid pass: the centroid the next tick will read.
-  kAccX, kAccY, kAccZ, kAccM,
+  kCenX = 0,
+  kCenY,
+  kCenZ,
+  kCenM,
+  // Weighted offsets from the previous published centre, plus cached mass.
+  // Reducing offsets preserves collective sub-ULP changes in large frames.
+  kAccX,
+  kAccY,
+  kAccZ,
+  kAccM,
   kGroupFieldCount
 };
 
@@ -79,12 +109,18 @@ class Harness {
           int group_count,
           int edge_count,
           int contact_count = 0);
+  ~Harness();
 
   int particle_count() const { return particles_; }
   int group_count() const { return groups_; }
   int edge_count() const { return edges_; }
   int contact_count() const { return contacts_; }
   bool ready() const { return ready_; }
+  void set_tick_mode(TickMode mode);
+  // Explicit prepared group slots, not automatic focal-field selection.
+  // An empty selection retains the legacy fixed coordinate origin.
+  void set_focus(const std::vector<int> &groups);
+  const Demand &demand() const { return demand_; }
 
   // Host staging, in the packed layout above.
   std::vector<float> particle_data;
@@ -94,7 +130,7 @@ class Harness {
   std::vector<int> contact_int_data;
   // The universal mass: the total mass of the construct, each particle
   // counted exactly once, used by radial velocity damping.
-  // Written on-device each tick by the clear pass;
+  // Rebuilt on-device at publication and reused until the next publication;
   // not staged from the host.
   std::vector<float> universal_data;
 
@@ -135,12 +171,12 @@ class Harness {
   }
   void validate_staging() const;
 
-  void launch_clear();
+  void launch_clear(bool seed);
   void launch_force(const Parameters &p);
   void launch_contact(const Parameters &p);
   void launch_integrate(const Parameters &p);
   void launch_determine();
-  void launch_centroid(const Parameters &p);
+  void launch_centroid(const Parameters &p, bool seed);
 
   engine::Runtime *runtime_;
   int particles_;
@@ -149,6 +185,12 @@ class Harness {
   int contacts_;
   bool uploaded_{false};
   bool ready_{false};
+  TickMode mode_{TickMode::Selective};
+  bool invalidated_{true};
+  Parameters previous_parameters_;
+  std::uint64_t exposed_{0};
+  Demand demand_;
+  std::unique_ptr<detail::Activity> activity_;
 
   std::unique_ptr<taichi::lang::Ndarray> particle_array_;
   std::unique_ptr<taichi::lang::Ndarray> group_array_;

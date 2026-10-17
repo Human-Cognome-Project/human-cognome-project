@@ -215,6 +215,13 @@ PreparedStudy prepare(const StudyInput &input) {
   }
   count(target.participation.size());
   count(target.contacts.size());
+  std::set<int> focal;
+  for (const auto &field : input.focal_fields) {
+    const auto found = groups.find({field.kind, field.value});
+    require(found != groups.end() && focal.insert(found->second).second,
+            "assembly: focus requires distinct exposed fields");
+    target.focal_groups.push_back(found->second);
+  }
   return target;
 }
 
@@ -257,6 +264,7 @@ void FixedStudy::stage(const PreparedStudy &target, const field::Parameters &par
     fields_->contact_int(field::kContactB, int(i)) = target.contacts[i].b;
   }
   fields_->publish(parameters);
+  fields_->set_focus(target.focal_groups);
 }
 
 void FixedStudy::publish(const StudyInput &input, const field::Parameters &parameters) {

@@ -65,6 +65,11 @@ struct Contact {
 struct Membership {
   std::string occurrence, group;
 };
+enum class GroupKind { SiblingDefinition, ParentValue, Membership };
+struct FocalField {
+  GroupKind kind;
+  std::string value;
+};
 struct StudyInput {
   int capacity{0};
   std::vector<StudyNode> nodes;
@@ -73,6 +78,6 @@ struct StudyInput {
   std::vector<Selection> selections;
   std::vector<Contact> contacts;
   std::vector<Membership> memberships;
+  std::vector<FocalField> focal_fields;
 };
-enum class GroupKind { SiblingDefinition, ParentValue, Membership };
 }  // namespace assembly
