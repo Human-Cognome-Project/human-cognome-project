@@ -33,7 +33,9 @@ through warm publication/refresh/reporting; reject private scopes before source
 lookup, without content inspection. See the proposed [pre-D design](../docs/pre-d-hot-workbench-design.md).
 It investigates native compilation/value boundaries, portable host staging,
 field density and restartable Taichi within the continuously operating system.
-C acceptance alone does not release D; none of these new adapters is built here.
+C acceptance alone did not release D. Bounded adapters are now implemented for
+review in #149, separately from #91's motion mathematics; see the
+[current status](../AGENTS.md#current-state) before GPU handoff.
 
 The production path is C++. Python is not an HCP engine or data-layer
 implementation language. Python present inside the Taichi fork is upstream

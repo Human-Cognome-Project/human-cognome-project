@@ -21,7 +21,9 @@ references, not another mandatory reading sequence.
   reviewed with no code blockers and all nine checks green, accepted and merged at `43f418a`.
 - [Pre-D host workbench design](pre-d-hot-workbench-design.md) — accepted in #147 under
   #145; compilation/value boundaries, private/local active input, portable
-  allocation/transfer, restart and dense-field rollups. D still requires explicit release; no new runtime implementation is included.
+  allocation/transfer, restart and dense-field rollups. Its bounded implementation
+  is under review in #149; [current status](../AGENTS.md#current-state) records
+  the separate #91 math requirement before GPU handoff.
 
 ## Active implementation plans and built results
 
@@ -33,6 +35,9 @@ references, not another mandatory reading sequence.
   native preparation boundary and its limits.
 - [Object-support results](../engine/docs/OBJECT-SUPPORT-RESULTS.md) — what
   the bounded engine slice implements and how it was checked.
+- [Effective-motion CPU evidence](../engine/docs/EFFECTIVE-MOTION.md) — #91's
+  selective particle/centroid gates, supplied focal origin, demand counts and
+  separate review/integration requirement before local GPU execution.
 
 ## Current system map
 

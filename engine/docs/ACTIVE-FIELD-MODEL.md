@@ -1,6 +1,6 @@
 # Active field model and tick dependencies
 
-**Status (2026-10-10):** The native object-support corrections approved in
+**Status (2026-10-17):** The native object-support corrections approved in
 [#124](https://github.com/Human-Cognome-Project/human-cognome-project/pull/124)
 and [#125](https://github.com/Human-Cognome-Project/human-cognome-project/pull/125)
 are implemented. See [OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md)
@@ -8,6 +8,11 @@ for executed checks and settings. The recovered
 [operational plan](OPERATIONAL-PLAN.md) and [drift audit](DRIFT-AUDIT.md)
 retain historical mechanics. `field::Harness` owns field arrays and ticks;
 `assembly::FixedStudy` supplies a bounded native preparation/publication path.
+The #91 follow-up implements selective ticks, a supplied focal-field origin,
+bidirectional motion gates and demand reporting for review. Its precise f32
+predicate is described below; it does not settle a broader semantic resolution
+law or the open combined-destination question. [CPU evidence and reproduction](EFFECTIVE-MOTION.md)
+are separate from Stage D #149 and from unexecuted local GPU validation.
 
 ## Fixed-study SNode scale mapping
 
@@ -69,8 +74,8 @@ kernel. Each active occurrence contributes its whole mass once per target.
 of the owning letter, deduplicating paths and inheriting those groups on exposed
 byte occurrences. Parent ordinals/counts remain separate. NULL group naming
 masses remain metadata, without creating group particles or changing source
-memberships. Native CPU seeded-response checks pass; full warm-to-hot integration
-remains queued as D.
+memberships. Native CPU seeded-response checks pass; the bounded warm-to-hot
+integration is separately under review as Stage D #149.
 
 Exposure selections choose an aggregate or its declared parts, preserving
 exact total mass and excluding the other representation. This bounded path
@@ -95,49 +100,99 @@ total-mass divisions are guarded. Empty arrays have size-safe storage while
 logical loop counts remain zero.
 
 The dormant universal-attraction kernel and launcher were removed. Total
-mass is still counted once per particle each tick for radial damping.
-Integration, its brake and radial damping otherwise retain their prior
-behavior; the focused checks did not require retuning.
+mass is counted once per particle at publication and reused for radial damping.
+Group mass is also cached until republication. Integration, its brake and
+ordinary contact retain their prior laws; the radial term now uses the supplied
+focal origin rather than always measuring from coordinate zero.
 
-## Tick order and the proposed activity gate
+## Selective tick and the effective-motion predicate
 
-| Phase | Built `field::Harness::tick()` | Intended selective path |
-|---|---|---|
-| Load | Fixed-study publication prepares records, uploads arrays, seeds centroids and enables ticking. | Assemble a study-specific base; initialize mass/geometry and wake all exposed work needed to establish it. |
-| Force | Clear accumulators; force per **every** loaded edge; separate contact pass. | Evaluate every active field of each unresolved particle, sum its forces, and use the bidirectional movement ratio at that interaction to flag any centroid it would effectively move. |
-| Motion | Integrate every particle with carried velocity, brake and separate outward radial dampening; free slots are inert; run determiner. | Apply combined motive force and brake to active particles before declaring a particle resolved. |
-| Publish | Reduce **every** loaded edge to group mass/weighted position; publish all centroids. | After motion, reduce positions **once** for each centroid flagged by any interaction; reuse unchanged group mass; publish new positions for the next tick and wake connected work as needed. |
+The default `TickMode::Selective` path uses the following order. The
+`AllLoaded` reference mode evaluates all live particles and recomputes all
+positive-mass groups with the same numerical laws and reduction order.
 
-The interaction only needs to decide **whether** a centroid is effectively
-perturbed. It does not predict how far that centroid moves; end-of-tick
-placement uses the updated positions of all its participating members. The
-movement-expression ratio across masses can avoid a whole-aggregate wake for
-an interaction absorbed by its much smaller participant (person/Earth is a
-scale analogy). Multiple active interactions combine their flags with an
-**any-active** rule; their actual positional effects can still compound or
-cancel. If none flags the group, the published position is retained for now.
-This effective stability may allow tiny flex and is not a proof of identical
-pre/post positions.
+| Phase | Implemented calculation |
+|---|---|
+| Publication | Validate the supplied state and adjacency; seed inclusive centroids and masses; invalidate previous exclusions. |
+| Begin/touch | Form the focal origin. Consider continuing state, changed inputs, changed field-relative vectors and moved contact endpoints. These select candidates, not automatic wakes. |
+| Force | Each candidate visits **all** connected fields, including unchanged ones, then its ledgered contacts. Combine contributions before deciding movement. |
+| Motion | Apply whole-mass integration, carried velocity, the existing brake and focal radial term. A positional wake requires an actual change in the final stored f32 position. |
+| Flag | Use participating-mass movement ratios and retained collective contributions to flag groups before their placement. Multiple triggers combine with any-active. |
+| Place | Reduce every member of each flagged group, including sleeping members, once. Publish its centroid and retain rounding residue; unchanged groups keep their published position. |
 
-Once a centroid is republished, its linked participants can be woken on a
-following tick. Their other fields may in turn flag other centroids; the
-result is a self-limiting ripple as expressions cease to be significant for
-the active resolution. A particle that requires no motion can sleep until
-something relevant touches it. A few ticks of wake latency are intended to
-be acceptable in a long simulation, but the behaviour has not been bounded
-or measured. A model fully resolved by its equations is intended to stop
-moving without a separate forced-stop rule.
+Field and activity kernels explicitly disable fast-math reassociation, which
+could otherwise algebraically erase an intended rounding residue. Here `fl`
+denotes the actual backend f32 operations, without an added epsilon.
+For a candidate particle the calculation produces `(p_next, v_next)` from the
+combined force and previous state. It moves iff any component of
+`p_next != p_old`. `particles_woken` counts a positional movement following a
+tick without movement, including initial movement. A candidate with no movement
+is rejected by this positional gate even if its velocity changes. Such a
+velocity change remains stored and keeps the particle eligible on the next
+tick. Continuing exclusion requires the **full** position/velocity state to be
+fixed under unchanged inputs; the speed determiner is not a sleep rule.
 
-**Two distinct decisions:** the per-tick ratio gates whether to recompute and
-propagate that centroid now; *continuing* to omit a particle or field needs
-an exclusion predicate absolute for the current defined calculation, plus
-tracked changes that invalidate it. Changed edges, masses, study exposure,
-centroid dependencies, and parameters can wake work. A small measured effect
-alone is not such a predicate. The resolution/significance rule, exact
-particle-sleep predicate, and invalidation graph still need specification.
-Group **mass** is stable while member identities, shares, and masses are
-unchanged, even when positions change; the current clear/reduction pass
-recomputes it on every tick.
+A published centroid change first compares `fl(C_new - p)` with
+`fl(C_old - p)`. Identical vectors justify reusing that interaction's input.
+Otherwise the particle becomes a candidate and evaluates all its fields before
+the final positional decision. Several individually small field contributions
+are therefore not independently discarded. A changed focal origin makes all
+live particles candidates for the origin-dependent calculation. Contact
+dependencies are reconsidered after either endpoint moves.
+
+For edge `e` in group `g`, let `h_e = fl(m_particle * share_e)`, cached group
+mass `M_g`, actual integrated displacement `delta_p = fl(p_next - p_old)`, and
+published centroid `C_g`. A moved member flags the group if any component of
+
+```text
+fl(C_g + fl(h_e * delta_p / M_g)) != C_g
+```
+
+It also adds its weighted displacement to retained `R_g`, in source-edge order.
+The collective test `fl(C_g + fl(R_g / M_g)) != C_g` can flag the group even
+when none of its individual contributions does. `R_g` survives unflagged ticks.
+Any individual qualifying interaction keeps the flag set even if contributions
+cancel. This is a would-move Boolean, not a preliminary full centroid placement.
+
+Each flagged group then reduces weighted member offsets around its previous
+centroid: `S_g = sum fl(h_e * fl(p_member - C_g))`. Publication is
+`C_next = f32(f64(C_g) + f64(S_g) / f64(M_g))` for positive mass; exact zero
+mass publishes zero. The old additive `1e-20` denominator floor is replaced by
+an exact empty-mass guard so finite small masses retain an ordinary centroid.
+The remaining weighted residue is
+`R_g = f32(f64(S_g) - (f64(C_next) - f64(C_g)) * f64(M_g))`.
+Only final placement/residue arithmetic is widened; stored positions and the
+would-move predicates remain f32. Seeding reduces around a member
+position and retains its rounding residue as well. This preserves collective
+small changes that a sum of large absolute coordinates can erase. Group mass
+is recomputed only at publication. Stable source ordering and one writer per
+particle/group remove float-atomic scheduling order from these reductions.
+
+Group position publication only schedules a candidate check on the next tick;
+it never declares every participant awake. The bounded CPU ripple fixture
+reaches successive linked particles over four ticks and stops at a massive
+participant with no positional response. This is fixture evidence, not a
+general bound on settling or wake latency. Structural/mass/share/exposure,
+radius/contact and supplied state changes require republication. Parameter,
+mode and focal-selection changes invalidate exclusions directly.
+
+## Supplied focal fields and mathematical origin
+
+`StudyInput::focal_fields` explicitly names prepared `(GroupKind, value)` keys;
+raw harness callers provide group slots. Missing, duplicate and mass-zero
+fields are refused. Selected fields form the ordinary mass-weighted centroid
+`O = sum(M_g * C_g) / sum(M_g)`, computed as offsets around the preceding origin
+in stable group order. Field masses are their existing inclusive participating
+masses; overlapping selected fields retain those supplied weights.
+
+The radial term uses `r = p - O` in its direction and `|r|²` reach calculation.
+This changes integration, not just rendering. Other field/contact forces are
+already relative to their endpoints. Empty selection explicitly retains the
+legacy fixed origin zero. Stored operative positions set the f32 positional
+resolution; no moving-frame velocity transformation, automatic focus selection,
+relational dimension/granularity inference or analyst is implemented here.
+The f32 predicate is the bounded proposal under review for #91, not an approved
+general semantic-resolution formula.
 
 ## Combined destination and the discretization brake
 
@@ -176,8 +231,10 @@ multi-field convergence.
 ## Scaling claim and measurement boundary
 
 A fully explicit pair comparison among `n` entities costs `Θ(n²)`. The
-runtime's loaded centroid-edge pass instead costs at least the number of
-edges it actually visits; it currently visits all of them every tick. The
+runtime's centroid-edge machinery instead costs at least the number of
+edges it actually visits. Selective force and placement avoid some numerical
+work, but current touch and centroid-gate scans still visit every loaded edge
+each tick. The
 intended ledger, chosen LoD, and reversible active-set exclusions reduce
 the surface of necessary interactions. `O(log N)` is the project's goal for
 active thought, where **`N` means exposed fields across particles** here;
@@ -190,8 +247,15 @@ and data transfers across representative devices. A single tick is a small
 part of a possibly long run; there is no fixed 4 ms target.
 
 The intended harness controls which numerical results leave a GPU and when.
-Today `tick()` does no download and `download()` synchronizes and transfers
-the whole arrays on demand. The future analyst might sample nearly every
+Today `tick()` synchronizes and reads 14 i64 counters plus eight f32 focal
+control values (144 bytes); `Demand` reports these counts, phase mask/adjacency
+visits and elapsed tick time including synchronization/reporting. Force
+eligibility checks, actual numerical field evaluations, rejected positional
+candidates and unique flagged/recomputed groups are distinct. Contacts count
+endpoint calculations, potentially two per pair. See the
+[counter definitions and evidence](EFFECTIVE-MOTION.md).
+`download()` transfers the whole numerical arrays on demand. Selective payload
+readback remains planned. The future analyst might sample nearly every
 tick; a human browser display might refresh only every few hundred ticks.
 Those cadences are independent. CPU functions/kernels can be parallelized or
 combined where dependencies allow; reading last tick's centroids and

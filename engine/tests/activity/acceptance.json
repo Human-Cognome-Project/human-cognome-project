@@ -1,0 +1,70 @@
+{
+  "issue": 91,
+  "status": "implemented_for_review",
+  "date_utc": "2026-10-17",
+  "ctest_log_start": "Start testing: Oct 17 21:00 UTC",
+  "code_commit": "0bdc1cfc3cae3901b60210c28dc9abf3f82eca13",
+  "base_commit": "dfa2fcc88a76da42ebff6016da3040b71afbb5f3",
+  "taichi_source_tree": "d191c5ce8a04639da6069dde0ec1e35cce9abe7a",
+  "native_compiler": "Clang 15.0.6",
+  "native_backend": "CPU",
+  "build_command": "cmake --build engine/build -j 3",
+  "test_command": "ctest --test-dir engine/build --output-on-failure",
+  "passed_suites": [
+    "engine_smoke_test",
+    "field_test",
+    "activity_test",
+    "activity_parallel_test",
+    "activity_assembly_test",
+    "preparation_test",
+    "assembly_test",
+    "letter_projection_test",
+    "letter_projection_native_test",
+    "membership_fields_test",
+    "membership_fields_native_test",
+    "index_cap_test"
+  ],
+  "failed_suites": [],
+  "activity": {
+    "activity_test": {
+      "checks": 86,
+      "cpu_workers": 1,
+      "demand_csv": "cpu-1-demand.csv",
+      "demand_rows": 32
+    },
+    "activity_parallel_test": {
+      "checks": 86,
+      "cpu_workers": 2,
+      "demand_csv": "cpu-2-demand.csv",
+      "demand_rows": 32
+    }
+  },
+  "focal_assembly_checks": 8,
+  "reference": {
+    "mode": "AllLoaded",
+    "particle_scalar_absolute_tolerance": 0.00001,
+    "centroid_position_absolute_tolerance": 0.00001,
+    "group_mass": "exact",
+    "bounded_ripple_absolute_tolerance": 0.0001,
+    "translated_focus_relative_position_absolute_tolerance": 0.0001
+  },
+  "motion_predicate": "Final stored-f32 position changes after combined connected-field/contact forces and integration; fixed full position/velocity state can sleep until invalidated.",
+  "centroid_flags": "Participating-mass displacement ratio, any-active plus retained collective displacement and initial/placement rounding residue; one full-member reduction per flagged group.",
+  "numeric_control": {
+    "field_fast_math": false,
+    "centroid_placement": "f64 final arithmetic, published f32",
+    "empty_mass_guard": "exact zero; no additive denominator floor",
+    "counter_type": "i64",
+    "per_tick_control_readback_bytes": 144
+  },
+  "source_data": "Bounded native fixtures; no DB mutation",
+  "gpu_executed": false,
+  "stage_d_combined_integration_executed": false,
+  "stage_d_pull_request": 149,
+  "gpu_handoff": "Held for math review, integration with D, and local hardware validation.",
+  "remaining": [
+    "Combined destination / |F_net| brake reach formula is unchanged and open.",
+    "Current mask and dependency scans remain linear in loaded arrays.",
+    "Broader semantic resolution, automatic focus/granularity and selective payload readback are not implemented."
+  ]
+}
