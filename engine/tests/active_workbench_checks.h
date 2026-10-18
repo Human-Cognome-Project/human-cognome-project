@@ -206,7 +206,8 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
                 "survives 2pow27 translation");
           check(d.particles_moved == 1 &&
                     d.particles_woken == (tick == 1 ? 1 : 0) &&
-                    d.particles_evaluated == (tick == 1 ? N : 1) &&
+                    d.particles_evaluated ==
+                        (tick == 1 ? d.particles_exposed : 1) &&
                     d.native_particle_entries == d.particles_evaluated &&
                     d.native_centroid_entries == touched.size() &&
                     d.centroids_flagged == touched.size() &&
