@@ -1,10 +1,11 @@
 # Pre-D design: host workbench and native execution handoff
 
-**Design accepted in #147, 2026-10-17; implementation remains unreleased.** Governing updates:
+**Design accepted in #147, 2026-10-17; bounded D released in #148.** Governing updates:
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139),
 [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145)
-and Patrick's recorded 2026-10-16 clarifications. C acceptance alone does not
-release D. This document changes no runtime, allocator, database or field law.
+and Patrick's recorded 2026-10-16 clarifications. See the separate
+[implementation and evidence](../engine/docs/ACTIVE-WORKBENCH.md). This design
+record itself changes no runtime, allocator, database or field law.
 The allocation/transfer choices below are candidates with explicit experiments;
 no measured optimal surface or implemented GPU pinning is claimed.
 
@@ -355,11 +356,13 @@ and no CUDA. Existing A/B acceptance and C's 25 pure / 44 native checks establis
 their bounded correctness; C's nine hosted checks are green. They do not measure
 this proposal's allocation alternatives or production density.
 
-**Unexecuted experiments:** direct CPU external binding integration, host
+**Unexecuted at design review:** direct CPU external binding integration, host
 registration versus allocated pinned buffers, GPU bandwidth/completion, alternative
 backend coherence, component-restart fault injection and production-sized density
-comparisons. No GPU, pinning, zero-copy or latency improvement is inferred from
-source alone. No LMDB benchmark is required.
+comparisons. Subsequent bounded D execution is recorded in the separate
+[implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md). No GPU, pinning,
+zero-copy or latency improvement is inferred from source alone. No LMDB
+benchmark is required.
 
 Use this minimum synthetic matrix, all counts bounded by native limits; fixture
 labels allocate no production addresses. Report active count alongside P:
@@ -416,7 +419,7 @@ Acceptance separates exact contracts from numerical coherence:
   readiness rather than falling back to the manager. Original local sources
   remain analyst-owned; no deletion or private hot-state persistence is implied.
 
-With this design accepted in #147, #139 must explicitly release the bounded D work.
+Issue #148 explicitly released bounded D under #139 after #147 acceptance.
 Its first integration still includes fresh-client warm recipe recovery, native
 letter/membership assembly, seeded execution, supported refresh/failure and cold
 stores unchanged. Allocation experiments and restart limits must be reported

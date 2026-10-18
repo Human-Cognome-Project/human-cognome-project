@@ -354,10 +354,10 @@ void Activity::index(const std::vector<int> &edges,
   build(p_, k_, contacts, kContactA, *contact_a_offsets, *contact_a_edges);
   build(p_, k_, contacts, kContactB, *contact_b_offsets, *contact_b_edges);
 }
-void Activity::begin(Ndarray &p, Ndarray &g, bool all, bool invalid) {
+void Activity::begin(Harness &h, bool all, bool invalid) {
   auto ctx = begin_.make_context();
-  ctx.set_arg_ndarray({0}, p);
-  ctx.set_arg_ndarray({1}, g);
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
   ctx.set_arg_ndarray({2}, *particle_flags);
   ctx.set_arg_ndarray({3}, *particle_delta);
   ctx.set_arg_ndarray({4}, *group_flags);
@@ -370,12 +370,12 @@ void Activity::begin(Ndarray &p, Ndarray &g, bool all, bool invalid) {
   ctx.set_arg_int({11}, invalid);
   begin_.launch(ctx);
 }
-void Activity::touch(Ndarray &p, Ndarray &g, Ndarray &e, Ndarray &contacts) {
+void Activity::touch(Harness &h) {
   auto ctx = touch_.make_context();
-  ctx.set_arg_ndarray({0}, p);
-  ctx.set_arg_ndarray({1}, g);
-  ctx.set_arg_ndarray({2}, e);
-  ctx.set_arg_ndarray({3}, contacts);
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
+  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data, {kEdgeIntFieldCount, std::max(e_, 1)});
+  h.bind(ctx, 3, h.contact_int_array_.get(), h.contact_int_data, {kContactIntFieldCount, std::max(k_, 1)});
   ctx.set_arg_ndarray({4}, *particle_flags);
   ctx.set_arg_ndarray({5}, *group_flags);
   ctx.set_arg_ndarray({6}, *group_delta);
@@ -384,12 +384,12 @@ void Activity::touch(Ndarray &p, Ndarray &g, Ndarray &e, Ndarray &contacts) {
   ctx.set_arg_int({9}, k_);
   touch_.launch(ctx);
 }
-void Activity::mark(Ndarray &p, Ndarray &g, Ndarray &e, Ndarray &shares) {
+void Activity::mark(Harness &h) {
   auto ctx = mark_.make_context();
-  ctx.set_arg_ndarray({0}, p);
-  ctx.set_arg_ndarray({1}, g);
-  ctx.set_arg_ndarray({2}, e);
-  ctx.set_arg_ndarray({3}, shares);
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
+  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data, {kEdgeIntFieldCount, std::max(e_, 1)});
+  h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data, {kEdgeFloatFieldCount, std::max(e_, 1)});
   ctx.set_arg_ndarray({4}, *particle_flags);
   ctx.set_arg_ndarray({5}, *particle_delta);
   ctx.set_arg_ndarray({6}, *group_flags);

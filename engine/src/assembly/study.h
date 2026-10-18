@@ -52,7 +52,8 @@ PreparedStudy prepare(const StudyInput &input);
 class FixedStudy {
  public:
   FixedStudy(engine::Runtime &runtime, const StudyInput &input,
-             const field::Parameters &parameters);
+             const field::Parameters &parameters,
+             field::HostPath path = field::HostPath::BulkCopy);
   void publish(const StudyInput &input, const field::Parameters &parameters);
   void tick(const field::Parameters &parameters) { fields_->tick(parameters); }
   void download() { fields_->download(); }

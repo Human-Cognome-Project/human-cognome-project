@@ -55,10 +55,25 @@ row-based population contract. See [the detailed direction](kernels/database/WOR
 and [layout](docs/warm-knowledge-cache-layout.md) preserve warm as the toolbox and
 hot as the host workbench where objects and relationships are assembled; backend
 execution memory is where their numerical projection runs together. Stage A
-stores supplied recipes; B supplies projection/normalization; C is accepted and merged in #146. The pre-D design is accepted in #147;
-D is implemented for review in #149. Its review can finish independently, while
-local GPU handoff remains held for #91's math correction and integration.
-Ordinary vectors do not establish pinned GPU transfer.
+stores supplied recipes; B/C supply projection and contextual fields. D was
+released in #148 after #147 acceptance and is implemented for review. It adds
+supplied active inputs and controlled session lifetime, not analyst reasoning,
+general rollups or process-failure isolation. Ordinary vectors are not pinned;
+GPU allocation/transfer qualification remains open in #145.
+
+**GPU handoff sequencing (Patrick, 2026-10-17):** complete and CPU-validate
+#91's effective-motion mechanism first. A changed centroid alone does not wake
+all dependents; test the combined positional effect, and evaluate every connected
+field of a woken particle. Combine centroid would-move flags with any-active,
+then place each flagged centroid once including sleeping members. Preserve
+carried motion and changed-input invalidation, and account for collective effects.
+Selected focal fields define the mathematical origin by ordinary centroid
+calculation, including the origin-dependent radial dampener. Report actual force
+evaluations separately from gate/adjacency visits, skipped/woken particles and
+flagged/recomputed centroids. The precise motion/resolution predicates must be
+stated; no arbitrary global epsilon or observed-zero-speed sleep rule is implied.
+Stage D review proceeds independently; its GPU command examples are held until
+this separate requirement is ready.
 
 **Private/local boundary (Patrick, 2026-10-16):** the analyst alone supplies its
 private/local information at active hot assembly. The cache manager has no role

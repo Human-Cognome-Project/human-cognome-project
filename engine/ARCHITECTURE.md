@@ -30,12 +30,13 @@ assembled; GPU memory is where prepared numerical objects run together. Private/
 local inputs enter only at active hot assembly, through a separate analyst-owned
 boundary. The cache manager must not access private DB codes/data or route them
 through warm publication/refresh/reporting; reject private scopes before source
-lookup, without content inspection. See the proposed [pre-D design](../docs/pre-d-hot-workbench-design.md).
+lookup, without content inspection. See the accepted [pre-D design](../docs/pre-d-hot-workbench-design.md).
 It investigates native compilation/value boundaries, portable host staging,
 field density and restartable Taichi within the continuously operating system.
-C acceptance alone did not release D. Bounded adapters are now implemented for
-review in #149, separately from #91's motion mathematics; see the
-[current status](../AGENTS.md#current-state) before GPU handoff.
+Issue #148 released bounded D after design #147 acceptance. The
+[active workbench adapter](docs/ACTIVE-WORKBENCH.md) implements supplied local
+inputs, checked native sessions and controlled restart. GPU pinning, broader
+rollups and process-failure isolation remain separate work.
 
 The production path is C++. Python is not an HCP engine or data-layer
 implementation language. Python present inside the Taichi fork is upstream

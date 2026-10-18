@@ -6,8 +6,8 @@ Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
 storage and the shared value interface for supplied normalized recipes.
 [Production projection/normalization (B)](../../../engine/docs/LETTER-PROJECTION.md)
 is accepted/merged in #143. C is reviewed with nine green checks in #146,
-accepted and merged at `43f418a`. D requires the separate #145 pre-D design review and
-explicit #139 release.
+accepted and merged at `43f418a`. Design #147 is accepted/merged; #148 explicitly
+releases bounded [D integration](../../../engine/docs/ACTIVE-WORKBENCH.md).
 
 **Ownership correction (Patrick, 2026-10-16):** the cache manager handles shared
 tools only. Analyst-private/local inputs enter active hot assembly through a
@@ -17,8 +17,14 @@ manager's request/source scope; reject attempts before lookup, without content
 inspection/filtering or private-content/code logging. Generic personal-storage
 operations/tests below are built capabilities, not authority for a manager
 private-data pipeline. Temporary ownership and retained fixtures are unchanged.
-The manager-facing gate and analyst-input integration remain unbuilt; see the
-[pre-D design](../../../docs/pre-d-hot-workbench-design.md).
+`shared_manager.h` adds the manager-facing shared-scope gate. The embedding
+owner provides a dedicated shared-only store and only public resolver credentials;
+it must not delegate generic `Toolbox` access to request clients. Publication
+tickets are minted by this public path, and fresh clients can recover them.
+The separate active adapter has no manager/storage handle. Public recipe callers
+remain responsible for supplying explicitly public inputs: the gate checks
+authority before lookup, not whether a caller secretly derived a shared-key
+placement from private information. See the [design](../../../docs/pre-d-hot-workbench-design.md).
 
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,

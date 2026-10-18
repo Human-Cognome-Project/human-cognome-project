@@ -4,14 +4,22 @@
 #include <chrono>
 #include <cmath>
 #include <set>
+#include <cstring>
 #include <stdexcept>
 #include <string>
 
+#include "engine/packed_view.h"
 #include "engine/transfer.h"
 #include "field/activity.h"
 
 namespace field {
 namespace {
+
+using Clock = std::chrono::steady_clock;
+double elapsed(Clock::time_point start) {
+  return std::chrono::duration<double, std::milli>(Clock::now() - start)
+      .count();
+}
 
 using namespace taichi::lang;
 
@@ -27,12 +35,12 @@ Stmt *load(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &index) {
 }
 
 void store(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &index,
-          Stmt *value) {
+           Stmt *value) {
   b.create_global_store(b.create_external_ptr(array, index), value);
 }
 
-void accumulate(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &index,
-                Stmt *value) {
+void accumulate(IRBuilder &b, ArgLoadStmt *array,
+                const std::vector<Stmt *> &index, Stmt *value) {
   b.create_atomic_add(b.create_external_ptr(array, index), value);
 }
 
@@ -53,7 +61,8 @@ Stmt *scalar_param(IRBuilder &b, int id, DataType dt) {
 void validate_parameters(const Parameters &p) {
   for (float value : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength}) {
     if (!std::isfinite(value) || value < 0.0f) {
-      throw std::invalid_argument("field: parameters must be finite and non-negative");
+      throw std::invalid_argument(
+          "field: parameters must be finite and non-negative");
     }
   }
 }
@@ -64,17 +73,19 @@ std::size_t storage_size(int fields, int count) {
 
 }  // namespace
 
-Harness::Harness(engine::Runtime &runtime,
-                 int particle_count,
-                 int group_count,
-                 int edge_count,
-                 int contact_count)
+Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
+                 int edge_count, int contact_count, HostPath path)
     : runtime_(&runtime),
       particles_(particle_count),
       groups_(group_count),
       edges_(edge_count),
-      contacts_(contact_count) {
-  if (particle_count < 0 || group_count < 0 || edge_count < 0 || contact_count < 0) {
+      contacts_(contact_count),
+      path_(path) {
+  const auto allocation_start = Clock::now();
+  if (path_ == HostPath::CpuDirect && runtime.on_cuda())
+    throw std::invalid_argument("direct host binding requires CPU backend");
+  if (particle_count < 0 || group_count < 0 || edge_count < 0 ||
+      contact_count < 0) {
     throw std::invalid_argument("field::Harness: counts must be non-negative");
   }
   // Empty logical arrays still need nonzero allocation/transfer sizes in
@@ -95,29 +106,33 @@ Harness::Harness(engine::Runtime &runtime,
   // lives at byte offset f*num_items + i -- exactly the host SoA layout
   // below; only the in-kernel index expression changes.
   Program &program = runtime.program();
-  particle_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::f32,
-      std::vector<int>{kParticleFieldCount, std::max(particles_, 1)});
-  group_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::f32,
-      std::vector<int>{kGroupFieldCount, std::max(groups_, 1)});
-  edge_float_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::f32,
-      std::vector<int>{kEdgeFloatFieldCount, std::max(edges_, 1)});
-  edge_int_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::i32,
-      std::vector<int>{kEdgeIntFieldCount, std::max(edges_, 1)});
-  contact_int_array_ = std::make_unique<Ndarray>(
-      &program, PrimitiveType::i32,
-      std::vector<int>{kContactIntFieldCount, std::max(contacts_, 1)});
-  determined_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
-                                                std::vector<int>{std::max(particles_, 1)});
-  // The universal mass: one cell, the total mass of the construct with each
-  // particle counted exactly once, rebuilt by the clear pass at publication.
-  universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
-                                               std::vector<int>{1});
-  activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_,
-                                                 edges_, contacts_);
+  if (path_ == HostPath::BulkCopy) {
+    particle_array_ = std::make_unique<Ndarray>(
+        &program, PrimitiveType::f32,
+        std::vector<int>{kParticleFieldCount, std::max(particles_, 1)});
+    group_array_ = std::make_unique<Ndarray>(
+        &program, PrimitiveType::f32,
+        std::vector<int>{kGroupFieldCount, std::max(groups_, 1)});
+    edge_float_array_ = std::make_unique<Ndarray>(
+        &program, PrimitiveType::f32,
+        std::vector<int>{kEdgeFloatFieldCount, std::max(edges_, 1)});
+    edge_int_array_ = std::make_unique<Ndarray>(
+        &program, PrimitiveType::i32,
+        std::vector<int>{kEdgeIntFieldCount, std::max(edges_, 1)});
+    contact_int_array_ = std::make_unique<Ndarray>(
+        &program, PrimitiveType::i32,
+        std::vector<int>{kContactIntFieldCount, std::max(contacts_, 1)});
+    determined_array_ =
+        std::make_unique<Ndarray>(&program, PrimitiveType::f32,
+                                  std::vector<int>{std::max(particles_, 1)});
+    // The universal mass: one cell, the total mass of the construct with each
+    // particle counted exactly once, recomputed by the clear pass each tick.
+    universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
+                                                 std::vector<int>{1});
+  }
+  activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_, edges_, contacts_);
+  timings_.allocation_ms = elapsed(allocation_start);
+  const auto compilation_start = Clock::now();
 
   const int threads = runtime.cpu_threads();
 
@@ -732,9 +747,33 @@ Harness::Harness(engine::Runtime &runtime,
          engine::Param::array(PrimitiveType::i64)},
         engine::MathMode::Strict);
   }
+  timings_.compilation_ms = elapsed(compilation_start);
+}
+
+template <class T>
+void Harness::bind(LaunchContextBuilder &ctx, int argument,
+                   const Ndarray *array, std::vector<T> &values,
+                   std::vector<int> shape) {
+  engine::PackedView<T> view(values, std::move(shape), generation_);
+  if (path_ == HostPath::BulkCopy) {
+    ctx.set_arg_ndarray({argument}, *array);
+  } else {
+    std::vector<taichi::int64> dimensions(view.shape().begin(),
+                                          view.shape().end());
+    ctx.set_arg_external_array_with_shape(
+        {argument}, reinterpret_cast<std::uintptr_t>(view.data()), view.bytes(),
+        dimensions);
+  }
 }
 
 Harness::~Harness() = default;
+
+// Activity launches share the exact same checked payload binding on both host
+// paths; keep the template bodies private to this implementation.
+template void Harness::bind<float>(LaunchContextBuilder &, int, const Ndarray *,
+                                   std::vector<float> &, std::vector<int>);
+template void Harness::bind<int>(LaunchContextBuilder &, int, const Ndarray *,
+                                 std::vector<int> &, std::vector<int>);
 
 void Harness::set_tick_mode(TickMode mode) {
   runtime_->synchronize();
@@ -768,13 +807,16 @@ void Harness::validate_staging() const {
       group_data.size() != storage_size(kGroupFieldCount, groups_) ||
       edge_float_data.size() != storage_size(kEdgeFloatFieldCount, edges_) ||
       edge_int_data.size() != storage_size(kEdgeIntFieldCount, edges_) ||
-      contact_int_data.size() != storage_size(kContactIntFieldCount, contacts_)) {
-    throw std::invalid_argument("field::Harness::upload: staging size mismatch");
+      contact_int_data.size() !=
+          storage_size(kContactIntFieldCount, contacts_)) {
+    throw std::invalid_argument(
+        "field::Harness::upload: staging size mismatch");
   }
   for (const auto *data : {&particle_data, &group_data, &edge_float_data}) {
     for (float value : *data) {
       if (!std::isfinite(value)) {
-        throw std::invalid_argument("field::Harness::upload: non-finite staging");
+        throw std::invalid_argument(
+            "field::Harness::upload: non-finite staging");
       }
     }
   }
@@ -782,12 +824,14 @@ void Harness::validate_staging() const {
     const float mass = particle_data[offset(kMass, particles_, i)];
     const float radius = particle_data[offset(kRadius, particles_, i)];
     if (mass < 0.0f || radius < 0.0f) {
-      throw std::invalid_argument("field::Harness::upload: negative mass or radius");
+      throw std::invalid_argument(
+          "field::Harness::upload: negative mass or radius");
     }
     if (mass == 0.0f) {
       for (int f = 0; f < kParticleFieldCount; ++f) {
         if (particle_data[offset(f, particles_, i)] != 0.0f) {
-          throw std::invalid_argument("field::Harness::upload: free slot must be zero");
+          throw std::invalid_argument(
+              "field::Harness::upload: free slot must be zero");
         }
       }
     }
@@ -798,25 +842,29 @@ void Harness::validate_staging() const {
     const int p = edge_int_data[offset(kEdgeParticle, edges_, e)];
     const int g = edge_int_data[offset(kEdgeGroup, edges_, e)];
     if (p < 0 || p >= particles_ || g < 0 || g >= groups_) {
-      throw std::out_of_range("field::Harness::upload: edge " + std::to_string(e) +
+      throw std::out_of_range("field::Harness::upload: edge " +
+                              std::to_string(e) +
                               " names a particle or group out of range");
     }
     const float share = edge_float_data[offset(kShare, edges_, e)];
-    if (particle_data[offset(kMass, particles_, p)] == 0.0f ||
-        share <= 0.0f || share > 1.0f) {
-      throw std::invalid_argument("field::Harness::upload: invalid participation");
+    if (particle_data[offset(kMass, particles_, p)] == 0.0f || share <= 0.0f ||
+        share > 1.0f) {
+      throw std::invalid_argument(
+          "field::Harness::upload: invalid participation");
     }
   }
   for (int k = 0; k < contacts_; ++k) {
     const int a = contact_int_data[offset(kContactA, contacts_, k)];
     const int b = contact_int_data[offset(kContactB, contacts_, k)];
     if (a < 0 || a >= particles_ || b < 0 || b >= particles_) {
-      throw std::out_of_range("field::Harness::upload: contact " + std::to_string(k) +
+      throw std::out_of_range("field::Harness::upload: contact " +
+                              std::to_string(k) +
                               " names a particle out of range");
     }
     if (a == b || particle_data[offset(kMass, particles_, a)] == 0.0f ||
         particle_data[offset(kMass, particles_, b)] == 0.0f) {
-      throw std::invalid_argument("field::Harness::upload: invalid contact endpoints");
+      throw std::invalid_argument(
+          "field::Harness::upload: invalid contact endpoints");
     }
   }
 }
@@ -843,38 +891,90 @@ void Harness::upload() {
   exposed_ = 0;
   for (int p = 0; p < particles_; ++p)
     if (particle(kMass, p) > 0) ++exposed_;
-  engine::upload(*particle_array_, particle_data.data(),
-                 particle_data.size() * sizeof(float));
-  engine::upload(*group_array_, group_data.data(),
-                 group_data.size() * sizeof(float));
-  engine::upload(*edge_float_array_, edge_float_data.data(),
-                 edge_float_data.size() * sizeof(float));
-  engine::upload(*edge_int_array_, edge_int_data.data(),
-                 edge_int_data.size() * sizeof(int));
-  engine::upload(*contact_int_array_, contact_int_data.data(),
-                 contact_int_data.size() * sizeof(int));
+  ++generation_;
+  const auto start = Clock::now();
+  // Validate each complete typed shape before any copy; synchronous transfer
+  // completion and exclusive harness ownership keep borrowed vectors stable.
+  engine::PackedView<float> particles(
+      particle_data, {kParticleFieldCount, std::max(particles_, 1)},
+      generation_);
+  engine::PackedView<float> groups(
+      group_data, {kGroupFieldCount, std::max(groups_, 1)}, generation_);
+  engine::PackedView<float> edge_f(edge_float_data,
+                                   {kEdgeFloatFieldCount, std::max(edges_, 1)},
+                                   generation_);
+  engine::PackedView<int> edge_i(
+      edge_int_data, {kEdgeIntFieldCount, std::max(edges_, 1)}, generation_);
+  engine::PackedView<int> contacts(
+      contact_int_data, {kContactIntFieldCount, std::max(contacts_, 1)},
+      generation_);
+  if (path_ == HostPath::BulkCopy) {
+    engine::upload(*particle_array_, particle_data.data(),
+                   particle_data.size() * sizeof(float));
+    engine::upload(*group_array_, group_data.data(),
+                   group_data.size() * sizeof(float));
+    engine::upload(*edge_float_array_, edge_float_data.data(),
+                   edge_float_data.size() * sizeof(float));
+    engine::upload(*edge_int_array_, edge_int_data.data(),
+                   edge_int_data.size() * sizeof(int));
+    engine::upload(*contact_int_array_, contact_int_data.data(),
+                   contact_int_data.size() * sizeof(int));
+    runtime_->synchronize();
+    timings_.upload_bytes += particles.bytes() + groups.bytes() +
+                             edge_f.bytes() + edge_i.bytes() + contacts.bytes();
+  }
+  timings_.upload_ms += elapsed(start);
   uploaded_ = true;
 }
 
 void Harness::download() {
+  const auto start = Clock::now();
   runtime_->synchronize();
-  engine::readback(*particle_array_, particle_data.data(),
-                   particle_data.size() * sizeof(float));
-  engine::readback(*group_array_, group_data.data(),
-                   group_data.size() * sizeof(float));
-  if (particles_ > 0) {
-    engine::readback(*determined_array_, determined_.data(),
-                     determined_.size() * sizeof(float));
+  if (path_ == HostPath::BulkCopy) {
+    engine::readback(*particle_array_, particle_data.data(),
+                     particle_data.size() * sizeof(float));
+    engine::readback(*group_array_, group_data.data(),
+                     group_data.size() * sizeof(float));
+    if (particles_ > 0) {
+      engine::readback(*determined_array_, determined_.data(),
+                       determined_.size() * sizeof(float));
+    }
+    timings_.download_bytes += (particle_data.size() + group_data.size() +
+                                (particles_ > 0 ? determined_.size() : 0)) *
+                               sizeof(float);
   }
+  timings_.report_ms += elapsed(start);
+}
+
+bool Harness::uploaded_payload_matches() {
+  if (!uploaded_ || ready_)
+    throw std::logic_error("payload diagnostic requires unseeded upload");
+  runtime_->synchronize();
+  if (path_ == HostPath::CpuDirect)
+    return true;  // Bound storage is the source.
+  const auto matches = [](Ndarray &array, const auto &source) {
+    using T = typename std::decay_t<decltype(source)>::value_type;
+    std::vector<T> received(source.size());
+    engine::readback(array, received.data(), received.size() * sizeof(T));
+    return !std::memcmp(source.data(), received.data(),
+                        received.size() * sizeof(T));
+  };
+  return matches(*particle_array_, particle_data) &&
+         matches(*group_array_, group_data) &&
+         matches(*edge_float_array_, edge_float_data) &&
+         matches(*edge_int_array_, edge_int_data) &&
+         matches(*contact_int_array_, contact_int_data);
 }
 
 void Harness::launch_clear(bool seed) {
   auto ctx = clear_.make_context();
-  ctx.set_arg_ndarray({0}, *particle_array_);
-  ctx.set_arg_ndarray({1}, *group_array_);
+  bind(ctx, 0, particle_array_.get(), particle_data,
+       {kParticleFieldCount, std::max(particles_, 1)});
+  bind(ctx, 1, group_array_.get(), group_data,
+       {kGroupFieldCount, std::max(groups_, 1)});
   ctx.set_arg_int({2}, particles_);
   ctx.set_arg_int({3}, groups_);
-  ctx.set_arg_ndarray({4}, *universal_array_);
+  bind(ctx, 4, universal_array_.get(), universal_data, {1});
   ctx.set_arg_int({5}, seed);
   ctx.set_arg_ndarray({6}, *activity_->particle_flags);
   ctx.set_arg_int({7}, seed ? particles_ : 0);
@@ -883,10 +983,14 @@ void Harness::launch_clear(bool seed) {
 
 void Harness::launch_force(const Parameters &p) {
   auto ctx = force_.make_context();
-  ctx.set_arg_ndarray({0}, *edge_int_array_);
-  ctx.set_arg_ndarray({1}, *edge_float_array_);
-  ctx.set_arg_ndarray({2}, *particle_array_);
-  ctx.set_arg_ndarray({3}, *group_array_);
+  bind(ctx, 0, edge_int_array_.get(), edge_int_data,
+       {kEdgeIntFieldCount, std::max(edges_, 1)});
+  bind(ctx, 1, edge_float_array_.get(), edge_float_data,
+       {kEdgeFloatFieldCount, std::max(edges_, 1)});
+  bind(ctx, 2, particle_array_.get(), particle_data,
+       {kParticleFieldCount, std::max(particles_, 1)});
+  bind(ctx, 3, group_array_.get(), group_data,
+       {kGroupFieldCount, std::max(groups_, 1)});
   ctx.set_arg_int({4}, particles_);
   ctx.set_arg_int({5}, groups_);
   ctx.set_arg_int({6}, edges_);
@@ -900,8 +1004,10 @@ void Harness::launch_force(const Parameters &p) {
 
 void Harness::launch_contact(const Parameters &p) {
   auto ctx = contact_.make_context();
-  ctx.set_arg_ndarray({0}, *contact_int_array_);
-  ctx.set_arg_ndarray({1}, *particle_array_);
+  bind(ctx, 0, contact_int_array_.get(), contact_int_data,
+       {kContactIntFieldCount, std::max(contacts_, 1)});
+  bind(ctx, 1, particle_array_.get(), particle_data,
+       {kParticleFieldCount, std::max(particles_, 1)});
   ctx.set_arg_int({2}, contacts_);
   ctx.set_arg_float({3}, p.contact_stiffness);
   ctx.set_arg_ndarray({4}, *activity_->particle_flags);
@@ -916,10 +1022,11 @@ void Harness::launch_contact(const Parameters &p) {
 
 void Harness::launch_integrate(const Parameters &p) {
   auto ctx = integrate_.make_context();
-  ctx.set_arg_ndarray({0}, *particle_array_);
+  bind(ctx, 0, particle_array_.get(), particle_data,
+       {kParticleFieldCount, std::max(particles_, 1)});
   ctx.set_arg_int({1}, particles_);
   ctx.set_arg_float({2}, p.dt);
-  ctx.set_arg_ndarray({3}, *universal_array_);
+  bind(ctx, 3, universal_array_.get(), universal_data, {1});
   ctx.set_arg_float({4}, p.reach_strength);
   ctx.set_arg_ndarray({5}, *activity_->particle_flags);
   ctx.set_arg_ndarray({6}, *activity_->particle_delta);
@@ -930,8 +1037,10 @@ void Harness::launch_integrate(const Parameters &p) {
 
 void Harness::launch_determine() {
   auto ctx = determine_.make_context();
-  ctx.set_arg_ndarray({0}, *particle_array_);
-  ctx.set_arg_ndarray({1}, *determined_array_);
+  bind(ctx, 0, particle_array_.get(), particle_data,
+       {kParticleFieldCount, std::max(particles_, 1)});
+  bind(ctx, 1, determined_array_.get(), particles_ ? determined_ : empty_determined_,
+       {std::max(particles_, 1)});
   ctx.set_arg_int({2}, particles_);
   determine_.launch(ctx);
 }
@@ -939,10 +1048,14 @@ void Harness::launch_determine() {
 void Harness::launch_centroid(const Parameters &, bool seed) {
   {
     auto ctx = centroid_.make_context();
-    ctx.set_arg_ndarray({0}, *edge_int_array_);
-    ctx.set_arg_ndarray({1}, *edge_float_array_);
-    ctx.set_arg_ndarray({2}, *particle_array_);
-    ctx.set_arg_ndarray({3}, *group_array_);
+    bind(ctx, 0, edge_int_array_.get(), edge_int_data,
+         {kEdgeIntFieldCount, std::max(edges_, 1)});
+    bind(ctx, 1, edge_float_array_.get(), edge_float_data,
+         {kEdgeFloatFieldCount, std::max(edges_, 1)});
+    bind(ctx, 2, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+    bind(ctx, 3, group_array_.get(), group_data,
+         {kGroupFieldCount, std::max(groups_, 1)});
     ctx.set_arg_int({4}, particles_);
     ctx.set_arg_int({5}, groups_);
     ctx.set_arg_int({6}, edges_);
@@ -955,7 +1068,8 @@ void Harness::launch_centroid(const Parameters &, bool seed) {
   }
   {
     auto ctx = finalize_.make_context();
-    ctx.set_arg_ndarray({0}, *group_array_);
+    bind(ctx, 0, group_array_.get(), group_data,
+         {kGroupFieldCount, std::max(groups_, 1)});
     ctx.set_arg_int({1}, groups_);
     ctx.set_arg_ndarray({2}, *activity_->group_flags);
     ctx.set_arg_ndarray({3}, *activity_->group_delta);
@@ -965,9 +1079,11 @@ void Harness::launch_centroid(const Parameters &, bool seed) {
 }
 
 void Harness::seed_centroids(const Parameters &p) {
+  const auto start = Clock::now();
   ready_ = false;
   if (!uploaded_) {
-    throw std::logic_error("field::Harness: upload required before centroid seeding");
+    throw std::logic_error(
+        "field::Harness: upload required before centroid seeding");
   }
   validate_parameters(p);
   activity_->reset();
@@ -978,11 +1094,13 @@ void Harness::seed_centroids(const Parameters &p) {
   ready_ = true;
   previous_parameters_ = p;
   invalidated_ = true;
+  timings_.seed_ms += elapsed(start);
 }
 
 void Harness::tick(const Parameters &p) {
   if (!ready_) {
-    throw std::logic_error("field::Harness: successful publication required before tick");
+    throw std::logic_error(
+        "field::Harness: successful publication required before tick");
   }
   validate_parameters(p);
   const auto start = std::chrono::steady_clock::now();
@@ -991,18 +1109,14 @@ void Harness::tick(const Parameters &p) {
       p.dt != previous_parameters_.dt ||
       p.contact_stiffness != previous_parameters_.contact_stiffness ||
       p.reach_strength != previous_parameters_.reach_strength;
-  activity_->begin(*particle_array_, *group_array_,
-                   mode_ == TickMode::AllLoaded,
-                   invalidated_ || parameters_changed);
-  activity_->touch(*particle_array_, *group_array_, *edge_int_array_,
-                   *contact_int_array_);
+  activity_->begin(*this, mode_ == TickMode::AllLoaded, invalidated_ || parameters_changed);
+  activity_->touch(*this);
   launch_clear(false);
   launch_force(p);
   launch_contact(p);
   launch_integrate(p);
   launch_determine();
-  activity_->mark(*particle_array_, *group_array_, *edge_int_array_,
-                  *edge_float_array_);
+  activity_->mark(*this);
   launch_centroid(p, false);
   runtime_->synchronize();
   demand_ = activity_->report(exposed_);
@@ -1011,6 +1125,7 @@ void Harness::tick(const Parameters &p) {
                         .count();
   previous_parameters_ = p;
   invalidated_ = false;
+  timings_.kernel_ms += elapsed(start);
 }
 
 }  // namespace field

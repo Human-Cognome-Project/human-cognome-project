@@ -38,12 +38,9 @@ class Activity {
   void reset();
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
-  void begin(taichi::lang::Ndarray &particles, taichi::lang::Ndarray &groups,
-             bool all_loaded, bool invalidate);
-  void touch(taichi::lang::Ndarray &particles, taichi::lang::Ndarray &groups,
-             taichi::lang::Ndarray &edges, taichi::lang::Ndarray &contacts);
-  void mark(taichi::lang::Ndarray &particles, taichi::lang::Ndarray &groups,
-            taichi::lang::Ndarray &edges, taichi::lang::Ndarray &shares);
+  void begin(Harness &h, bool all_loaded, bool invalidate);
+  void touch(Harness &h);
+  void mark(Harness &h);
   Demand report(std::uint64_t exposed);
   std::unique_ptr<taichi::lang::Ndarray> particle_flags, particle_delta;
   // pending weighted member motion xyz, previous published centroid xyz.
