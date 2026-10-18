@@ -219,11 +219,11 @@ PreparedStudy prepare(const StudyInput &input) {
 }
 
 FixedStudy::FixedStudy(engine::Runtime &runtime, const StudyInput &input,
-                       const field::Parameters &parameters)
+                       const field::Parameters &parameters, field::HostPath path)
     : prepared_(prepare(input)),
       fields_(std::make_unique<field::Harness>(runtime, prepared_.capacity,
               count(prepared_.groups.size()), count(prepared_.participation.size()),
-              count(prepared_.contacts.size()))) {
+              count(prepared_.contacts.size()), path)) {
   stage(prepared_, parameters);
 }
 
