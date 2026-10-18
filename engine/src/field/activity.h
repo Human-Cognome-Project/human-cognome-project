@@ -1,15 +1,10 @@
 #pragma once
 
 #include "field/field.h"
+#include "field/native_set.h"
 
 namespace field::detail {
-enum ParticleState {
-  Candidate,
-  Continued,
-  Moving,
-  PriorMoving,
-  ParticleStateCount
-};
+enum ParticleState { Moving, PriorMoving, ParticleStateCount };
 enum GroupState { Flagged, Changed, GroupStateCount };
 enum Counter {
   Evaluated,
@@ -25,7 +20,11 @@ enum Counter {
   GeometryChecks,
   TouchEdges,
   ReducedEdges,
-  ExposedFields,
+  GroupGateEntries,
+  GateEdges,
+  AdjacencyVisits,
+  ZeroTouches,
+  InvalidatedSlots,
   CounterCount
 };
 
@@ -39,10 +38,12 @@ class Activity {
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
   void set_frame_anchor(const FrameAnchor &anchor);
-  void begin(Harness &h, bool all_loaded, bool invalidate);
-  void touch(Harness &h);
-  void mark(Harness &h);
-  Demand report(std::uint64_t exposed);
+  void begin(Harness &h, bool all_loaded, bool invalidate, bool radial);
+  void touch(Harness &h, float gravity);
+  void mark(Harness &h, bool all_loaded);
+  void finish();
+  Demand report(std::uint64_t exposed, std::uint64_t fields_exposed);
+  NativeSet current, next, centroids;
   double compilation_ms{0};
   std::unique_ptr<taichi::lang::Ndarray> particle_flags, particle_delta;
   // pending weighted member motion xyz, previous published centroid xyz.
@@ -56,9 +57,10 @@ class Activity {
  private:
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
-  std::vector<int> focus_mask_;
+  std::vector<int> selected_slots_;
+  std::vector<int> selected_groups_;
   std::array<float, 3> fixed_origin_{};
-  std::unique_ptr<taichi::lang::Ndarray> focus_mask_array_;
-  engine::CompiledKernel begin_, touch_, mark_;
+  std::unique_ptr<taichi::lang::Ndarray> selected_slots_array_;
+  engine::CompiledKernel begin_, touch_, mark_, reset_, finish_;
 };
 }  // namespace field::detail

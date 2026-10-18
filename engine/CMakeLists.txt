@@ -79,6 +79,12 @@ set_tests_properties(field_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 
 add_executable(activity_test tests/activity_test.cpp)
+add_executable(native_activity_test tests/native_activity_test.cpp)
+target_include_directories(native_activity_test PRIVATE tests)
+target_link_libraries(native_activity_test PRIVATE field_core)
+add_test(NAME native_activity_test COMMAND native_activity_test)
+set_tests_properties(native_activity_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 target_include_directories(activity_test PRIVATE tests)
 target_link_libraries(activity_test PRIVATE field_core)
 add_test(NAME activity_test COMMAND activity_test)

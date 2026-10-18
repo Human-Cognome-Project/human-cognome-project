@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <set>
 #include <cstring>
 #include <limits>
+#include <set>
 #include <stdexcept>
 #include <string>
 
@@ -127,12 +127,16 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         std::make_unique<Ndarray>(&program, PrimitiveType::f32,
                                   std::vector<int>{std::max(particles_, 1)});
     // The universal mass: one cell, the total mass of the construct with each
-    // particle counted exactly once, recomputed by the clear pass each tick.
+    // particle counted exactly once, computed during publication.
     universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
                                                  std::vector<int>{1});
   }
-  activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_, edges_, contacts_);
-  timings_.allocation_ms = elapsed(allocation_start) - activity_->compilation_ms;
+  activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_,
+                                                 edges_, contacts_);
+  timings_.allocation_ms =
+      elapsed(allocation_start) - activity_->compilation_ms;
+  // These kernels embed Activity's SNode layout; CHI IR cache names below
+  // include its id to avoid reusing another study's tree-bound machine code.
   const auto compilation_start = Clock::now();
 
   const int threads = runtime.cpu_threads();
@@ -147,27 +151,22 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     IRBuilder b;
     auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
     auto *groups = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
-    auto *n = scalar_param(b, 2, PrimitiveType::i32);
-    auto *g = scalar_param(b, 3, PrimitiveType::i32);
     auto *universal = array_param(b, 4, PrimitiveType::f32, /*total_dim=*/1);
     auto *seed = scalar_param(b, 5, PrimitiveType::i32);
-    auto *ps = array_param(b, 6, PrimitiveType::i32, 2);
     auto *mass_count = scalar_param(b, 7, PrimitiveType::i32);
     auto *zero = b.get_float32(0.0f);
     {
-      auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
+      auto *loop =
+          b.create_struct_for(activity_->current.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
-      auto active =
-          b.get_if_guard(b.create_if(b.create_logical_or(
-                             seed, load(b, ps, at(b, detail::Candidate, i)))),
-                         true);
       for (int f : {kForceX, kForceY, kForceZ}) {
         store(b, particles, at(b, f, i), zero);
       }
     }
     {
-      auto *loop = b.create_range_for(b.get_int32(0), g, false, threads);
+      auto *loop =
+          b.create_struct_for(activity_->centroids.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       for (int f : {kAccX, kAccY, kAccZ}) {
@@ -180,8 +179,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       }
     }
     {
-      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(1), false,
-                                      threads);
+      auto *loop =
+          b.create_range_for(b.get_int32(0), b.get_int32(1), false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       auto reset = b.get_if_guard(b.create_if(seed), true);
@@ -197,7 +196,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                          load(b, particles, at(b, kMass, i))));
     }
     clear_ = engine::CompiledKernel(
-        runtime, "field_clear", b.extract_ir(),
+        runtime, "field_clear_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
@@ -220,7 +220,6 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *g = scalar_param(b, 5, PrimitiveType::i32);
     auto *e = scalar_param(b, 6, PrimitiveType::i32);
     auto *gravity = scalar_param(b, 7, PrimitiveType::f32);
-    auto *ps = array_param(b, 8, PrimitiveType::i32, 2);
     auto *counters = array_param(b, 9, PrimitiveType::i64, 1);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
     auto *order = array_param(b, 11, PrimitiveType::i32, 1);
@@ -228,12 +227,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     (void)g;
     (void)e;
 
-    auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
+    auto *loop = b.create_struct_for(activity_->current.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
-      auto active = b.get_if_guard(
-          b.create_if(load(b, ps, at(b, detail::Candidate, p))), true);
       auto *members =
           b.create_range_for(load(b, offsets, at(b, 0, p)),
                              load(b, offsets, at(b, 1, p)), false, 1, 0, true);
@@ -268,15 +265,14 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       // Exact squared separation: the one law is m1*m2/d^2, with no epsilon
       // added to any interaction. The singularity at d==0 is closed by an
       // exact branchless gate below, never by softening the law.
-      auto *d2 = b.create_add(
-          b.create_add(b.create_mul(dx, dx), b.create_mul(dy, dy)),
-          b.create_mul(dz, dz));
+      auto *d2 =
+          b.create_add(b.create_add(b.create_mul(dx, dx), b.create_mul(dy, dy)),
+                       b.create_mul(dz, dz));
       // live == 1.0 when d2 > 0, exactly 0.0 when d2 == 0 (d2 is always >= 0).
       auto *live = b.create_sgn(d2);
       // Guard the rsqrt input against d2==0 without touching any d2>0 value:
       // safe == d2 where d2>0, == 1 where d2==0, so rsqrt is always finite.
-      auto *safe =
-          b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
+      auto *safe = b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
       auto *inv = b.create_rsqrt(safe);
       auto *inv3 = b.create_mul(inv, b.create_mul(inv, inv));
 
@@ -300,7 +296,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
             b.create_add(load(b, particles, at(b, kForceZ, p)), fz));
     }
     force_ = engine::CompiledKernel(
-        runtime, "field_force", b.extract_ir(),
+        runtime, "field_force_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
@@ -324,20 +321,16 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *particles = array_param(b, 1, PrimitiveType::f32, 2);
     auto *count = scalar_param(b, 2, PrimitiveType::i32);
     auto *stiffness = scalar_param(b, 3, PrimitiveType::f32);
-    auto *ps = array_param(b, 4, PrimitiveType::i32, 2);
     auto *counters = array_param(b, 5, PrimitiveType::i64, 1);
     auto *a_offsets = array_param(b, 6, PrimitiveType::i32, 2);
     auto *a_order = array_param(b, 7, PrimitiveType::i32, 1);
     auto *b_offsets = array_param(b, 8, PrimitiveType::i32, 2);
     auto *b_order = array_param(b, 9, PrimitiveType::i32, 1);
-    auto *n = scalar_param(b, 10, PrimitiveType::i32);
     (void)count;
-    auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
+    auto *loop = b.create_struct_for(activity_->current.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
-      auto active = b.get_if_guard(
-          b.create_if(load(b, ps, at(b, detail::Candidate, p))), true);
       for (int side = 0; side < 2; ++side) {
         auto *offsets = side == 0 ? a_offsets : b_offsets;
         auto *order = side == 0 ? a_order : b_order;
@@ -378,20 +371,22 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         }
       }
     }
-    contact_ =
-        engine::CompiledKernel(runtime, "field_contact", b.extract_ir(),
-                               {engine::Param::array(PrimitiveType::i32, 2),
-                                engine::Param::array(PrimitiveType::f32, 2),
-                                engine::Param::scalar(PrimitiveType::i32),
-                                engine::Param::scalar(PrimitiveType::f32),
-                                engine::Param::array(PrimitiveType::i32, 2),
-                                engine::Param::array(PrimitiveType::i64),
-                                engine::Param::array(PrimitiveType::i32, 2),
-                                engine::Param::array(PrimitiveType::i32),
-                                engine::Param::array(PrimitiveType::i32, 2),
-                                engine::Param::array(PrimitiveType::i32),
-                                engine::Param::scalar(PrimitiveType::i32)},
-                               engine::MathMode::Strict);
+    contact_ = engine::CompiledKernel(
+        runtime,
+        "field_contact_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
+        {engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::f32, 2),
+         engine::Param::scalar(PrimitiveType::i32),
+         engine::Param::scalar(PrimitiveType::f32),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i64),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32),
+         engine::Param::scalar(PrimitiveType::i32)},
+        engine::MathMode::Strict);
   }
 
   // Integrate: force over total mass, then the brake, then the radial
@@ -399,7 +394,6 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
   {
     IRBuilder b;
     auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *n = scalar_param(b, 1, PrimitiveType::i32);
     auto *dt = scalar_param(b, 2, PrimitiveType::f32);
     auto *universal = array_param(b, 3, PrimitiveType::f32, /*total_dim=*/1);
     auto *reach_strength = scalar_param(b, 4, PrimitiveType::f32);
@@ -407,14 +401,21 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *pd = array_param(b, 6, PrimitiveType::f32, 2);
     auto *origin = array_param(b, 7, PrimitiveType::f32, 1);
     auto *counters = array_param(b, 8, PrimitiveType::i64, 1);
+    auto *edges = array_param(b, 9, PrimitiveType::i32, 2);
+    auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
+    auto *order = array_param(b, 11, PrimitiveType::i32, 1);
+    auto *a_offsets = array_param(b, 12, PrimitiveType::i32, 2);
+    auto *a_order = array_param(b, 13, PrimitiveType::i32, 1);
+    auto *b_offsets = array_param(b, 14, PrimitiveType::i32, 2);
+    auto *b_order = array_param(b, 15, PrimitiveType::i32, 1);
+    auto *pairs = array_param(b, 16, PrimitiveType::i32, 2);
+    auto *stiffness = scalar_param(b, 17, PrimitiveType::f32);
 
-    auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
+    auto *loop = b.create_struct_for(activity_->current.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
 
-      auto active = b.get_if_guard(
-          b.create_if(load(b, ps, at(b, detail::Candidate, i))), true);
       count_work(b, counters, detail::Evaluated);
       std::array<Stmt *, 3> old_position, old_velocity;
       for (int axis = 0; axis < 3; ++axis) {
@@ -430,9 +431,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
 
       // The whole mass absorbs the force the share raised.
       auto *mass_live = b.create_sgn(mass);
-      auto *safe_mass = b.create_add(
-          mass, b.create_sub(b.get_float32(1.0f), mass_live));
-      auto *step_over_mass = b.create_div(b.create_mul(dt, mass_live), safe_mass);
+      auto *safe_mass =
+          b.create_add(mass, b.create_sub(b.get_float32(1.0f), mass_live));
+      auto *step_over_mass =
+          b.create_div(b.create_mul(dt, mass_live), safe_mass);
       auto *vx =
           b.create_add(old_velocity[0], b.create_mul(fx, step_over_mass));
       auto *vy =
@@ -443,13 +445,13 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       // The brake. Distance to the resultant force pulling this particle --
       // the one accumulation the model defines -- against the distance this
       // step would travel.
-      auto *reach = b.create_sqrt(b.create_add(
-          b.create_add(b.create_mul(fx, fx), b.create_mul(fy, fy)),
-          b.create_mul(fz, fz)));
+      auto *reach = b.create_sqrt(
+          b.create_add(b.create_add(b.create_mul(fx, fx), b.create_mul(fy, fy)),
+                       b.create_mul(fz, fz)));
 
-      auto *speed = b.create_sqrt(b.create_add(
-          b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
-          b.create_mul(vz, vz)));
+      auto *speed = b.create_sqrt(
+          b.create_add(b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
+                       b.create_mul(vz, vz)));
       auto *travel = b.create_mul(speed, dt);
 
       // live == 1.0 when reach > 0, exactly 0.0 when reach == 0 (reach is
@@ -460,8 +462,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       // against, rather than attenuating carried momentum or dividing by
       // zero.
       auto *live = b.create_sgn(reach);
-      auto *safe =
-          b.create_add(reach, b.create_sub(b.get_float32(1.0f), live));
+      auto *safe = b.create_add(reach, b.create_sub(b.get_float32(1.0f), live));
       auto *ratio = b.create_div(travel, safe);
       auto *ratio2 = b.create_mul(ratio, ratio);
       // Negligible while the step is a real margin short of the reach,
@@ -485,14 +486,13 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
           b.create_sub(old_position[1], load(b, origin, {b.get_int32(1)}));
       auto *pz =
           b.create_sub(old_position[2], load(b, origin, {b.get_int32(2)}));
-      auto *pd2 = b.create_add(
-          b.create_add(b.create_mul(px, px), b.create_mul(py, py)),
-          b.create_mul(pz, pz));
+      auto *pd2 =
+          b.create_add(b.create_add(b.create_mul(px, px), b.create_mul(py, py)),
+                       b.create_mul(pz, pz));
       // The same exact d==0 gate used elsewhere: no radial direction, no
       // dampening, at the origin.
       auto *plive = b.create_sgn(pd2);
-      auto *psafe =
-          b.create_add(pd2, b.create_sub(b.get_float32(1.0f), plive));
+      auto *psafe = b.create_add(pd2, b.create_sub(b.get_float32(1.0f), plive));
       auto *pinv = b.create_rsqrt(psafe);
       auto *rux = b.create_mul(px, pinv);
       auto *ruy = b.create_mul(py, pinv);
@@ -505,9 +505,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       // reach_ratio == reach_strength / (M/d2) == threshold / field-strength.
       auto *reach_ratio =
           b.create_div(b.create_mul(reach_strength, pd2), safe_total);
-      auto *excess =
-          b.create_max(b.create_sub(reach_ratio, b.get_float32(1.0f)),
-                       b.get_float32(0.0f));
+      auto *excess = b.create_max(
+          b.create_sub(reach_ratio, b.get_float32(1.0f)), b.get_float32(0.0f));
       // D == 1 inside the reach (bulk untouched), D -> 0 far outside
       // (escape velocity bled off).
       auto *dampen = b.create_exp(b.create_neg(excess));
@@ -542,17 +541,44 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                                         b.create_cmp_ne(v, old_velocity[pair]));
         store(b, particles, at(b, pos_field, i), next);
       }
-      store(b, ps, at(b, detail::Continued, i), b.get_int32(0));
       {
         auto changed = b.get_if_guard(
             b.create_if(b.create_logical_or(continued, moved)), true);
-        store(b, ps, at(b, detail::Continued, i), b.get_int32(1));
+        activity_->next.activate(b, i);
       }
       auto *motion = b.create_if(moved);
       {
         auto moving = b.get_if_guard(motion, true);
         store(b, ps, at(b, detail::Moving, i), b.get_int32(1));
         count_work(b, counters, detail::Moved);
+        // Repeated member touches collapse in Taichi's native centroid mask.
+        {
+          auto *members = b.create_range_for(load(b, offsets, at(b, 0, i)),
+                                             load(b, offsets, at(b, 1, i)),
+                                             false, 1, 0, true);
+          auto member_guard = b.get_loop_guard(members);
+          auto *edge = load(b, order, {b.get_loop_index(members)});
+          activity_->centroids.activate(
+              b, load(b, edges, at(b, kEdgeGroup, edge)));
+          count_work(b, counters, detail::AdjacencyVisits);
+        }
+        {
+          auto enabled = b.get_if_guard(
+              b.create_if(b.create_cmp_ne(stiffness, b.get_float32(0))), true);
+          for (int side = 0; side < 2; ++side) {
+            auto *contact_offsets = side == 0 ? a_offsets : b_offsets;
+            auto *contact_order = side == 0 ? a_order : b_order;
+            auto *members = b.create_range_for(
+                load(b, contact_offsets, at(b, 0, i)),
+                load(b, contact_offsets, at(b, 1, i)), false, 1, 0, true);
+            auto member_guard = b.get_loop_guard(members);
+            auto *contact = load(b, contact_order, {b.get_loop_index(members)});
+            auto *other = load(
+                b, pairs, at(b, side == 0 ? kContactB : kContactA, contact));
+            activity_->next.activate(b, other);
+            count_work(b, counters, detail::AdjacencyVisits);
+          }
+        }
         auto newly = b.get_if_guard(
             b.create_if(b.create_cmp_eq(
                 load(b, ps, at(b, detail::PriorMoving, i)), b.get_int32(0))),
@@ -565,7 +591,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       }
     }
     integrate_ = engine::CompiledKernel(
-        runtime, "field_integrate", b.extract_ir(),
+        runtime,
+        "field_integrate_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::scalar(PrimitiveType::f32),
@@ -574,7 +602,16 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
          engine::Param::array(PrimitiveType::i32, 2),
          engine::Param::array(PrimitiveType::f32, 2),
          engine::Param::array(PrimitiveType::f32),
-         engine::Param::array(PrimitiveType::i64)},
+         engine::Param::array(PrimitiveType::i64),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::array(PrimitiveType::i32),
+         engine::Param::array(PrimitiveType::i32, 2),
+         engine::Param::scalar(PrimitiveType::f32)},
         engine::MathMode::Strict);
   }
 
@@ -584,8 +621,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     IRBuilder b;
     auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
     auto *out = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/1);
-    auto *n = scalar_param(b, 2, PrimitiveType::i32);
-    auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
+    auto *loop = b.create_struct_for(activity_->current.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
@@ -598,7 +634,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                 b.create_mul(vz, vz))));
     }
     determine_ = engine::CompiledKernel(
-        runtime, "field_determine", b.extract_ir(),
+        runtime,
+        "field_determine_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32),
          engine::Param::scalar(PrimitiveType::i32)},
@@ -616,7 +654,6 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *n = scalar_param(b, 4, PrimitiveType::i32);
     auto *g = scalar_param(b, 5, PrimitiveType::i32);
     auto *e = scalar_param(b, 6, PrimitiveType::i32);
-    auto *gs = array_param(b, 7, PrimitiveType::i32, 2);
     auto *counters = array_param(b, 8, PrimitiveType::i64, 1);
     auto *seed = scalar_param(b, 9, PrimitiveType::i32);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
@@ -625,12 +662,14 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     (void)g;
     (void)e;
 
-    auto *loop = b.create_range_for(b.get_int32(0), g, false, threads);
+    auto *loop =
+        b.create_struct_for(activity_->centroids.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *grp = b.get_loop_index(loop);
-      auto active = b.get_if_guard(
-          b.create_if(load(b, gs, at(b, detail::Flagged, grp))), true);
+      // Native centroid entries are activated during integration, after clear.
+      for (int axis = 0; axis < 3; ++axis)
+        store(b, groups, at(b, kAccX + axis, grp), b.get_float32(0));
       // Seed around a member position rather than coordinate zero, preserving
       // the initial rounding residue that later small motions can combine with.
       {
@@ -668,7 +707,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       }
     }
     centroid_ = engine::CompiledKernel(
-        runtime, "field_centroid", b.extract_ir(),
+        runtime,
+        "field_centroid_" + std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
@@ -688,17 +729,15 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
   {
     IRBuilder b;
     auto *groups = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *g = scalar_param(b, 1, PrimitiveType::i32);
     auto *gs = array_param(b, 2, PrimitiveType::i32, 2);
     auto *gd = array_param(b, 3, PrimitiveType::f32, 2);
     auto *counters = array_param(b, 4, PrimitiveType::i64, 1);
     {
-      auto *loop = b.create_range_for(b.get_int32(0), g, false, threads);
+      auto *loop =
+          b.create_struct_for(activity_->centroids.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       store(b, gs, at(b, detail::Changed, i), b.get_int32(0));
-      auto active = b.get_if_guard(
-          b.create_if(load(b, gs, at(b, detail::Flagged, i))), true);
       count_work(b, counters, detail::Recomputed);
       auto *m = load(b, groups, at(b, kAccM, i));
       // Ordinary weighted mean: preserve every positive mass, substitute one
@@ -740,7 +779,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       store(b, groups, at(b, kCenM, i), m);
     }
     finalize_ = engine::CompiledKernel(
-        runtime, "field_publish_centroids", b.extract_ir(),
+        runtime,
+        "field_publish_centroids_" +
+            std::to_string(activity_->current.cells->id),
+        b.extract_ir(),
         {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::array(PrimitiveType::i32, 2),
@@ -748,7 +790,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
          engine::Param::array(PrimitiveType::i64)},
         engine::MathMode::Strict);
   }
-  timings_.compilation_ms = activity_->compilation_ms + elapsed(compilation_start);
+  timings_.compilation_ms =
+      activity_->compilation_ms + elapsed(compilation_start);
 }
 
 template <class T>
@@ -801,7 +844,8 @@ void Harness::set_focus(const std::vector<int> &groups) {
         anchor_slot = edge_int(kEdgeParticle, e);
         break;
       }
-    if (anchor_slot < 0) throw std::invalid_argument("focal field has no member");
+    if (anchor_slot < 0)
+      throw std::invalid_argument("focal field has no member");
     FrameAnchor shift{}, next_anchor = frame_anchor_;
     for (int axis = 0; axis < 3; ++axis) {
       shift[axis] = particle(kPosX + axis, anchor_slot);
@@ -812,10 +856,13 @@ void Harness::set_focus(const std::vector<int> &groups) {
       for (int slot = 0; slot < particles_; ++slot) {
         if (particle(kMass, slot) == 0) continue;
         for (int axis = 0; axis < 3; ++axis) {
-          const double value = double(particle(kPosX + axis, slot)) - shift[axis];
-          if (!std::isfinite(value) || std::abs(value) > std::numeric_limits<float>::max())
+          const double value =
+              double(particle(kPosX + axis, slot)) - shift[axis];
+          if (!std::isfinite(value) ||
+              std::abs(value) > std::numeric_limits<float>::max())
             throw std::invalid_argument("focus-local extent outside f32 range");
-          local[offset(kPosX + axis, particles_, slot)] = static_cast<float>(value);
+          local[offset(kPosX + axis, particles_, slot)] =
+              static_cast<float>(value);
         }
       }
       activity_->set_focus(groups);
@@ -903,15 +950,14 @@ void Harness::invalidate() {
   demand_ = {};
 }
 
-void Harness::publish(const Parameters &p) {
-  publish(p, frame_anchor_);
-}
+void Harness::publish(const Parameters &p) { publish(p, frame_anchor_); }
 
 void Harness::publish(const Parameters &p, const FrameAnchor &anchor) {
   invalidate();
   validate_parameters(p);
   for (double coordinate : anchor)
-    if (!std::isfinite(coordinate) || std::abs(coordinate) > std::numeric_limits<float>::max())
+    if (!std::isfinite(coordinate) ||
+        std::abs(coordinate) > std::numeric_limits<float>::max())
       throw std::invalid_argument("invalid frame reference");
   frame_anchor_ = anchor;
   upload();
@@ -925,6 +971,11 @@ void Harness::upload() {
   exposed_ = 0;
   for (int p = 0; p < particles_; ++p)
     if (particle(kMass, p) > 0) ++exposed_;
+  std::vector<bool> live_groups(groups_, false);
+  for (int e = 0; e < edges_; ++e)
+    if (particle(kMass, edge_int(kEdgeParticle, e)) * edge_float(kShare, e) > 0)
+      live_groups[edge_int(kEdgeGroup, e)] = true;
+  exposed_fields_ = std::count(live_groups.begin(), live_groups.end(), true);
   ++generation_;
   const auto start = Clock::now();
   // Validate each complete typed shape before any copy; synchronous transfer
@@ -1066,6 +1117,17 @@ void Harness::launch_integrate(const Parameters &p) {
   ctx.set_arg_ndarray({6}, *activity_->particle_delta);
   ctx.set_arg_ndarray({7}, *activity_->focus);
   ctx.set_arg_ndarray({8}, *activity_->counters);
+  bind(ctx, 9, edge_int_array_.get(), edge_int_data,
+       {kEdgeIntFieldCount, std::max(edges_, 1)});
+  ctx.set_arg_ndarray({10}, *activity_->particle_offsets);
+  ctx.set_arg_ndarray({11}, *activity_->particle_edges);
+  ctx.set_arg_ndarray({12}, *activity_->contact_a_offsets);
+  ctx.set_arg_ndarray({13}, *activity_->contact_a_edges);
+  ctx.set_arg_ndarray({14}, *activity_->contact_b_offsets);
+  ctx.set_arg_ndarray({15}, *activity_->contact_b_edges);
+  bind(ctx, 16, contact_int_array_.get(), contact_int_data,
+       {kContactIntFieldCount, std::max(contacts_, 1)});
+  ctx.set_arg_float({17}, p.contact_stiffness);
   integrate_.launch(ctx);
 }
 
@@ -1073,8 +1135,8 @@ void Harness::launch_determine() {
   auto ctx = determine_.make_context();
   bind(ctx, 0, particle_array_.get(), particle_data,
        {kParticleFieldCount, std::max(particles_, 1)});
-  bind(ctx, 1, determined_array_.get(), particles_ ? determined_ : empty_determined_,
-       {std::max(particles_, 1)});
+  bind(ctx, 1, determined_array_.get(),
+       particles_ ? determined_ : empty_determined_, {std::max(particles_, 1)});
   ctx.set_arg_int({2}, particles_);
   determine_.launch(ctx);
 }
@@ -1125,6 +1187,7 @@ void Harness::seed_centroids(const Parameters &p) {
   launch_clear(true);
   launch_centroid(p, true);
   launch_determine();
+  activity_->finish();
   runtime_->synchronize();
   ready_ = true;
   previous_parameters_ = p;
@@ -1144,17 +1207,19 @@ void Harness::tick(const Parameters &p) {
       p.dt != previous_parameters_.dt ||
       p.contact_stiffness != previous_parameters_.contact_stiffness ||
       p.reach_strength != previous_parameters_.reach_strength;
-  activity_->begin(*this, mode_ == TickMode::AllLoaded, invalidated_ || parameters_changed);
-  activity_->touch(*this);
+  activity_->begin(*this, mode_ == TickMode::AllLoaded,
+                   invalidated_ || parameters_changed, p.reach_strength != 0);
   launch_clear(false);
   launch_force(p);
   launch_contact(p);
   launch_integrate(p);
   launch_determine();
-  activity_->mark(*this);
+  activity_->mark(*this, mode_ == TickMode::AllLoaded);
   launch_centroid(p, false);
+  activity_->touch(*this, p.gravity);
+  activity_->finish();
   runtime_->synchronize();
-  demand_ = activity_->report(exposed_);
+  demand_ = activity_->report(exposed_, exposed_fields_);
   demand_.frame_anchor = frame_anchor_;
   demand_.tick_ms = std::chrono::duration<double, std::milli>(
                         std::chrono::steady_clock::now() - start)

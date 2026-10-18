@@ -76,7 +76,10 @@ void row(const char *scenario, int tick, const Harness &h) {
             << ',' << d.force_mask_visits << ',' << d.centroid_gate_visits
             << ',' << d.centroid_mask_visits << ',' << d.centroids_flagged
             << ',' << d.centroids_recomputed << ',' << d.centroid_touch_edges
-            << ',' << d.centroid_reduction_edges << ',' << d.tick_ms << '\n';
+            << ',' << d.centroid_reduction_edges << ','
+            << d.native_particle_entries << ',' << d.native_centroid_entries
+            << ',' << d.zero_response_touches << ','
+            << d.invalidation_particle_visits << ',' << d.tick_ms << '\n';
 }
 void compare(Harness &a, Harness &b, float absolute = 1e-5f) {
   a.download();
@@ -131,12 +134,15 @@ void settled_and_invalidation(engine::Runtime &runtime) {
             s->demand().particles_skipped == 2 &&
             s->demand().centroids_recomputed == 0,
         "fixed point skips repeated force and centroid work");
-  check(s->demand().touch_adjacency_visits == 2 &&
-            s->demand().force_mask_visits == 2 &&
-            s->demand().centroid_gate_visits == 2 &&
-            s->demand().centroid_mask_visits == 3 && s->demand().tick_ms > 0,
-        "demand reports mask/adjacency visits and time separately from avoided "
-        "force work");
+  check(s->demand().native_particle_entries == 0 &&
+            s->demand().native_centroid_entries == 0 &&
+            s->demand().invalidation_particle_visits == 0 &&
+            s->demand().touch_adjacency_visits == 0 &&
+            s->demand().force_mask_visits == 0 &&
+            s->demand().centroid_gate_visits == 0 &&
+            s->demand().centroid_mask_visits == 0 && s->demand().tick_ms > 0,
+        "native inactive traversal omits calculation and adjacency bodies; "
+        "tick time still includes native list generation and launches");
   p.gravity *= 2;
   s->tick(p);
   r->tick(p);
@@ -176,15 +182,15 @@ void ineffective_touch(engine::Runtime &runtime) {
     compare(*s, *r);
     row("ineffective-touch", tick, *s);
   }
-  check(s->group(kCenX, 0) != 0 && s->demand().geometry_rejected >= 1,
-        "changed centroid rejects interactions whose computed relative vector "
-        "is unchanged");
+  check(s->group(kCenX, 0) != 0 && s->demand().zero_response_touches == 3,
+        "changed centroid rejects exact zero-gravity responses before next "
+        "particle activation");
   check(s->particle(kPosX, 0) == 0 && s->particle(kPosX, 2) == -1000000 &&
-            s->demand().particles_woken == 0 && s->demand().gate_rejected >= 1,
+            s->demand().particles_woken == 0 && s->demand().gate_rejected == 0,
         "changed centroid with no resulting displacement does not wake "
         "stationary particles");
-  check(s->demand().force_requests == 2 && s->demand().force_evaluations == 0 &&
-            s->demand().particles_skipped == 1,
+  check(s->demand().force_requests == 1 && s->demand().force_evaluations == 0 &&
+            s->demand().particles_skipped == 2,
         "unchanged interaction inputs justify actual force omission, not a "
         "speed heuristic");
 }
@@ -197,6 +203,7 @@ void all_fields_and_sleeping_members(engine::Runtime &runtime) {
   s->tick(p);
   r->tick(p);
   compare(*s, *r);
+  row("all-connected-fields", 1, *s);
   check(s->particle(kPosX, 0) == 0 && s->demand().centroids_recomputed == 1,
         "initial combined forces balance while one supplied moving member "
         "perturbs one field");
@@ -419,9 +426,9 @@ void translated_motion(engine::Runtime &runtime) {
             "members");
       check(d.particles_moved == 1 &&
                 d.particles_woken == (tick == 1 ? 1 : 0) &&
-                d.particles_evaluated == (tick == 1 ? 3 : 2) &&
-                d.particles_skipped == (tick == 1 ? 0 : 1) &&
-                d.gate_rejected == (tick == 1 ? 2 : 1),
+                d.particles_evaluated == (tick == 1 ? 3 : 1) &&
+                d.particles_skipped == (tick == 1 ? 0 : 2) &&
+                d.gate_rejected == (tick == 1 ? 2 : 0),
             "translated study preserves continued eligibility and "
             "ineffective-touch rejection");
     }
@@ -496,13 +503,15 @@ int main(int argc, char **argv) {
         throw std::invalid_argument("expected --cuda or --parallel");
     }
     engine::Runtime runtime(settings);
-    std::cout << "DEMAND,scenario,tick,P,N,G,exposed_G,E,exposed_E,evaluated,"
-                 "skipped,moved,woken,"
-                 "force_requests,force_evaluations,zero_response,force_skipped,"
-                 "gate_checks,gate_rejected,geometry_rejected,touch_visits,"
-                 "force_mask_visits,centroid_gate_visits,centroid_mask_visits,"
-                 "flagged,recomputed,"
-                 "touched_edges,reduced_edges,tick_ms\n";
+    std::cout
+        << "DEMAND,scenario,tick,P,N,G,exposed_G,E,exposed_E,evaluated,"
+           "skipped,moved,woken,"
+           "force_requests,force_evaluations,zero_response,force_skipped,"
+           "gate_checks,gate_rejected,geometry_rejected,touch_visits,"
+           "force_mask_visits,centroid_gate_visits,centroid_mask_visits,"
+           "flagged,recomputed,"
+           "touched_edges,reduced_edges,native_particles,native_centroids,"
+           "zero_response_touches,invalidation_particle_visits,tick_ms\n";
     settled_and_invalidation(runtime);
     ineffective_touch(runtime);
     all_fields_and_sleeping_members(runtime);

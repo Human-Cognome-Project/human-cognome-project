@@ -206,6 +206,9 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
                 "survives 2pow27 translation");
           check(d.particles_moved == 1 &&
                     d.particles_woken == (tick == 1 ? 1 : 0) &&
+                    d.particles_evaluated == (tick == 1 ? N : 1) &&
+                    d.native_particle_entries == d.particles_evaluated &&
+                    d.native_centroid_entries == touched.size() &&
                     d.centroids_flagged == touched.size() &&
                     d.centroids_recomputed == touched.size() &&
                     d.force_evaluations == 0 &&
@@ -220,7 +223,11 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
                     << ',' << d.centroids_flagged << ','
                     << d.centroids_recomputed << ',' << d.gate_rejected << ','
                     << d.force_requests << ',' << d.touch_adjacency_visits
-                    << ',' << d.tick_ms << '\n';
+                    << ',' << d.native_particle_entries << ','
+                    << d.native_centroid_entries << ','
+                    << d.zero_response_touches << ','
+                    << d.invalidation_particle_visits << ',' << d.tick_ms
+                    << '\n';
         }
         rejects([&] { session.demand(handle, warm::new_uuid()); },
                 "private-derived focal demand requires active owner");

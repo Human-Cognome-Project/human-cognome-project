@@ -38,6 +38,8 @@ struct Demand {
   std::uint64_t centroid_gate_visits{0};
   std::uint64_t centroid_touch_edges{0}, centroid_reduction_edges{0};
   std::uint64_t centroids_flagged{0}, centroids_recomputed{0};
+  std::uint64_t native_particle_entries{0}, native_centroid_entries{0};
+  std::uint64_t zero_response_touches{0}, invalidation_particle_visits{0};
   std::array<float, 3> focal_origin{};
   FrameAnchor frame_anchor{};
   double tick_ms{0};
@@ -226,6 +228,7 @@ class Harness {
   bool invalidated_{true};
   Parameters previous_parameters_;
   std::uint64_t exposed_{0};
+  std::uint64_t exposed_fields_{0};
   Demand demand_;
   FrameAnchor frame_anchor_{};
   std::unique_ptr<detail::Activity> activity_;
