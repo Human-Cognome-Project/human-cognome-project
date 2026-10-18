@@ -37,6 +37,11 @@ Issue #148 released bounded D after design #147 acceptance. The
 [active workbench adapter](docs/ACTIVE-WORKBENCH.md) implements supplied local
 inputs, checked native sessions and controlled restart. GPU pinning, broader
 rollups and process-failure isolation remain separate work.
+Stage D is accepted/merged in #149. The revised #150 integrates focus-local
+coordinates, activity/focal control on both host paths and combined CPU/SQL
+evidence; review remains required before GPU handoff. Dynamic focus-scoped LoD
+selection and transition rules remain intended work, as distinguished in the
+[field model](docs/ACTIVE-FIELD-MODEL.md#focus-scoped-lod-intended-versus-built).
 
 The production path is C++. Python is not an HCP engine or data-layer
 implementation language. Python present inside the Taichi fork is upstream

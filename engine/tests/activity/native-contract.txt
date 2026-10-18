@@ -1,0 +1,7 @@
+ok   native inactive sets have no calculation-body entries
+ok   4096 parallel touches collapse to two native active entries
+ok   consumption clears current bits and retains separate next-phase activation
+ok   native reactivation does not consume or overwrite the next phase
+ok   native scheduling consumption preserves sleeping numerical members outside control storage
+5 native activity checks
+PASS native_activity_test
