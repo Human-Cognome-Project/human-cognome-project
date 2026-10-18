@@ -27,6 +27,9 @@ int main(int argc, char **argv) {
   try {
     engine::InstanceSettings settings;
     settings.cuda = argc == 2 && std::string(argv[1]) == "--cuda";
+    const auto path = argc == 2 && std::string(argv[1]) == "--direct"
+                          ? field::HostPath::CpuDirect
+                          : field::HostPath::BulkCopy;
     settings.read_environment = false;
     settings.cpu_threads = 1;
     engine::Runtime runtime(settings);
@@ -50,7 +53,7 @@ int main(int argc, char **argv) {
     field::Parameters p;
     p.gravity = 0;
     p.dt = 0.1f;
-    assembly::FixedStudy study(runtime, input, p);
+    assembly::FixedStudy study(runtime, input, p, path);
     const auto &prepared = study.prepared();
     check(prepared.focal_groups.size() == 1 &&
               prepared.groups.at(prepared.focal_groups[0]).kind ==
@@ -61,7 +64,8 @@ int main(int argc, char **argv) {
           "a group particle");
     study.tick(p);
     study.download();
-    check(study.demand().focal_origin[0] == 101 &&
+    check(study.demand().frame_anchor[0] == 100 &&
+              study.demand().focal_origin[0] == 1 &&
               study.demand().particles_exposed == 2,
           "two retained English letter objects establish the mathematical "
           "focal origin");
@@ -70,8 +74,8 @@ int main(int argc, char **argv) {
       if (particle.occurrence.position.x == 102)
         carried = study.fields().particle(field::kVelX,
                                           particle.occurrence.slot) == 0.1f &&
-                  std::abs(study.fields().particle(field::kPosX,
-                                                   particle.occurrence.slot) -
+                  std::abs(study.fields().supplied_position(
+                               0, particle.occurrence.slot) -
                            102.01f) < 1e-5f;
     check(carried,
           "prepared letter object integrates relative to focal field, not "
@@ -89,8 +93,43 @@ int main(int argc, char **argv) {
     check(!study.ready(), "invalid focal generation cannot execute");
     study.publish(input, p);
     study.tick(p);
-    check(study.ready() && study.demand().focal_origin[0] == 101,
+    check(study.ready() && study.demand().focal_origin[0] == 1,
           "valid supplied focal generation reseeds and recovers readiness");
+    for (const double offset : {0.0, 134217728.0}) {
+      auto translated = input;
+      const auto first_id = prepared.particles.at(0).occurrence.id;
+      const auto second_id = prepared.particles.at(1).occurrence.id;
+      for (auto &occurrence : translated.occurrences) {
+        if (occurrence.id == first_id) occurrence.position = {offset, 0, 0};
+        if (occurrence.id == second_id) {
+          occurrence.position = {offset + 1, 0, 0};
+          occurrence.velocity = {1, 0, 0};
+        }
+      }
+      field::Parameters motion;
+      motion.gravity = 0;
+      motion.dt = 1;
+      motion.reach_strength = 0;
+      assembly::FixedStudy local(runtime, translated, motion, path);
+      check(local.prepared().frame_anchor.x == offset &&
+                local.prepared().particles.at(1).position.x == 1,
+            "preparation subtracts supplied double reference before narrowing "
+            "to f32");
+      const int group = local.prepared().focal_groups.at(0);
+      const int moving_slot = local.prepared().particles.at(1).occurrence.slot;
+      for (int tick = 1; tick <= 3; ++tick) {
+        local.tick(motion);
+        local.download();
+        check(local.fields().particle(field::kPosX, moving_slot) == 1 + tick &&
+                  local.fields().group(field::kCenX, group) ==
+                      (1 + tick) * 0.5f &&
+                  local.demand().particles_moved == 1 &&
+                  local.demand().centroids_recomputed ==
+                      local.prepared().groups.size(),
+              "translated language objects preserve independently expected "
+              "local motion and centroid propagation");
+      }
+    }
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
   }

@@ -1,6 +1,7 @@
 #include "field/activity.h"
 
 #include <algorithm>
+#include <chrono>
 #include <set>
 #include <stdexcept>
 
@@ -61,10 +62,11 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
   counters = std::make_unique<Ndarray>(&r.program(), PrimitiveType::i64,
                                        std::vector<int>{CounterCount});
   focus = std::make_unique<Ndarray>(&r.program(), PrimitiveType::f32,
-                                    std::vector<int>{8});
+                                    std::vector<int>{11});
   focus_mask_array_ = std::make_unique<Ndarray>(
       &r.program(), PrimitiveType::i32, std::vector<int>{std::max(g, 1)});
   reset();
+  const auto compile_start = std::chrono::steady_clock::now();
   const int threads = r.cpu_threads();
   const auto f = PrimitiveType::f32, i32 = PrimitiveType::i32;
   const auto fa = engine::Param::array(f, 2), ia = engine::Param::array(i32, 2);
@@ -135,7 +137,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
             b.create_add(
                 read(b, origin, {b.get_int32(axis)}),
                 b.create_div(read(b, origin, {b.get_int32(axis + 3)}), denom)),
-            b.get_float32(0));
+            read(b, origin, {b.get_int32(8 + axis)}));
         auto changed =
             b.get_if_guard(b.create_if(b.create_cmp_ne(
                                next, read(b, origin, {b.get_int32(axis)}))),
@@ -150,7 +152,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
                       read(b, origin, {b.get_int32(axis)}),
                       b.create_div(read(b, origin, {b.get_int32(axis + 3)}),
                                    denom)),
-                  b.get_float32(0)));
+                  read(b, origin, {b.get_int32(8 + axis)})));
     }
     {
       auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);
@@ -291,6 +293,8 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
         {fa, fa, ia, fa, ia, fa, ia, fa, cv, integer, integer, ia, iv},
         engine::MathMode::Strict);
   }
+  compilation_ms = std::chrono::duration<double, std::milli>(
+      std::chrono::steady_clock::now() - compile_start).count();
 }
 
 void Activity::reset() {
@@ -306,7 +310,9 @@ void Activity::reset() {
   const std::vector<std::int64_t> count_zero(CounterCount, 0);
   engine::upload(*counters, count_zero.data(),
                  count_zero.size() * sizeof(std::int64_t));
-  zero(*focus, 8);
+  std::vector<float> origin(11, 0);
+  std::copy(fixed_origin_.begin(), fixed_origin_.end(), origin.begin() + 8);
+  engine::upload(*focus, origin.data(), origin.size() * sizeof(float));
   std::vector<int> ps(ParticleStateCount * std::size_t(std::max(p_, 1)), 0),
       gs(GroupStateCount * std::size_t(std::max(g_, 1)), 0);
   std::fill_n(ps.begin(), p_, 1);
@@ -327,6 +333,10 @@ void Activity::set_focus(const std::vector<int> &groups) {
   for (int g : groups) focus_mask_[g] = 1;
   engine::upload(*focus_mask_array_, focus_mask_.data(),
                  focus_mask_.size() * sizeof(int));
+}
+void Activity::set_frame_anchor(const FrameAnchor &anchor) {
+  for (int axis = 0; axis < 3; ++axis)
+    fixed_origin_[axis] = static_cast<float>(-anchor[axis]);
 }
 void Activity::index(const std::vector<int> &edges,
                      const std::vector<int> &contacts) {
@@ -356,8 +366,10 @@ void Activity::index(const std::vector<int> &edges,
 }
 void Activity::begin(Harness &h, bool all, bool invalid) {
   auto ctx = begin_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+         {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+         {kGroupFieldCount, std::max(g_, 1)});
   ctx.set_arg_ndarray({2}, *particle_flags);
   ctx.set_arg_ndarray({3}, *particle_delta);
   ctx.set_arg_ndarray({4}, *group_flags);
@@ -372,10 +384,14 @@ void Activity::begin(Harness &h, bool all, bool invalid) {
 }
 void Activity::touch(Harness &h) {
   auto ctx = touch_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
-  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data, {kEdgeIntFieldCount, std::max(e_, 1)});
-  h.bind(ctx, 3, h.contact_int_array_.get(), h.contact_int_data, {kContactIntFieldCount, std::max(k_, 1)});
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+         {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+         {kGroupFieldCount, std::max(g_, 1)});
+  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
+         {kEdgeIntFieldCount, std::max(e_, 1)});
+  h.bind(ctx, 3, h.contact_int_array_.get(), h.contact_int_data,
+         {kContactIntFieldCount, std::max(k_, 1)});
   ctx.set_arg_ndarray({4}, *particle_flags);
   ctx.set_arg_ndarray({5}, *group_flags);
   ctx.set_arg_ndarray({6}, *group_delta);
@@ -386,10 +402,14 @@ void Activity::touch(Harness &h) {
 }
 void Activity::mark(Harness &h) {
   auto ctx = mark_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data, {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data, {kGroupFieldCount, std::max(g_, 1)});
-  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data, {kEdgeIntFieldCount, std::max(e_, 1)});
-  h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data, {kEdgeFloatFieldCount, std::max(e_, 1)});
+  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+         {kParticleFieldCount, std::max(p_, 1)});
+  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+         {kGroupFieldCount, std::max(g_, 1)});
+  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
+         {kEdgeIntFieldCount, std::max(e_, 1)});
+  h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data,
+         {kEdgeFloatFieldCount, std::max(e_, 1)});
   ctx.set_arg_ndarray({4}, *particle_flags);
   ctx.set_arg_ndarray({5}, *particle_delta);
   ctx.set_arg_ndarray({6}, *group_flags);

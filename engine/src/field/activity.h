@@ -38,10 +38,12 @@ class Activity {
   void reset();
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
+  void set_frame_anchor(const FrameAnchor &anchor);
   void begin(Harness &h, bool all_loaded, bool invalidate);
   void touch(Harness &h);
   void mark(Harness &h);
   Demand report(std::uint64_t exposed);
+  double compilation_ms{0};
   std::unique_ptr<taichi::lang::Ndarray> particle_flags, particle_delta;
   // pending weighted member motion xyz, previous published centroid xyz.
   std::unique_ptr<taichi::lang::Ndarray> group_flags, group_delta, counters,
@@ -55,6 +57,7 @@ class Activity {
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
   std::vector<int> focus_mask_;
+  std::array<float, 3> fixed_origin_{};
   std::unique_ptr<taichi::lang::Ndarray> focus_mask_array_;
   engine::CompiledKernel begin_, touch_, mark_;
 };

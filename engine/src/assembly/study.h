@@ -34,6 +34,7 @@ struct Participation {
 struct ContactSlots { int a, b; };
 struct PreparedStudy {
   int capacity{0};
+  Point frame_anchor;
   std::vector<ScaleBinding> scales;
   std::vector<PreparedParticle> particles;
   std::vector<Group> groups;

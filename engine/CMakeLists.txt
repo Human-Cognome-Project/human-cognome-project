@@ -83,14 +83,16 @@ target_include_directories(activity_test PRIVATE tests)
 target_link_libraries(activity_test PRIVATE field_core)
 add_test(NAME activity_test COMMAND activity_test)
 add_test(NAME activity_parallel_test COMMAND activity_test --parallel)
-set_tests_properties(activity_test activity_parallel_test PROPERTIES
+add_test(NAME activity_direct_test COMMAND activity_test --direct --parallel)
+set_tests_properties(activity_test activity_parallel_test activity_direct_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 
 add_executable(activity_assembly_test tests/activity_assembly_test.cpp)
 target_include_directories(activity_assembly_test PRIVATE tests)
 target_link_libraries(activity_assembly_test PRIVATE membership_fields study_assembly)
 add_test(NAME activity_assembly_test COMMAND activity_assembly_test)
-set_tests_properties(activity_assembly_test PROPERTIES
+add_test(NAME activity_assembly_direct_test COMMAND activity_assembly_test --direct)
+set_tests_properties(activity_assembly_test activity_assembly_direct_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 
 foreach(suite preparation_test assembly_test)

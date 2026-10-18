@@ -5,6 +5,7 @@
 #include <cmath>
 #include <set>
 #include <cstring>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -131,7 +132,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                                                  std::vector<int>{1});
   }
   activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_, edges_, contacts_);
-  timings_.allocation_ms = elapsed(allocation_start);
+  timings_.allocation_ms = elapsed(allocation_start) - activity_->compilation_ms;
   const auto compilation_start = Clock::now();
 
   const int threads = runtime.cpu_threads();
@@ -747,7 +748,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
          engine::Param::array(PrimitiveType::i64)},
         engine::MathMode::Strict);
   }
-  timings_.compilation_ms = elapsed(compilation_start);
+  timings_.compilation_ms = activity_->compilation_ms + elapsed(compilation_start);
 }
 
 template <class T>
@@ -789,14 +790,39 @@ void Harness::set_focus(const std::vector<int> &groups) {
       throw std::invalid_argument(
           "focus requires distinct prepared field slots");
   if (!groups.empty()) {
-    runtime_->synchronize();
-    std::vector<float> snapshot(group_data.size());
-    engine::readback(*group_array_, snapshot.data(),
-                     snapshot.size() * sizeof(float));
+    download();
     for (int g : groups)
-      if (!(snapshot[offset(kCenM, groups_, g)] > 0))
+      if (!(group(kCenM, g) > 0))
         throw std::invalid_argument(
             "focal fields require exposed participating mass");
+    int anchor_slot = -1;
+    for (int e = 0; e < edges_; ++e)
+      if (edge_int(kEdgeGroup, e) == groups.front()) {
+        anchor_slot = edge_int(kEdgeParticle, e);
+        break;
+      }
+    if (anchor_slot < 0) throw std::invalid_argument("focal field has no member");
+    FrameAnchor shift{}, next_anchor = frame_anchor_;
+    for (int axis = 0; axis < 3; ++axis) {
+      shift[axis] = particle(kPosX + axis, anchor_slot);
+      next_anchor[axis] += shift[axis];
+    }
+    if (shift != FrameAnchor{}) {
+      auto local = particle_data;
+      for (int slot = 0; slot < particles_; ++slot) {
+        if (particle(kMass, slot) == 0) continue;
+        for (int axis = 0; axis < 3; ++axis) {
+          const double value = double(particle(kPosX + axis, slot)) - shift[axis];
+          if (!std::isfinite(value) || std::abs(value) > std::numeric_limits<float>::max())
+            throw std::invalid_argument("focus-local extent outside f32 range");
+          local[offset(kPosX + axis, particles_, slot)] = static_cast<float>(value);
+        }
+      }
+      activity_->set_focus(groups);
+      std::copy(local.begin(), local.end(), particle_data.begin());
+      publish(previous_parameters_, next_anchor);
+      return;
+    }
   }
   activity_->set_focus(groups);
   invalidated_ = true;
@@ -878,8 +904,16 @@ void Harness::invalidate() {
 }
 
 void Harness::publish(const Parameters &p) {
+  publish(p, frame_anchor_);
+}
+
+void Harness::publish(const Parameters &p, const FrameAnchor &anchor) {
   invalidate();
   validate_parameters(p);
+  for (double coordinate : anchor)
+    if (!std::isfinite(coordinate) || std::abs(coordinate) > std::numeric_limits<float>::max())
+      throw std::invalid_argument("invalid frame reference");
+  frame_anchor_ = anchor;
   upload();
   seed_centroids(p);
 }
@@ -1086,6 +1120,7 @@ void Harness::seed_centroids(const Parameters &p) {
         "field::Harness: upload required before centroid seeding");
   }
   validate_parameters(p);
+  activity_->set_frame_anchor(frame_anchor_);
   activity_->reset();
   launch_clear(true);
   launch_centroid(p, true);
@@ -1120,6 +1155,7 @@ void Harness::tick(const Parameters &p) {
   launch_centroid(p, false);
   runtime_->synchronize();
   demand_ = activity_->report(exposed_);
+  demand_.frame_anchor = frame_anchor_;
   demand_.tick_ms = std::chrono::duration<double, std::milli>(
                         std::chrono::steady_clock::now() - start)
                         .count();

@@ -31,6 +31,13 @@ Point convert(Point p, double units) {
   return {numerical(p.x * units), numerical(p.y * units), numerical(p.z * units)};
 }
 
+Point placed(Point p, double units) {
+  finite(p);
+  Point result{p.x * units, p.y * units, p.z * units};
+  finite(result);
+  return result;
+}
+
 int count(std::size_t size) {
   require(size <= std::size_t(std::numeric_limits<int>::max()),
           "assembly: logical count exceeds i32 axis");
@@ -178,7 +185,7 @@ PreparedStudy prepare(const StudyInput &input) {
     if (radius < extent) radius = std::nextafter(radius, std::numeric_limits<float>::infinity());
     require(std::isfinite(radius), "assembly: radius outside finite f32 range");
     target.particles.push_back({occurrence, definition.mass,
-                               convert(occurrence.position, units),
+                               placed(occurrence.position, units),
                                convert(occurrence.velocity, units),
                                numerical(double(definition.mass)), radius});
     active_slots.emplace(occurrence.id, occurrence.slot);
@@ -222,6 +229,20 @@ PreparedStudy prepare(const StudyInput &input) {
             "assembly: focus requires distinct exposed fields");
     target.focal_groups.push_back(found->second);
   }
+  if (!target.focal_groups.empty()) {
+    const auto member = std::find_if(target.participation.begin(), target.participation.end(),
+        [&](const auto &e) { return e.group == target.focal_groups.front(); });
+    const auto particle = std::find_if(target.particles.begin(), target.particles.end(),
+        [&](const auto &p) { return p.occurrence.slot == member->slot; });
+    target.frame_anchor = particle->position;
+  }
+  // Choose the numerical reference before f32 conversion. Original supplied
+  // placements remain in Occurrence; no universal absolute 3D map is needed.
+  for (auto &p : target.particles) {
+    p.position = {numerical(p.position.x - target.frame_anchor.x),
+                  numerical(p.position.y - target.frame_anchor.y),
+                  numerical(p.position.z - target.frame_anchor.z)};
+  }
   return target;
 }
 
@@ -263,7 +284,8 @@ void FixedStudy::stage(const PreparedStudy &target, const field::Parameters &par
     fields_->contact_int(field::kContactA, int(i)) = target.contacts[i].a;
     fields_->contact_int(field::kContactB, int(i)) = target.contacts[i].b;
   }
-  fields_->publish(parameters);
+  fields_->publish(parameters, {target.frame_anchor.x, target.frame_anchor.y,
+                                target.frame_anchor.z});
   fields_->set_focus(target.focal_groups);
 }
 

@@ -56,6 +56,7 @@ class ActiveAssembly {
                                  std::optional<LocalInput> local = {});
   ActiveAssembly revise(std::optional<LocalInput> local) const;
   ActiveAssembly restart() const;
+  ActiveAssembly focus(std::vector<FocalField> fields) const;
   bool inputs_available() const {
     return !requires_local_ || local_.has_value();
   }
@@ -76,6 +77,7 @@ class ActiveAssembly {
   warm::Uuid owner_, generation_;
   bool requires_local_;
   std::optional<LocalInput> local_;
+  std::vector<FocalField> focal_fields_;
 };
 
 struct ExecutionHandle {
@@ -88,6 +90,8 @@ struct ActiveReport {
   std::optional<LocalInput> local_provenance;
   PreparedStudy prepared;
   std::vector<float> particles, groups, determined;
+  field::FrameAnchor frame_anchor;
+  field::Demand demand;
 };
 // Owns all native bindings. Destruction drains work, destroys studies/kernels
 // while their Program is alive, then finalizes it. Logical assemblies/pins are
@@ -107,6 +111,7 @@ class ActiveSession {
   ActiveReport report(const ExecutionHandle &handle, const warm::Uuid &owner);
   void accept(const ActiveReport &report, const warm::Uuid &owner) const;
   field::PhaseTimes timings(const ExecutionHandle &handle) const;
+  field::Demand demand(const ExecutionHandle &handle, const warm::Uuid &owner) const;
   double assembly_ms() const { return assembly_ms_; }
 
  private:

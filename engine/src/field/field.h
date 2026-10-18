@@ -24,6 +24,7 @@ namespace detail {
 class Activity;
 }
 enum class TickMode { Selective, AllLoaded };
+using FrameAnchor = std::array<double, 3>;
 struct Demand {
   std::uint64_t particles_loaded{0}, particles_exposed{0}, fields_loaded{0},
       fields_exposed{0}, edges_loaded{0}, edges_exposed{0};
@@ -38,6 +39,7 @@ struct Demand {
   std::uint64_t centroid_touch_edges{0}, centroid_reduction_edges{0};
   std::uint64_t centroids_flagged{0}, centroids_recomputed{0};
   std::array<float, 3> focal_origin{};
+  FrameAnchor frame_anchor{};
   double tick_ms{0};
 };
 enum class HostPath { BulkCopy, CpuDirect };
@@ -132,6 +134,12 @@ class Harness {
   // An empty selection retains the legacy fixed coordinate origin.
   void set_focus(const std::vector<int> &groups);
   const Demand &demand() const { return demand_; }
+  const FrameAnchor &frame_anchor() const { return frame_anchor_; }
+  // Positions are local numerical values. Add this reference in double only
+  // when interpreting an explicitly downloaded result in supplied coordinates.
+  double supplied_position(int axis, int slot) const {
+    return frame_anchor_.at(axis) + particle(kPosX + axis, slot);
+  }
   const PhaseTimes &timings() const { return timings_; }
 
   // Host staging, in the packed layout above.
@@ -175,6 +183,7 @@ class Harness {
   void download();
   void invalidate();
   void publish(const Parameters &p);
+  void publish(const Parameters &p, const FrameAnchor &anchor);
 
   // Build the centroids once from the staged state, so the first tick reads a
   // consistent field rather than zeros.
@@ -218,6 +227,7 @@ class Harness {
   Parameters previous_parameters_;
   std::uint64_t exposed_{0};
   Demand demand_;
+  FrameAnchor frame_anchor_{};
   std::unique_ptr<detail::Activity> activity_;
   HostPath path_;
   std::uint64_t generation_{0};

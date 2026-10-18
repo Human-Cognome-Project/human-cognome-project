@@ -11,6 +11,7 @@
 namespace {
 using namespace field;
 int checks = 0;
+HostPath host_path = HostPath::BulkCopy;
 void check(bool ok, const char *label) {
   ++checks;
   harness::record(ok, label, "activity contract failed");
@@ -41,7 +42,7 @@ std::unique_ptr<Harness> make(engine::Runtime &runtime, const Input &input,
                               TickMode mode = TickMode::Selective) {
   auto h = std::make_unique<Harness>(runtime, int(input.x.size()), input.groups,
                                      int(input.edges.size()),
-                                     int(input.contacts.size()));
+                                     int(input.contacts.size()), host_path);
   for (std::size_t i = 0; i < input.x.size(); ++i) {
     h->particle(kPosX, int(i)) = input.x[i];
     h->particle(kMass, int(i)) = input.mass[i];
@@ -358,20 +359,21 @@ void focal_frame(engine::Runtime &runtime) {
     t->tick(p);
     compare(*s, *r);
     t->download();
-    check(std::abs((s->particle(kPosX, 1) - 100) -
-                   (t->particle(kPosX, 1) - 1000)) <= 1e-4f,
+    check(std::abs(s->particle(kPosX, 1) - t->particle(kPosX, 1)) <= 1e-4f,
           "translated selected-focus calculation preserves relative motion "
           "within 1e-4");
   }
   row("focal-origin", 4, *s);
-  check(s->demand().focal_origin[0] == 100 && s->particle(kVelX, 1) == 0.1f,
+  check(s->demand().frame_anchor[0] == 100 &&
+            s->demand().focal_origin[0] == 0 && s->particle(kVelX, 1) == 0.1f,
         "selected focal centroid changes actual origin-dependent radial "
         "integration");
   Input multiple{{100, 104}, {2, 1}, {}, 2, {{0, 0}, {1, 1}}, {}};
   auto many = make(runtime, multiple, p);
   many->set_focus({0, 1});
   many->tick(p);
-  check(std::abs(many->demand().focal_origin[0] - 304.0f / 3) <= 1e-5f,
+  check(std::abs(many->demand().frame_anchor[0] +
+                 many->demand().focal_origin[0] - 304.0 / 3) <= 1e-5,
         "multiple focal fields form the ordinary mass-weighted centroid");
   auto unused = a;
   unused.groups = 2;
@@ -386,9 +388,44 @@ void focal_frame(engine::Runtime &runtime) {
   s->set_focus({});
   s->tick(p);
   s->download();
-  check(s->demand().focal_origin[0] == 0 && s->particle(kVelX, 1) == 0,
+  // The normalized radial direction can leave a rounding residue after
+  // subtracting the outward component; this is an observation tolerance.
+  check(s->demand().focal_origin[0] == -100 &&
+            std::abs(s->particle(kVelX, 1)) <= 1e-7f,
         "explicitly clearing focus restores legacy origin and invalidates "
         "radial calculation");
+}
+void translated_motion(engine::Runtime &runtime) {
+  const auto p = parameters(0);
+  for (const float offset : {0.0f, 134217728.0f}) {
+    const Input input{{offset, offset, offset}, {1, 1, 1}, {0, 1, 0}, 2,
+                      {{0, 0}, {1, 1}, {2, 1}}, {}};
+    auto h = make(runtime, input, p);
+    h->set_focus({0});
+    for (int tick = 1; tick <= 4; ++tick) {
+      h->tick(p);
+      h->download();
+      const auto &d = h->demand();
+      row(offset == 0 ? "local-motion-zero" : "local-motion-2pow27", tick, *h);
+      check(h->frame_anchor()[0] == offset && h->particle(kPosX, 1) == tick &&
+                h->particle(kVelX, 1) == 1 &&
+                h->supplied_position(0, 1) == double(offset) + tick,
+            "independent unit-motion expectation survives large coordinate "
+            "translation");
+      check(h->particle(kPosX, 0) == 0 && h->particle(kPosX, 2) == 0 &&
+                h->group(kCenX, 1) == tick * 0.5f && d.centroids_flagged == 1 &&
+                d.centroids_recomputed == 1 && d.centroid_reduction_edges == 2,
+            "local displacement propagates to one centroid with sleeping "
+            "members");
+      check(d.particles_moved == 1 &&
+                d.particles_woken == (tick == 1 ? 1 : 0) &&
+                d.particles_evaluated == (tick == 1 ? 3 : 2) &&
+                d.particles_skipped == (tick == 1 ? 0 : 1) &&
+                d.gate_rejected == (tick == 1 ? 2 : 1),
+            "translated study preserves continued eligibility and "
+            "ineffective-touch rejection");
+    }
+  }
 }
 void ripple(engine::Runtime &runtime) {
   const auto p = parameters();
@@ -453,6 +490,8 @@ int main(int argc, char **argv) {
         settings.cuda = true;
       else if (option == "--parallel")
         settings.cpu_threads = 2;
+      else if (option == "--direct")
+        host_path = HostPath::CpuDirect;
       else
         throw std::invalid_argument("expected --cuda or --parallel");
     }
@@ -470,6 +509,7 @@ int main(int argc, char **argv) {
     collective_effects(runtime);
     carried_motion(runtime);
     focal_frame(runtime);
+    translated_motion(runtime);
     ripple(runtime);
     contact(runtime);
   } catch (const std::exception &e) {
