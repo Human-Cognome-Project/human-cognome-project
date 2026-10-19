@@ -1,6 +1,11 @@
 # Pre-D design: host workbench and native execution handoff
 
-**Design accepted in #147, 2026-10-17; bounded D released in #148.** Governing updates:
+**Current status (2026-10-19):** design accepted in #147; bounded D released
+in #148 and accepted/merged in #149. #150's combined native activity/focal CPU
+review is complete; #152 requests type-phase simplification. GPU/pinning
+measurements remain open under #145. The design-time candidate descriptions
+below are historical where later implementation evidence supersedes them.
+Governing updates:
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139),
 [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145)
 and Patrick's recorded 2026-10-16 clarifications. See the separate
