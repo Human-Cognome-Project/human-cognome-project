@@ -485,6 +485,49 @@ void contact(engine::Runtime &runtime) {
         "body-contact dependencies preserve equal/opposite whole-particle "
         "motion");
 }
+void contact_phase_latency(engine::Runtime &runtime) {
+  const auto p = parameters(0, 1);
+  for (const bool high_source : {false, true}) {
+    const int mover = high_source ? 64 : 0, near = high_source ? 65 : 1,
+              far = high_source ? 0 : 64, chain = high_source ? 1 : 65;
+    Input input;
+    input.x.resize(70);
+    input.mass.assign(70, 1);
+    input.velocity.assign(70, 0);
+    for (int i = 0; i < 70; ++i) input.x[i] = 1000 + 10 * i;
+    input.x[mover] = 0;
+    input.x[near] = 0.5f;
+    input.x[far] = -0.5f;
+    input.x[chain] = -1;
+    input.velocity[mover] = 0.125f;
+    input.contacts = {{mover, near}, {far, mover}, {chain, far}};
+    auto s = make(runtime, input, p),
+         r = make(runtime, input, p, TickMode::AllLoaded);
+    for (int tick = 1; tick <= 5; ++tick) {
+      s->tick(p);
+      r->tick(p);
+      compare(*s, *r);
+      row(high_source ? "contact-phase-high-source"
+                      : "contact-phase-low-source",
+          tick, *s);
+      check(
+          s->demand().particles_evaluated ==
+                  (tick == 1 ? 70 : (tick == 5 ? 2 : 3)) &&
+              s->demand().native_particle_entries ==
+                  s->demand().particles_evaluated &&
+              s->demand().centroids_recomputed == 0,
+          "contact touches survive particle consumption and enter calculation "
+          "only at the following type phase across both pointer directions");
+      check(s->particle(kPosX, far) == -0.5f &&
+                s->particle(kPosX, chain) == -1 &&
+                (tick <= 3 ? s->particle(kPosX, near) == 0.5f
+                           : s->particle(kPosX, near) > 0.5f),
+            "sleeping contact target responds at the expected step without "
+            "propagating through an unmoved peer");
+    }
+  }
+}
+
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -521,6 +564,7 @@ int main(int argc, char **argv) {
     translated_motion(runtime);
     ripple(runtime);
     contact(runtime);
+    contact_phase_latency(runtime);
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
   }

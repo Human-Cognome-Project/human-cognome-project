@@ -45,8 +45,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
       k_(k),
       selected_slots_(std::max(g, 1), 0) {
   auto root = std::make_unique<SNode>(0, SNodeType::root);
-  current = NativeSet::attach(*root, p);
-  next = NativeSet::attach(*root, p);
+  particle_activity = NativeSet::attach(*root, p);
   centroids = NativeSet::attach(*root, g);
   r.program().add_snode_tree(std::move(root), false);
   particle_flags = allocate(r, PrimitiveType::i32, ParticleStateCount, p);
@@ -95,15 +94,6 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
                                       false, threads);
       auto guard = b.get_loop_guard(loop);
       write(b, c, {b.get_loop_index(loop)}, b.get_int64(0));
-    }
-    // Consume only the previous next-phase set. Current and next have separate
-    // native masks, so no parallel next-tick touch is consumed in this phase.
-    {
-      auto *loop = b.create_struct_for(next.cells, false, threads);
-      auto guard = b.get_loop_guard(loop);
-      auto *p = b.get_loop_index(loop);
-      current.activate(b, p);
-      next.deactivate(b, p);
     }
     {
       auto *loop =
@@ -177,7 +167,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
           b.create_if(b.create_cmp_gt(read(b, particles, cell(b, kMass, p)),
                                       b.get_float32(0))),
           true);
-      current.activate(b, p);
+      particle_activity.activate(b, p);
     }
     {
       auto *loop = b.create_range_for(
@@ -193,7 +183,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
     }
     // Motion history is maintained only within the native active traversal.
     {
-      auto *loop = b.create_struct_for(current.cells, false, threads);
+      auto *loop = b.create_struct_for(particle_activity.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
       write(b, ps, cell(b, PriorMoving, p), read(b, ps, cell(b, Moving, p)));
@@ -202,11 +192,44 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
         write(b, pd, cell(b, axis, p), b.get_float32(0));
     }
     begin_ = engine::CompiledKernel(
-        r, "activity_begin_" + std::to_string(current.cells->id),
+        r, "activity_begin_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(),
         {fa, fa, ia, fa, ia, cv, fv, iv, integer, integer, integer, integer,
          integer, integer},
         engine::MathMode::Strict);
+  }
+  {
+    IRBuilder b;
+    auto *ps = array(b, 0, i32), *c = array(b, 1, PrimitiveType::i64, 1),
+         *a_offsets = array(b, 2, i32), *a_order = array(b, 3, i32, 1),
+         *b_offsets = array(b, 4, i32), *b_order = array(b, 5, i32, 1),
+         *pairs = array(b, 6, i32);
+    // All numerical particle work and bit consumption has finished. Movers
+    // already retained their own bits; newly touched sleepers have Moving=0.
+    // Therefore dynamic peer activation can neither enter a calculation early
+    // nor extend propagation through a newly touched stationary particle.
+    auto *loop = b.create_struct_for(particle_activity.cells, false, threads);
+    auto guard = b.get_loop_guard(loop);
+    auto *p = b.get_loop_index(loop);
+    auto moving =
+        b.get_if_guard(b.create_if(read(b, ps, cell(b, Moving, p))), true);
+    for (int side = 0; side < 2; ++side) {
+      auto *offsets = side == 0 ? a_offsets : b_offsets;
+      auto *order = side == 0 ? a_order : b_order;
+      auto *members = b.create_range_for(read(b, offsets, cell(b, 0, p)),
+                                         read(b, offsets, cell(b, 1, p)), false,
+                                         1, 0, true);
+      auto member_guard = b.get_loop_guard(members);
+      auto *contact = read(b, order, {b.get_loop_index(members)});
+      auto *other =
+          read(b, pairs, cell(b, side == 0 ? kContactB : kContactA, contact));
+      particle_activity.activate(b, other);
+      count(b, c, AdjacencyVisits);
+    }
+    contact_touch_ = engine::CompiledKernel(
+        r,
+        "activity_contact_touch_" + std::to_string(particle_activity.cells->id),
+        b.extract_ir(), {ia, cv, ia, iv, ia, iv, ia}, engine::MathMode::Strict);
   }
   {
     IRBuilder b;
@@ -219,6 +242,9 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
     auto *loop = b.create_struct_for(centroids.cells, false, threads);
     auto guard = b.get_loop_guard(loop);
     auto *g = b.get_loop_index(loop);
+    // No centroid writes occur in this type's phase. Consume before touching
+    // particles; their phase has already finished its numerical calculation.
+    centroids.deactivate(b, g);
     auto changed =
         b.get_if_guard(b.create_if(read(b, gs, cell(b, Changed, g))), true);
     auto *members =
@@ -249,7 +275,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
       auto *test = b.create_if(different);
       {
         auto qualifies = b.get_if_guard(test, true);
-        next.activate(b, p);
+        particle_activity.activate(b, p);
       }
       {
         auto unchanged = b.get_if_guard(test, false);
@@ -261,7 +287,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
       count(b, c, ZeroTouches);
     }
     touch_ = engine::CompiledKernel(
-        r, "activity_propagate_" + std::to_string(current.cells->id),
+        r, "activity_propagate_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(),
         {fa, fa, ia, fa, ia, fa, cv, ia, iv, engine::Param::scalar(f)},
         engine::MathMode::Strict);
@@ -331,38 +357,40 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
       }
     }
     mark_ = engine::CompiledKernel(
-        r, "activity_mark_centroids_" + std::to_string(current.cells->id),
+        r,
+        "activity_mark_centroids_" +
+            std::to_string(particle_activity.cells->id),
         b.extract_ir(),
         {fa, fa, ia, fa, ia, fa, ia, fa, cv, integer, integer, ia, iv},
         engine::MathMode::Strict);
   }
   {
     IRBuilder b;
-    for (const auto &set : {current, next, centroids}) {
+    for (const auto &set : {particle_activity, centroids}) {
       auto *loop = b.create_struct_for(set.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       set.deactivate(b, b.get_loop_index(loop));
     }
     for (const auto &entry : std::vector<std::pair<NativeSet, int>>{
-             {current, p_}, {centroids, g_}}) {
+             {particle_activity, p_}, {centroids, g_}}) {
       auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(entry.second),
                                       false, threads);
       auto guard = b.get_loop_guard(loop);
       entry.first.activate(b, b.get_loop_index(loop));
     }
     reset_ = engine::CompiledKernel(
-        r, "activity_reset_" + std::to_string(current.cells->id),
+        r, "activity_reset_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(), {}, engine::MathMode::Strict);
   }
   {
     IRBuilder b;
-    for (const auto &set : {current, centroids}) {
+    for (const auto &set : {particle_activity, centroids}) {
       auto *loop = b.create_struct_for(set.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       set.deactivate(b, b.get_loop_index(loop));
     }
-    finish_ = engine::CompiledKernel(
-        r, "activity_finish_" + std::to_string(current.cells->id),
+    clear_ = engine::CompiledKernel(
+        r, "activity_clear_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(), {}, engine::MathMode::Strict);
   }
   compilation_ms = std::chrono::duration<double, std::milli>(
@@ -478,6 +506,19 @@ void Activity::touch(Harness &h, float gravity) {
   ctx.set_arg_float({9}, gravity);
   touch_.launch(ctx);
 }
+void Activity::touch_contacts(Harness &h, float stiffness) {
+  if (k_ == 0 || stiffness == 0) return;
+  auto ctx = contact_touch_.make_context();
+  ctx.set_arg_ndarray({0}, *particle_flags);
+  ctx.set_arg_ndarray({1}, *counters);
+  ctx.set_arg_ndarray({2}, *contact_a_offsets);
+  ctx.set_arg_ndarray({3}, *contact_a_edges);
+  ctx.set_arg_ndarray({4}, *contact_b_offsets);
+  ctx.set_arg_ndarray({5}, *contact_b_edges);
+  h.bind(ctx, 6, h.contact_int_array_.get(), h.contact_int_data,
+         {kContactIntFieldCount, std::max(k_, 1)});
+  contact_touch_.launch(ctx);
+}
 void Activity::mark(Harness &h, bool all) {
   auto ctx = mark_.make_context();
   h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
@@ -499,9 +540,9 @@ void Activity::mark(Harness &h, bool all) {
   ctx.set_arg_ndarray({12}, *group_edges);
   mark_.launch(ctx);
 }
-void Activity::finish() {
-  auto ctx = finish_.make_context();
-  finish_.launch(ctx);
+void Activity::clear() {
+  auto ctx = clear_.make_context();
+  clear_.launch(ctx);
 }
 Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
   std::vector<std::int64_t> c(CounterCount);
