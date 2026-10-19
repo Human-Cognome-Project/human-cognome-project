@@ -5,14 +5,12 @@ at `867c310`, under [#148](https://github.com/Human-Cognome-Project/human-cognom
 after A/B/C and [design #147](../../docs/pre-d-hot-workbench-design.md) acceptance.
 This is native C++ integration using supplied requests, not an analyst or scheduler.
 
-**GPU handoff held (2026-10-18):** the accepted D baseline's nine green hosted
-checks establish its bounded workbench scope. The revised #150 integrates D
-with [focus-local effective motion](EFFECTIVE-MOTION.md) and both host paths;
-combined CPU/PostgreSQL evidence is [recorded separately](../tests/activity/acceptance.json).
-The revision now uses native binary SNode traversal. Its scheduling, corrected
-mathematics and combined evidence require review under
-[#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
-The command examples below preserve reproduction and do not clear GPU testing.
+**GPU validation status (2026-10-19):** #150 is accepted/merged at `755bcefb`,
+including focus-local motion, native activity and combined CPU/PostgreSQL
+acceptance on both host paths. The CPU-review prerequisite for bounded local
+GPU tests is satisfied; actual hardware/pinning evidence remains under #145.
+#152 requests a focused type-phase activity simplification. The command examples
+exercise the accepted baseline; they are not evidence of executed GPU tests.
 
 `ActiveAssembly::focus()` supplies exact prepared field keys without manager
 access. Focus configuration survives logical revision/restart. Preparation
