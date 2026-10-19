@@ -362,7 +362,7 @@ need not schedule outward work until a tracked change wakes it. Unchanged mass
 can be reused until a member or its mass changes. Unresolved particles visit
 their active exposed fields; resolved ones can sleep only while a valid wake
 path preserves their necessary work. The #91 follow-up now implements a bounded
-native selective path for review: a particle wakes on a final local stored-f32
+native selective path accepted in #150: a particle wakes on a final local stored-f32
 position change after all connected contributions and integration. A fixed
 position/velocity state can be omitted until invalidated; a changing velocity
 remains eligible even before displacement. Participating-mass motion ratios
@@ -415,7 +415,7 @@ record → WAL → cache-manager → model loop.
 | Area | In this repository now | Clarified intent / open seam |
 |---|---|---|
 | Operative LoD distance | Fixed-study preparation binds the root at unit scale, primary steps at 64 and secondary compression/naming equivalence at 1:1. | General zoom/recomposition and trajectory conversion across focus changes; broader factor calibration including 128. |
-| Native field engine | Taichi-backed C++ whole-particle field/contact response, prepared sibling/membership groups, inclusive seeded centroids and full on-demand download. #150's revised local-coordinate motion gates, cached mass, any-active centroid placement and demand counts are integrated with D and CPU/PostgreSQL tested on both host paths. Native binary SNode sets gate particle/centroid traversal. | Review of the corrected mathematics and combined evidence; combined destination/brake reach; dynamic focus/granularity and transition rules; selective payload readback; actual GPU validation. |
+| Native field engine | Taichi-backed C++ whole-particle field/contact response, prepared sibling/membership groups, inclusive seeded centroids and full on-demand download. #150's revised local-coordinate motion gates, cached mass, any-active centroid placement and demand counts are integrated with D and CPU/PostgreSQL tested on both host paths. Native binary SNode sets gate particle/centroid traversal. | #152 type-phase activity simplification; combined destination/brake reach; dynamic focus/granularity and transition rules; selective payload readback; actual GPU validation. |
 | PostgreSQL records | Five-table direct reciprocal structure/membership schema, controller, command/dispatch and tier-2 fixture-driven DB-manager handler. | Study-root composition, warm view composer, provisional address handling, file-now/wire-later ownership, local private DB implementation. |
 | WAL | Fixture-fed report recognition, per-source monitor, durable obligation/History tables, local endpoint handler emitting owed identities. | Live logical-decoding adapter, privacy-aware routing, cache-manager deferred consumer, RECONCILE staging, recovery/replay. |
 | Network | In-memory boxes, endpoint registry, cooperative priority scheduler. | Runtime balancer, configuration/bridges, concurrency, swarm/tracker. |
