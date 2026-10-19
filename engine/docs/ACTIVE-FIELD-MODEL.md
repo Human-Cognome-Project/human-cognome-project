@@ -1,6 +1,6 @@
 # Active field model and tick dependencies
 
-**Status (2026-10-18):** The native object-support corrections approved in
+**Status (2026-10-19):** The native object-support corrections approved in
 [#124](https://github.com/Human-Cognome-Project/human-cognome-project/pull/124)
 and [#125](https://github.com/Human-Cognome-Project/human-cognome-project/pull/125)
 are implemented. See [OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md)
@@ -9,15 +9,29 @@ for executed checks and settings. The recovered
 retain historical mechanics. `field::Harness` owns field arrays and ticks;
 `assembly::FixedStudy` supplies a bounded native preparation/publication path.
 The #91 follow-up implements selective ticks, a supplied focal-field origin,
-bidirectional motion gates and demand reporting for review. The revision after
+bidirectional motion gates and demand reporting, accepted/merged in #150
+at `755bcefb`. The revision after
 the origin-dependence finding subtracts a nearby supplied reference before
 f32 conversion and integrates in local coordinates. Its precise local-f32
 predicate is described below; it does not settle a broader semantic resolution
 law or the open combined-destination question. [CPU evidence and reproduction](EFFECTIVE-MOTION.md)
 include integration with accepted Stage D #149 (`867c310`) on both host paths.
 Native binary scheduling now uses Taichi SNode activation and active traversal.
-Local GPU validation remains unexecuted; review of this revision and its combined
-CPU/PostgreSQL evidence is required before handoff.
+Local GPU validation remains unexecuted; combined CPU/PostgreSQL evidence was
+accepted on 2026-10-19, clearing that review prerequisite for bounded local tests.
+
+**Type-defined activity phases (Patrick, 2026-10-19):** element type determines
+when it calculates; one binary activity flag selects work at that phase's entry.
+Particles activate centroids for the centroid phase; centroids activate particles
+for the following particle phase. “This/next tick” describes that order, not an
+independent scheduling policy. #150's duplicate current/next particle sets are
+built implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+requests their simplification using native traversal/consumption, with concrete
+verification of carried-motion, contact and parallel activation dependencies.
+
+The phase table and separate sets described below document the current #150
+implementation. They do not supersede the type-defined contract or assert that
+#152's simplification is already built.
 
 ## Fixed-study SNode scale mapping
 
