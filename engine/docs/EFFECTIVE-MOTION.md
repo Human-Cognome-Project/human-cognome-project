@@ -1,6 +1,6 @@
 # Effective-motion CPU evidence
 
-Status: revised for review, 2026-10-18, under
+Status: accepted/merged in #150 at `755bcefb`, 2026-10-19, under
 [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
 The [active field model](ACTIVE-FIELD-MODEL.md#current-selective-tick-and-the-effective-motion-predicate)
 specifies the exact calculation. This evidence uses the native C++ path and
@@ -9,7 +9,7 @@ separate warm fixtures and use supplied local values. No private store is opened
 The revision uses Taichi native binary SNode activation/iteration for particle
 and centroid scheduling. See the [phase and storage semantics](ACTIVE-FIELD-MODEL.md#native-binary-activity).
 
-## Calculation under review
+## Accepted bounded calculation
 
 Candidates combine every connected field and applicable contact contribution,
 then apply carried velocity, whole-mass integration, the existing brake and
@@ -135,9 +135,10 @@ cmake --build engine/build -j 3
 ctest --test-dir engine/build --output-on-failure
 ```
 
-After the corrected mathematics, native scheduling and combined CPU evidence
-are reviewed, these cases can be included in
-Patrick's local GPU run:
+The corrected mathematics, native scheduling and combined CPU evidence were
+accepted on 2026-10-19. These cases can be included in Patrick's bounded local
+GPU run. #152 separately requests simplification of the current/next particle
+sets to type-defined phases; this evidence describes the merged #150 baseline:
 
 ```sh
 . engine/build/engine-env.sh
