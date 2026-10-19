@@ -9,7 +9,10 @@ accepted and merged in #141 at `e7acdea`, with 90 native PostgreSQL checks.
 hosted checks green, accepted and merged at `43f418a`. The separate
 [pre-D design](pre-d-hot-workbench-design.md) is accepted/merged in #147.
 Issue #148 explicitly releases bounded D under #139; its
-[implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md) is submitted for review.
+[implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md) is accepted/merged
+in #149 at `867c310`. The combined native activity/focal correction is accepted
+in #150 at `755bcefb`; #152 now tracks type-phase simplification. GPU/pinning
+evidence remains under #145; dynamic LoD slopes remain pending discussion.
 None of this work modifies cold stores.
 The [layout](warm-knowledge-cache-layout.md) supplies the governing boundaries.
 
@@ -385,7 +388,7 @@ fields by ordinal or rewrite the warm/cold source membership graph.
 
 ## D. Host workbench and native execution handoff
 
-**Released in #148, implemented for review:** A–C and design #147 are accepted.
+**Accepted/merged in #149 under #148:** A–C and design #147 are accepted.
 The [implementation/evidence](../engine/docs/ACTIVE-WORKBENCH.md) covers the
 bounded CPU/PostgreSQL handoff and controlled restart. The
 [pre-D design](pre-d-hot-workbench-design.md) also records allocation/transfer
@@ -496,8 +499,8 @@ Do not request it again or treat the deferred internal layout as a gate on share
 `00` / `02` letter work. The persisted recipe, exposed-scale rules and contextual
 organizational response on exposed byte parts were accepted together in #137.
 Stages A/B are accepted in #141/#143. C in #146 has no code blockers and all
-checks green, accepted and merged at `43f418a`. Review the expanded pre-D design under
-#145 before any explicit D release through #139. No additional cold data
+checks green, accepted and merged at `43f418a`. The expanded pre-D design was accepted in #147 and D was released in #148,
+then accepted in #149; #145 retains hardware evidence. No additional cold data
 load, physics requalification or revival of #111/#123/#75 is needed. No new meaning
 for `01` or additional personal expansion block is assigned.
 
@@ -519,7 +522,8 @@ The Dutch parent-row mass cells remain NULL. No source rows were changed and
 no proposed warm schema was installed during these checks.
 The subsequent recipe/scale corrections were checked against the native
 `StudyInput`, `Selection`, `scale_bindings` and `FixedStudy` source contracts.
-Their new integration acceptance cases above remain planned, not executed.
+That was the design-time state; subsequent A–D execution evidence below and
+ACTIVE-WORKBENCH.md supersede it.
 
 ## Stage A execution
 
@@ -544,7 +548,7 @@ engine-independent values and returns normalized recipes plus bounded native
 input values; no PostgreSQL dependency or database mutation is introduced.
 Membership fields are accepted and merged in #146; all nine hosted checks
 are green. The bounded workbench/backend handoff, private-input access gate and
-controlled recovery are implemented for review in D; host pinning remains open.
+controlled recovery are accepted/merged in D (#149); host pinning remains open.
 
 
 ## Stage C execution
@@ -557,4 +561,4 @@ Native CPU fixtures verify seeded centroid data and membership response through
 the existing FixedStudy/field boundary in letter-only, byte-only and mixed
 exposure. Existing field, preparation, assembly and projection suites pass.
 No source memberships, database tables or field laws change. Full warm pin and
-database-to-hot materialization is implemented for review in Stage D under #148.
+database-to-hot materialization is accepted/merged in Stage D #149 under #148.
