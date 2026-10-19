@@ -27,7 +27,7 @@ a merge or review changes these statuses; other entry points link here.
 | Effective motion accepted/merged | [#150](https://github.com/Human-Cognome-Project/human-cognome-project/pull/150), revised after the #91 absolute-origin finding: subtract a supplied nearby reference in double before f32 projection; integrate and gate in local coordinates. BulkCopy and CpuDirect share activity bindings. Independent offsets 0 / `2^27` retain unit motion, continued eligibility and centroid propagation. All 17 CPU suites, 180 PostgreSQL-to-active checks and 90 Stage A regression checks pass with unchanged full cold-data hashes. [Exact rules](engine/docs/ACTIVE-FIELD-MODEL.md) and [evidence](engine/tests/activity/acceptance.json). Accepted and merged in #150 at `755bcefb8a50e1dcfe07c7da692f81da15fb78af` after eight green hosted checks, including the native CPU workflow with PostgreSQL integration. Native SNode masks now gate particle and centroid traversal, with separate current/next sets and retained sleeping payloads. Bounded local GPU validation may proceed under #145; GPU performance and pinning are not yet validated. #91 remains open for its other follow-ups. Combined-destination/brake reach remains open. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
-| Draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): field monitor, held pending skip machinery per its current description. |
+| Deferred draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): optional read-only monitor. Its all-edge baseline and old skip-machinery hold are historical after #150. Reconcile with current reporting before revival; not a prerequisite for #151/#152 or local GPU tests. |
 
 **Active data priority:** use the retained language-letter/punctuation endpoints,
 ordered core parents and membership reciprocals to define the first native
@@ -122,6 +122,34 @@ bindings, and their internal production layout remains deferred.
 [#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
 tracks endpoint sub-classification and numeric/operator coverage/placement as a
 separate follow-up, preserving seed identities and adding no gate on that milestone.
+
+## Active and deferred work — 2026-10-19
+
+- **Active cleanup:** #152, type-defined binary activity phases; do not turn
+  current/next bookkeeping into an independent scheduling policy.
+- **Optional human troubleshooting:** #151, separate read-only browser viewport
+  with camera navigation and per-LoD relative-mass colouring. Useful for visual
+  linguistic/physics inspection; removable and not a long-term engine requirement.
+- **Hardware validation:** #145, local GPU execution and allocation/transfer
+  evidence. #150's CPU review is complete; #152 is a requested simplification,
+  not a claim that GPU tests or pinning have already passed.
+- **Held/deferred from this track:** #123 general view/identity contract and #111
+  command atomicity/restart work retain unresolved findings; neither is accepted
+  or required by the bounded letter/workbench path. Retained UTF data is separate.
+- **Pending discussion:** dynamic LoD selection, step slopes/transitions and test
+  granularities; private/temp root subdivisions. Do not invent policies for them.
+- **Separate follow-ups:** #134 range-compressed navigation and #138 endpoint
+  subclassification/digit/operator placement remain outside this milestone.
+  General analyst, recomposition and process-failure hosting remain unbuilt.
+
+**Type-defined activity phases (Patrick, 2026-10-19):** element type determines
+when it calculates; one binary activity flag selects work at that phase's entry.
+Particles activate centroids for the centroid phase; centroids activate particles
+for the following particle phase. “This/next tick” describes that order, not an
+independent scheduling policy. #150's duplicate current/next particle sets are
+built implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+requests their simplification using native traversal/consumption, with concrete
+verification of carried-motion, contact and parallel activation dependencies.
 
 ## Reading paths
 
