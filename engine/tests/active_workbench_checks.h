@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <limits>
+#include <set>
 
 #include "assembly/active_workbench.h"
 #include "engine/packed_view.h"
@@ -113,6 +114,166 @@ inline LocalInput local_fixture(const ActiveAssembly &a) {
   local.placements.push_back({{0, {}}, {{-2, 0, 0}, {}}});
   local.geometry.push_back({object("02.00.00.00.03"), {}, {{{}, 0.25}}});
   return local;
+}
+inline void run_focus(const warm::Bundle &recipe, bool cuda) {
+  const auto owner = warm::new_uuid();
+  const auto shared = ActiveAssembly::assemble(recipe, owner, true);
+  engine::InstanceSettings settings;
+  settings.cuda = cuda;
+  settings.read_environment = false;
+  settings.cpu_threads = 2;
+  const std::vector<field::HostPath> paths =
+      cuda ? std::vector<field::HostPath>{field::HostPath::BulkCopy}
+           : std::vector<field::HostPath>{field::HostPath::BulkCopy,
+                                          field::HostPath::CpuDirect};
+  for (const auto path : paths)
+    for (const double offset : {0.0, 134217728.0}) {
+      auto local = local_fixture(shared);
+      local.values.at(0).initial = {{offset, 0, 0}, {}};
+      // The bounded mixed fixture has its byte at root units and letter at 64.
+      // All supplied points coincide in the operative frame; only the letter
+      // has unit operative velocity. No rounded absolute f32 oracle is used.
+      local.placements = {{{0, {}}, {{offset / 64, 0, 0}, {1.0 / 64, 0, 0}}},
+                          {{1, {0, 0}}, {{offset, 0, 0}, {}}}};
+      const std::vector<FocalField> focus{
+          {GroupKind::SiblingDefinition,
+           warm::key(local.values.at(0).ref.object)}};
+      auto active = shared.revise(local).focus(focus);
+      field::Parameters p;
+      p.gravity = 0;
+      p.contact_stiffness = 0;
+      p.reach_strength = 0;
+      p.dt = 1;
+      ExecutionHandle old;
+      ActiveReport old_report;
+      {
+        ActiveSession session(settings);
+        auto handle = session.submit(active, p, path);
+        const auto initial = session.report(handle, owner);
+        const int N = initial.prepared.capacity,
+                  G = int(initial.prepared.groups.size());
+        const auto id = occurrence_text({active.study(), {0, {}}});
+        int moving = -1, context = -1;
+        for (const auto &particle : initial.prepared.particles)
+          if (particle.occurrence.id == id) moving = particle.occurrence.slot;
+        for (int g = 0; g < G; ++g)
+          if (initial.prepared.groups[g].kind == GroupKind::Membership &&
+              initial.prepared.groups[g].value ==
+                  warm::key(local.context.front().target.object))
+            context = g;
+        check(moving >= 0 && context >= 0 &&
+                  initial.frame_anchor[0] == offset &&
+                  initial.prepared.focal_groups.size() == 1,
+              "focused workbench retains supplied local frame and exact typed "
+              "selection on both host paths");
+        std::set<int> touched;
+        double context_mass = 0,
+               moving_mass = initial.particles[field::kMass * N + moving];
+        for (const auto &edge : initial.prepared.participation) {
+          if (edge.slot == moving) touched.insert(edge.group);
+          if (edge.group == context)
+            context_mass += initial.particles[field::kMass * N + edge.slot] *
+                            double(edge.share);
+        }
+        for (int tick = 1; tick <= 4; ++tick) {
+          session.tick(handle, p);
+          const auto report = session.report(handle, owner);
+          const auto d = session.demand(handle, owner);
+          bool motion = true;
+          for (const auto &particle : report.prepared.particles)
+            motion &=
+                report.particles[field::kPosX * N + particle.occurrence.slot] ==
+                (particle.occurrence.slot == moving ? tick : 0);
+          if (!motion || report.particles[field::kVelX * N + moving] != 1) {
+            for (const auto &particle : report.prepared.particles)
+              std::cerr << "focal particle node="
+                        << particle.occurrence.study_node
+                        << " slot=" << particle.occurrence.slot
+                        << " seed=" << particle.position.x
+                        << " vx=" << particle.velocity.x << " current="
+                        << report.particles[field::kPosX * N +
+                                            particle.occurrence.slot]
+                        << '\n';
+            std::cerr << "centroid="
+                      << report.groups[field::kCenX * G + context]
+                      << " expected=" << tick * moving_mass / context_mass
+                      << '\n';
+          }
+          check(motion && report.particles[field::kVelX * N + moving] == 1 &&
+                    std::abs(report.groups[field::kCenX * G + context] -
+                             tick * moving_mass / context_mass) <= 1e-6,
+                "independent focused workbench motion and centroid expectation "
+                "survives 2pow27 translation");
+          check(d.particles_moved == 1 &&
+                    d.particles_woken == (tick == 1 ? 1 : 0) &&
+                    d.particles_evaluated ==
+                        (tick == 1 ? d.particles_exposed : 1) &&
+                    d.native_particle_entries == d.particles_evaluated &&
+                    d.native_centroid_entries == touched.size() &&
+                    d.centroids_flagged == touched.size() &&
+                    d.centroids_recomputed == touched.size() &&
+                    d.force_evaluations == 0 &&
+                    report.demand.particles_moved == d.particles_moved,
+                "both host paths preserve continued motion, centroid touches "
+                "and owner-scoped demand");
+          std::cout << "FOCUS_DEMAND,"
+                    << (path == field::HostPath::BulkCopy ? "bulk" : "direct")
+                    << ',' << offset << ',' << tick << ','
+                    << d.particles_exposed << ',' << d.particles_evaluated
+                    << ',' << d.particles_moved << ',' << d.particles_woken
+                    << ',' << d.centroids_flagged << ','
+                    << d.centroids_recomputed << ',' << d.gate_rejected << ','
+                    << d.force_requests << ',' << d.touch_adjacency_visits
+                    << ',' << d.native_particle_entries << ','
+                    << d.native_centroid_entries << ','
+                    << d.zero_response_touches << ','
+                    << d.invalidation_particle_visits << ',' << d.tick_ms
+                    << '\n';
+        }
+        rejects([&] { session.demand(handle, warm::new_uuid()); },
+                "private-derived focal demand requires active owner");
+        const auto before = session.report(handle, owner);
+        auto invalid = active.focus({{GroupKind::Membership, "absent focus"}});
+        rejects([&] { session.refresh(handle, invalid, p); },
+                "invalid focus refresh fails closed on both host paths");
+        const ExecutionHandle failed{handle.session, invalid.study(),
+                                     invalid.generation()};
+        check(!session.ready(handle) && !session.ready(failed),
+              "invalid focal generation cannot execute old numerical state");
+        rejects([&] { session.accept(before, owner); },
+                "old focal report rejected after failed refresh");
+        active = invalid.focus(focus);
+        handle = session.refresh(failed, active, p);
+        check(session.ready(handle) &&
+                  session.report(handle, owner).frame_anchor[0] == offset,
+              "valid focal refresh reseeds reference and activity buffers on "
+              "both host paths");
+        session.tick(handle, p);
+        check(session.demand(handle, owner).particles_woken == 1,
+              "refreshed activity state preserves initial positional wake");
+        old = handle;
+        old_report = session.report(handle, owner);
+      }
+      const auto rebuilt = active.restart();
+      {
+        ActiveSession restarted(settings);
+        rejects([&] { restarted.accept(old_report, owner); },
+                "old focused report rejected by restarted session");
+        rejects([&] { restarted.tick(old, p); },
+                "old focused handle rejected by restarted session");
+        const auto handle = restarted.submit(rebuilt, p, path);
+        const auto seed = restarted.report(handle, owner);
+        check(seed.frame_anchor[0] == offset &&
+                  seed.prepared.focal_groups.size() == 1,
+              "restart reconstructs supplied focus, frame reference and native "
+              "buffers on both paths");
+        restarted.tick(handle, p);
+        check(restarted.demand(handle, owner).particles_moved == 1 &&
+                  restarted.demand(handle, owner).particles_woken == 1,
+              "restarted focused study retains independently expected unit "
+              "motion");
+      }
+    }
 }
 inline void run(const warm::Bundle &recipe, bool cuda) {
   const auto owner = warm::new_uuid();
@@ -283,5 +444,6 @@ inline void run(const warm::Bundle &recipe, bool cuda) {
   check(intact && recipe.geometry[0].spheres[0].radius != 0.25,
         "private geometry, placements and context never rewrite shared source "
         "definitions/recipe");
+  run_focus(recipe, cuda);
 }
 }  // namespace active_checks

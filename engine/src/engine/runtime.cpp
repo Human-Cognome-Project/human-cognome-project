@@ -61,10 +61,9 @@ int Runtime::issued_snode_ids() const {
   return SNode::counter;
 }
 
-CompiledKernel::CompiledKernel(Runtime &runtime,
-                               const std::string &name,
+CompiledKernel::CompiledKernel(Runtime &runtime, const std::string &name,
                                std::unique_ptr<Block> body,
-                               const std::vector<Param> &params)
+                               const std::vector<Param> &params, MathMode math)
     : runtime_(&runtime) {
   Program &program = runtime.program();
   kernel_ = std::make_unique<Kernel>(program, std::move(body), name);
@@ -77,8 +76,10 @@ CompiledKernel::CompiledKernel(Runtime &runtime,
   }
   kernel_->finalize_params();
   kernel_->finalize_rets();
-  compiled_ = &program.compile_kernel(program.compile_config(),
-                                      program.get_device_caps(), *kernel_);
+  auto config = program.compile_config();
+  if (math == MathMode::Strict) config.fast_math = false;
+  compiled_ =
+      &program.compile_kernel(config, program.get_device_caps(), *kernel_);
 }
 
 LaunchContextBuilder CompiledKernel::make_context() {

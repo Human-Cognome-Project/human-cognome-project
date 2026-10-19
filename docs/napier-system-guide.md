@@ -361,9 +361,22 @@ decision marks that centroid for one end-of-tick placement; a stable centroid
 need not schedule outward work until a tracked change wakes it. Unchanged mass
 can be reused until a member or its mass changes. Unresolved particles visit
 their active exposed fields; resolved ones can sleep only while a valid wake
-path preserves their necessary work. This shrinking active set is **not yet in
-the field harness**. [Active field model](../engine/docs/ACTIVE-FIELD-MODEL.md)
-records the exact built order and pending formula choices.
+path preserves their necessary work. The #91 follow-up now implements a bounded
+native selective path for review: a particle wakes on a final local stored-f32
+position change after all connected contributions and integration. A fixed
+position/velocity state can be omitted until invalidated; a changing velocity
+remains eligible even before displacement. Participating-mass motion ratios
+and retained collective residue flag centroids before once-per-group placement
+over all members, including sleepers. Supplied focal fields define the origin
+used by radial integration. A nearby reference is subtracted before f32
+projection, so arbitrary translation of supplied placements cannot erase local
+motion. Reports retain that double reference separately. Stage D is merged and
+both host paths are included in the combined CPU/PostgreSQL evidence.
+[Active field model](../engine/docs/ACTIVE-FIELD-MODEL.md)
+records the exact predicate, invalidation and remaining formula choices;
+[CPU demand evidence](../engine/docs/EFFECTIVE-MOTION.md) reports avoided
+numerical work separately from touched adjacency and native traversal. Native
+metadata cost remains uninstrumented; no logarithmic bound is established.
 
 The archive is a **pairwise discovery ledger**: store a discovered direct
 connection and its effects once; later analyses follow it rather than repeat
@@ -401,8 +414,8 @@ record → WAL → cache-manager → model loop.
 
 | Area | In this repository now | Clarified intent / open seam |
 |---|---|---|
-| Operative LoD distance | No verified expressed-scale bridge or zoom conversion. | Finest visible LoD anchors one distance unit; less granular expressed levels expand by 64 or 128; compressed equivalences skip steps. Factor choice and implementation remain open. |
-| Native field engine | Taichi-backed C++ particle/group/edge kernels, inclusive seeded centroids, field force, integration/brake, end-of-tick centroid publication, full on-demand download. | Combined destination and brake reach; proportional whole-particle parent response without application offsets; automatic sibling groups; conditional mass/centroid/particle activity; selective readback. |
+| Operative LoD distance | Fixed-study preparation binds the root at unit scale, primary steps at 64 and secondary compression/naming equivalence at 1:1. | General zoom/recomposition and trajectory conversion across focus changes; broader factor calibration including 128. |
+| Native field engine | Taichi-backed C++ whole-particle field/contact response, prepared sibling/membership groups, inclusive seeded centroids and full on-demand download. #150's revised local-coordinate motion gates, cached mass, any-active centroid placement and demand counts are integrated with D and CPU/PostgreSQL tested on both host paths. Native binary SNode sets gate particle/centroid traversal. | Review of the corrected mathematics and combined evidence; combined destination/brake reach; dynamic focus/granularity and transition rules; selective payload readback; actual GPU validation. |
 | PostgreSQL records | Five-table direct reciprocal structure/membership schema, controller, command/dispatch and tier-2 fixture-driven DB-manager handler. | Study-root composition, warm view composer, provisional address handling, file-now/wire-later ownership, local private DB implementation. |
 | WAL | Fixture-fed report recognition, per-source monitor, durable obligation/History tables, local endpoint handler emitting owed identities. | Live logical-decoding adapter, privacy-aware routing, cache-manager deferred consumer, RECONCILE staging, recovery/replay. |
 | Network | In-memory boxes, endpoint registry, cooperative priority scheduler. | Runtime balancer, configuration/bridges, concurrency, swarm/tracker. |

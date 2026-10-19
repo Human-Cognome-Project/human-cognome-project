@@ -36,6 +36,9 @@ references, not another mandatory reading sequence.
   native preparation boundary and its limits.
 - [Object-support results](../engine/docs/OBJECT-SUPPORT-RESULTS.md) — what
   the bounded engine slice implements and how it was checked.
+- [Effective-motion CPU evidence](../engine/docs/EFFECTIVE-MOTION.md) — #91's
+  selective particle/centroid gates, supplied focal origin, demand counts and
+  separate review/integration requirement before local GPU execution.
 
 ## Current system map
 

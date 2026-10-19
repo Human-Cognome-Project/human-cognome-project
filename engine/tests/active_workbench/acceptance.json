@@ -1,5 +1,5 @@
 {
-  "status": "implemented-for-review",
+  "status": "accepted_merged_baseline",
   "assignment": "https://github.com/Human-Cognome-Project/human-cognome-project/issues/148",
   "date": "2026-10-17",
   "backend": "native x64, Clang/LLVM 15, two launch threads",
@@ -8,7 +8,10 @@
   "postgresql_native_integration_checks": 104,
   "stage_a_postgresql_regression_checks": 90,
   "density_cases": 4,
-  "density_paths": ["bulk-copy", "cpu-direct"],
+  "density_paths": [
+    "bulk-copy",
+    "cpu-direct"
+  ],
   "density_checks": 40,
   "native_ctest_suites_passed": 11,
   "addressed_public_source_reads": 24,
@@ -28,10 +31,41 @@
   "first_force_relative_tolerance_density": 0.001,
   "max_density_centroid_absolute_error": 0,
   "max_density_force_absolute_error": 0.000228882,
-  "exact_contracts": ["scoped identities and revisions", "ordered construction and NULLs", "explicit units and initial state", "all five f32/i32 upload spans", "owned warm pins", "session/study/generation guards"],
-  "executed": ["fresh-client shared recovery", "supplied local primitives/context/geometry/placements", "scope and owner rejection", "two independent studies", "seeded centroids and first force", "16 nonzero-dt steps", "equal-count refresh and fail-closed recovery", "controlled Program teardown/recreation", "stale handle/report rejection", "paired epoch/policy rotation", "expected-head rejection preserves existing leases", "CPU copy/direct density comparison"],
-  "unexecuted_or_unbuilt": ["GPU execution", "host pinning/registration", "GPU bandwidth/async completion", "backend argument-buffer allocation instrumentation", "compiler cache-hit attribution", "balanced performance trials", "general rollups", "process-fatal fault isolation"],
+  "exact_contracts": [
+    "scoped identities and revisions",
+    "ordered construction and NULLs",
+    "explicit units and initial state",
+    "all five f32/i32 upload spans",
+    "owned warm pins",
+    "session/study/generation guards"
+  ],
+  "executed": [
+    "fresh-client shared recovery",
+    "supplied local primitives/context/geometry/placements",
+    "scope and owner rejection",
+    "two independent studies",
+    "seeded centroids and first force",
+    "16 nonzero-dt steps",
+    "equal-count refresh and fail-closed recovery",
+    "controlled Program teardown/recreation",
+    "stale handle/report rejection",
+    "paired epoch/policy rotation",
+    "expected-head rejection preserves existing leases",
+    "CPU copy/direct density comparison"
+  ],
+  "unexecuted_or_unbuilt": [
+    "GPU execution",
+    "host pinning/registration",
+    "GPU bandwidth/async completion",
+    "backend argument-buffer allocation instrumentation",
+    "compiler cache-hit attribution",
+    "balanced performance trials",
+    "general rollups",
+    "process-fatal fault isolation"
+  ],
   "hardware_followup": "https://github.com/Human-Cognome-Project/human-cognome-project/issues/145",
   "hosted_ci": "all nine checks passed at d0f3ebc890adb2722e712550003e58df0c5bc26f",
-  "gpu_handoff": "held pending #91 bidirectional effective-motion touch/wake, focal-origin math and per-tick demand counts with CPU validation; D baseline acceptance is separate"
+  "gpu_handoff": "Held for review of corrected local mathematics, native activity and combined CPU/PostgreSQL evidence. Actual CUDA/pinning validation remains local and unexecuted here.",
+  "accepted_merge_commit": "867c31037937a3b48e179f802eb55646f3b4f532",
+  "combined_followup": "../activity/acceptance.json"
 }

@@ -1,17 +1,27 @@
 # Bounded active workbench — Stage D
 
-Implemented for review under [#148](https://github.com/Human-Cognome-Project/human-cognome-project/issues/148),
+Accepted/merged in [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149)
+at `867c310`, under [#148](https://github.com/Human-Cognome-Project/human-cognome-project/issues/148),
 after A/B/C and [design #147](../../docs/pre-d-hot-workbench-design.md) acceptance.
 This is native C++ integration using supplied requests, not an analyst or scheduler.
 
-**GPU handoff held (Patrick, 2026-10-17):** all nine hosted checks pass on
-`d0f3ebc`, but [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91)
-must implement and CPU-validate bidirectional effective-motion touch/wake,
-the mathematical focal origin and per-tick demand counts before local GPU
-testing. This D baseline still evaluates all loaded force edges and recomputes
-all centroids; its speed determiner is not a sleep/wake predicate. Bounded D
-review can complete independently. The command examples below preserve the
-reproduction path and do not clear the new handoff requirement.
+**GPU handoff held (2026-10-18):** the accepted D baseline's nine green hosted
+checks establish its bounded workbench scope. The revised #150 integrates D
+with [focus-local effective motion](EFFECTIVE-MOTION.md) and both host paths;
+combined CPU/PostgreSQL evidence is [recorded separately](../tests/activity/acceptance.json).
+The revision now uses native binary SNode traversal. Its scheduling, corrected
+mathematics and combined evidence require review under
+[#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
+The command examples below preserve reproduction and do not clear GPU testing.
+
+`ActiveAssembly::focus()` supplies exact prepared field keys without manager
+access. Focus configuration survives logical revision/restart. Preparation
+subtracts a nearby double reference before narrowing to f32; numerical reports
+carry local positions and `frame_anchor` separately. Owner checks apply to both
+full reports and `ActiveSession::demand()`, including private-derived focal data.
+The revised shared checks cover translated unit motion, centroid propagation,
+failed focal refresh and controlled restart on BulkCopy and CpuDirect. The
+original D evidence below records its preceding baseline, not the combined run.
 
 `warm::SharedManager` wraps a dedicated shared-only Stage A store. Its public
 source directory delegates only `00`/`02` prefixes. A non-shared scope is refused

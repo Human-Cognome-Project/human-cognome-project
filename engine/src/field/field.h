@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -19,6 +20,30 @@
 // Nothing here decides what the data means. It moves state through one tick.
 namespace field {
 
+namespace detail {
+class Activity;
+}
+enum class TickMode { Selective, AllLoaded };
+using FrameAnchor = std::array<double, 3>;
+struct Demand {
+  std::uint64_t particles_loaded{0}, particles_exposed{0}, fields_loaded{0},
+      fields_exposed{0}, edges_loaded{0}, edges_exposed{0};
+  std::uint64_t particles_evaluated{0}, particles_skipped{0},
+      particles_moved{0}, particles_woken{0};
+  std::uint64_t force_requests{0}, force_evaluations{0}, force_zero_response{0},
+      force_skipped{0}, contact_evaluations{0};
+  std::uint64_t gate_checks{0}, gate_rejected{0}, geometry_rejected{0};
+  std::uint64_t touch_adjacency_visits{0}, force_mask_visits{0},
+      centroid_mask_visits{0};
+  std::uint64_t centroid_gate_visits{0};
+  std::uint64_t centroid_touch_edges{0}, centroid_reduction_edges{0};
+  std::uint64_t centroids_flagged{0}, centroids_recomputed{0};
+  std::uint64_t native_particle_entries{0}, native_centroid_entries{0};
+  std::uint64_t zero_response_touches{0}, invalidation_particle_visits{0};
+  std::array<float, 3> focal_origin{};
+  FrameAnchor frame_anchor{};
+  double tick_ms{0};
+};
 enum class HostPath { BulkCopy, CpuDirect };
 struct PhaseTimes {
   double allocation_ms{0}, compilation_ms{0}, upload_ms{0}, seed_ms{0},
@@ -49,7 +74,8 @@ enum GroupField {
   kCenY,
   kCenZ,
   kCenM,
-  // Written by the centroid pass: the centroid the next tick will read.
+  // Weighted offsets from the previous published centre, plus cached mass.
+  // Reducing offsets preserves collective sub-ULP changes in large frames.
   kAccX,
   kAccY,
   kAccZ,
@@ -98,12 +124,24 @@ class Harness {
   Harness(engine::Runtime &runtime, int particle_count, int group_count,
           int edge_count, int contact_count = 0,
           HostPath path = HostPath::BulkCopy);
+  ~Harness();
 
   int particle_count() const { return particles_; }
   int group_count() const { return groups_; }
   int edge_count() const { return edges_; }
   int contact_count() const { return contacts_; }
   bool ready() const { return ready_; }
+  void set_tick_mode(TickMode mode);
+  // Explicit prepared group slots, not automatic focal-field selection.
+  // An empty selection retains the legacy fixed coordinate origin.
+  void set_focus(const std::vector<int> &groups);
+  const Demand &demand() const { return demand_; }
+  const FrameAnchor &frame_anchor() const { return frame_anchor_; }
+  // Positions are local numerical values. Add this reference in double only
+  // when interpreting an explicitly downloaded result in supplied coordinates.
+  double supplied_position(int axis, int slot) const {
+    return frame_anchor_.at(axis) + particle(kPosX + axis, slot);
+  }
   const PhaseTimes &timings() const { return timings_; }
 
   // Host staging, in the packed layout above.
@@ -114,7 +152,7 @@ class Harness {
   std::vector<int> contact_int_data;
   // The universal mass: the total mass of the construct, each particle
   // counted exactly once, used by radial velocity damping.
-  // Written on-device each tick by the clear pass;
+  // Rebuilt on-device at publication and reused until the next publication;
   // not staged from the host.
   std::vector<float> universal_data;
 
@@ -147,6 +185,7 @@ class Harness {
   void download();
   void invalidate();
   void publish(const Parameters &p);
+  void publish(const Parameters &p, const FrameAnchor &anchor);
 
   // Build the centroids once from the staged state, so the first tick reads a
   // consistent field rather than zeros.
@@ -161,6 +200,7 @@ class Harness {
   const std::vector<float> &determined() const { return determined_; }
 
  private:
+  friend class detail::Activity;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
   }
@@ -170,12 +210,12 @@ class Harness {
             const taichi::lang::Ndarray *array, std::vector<T> &values,
             std::vector<int> shape);
 
-  void launch_clear();
+  void launch_clear(bool seed);
   void launch_force(const Parameters &p);
   void launch_contact(const Parameters &p);
   void launch_integrate(const Parameters &p);
   void launch_determine();
-  void launch_centroid(const Parameters &p);
+  void launch_centroid(const Parameters &p, bool seed);
 
   engine::Runtime *runtime_;
   int particles_;
@@ -184,6 +224,14 @@ class Harness {
   int contacts_;
   bool uploaded_{false};
   bool ready_{false};
+  TickMode mode_{TickMode::Selective};
+  bool invalidated_{true};
+  Parameters previous_parameters_;
+  std::uint64_t exposed_{0};
+  std::uint64_t exposed_fields_{0};
+  Demand demand_;
+  FrameAnchor frame_anchor_{};
+  std::unique_ptr<detail::Activity> activity_;
   HostPath path_;
   std::uint64_t generation_{0};
   PhaseTimes timings_;

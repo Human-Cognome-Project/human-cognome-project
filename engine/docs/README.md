@@ -46,9 +46,11 @@ requirements without claiming the corresponding code has changed. Track
 - **[OBJECT-SUPPORT-RESULTS.md](OBJECT-SUPPORT-RESULTS.md)** — executed native
   object-support checks, fixture settings and payload migration boundaries.
 - **[ACTIVE-FIELD-MODEL.md](ACTIVE-FIELD-MODEL.md)** — current integrated field
-  and tick explanation, distinguishing built passes from the later active-set
-  and revised destination/brake questions. Read with the
+  and tick explanation, including #91's implemented selective-motion proposal
+  and the open destination/brake questions. Read with the
   [NAPIER system guide](../../docs/napier-system-guide.md).
+- **[EFFECTIVE-MOTION.md](EFFECTIVE-MOTION.md)** — CPU fixtures, reproduction,
+  demand definitions and the review/integration boundary before local GPU tests.
 - **OPERATIONAL-PLAN.md** — most complete consolidation of the native field
   model and build state as of 2026-09-14. Treat explicit RESOLVED/BUILT entries
   as design/build evidence, but check current code and later decisions before

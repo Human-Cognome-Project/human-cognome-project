@@ -70,10 +70,19 @@ ActiveAssembly ActiveAssembly::assemble(warm::Bundle shared, warm::Uuid owner,
                         std::move(local));
 }
 ActiveAssembly ActiveAssembly::revise(std::optional<LocalInput> local) const {
-  return ActiveAssembly(projection_, owner_, requires_local_, std::move(local));
+  auto revised = ActiveAssembly(projection_, owner_, requires_local_, std::move(local));
+  revised.focal_fields_ = focal_fields_;
+  return revised;
 }
 ActiveAssembly ActiveAssembly::restart() const {
-  return assemble(projection_.recipe(), owner_, requires_local_, local_);
+  auto rebuilt = assemble(projection_.recipe(), owner_, requires_local_, local_);
+  rebuilt.focal_fields_ = focal_fields_;
+  return rebuilt;
+}
+ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {
+  auto focused = revise(local_);
+  focused.focal_fields_ = std::move(fields);
+  return focused;
 }
 std::vector<Origin> ActiveAssembly::origins() const {
   std::vector<Origin> out;
@@ -87,6 +96,7 @@ std::vector<Origin> ActiveAssembly::origins() const {
 StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
   require(inputs_available());
   auto input = memberships_.bind(projection_, nodes);
+  input.focal_fields = focal_fields_;
   if (!local_) return input;
   for (const auto &v : local_->values) {
     require(input.capacity < std::numeric_limits<int>::max());
@@ -229,7 +239,9 @@ ActiveReport ActiveSession::report(const ExecutionHandle &h,
           std::move(prepared),
           f.particle_data,
           f.group_data,
-          f.determined()};
+          f.determined(),
+          f.frame_anchor(),
+          f.demand()};
 }
 void ActiveSession::accept(const ActiveReport &r,
                            const warm::Uuid &owner) const {
@@ -241,5 +253,11 @@ void ActiveSession::accept(const ActiveReport &r,
 }
 field::PhaseTimes ActiveSession::timings(const ExecutionHandle &h) const {
   return get(h).study->fields().timings();
+}
+field::Demand ActiveSession::demand(const ExecutionHandle &h, const warm::Uuid &owner) const {
+  const auto &e = get(h);
+  if (owner != e.assembly.owner()) throw warm::Unauthorized("active owner required");
+  require(e.study->ready());
+  return e.study->demand();
 }
 }  // namespace assembly
