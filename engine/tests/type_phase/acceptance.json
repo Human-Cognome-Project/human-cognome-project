@@ -1,0 +1,155 @@
+{
+  "issue": 152,
+  "status": "implemented_for_review",
+  "date_utc": "2026-10-19",
+  "code_commit": "a9ab0e94d2bda12cbfc638558882b68eb74b3737",
+  "base_commit": "186e1f14a7eda434fa5fb1fe8eadb598336e5afd",
+  "accepted_motion_merge": "755bcefb8a50e1dcfe07c7da692f81da15fb78af",
+  "taichi_source_tree": "d191c5ce8a04639da6069dde0ec1e35cce9abe7a",
+  "native_compiler": "Clang/LLVM 15.0.6",
+  "backend": "CPU",
+  "build_command": "cmake --build engine/build -j 3",
+  "test_command": "ctest --test-dir engine/build --output-on-failure -j 2",
+  "ctest_log_start": "Start testing: Oct 19 16:31 UTC",
+  "passed_suites": [
+    "activity_parallel_test",
+    "activity_direct_test",
+    "activity_assembly_direct_test",
+    "active_workbench_test",
+    "active_transfer_experiment",
+    "activity_test",
+    "field_test",
+    "activity_assembly_test",
+    "membership_fields_native_test",
+    "native_activity_test",
+    "assembly_test",
+    "index_cap_test",
+    "letter_projection_native_test",
+    "preparation_test",
+    "letter_projection_test",
+    "membership_fields_test",
+    "engine_smoke_test"
+  ],
+  "failed_suites": [],
+  "contract": {
+    "particle_activity_sets": 1,
+    "centroid_activity_sets": 1,
+    "phase_order": "Native particle calculation then native centroid calculation; the following particle phase occurs on the next tick.",
+    "promotion": false,
+    "end_of_tick_particle_clear": false,
+    "publication_only_clear": true,
+    "motion_state": "Stored numerical history read/updated within active work; retain the same activity bit for changing state and consume it for a fixed full position/velocity state.",
+    "contact_order": "Contact forces retain pre-integration evaluation. Peer activity writes occur after all particle calculations/consumption; newly touched stationary peers do not relay touches.",
+    "centroid_order": "Consume qualified centroid bits before activating particles; unqualified centroid bits are consumed by the numerical gate.",
+    "extra_scheduler_state": "No duplicate particle bank, epoch, timestamp or custom queue."
+  },
+  "native_functions": [
+    {
+      "symbol": "IRBuilder::create_struct_for",
+      "purpose": "Type-specific active traversal; compiler supplies native list clear/generation."
+    },
+    {
+      "symbol": "SNodeOpType::activate / deactivate",
+      "purpose": "Native pointer allocation and bitmasked atomic activation/consumption; no dummy marker writes."
+    },
+    {
+      "symbol": "bit::least_pot_bound",
+      "purpose": "Pad physical pointer capacity; preserve logical counts and leave padding inactive."
+    }
+  ],
+  "native_contract": {
+    "checks": 11,
+    "cpu_workers": 2,
+    "evidence": "native-contract.txt",
+    "duplicate_touches": 4096,
+    "unique_entries": 2,
+    "live_leaf_probe": {
+      "backend": "CPU",
+      "workers": 1,
+      "initial_active": 1,
+      "body_entries_after_in_loop_peer_activation": 2
+    },
+    "phase_and_payload": "Particle consumption/carried activity, centroid consumption/reactivation, no early particle calculation and sleeping-member contributions verified."
+  },
+  "layout_probe": {
+    "unpadded_pointer_blocks": 3,
+    "bitmasked_cells_per_block": 32,
+    "requested_logical_slots": 70,
+    "native_active_queries": 70,
+    "observed_traversal_entries_unpadded": 50,
+    "padded_pointer_blocks": 4,
+    "verified_traversal_entries_padded": 70,
+    "padding_active": false,
+    "boundary": "Bounded CPU observation on pinned fork. Unpadded non-power-of-two traversal is not qualified; no vendor change or universal GPU claim."
+  },
+  "activity": {
+    "activity_test": {
+      "checks": 140,
+      "cpu_workers": 1,
+      "host_path": "BulkCopy",
+      "demand_csv": "cpu-1-demand.csv",
+      "demand_rows": 51
+    },
+    "activity_parallel_test": {
+      "checks": 140,
+      "cpu_workers": 2,
+      "host_path": "BulkCopy",
+      "demand_csv": "cpu-2-demand.csv",
+      "demand_rows": 51
+    },
+    "activity_direct_test": {
+      "checks": 140,
+      "cpu_workers": 2,
+      "host_path": "CpuDirect",
+      "demand_csv": "cpu-direct-demand.csv",
+      "demand_rows": 51
+    }
+  },
+  "focal_assembly": {
+    "checks_per_host_path": 16,
+    "paths": [
+      "BulkCopy",
+      "CpuDirect"
+    ]
+  },
+  "workbench": {
+    "checks": 140,
+    "paths": [
+      "BulkCopy",
+      "CpuDirect"
+    ],
+    "focus_demand_csv": "workbench-focus-demand.csv",
+    "focus_demand_rows": 16
+  },
+  "postgresql": {
+    "checks": 180,
+    "version": "16.15",
+    "retained_warm_fixture": "hcp_warm_d_20261019163151_15609",
+    "retained_core": "hcp_seed_core_a242d4f806064d",
+    "retained_linguistics": "hcp_seed_ling_a242d4f806064d",
+    "cold_core_sha256_before_and_after": "2a65efd49639a321c01361d3402582230faa9d08d1aa961cc6bf80b6a4d75f04",
+    "cold_linguistics_sha256_before_and_after": "bc76d8aff36d2afbc3718808e3f42e65caf101c55a775a29d17e11f7feb89544",
+    "addressed_source_reads": 24,
+    "private_source_reads": 0,
+    "focus_demand_csv": "postgres-focus-demand.csv",
+    "focus_demand_rows": 16,
+    "command": "bash engine/scripts/run_warm_active_acceptance.sh engine/build hcp-linguistics-validation hcp_seed_core_a242d4f806064d hcp_seed_ling_a242d4f806064d"
+  },
+  "numeric_control": {
+    "force_and_integration_law": "Unchanged from accepted #150.",
+    "coordinate_frame": "Nearby supplied double reference subtracted before f32 projection; local motion and centroid expectations at offsets 0 and 2^27 retained.",
+    "field_fast_math": false,
+    "centroid_final_arithmetic": "f64 before published f32",
+    "counter_type": "i64",
+    "counter_count": 18,
+    "per_tick_control_readback_bytes": 176
+  },
+  "measurement_boundary": "Named body/adjacency counts exclude some list-generation/mask and propagation bookkeeping instructions; wall time includes launch/synchronization/reporting. No speedup or logarithmic bound asserted.",
+  "baseline_evidence": "../activity/acceptance.json",
+  "gpu_executed": false,
+  "deferred": [
+    "Actual GPU/pinning evidence remains under #145.",
+    "Dynamic LoD slope/transition, analyst and force-law changes are outside #152.",
+    "#151 optional viewport is left for afterward."
+  ]
+}

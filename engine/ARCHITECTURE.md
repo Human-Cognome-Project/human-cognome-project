@@ -39,7 +39,9 @@ inputs, checked native sessions and controlled restart. GPU pinning, broader
 rollups and process-failure isolation remain separate work.
 Stage D is accepted/merged in #149. The revised #150 integrates focus-local
 coordinates, activity/focal control on both host paths and combined CPU/SQL
-evidence; review remains required before GPU handoff. Dynamic focus-scoped LoD
+evidence; #150 is accepted. The focused #152 revision removes duplicate particle
+sets: one activity set per type, native phase traversal, stored motion state
+inside active work and ordered contact effects. GPU execution remains local. Dynamic focus-scoped LoD
 selection and transition rules remain intended work, as distinguished in the
 [field model](docs/ACTIVE-FIELD-MODEL.md#focus-scoped-lod-intended-versus-built).
 
