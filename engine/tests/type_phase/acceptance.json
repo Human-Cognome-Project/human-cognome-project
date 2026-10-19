@@ -151,5 +151,6 @@
     "Actual GPU/pinning evidence remains under #145.",
     "Dynamic LoD slope/transition, analyst and force-law changes are outside #152.",
     "#151 optional viewport is left for afterward."
-  ]
+  ],
+  "documentation_integration_base": "b455bcab579ac2509fd35b8ed4f1106473b5c328"
 }

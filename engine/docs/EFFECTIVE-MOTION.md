@@ -11,7 +11,7 @@ and centroid scheduling. The focused #152 revision has one set per type and
 uses native cell operations directly; stored motion state is read only inside
 selected work. See the [phase and storage semantics](ACTIVE-FIELD-MODEL.md#native-binary-activity).
 
-## Calculation under review
+## Accepted bounded calculation
 
 Candidates combine every connected field and applicable contact contribution,
 then apply carried velocity, whole-mass integration, the existing brake and
