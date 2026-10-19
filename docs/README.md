@@ -21,7 +21,7 @@ references, not another mandatory reading sequence.
   reviewed with no code blockers and all nine checks green, accepted and merged at `43f418a`.
 - [Pre-D host workbench design](pre-d-hot-workbench-design.md) — accepted in #147 under
   #145; compilation/value boundaries, private/local active input, portable
-  allocation/transfer, restart and dense-field rollups. Bounded D is released in #148.
+  allocation/transfer, restart and dense-field rollups. Bounded D is accepted/merged in #149 under #148.
 - [Stage D active workbench](../engine/docs/ACTIVE-WORKBENCH.md) — native shared-only
   recovery, separate supplied local inputs, seeded execution and controlled restart;
   CPU copy/direct-host density evidence, with GPU pinning tracked separately in #145.
@@ -38,7 +38,13 @@ references, not another mandatory reading sequence.
   the bounded engine slice implements and how it was checked.
 - [Effective-motion CPU evidence](../engine/docs/EFFECTIVE-MOTION.md) — #91's
   selective particle/centroid gates, supplied focal origin, demand counts and
-  separate review/integration requirement before local GPU execution.
+  accepted/merged in #150; CPU prerequisite satisfied, GPU evidence under #145.
+- [Type-phase simplification #152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152) — active cleanup of duplicate particle scheduling sets; type determines phase.
+- [Optional troubleshooting viewport #151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151) — separate read-only browser view; not a long-term engine requirement.
+
+Held/deferred PRs: #123 (unaccepted general identity contract), #111 (unresolved
+command atomicity/restart), and #75 (optional historical monitor draft). They
+are not prerequisites for the current bounded work. See [guidance](../AGENTS.md#active-and-deferred-work--2026-10-19).
 
 ## Current system map
 
