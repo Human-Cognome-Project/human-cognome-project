@@ -1,6 +1,6 @@
-# Human viewport: purpose and proposed implementation
+# Human viewport: purpose and implementation plan
 
-Status: **proposed for review, 2026-10-20**. This document records Patrick's
+Status: **accepted plan in #154, 2026-10-20; implementation not yet built**. This document records Patrick's
 purpose clarification and proposes the first implementation of
 [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151).
 The viewport and exporter are not built by this documentation change.
@@ -60,6 +60,27 @@ published and seeded state; increment only after a successful tick. Capture
 metadata is bound to the same execution handle and generation, and is replaced
 on refresh/restart. Capture occurs between native operations under that caller's
 control. No new scheduler, activity state or reporting overlay is needed.
+
+### Focal origin at capture time
+
+Keep the capture's geometry and last-tick diagnostics distinct.
+`ActiveReport::demand.focal_origin` is the origin used by the last tick's
+calculation; it is not guaranteed to be the focal centroid after that tick's
+particle movement. Demand is cleared on publication, so its zero value at
+tick zero must not be treated as a measured focal origin.
+
+For the snapshot's camera target, derive the ordinary participating-mass
+weighted centroid of the selected focal groups from the same captured
+`groups` arrays and `prepared.focal_groups`. Use their current centroid
+positions and masses, not publication-time particle positions or last-tick
+demand. With no focal selection, preserve the engine's explicit legacy origin
+in local coordinates (negative frame reference), or document a separately
+named display framing target. A display target is not a changed study focus.
+
+If last-tick integration origin is exported, label it separately with its
+phase; omit it or mark it unavailable before a successful tick. Include
+tick-zero and moving-focal-field cases in exporter checks. These are derived
+snapshot metadata, not a new engine control or a change to centroid rules.
 
 ## First implementation boundary
 
@@ -184,12 +205,12 @@ report integration; it establishes no million/billion-particle browser capacity.
 Visual observations can inform the next data/model discussion without adding
 a new requirement to reprove the model mechanics.
 
-## Review decisions and deferred work
+## Accepted decisions and deferred work
 
-Review is requested on the proposed snapshot boundary, caller-owned tick and
-exposure metadata, local bundled Three.js dependency, numerical-mass colour
-mapping and bounded real-letter demonstration. These are proposed implementation
-choices; the two human purposes above are Patrick's stated intent.
+The snapshot boundary, caller-owned tick/exposure metadata, local bundled
+Three.js dependency, numerical-mass colour mapping and bounded real-letter
+demonstration are accepted for this first slice. Capture-origin phase handling
+below is part of that contract. The two human purposes above are Patrick's stated intent.
 
 Edges/hulls, centroid markers, activity overlays, refresh, time scrubbing and
 binary transport remain follow-ups. A later centroid marker needs a distinct
