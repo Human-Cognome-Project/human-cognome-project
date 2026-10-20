@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <cstdint>
+#include <string>
 #include <thread>
 #include <unistd.h>
 
@@ -47,7 +48,21 @@ HostInfo host_info() {
 
 bool cuda_available() {
 #if defined(TI_WITH_CUDA)
-  return taichi::is_cuda_api_available();
+  // True only when a CUDA device is usable: the driver loads, initializes and
+  // reports at least one visible device. This initializes the driver, so the
+  // visibility list has to be set before it. The fork reports an
+  // initialization refusal (for example CUDA_ERROR_NO_DEVICE with no visible
+  // device) by throwing a bare string, which means "no usable CUDA" here.
+  try {
+    if (!taichi::is_cuda_api_available()) {
+      return false;
+    }
+    int count = 0;
+    driver().device_get_count(&count);
+    return count > 0;
+  } catch (const std::string &) {
+    return false;
+  }
 #else
   return false;
 #endif

@@ -188,7 +188,7 @@ capture is the fixed 8-tick CPU run and file names above.
 
 | Option | Meaning |
 |---|---|
-| `--backend cpu\|cuda` | Engine backend (default `cpu`). `cuda` needs a matched Taichi build with CUDA and a device; otherwise the engine's startup error is reported and the exit status is non-zero. There is no silent CPU fallback. |
+| `--backend cpu\|cuda` | Engine backend (default `cpu`). `cuda` needs a matched Taichi build with CUDA, its driver and a visible device. The engine can silently fall back to the CPU when it finds no driver or device, so the client checks the Program's actual architecture right after the session starts and, before any warm write, exits non-zero on a mismatch or a startup error. `native-evidence.json` records the verified backend (`native_cpu` or `native_cuda`), not the request. |
 | `--ticks N` | Total completed ticks, N >= 1 (default 8). |
 | `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
 | `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
@@ -226,7 +226,7 @@ and exits 0. The pin is also released if the run fails after acquiring it.
 The Docker helper copies its output only when the client exits and does not
 forward signals; use a finite `--ticks` there.
 
-`native-evidence.json` records the backend actually passed to the engine
+`native-evidence.json` records the backend verified on the constructed engine
 (`native_cpu` or `native_cuda`), `dt`, `cpu_threads`, `every` (null when absent),
 `pace_ms`, `requested_ticks`, completed `ticks`, `stopped_by_signal` (the run
 ended before the requested ticks) and `capture_count`. To stay bounded in long

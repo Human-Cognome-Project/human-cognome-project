@@ -40,8 +40,17 @@ class Runtime {
   taichi::lang::Program &program() {
     return *program_;
   }
+  // The architecture the constructed Program actually runs on. It can differ
+  // from settings().cuda: the Taichi LLVM executor rewrites a requested CUDA
+  // architecture to the host's when the driver API or a device is absent
+  // (the Program's compile config is passed to it by reference), so a
+  // successful construction is not evidence of CUDA.
+  taichi::Arch arch() const {
+    return program_->compile_config().arch;
+  }
+  // True only when the Program really executes on CUDA.
   bool on_cuda() const {
-    return settings_.cuda;
+    return arch() == taichi::Arch::cuda;
   }
   const InstanceSettings &settings() const {
     return settings_;

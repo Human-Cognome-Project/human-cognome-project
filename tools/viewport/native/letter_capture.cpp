@@ -77,6 +77,14 @@ int main(int argc, char **argv) {
       return 1;
     }
     ActiveSession &session = *started;
+    // Construction succeeds even when a CUDA-enabled build has no driver or device: the engine
+    // then silently runs on the CPU. Verify the actual backend before any warm write.
+    if (session.on_cuda() != settings.cuda) {
+      std::cerr << "viewport letter capture failed: requested backend " << (settings.cuda ? "cuda" : "cpu")
+                << " but the engine runs on " << (session.on_cuda() ? "cuda" : "cpu")
+                << (settings.cuda ? " (no CUDA driver or device available); no fallback is permitted\n" : "\n");
+      return 1;
+    }
     const auto actor = new_uuid(), owner = new_uuid(), instance = new_uuid(), epoch = new_uuid();
     const auto conn = env("HCP_WARM_TEST_CONNINFO");
     Administrator admin(conn);
@@ -153,7 +161,7 @@ int main(int argc, char **argv) {
     field::Parameters parameters;
     parameters.dt = float(options.dt);
     const auto handle = session.submit(logical, parameters);
-    viewport::Json evidence{{"backend", settings.cuda ? "native_cuda" : "native_cpu"}, {"requested_ticks", options.ticks},
+    viewport::Json evidence{{"backend", session.on_cuda() ? "native_cuda" : "native_cpu"}, {"requested_ticks", options.ticks},
       {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)},
       {"every", options.every ? viewport::Json(options.every) : viewport::Json()}, {"pace_ms", options.pace_ms},
       {"source_calls", manager.activity().source_calls}};
