@@ -174,7 +174,9 @@ container (`docker exec`). For a PostgreSQL server outside Docker (remote or
 host-installed), run the same sequence by hand from a local client. Database
 names (all three, independently) and connection details are local
 configuration (a libpq `service=NAME` from `~/.pg_service.conf`, password in
-`~/.pgpass`); configuration scripts are not yet formalized, so this is manual. See the
+`~/.pgpass`); configuration scripts are not yet formalized, so this is manual.
+`CORE_DB` and `LINGUISTICS_DB` below are the same placeholders as in the restore
+notes. See the
 [restore notes](../../../data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md#restoring-onto-an-existing-server)
 for mounting the retained pair.
 
@@ -214,7 +216,7 @@ interactive shell (`set -e` closes an interactive session on the first failure).
    ```bash
    HCP_WARM_TEST_CONNINFO="service=NAME dbname=WARM_DB" \
    HCP_CORE_TEST_CONNINFO="service=NAME dbname=CORE_DB" \
-   HCP_LING_TEST_CONNINFO="service=NAME dbname=LING_DB" \
+   HCP_LING_TEST_CONNINFO="service=NAME dbname=LINGUISTICS_DB" \
      /tmp/hcp-warm-build/warm_postgres_test
    ```
 

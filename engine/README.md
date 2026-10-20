@@ -106,8 +106,8 @@ A different fork/build can still be supplied with
 
 ### Local CUDA build
 
-Observed 2026-10-20 (see below) on a GTX 1070 (compute capability 6.1), NVIDIA driver
-535.309.01, Ubuntu 24.04, LLVM/clang 15. **No CUDA toolkit or `nvcc` is
+Observed 2026-10-20 (see below) on a GTX 1070 (compute capability 6.1), NVIDIA
+driver 535.309.01, Ubuntu 24.04, LLVM/clang 15. **No CUDA toolkit or `nvcc` is
 installed or needed:** Taichi's CUDA backend emits PTX through LLVM NVPTX and
 talks to the driver's `libcuda`.
 
@@ -142,8 +142,10 @@ Observed 2026-10-20 (evidence: [CUDA-LOCAL-VALIDATION.md](docs/CUDA-LOCAL-VALIDA
 printed arch is the request, not the actual Program backend; see the evidence
 note), and `engine_smoke_test`, `field_test`, and
 `native_activity_test --cuda`, `activity_assembly_test --cuda` and
-`active_transfer_experiment --cuda` pass (no transfer timing or pinning figures
-are recorded or implied). This is bounded local functional evidence for the
+`active_transfer_experiment --cuda` pass. These tests likewise request CUDA
+through `settings.cuda` (`runtime.cpp:40`) and do not assert the actual Program
+backend; no backend check was recorded for them, and no transfer timing or
+pinning figures are recorded or implied. This is bounded local functional evidence for the
 existing fixture path; it does not validate engine-owned insertion (#156, not
 built), and it is not performance or pinning qualification (#145 remains open).
 

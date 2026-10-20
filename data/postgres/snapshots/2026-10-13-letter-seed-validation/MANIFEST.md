@@ -37,7 +37,9 @@ covered by a separate test-only sequence, without altering the retained inventor
 
 Exactly two destination foreign keys differ from the original schema:
 `hcp_core.token_child.child_token_id` and
-`hcp_linguistics.token_parent.parent_token_id` may now point to the other store.
+`hcp_linguistics.token_parent.parent_token_id` may now point to the other store
+(here `hcp_core` and `hcp_linguistics` are the export's store labels, not
+required database names).
 Owner-token and all membership keys remain. The core's exact original mass
 trigger is retained; Linguistics has none. Core tokens, parents, memberships and
 every pre-existing child row were preserved. The identical rerun added zero rows.

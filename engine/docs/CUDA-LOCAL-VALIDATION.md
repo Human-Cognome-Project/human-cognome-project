@@ -24,6 +24,10 @@ after release: 7.83 GiB free
 
 ## Functional tests
 
+Each test requests CUDA through `settings.cuda` (`runtime.cpp:40` passes it to
+the Program as the requested arch). No backend check was recorded for them, so
+these results do not assert the actual Program backend.
+
 ```text
 PASS engine_smoke_test
 PASS field_test
@@ -43,12 +47,14 @@ architecture. This fork's `llvm_runtime_executor.cpp:44-62` falls back to the
 host architecture when no CUDA driver or device is visible (maintainer finding
 in #158), so a requested CUDA backend is not by itself proof of actual CUDA.
 
-For this run, device binding, the 1070 memory figures ("bound", "reserved at
-startup", "after release") and the reserved device memory are the supporting
-observations; no fallback is claimed or indicated. Future evidence should check
-the actual Program backend (`runtime.program().compile_config().arch`),
-including a negative case with no visible device (for example
-`CUDA_VISIBLE_DEVICES=` empty) that must not report CUDA.
+The five test results are in the same position: they request CUDA and no
+backend check was recorded for them. The recorded device-binding lines show that
+the engine bound device 0; they are not a backend check, and no memory
+consumption recorded during the tests is cited as evidence. No fallback is
+claimed or indicated for this run. Future evidence should check the actual
+Program backend (`runtime.program().compile_config().arch`), including a
+negative case with no visible device (for example `CUDA_VISIBLE_DEVICES=`
+empty) that must not report CUDA.
 
 ## Scope
 
