@@ -66,23 +66,31 @@ Use a `psql` client of 16.15 or newer (the exports were written by `pg_dump`
 server version is a separate matter: the pair was also restored and read back
 exactly on an existing PostgreSQL **16.13** server using 16.15 client tools
 (2026-10-20). That is an observation, not a guarantee for other versions. From
-the repository root, these example names create new databases without replacing
-an existing installation:
+the repository root, this example creates new databases without replacing
+an existing installation. The database names are deployment configuration:
+choose them yourself and set `CORE_DB` and `LINGUISTICS_DB` (the placeholders
+below) to names that do not yet exist on the server. Ordinary engine use
+connects to the configured retained stores; this restore is for recovery or
+isolated validation, and creates a separate database only for that explicit
+purpose.
 
 ```bash
 set -euo pipefail
+: "${CORE_DB:?set to the new, empty target database name}"
+: "${LINGUISTICS_DB:?set to the new, empty target database name}"
 git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
-createdb --template=template0 --encoding=UTF8 hcp_core_seed
-createdb --template=template0 --encoding=UTF8 hcp_linguistics_seed
+createdb --template=template0 --encoding=UTF8 "$CORE_DB"
+createdb --template=template0 --encoding=UTF8 "$LINGUISTICS_DB"
 gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_core.sql.gz \
-  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_core_seed
+  | psql -X --set=ON_ERROR_STOP=1 --dbname="$CORE_DB"
 gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_linguistics.sql.gz \
-  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_linguistics_seed
+  | psql -X --set=ON_ERROR_STOP=1 --dbname="$LINGUISTICS_DB"
 ```
 
-The two databases may use different local names (see the next section); their token addresses are
-unchanged. Fetch the Git LFS payloads before restoring. These exports already
-contain the seed data and the two reviewed foreign-key changes; do not rerun the
+A database name is deployment configuration; the snapshot filename, date and
+label are provenance of the artifact. Neither determines the other, and token
+addresses are unchanged by whatever names are chosen. Fetch the Git LFS
+payloads before restoring. These exports already contain the seed data and the two reviewed foreign-key changes; do not rerun the
 population writer just to load the pair. The bootstrap-only mutation restriction
 described above continues to apply to the restored cross-linked stores.
 
@@ -97,21 +105,24 @@ host-installed. Nothing here relaxes the new-empty-database requirement.
   `host`, `port`, `user`), or `PGHOST` / `PGPORT` / `PGUSER`, with the password
   in `~/.pgpass` (mode 600). Never put credentials or private host details in
   Git. Then, for example,
-  `createdb --maintenance-db="service=NAME" --template=template0 --encoding=UTF8 TARGET` and
-  `psql --dbname="service=NAME dbname=TARGET"`.
+  `createdb --maintenance-db="service=NAME" --template=template0 --encoding=UTF8 "$CORE_DB"`
+  and `psql --dbname="service=NAME dbname=$CORE_DB"` (likewise for
+  `$LINGUISTICS_DB`).
 - **Atomic restore.** Add `--single-transaction` to the `psql` restore commands
   (alongside `ON_ERROR_STOP`). A failed restore then leaves an empty database
   rather than a partial one.
-- **Names are local configuration.** The `*_seed` names above are examples only;
-  snapshot names do not bind database names. Supply the chosen names at
-  invocation (`dbname=` in a conninfo string, the `HCP_*_TEST_CONNINFO`
-  variables, or a service entry), never hard-coded in repository code. If the
-  server already has a database with the intended name (for example an older
-  development store), restore into a differently named new database; never
-  restore over it. `ALTER DATABASE ... RENAME` requires that no other session is
-  connected (an autovacuum worker on a freshly restored database is cancelled
-  automatically) and changes the name every existing consumer of that database
-  uses; the owner decides, and nothing here runs it.
+- **Names are local configuration.** Database names are deployment
+  configuration; the snapshot filename, date or label is artifact provenance.
+  Neither determines the other, and the former `*_seed` suffix was an example
+  conflation, not a required namespace or an instruction to create another
+  persistent database per snapshot or run. Supply the chosen names at invocation
+  (`dbname=` in a conninfo string, the `HCP_*_TEST_CONNINFO` variables, or a
+  service entry), never hard-coded in repository code. The protections against
+  restoring over populated stores stand: restore only into a new, empty
+  database, and if a database with the intended name already exists, choose a
+  different name for the new one. This guidance authorizes no rename,
+  overwrite, drop or migration of any existing database; any such change is the
+  owner's separate decision and is outside this document.
 
 #### Read-back verification
 

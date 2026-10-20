@@ -32,8 +32,28 @@ PASS activity_assembly_test      (--cuda)
 PASS active_transfer_experiment  (--cuda)
 ```
 
+## What the `instance: arch` line shows
+
+`engine_devices` prints that line from its own request, not from the running
+Program: `engine_devices.cpp` chooses `use_cuda = cuda_available() && !cpu_only`,
+sets `settings.cuda` from it, and prints the literal `"cuda"` or `"x64"` from
+that same flag. Only the capacities and memory budget come from
+`runtime.program().compile_config()`. The line therefore records the requested
+architecture. This fork's `llvm_runtime_executor.cpp:44-62` falls back to the
+host architecture when no CUDA driver or device is visible (maintainer finding
+in #158), so a requested CUDA backend is not by itself proof of actual CUDA.
+
+For this run, device binding, the 1070 memory figures ("bound", "reserved at
+startup", "after release") and the reserved device memory are the supporting
+observations; no fallback is claimed or indicated. Future evidence should check
+the actual Program backend (`runtime.program().compile_config().arch`),
+including a negative case with no visible device (for example
+`CUDA_VISIBLE_DEVICES=` empty) that must not report CUDA.
+
 ## Scope
 
-Functional execution on the GTX 1070 only. No transfer timings, pinning,
+These five checks are bounded local functional evidence for the existing
+fixture path. They do not validate engine-owned object insertion (#156, not
+built). Functional execution on the GTX 1070 only. No transfer timings, pinning,
 performance or GTX 750 Ti results are recorded or implied. Local GPU
 transfer/pinning qualification remains open in #145.

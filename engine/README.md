@@ -138,12 +138,14 @@ talks to the driver's `libcuda`.
    those clients are wanted.
 
 Observed 2026-10-20 (evidence: [CUDA-LOCAL-VALIDATION.md](docs/CUDA-LOCAL-VALIDATION.md)):
-`engine_devices` binds device 0 (the GTX 1070) with
-instance arch `cuda`, and `engine_smoke_test`, `field_test`, and
+`engine_devices` binds device 0 (the GTX 1070) and requests arch `cuda` (the
+printed arch is the request, not the actual Program backend; see the evidence
+note), and `engine_smoke_test`, `field_test`, and
 `native_activity_test --cuda`, `activity_assembly_test --cuda` and
 `active_transfer_experiment --cuda` pass (no transfer timing or pinning figures
-are recorded or implied). This is functional execution only; it is not
-performance or pinning qualification (#145 remains open).
+are recorded or implied). This is bounded local functional evidence for the
+existing fixture path; it does not validate engine-owned insertion (#156, not
+built), and it is not performance or pinning qualification (#145 remains open).
 
 **Target selection.** The fork JIT-compiles kernels at run time for the bound
 device: `taichi/rhi/cuda/cuda_context.cpp` reads the device's compute

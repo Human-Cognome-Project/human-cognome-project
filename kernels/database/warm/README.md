@@ -172,9 +172,9 @@ fixtures and runs the same acceptance helper. The published exports are unchange
 `tools/viewport/run-capture.sh` all assume the cold stores live in a local Docker
 container (`docker exec`). For a PostgreSQL server outside Docker (remote or
 host-installed), run the same sequence by hand from a local client. Database
-names and connection details are local configuration (a libpq `service=NAME`
-from `~/.pg_service.conf`, password in `~/.pgpass`); configuration scripts are
-not yet formalized, so this is manual. See the
+names (all three, independently) and connection details are local
+configuration (a libpq `service=NAME` from `~/.pg_service.conf`, password in
+`~/.pgpass`); configuration scripts are not yet formalized, so this is manual. See the
 [restore notes](../../../data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md#restoring-onto-an-existing-server)
 for mounting the retained pair.
 
@@ -195,7 +195,10 @@ interactive shell (`set -e` closes an interactive session on the first failure).
    A hash of `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
    (SHA-256 of empty input) means the dump produced nothing and the check is
    invalid. A newer `pg_dump` client against an older 16.x server is fine.
-2. Create a new, uniquely named warm database and apply the schema. The
+2. Create a new, uniquely named warm database and apply the schema. This
+   database is an isolated acceptance fixture, not a normal deployment or
+   operating store; its name is only the unique fixture label, independent of
+   the core and Linguistics names and of any snapshot name. The
    connecting role needs `CREATEDB` for this. The 2026-10-20 run used a role with
    `CREATEDB` (and superuser), so the minimum privileges needed on the cold
    databases were not separately tested; read-only access is not claimed to be
