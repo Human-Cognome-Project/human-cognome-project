@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {parseSnapshot, validateSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, pollInterval, fileStamp, resolveSelection, watchState} from '../model.mjs';
+import {parseSnapshot, validateSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, referenceShift, pollInterval, fileStamp, resolveSelection, watchState} from '../model.mjs';
 const study = '12345678-1234-1234-1234-123456789abc';
 export function fixture() {
   const particle = (i, mass, radius, binding = 0) => ({id: `${study}/${i}`, definition: `public:${i}`, slot: i,
@@ -94,6 +94,17 @@ test('live updates: selection re-resolves by occurrence ID and clears when absen
   assert.notEqual(resolveSelection(selectParticles(b).matched, chosen.id), chosen);
   assert.equal(resolveSelection(selectParticles(b).matched, a.particles[2].id), null);
   assert.equal(resolveSelection(selectParticles(b, {level: '1'}).matched, chosen.id), null);
+});
+test('live updates: reference shift keeps physical positions fixed without adding absolute origins', () => {
+  // Maintainer case: reference 100 -> 108, local 0 -> -8; the object stays at 100 and the camera-relative offset stays -10.
+  assert.deepEqual(referenceShift([100, 0, 0], [108, 0, 0]), [8, 0, 0]);
+  assert.deepEqual(referenceShift([5, 6, 7], [5, 6, 7]), [0, 0, 0]);
+  assert.ok(referenceShift([1, 2, 3], [1, 2, 3]).every(v => Object.is(v, 0)));
+  const old = [100, -50, 7], big = [old[0] + 2 ** 27, old[1] - 2 ** 26, old[2] + 2 ** 60], shift = referenceShift(old, big);
+  assert.deepEqual(shift, [2 ** 27, -(2 ** 26), 2 ** 60]);
+  const local = [48, -16, 0], moved = local.map((v, i) => Math.fround(v - shift[i]));
+  assert.deepEqual(moved.map((v, i) => v + shift[i]).slice(0, 2), local.slice(0, 2));
+  assert.deepEqual(referenceShift(old, old), [0, 0, 0]);
 });
 test('live updates: interval is clamped, files are compared by modified time and size', () => {
   assert.equal(pollInterval('250'), 250); assert.equal(pollInterval(50), 100); assert.equal(pollInterval('0'), 100);

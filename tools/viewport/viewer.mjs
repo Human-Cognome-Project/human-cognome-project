@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {parseSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, pollInterval, fileStamp, resolveSelection, watchState, defaultPollMs} from './model.mjs';
+import {parseSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, referenceShift, pollInterval, fileStamp, resolveSelection, watchState, defaultPollMs} from './model.mjs';
 
 const $ = id => document.getElementById(id);
 const space = $('space');
@@ -42,7 +42,12 @@ function resize() {
   renderer.setSize(width, height);
   camera.aspect = width / Math.max(1, height); camera.updateProjectionMatrix(); render();
 }
+// Display frame: camera and scene use local positions plus `shift` (reference minus the display reference, a per-axis
+// double difference), so a reference change between captures never reads as motion. No absolute origin is added.
+let displayReference = [0, 0, 0], shift = [0, 0, 0];
+const place = point => shift.every(v => v === 0) ? point : point.map((v, i) => v + shift[i]);
 function frame(particles, target = null) {
+  particles = particles.map(p => ({position: place(p.position), radius: p.radius}));
   const bounds = boundsFor(particles), centre = target ?? bounds.centre;
   let radius = 0.001;
   for (const p of particles) radius = Math.max(radius, Math.hypot(...p.position.map((v, i) => v - centre[i])) + (p.radius ?? 0));
@@ -67,7 +72,7 @@ function inspect(p) {
       'Conceptual LoD': p.level, Binding: `${p.binding} · ${binding.role} · ${binding.units} units`,
       Exposure: p.exposure, 'Aggregate context': p.aggregate})) row($('details'), label, value);
     highlight.visible = p.radius !== null && p.radius > 0 && drawn.includes(p);
-    highlight.position.fromArray(p.position); highlight.scale.setScalar(p.radius ?? 0);
+    highlight.position.fromArray(place(p.position)); highlight.scale.setScalar(p.radius ?? 0);
   } else highlight.visible = false;
   for (const button of $('objects').children) button.setAttribute('aria-pressed', String(button.dataset.id === p?.id));
   render();
@@ -98,7 +103,7 @@ function updateDisplay() {
     mesh = new THREE.InstancedMesh(geometry, material, drawn.length);
     const transform = new THREE.Object3D(), colour = new THREE.Color();
     drawn.forEach((p, i) => {
-      transform.position.fromArray(p.position); transform.scale.setScalar(p.radius); transform.updateMatrix();
+      transform.position.fromArray(place(p.position)); transform.scale.setScalar(p.radius); transform.updateMatrix();
       mesh.setMatrixAt(i, transform.matrix); mesh.setColorAt(i, colour.set(massColour(p.mass, ranges.get(p.level))));
     });
     mesh.computeBoundingSphere(); scene.add(mesh);
@@ -119,12 +124,15 @@ function updateDisplay() {
 function deepFreeze(value) { if (value && typeof value === 'object') { Object.values(value).forEach(deepFreeze); Object.freeze(value); } return value; }
 function replaceSnapshot(next, keep = false) {
   const level = $('level').value;
+  const fixed = keep ? displayReference : next.frame.reference; // a new capture starts a new display frame
   snapshot = deepFreeze(next); ranges = rangesFor(snapshot); if (!keep) selection = null;
+  displayReference = [...fixed]; shift = referenceShift(displayReference, snapshot.frame.reference);
   $('capture-title').textContent = snapshot.capture.label || 'Untitled study'; $('capture-meta').replaceChildren();
   for (const [label, value] of Object.entries({'Schema': 'HCP snapshot v1', Study: snapshot.capture.study,
     Generation: snapshot.capture.generation, Tick: `${snapshot.capture.tick} · ${snapshot.capture.phase}`,
     'Double frame reference': snapshot.frame.reference.join(', '), 'Captured camera target': snapshot.frame.camera_target.join(', '),
     Coordinates: 'Reference-local · operative model units'})) row($('capture-meta'), label, value);
+  if (shift.some(v => v !== 0)) row($('capture-meta'), 'Display offset', `${shift.join(', ')} (camera follows reference changes)`);
   $('level').replaceChildren(new Option('All captured levels', ''));
   for (const level of [...ranges.keys()].sort((a, b) => a - b)) $('level').add(new Option(`LoD ${level}`, String(level)));
   // A live update inside one session+study keeps filters and camera; a new capture clears and frames.
@@ -241,7 +249,7 @@ for (const id of ['level', 'exposure']) $(id).addEventListener('change', updateD
 $('search').addEventListener('input', updateDisplay);
 $('frame-all').addEventListener('click', () => snapshot && frame(matched));
 $('frame-selection').addEventListener('click', () => selection && frame([selection]));
-$('focus').addEventListener('click', () => snapshot && frame(snapshot.particles, snapshot.frame.camera_target));
+$('focus').addEventListener('click', () => snapshot && frame(snapshot.particles, place(snapshot.frame.camera_target)));
 try {
   renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -268,7 +276,7 @@ window.HCPViewport = {inspect: () => ({snapshot: snapshot ? structuredClone(snap
     return {id: p.id, position: position.toArray(), radius: scale.x, colour: '#' + colour.getHexString(THREE.SRGBColorSpace),
       screen: {x: rect.left + (projected.x + 1) * rect.width / 2, y: rect.top + (1 - projected.y) * rect.height / 2, z: projected.z}};
   }), selected: selection?.id ?? null, ranges: ranges ? [...ranges] : [],
-  camera: {position: camera.position.toArray(), target: controls?.target.toArray()},
+  camera: {position: camera.position.toArray(), target: controls?.target.toArray()}, display: {reference: [...displayReference], shift: [...shift]},
   metrics: {parse_ms: parseMs, build_ms: buildMs, render_submit_ms: renderMs},
   watch: {supported: canWatch, secure: isSecureContext, mode: $('mode').textContent, active: !!watch, paused: watch?.paused ?? null,
     interval: watch?.interval ?? null, checks: watch?.checks ?? 0, applied: watch?.applied ?? 0, error: watch?.error ?? null, missing: watch?.missing ?? null},

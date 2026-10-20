@@ -325,6 +325,48 @@ try {
     await page.evaluate(async () => (await navigator.storage.getDirectory()).removeEntry('hcp-watch-test', {recursive: true}));
   }
 
+  // Reference changes: a same-study capture with a new generation and frame.reference moves the local frame, not the
+  // objects. UI fixtures with coarse (multiple-of-16) positions, so local = old - delta is exact in f32.
+  const rebased = (base, tick, delta, generation) => {
+    const f = structuredClone(base);
+    f.capture = {...f.capture, tick: String(tick), generation, phase: 'post_tick'};
+    f.frame.reference = base.frame.reference.map((v, i) => v + delta[i]);
+    f.frame.camera_target = base.frame.camera_target.map((v, i) => v - delta[i]);
+    f.frame.focal_fields.forEach((g, k) => { g.position = base.frame.focal_fields[k].position.map((v, i) => v - delta[i]); });
+    f.particles.forEach((p, k) => { p.position = base.particles[k].position.map((v, i) => Math.fround(v - delta[i])); });
+    return f;
+  };
+  const frameA = structuredClone(tick8);
+  frameA.capture = {...frameA.capture, tick: '20', label: 'UI validation fixture, reference changes'};
+  frameA.frame = {...frameA.frame, reference: [100, -50, 7], camera_target: [16, 0, 0], target_kind: 'captured_focal_centroid',
+    focal_fields: [{kind: 'parent_value', value: 'ui-fixture', position: [16, 0, 0], mass: 1}]};
+  frameA.particles.forEach((p, k) => { p.position = [16 * (k % 4), 16 * (Math.floor(k / 4) % 4), 16 * (k % 3)]; });
+  const uuid = n => `${n}0000000-0000-4000-8000-000000000000`;
+  const big = [2 ** 27, -(2 ** 26), 0];
+  await load(frameA, 'frame-a.json'); await waitTick('20');
+  await page.locator('#level').selectOption('1'); await page.locator('#objects button').first().click(); await orbit();
+  const beforeRebase = await state();
+  // Largest camera-relative offset and screen-position difference between two states of the same objects.
+  const drifts = (a, b) => a.drawn.reduce((m, v, k) => ({
+    drift: Math.max(m.drift, ...v.position.map((x, i) => Math.abs((x - a.camera.position[i]) - (b.drawn[k].position[i] - b.camera.position[i])))),
+    pixels: Math.max(m.pixels, Math.abs(v.screen.x - b.drawn[k].screen.x), Math.abs(v.screen.y - b.drawn[k].screen.y))}), {drift: 0, pixels: 0});
+  await src.set(frameA); await src.watch('fixture-dir'); await waitMode('LIVE');
+  await src.set(rebased(frameA, 21, big, uuid(1))); await waitTick('21');
+  let reb = await state();
+  const {drift, pixels} = drifts(reb, beforeRebase);
+  check(reb.snapshot.capture.generation === uuid(1) && reb.snapshot.frame.reference[0] === 100 + 2 ** 27 && reb.display.shift[0] === 2 ** 27 && reb.display.shift[1] === -(2 ** 26), 'large reference shift arrives as a same-study generation change');
+  check(reb.drawn.length === beforeRebase.drawn.length && drift === 0 && pixels < 1e-6, 'large reference shift without motion leaves camera-relative positions and screen positions unchanged');
+  await same(beforeRebase.camera, 'large reference shift does not re-frame the camera');
+  check(reb.selected === beforeRebase.selected && (await page.locator('#details').textContent()).includes(String(reb.snapshot.particles.find(p => p.id === reb.selected).position[0])) && await page.locator('#level').inputValue() === '1', 'selection and filters survive a reference change, inspected at the new local values');
+  await page.locator('#focus').click();
+  check(JSON.stringify((await state()).camera.target) === JSON.stringify(frameA.frame.camera_target), 'Study focus uses the new capture camera target in the display frame');
+  await orbit(); const beforeSmall = await state();
+  await src.set(rebased(frameA, 22, [8, 0, 0], uuid(2))); await waitTick('22'); reb = await state();
+  const second = drifts(reb, beforeSmall);
+  check(JSON.stringify(reb.display.shift) === JSON.stringify([8, 0, 0]) && reb.snapshot.frame.reference[0] === 108 && second.drift === 0 && second.pixels < 1e-6, 'small reference shift (100 to 108, local -8) displays no motion');
+  await same(beforeSmall.camera, 'small reference shift does not re-frame the camera');
+  await page.locator('#stop').click();
+
   // Without the File System Access API the control is disabled and says Open snapshot still works.
   const plain = await context.newPage(); plain.on('pageerror', e => errors.push(e.message));
   await plain.addInitScript(() => { Object.defineProperty(window, 'showDirectoryPicker', {value: undefined, configurable: true}); });
