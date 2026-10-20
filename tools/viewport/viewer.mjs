@@ -45,6 +45,7 @@ function resize() {
 // Display frame: camera and scene use local positions plus `shift` (reference minus the display reference, a per-axis
 // double difference), so a reference change between captures never reads as motion. No absolute origin is added.
 let displayReference = [0, 0, 0], shift = [0, 0, 0];
+const offset = () => shift.some(v => v !== 0);
 const place = point => shift.every(v => v === 0) ? point : point.map((v, i) => v + shift[i]);
 function frame(particles, target = null) {
   particles = particles.map(p => ({position: place(p.position), radius: p.radius}));
@@ -131,8 +132,8 @@ function replaceSnapshot(next, keep = false) {
   for (const [label, value] of Object.entries({'Schema': 'HCP snapshot v1', Study: snapshot.capture.study,
     Generation: snapshot.capture.generation, Tick: `${snapshot.capture.tick} · ${snapshot.capture.phase}`,
     'Double frame reference': snapshot.frame.reference.join(', '), 'Captured camera target': snapshot.frame.camera_target.join(', '),
+    ...offset() && {'Display offset': `${shift.join(', ')} (objects shifted; camera unchanged)`},
     Coordinates: 'Reference-local · operative model units'})) row($('capture-meta'), label, value);
-  if (shift.some(v => v !== 0)) row($('capture-meta'), 'Display offset', `${shift.join(', ')} (camera follows reference changes)`);
   $('level').replaceChildren(new Option('All captured levels', ''));
   for (const level of [...ranges.keys()].sort((a, b) => a - b)) $('level').add(new Option(`LoD ${level}`, String(level)));
   // A live update inside one session+study keeps filters and camera; a new capture clears and frames.
@@ -163,7 +164,7 @@ function ui() {
     'Last check': w.checkedAt ? new Date(w.checkedAt).toLocaleTimeString() : 'None yet',
     'Checks · captures applied': `${w.checks} · ${w.applied}`})) row($('live-status'), label, value);
   if (!snapshot) return;
-  const base = `tick ${snapshot.capture.tick} · actual model radii · ${snapshot.particles.length} objects`;
+  const base = `tick ${snapshot.capture.tick} · actual model radii · ${snapshot.particles.length} objects${offset() ? ' · display offset' : ''}`;
   $('frame-note').textContent = !w ? `STATIC CAPTURE · ${base}` : !w.last ? `STATIC CAPTURE (opened file) · ${base} · watching ${w.name}, ${mode.toLowerCase()}` :
     `${mode} CAPTURE · ${base} · polling ${w.name}/latest.json every ${w.interval} ms · colour ranges per capture`;
 }

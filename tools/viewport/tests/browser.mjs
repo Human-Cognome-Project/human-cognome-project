@@ -358,6 +358,8 @@ try {
   check(reb.drawn.length === beforeRebase.drawn.length && drift === 0 && pixels < 1e-6, 'large reference shift without motion leaves camera-relative positions and screen positions unchanged');
   await same(beforeRebase.camera, 'large reference shift does not re-frame the camera');
   check(reb.selected === beforeRebase.selected && (await page.locator('#details').textContent()).includes(String(reb.snapshot.particles.find(p => p.id === reb.selected).position[0])) && await page.locator('#level').inputValue() === '1', 'selection and filters survive a reference change, inspected at the new local values');
+  const meta = await page.locator('#capture-meta').textContent();
+  check(meta.includes('Display offset') && meta.indexOf('Display offset') < meta.indexOf('Coordinates') && meta.includes('objects shifted; camera unchanged') && (await page.locator('#frame-note').textContent()).includes(' · display offset'), 'non-zero display offset is listed before Coordinates and flagged in the footer');
   await page.locator('#focus').click();
   check(JSON.stringify((await state()).camera.target) === JSON.stringify(frameA.frame.camera_target), 'Study focus uses the new capture camera target in the display frame');
   await orbit(); const beforeSmall = await state();

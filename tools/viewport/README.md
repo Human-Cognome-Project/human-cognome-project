@@ -102,15 +102,20 @@ same spatial frame to watch whether a coherent pattern forms.
   and target, level/exposure/search filters and the selection are kept; the
   selection is found again by occurrence ID and is cleared only if that ID is
   absent from the new capture or filtered out. A level filter whose level is
-  absent from the new capture resets to "All captured levels". The camera also
-  follows reference changes: a refresh or rebase can change `frame.reference`
-  (and so every local coordinate) with no physical motion, so the viewer keeps
-  its display frame at the reference of the capture that was opened or first
-  watched and adds only the per-axis double difference of references to local
-  positions. Unmoved objects therefore stay where they were, camera-relative,
-  rather than being shown as moving, and no large absolute origin enters render
-  coordinates. A non-zero offset is listed in the capture metadata. **Study
-  focus** still uses the new capture's own camera target. Only when
+  absent from the new capture resets to "All captured levels". A refresh or
+  rebase can change `frame.reference` (and so every local coordinate) with no
+  physical motion. The camera therefore stays fixed in a display frame while
+  scene content is offset by the reference difference: the display frame is
+  set by the capture that last started a new display frame (**Open snapshot**,
+  a first load, or a different session or study), and only the per-axis double
+  difference of references is added to local positions. No large absolute
+  origin enters render coordinates. The conversion itself is exact; any
+  apparent drift of objects that did not move can only come from f32 rounding
+  of the new capture's own local values, which grows with the reference jump
+  (a probe showed up to about 2 units after a 2^27 jump with ordinary f32
+  local values). A non-zero offset is listed in the capture metadata ("Display
+  offset") and flagged in the footer. **Study focus** still uses the new
+  capture's own camera target. Only when
   nothing is displayed, or the capture has a different session or study, does
   it behave exactly like opening a new file: the generation is replaced,
   selection and filters are cleared and the camera frames it.
@@ -295,8 +300,8 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
-Watch-mode checks (51 additional, 124 in all) feed the retained tick 0 and 8
-captures (122 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+Watch-mode checks (52 additional, 125 in all) feed the retained tick 0 and 8
+captures (123 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
 local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
 folder source: same-study camera/filter/selection preservation, updated values
 and per-capture colours, invalid/unsupported/missing files with recovery,
