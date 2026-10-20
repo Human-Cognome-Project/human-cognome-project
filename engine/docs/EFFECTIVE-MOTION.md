@@ -1,13 +1,15 @@
 # Effective-motion CPU evidence
 
-Status: accepted/merged in #150 at `755bcefb`, 2026-10-19, under
+Status: #150 accepted/merged; #152 type-phase revision for review, 2026-10-19, under
 [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
 The [active field model](ACTIVE-FIELD-MODEL.md#current-selective-tick-and-the-effective-motion-predicate)
 specifies the exact calculation. This evidence uses the native C++ path and
 the pinned Taichi fork on CPU. Retained cold sources are read-only; tests create
 separate warm fixtures and use supplied local values. No private store is opened.
 The revision uses Taichi native binary SNode activation/iteration for particle
-and centroid scheduling. See the [phase and storage semantics](ACTIVE-FIELD-MODEL.md#native-binary-activity).
+and centroid scheduling. The focused #152 revision has one set per type and
+uses native cell operations directly; stored motion state is read only inside
+selected work. See the [phase and storage semantics](ACTIVE-FIELD-MODEL.md#native-binary-activity).
 
 ## Accepted bounded calculation
 
@@ -65,6 +67,7 @@ This is bounded equivalence evidence, not a global trajectory error bound.
 | Large translated study | Independent unit velocity/dt expectations at offsets 0 and `2^27`: positions 1–4, continued eligibility, half-unit centroid progression, rejected stationary touches and identical demand counts. |
 | Bounded ripple | Successive published dependencies reach four linked particles over four ticks, then stop at a participant without displacement. |
 | Ordinary contact | Supplied contact adjacency preserves equal/opposite whole-particle response across selective/reference ticks. |
+| Contact phase boundary | Seventy live particles, both source index directions and pointer blocks: peers calculate at the following particle phase, first displacement occurs on the expected step, and an unmoved peer does not propagate activity. |
 
 `activity_assembly_test` additionally prepares repeated English letter objects
 through the native SNode/membership path, binds a focal field by exact kind/value,
@@ -73,17 +76,17 @@ unit separation and subsequent unit motion survive `2^27` translation before
 f32 conversion. Wrong-kind and duplicate focus fail
 preparation; invalid refresh disables ticks and a valid refresh recovers.
 
-The complete CPU run and bounded demand output are recorded in
-[acceptance.json](../tests/activity/acceptance.json) and its adjacent CSV files.
-All 17 CPU suites pass: the full run passed 16, then the corrected workbench
-assertion passed on rerun. That assertion now compares evaluated particles with
-live exposure rather than allocated capacity; the engine source did not change
-between runs. The manifest records this history explicitly. Activity has 110
-checks on each of three worker/host configurations; focal assembly has 16 on
-each host path; native bitmask semantics have five. The workbench has 140 checks,
-PostgreSQL-to-active integration 180, and the Stage A regression 90. Full retained
-cold-data hashes match before/after. The CSV includes measured tick times. Initial ticks can include lazy kernel
-compilation; these small cases establish work-count behavior, not a speedup.
+The accepted #150 baseline remains in its original
+[manifest](../tests/activity/acceptance.json) and CSV files. The focused #152
+revision has [separate evidence](../tests/type_phase/acceptance.json), retaining
+translated motion, reference comparisons and combined workbench/PostgreSQL
+checks. Its native contract includes a controlled CPU live-bit probe: a peer
+activated inside traversal can enter that same loop. Production contact writes
+therefore occur after the consuming particle calculation pass. Bounded contact
+fixtures check both pointer/index directions, first response time and no cascade
+through stationary peers. Numerical forces use the same original phase/order.
+Tick times include native metadata, launches and compilation warmup; these
+fixtures establish behavior and work counts, not a speedup.
 
 ## Demand definitions
 
@@ -135,10 +138,9 @@ cmake --build engine/build -j 3
 ctest --test-dir engine/build --output-on-failure
 ```
 
-The corrected mathematics, native scheduling and combined CPU evidence were
-accepted on 2026-10-19. These cases can be included in Patrick's bounded local
-GPU run. #152 separately requests simplification of the current/next particle
-sets to type-defined phases; this evidence describes the merged #150 baseline:
+#150's accepted CPU review permits Patrick's bounded local validation under
+#145. The #152 single-set revision is a focused follow-up for review; neither
+baseline acceptance nor CPU execution asserts GPU qualification. Local cases are:
 
 ```sh
 . engine/build/engine-env.sh

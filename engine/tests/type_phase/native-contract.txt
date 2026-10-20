@@ -1,0 +1,13 @@
+ok   inactive type sets have zero calculation-body entries
+ok   CPU native leaf bits are live: a peer activated inside traversal can enter that same calculation loop
+ok   padded native capacity traverses all 70 requested logical slots without activating padding
+ok   4096 parallel native activations across pointer blocks collapse to two particle entries
+ok   particle phase consumes fixed entries, retains carried activity and collapses centroid touches
+ok   centroid phase consumes its own bit and reactivates particles once without running their calculation phase
+ok   centroid placement retains the consumed sleeping member contribution
+ok   following particle phase calculates each of four selected entries once and consumes fixed activity
+ok   centroid without further effects consumes activity without erasing particle numerical state
+ok   subsequent inactive particle phase enters no calculation body
+ok   type-phase consumption preserves all untouched numerical values
+11 native activity checks
+PASS native_activity_test

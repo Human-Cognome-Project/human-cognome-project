@@ -9,29 +9,16 @@ for executed checks and settings. The recovered
 retain historical mechanics. `field::Harness` owns field arrays and ticks;
 `assembly::FixedStudy` supplies a bounded native preparation/publication path.
 The #91 follow-up implements selective ticks, a supplied focal-field origin,
-bidirectional motion gates and demand reporting, accepted/merged in #150
-at `755bcefb`. The revision after
+bidirectional motion gates and demand reporting, accepted in #150. The revision after
 the origin-dependence finding subtracts a nearby supplied reference before
 f32 conversion and integrates in local coordinates. Its precise local-f32
 predicate is described below; it does not settle a broader semantic resolution
 law or the open combined-destination question. [CPU evidence and reproduction](EFFECTIVE-MOTION.md)
 include integration with accepted Stage D #149 (`867c310`) on both host paths.
-Native binary scheduling now uses Taichi SNode activation and active traversal.
-Local GPU validation remains unexecuted; combined CPU/PostgreSQL evidence was
-accepted on 2026-10-19, clearing that review prerequisite for bounded local tests.
-
-**Type-defined activity phases (Patrick, 2026-10-19):** element type determines
-when it calculates; one binary activity flag selects work at that phase's entry.
-Particles activate centroids for the centroid phase; centroids activate particles
-for the following particle phase. “This/next tick” describes that order, not an
-independent scheduling policy. #150's duplicate current/next particle sets are
-built implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
-requests their simplification using native traversal/consumption, with concrete
-verification of carried-motion, contact and parallel activation dependencies.
-
-The phase table and separate sets described below document the current #150
-implementation. They do not supersede the type-defined contract or assert that
-#152's simplification is already built.
+#150 is accepted/merged at `755bcef`. The focused [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+revision removes duplicate particle sets: type defines calculation phase and
+one native binary activity set belongs to each type. The revised CPU evidence
+is separate from the accepted #150 baseline. GPU execution remains untested here.
 
 ## Fixed-study SNode scale mapping
 
@@ -129,20 +116,24 @@ focal origin rather than always measuring from coordinate zero.
 The default `TickMode::Selective` path uses the following order. The
 `AllLoaded` reference mode evaluates all live particles and recomputes all
 positive-mass groups with the same numerical laws and reduction order.
-Scheduling uses native pointer/bitmasked SNode sets for current particles,
-next-tick particles and current centroids. Numerical payloads and memberships
-remain separately resident. Movement history is updated only inside native
-active traversal; it supplies centroid displacement and wake diagnostics.
+Activity is one binary flag per calculable element, stored in native
+pointer/bitmasked SNode sets: one particle set and one centroid set. Type defines
+phase order: particle calculation, centroid calculation, then particle calculation
+again on the following tick. There is no per-element current/next scheduling
+state or promotion pass. Native phase traversal selects active elements before
+numerical work reads their stored motion state. Numerical payloads and
+memberships remain separately resident.
 
 | Phase | Implemented calculation |
 |---|---|
 | Publication | Validate the supplied state and adjacency; seed inclusive centroids and masses; invalidate previous exclusions. |
-| Begin | Promote the previous next-particle set and consume its bits. Form the focal origin from the compact supplied focus list. Whole-study invalidation activates all live particles; ordinary ticks do not scan loaded particles. |
+| Begin | Form the focal origin from the compact supplied focus list. Whole-study invalidation activates all live particles; ordinary ticks do not scan loaded particles. Update motion history only for native active particles. |
 | Force | Each candidate visits **all** connected fields, including unchanged ones, then its ledgered contacts. Combine contributions before deciding movement. |
-| Motion | Traverse active particles; apply whole-mass integration, carried velocity, the existing brake and focal radial term. Changed position/velocity activates continuation for next tick. Actual displacement touches native centroid bits and contact neighbours. |
+| Motion | Traverse active particles; apply the existing integration law. Retain the activity bit while position/velocity changes, or consume it when the full state is fixed. Actual displacement activates centroid bits. |
+| Contact propagation | After all particle calculations/consumption, moved particles activate supplied contact peers using native operations. These peers calculate at the following particle phase. |
 | Flag | Use participating-mass movement ratios and retained collective contributions to flag groups before their placement. Multiple triggers combine with any-active. |
 | Place | Reduce every member of each flagged group, including sleeping members, once. Publish its centroid and retain rounding residue; unchanged groups keep their published position. |
-| Propagate/finish | Changed native centroids visit their members and qualify next-tick particle activation. Clear current particle/centroid sets only; preserve the next set. |
+| Centroid propagation | Consume each selected centroid bit, then qualify particle activation from changed-centroid member inputs. The particle phase has already finished, so those bits survive to its following phase. |
 
 In the formulas below, particle and centroid positions are **local operative
 coordinates**, not supplied absolute placements. Field and activity kernels
@@ -271,67 +262,89 @@ from the notes. Existing primary-step and 1:1 compression distinctions remain.
 
 ## Native binary activity
 
-The [2026-10-18 clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91#issuecomment-6251177820)
-uses one binary scheduling decision per particle/centroid. The implementation
-in [native_set.h](../src/field/native_set.h) attaches pointer blocks with native
-bitmasked cells. Repeated atomic touches collapse to one active entry.
-Particle force/clear/contact/integration/determiner loops use native struct-for;
-centroid gate/reduction/publication loops likewise traverse native active groups.
-Numerical eligibility checks occur inside that traversal; the group gate
-consumes unqualified bits before placement/publication. No Candidate or
-Continued array is used for scheduling.
+[Patrick's type-phase clarification (#152)](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+governs the simplification of accepted #150. Each calculable element has one
+activity bit; type determines when native traversal polls it. Particle effects
+activate centroids; centroid effects activate particles. The next particle phase
+occurs on the following tick by this order, without an additional scheduling
+policy. Motion/velocity history belongs to the selected particle's numerical
+calculation, not a second activity mechanism.
 
-Source inspection of the pinned `d191c5ce` tree establishes the mechanism:
+The thin [NativeSet](../src/field/native_set.h) wrapper uses existing fork
+operations, rather than implementing a host bitmask/list/queue:
 
-- `IRBuilder::create_struct_for` iterates SNode containers. LLVM code generation
-  guards bitmasked loop bodies with the native `is_active` result before
-  entering the body (`taichi/codegen/llvm/codegen_llvm.cpp`).
-- `Bitmasked_activate` uses atomic OR; `Bitmasked_deactivate` uses atomic AND
-  (`taichi/runtime/llvm/runtime_module/node_bitmasked.h`). Clearing a bit does
-  not clear that cell's payload. This fact does not generalize to pointer or
-  dynamic deactivation. The scheduler leaves pointer parents allocated and
-  stores persistent numerical/membership values separately in any case.
-- Native list generation, pointer high-water allocation and mask checks still
-  cost work. Zero inactive calculation-body entries do not prove zero metadata
-  traversal, a logarithmic bound or universal hardware speed superiority.
+- `IRBuilder::create_struct_for` supplies sparse traversal. The compiler emits
+  its own list clear/generation tasks (`taichi/transforms/offload.cpp`).
+- `SNodeOpType::activate` / `deactivate` emit native cell operations. Native
+  pointer activation allocates an ancestor block before native bitmasked
+  activation; explicit cell activation in this fork does not allocate its
+  ancestors automatically. The runtime owns the pointer allocation and atomic
+  OR/AND bit operations (`node_pointer.h`, `node_bitmasked.h`). The former
+  dummy atomic marker write is removed; the i8 layout leaf carries no activity
+  payload and is never written by this wrapper.
+- Pointer capacity uses the fork's `bit::least_pot_bound` storage helper. A
+  bounded unpadded 3-by-32 probe reported all 70 requested bits active but entered
+  only 50 traversal bodies on this CPU fork. Padding the pointer level to four
+  blocks makes all 70 entries traversable. Logical counts remain unchanged and
+  padding stays inactive. This is a verified layout constraint/workaround, not
+  a new model scale or a claim that arbitrary non-power-of-two layouts work.
+- LLVM checks the live leaf bit before each struct-for body
+  (`taichi/codegen/llvm/codegen_llvm.cpp`). Generated container lists are not
+  an immutable snapshot of individual leaf bits. The CPU probe activates a
+  peer inside a single-thread traversal and observes two bodies from one
+  initial bit. HCP must order effects accordingly; extra particle banks are
+  unnecessary for this model.
 
-The fork's CHI IR compiler cache uses the kernel name as its memory-cache key
-(`taichi/compilation_manager/kernel_compilation_manager.cpp`); these kernels
-embed a particular control tree. Their names therefore include the execution
-layout's SNode id. Distinct studies compile independently rather than silently
-reusing code bound to the first tree. CHI IR is not restored from disk cache.
-The Program owns these control trees until runtime teardown; this bounded
-implementation does not claim per-study tree reclamation or stable compilation
-cost across new layouts. Runtime warmup is separate from steady-tick work.
+The particle set remains stable through clear, force and contact calculations.
+Integration consumes a particle's bit only when its full position/velocity state
+is fixed. A changing state retains the same bit for continued calculation.
+No peer particle is activated while this calculation pass consumes bits.
+The speed determiner updates continuing particles; a consumed fixed particle's
+cached speed is still valid because its velocity is unchanged.
 
-Current particles, next particles and current centroids use separate masks.
-At begin, native next entries activate current and are consumed; no numerical
-phase produces new next entries until that pass completes. Integration touches
-current centroids and next-particle continuation/contact bits. Placement touches
-next particles only. Finish consumes current particle/centroid bits and never
-next bits. Ordered kernel phases and tick completion synchronization protect
-this handoff. Multiple touches cannot cause repeated integration or placement
-within a phase.
+Supplied contacts require an explicit ordering detail. Their force calculation
+still uses the pre-integration positions and existing source order. Only contact
+**activity writes** move from individual integration bodies to a native
+propagation pass after all particle calculations and consumption. All actually
+moved particles already retain their own activity bit. The pass emits peer
+touches only from their stored Moving state. A newly touched sleeping peer has
+Moving=0, so even if its live bit is encountered in this propagation traversal,
+it performs no force/integration calculation and emits no further touches.
+The pass is omitted when there are no supplied contacts or stiffness is zero.
+No queue, epoch, timestamp, bank or full-particle scan is added.
 
-Publication reseeds all logical slots once. First tick, parameter/mode changes
-and republished inputs activate every live particle. A changed focal origin also
-invalidates all live particles when radial integration uses it. Stable ticks
-use a zero-length invalidation range. Focus calculation visits only explicitly
-selected focal groups. Exposed-field counts are cached during host publication.
+Centroid gating traverses the touched centroid set and consumes unqualified bits.
+Qualified centroids place once, including sleeping numerical members. Propagation
+consumes each remaining centroid bit before activating particles. There are no
+centroid activations during this centroid phase and no further particle-bit
+consumption until the next particle phase. Thus repeated touches collapse and
+later-phase activation survives, without promotion or end-of-tick clearing.
+Publication alone clears both type sets after seeding; ordinary ticks have no
+blanket finish/consume pass.
 
-Moving/PriorMoving and displacement values serve the numerical centroid gate
-and wake reporting. Begin resets them only for active particles. A mover always
-schedules its own next calculation until its full state is fixed, so a sleeping
-particle necessarily retains Moving=0. No inactive pass is needed to maintain
-that invariant. Sleeping member positions/masses remain available to full-member
-centroid reduction, independently of scheduling-bit consumption.
+Moving/PriorMoving and displacement serve centroid arithmetic and wake reporting
+only within active work. A mover retains its bit until a later calculation fixes
+its full state and clears Moving; a sleeping particle therefore has Moving=0.
+Sleeping positions/masses remain available independently of control bits.
+Whole-study publication/parameter/mode invalidation and radial-origin changes
+still activate all necessary live particles. Stable ticks use a zero-length
+invalidation range; focus visits only selected groups and exposed counts are
+cached at publication.
 
-[Native acceptance](../tests/native_activity_test.cpp) executes inactive
-traversal, 4,096 parallel duplicate touches collapsing to two entries, separate
-current/next consume/reactivate behavior and retained numerical values.
-Combined activity/workbench cases check ripple latency, one placement, carried
-motion, invalidation, sleeping-member contributions and both host paths.
-Dynamic LoD transitions remain a separate discussion.
+The fork's CHI IR compiler memory-cache key is the kernel name, so tree-bound
+kernel names still include the execution-layout SNode id. Control trees and
+pointer high-water storage live until Program teardown. Native list generation,
+mask checks, the contact propagation traversal and launches all cost work; named
+demand counters do not measure every instruction. No hardware speed or logarithmic
+bound is claimed. Dynamic LoD slopes and #151's optional viewport stay separate.
+
+[Type-phase CPU evidence](../tests/type_phase/acceptance.json) covers native
+phase entry, duplicate touches, live-bit behavior, consume/reactivate order,
+carried activity and retained member values. Contact fixtures put the source
+both below and above sleeping target indices, within/across pointer blocks,
+and check delayed response without propagation through an unmoved peer.
+Existing full-field/ripple/collective/local-frame tests and both workbench paths
+remain required. Actual GPU behavior/performance is unexecuted here.
 
 ## Combined destination and the discretization brake
 

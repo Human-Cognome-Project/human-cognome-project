@@ -24,7 +24,8 @@ a merge or review changes these statuses; other entry points link here.
 | Stage C accepted/merged | [Membership evidence](engine/docs/MEMBERSHIP-FIELDS.md), [#146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146), head `8508ee3`: contextual memberships per live occurrence, byte-owner inheritance, exact contributions and distinct field kinds through the existing kernel. 25 pure and 44 native checks pass, with CPU seeded response in all exposure profiles; existing regression suites and all nine hosted checks pass. Merged in #146 at `43f418a`. |
 | Pre-D design accepted | [Host workbench design](docs/pre-d-hot-workbench-design.md), accepted in #147; bounded adapters accepted/merged in #149. [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145) retains actual GPU transfer/pinning measurements. Broader rollups, dynamic view selection and process-failure hosting remain unbuilt. |
 | Stage D accepted/merged | [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149) accepted and merged at `867c310`, after nine green hosted checks. Its [active workbench](engine/docs/ACTIVE-WORKBENCH.md) includes separate supplied local inputs, owner/generation guards, failed-refresh invalidation, controlled restart and both host paths. The #150 revision integrates that baseline and reruns combined CPU/PostgreSQL acceptance. The #150 CPU-review prerequisite is now satisfied; actual GPU evidence remains under #145. |
-| Effective motion accepted/merged | [#150](https://github.com/Human-Cognome-Project/human-cognome-project/pull/150), revised after the #91 absolute-origin finding: subtract a supplied nearby reference in double before f32 projection; integrate and gate in local coordinates. BulkCopy and CpuDirect share activity bindings. Independent offsets 0 / `2^27` retain unit motion, continued eligibility and centroid propagation. All 17 CPU suites, 180 PostgreSQL-to-active checks and 90 Stage A regression checks pass with unchanged full cold-data hashes. [Exact rules](engine/docs/ACTIVE-FIELD-MODEL.md) and [evidence](engine/tests/activity/acceptance.json). Accepted and merged in #150 at `755bcefb8a50e1dcfe07c7da692f81da15fb78af` after eight green hosted checks, including the native CPU workflow with PostgreSQL integration. Native SNode masks now gate particle and centroid traversal, with separate current/next sets and retained sleeping payloads. Bounded local GPU validation may proceed under #145; GPU performance and pinning are not yet validated. #91 remains open for its other follow-ups. Combined-destination/brake reach remains open. |
+| Effective motion accepted/merged | [#150](https://github.com/Human-Cognome-Project/human-cognome-project/pull/150), revised after the #91 absolute-origin finding: subtract a supplied nearby reference in double before f32 projection; integrate and gate in local coordinates. BulkCopy and CpuDirect share activity bindings. Independent offsets 0 / `2^27` retain unit motion, continued eligibility and centroid propagation. All 17 CPU suites, 180 PostgreSQL-to-active checks and 90 Stage A regression checks pass with unchanged full cold-data hashes. [Exact rules](engine/docs/ACTIVE-FIELD-MODEL.md) and [evidence](engine/tests/activity/acceptance.json). Accepted and merged in #150 at `755bcefb8a50e1dcfe07c7da692f81da15fb78af` after eight green hosted checks, including the native CPU workflow with PostgreSQL integration. Native SNode masks gate particle and centroid traversal with retained sleeping payloads. #152 requests removal of its redundant particle banks under the type-defined phase contract. Bounded local GPU validation may proceed under #145; GPU performance and pinning are not yet validated. #91 remains open for its other follow-ups. Combined-destination/brake reach remains open. |
+| Type-phase correction implemented for review | [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152): one native particle set and one centroid set; no promotion or per-tick particle-bank clearing. Native cell operations replace dummy marker writes. Motion remains internal numerical state; contact activity writes follow particle consumption. All 17 CPU suites pass, including 140 activity checks on each of three configurations, 11 native phase/layout checks and 140 workbench checks; 180 PostgreSQL-to-active checks pass with unchanged cold-data hashes. [Separate evidence](engine/tests/type_phase/acceptance.json). The 70-slot fixture verifies power-of-two storage padding, both contact index directions and no stationary-peer cascade. This focused revision awaits review; #151 remains deferred. |
 | Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
 | Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
 | Deferred draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): optional read-only monitor. Its all-edge baseline and old skip-machinery hold are historical after #150. Reconcile with current reporting before revival; not a prerequisite for #151/#152 or local GPU tests. |
@@ -78,18 +79,25 @@ bounded local GPU validation under #145. This is permission to test, not a claim
 of GPU or pinning qualification. #91's remaining formula/resolution/readback work
 and dynamic LoD slopes remain open.
 
-**Native binary activity (Patrick, 2026-10-18):** [latest note](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91#issuecomment-6251177820)
-requires native SNode bitmask/active traversal as the finished gate. Centroids
-place once this tick; qualified particles calculate next tick; repeated touches
-set the same bit. The revised implementation uses native current/next particle and current
-centroid sets. Candidate/Continued scheduling arrays are removed; Moving/PriorMoving
-remain numerical/reporting history inside active traversal. Preserve
-sleeping numerical values, full-field evaluation, carried motion, invalidation
-and phase-safe reset. Diagnostics must not require inspecting inactive particles
-solely to maintain them. [Source review](engine/docs/ACTIVE-FIELD-MODEL.md#native-binary-activity)
-and executable native acceptance verify duplicate touches, traversal exclusion
-and phase-safe consumption with retained numerical values. Native metadata costs
-remain uninstrumented; CPU results do not imply a hardware speed claim.
+**Native activity by type (Patrick, 2026-10-19):** [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+clarifies one binary activity flag per calculable element. Type defines phase;
+"this/next tick" describes the flow, not a separate element scheduling state.
+Native traversal selects active particles before reading their motion state;
+particle effects activate centroids and centroid effects activate particles.
+The focused revision uses one particle set and one centroid set, with native
+SNode activation/deactivation and compiler list generation. No particle banks,
+promotion, epochs, timestamps, custom queues or loaded-array scheduler scans.
+Fixed full-state particles consume activity; changing motion retains the bit.
+Contact activity writes occur after all particle calculations/consumption,
+before centroid propagation. Preserve pre-integration contact forces and test
+sleeping targets on both sides of source indices and across pointer blocks.
+Sleeping numerical/member values remain resident. Moving/PriorMoving belongs
+to active numerical work, not a separate activity policy. See the
+[type-phase rules](engine/docs/ACTIVE-FIELD-MODEL.md#native-binary-activity).
+The CPU live-bit probe shows why peer activation during consuming traversal can
+enter that same loop. Native metadata/propagation cost remains distinct from
+numeric work and is not a hardware speed claim. #151 stays a separate optional
+viewport, to consider after this focused correction.
 
 **Focus-scoped LoD (Patrick, 2026-10-18):** [notes on #91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91#issuecomment-6251014344)
 record intended n-dimensional study anchoring, an expressed 3D neighbourhood and
@@ -146,10 +154,10 @@ separate follow-up, preserving seed identities and adding no gate on that milest
 when it calculates; one binary activity flag selects work at that phase's entry.
 Particles activate centroids for the centroid phase; centroids activate particles
 for the following particle phase. “This/next tick” describes that order, not an
-independent scheduling policy. #150's duplicate current/next particle sets are
-built implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
-requests their simplification using native traversal/consumption, with concrete
-verification of carried-motion, contact and parallel activation dependencies.
+independent scheduling policy. #150's duplicate current/next particle sets were
+implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
+is implemented for review with one native set per type, stored motion state,
+ordered contact propagation and concrete CPU phase/activation evidence above.
 
 ## Reading paths
 
