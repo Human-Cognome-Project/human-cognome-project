@@ -144,9 +144,10 @@ try {
   // failNext makes the next text() reject like a read that races the writer's rename replacement.
   const makeSrc = async target => {
     await target.evaluate(() => {
-      const s = window.__src = {text: null, mod: 1e12, reads: 0, calls: [], failNext: 0};
+      const s = window.__src = {text: null, mod: 1e12, reads: 0, calls: [], failNext: 0, throwNext: 0};
       s.getFileHandle = async name => {
         s.calls.push(performance.now());
+        if (s.throwNext > 0) { --s.throwNext; throw new DOMException('permission lapsed', 'NotAllowedError'); }
         if (name !== 'latest.json' || s.text === null) throw new DOMException('absent', 'NotFoundError');
         const text = s.text, lastModified = s.mod;
         return {getFile: async () => ({lastModified, size: new Blob([text]).size, text: async () => {
@@ -156,6 +157,7 @@ try {
     });
     return {set: value => target.evaluate(text => { window.__src.text = text; window.__src.mod += 1000; }, typeof value === 'string' ? value : JSON.stringify(value)),
       remove: () => target.evaluate(() => { window.__src.text = null; }),
+      throwNext: n => target.evaluate(count => { window.__src.throwNext = count; }, n),
       failNext: (n = 1) => target.evaluate(count => { window.__src.failNext = count; }, n),
       stats: () => target.evaluate(() => ({reads: window.__src.reads, calls: window.__src.calls.length})),
       times: () => target.evaluate(() => [...window.__src.calls]),
@@ -271,6 +273,11 @@ try {
   await src.set(noLevel1); await waitTick('15');
   check(await page.locator('#level').inputValue() === '' && await page.locator('#exposure').inputValue() === 'aggregate', 'absent level filter resets to all captured levels; other filters stay');
   await src.set(uiFixture(16)); await waitTick('16'); await page.locator('#level').selectOption('1');
+
+  // A read-stage failure that then reads back the same unchanged file clears itself (an invalid file's error would not).
+  await page.evaluate(() => { window.__sawError = false; window.__firstError = null; });
+  await src.throwNext(2); await page.waitForFunction(() => window.__sawError); await waitMode('LIVE');
+  check((await page.evaluate(() => window.__firstError.text)).includes('permission lapsed') && await page.locator('#error').isHidden() && (await state()).snapshot.capture.tick === '16', 'read error clears when the unchanged file reads again');
 
   // A different study replaces everything, like opening a new file.
   const other = structuredClone(tick8), ids = ['0123abcd-0123-4123-8123-0123456789ab', '1123abcd-0123-4123-8123-0123456789ab'];

@@ -282,8 +282,8 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
-Watch-mode checks (43 additional, 116 in all) feed the retained tick 0 and 8
-captures (114 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+Watch-mode checks (44 additional, 117 in all) feed the retained tick 0 and 8
+captures (115 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
 local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
 folder source: same-study camera/filter/selection preservation, updated values
 and per-capture colours, invalid/unsupported/missing files with recovery,

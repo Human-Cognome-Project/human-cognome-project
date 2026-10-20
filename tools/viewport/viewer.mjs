@@ -163,15 +163,16 @@ function schedule(w) { clearTimeout(w.timer); w.timer = setTimeout(() => poll(w)
 async function poll(w) {
   if (watch !== w || w.paused || w.busy) return;
   w.busy = true; ++w.checks; w.checkedAt = Date.now();
+  let stamped = false;
   try {
     let file;
     try { file = await (await w.src.getFileHandle('latest.json')).getFile(); w.missing = false; }
-    catch (e) { if (e?.name !== 'NotFoundError') throw e; w.missing = true; w.error = null; w.stamp = null; if (watch === w) error(); return; }
+    catch (e) { if (e?.name !== 'NotFoundError') throw e; w.missing = true; w.error = null; w.stamp = null; w.racing = 0; if (watch === w) error(); return; }
     if (fileStamp(file) === w.stamp) { w.racing = 0; return; }
     const text = await file.text();
     w.racing = 0;
     if (watch !== w || w.paused) return;
-    w.stamp = fileStamp(file);
+    w.stamp = fileStamp(file); stamped = true;
     const start = performance.now(), next = parseSnapshot(text), elapsed = performance.now() - start;
     if (!renderer) throw new Error('WebGL renderer is unavailable.');
     // The displayed capture is the baseline, so a (re)started watch of the same session and study keeps the person's frame.
@@ -180,8 +181,11 @@ async function poll(w) {
     if (kind !== 'same' || !w.last) { w.last = snapshot; w.changedAt = Date.now(); ++w.applied; }
     w.error = null; error();
   } catch (e) {
-    // A read that races the writer's replacement can fail transiently; w.stamp stays unset so the next check retries.
+    // A failed read forgets the stamp so the next check re-reads (and clears the error if the file is unchanged);
+    // a parse failure keeps it, so an invalid file stays reported without being re-parsed.
+    // A read that races the writer's replacement can fail transiently and is retried.
     // Three consecutive such failures stay silent; the fourth is reported like any read error.
+    if (!stamped) w.stamp = null;
     if (e?.name === 'NotReadableError' && ++w.racing <= 3) return;
     if (watch === w) {
       w.error = e.message;
@@ -208,7 +212,7 @@ $('interval').addEventListener('change', () => {
 });
 $('pause').addEventListener('click', () => {
   if (!watch) return;
-  watch.paused = !watch.paused; clearTimeout(watch.timer);
+  watch.paused = !watch.paused; watch.racing = 0; clearTimeout(watch.timer);
   if (!watch.paused) poll(watch); else ui();
 });
 $('stop').addEventListener('click', stopWatch);
