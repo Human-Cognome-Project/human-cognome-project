@@ -65,7 +65,7 @@ same spatial frame to watch whether a coherent pattern forms.
   for that tab only; Chromium refuses a few system folders, so pick a dedicated
   capture directory. Each check looks `latest.json` up by name again, so
   a replacement file written by rename is always read whole (a read that races
-  a replacement is retried at the next check). No server or
+  a replacement is retried at the next check, and reported only after four consecutive failures). No server or
   network is involved and the page cannot write to the folder. Where the API
   is absent (for example Firefox), the control is disabled with an explanation;
   **Open snapshot** still works and no browser policy is changed.
@@ -282,8 +282,8 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
-Watch-mode checks (41 additional, 114 in all) feed the retained tick 0 and 8
-captures (112 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+Watch-mode checks (43 additional, 116 in all) feed the retained tick 0 and 8
+captures (114 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
 local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
 folder source: same-study camera/filter/selection preservation, updated values
 and per-capture colours, invalid/unsupported/missing files with recovery,

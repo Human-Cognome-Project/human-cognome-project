@@ -156,7 +156,7 @@ try {
     });
     return {set: value => target.evaluate(text => { window.__src.text = text; window.__src.mod += 1000; }, typeof value === 'string' ? value : JSON.stringify(value)),
       remove: () => target.evaluate(() => { window.__src.text = null; }),
-      failNext: () => target.evaluate(() => { window.__src.failNext = 1; }),
+      failNext: (n = 1) => target.evaluate(count => { window.__src.failNext = count; }, n),
       stats: () => target.evaluate(() => ({reads: window.__src.reads, calls: window.__src.calls.length})),
       times: () => target.evaluate(() => [...window.__src.calls]),
       watch: name => target.evaluate(n => window.HCPViewport.watchWith(window.__src, n), name)};
@@ -250,12 +250,21 @@ try {
 
   // A read that races a replacement (NotReadableError) is transient: no error is shown and the next check retries.
   await page.evaluate(() => {
-    window.__sawError = false;
-    new MutationObserver(() => { if (document.getElementById('mode').textContent === 'ERROR' || !document.getElementById('error').hidden) window.__sawError = true; })
-      .observe(document.body, {subtree: true, childList: true, characterData: true, attributes: true});
+    window.__sawError = false; window.__firstError = null;
+    new MutationObserver(() => {
+      if (document.getElementById('mode').textContent !== 'ERROR' && document.getElementById('error').hidden) return;
+      window.__sawError = true; window.__firstError ??= {remaining: window.__src.failNext, text: document.getElementById('error').textContent};
+    }).observe(document.body, {subtree: true, childList: true, characterData: true, attributes: true});
   });
   const racing = await src.stats(); await src.failNext(); await src.set(uiFixture(13)); await waitTick('13'); await sleep(300);
   check(!(await page.evaluate(() => window.__sawError)) && (await page.evaluate(() => window.__src.failNext)) === 0 && (await src.stats()).reads === racing.reads + 1 && (await watchInfo()).error === null, 'transient NotReadableError shows no error and is retried at the next check');
+
+  // The fourth consecutive failure is reported, keeps the prior capture and polling, and a success clears it.
+  await page.evaluate(() => { window.__sawError = false; window.__firstError = null; });
+  await src.failNext(4); await src.set(uiFixture(14)); await waitTick('14'); await waitMode('LIVE');
+  const firstError = await page.evaluate(() => window.__firstError);
+  check(firstError?.remaining === 0 && firstError.text.includes('Capture at tick 13 remains displayed') && firstError.text.includes('Still watching'), 'fourth consecutive NotReadableError shows the read error with the prior capture retained');
+  check(await page.locator('#error').isHidden() && (await watchInfo()).error === null, 'a following successful read clears the error');
 
   // A level filter whose level is absent from the new capture resets to all levels.
   const noLevel1 = uiFixture(15); noLevel1.particles = noLevel1.particles.filter(p => p.level !== 1);

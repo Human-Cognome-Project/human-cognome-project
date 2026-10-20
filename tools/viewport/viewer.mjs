@@ -167,8 +167,9 @@ async function poll(w) {
     let file;
     try { file = await (await w.src.getFileHandle('latest.json')).getFile(); w.missing = false; }
     catch (e) { if (e?.name !== 'NotFoundError') throw e; w.missing = true; w.error = null; w.stamp = null; if (watch === w) error(); return; }
-    if (fileStamp(file) === w.stamp) return;
+    if (fileStamp(file) === w.stamp) { w.racing = 0; return; }
     const text = await file.text();
+    w.racing = 0;
     if (watch !== w || w.paused) return;
     w.stamp = fileStamp(file);
     const start = performance.now(), next = parseSnapshot(text), elapsed = performance.now() - start;
@@ -180,7 +181,8 @@ async function poll(w) {
     w.error = null; error();
   } catch (e) {
     // A read that races the writer's replacement can fail transiently; w.stamp stays unset so the next check retries.
-    if (e?.name === 'NotReadableError') return;
+    // Three consecutive such failures stay silent; the fourth is reported like any read error.
+    if (e?.name === 'NotReadableError' && ++w.racing <= 3) return;
     if (watch === w) {
       w.error = e.message;
       error(`Could not read latest.json: ${e.message}${w.last ? ` Capture at tick ${w.last.capture.tick} remains displayed.` : snapshot ? ' Previous capture remains displayed.' : ''} Still watching.`);
@@ -194,7 +196,7 @@ function stopWatch() {
 // source: anything with getFileHandle(name) -> {getFile()}; the picker's directory handle in normal use.
 function startWatch(source, name) {
   stopWatch(); ticker = setInterval(ui, 1000);
-  const w = watch = {src: source, name, interval: pollInterval($('interval').value), paused: false, busy: false, timer: 0,
+  const w = watch = {src: source, name, interval: pollInterval($('interval').value), paused: false, busy: false, racing: 0, timer: 0,
     stamp: null, last: null, checks: 0, applied: 0, changedAt: 0, checkedAt: 0, missing: false, error: null};
   error(); ui(); poll(w);
 }
