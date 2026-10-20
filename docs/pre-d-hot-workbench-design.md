@@ -1,5 +1,39 @@
 # Pre-D design: host workbench and native execution handoff
 
+## Allocation foundation correction — 2026-10-20
+
+Patrick clarified that available **potential particle capacity**, **present
+objects**, and **awake calculation work** are distinct. In earlier GPU estimates,
+“active particles” means present objects, not just elements selected by the
+per-phase binary activity gate. Sleeping objects retain presence, mass and field
+participation; unused potential capacity contributes none.
+
+The intended SNode structure under `ti.root` defines available object space.
+Its live configuration expresses the representation. Ordinary stream admission
+claims/redeclares prepared capacity; it must not require a new study, backing
+allocation or compilation for each arrival. Prepare supporting field, relationship,
+contact and activity capacity too. Capacity exhaustion/expansion is a separate
+resource operation. Native sparse address capacity alone does not establish
+allocation-free first use: inspect the fork's backing/activation behaviour and
+measure setup, first touch and ordinary admission separately.
+
+Slot/index topology does not prescribe physical coordinates. Space acquires
+relevant coordinates through field interactions between structures. Once focus
+exists, the engine inserts newcomers at its nearest unoccupied space; it preserves
+the current state of existing objects. The same foundation must support LoD
+representation changes within prepared capacity, with primary scale and 1:1
+compression kept distinct. Initial relational instantiation and detailed view
+selection remain under discussion.
+
+This supersedes fixed-study/equal-count and caller-placement assumptions as
+production requirements. They describe built bounded fixtures only. The correction
+is **required, not yet implemented**. See [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
+for source findings and acceptance: stream into unused capacity while ticking,
+distinguish potential/present/awake counts, and verify no backing allocation or
+recompilation in normal admission. Use native Taichi facilities before custom
+allocation or traversal machinery.
+
+
 **Current status (2026-10-19):** design accepted in #147; bounded D released
 in #148 and accepted/merged in #149. #150's combined native activity/focal CPU
 review is complete; #152 requests type-phase simplification. GPU/pinning
