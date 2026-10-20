@@ -23,6 +23,8 @@ struct Options {
   std::uint64_t ticks{8};
   double dt{0.1};
   int cpu_threads{1};
+  std::uint64_t every{0};     // 0: only tick 0 and the final tick
+  std::uint64_t pace_ms{0};   // minimum wall-clock gap between captures
 };
 inline const char *usage() {
   return "usage: viewport_letter_capture OUTPUT_DIRECTORY [options]\n"
@@ -30,8 +32,15 @@ inline const char *usage() {
     "  --ticks N           total completed ticks, N >= 1 (default 8)\n"
     "  --dt X              finite tick length > 0 (default 0.1)\n"
     "  --cpu-threads N     CPU worker threads, N >= 1 (default 1; used by the cpu backend)\n"
+    "  --every K           also capture every K completed ticks, K >= 1 (default: tick 0 and the final tick only)\n"
+    "  --pace-ms M         minimum wall-clock ms between captures, M >= 0 (default 0; does not change the simulation)\n"
+    "SIGINT/SIGTERM stop after the current tick with a final capture and exit 0.\n"
     "HCP_WARM_TEST_CONNINFO: fresh warm DB with schema.sql; "
     "HCP_CORE_TEST_CONNINFO/HCP_LING_TEST_CONNINFO: retained read-only sources\n";
+}
+// Capture schedule: tick 0, every K completed ticks (when set) and the final tick.
+inline bool captures_at(std::uint64_t tick, const Options &o) {
+  return tick == 0 || tick == o.ticks || (o.every && tick % o.every == 0);
 }
 // Whole-string unsigned decimal in [lo, hi]; no sign, space or suffix.
 inline std::uint64_t parse_count(const std::string &name, const std::string &text,
@@ -82,6 +91,8 @@ inline Options parse_options(const std::vector<std::string> &args) {
     } else if (name == "--ticks") o.ticks = parse_count(name, value, 1, UINT64_MAX);
     else if (name == "--dt") o.dt = parse_positive(name, value);
     else if (name == "--cpu-threads") o.cpu_threads = int(parse_count(name, value, 1, 4096));
+    else if (name == "--every") o.every = parse_count(name, value, 1, UINT64_MAX);
+    else if (name == "--pace-ms") o.pace_ms = parse_count(name, value, 0, 86400000);
     else throw UsageError("unknown option: '" + name + "'");
   }
   return o;

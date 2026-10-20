@@ -32,6 +32,27 @@ int main() {
     check(viewport::parse_options({"out", "--dt", "1e-3"}).dt == 1e-3 && viewport::parse_options({"out", "--dt", ".5"}).dt == 0.5 && viewport::parse_options({"out", "--dt", "3.4e38"}).dt == 3.4e38, "exponent and leading-point dt");
     for (const char *bad : {"0", "-2", "1.0", "5000", "x"})
       check(rejected({"out", "--cpu-threads", bad}), "invalid cpu threads");
+    check(d.every == 0 && d.pace_ms == 0, "live options default off");
+    const auto l = viewport::parse_options({"out", "--every=10", "--pace-ms", "250"});
+    check(l.every == 10 && l.pace_ms == 250, "live options");
+    check(viewport::parse_options({"out", "--pace-ms", "0"}).pace_ms == 0, "zero pace");
+    for (const char *bad : {"0", "-1", "1.5", "", "x"})
+      check(rejected({"out", "--every", bad}), "invalid every");
+    for (const char *bad : {"-1", "1.5", "", "x", "86400001"})
+      check(rejected({"out", "--pace-ms", bad}), "invalid pace");
+    auto schedule = [](const viewport::Options &s) {
+      std::vector<std::uint64_t> at;
+      for (std::uint64_t t = 0; t <= s.ticks; ++t) if (viewport::captures_at(t, s)) at.push_back(t);
+      return at;
+    };
+    check(schedule(d) == std::vector<std::uint64_t>({0, 8}), "default schedule: tick 0 and final");
+    auto s = d;
+    s.every = 3;
+    check(schedule(s) == std::vector<std::uint64_t>({0, 3, 6, 8}), "every K plus final");
+    s.every = 4;
+    check(schedule(s) == std::vector<std::uint64_t>({0, 4, 8}), "final on a multiple is not repeated");
+    s.every = 100;
+    check(schedule(s) == std::vector<std::uint64_t>({0, 8}), "every beyond ticks");
     check(rejected({"out", "--ticks", "2", "--ticks", "3"}), "repeated option");
     check(rejected({"out", "--ticks"}), "missing value");
     std::cout << checks << " viewport option checks passed\n";

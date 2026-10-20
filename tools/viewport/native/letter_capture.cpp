@@ -1,12 +1,18 @@
 #include "capture_options.h"
 #include "snapshot.h"
 
+#include <signal.h>
+
+#include <algorithm>
 #include <chrono>
+#include <csignal>
 #include <cstdlib>
 #include <filesystem>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <optional>
+#include <thread>
 
 #include "shared_manager.h"
 
@@ -20,6 +26,24 @@ std::string env(const char *name) {
   if (!v || !*v) throw std::invalid_argument(std::string("missing ") + name);
   return v;
 }
+// Signals only set this flag (async-signal-safe); the capture loop acts on it between ticks.
+volatile std::sig_atomic_t stop_flag = 0;
+void on_signal(int) { stop_flag = 1; }
+bool stop_requested() { return stop_flag != 0; }
+void install_stop_handlers() {
+  struct sigaction action {};
+  action.sa_handler = on_signal;
+  action.sa_flags = SA_RESETHAND;  // A second signal takes the default action: a stuck run stays killable.
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGINT, &action, nullptr);
+  sigaction(SIGTERM, &action, nullptr);
+}
+// Releases the owned warm pin when still held, ignoring errors; release() is the checked success path.
+struct Pin {
+  std::function<void()> release_fn;
+  ~Pin() { try { if (release_fn) release_fn(); } catch (...) {} }
+  void release() { auto f = std::move(release_fn); release_fn = nullptr; f(); }
+};
 warm::ObjectKey object(const std::string &s) {
   const auto address = codec::decode_token_id(s);
   if (!address) throw std::invalid_argument("invalid fixture address");
@@ -119,17 +143,31 @@ int main(int argc, char **argv) {
     const auto ticket = manager.publish(recipe);
     const auto consumer = new_uuid();
     const auto pinned = manager.acquire(ticket, consumer);
+    Pin pin{[&] { manager.release(ticket, consumer); }};  // Released on every exit path.
+    // Handlers go in back to back with the guard: from here a signal is only noted, so a signal
+    // during submit lets setup finish, then stops after the tick-0 capture with the pin released.
+    // Before this point the default action stays (nothing is held yet).
+    install_stop_handlers();
     auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)
       .focus({{GroupKind::SiblingDefinition, key(english.object)}});
     field::Parameters parameters;
     parameters.dt = float(options.dt);
     const auto handle = session.submit(logical, parameters);
-    viewport::Json evidence{{"backend", settings.cuda ? "native_cuda" : "native_cpu"}, {"ticks", options.ticks},
-      {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)}, {"source_calls", manager.activity().source_calls}};
-    for (std::uint64_t tick = 0; tick <= options.ticks; ++tick) {
-      if (tick) session.tick(handle, parameters);
-      if (tick != 0 && tick != options.ticks) continue;
-      auto ctx = viewport::context(logical, handle, tick, "Retained English/French/Dutch letter study");
+    viewport::Json evidence{{"backend", settings.cuda ? "native_cuda" : "native_cpu"}, {"requested_ticks", options.ticks},
+      {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)},
+      {"every", options.every ? viewport::Json(options.every) : viewport::Json()}, {"pace_ms", options.pace_ms},
+      {"source_calls", manager.activity().source_calls}};
+    std::uint64_t completed = 0, count = 0;
+    viewport::Json first, last;  // Evidence keeps only the first and last captures: bounded for long runs.
+    std::optional<Clock::time_point> previous;
+    // Returns true when this capture is the last: ticks done, or a stop signal seen (also while pacing).
+    const auto capture = [&](bool final) {
+      if (previous && options.pace_ms)
+        for (const auto due = *previous + std::chrono::milliseconds(options.pace_ms);
+             !stop_requested() && Clock::now() < due;)
+          std::this_thread::sleep_for(std::min<Clock::duration>(due - Clock::now(), std::chrono::milliseconds(20)));
+      final = final || stop_requested();
+      auto ctx = viewport::context(logical, handle, completed, "Retained English/French/Dutch letter study");
       ctx.source = {{"kind", "retained_cold_to_warm_to_active"},
         {"core_export_sha256", "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121"},
         {"linguistics_export_sha256", "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296"},
@@ -140,13 +178,32 @@ int main(int argc, char **argv) {
       const auto report = session.report(handle, owner);
       const auto report_ms = ms(report_start);
       const auto start = Clock::now();
+      // One coherent value (one study, generation and tick) is written to every file of this capture.
       const auto value = viewport::snapshot(report, ctx);
-      const auto path = std::filesystem::path(options.output) / (tick == 0 ? "letter-study-tick0.json" : "letter-study.json");
-      viewport::write(path.string(), value);
-      evidence["captures"].push_back({{"tick", tick}, {"particles", value["particles"].size()},
-        {"report_ms", report_ms}, {"export_ms", ms(start)}, {"bytes", std::filesystem::file_size(path)}});
+      const std::filesystem::path out(options.output);
+      std::filesystem::path written;
+      if (completed == 0) viewport::write_atomic((written = out / "letter-study-tick0.json").string(), value);
+      if (final) viewport::write_atomic((written = out / "letter-study.json").string(), value);
+      // latest.json only for a watched run (--every); otherwise the files are the fixed two.
+      if (options.every) viewport::write_atomic((written = out / "latest.json").string(), value);
+      last = {{"tick", completed}, {"particles", value["particles"].size()},
+        {"report_ms", report_ms}, {"export_ms", ms(start)}, {"bytes", std::filesystem::file_size(written)}};
+      if (!count++) first = last;
+      previous = Clock::now();
+      return final;
+    };
+    bool final = capture(false);  // Tick 0 (already final if stopped before the first tick).
+    while (!final) {
+      session.tick(handle, parameters);
+      ++completed;
+      final = completed == options.ticks || stop_requested();
+      if (final || viewport::captures_at(completed, options)) final = capture(final);
     }
-    manager.release(ticket, consumer);
+    pin.release();
+    evidence["ticks"] = completed;
+    evidence["stopped_by_signal"] = completed < options.ticks;
+    evidence["capture_count"] = count;
+    evidence["captures"] = count > 1 ? viewport::Json::array({first, last}) : viewport::Json::array({last});
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
   } catch (const std::exception &e) {

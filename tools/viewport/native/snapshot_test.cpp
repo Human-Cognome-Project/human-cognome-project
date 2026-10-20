@@ -1,7 +1,14 @@
 #include "snapshot.h"
 
+#include <unistd.h>
+
+#include <atomic>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <limits>
+#include <thread>
 
 #include "membership_fixture.h"
 
@@ -112,6 +119,56 @@ int main() {
     rejects([&] { viewport::capture(session, logical.owner(), viewport::context(logical, h, 1, "old")); }, "refreshed native generation rejects old capture");
     const auto fresh = viewport::capture(session, logical.owner(), viewport::context(revised, refreshed, 0, "new"));
     check(fresh["capture"]["tick"] == "0" && fresh["frame"]["camera_target"][0] == 4, "refreshed generation gets seeded focus and new capture counter");
+    // Atomic latest-file writer: exact final content, no temporary left, never a partial read.
+    namespace fs = std::filesystem;
+    const fs::path dir = fs::temp_directory_path() / ("hcp-viewport-atomic-" + std::to_string(getpid()));
+    struct Cleanup {  // Removes the directory even when a check throws.
+      fs::path path;
+      ~Cleanup() { std::error_code ignored; fs::remove_all(path, ignored); }
+    } cleanup{dir};
+    fs::remove_all(dir);
+    fs::create_directories(dir);
+    const auto latest = (dir / "latest.json").string();
+    auto entries = [&] { std::vector<std::string> n; for (const auto &e : fs::directory_iterator(dir)) n.push_back(e.path().filename()); return n; };
+    auto slurp = [](const std::string &p) { std::ifstream in(p, std::ios::binary); return std::string(std::istreambuf_iterator<char>(in), {}); };
+    auto make_doc = [](int generation) {
+      Json v{{"generation", generation}, {"cells", Json::array()}};
+      for (int i = 0; i < 4000; ++i) v["cells"].push_back({{"g", generation}, {"i", i}, {"text", "é\"\n\\"}});
+      return v;
+    };
+    viewport::write_atomic(latest, make_doc(1));
+    check(entries() == std::vector<std::string>({"latest.json"}), "first atomic write leaves only the target");
+    check(slurp(latest) == make_doc(1).dump(2) + "\n", "exact atomic content");
+    viewport::write_atomic(latest, make_doc(2));
+    check(entries() == std::vector<std::string>({"latest.json"}) && Json::parse(slurp(latest)) == make_doc(2), "replacement leaves only the final content");
+    std::atomic<bool> done{false};
+    std::atomic<int> reads{0}, torn{0};
+    const Json doc_a = make_doc(3), doc_b = make_doc(4), doc_c = make_doc(2);
+    std::thread reader([&] {
+      while (!done) {
+        const auto text = slurp(latest);
+        if (text.empty()) { ++torn; continue; }
+        const auto v = Json::parse(text, nullptr, false);
+        if (v.is_discarded() || (v != doc_a && v != doc_b && v != doc_c)) ++torn;
+        ++reads;
+      }
+    });
+    struct Join {  // A throwing write must not leave a joinable thread behind.
+      std::atomic<bool> &stop;
+      std::thread &thread;
+      ~Join() { stop = true; if (thread.joinable()) thread.join(); }
+    } join{done, reader};
+    for (int i = 0; i < 150; ++i) viewport::write_atomic(latest, i % 2 ? doc_a : doc_b);
+    done = true;
+    reader.join();
+    check(reads > 0 && torn == 0, "concurrent reader never observes partial content");
+    check(entries() == std::vector<std::string>({"latest.json"}), "no temporary after repeated writes");
+    fs::remove(latest);
+    fs::create_directory(latest);  // A directory target makes the rename fail.
+    rejects([&] { viewport::write_atomic(latest, doc_a); }, "failed rename reported");
+    check(entries() == std::vector<std::string>({"latest.json"}), "failed write removes its temporary");
+    rejects([&] { viewport::write_atomic((dir / "missing" / "latest.json").string(), doc_a); }, "missing directory reported");
+    fs::remove_all(dir);
     std::cout << checks << " viewport snapshot checks passed\n";
     return 0;
   } catch (const std::exception &e) {

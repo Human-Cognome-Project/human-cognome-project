@@ -124,12 +124,48 @@ capture is the fixed 8-tick CPU run and file names above.
 | `--ticks N` | Total completed ticks, N >= 1 (default 8). |
 | `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
 | `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
+| `--every K` | Also capture every K completed ticks, K >= 1. Absent: tick 0 and the final tick only. |
+| `--pace-ms M` | Minimum wall-clock milliseconds between successive captures, M >= 0 (default 0). The client sleeps before a capture if needed so a small study is watchable. The simulation is unchanged: same ticks and `dt`. |
 
-`tick0` and the final tick are written as `letter-study-tick0.json` and
-`letter-study.json`. `native-evidence.json` records the backend actually passed
-to the engine (`native_cpu` or `native_cuda`), `ticks`, `dt` and `cpu_threads`
-beside its existing keys. A CUDA run is functional execution only: it is not a
-GPU performance or pinning qualification (#145).
+`--ticks` stays finite but may be large. Tick 0 is written as
+`letter-study-tick0.json` and the final tick as `letter-study.json`. **With
+`--every`**, every capture, including those two, is also written to
+`latest.json`, so a watcher can follow one fixed path; without it no
+`latest.json` is written and the output files are exactly the fixed set. With
+`--every`, the evidence's `export_ms` includes that extra `latest.json` write.
+Intermediate `--every` captures are not kept as separate files; each is
+replaced by the next. Each file is one coherent capture (one study, generation
+and tick) taken between ticks. Files are written to a hidden, uniquely named
+temporary in the same directory, closed, then renamed over the target, so a
+reader sees the previous or the new complete file and never a partial one. The
+rename gives reader atomicity, not crash durability (no `fsync`). One writer per
+output directory is the supported use: a concurrent second writer leaves the
+final content undefined, though readers still never see a torn file.
+
+`SIGINT` or `SIGTERM` only sets a flag. The handlers are installed immediately
+after the warm pin is acquired, together with the pin's release guard. A signal
+during the later engine setup is noted: setup finishes, the tick-0 capture is
+written as the final capture and the run exits 0 with the pin released. A signal
+before the pin is acquired (including a hung database connection), or a second
+signal of the same kind, takes the default action and ends the process
+immediately without releasing the pin or writing evidence. A launcher that
+starts the client with `SIGINT` ignored (for example `&` from a non-interactive
+shell) makes a setup-phase `SIGINT` a no-op; `SIGTERM` is unaffected. In the
+loop, the client finishes the current tick (or ends a pacing sleep early), writes
+a final capture with the actual completed tick count to `letter-study.json` (and
+`latest.json` with `--every`), releases its warm pin, writes `native-evidence.json`
+and exits 0. The pin is also released if the run fails after acquiring it.
+The Docker helper copies its output only when the client exits and does not
+forward signals; use a finite `--ticks` there.
+
+`native-evidence.json` records the backend actually passed to the engine
+(`native_cpu` or `native_cuda`), `dt`, `cpu_threads`, `every` (null when absent),
+`pace_ms`, `requested_ticks`, completed `ticks`, `stopped_by_signal` (the run
+ended before the requested ticks) and `capture_count`. To stay bounded in long
+runs, `captures` holds only the first and last captures (one entry when there
+was only one), each with tick, particles, bytes and report/export milliseconds.
+A CUDA run is functional execution only: it is not a GPU performance or pinning
+qualification (#145).
 
 For an existing owned Linux PostgreSQL Docker container, this helper packages
 the matched executable/runtime and creates a new warm fixture itself:

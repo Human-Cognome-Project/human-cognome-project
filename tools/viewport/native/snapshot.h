@@ -29,4 +29,7 @@ Json snapshot(const assembly::ActiveReport &report, const CaptureContext &captur
 Json capture(assembly::ActiveSession &session, const warm::Uuid &owner,
              const CaptureContext &context);
 void write(const std::string &path, const Json &snapshot);
+// Readers of a watched path never see a partial file: the content is written to a
+// hidden, uniquely named temporary in the same directory, closed, then renamed over the target.
+void write_atomic(const std::string &path, const Json &snapshot);
 }  // namespace viewport
