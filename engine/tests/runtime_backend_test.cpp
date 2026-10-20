@@ -30,6 +30,8 @@ int main(int argc, char **argv) {
     CHECK_TRUE(setenv("TI_ENABLE_CUDA", "0", 1) == 0, "CUDA driver API disabled");
   } else if (mode == "--no-device") {
     CHECK_TRUE(engine::set_visible_cuda_devices(""), "CUDA visibility set before CUDA starts");
+    CHECK_TRUE(!engine::cuda_available() && engine::visible_cuda_devices().empty(),
+               "no visible device: probes report none instead of aborting");
   } else if (!engine::cuda_available() || engine::visible_cuda_devices().empty()) {
     harness::note("no visible CUDA device: real-device case skipped");
     return 0;

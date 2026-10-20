@@ -22,13 +22,14 @@ double to_gib(std::size_t bytes) {
 
 [[noreturn]] void usage(int code) {
   std::printf(
-      "usage: engine_devices [--visible LIST] [--cpu-only]\n"
+      "usage: engine_devices [--visible LIST] [--cpu-only] [--require-cuda]\n"
       "                      [--snode-capacity N] [--tree-capacity N]\n"
       "                      [--device-memory-gb F] [--cells N]\n"
       "                      [--trees N] [--leaves N] [--tree-cells N]\n"
       "                      [--arith-cells N] [--arith-rounds N]\n"
       "  --visible selects which physical devices the process sees, before\n"
-      "  CUDA starts; the engine then binds visible ordinal 0.\n");
+      "  CUDA starts; the engine then binds visible ordinal 0.\n"
+      "  --require-cuda exits non-zero when no usable CUDA device is visible.\n");
   std::exit(code);
 }
 
@@ -135,6 +136,7 @@ ArithTiming time_arithmetic(engine::Runtime &runtime,
 int main(int argc, char **argv) {
   std::string visible;
   bool cpu_only = false;
+  bool require_cuda = false;
   int cells = 0;
   int trees = 0;
   int leaves = 4;
@@ -161,6 +163,8 @@ int main(int argc, char **argv) {
       cells = std::atoi(value_of(argc, argv, i));
     } else if (!std::strcmp(arg, "--cpu-only")) {
       cpu_only = true;
+    } else if (!std::strcmp(arg, "--require-cuda")) {
+      require_cuda = true;
     } else if (!std::strcmp(arg, "--snode-capacity")) {
       settings.snode_capacity = std::atoi(value_of(argc, argv, i));
     } else if (!std::strcmp(arg, "--tree-capacity")) {
@@ -186,7 +190,11 @@ int main(int argc, char **argv) {
               to_gib(host.total_memory_bytes));
 
   if (!engine::cuda_available()) {
-    std::printf("cuda: unavailable on this host\n");
+    std::printf("cuda: no visible CUDA device (or no CUDA driver) on this host\n");
+    if (require_cuda) {
+      std::fprintf(stderr, "--require-cuda: no usable CUDA device is visible\n");
+      return 1;
+    }
   } else {
     for (const engine::CudaDevice &device : engine::visible_cuda_devices()) {
       std::printf("cuda device %d: %s, compute capability %d.%d%s\n",
