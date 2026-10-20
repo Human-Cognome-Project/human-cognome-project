@@ -2,6 +2,26 @@
 
 This file is the operational entry point for AI coding/review agents working on HCP.
 
+## Placement correction — 2026-10-20
+
+**Immediate governing correction:** [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
+audits accepted A–D and current engine code, not just open proposals. New objects
+are inserted by the engine at the **nearest unoccupied space to the current
+centre of focus**, respecting extents and occupied space. Subsequent relative
+motion follows the model's mass and field mechanics. Structural definitions and
+warm recipes must not require caller-prescribed positions or velocities.
+Current mutable state belongs to Taichi execution under engine protocols;
+staging/readback/report copies are not independent placement authorities.
+
+**Not implemented yet:** current warm records, projection requests and publication
+still require supplied initial state; refresh reloads it and restart reconstructs
+it. Their earlier acceptance is bounded fixture evidence, not authority to carry
+that production requirement forward. #156 lists the exact code, schema, lifecycle,
+extent/contact, documentation and acceptance corrections. Preserve existing data,
+native activity, coordinate precision and owner/private boundaries. Distinguish
+new insertion from survivor updates and coordinate rebasing. Do not replace the
+settled insertion rule with random starts, a lattice or a semantic heuristic.
+
 ## Current state
 
 Last checked: **2026-10-20**.
