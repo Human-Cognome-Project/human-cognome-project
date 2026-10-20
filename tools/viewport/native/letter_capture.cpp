@@ -41,6 +41,10 @@ int main(int argc, char **argv) {
     }
     using namespace warm;
     using namespace assembly;
+    // From here (argument parsing is over) a first SIGINT/SIGTERM is only noted, with no masking,
+    // so a hung start-up or stalled acquire still ends on a second signal. Setup and the current
+    // tick finish, then the final capture, release and exit 0.
+    viewport::install_stop_handlers();
     std::filesystem::create_directories(options.output);
     engine::InstanceSettings settings;
     settings.cuda = options.cuda;
@@ -51,11 +55,6 @@ int main(int argc, char **argv) {
     // failure: no CPU fallback.
     std::unique_ptr<ActiveSession> started;
     try {
-      // Signals blocked while the engine may start threads: they inherit the mask, so a later
-      // process-directed signal is only ever delivered to this thread, whose mask is controlled
-      // around the lease boundary. A signal that arrives meanwhile (nothing is held yet) is
-      // delivered on unblocking with the default action.
-      viewport::SignalBlock engine_threads_inherit_block;
       started = std::make_unique<ActiveSession>(settings);
     } catch (const std::exception &e) {
       std::cerr << "viewport letter capture failed: engine startup: " << e.what() << '\n';
@@ -135,10 +134,10 @@ int main(int argc, char **argv) {
     const auto recipe = normalize_letters(definitions, requests);
     const auto ticket = manager.publish(recipe);
     const auto consumer = new_uuid();
-    // acquire commits the persistent lease before it returns, so signals stay blocked from before
-    // it runs until the release guard exists and the handlers are installed. A signal in that
-    // window is then delivered to the graceful handler: setup finishes, the tick-0 capture is the
-    // final capture and the pin is released. Before the acquire the default action stays.
+    // acquire commits the persistent lease before it returns. The handlers are already installed,
+    // so a first signal anywhere in that window only sets the flag; the guard is built as soon as
+    // acquire returns, setup finishes, the tick-0 capture is the final capture and the pin is
+    // released.
     auto [pinned, pin] = viewport::acquire_guarded(
       [&] { return manager.acquire(ticket, consumer); }, [&] { manager.release(ticket, consumer); });
     auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)

@@ -1,10 +1,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <atomic>
 #include <iostream>
 #include <stdexcept>
-#include <thread>
+#include <string>
 
 #include "signal_guard.h"
 
@@ -13,11 +12,6 @@ int checks = 0;
 void check(bool ok, const char *label) {
   ++checks;
   if (!ok) throw std::runtime_error(label);
-}
-bool blocked_here(int signo) {
-  sigset_t mask;
-  pthread_sigmask(SIG_BLOCK, nullptr, &mask);
-  return sigismember(&mask, signo) == 1;
 }
 // Runs body in a child process; returns the raw wait status.
 template <class F> int in_child(F body) {
@@ -35,65 +29,71 @@ template <class F> int in_child(F body) {
 int main() {
   try {
     using namespace viewport;
-    // The boundary itself: acquire commits, then a signal arrives before the guard and the handlers
-    // exist. Without the block the default action ends the process and nothing is released.
+    // Control: without the handlers a signal after the lease commit ends the process at once,
+    // running no destructor and so releasing nothing.
     const int unprotected = in_child([] {
-      struct Release { ~Release() { _exit(5); } } would_release;  // Never runs on the default action.
+      struct Release { ~Release() { _exit(5); } } would_release;
       raise(SIGINT);  // The lease was committed just before this point.
       return 0;
     });
     check(WIFSIGNALED(unprotected) && WTERMSIG(unprotected) == SIGINT,
-          "control: an unprotected signal after the commit terminates the process without releasing");
-    // With acquire_guarded the same interleaving is deferred, then handled gracefully.
+          "control: an unhandled signal after the commit terminates the process without releasing");
+    // With the handlers installed first, the same interleaving only sets the flag.
+    for (const int signo : {SIGINT, SIGTERM}) {
+      const int status = in_child([signo] {
+        install_stop_handlers();
+        int released = 0;
+        {
+          auto guarded = acquire_guarded([&] { raise(signo); return 7; }, [&] { ++released; });
+          if (guarded.first != 7) return 10;
+          if (!stop_requested()) return 11;  // Noted, not fatal.
+          if (released) return 12;           // Held until the run finishes.
+        }                                    // Guard destroyed: release runs.
+        return released == 1 ? 0 : 13;
+      });
+      check(status == 0, signo == SIGINT ? "SIGINT after the committed lease: survives, flag set, release once"
+                                         : "SIGTERM after the committed lease: survives, flag set, release once");
+    }
+    // Explicit release runs once and the destructor does not repeat it.
     check(in_child([] {
-      bool committed = false, released = false;
+      install_stop_handlers();
+      int released = 0;
       {
-        auto guarded = acquire_guarded(
-          [&] { committed = true; raise(SIGINT); return 7; },
-          [&] { released = true; });
-        if (guarded.first != 7 || !committed) return 10;
-        if (!stop_requested()) return 11;  // Delivered to the handler once unblocked.
-        if (released) return 12;           // Still held: the loop owns it until it finishes.
-      }                                    // Guard destroyed: release runs.
-      return released && !blocked_here(SIGINT) && !blocked_here(SIGTERM) ? 0 : 13;
-    }) == 0, "signal after the committed lease: survives, flag set, pin released, mask restored");
-    check(in_child([] {
-      bool released = false;
-      {
-        auto guarded = acquire_guarded([&] { raise(SIGTERM); return 0; }, [&] { released = true; });
+        auto guarded = acquire_guarded([&] { raise(SIGTERM); return 0; }, [&] { ++released; });
         guarded.second.release();
-        if (!released) return 10;
+        if (released != 1) return 10;
       }
-      return stop_requested() ? 0 : 11;
-    }) == 0, "SIGTERM likewise; explicit release runs once");
+      return released == 1 && stop_requested() ? 0 : 11;
+    }) == 0, "explicit release runs once");
     // A second signal of the same kind takes the default action (SA_RESETHAND).
-    check(WIFSIGNALED(in_child([] {
-      auto guarded = acquire_guarded([] { raise(SIGINT); return 0; }, [] {});
+    const int second = in_child([] {
+      install_stop_handlers();
+      raise(SIGINT);
       if (!stop_requested()) return 10;
       raise(SIGINT);
       return 11;
-    })), "a second signal ends the process");
-    // A failing acquire guards nothing and leaves the mask as it was.
+    });
+    check(WIFSIGNALED(second) && WTERMSIG(second) == SIGINT, "a second signal ends the process");
+    // A failing acquire guards nothing.
     check(in_child([] {
-      bool released = false;
+      install_stop_handlers();
+      int released = 0;
       try {
-        acquire_guarded([]() -> int { throw std::runtime_error("no lease"); }, [&] { released = true; });
+        acquire_guarded([]() -> int { throw std::runtime_error("no lease"); }, [&] { ++released; });
         return 10;
       } catch (const std::runtime_error &) {}
-      return !released && !blocked_here(SIGINT) && !stop_requested() ? 0 : 11;
-    }) == 0, "failing acquire: nothing released, mask restored");
-    // Threads created while blocked inherit the block; the creator's mask is restored.
-    {
-      std::atomic<int> thread_blocks_int{-1};
-      {
-        SignalBlock block;
-        std::thread t([&] { thread_blocks_int = blocked_here(SIGINT) && blocked_here(SIGTERM); });
-        t.join();
-        check(blocked_here(SIGINT), "blocked inside the scope");
+      return released == 0 ? 0 : 11;
+    }) == 0, "failing acquire: nothing released");
+    // The fork throws bare strings: a catch-all unwinds, so the guard runs and the pin is released.
+    check(in_child([] {
+      int released = 0;
+      try {
+        auto guarded = acquire_guarded([] { return 1; }, [&] { ++released; });
+        throw std::string("bare string from the engine");
+      } catch (...) {
+        return released == 1 ? 0 : 10;  // Unwound before the handler body.
       }
-      check(thread_blocks_int == 1, "engine threads started under the block inherit it");
-      check(!blocked_here(SIGINT) && !blocked_here(SIGTERM), "creator's mask restored");
-    }
+    }) == 0, "a bare-string throw caught by catch(...) unwinds and releases the pin");
     std::cout << checks << " viewport signal guard checks passed\n";
     return 0;
   } catch (const std::exception &e) {

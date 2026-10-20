@@ -175,8 +175,8 @@ needed only for the retained-data capture client.
 
 ```sh
 cmake -S engine -B engine/build -DHCP_WITH_VIEWPORT=ON -DHCP_WITH_WARM_INTEGRATION=ON
-cmake --build engine/build --target viewport_snapshot_test viewport_options_test viewport_letter_capture -j 2
-ctest --test-dir engine/build -R '^viewport_(snapshot|options)_test$' --output-on-failure
+cmake --build engine/build --target viewport_snapshot_test viewport_options_test viewport_signal_guard_test viewport_letter_capture -j 2
+ctest --test-dir engine/build -R '^viewport_(snapshot|options|signal_guard)_test$' --output-on-failure
 . engine/build/engine-env.sh
 ```
 
@@ -223,24 +223,24 @@ rename gives reader atomicity, not crash durability (no `fsync`). One writer per
 output directory is the supported use: a concurrent second writer leaves the
 final content undefined, though readers still never see a torn file.
 
-`SIGINT` or `SIGTERM` only sets a flag. The warm acquire commits its lease
-before it returns, so both signals are blocked from before the acquire until the
-pin's release guard exists and the handlers are installed, then unblocked: a
-signal that arrived in that window is delivered to the graceful handler. (The
-engine's threads are started with the signals blocked and so never receive
-them.) A signal during the later engine setup is likewise noted: setup finishes,
-the tick-0 capture is written as the final capture and the run exits 0 with the
-pin released. A signal before the acquire (including a hung database connection,
-and the engine start-up), or a second signal of the same kind, takes the default
-action and ends the process immediately without releasing the pin or writing
-evidence; so does `SIGKILL`. These forced terminations are a documented
-limitation: a lease left that way stays in the warm database. A launcher that
+`SIGINT` or `SIGTERM` only sets a flag. The handlers are installed as soon as
+argument parsing is over, before the engine starts and before the warm acquire,
+and nothing is masked. A **first** signal at any point after that is noted: setup
+(including the lease boundary, since the acquire commits its lease before it
+returns) and the current tick finish, then the client writes the final capture
+(a signal during setup gives the tick-0 capture) with the actual completed tick
+count to `letter-study.json` (and `latest.json` with `--every`), releases its warm
+pin, writes `native-evidence.json` and exits 0. The pin is also released if the
+run fails after acquiring it, including on a bare-string exception from the
+engine, which the client catches so the stack unwinds. A **second** signal of the
+same kind, `SIGKILL`, or a signal before the handlers are installed (argument
+parsing only) takes the default action and ends the process immediately without
+releasing the pin or writing evidence; a lease left that way stays in the warm
+database. A hang inside engine start-up or a stalled database call is not
+interrupted by the first signal, so it needs a second one. A launcher that
 starts the client with `SIGINT` ignored (for example `&` from a non-interactive
-shell) makes a setup-phase `SIGINT` a no-op; `SIGTERM` is unaffected. In the
-loop, the client finishes the current tick (or ends a pacing sleep early), writes
-a final capture with the actual completed tick count to `letter-study.json` (and
-`latest.json` with `--every`), releases its warm pin, writes `native-evidence.json`
-and exits 0. The pin is also released if the run fails after acquiring it.
+shell) is overridden: installing the handler replaces the ignore, so `SIGINT` is
+honoured from that point.
 The Docker helper copies its output only when the client exits and does not
 forward signals; use a finite `--ticks` there.
 
