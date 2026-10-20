@@ -51,7 +51,12 @@ Runtime::Runtime(const InstanceSettings &settings) : settings_(settings) {
     throw;
   }
   default_compile_config = saved;
-  program_->materialize_runtime();
+  try {
+    program_->materialize_runtime();
+  } catch (const std::string &error) {
+    // Same bare-string convention as above.
+    throw std::runtime_error("engine initialization failed: " + error);
+  }
 }
 
 Runtime::~Runtime() {

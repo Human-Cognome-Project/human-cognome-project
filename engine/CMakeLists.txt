@@ -154,7 +154,7 @@ if(ENGINE_TAICHI_WITH_CUDA)
   endforeach()
 endif()
 
-option(HCP_WITH_VIEWPORT"Build the optional offline study snapshot exporter" OFF)
+option(HCP_WITH_VIEWPORT "Build the optional offline study snapshot exporter" OFF)
 if(HCP_WITH_VIEWPORT)
   add_subdirectory(../tools/viewport/native viewport)
 endif()

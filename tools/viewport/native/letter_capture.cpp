@@ -157,8 +157,10 @@ int main(int argc, char **argv) {
     manager.release(ticket, consumer);
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
-  } catch (const std::exception &e) {
-    // Source/SQL exceptions can carry deployment details: keep public output generic.
+  } catch (...) {
+    // Source/SQL exceptions can carry deployment details: keep public output generic. The engine
+    // fork throws bare strings from some calls; catching everything here guarantees the stack
+    // unwinds (destructors and guards run) instead of std::terminate.
     std::cerr << "viewport letter capture failed; check owned output path, fixture configuration and retained endpoints\n";
     return 1;
   }
