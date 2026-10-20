@@ -141,6 +141,11 @@ add_test(NAME index_cap_test COMMAND index_cap_test)
 set_tests_properties(index_cap_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 
+option(HCP_WITH_VIEWPORT "Build the optional offline study snapshot exporter" OFF)
+if(HCP_WITH_VIEWPORT)
+  add_subdirectory(../tools/viewport/native viewport)
+endif()
+
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/engine-env.sh.in"
                "${CMAKE_CURRENT_BINARY_DIR}/engine-env.sh" @ONLY)

@@ -1,3 +1,7 @@
 archive/2026-03-database-generation/db/*.gz filter=lfs diff=lfs merge=lfs -text
 data/postgres/snapshots/*.sql.gz filter=lfs diff=lfs merge=lfs -text
 data/postgres/snapshots/**/*.sql.gz filter=lfs diff=lfs merge=lfs -text
+
+# Preserve upstream licenses and bundled shader-string whitespace verbatim.
+tools/viewport/vendor/** -whitespace linguist-vendored
+tools/viewport/vendor/viewer.bundle.js linguist-generated

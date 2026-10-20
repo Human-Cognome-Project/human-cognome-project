@@ -1,0 +1,357 @@
+{
+  "bindings": [
+    {
+      "id": 0,
+      "level": 0,
+      "parent": -1,
+      "role": "root",
+      "units": 1.0
+    },
+    {
+      "id": 1,
+      "level": 1,
+      "parent": 0,
+      "role": "primary_step",
+      "units": 64.0
+    }
+  ],
+  "capture": {
+    "generation": "04ab9339-6af1-4de8-8497-e71372b18bc7",
+    "label": "Retained English/French/Dutch letter study",
+    "phase": "published_seeded",
+    "session": "b9338242-f83f-431f-8912-ce0f650ab772",
+    "study": "5261ff87-d35b-418b-85c1-0a73f751c3b8",
+    "tick": "0"
+  },
+  "frame": {
+    "camera_target": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "coordinates": "reference_local",
+    "focal_fields": [
+      {
+        "kind": "sibling_definition",
+        "mass": 2.0,
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "value": "00000000-0000-0000-0000-000000000000/02.00.00.00.03"
+      }
+    ],
+    "reference": [
+      -76.8,
+      0.0,
+      0.0
+    ],
+    "target_kind": "captured_focal_centroid",
+    "units": "operative_model_units"
+  },
+  "particles": [
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/0",
+      "binding": 1,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.00.00.03",
+      "exact_mass": "2",
+      "exposure": "aggregate",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/0",
+      "label": "A",
+      "level": 1,
+      "mass": 2.0,
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "radius": 8.0,
+      "slot": 0
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/1",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.23",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/1/0/0",
+      "label": "41",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        16.799999237060547,
+        13.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 3
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/2",
+      "binding": 1,
+      "definition": "00000000-0000-0000-0000-000000000000/02.01.00.00.03",
+      "exact_mass": "2",
+      "exposure": "aggregate",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/2",
+      "label": "A",
+      "level": 1,
+      "mass": 2.0,
+      "position": [
+        51.20000076293945,
+        0.0,
+        0.0
+      ],
+      "radius": 8.0,
+      "slot": 4
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/3",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.23",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/3/0/0",
+      "label": "41",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        56.79999923706055,
+        19.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 7
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/4",
+      "binding": 1,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.20.00.1W",
+      "exact_mass": "10",
+      "exposure": "aggregate",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/4",
+      "label": "íj́",
+      "level": 1,
+      "mass": 10.0,
+      "position": [
+        102.4000015258789,
+        0.0,
+        0.0
+      ],
+      "radius": 16.0,
+      "slot": 8
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.49",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5/0/0",
+      "label": "C3",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        96.80000305175781,
+        25.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 15
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.3n",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5/0/1",
+      "label": "AD",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        98.80000305175781,
+        25.0,
+        1.0
+      ],
+      "radius": 0.125,
+      "slot": 16
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.2i",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5/1/0",
+      "label": "6A",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        100.80000305175781,
+        25.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 17
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.4I",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5/2/0",
+      "label": "CC",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        102.80000305175781,
+        25.0,
+        1.0
+      ],
+      "radius": 0.125,
+      "slot": 18
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.35",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/5/2/1",
+      "label": "81",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        104.80000305175781,
+        25.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 19
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/6",
+      "binding": 1,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.20.00.1W",
+      "exact_mass": "10",
+      "exposure": "aggregate",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/6",
+      "label": "íj́",
+      "level": 1,
+      "mass": 10.0,
+      "position": [
+        153.60000610351563,
+        0.0,
+        0.0
+      ],
+      "radius": 16.0,
+      "slot": 20
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.49",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7/0/0",
+      "label": "C3",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        136.8000030517578,
+        31.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 27
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.3n",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7/0/1",
+      "label": "AD",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        138.8000030517578,
+        31.0,
+        1.0
+      ],
+      "radius": 0.125,
+      "slot": 28
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.2i",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7/1/0",
+      "label": "6A",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        140.8000030517578,
+        31.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 29
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.4I",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7/2/0",
+      "label": "CC",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        142.8000030517578,
+        31.0,
+        1.0
+      ],
+      "radius": 0.125,
+      "slot": 30
+    },
+    {
+      "aggregate": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.35",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "5261ff87-d35b-418b-85c1-0a73f751c3b8/7/2/1",
+      "label": "81",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        144.8000030517578,
+        31.0,
+        -1.0
+      ],
+      "radius": 0.125,
+      "slot": 31
+    }
+  ],
+  "schema": "hcp-study-snapshot",
+  "source": {
+    "core_export_sha256": "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121",
+    "geometry": "supplied: centred sphere radius 0.25 for Dutch aggregate, 0.125 otherwise",
+    "kind": "retained_cold_to_warm_to_active",
+    "linguistics_export_sha256": "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296",
+    "parameters": {
+      "contact_stiffness": 1.0,
+      "dt": 0.10000000149011612,
+      "gravity": 0.07710634171962738,
+      "reach_strength": 1.0
+    }
+  },
+  "version": 1
+}

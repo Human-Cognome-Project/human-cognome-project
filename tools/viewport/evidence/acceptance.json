@@ -1,0 +1,51 @@
+{
+  "format": "hcp-viewport-acceptance-v1",
+  "date": "2026-10-20",
+  "baseline_main": "b8c2b49",
+  "taichi_source_tree": "d191c5ce8a04639da6069dde0ec1e35cce9abe7a",
+  "host": {
+    "architecture": "x86_64",
+    "cpu": "AMD EPYC 9V74",
+    "visible_logical_cpus": 5,
+    "native_capture_threads": 1
+  },
+  "native": {
+    "backend": "CPU",
+    "full_suites_passed": 18,
+    "exporter_checks": 37,
+    "disabled_viewport": {
+      "configure_and_build": "passed",
+      "registered_tests": 17,
+      "representative_tests_passed": [
+        "active_workbench_test",
+        "letter_projection_native_test"
+      ]
+    },
+    "warm_fixture": "hcp_viewport_20261020103405_1123",
+    "source_addressed_reads": 27,
+    "source_mutation": "none; complete before/after cold data-only hashes match",
+    "captures": "native-evidence.json"
+  },
+  "browser": {
+    "model_tests": 8,
+    "assertions": 73,
+    "capture": "browser-evidence.json",
+    "offline_exact_assets_in_memory": "passed",
+    "direct_file_navigation": "blocked by managed cloud Chromium policy; default local/CI test retained"
+  },
+  "artifact_sha256": {
+    "examples/letter-study.json": "52a048a28aff2f157e6b3a7dd5aebd62539d85630422ecb7315e52221a1db388",
+    "examples/letter-study-tick0.json": "47ad68167540ceb158d6691114990999676ac929ebe689d1066e3fde98d9d9a9",
+    "vendor/viewer.bundle.js": "891ecb0e920f66edb47f36e783a627626df50229e225ba21492c106f9ffb65a0",
+    "vendor/json.hpp": "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63",
+    "snapshot.schema.json": "af35213ae5ca8d445c6462f6021c03a7c5db6d7d919e5ac9e0a26bbdd6fa3a34"
+  },
+  "unexecuted": [
+    "Taichi GPU execution/pinning",
+    "Direct file navigation in this managed cloud browser"
+  ],
+  "measurement_limits": [
+    "Single small-fixture observations, no performance guarantee or large-count claim",
+    "WebGL uses software rendering; render submission does not measure GPU completion"
+  ]
+}

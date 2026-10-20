@@ -1,0 +1,21 @@
+{
+  "backend": "native_cpu",
+  "captures": [
+    {
+      "bytes": 8970,
+      "export_ms": 0.345972,
+      "particles": 16,
+      "report_ms": 0.031887,
+      "tick": 0
+    },
+    {
+      "bytes": 9579,
+      "export_ms": 0.444959,
+      "particles": 16,
+      "report_ms": 0.048241,
+      "tick": 8
+    }
+  ],
+  "source_calls": 27,
+  "ticks": 8
+}

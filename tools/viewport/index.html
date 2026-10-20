@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HCP · Study viewport</title>
+  <link rel="stylesheet" href="viewport.css">
+  <script defer src="vendor/viewer.bundle.js"></script>
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">HUMAN COGNOME PROJECT / OBSERVATION TOOLS</span><h1>Study viewport</h1></div>
+    <label class="file-button">Open snapshot<input id="file" type="file" accept=".json,application/json"></label>
+  </header>
+  <div id="error" role="alert" hidden></div>
+  <main>
+    <aside>
+      <section><h2>Capture <span class="tag">STATIC</span></h2><p id="capture-title">Choose a native study snapshot.</p><dl id="capture-meta"></dl></section>
+      <section><h2>Display filters</h2>
+        <label>Conceptual level<select id="level"><option value="">All captured levels</option></select></label>
+        <label>Exposure<select id="exposure"><option value="">All exposures</option><option value="aggregate">Aggregate</option><option value="parts">Parts</option><option value="standalone">Standalone</option></select></label>
+        <label>Find identity or label<input id="search" type="search" placeholder="Search captured objects" autocomplete="off"></label>
+        <p id="counts" aria-live="polite">0 total · 0 matched · 0 drawable</p><p id="omissions" class="muted"></p>
+      </section>
+      <section><h2>Relative mass</h2><p class="muted">Linear within each captured level. Ranges stay fixed while filtering.</p><div id="legends"></div></section>
+      <section class="objects"><h2>Objects</h2><p class="muted">Select here or click a sphere.</p><div id="objects" role="list" aria-label="Captured objects"></div></section>
+      <section><h2>Capture performance</h2><dl id="metrics"></dl><p class="muted">Browser timings are local observation costs, not engine or GPU benchmarks.</p></section>
+    </aside>
+    <div id="space">
+      <nav aria-label="Camera"><button id="frame-all" disabled>Frame all</button><button id="frame-selection" disabled>Frame selection</button><button id="focus" disabled>Study focus</button><span>Drag to orbit · right-drag to pan · scroll to zoom</span></nav>
+      <div id="empty"><span class="eyebrow">NATIVE REPORT → LOCAL CAPTURE</span><h2>See the shape of the data.</h2><p>Open a JSON snapshot to explore its objects,<br>spatial relationships and relative masses.</p><p class="muted">Files stay in this browser. No connection to the engine.</p></div>
+      <div id="inspection" hidden><h2>Selected object</h2><dl id="details"></dl></div>
+      <footer id="frame-note">Model geometry · local coordinates · display controls only</footer>
+    </div>
+  </main>
+</body>
+</html>

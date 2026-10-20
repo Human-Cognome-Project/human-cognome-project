@@ -1,0 +1,36 @@
+name: Optional offline viewport
+
+on:
+  pull_request:
+    paths:
+      - "tools/viewport/**"
+      - ".github/workflows/viewport.yml"
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/viewport
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: tools/viewport/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+      - name: Verify retained bundle matches pinned sources
+        run: git diff --exit-code -- vendor/
+      - run: npx playwright install --with-deps chromium
+      - name: Test direct-file offline page with real native capture
+        run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: viewport-browser-evidence
+          path: tools/viewport/tests/results/
