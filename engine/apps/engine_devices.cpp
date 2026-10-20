@@ -214,10 +214,14 @@ int main(int argc, char **argv) {
     std::printf(
         "instance: arch %s, snode capacity %d, tree capacity %d, "
         "device memory budget %.2f GiB, %d launch threads\n",
-        use_cuda ? "cuda" : "x64", config.llvm_snode_capacity,
+        taichi::arch_name(config.arch).c_str(), config.llvm_snode_capacity,
         config.llvm_snode_tree_capacity, config.device_memory_GB,
         runtime.cpu_threads());
-    if (use_cuda) {
+    if (use_cuda && !runtime.on_cuda()) {
+      std::printf("note: CUDA was requested but the engine fell back to %s\n",
+                  taichi::arch_name(config.arch).c_str());
+    }
+    if (runtime.on_cuda()) {
       const std::size_t after = engine::cuda_free_memory();
       std::printf("instance device memory: %.3f GiB reserved at startup\n",
                   to_gib(before > after ? before - after : 0));

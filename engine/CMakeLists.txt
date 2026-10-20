@@ -141,7 +141,20 @@ add_test(NAME index_cap_test COMMAND index_cap_test)
 set_tests_properties(index_cap_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 
-option(HCP_WITH_VIEWPORT "Build the optional offline study snapshot exporter" OFF)
+# Only for a CUDA-enabled Taichi build (CI's CPU-only build does not have it):
+# a requested CUDA instance must report the backend it actually runs on.
+if(ENGINE_TAICHI_WITH_CUDA)
+  add_executable(runtime_backend_test tests/runtime_backend_test.cpp)
+  target_include_directories(runtime_backend_test PRIVATE tests)
+  target_link_libraries(runtime_backend_test PRIVATE engine_support)
+  foreach(mode no-driver no-device device)
+    add_test(NAME runtime_backend_${mode} COMMAND runtime_backend_test --${mode})
+    set_tests_properties(runtime_backend_${mode} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  endforeach()
+endif()
+
+option(HCP_WITH_VIEWPORT"Build the optional offline study snapshot exporter" OFF)
 if(HCP_WITH_VIEWPORT)
   add_subdirectory(../tools/viewport/native viewport)
 endif()

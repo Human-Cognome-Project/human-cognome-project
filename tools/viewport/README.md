@@ -120,14 +120,14 @@ capture is the fixed 8-tick CPU run and file names above.
 
 | Option | Meaning |
 |---|---|
-| `--backend cpu\|cuda` | Engine backend (default `cpu`). `cuda` needs a matched Taichi build with CUDA and a device; otherwise the engine's startup error is reported and the exit status is non-zero. There is no silent CPU fallback. |
+| `--backend cpu\|cuda` | Engine backend (default `cpu`). `cuda` needs a matched Taichi build with CUDA, its driver and a visible device. The engine can silently fall back to the CPU when it finds no driver or device, so the client checks the Program's actual architecture right after the session starts and, before any warm write, exits non-zero on a mismatch or a startup error. `native-evidence.json` records the verified backend (`native_cpu` or `native_cuda`), not the request. |
 | `--ticks N` | Total completed ticks, N >= 1 (default 8). |
 | `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
 | `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
 
 `tick0` and the final tick are written as `letter-study-tick0.json` and
-`letter-study.json`. `native-evidence.json` records the backend actually passed
-to the engine (`native_cpu` or `native_cuda`), `ticks`, `dt` and `cpu_threads`
+`letter-study.json`. `native-evidence.json` records the backend verified on the
+constructed engine (`native_cpu` or `native_cuda`), `ticks`, `dt` and `cpu_threads`
 beside its existing keys. A CUDA run is functional execution only: it is not a
 GPU performance or pinning qualification (#145).
 
