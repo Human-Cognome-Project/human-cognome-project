@@ -227,8 +227,9 @@ would watch that folder read-only through the File System Access API at its own
 configurable polling interval, independent of K and of simulation tick rate.
 Captures within one session and study update in place and keep the camera,
 filters and selection by occurrence ID, so the person's spatial frame stays
-stable while the model changes; a first or different session/study replaces the
-display as a new file does. Mass colour ranges stay per capture. It adds no
+stable while the model changes, including when watching starts on the study
+already displayed; nothing displayed, or a different session/study, replaces
+the display as a new file does. Mass colour ranges stay per capture. It adds no
 engine control or network, and invalid or missing captures keep the previous one
 displayed. See the [watch behaviour](../tools/viewport/README.md#watch-a-running-capture).
 

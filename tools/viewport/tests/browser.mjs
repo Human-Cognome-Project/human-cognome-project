@@ -138,22 +138,30 @@ try {
     f.particles = f.particles.filter(p => p.id !== drop); return f;
   };
   const picker = await page.evaluate(() => ({show_directory_picker: typeof window.showDirectoryPicker, secure_context: isSecureContext, protocol: location.protocol}));
-  if (!inMemory) check(picker.show_directory_picker === 'function' && picker.secure_context && picker.protocol === 'file:', 'showDirectoryPicker is exposed on a direct file:// page in Chromium');
+  // Recorded, not asserted: whether the API exists depends on the Chromium build, and the control follows it either way.
   check((await page.locator('#watch').isEnabled()) === (picker.show_directory_picker === 'function'), 'Watch folder control follows API support');
   check((await page.locator('#mode').textContent()) === 'STATIC' && (await page.locator('#frame-note').textContent()).startsWith('STATIC CAPTURE ·'), 'opened files are labelled static');
-  await page.evaluate(() => {
-    const s = window.__src = {text: null, mod: 1e12, reads: 0, calls: []};
-    s.getFileHandle = async name => {
-      s.calls.push(performance.now());
-      if (name !== 'latest.json' || s.text === null) throw new DOMException('absent', 'NotFoundError');
-      const text = s.text, lastModified = s.mod;
-      return {getFile: async () => ({lastModified, size: new Blob([text]).size, text: async () => { ++s.reads; return text; }})};
-    };
-  });
-  const src = {set: value => page.evaluate(text => { window.__src.text = text; window.__src.mod += 1000; }, typeof value === 'string' ? value : JSON.stringify(value)),
-    remove: () => page.evaluate(() => { window.__src.text = null; }),
-    stats: () => page.evaluate(() => ({reads: window.__src.reads, calls: window.__src.calls.length})),
-    times: () => page.evaluate(() => [...window.__src.calls])};
+  // failNext makes the next text() reject like a read that races the writer's rename replacement.
+  const makeSrc = async target => {
+    await target.evaluate(() => {
+      const s = window.__src = {text: null, mod: 1e12, reads: 0, calls: [], failNext: 0};
+      s.getFileHandle = async name => {
+        s.calls.push(performance.now());
+        if (name !== 'latest.json' || s.text === null) throw new DOMException('absent', 'NotFoundError');
+        const text = s.text, lastModified = s.mod;
+        return {getFile: async () => ({lastModified, size: new Blob([text]).size, text: async () => {
+          if (s.failNext > 0) { --s.failNext; throw new DOMException('replaced while reading', 'NotReadableError'); }
+          ++s.reads; return text; }})};
+      };
+    });
+    return {set: value => target.evaluate(text => { window.__src.text = text; window.__src.mod += 1000; }, typeof value === 'string' ? value : JSON.stringify(value)),
+      remove: () => target.evaluate(() => { window.__src.text = null; }),
+      failNext: () => target.evaluate(() => { window.__src.failNext = 1; }),
+      stats: () => target.evaluate(() => ({reads: window.__src.reads, calls: window.__src.calls.length})),
+      times: () => target.evaluate(() => [...window.__src.calls]),
+      watch: name => target.evaluate(n => window.HCPViewport.watchWith(window.__src, n), name)};
+  };
+  const src = await makeSrc(page);
   const waitTick = tick => page.waitForFunction(t => window.HCPViewport.inspect().snapshot?.capture.tick === t, String(tick));
   const waitMode = mode => page.waitForFunction(m => document.getElementById('mode').textContent === m, mode);
   const watchInfo = async () => (await state()).watch;
@@ -161,23 +169,34 @@ try {
   const setPoll = async value => { await page.locator('#interval').fill(String(value)); await page.locator('#interval').dispatchEvent('change'); };
   await setPoll(200);
   check(await page.locator('#interval').inputValue() === '200', 'poll interval is configurable');
-  await src.set(tick0);
-  const previousCamera = (await state()).camera;
-  await page.evaluate(() => window.HCPViewport.watchWith(window.__src, 'fixture-dir'));
-  await waitTick('0'); await waitMode('LIVE');
-  current = await state();
-  check(current.drawn.length === tick0.particles.length && current.drawn.every(v => v.position.every((x, i) => x === tick0.particles.find(p => p.id === v.id).position[i])), 'first watched load shows the capture');
-  check(JSON.stringify(current.camera.target) === JSON.stringify(boundsFor(tick0.particles).centre) && JSON.stringify(current.camera.target) !== JSON.stringify(previousCamera.target), 'first watched load frames like a new file');
-  check((await page.locator('#frame-note').textContent()).startsWith('LIVE CAPTURE · tick 0') && (await page.locator('#live-status').textContent()).includes('fixture-dir'), 'footer and status identify live capture');
+  const orbit = async (pg = page) => {
+    const box = await pg.locator('canvas').boundingBox();
+    await pg.mouse.move(box.x + box.width * 0.65, box.y + box.height * 0.4);
+    await pg.mouse.down(); await pg.mouse.move(box.x + box.width * 0.65 + 90, box.y + box.height * 0.4 + 30, {steps: 5}); await pg.mouse.up();
+  };
 
-  // Same study: the person's filters, selection and camera survive.
+  // Baseline is the displayed capture. (a) Nothing displayed: the first watched capture frames like a new file.
+  const fresh = await context.newPage(); fresh.on('pageerror', e => errors.push(e.message));
+  await openViewport(fresh);
+  const freshSrc = await makeSrc(fresh); await freshSrc.set(tick0); await freshSrc.watch('fixture-dir');
+  await fresh.waitForFunction(() => window.HCPViewport.inspect().snapshot?.capture.tick === '0');
+  const freshState = await fresh.evaluate(() => window.HCPViewport.inspect());
+  check(freshState.drawn.length === tick0.particles.length && freshState.drawn.every(v => v.position.every((x, i) => x === tick0.particles.find(p => p.id === v.id).position[i])), 'first watched load shows the capture');
+  check(JSON.stringify(freshState.camera.target) === JSON.stringify(boundsFor(tick0.particles).centre) && (await fresh.locator('#mode').textContent()) === 'LIVE', 'watching with nothing displayed frames like a new file');
+  await fresh.close();
+
+  // (b) The same study is already displayed: starting a watch keeps camera, filters and selection.
+  await load(tick0, 'letter-study-tick0.json'); await waitTick('0');
   await page.locator('#level').selectOption('1'); await page.locator('#exposure').selectOption('aggregate');
-  await page.locator('#objects button').first().click();
-  const chosen = (await state()).selected, canvasBox = await page.locator('canvas').boundingBox();
-  await page.mouse.move(canvasBox.x + canvasBox.width * 0.65, canvasBox.y + canvasBox.height * 0.4);
-  await page.mouse.down(); await page.mouse.move(canvasBox.x + canvasBox.width * 0.65 + 90, canvasBox.y + canvasBox.height * 0.4 + 30, {steps: 5}); await page.mouse.up();
-  const orbited = (await state()).camera, level1 = tick8.particles.filter(p => p.level === 1);
-  check(!!chosen && JSON.stringify(orbited.position) !== JSON.stringify(current.camera.position), 'selected an object and orbited before the update');
+  await page.locator('#objects button').first().click(); await orbit();
+  const chosen = (await state()).selected, orbited = (await state()).camera, level1 = tick8.particles.filter(p => p.level === 1);
+  await src.set(tick0); await src.watch('fixture-dir'); await waitMode('LIVE');
+  current = await state();
+  await same(orbited, 'starting a watch on the displayed study keeps the camera');
+  check(!!chosen && current.selected === chosen && await page.locator('#level').inputValue() === '1' && await page.locator('#exposure').inputValue() === 'aggregate', 'starting a watch on the displayed study keeps filters and selection');
+  check((await page.locator('#frame-note').textContent()).startsWith('LIVE CAPTURE · tick 0') && (await page.locator('#live-status').textContent()).includes('fixture-dir') && (await watchInfo()).applied === 1, 'footer and status identify live capture');
+
+  // Same study updates: the person's filters, selection and camera survive.
   await src.set(tick8); await waitTick('8');
   current = await state();
   await same(orbited, 'same-study update preserves camera position and target');
@@ -229,6 +248,21 @@ try {
   check((await src.stats()).calls === paused.calls && (await state()).snapshot.capture.tick === '11' && (await page.locator('#pause').textContent()) === 'Resume', 'pause stops polling and applying');
   await page.locator('#pause').click(); await waitTick('12'); await waitMode('LIVE');
 
+  // A read that races a replacement (NotReadableError) is transient: no error is shown and the next check retries.
+  await page.evaluate(() => {
+    window.__sawError = false;
+    new MutationObserver(() => { if (document.getElementById('mode').textContent === 'ERROR' || !document.getElementById('error').hidden) window.__sawError = true; })
+      .observe(document.body, {subtree: true, childList: true, characterData: true, attributes: true});
+  });
+  const racing = await src.stats(); await src.failNext(); await src.set(uiFixture(13)); await waitTick('13'); await sleep(300);
+  check(!(await page.evaluate(() => window.__sawError)) && (await page.evaluate(() => window.__src.failNext)) === 0 && (await src.stats()).reads === racing.reads + 1 && (await watchInfo()).error === null, 'transient NotReadableError shows no error and is retried at the next check');
+
+  // A level filter whose level is absent from the new capture resets to all levels.
+  const noLevel1 = uiFixture(15); noLevel1.particles = noLevel1.particles.filter(p => p.level !== 1);
+  await src.set(noLevel1); await waitTick('15');
+  check(await page.locator('#level').inputValue() === '' && await page.locator('#exposure').inputValue() === 'aggregate', 'absent level filter resets to all captured levels; other filters stay');
+  await src.set(uiFixture(16)); await waitTick('16'); await page.locator('#level').selectOption('1');
+
   // A different study replaces everything, like opening a new file.
   const other = structuredClone(tick8), ids = ['0123abcd-0123-4123-8123-0123456789ab', '1123abcd-0123-4123-8123-0123456789ab'];
   other.capture = {...other.capture, session: ids[0], study: ids[1], generation: ids[1], tick: '3', label: 'UI validation fixture, other study'};
@@ -246,10 +280,19 @@ try {
   check(current.snapshot.capture.tick === '3' && !current.watch.active && (await page.locator('#mode').textContent()) === 'STATIC' && (await page.locator('#frame-note').textContent()).startsWith('STATIC CAPTURE ·') && (await src.stats()).calls === stopped.calls && await page.locator('#stop').isDisabled(), 'stop watching leaves a static capture and ends polling');
 
   // Opening a file while watching ends the watch; Open snapshot itself is unchanged.
-  await src.set(tick0); await page.evaluate(() => window.HCPViewport.watchWith(window.__src, 'fixture-dir')); await waitTick('0');
+  await src.set(tick0); await src.watch('fixture-dir'); await waitTick('0');
   await load(tick8, 'letter-study.json'); await waitTick('8'); await waitMode('STATIC');
   await src.set(uiFixture(13)); await sleep(600);
   check((await state()).snapshot.capture.tick === '8' && !(await watchInfo()).active, 'opening a file stops watching');
+
+  // Restarting after Open snapshot on the same study keeps the frame; (c) a different study replaces it.
+  await orbit(); const reopened = (await state()).camera;
+  await src.watch('fixture-dir'); await waitTick('13'); await waitMode('LIVE');
+  await same(reopened, 'restarting a watch on the displayed study keeps the camera');
+  await page.locator('#level').selectOption('1'); await src.set(other); await src.watch('fixture-dir'); await waitTick('3');
+  current = await state();
+  check(current.snapshot.capture.study === ids[1] && await page.locator('#level').inputValue() === '' && JSON.stringify(current.camera.target) === JSON.stringify(boundsFor(other.particles).centre), 'watching a different study than the displayed one replaces and frames it');
+  await page.locator('#stop').click();
 
   // A real FileSystemDirectoryHandle (origin-private) exercises the genuine getFileHandle/getFile path, including replacement by a new file.
   const opfs = await page.evaluate(async text => {

@@ -173,10 +173,14 @@ async function poll(w) {
     w.stamp = fileStamp(file);
     const start = performance.now(), next = parseSnapshot(text), elapsed = performance.now() - start;
     if (!renderer) throw new Error('WebGL renderer is unavailable.');
-    const kind = classifyUpdate(w.last, next);
-    if (kind !== 'same') { parseMs = elapsed; replaceSnapshot(next, kind === 'update'); w.last = next; w.changedAt = Date.now(); ++w.applied; }
+    // The displayed capture is the baseline, so a (re)started watch of the same session and study keeps the person's frame.
+    const kind = classifyUpdate(snapshot, next);
+    if (kind !== 'same') { parseMs = elapsed; replaceSnapshot(next, kind === 'update'); }
+    if (kind !== 'same' || !w.last) { w.last = snapshot; w.changedAt = Date.now(); ++w.applied; }
     w.error = null; error();
   } catch (e) {
+    // A read that races the writer's replacement can fail transiently; w.stamp stays unset so the next check retries.
+    if (e?.name === 'NotReadableError') return;
     if (watch === w) {
       w.error = e.message;
       error(`Could not read latest.json: ${e.message}${w.last ? ` Capture at tick ${w.last.capture.tick} remains displayed.` : snapshot ? ' Previous capture remains displayed.' : ''} Still watching.`);
@@ -247,7 +251,7 @@ try {
     inspect(hit ? drawn[hit.instanceId] : null);
   });
 } catch (e) { error(`WebGL could not start: ${e.message}`); }
-// Read-only diagnostics for reproducible browser verification, no execution API.
+// Read-only diagnostics, plus a test-only watchWith that polls a supplied object; no engine or network access.
 window.HCPViewport = {inspect: () => ({snapshot: snapshot ? structuredClone(snapshot) : null,
   matched: matched.map(p => p.id), drawn: drawn.map((p, i) => {
     const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);

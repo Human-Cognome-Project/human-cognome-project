@@ -103,10 +103,11 @@ export function pollInterval(value, fallback = defaultPollMs) {
 }
 export const fileStamp = file => `${file.lastModified}:${file.size}`;
 export const resolveSelection = (particles, id) => particles.find(p => p.id === id) ?? null;
-// STALE is only a display hint: no new capture for longer than ten polls (at least ten seconds).
+// NO CHANGE is only a display hint: no new capture for longer than ten polls (at least ten seconds).
+// It does not mean the engine stopped; the native capture interval may be longer.
 export function watchState({paused, error, missing, hasCapture, idleMs, intervalMs}) {
   if (paused) return 'PAUSED';
   if (error) return 'ERROR';
   if (!hasCapture || missing) return 'WAITING';
-  return idleMs > Math.max(10000, 10 * intervalMs) ? 'STALE' : 'LIVE';
+  return idleMs > Math.max(10000, 10 * intervalMs) ? 'NO CHANGE' : 'LIVE';
 }

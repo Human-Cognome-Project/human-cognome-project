@@ -64,14 +64,17 @@ same spatial frame to watch whether a coherent pattern forms.
   browser. The page asks for **read-only** access to the one folder you choose,
   for that tab only; Chromium refuses a few system folders, so pick a dedicated
   capture directory. Each check looks `latest.json` up by name again, so
-  a replacement file written by rename is always read whole. No server or
+  a replacement file written by rename is always read whole (a read that races
+  a replacement is retried at the next check). No server or
   network is involved and the page cannot write to the folder. Where the API
   is absent (for example Firefox), the control is disabled with an explanation;
   **Open snapshot** still works and no browser policy is changed.
-  Checked: on a direct `file://` page in Chromium 145 (Playwright's
+  Observed locally: on a direct `file://` page in Chromium 145 (Playwright
   `chromium-1208`) `showDirectoryPicker` is a function and the page is a
-  secure context. The browser test asserts this and writes it to its results;
-  the retained evidence file below predates watch mode. The folder picker
+  secure context. The browser test records this in its results (recorded, not
+  asserted), because the pinned Playwright in CI uses `chromium-1194` and the
+  API's presence depends on the build; the control follows whatever the
+  browser reports. The retained evidence file below predates watch mode. The folder picker
   itself needs a person, so the test drives watching through a page-side
   source with the same `getFileHandle()`/`getFile()` shape. An origin-private
   directory handle was not usable from `file://` (`SecurityError`), so a real
@@ -80,21 +83,28 @@ same spatial frame to watch whether a coherent pattern forms.
   looks, default 1000, minimum 100, remembered locally when the browser permits.
   It is independent of simulation tick rate and of K. A file whose modified time
   and size are unchanged is not read or parsed again, and a capture with the
-  same session, study, generation and tick is not re-applied. **Pause** stops
+  same session, study, generation and tick is not re-applied. Change detection
+  uses the file's modification time and size, so on filesystems with coarse
+  timestamps (for example FAT/exFAT or some NFS) two equal-length captures
+  written within that granularity can show as one. **Pause** stops
   checking and applying (**Resume** catches up to the newest file) and
   **Stop watching** ends the watch, leaving the last capture as a static display.
 - **Status.** The tag beside Capture reads STATIC for opened files, and LIVE,
-  PAUSED, WAITING (no `latest.json` yet, still polling), ERROR or STALE while
-  watching. STALE is only a display hint: no new capture for more than ten
-  checks (at least ten seconds). The Live updates panel and footer show the
-  applied tick, wall time of the last change and time since it.
-- **Same study keeps your view.** A capture with the same session and study as
-  the one displayed updates positions, masses, metadata and the inspection panel
-  in place. Camera position and target, level/exposure/search filters and the
-  selection are kept; the selection is found again by occurrence ID and is
-  cleared only if that ID is absent from the new capture or filtered out. The
-  first watched capture, and any capture with a different session or study,
-  behave exactly like opening a new file: the generation is replaced,
+  PAUSED, WAITING (no `latest.json` yet, still polling), ERROR or NO CHANGE
+  while watching. NO CHANGE is only a display hint: no new capture for more than
+  ten checks (at least ten seconds). It does not mean the engine has stopped;
+  the native capture interval may exceed that threshold. The Live updates panel
+  and footer show the applied tick, wall time of the last change and time since it.
+- **Same study keeps your view.** The capture on display is the baseline. A
+  capture with the same session and study updates positions, masses, metadata
+  and the inspection panel in place, including when a watch is started or
+  restarted (for example after **Open snapshot**) on that study. Camera position
+  and target, level/exposure/search filters and the selection are kept; the
+  selection is found again by occurrence ID and is cleared only if that ID is
+  absent from the new capture or filtered out. A level filter whose level is
+  absent from the new capture resets to "All captured levels". Only when
+  nothing is displayed, or the capture has a different session or study, does
+  it behave exactly like opening a new file: the generation is replaced,
   selection and filters are cleared and the camera frames it.
 - **Colour is relative within each update.** Mass ranges and legends are
   computed per capture, as for any opened file, so a sphere's colour compares
@@ -272,8 +282,8 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
-Watch-mode checks (37 additional, 110 in all) feed the retained tick 0 and 8
-captures (107 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+Watch-mode checks (41 additional, 114 in all) feed the retained tick 0 and 8
+captures (112 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
 local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
 folder source: same-study camera/filter/selection preservation, updated values
 and per-capture colours, invalid/unsupported/missing files with recovery,

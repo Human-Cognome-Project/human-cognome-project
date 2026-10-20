@@ -112,7 +112,7 @@ main {
   color: #ffb3ad;
   border-color: #b56b70;
 }
-.tag[data-mode=STALE],
+.tag[data-mode="NO CHANGE"],
 .tag[data-mode=WAITING],
 .tag[data-mode=PAUSED] {
   color: #f0d98a;

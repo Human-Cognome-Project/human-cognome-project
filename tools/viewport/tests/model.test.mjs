@@ -103,10 +103,10 @@ test('live updates: interval is clamped, files are compared by modified time and
   assert.notEqual(fileStamp({lastModified: 5, size: 7}), fileStamp({lastModified: 6, size: 7}));
   assert.notEqual(fileStamp({lastModified: 5, size: 7}), fileStamp({lastModified: 5, size: 8}));
 });
-test('live updates: watch state precedence and staleness hint', () => {
+test('live updates: watch state precedence and no-change hint', () => {
   const base = {paused: false, error: null, missing: false, hasCapture: true, idleMs: 0, intervalMs: 1000};
   assert.equal(watchState(base), 'LIVE');
-  assert.equal(watchState({...base, idleMs: 10001}), 'STALE');
+  assert.equal(watchState({...base, idleMs: 10001}), 'NO CHANGE');
   assert.equal(watchState({...base, intervalMs: 5000, idleMs: 20000}), 'LIVE');
   assert.equal(watchState({...base, hasCapture: false}), 'WAITING');
   assert.equal(watchState({...base, missing: true}), 'WAITING');
