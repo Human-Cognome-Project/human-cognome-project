@@ -147,9 +147,6 @@ the native client over the container's local PostgreSQL socket. It hashes comple
 data-only dumps of both cold stores before and after, excluding only pg_dump's
 per-session restriction nonce. A difference fails acceptance. Evidence and the
 fixture name are printed; databases and evidence remain for inspection.
-Without Docker, create the new database/schema explicitly and run
-`warm_postgres_test` with `HCP_WARM_TEST_CONNINFO`, `HCP_CORE_TEST_CONNINFO` and
-`HCP_LING_TEST_CONNINFO` set through your connection configuration.
 
 [acceptance.json](acceptance.json) records **90 passing checks** on PostgreSQL
 16.15 against 27 retained source definitions, including real Dutch repeated
@@ -168,3 +165,57 @@ The cold data hashes match before/after. Engine/GPU execution is not part of A.
 The [hosted workflow](../../../.github/workflows/warm-toolbox.yml) builds native
 code, verifies the exact paired export hashes, restores only into new cold
 fixtures and runs the same acceptance helper. The published exports are unchanged.
+
+### Without Docker
+
+`run_container_acceptance.sh`, `engine/scripts/run_warm_active_acceptance.sh` and
+`tools/viewport/run-capture.sh` all assume the cold stores live in a local Docker
+container (`docker exec`). For a PostgreSQL server outside Docker (remote or
+host-installed), run the same sequence by hand from a local client. Database
+names and connection details are local configuration (a libpq `service=NAME`
+from `~/.pg_service.conf`, password in `~/.pgpass`); configuration scripts are
+not yet formalized, so this is manual. See the
+[restore notes](../../../data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md#restoring-onto-an-existing-server)
+for mounting the retained pair.
+
+Run the steps in a shell with `set -euo pipefail`, as the repository scripts do;
+otherwise a failed `pg_dump` hashes empty output and the before/after comparison
+passes vacuously. Put the steps in a script, or use `set -o pipefail` alone in an
+interactive shell (`set -e` closes an interactive session on the first failure).
+
+1. Fingerprint both cold databases (complete data-only dumps, excluding only
+   pg_dump's per-session restriction nonce) and keep the two hashes:
+
+   ```bash
+   pg_dump --data-only --no-owner --no-privileges --dbname="service=NAME dbname=CORE_DB" \
+     | sed -E '/^\\(un)?restrict /d' | sha256sum
+   # repeat for the Linguistics database
+   ```
+
+   A hash of `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+   (SHA-256 of empty input) means the dump produced nothing and the check is
+   invalid. A newer `pg_dump` client against an older 16.x server is fine.
+2. Create a new, uniquely named warm database and apply the schema. The
+   connecting role needs `CREATEDB` for this. The 2026-10-20 run used a role with
+   `CREATEDB` (and superuser), so the minimum privileges needed on the cold
+   databases were not separately tested; read-only access is not claimed to be
+   sufficient.
+
+   ```bash
+   createdb --maintenance-db="service=NAME" hcp_warm_a_$(date -u +%Y%m%d%H%M%S)   # note the name
+   psql -X -v ON_ERROR_STOP=1 --dbname="service=NAME dbname=WARM_DB" -f kernels/database/warm/schema.sql
+   ```
+3. Run the native client with the three connection settings. libpq conninfo
+   accepts `service=NAME`, so these work:
+
+   ```bash
+   HCP_WARM_TEST_CONNINFO="service=NAME dbname=WARM_DB" \
+   HCP_CORE_TEST_CONNINFO="service=NAME dbname=CORE_DB" \
+   HCP_LING_TEST_CONNINFO="service=NAME dbname=LING_DB" \
+     /tmp/hcp-warm-build/warm_postgres_test
+   ```
+
+   The engine's `warm_active_integration` client (built with
+   `-DHCP_WITH_WARM_INTEGRATION=ON`) reads the same three variables.
+4. Re-fingerprint both cold databases as in step 1 and compare with the
+   earlier hashes; any difference fails acceptance.

@@ -17,6 +17,10 @@ Use dated subdirectories and keep state dumps separate from source schema/migrat
 
 Compressed `*.sql.gz` snapshots under this tree are tracked through Git LFS.
 
+To mount a retained pair on an existing PostgreSQL server (client versus server
+version, connection services, atomic restore, naming and read-back digests), see
+[Restoring onto an existing server](2026-10-13-letter-seed-validation/MANIFEST.md#restoring-onto-an-existing-server).
+
 Do not commit credentials, connection strings containing secrets, private user data, or machine-specific authentication material.
 
 The existing `/db` tree is retained unchanged during the initial reorganization because it contains legacy database tooling/dumps that still need separate disposition.

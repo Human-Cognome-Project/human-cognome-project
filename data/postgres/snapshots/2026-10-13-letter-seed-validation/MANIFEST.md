@@ -58,9 +58,16 @@ journal for recovery there; a restored copy is evidence, not the same transactio
 of both exact compressed payloads into new empty PostgreSQL 16.15 databases.
 Counts, whole masses, NULL cells, ordered parents, membership reciprocals,
 core child links, schema/trigger definitions and core row digests pass read-back.
+The restore was also read back onto an existing PostgreSQL 16.13 server on
+2026-10-20; see [Restoring onto an existing server](#restoring-onto-an-existing-server).
 
-Use PostgreSQL/psql 16.15 or newer. From the repository root, these example names
-create new databases without replacing an existing installation:
+Use a `psql` client of 16.15 or newer (the exports were written by `pg_dump`
+16.15, whose `\restrict` / `\unrestrict` lines are `psql` meta-commands). The
+server version is a separate matter: the pair was also restored and read back
+exactly on an existing PostgreSQL **16.13** server using 16.15 client tools
+(2026-10-20). That is an observation, not a guarantee for other versions. From
+the repository root, these example names create new databases without replacing
+an existing installation:
 
 ```bash
 set -euo pipefail
@@ -73,10 +80,57 @@ gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_linguisti
   | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_linguistics_seed
 ```
 
-The two databases may use different local names; their token addresses are
+The two databases may use different local names (see the next section); their token addresses are
 unchanged. Fetch the Git LFS payloads before restoring. These exports already
 contain the seed data and the two reviewed foreign-key changes; do not rerun the
 population writer just to load the pair. The bootstrap-only mutation restriction
 described above continues to apply to the restored cross-linked stores.
+
+### Restoring onto an existing server
+
+The commands above assume a local default connection. These adjustments cover
+mounting the pair on an existing PostgreSQL server, which may be remote or
+host-installed. Nothing here relaxes the new-empty-database requirement.
+
+- **Connection settings.** Select the server through libpq configuration rather
+  than command-line arguments: a `~/.pg_service.conf` service (`[NAME]` with
+  `host`, `port`, `user`), or `PGHOST` / `PGPORT` / `PGUSER`, with the password
+  in `~/.pgpass` (mode 600). Never put credentials or private host details in
+  Git. Then, for example,
+  `createdb --maintenance-db="service=NAME" --template=template0 --encoding=UTF8 TARGET` and
+  `psql --dbname="service=NAME dbname=TARGET"`.
+- **Atomic restore.** Add `--single-transaction` to the `psql` restore commands
+  (alongside `ON_ERROR_STOP`). A failed restore then leaves an empty database
+  rather than a partial one.
+- **Names are local configuration.** The `*_seed` names above are examples only;
+  snapshot names do not bind database names. Supply the chosen names at
+  invocation (`dbname=` in a conninfo string, the `HCP_*_TEST_CONNINFO`
+  variables, or a service entry), never hard-coded in repository code. If the
+  server already has a database with the intended name (for example an older
+  development store), restore into a differently named new database; never
+  restore over it. `ALTER DATABASE ... RENAME` requires that no other session is
+  connected (an autovacuum worker on a freshly restored database is cancelled
+  automatically) and changes the name every existing consumer of that database
+  uses; the owner decides, and nothing here runs it.
+
+#### Read-back verification
+
+After restoring, compare per-table counts with
+[RESTORE-VALIDATION.json](RESTORE-VALIDATION.json) (all ten tables) and, for the
+core, the order-independent row digest recorded under `core_after` in
+[COUNTS.json](COUNTS.json). This is the method used by `snapshot()` in
+[`tools/linguistics/populate.py`](../../../../tools/linguistics/populate.py). For
+each of `token`, `token_parent`, `token_child`, `members` and `member_of` on the
+restored core:
+
+```sql
+SELECT count(*),
+  COALESCE(sum(('x'||substr(md5(r::text),1,16))::bit(64)::bigint),0)::text AS h1,
+  COALESCE(sum(('x'||substr(md5(r::text),17,16))::bit(64)::bigint),0)::text AS h2
+FROM public.token r;  -- repeat for each table name
+```
+
+`count`, `h1` and `h2` must equal that table's `core_after` entry exactly. On
+the 2026-10-20 mount, every count and all five core digests matched.
 
 See [writer and validation instructions](../../../../docs/letter-population-writer.md).
