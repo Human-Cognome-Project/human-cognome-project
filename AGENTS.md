@@ -135,9 +135,13 @@ separate follow-up, preserving seed identities and adding no gate on that milest
 
 - **Completed cleanup:** #152, accepted in #153; type-defined binary activity phases. Do not turn
   current/next bookkeeping into an independent scheduling policy.
-- **Optional human troubleshooting:** #151, separate read-only browser viewport
-  with camera navigation and per-LoD relative-mass colouring. Useful for visual
-  linguistic/physics inspection; removable and not a long-term engine requirement.
+- **Optional human observation and analysis:** #151, separate read-only browser
+  viewport with camera navigation and per-LoD relative-mass colouring. Patrick's
+  two purposes are making data shape tangible and using human visual pattern
+  recognition/intuitive quantitative judgment. The [purpose and implementation
+  plan](docs/viewport-purpose-and-plan.md) is accepted in #154; implementation
+  follows in a separate PR and is not yet built.
+  The tool remains removable and is not a long-term engine requirement.
 - **Hardware validation:** #145, local GPU execution and allocation/transfer
   evidence. #150's CPU review is complete; #152's simplification is accepted in #153,
   not a claim that GPU tests or pinning have already passed.
