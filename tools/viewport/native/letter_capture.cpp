@@ -1,11 +1,9 @@
 #include "capture_options.h"
+#include "signal_guard.h"
 #include "snapshot.h"
-
-#include <signal.h>
 
 #include <algorithm>
 #include <chrono>
-#include <csignal>
 #include <cstdlib>
 #include <filesystem>
 #include <functional>
@@ -26,24 +24,6 @@ std::string env(const char *name) {
   if (!v || !*v) throw std::invalid_argument(std::string("missing ") + name);
   return v;
 }
-// Signals only set this flag (async-signal-safe); the capture loop acts on it between ticks.
-volatile std::sig_atomic_t stop_flag = 0;
-void on_signal(int) { stop_flag = 1; }
-bool stop_requested() { return stop_flag != 0; }
-void install_stop_handlers() {
-  struct sigaction action {};
-  action.sa_handler = on_signal;
-  action.sa_flags = SA_RESETHAND;  // A second signal takes the default action: a stuck run stays killable.
-  sigemptyset(&action.sa_mask);
-  sigaction(SIGINT, &action, nullptr);
-  sigaction(SIGTERM, &action, nullptr);
-}
-// Releases the owned warm pin when still held, ignoring errors; release() is the checked success path.
-struct Pin {
-  std::function<void()> release_fn;
-  ~Pin() { try { if (release_fn) release_fn(); } catch (...) {} }
-  void release() { auto f = std::move(release_fn); release_fn = nullptr; f(); }
-};
 warm::ObjectKey object(const std::string &s) {
   const auto address = codec::decode_token_id(s);
   if (!address) throw std::invalid_argument("invalid fixture address");
@@ -71,6 +51,11 @@ int main(int argc, char **argv) {
     // failure: no CPU fallback.
     std::unique_ptr<ActiveSession> started;
     try {
+      // Signals blocked while the engine may start threads: they inherit the mask, so a later
+      // process-directed signal is only ever delivered to this thread, whose mask is controlled
+      // around the lease boundary. A signal that arrives meanwhile (nothing is held yet) is
+      // delivered on unblocking with the default action.
+      viewport::SignalBlock engine_threads_inherit_block;
       started = std::make_unique<ActiveSession>(settings);
     } catch (const std::exception &e) {
       std::cerr << "viewport letter capture failed: engine startup: " << e.what() << '\n';
@@ -150,12 +135,12 @@ int main(int argc, char **argv) {
     const auto recipe = normalize_letters(definitions, requests);
     const auto ticket = manager.publish(recipe);
     const auto consumer = new_uuid();
-    const auto pinned = manager.acquire(ticket, consumer);
-    Pin pin{[&] { manager.release(ticket, consumer); }};  // Released on every exit path.
-    // Handlers go in back to back with the guard: from here a signal is only noted, so a signal
-    // during submit lets setup finish, then stops after the tick-0 capture with the pin released.
-    // Before this point the default action stays (nothing is held yet).
-    install_stop_handlers();
+    // acquire commits the persistent lease before it returns, so signals stay blocked from before
+    // it runs until the release guard exists and the handlers are installed. A signal in that
+    // window is then delivered to the graceful handler: setup finishes, the tick-0 capture is the
+    // final capture and the pin is released. Before the acquire the default action stays.
+    auto [pinned, pin] = viewport::acquire_guarded(
+      [&] { return manager.acquire(ticket, consumer); }, [&] { manager.release(ticket, consumer); });
     auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)
       .focus({{GroupKind::SiblingDefinition, key(english.object)}});
     field::Parameters parameters;
@@ -172,9 +157,9 @@ int main(int argc, char **argv) {
     const auto capture = [&](bool final) {
       if (previous && options.pace_ms)
         for (const auto due = *previous + std::chrono::milliseconds(options.pace_ms);
-             !stop_requested() && Clock::now() < due;)
+             !viewport::stop_requested() && Clock::now() < due;)
           std::this_thread::sleep_for(std::min<Clock::duration>(due - Clock::now(), std::chrono::milliseconds(20)));
-      final = final || stop_requested();
+      final = final || viewport::stop_requested();
       auto ctx = viewport::context(logical, handle, completed, "Retained English/French/Dutch letter study");
       ctx.source = {{"kind", "retained_cold_to_warm_to_active"},
         {"core_export_sha256", "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121"},
@@ -204,7 +189,7 @@ int main(int argc, char **argv) {
     while (!final) {
       session.tick(handle, parameters);
       ++completed;
-      final = completed == options.ticks || stop_requested();
+      final = completed == options.ticks || viewport::stop_requested();
       if (final || viewport::captures_at(completed, options)) final = capture(final);
     }
     pin.release();

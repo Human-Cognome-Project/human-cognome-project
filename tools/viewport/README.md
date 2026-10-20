@@ -210,13 +210,18 @@ rename gives reader atomicity, not crash durability (no `fsync`). One writer per
 output directory is the supported use: a concurrent second writer leaves the
 final content undefined, though readers still never see a torn file.
 
-`SIGINT` or `SIGTERM` only sets a flag. The handlers are installed immediately
-after the warm pin is acquired, together with the pin's release guard. A signal
-during the later engine setup is noted: setup finishes, the tick-0 capture is
-written as the final capture and the run exits 0 with the pin released. A signal
-before the pin is acquired (including a hung database connection), or a second
-signal of the same kind, takes the default action and ends the process
-immediately without releasing the pin or writing evidence. A launcher that
+`SIGINT` or `SIGTERM` only sets a flag. The warm acquire commits its lease
+before it returns, so both signals are blocked from before the acquire until the
+pin's release guard exists and the handlers are installed, then unblocked: a
+signal that arrived in that window is delivered to the graceful handler. (The
+engine's threads are started with the signals blocked and so never receive
+them.) A signal during the later engine setup is likewise noted: setup finishes,
+the tick-0 capture is written as the final capture and the run exits 0 with the
+pin released. A signal before the acquire (including a hung database connection,
+and the engine start-up), or a second signal of the same kind, takes the default
+action and ends the process immediately without releasing the pin or writing
+evidence; so does `SIGKILL`. These forced terminations are a documented
+limitation: a lease left that way stays in the warm database. A launcher that
 starts the client with `SIGINT` ignored (for example `&` from a non-interactive
 shell) makes a setup-phase `SIGINT` a no-op; `SIGTERM` is unaffected. In the
 loop, the client finishes the current tick (or ends a pacing sleep early), writes
