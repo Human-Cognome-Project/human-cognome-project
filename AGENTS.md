@@ -131,7 +131,7 @@ bindings, and their internal production layout remains deferred.
 tracks endpoint sub-classification and numeric/operator coverage/placement as a
 separate follow-up, preserving seed identities and adding no gate on that milestone.
 
-## Active and deferred work — 2026-10-19
+## Active and deferred work — 2026-10-20
 
 - **Completed cleanup:** #152, accepted in #153; type-defined binary activity phases. Do not turn
   current/next bookkeeping into an independent scheduling policy.
@@ -140,11 +140,12 @@ separate follow-up, preserving seed identities and adding no gate on that milest
   two purposes are making data shape tangible and using human visual pattern
   recognition/intuitive quantitative judgment. The [purpose and implementation
   plan](docs/viewport-purpose-and-plan.md) is accepted in #154. The optional
-  [exporter/viewer](tools/viewport/README.md) is implemented for review, with
-  16-occurrence real CPU captures, 37 exporter checks and offline browser
-  evidence. Managed cloud Chromium blocks direct-file navigation; the exact
-  assets were tested in memory, with local/CI file navigation tracked separately.
-  The tool remains removable and is not a long-term engine requirement.
+  [exporter/viewer](tools/viewport/README.md) is accepted/merged in #155 at
+  `8898a776671cc87be966e3612e855f826bb2282c` on 2026-10-20 after all nine
+  hosted checks passed, including native CPU and direct-file offline browser
+  validation. Evidence includes 16-occurrence real CPU captures and 37 exporter
+  checks. #151 is complete. The tool remains removable and is not a long-term
+  engine requirement; native GPU execution/pinning remains unverified under #145.
 - **Hardware validation:** #145, local GPU execution and allocation/transfer
   evidence. #150's CPU review is complete; #152's simplification is accepted in #153,
   not a claim that GPU tests or pinning have already passed.
