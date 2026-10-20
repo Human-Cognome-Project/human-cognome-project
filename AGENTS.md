@@ -139,8 +139,11 @@ separate follow-up, preserving seed identities and adding no gate on that milest
   viewport with camera navigation and per-LoD relative-mass colouring. Patrick's
   two purposes are making data shape tangible and using human visual pattern
   recognition/intuitive quantitative judgment. The [purpose and implementation
-  plan](docs/viewport-purpose-and-plan.md) is accepted in #154; implementation
-  follows in a separate PR and is not yet built.
+  plan](docs/viewport-purpose-and-plan.md) is accepted in #154. The optional
+  [exporter/viewer](tools/viewport/README.md) is implemented for review, with
+  16-occurrence real CPU captures, 37 exporter checks and offline browser
+  evidence. Managed cloud Chromium blocks direct-file navigation; the exact
+  assets were tested in memory, with local/CI file navigation tracked separately.
   The tool remains removable and is not a long-term engine requirement.
 - **Hardware validation:** #145, local GPU execution and allocation/transfer
   evidence. #150's CPU review is complete; #152's simplification is accepted in #153,

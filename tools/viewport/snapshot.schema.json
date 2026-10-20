@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hcp:study-snapshot:1",
+  "title": "HCP static study capture v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "capture", "frame", "bindings", "particles", "source"],
+  "properties": {
+    "schema": {"const": "hcp-study-snapshot"},
+    "version": {"const": 1},
+    "capture": {
+      "type": "object", "additionalProperties": false,
+      "required": ["session", "study", "generation", "tick", "phase", "label"],
+      "properties": {
+        "session": {"$ref": "#/$defs/uuid"},
+        "study": {"$ref": "#/$defs/uuid"},
+        "generation": {"$ref": "#/$defs/uuid"},
+        "tick": {"$ref": "#/$defs/decimal"},
+        "phase": {"enum": ["published_seeded", "post_tick"]},
+        "label": {"type": "string"}
+      }
+    },
+    "frame": {
+      "type": "object", "additionalProperties": false,
+      "required": ["coordinates", "units", "reference", "camera_target", "target_kind", "focal_fields"],
+      "properties": {
+        "coordinates": {"const": "reference_local"},
+        "units": {"const": "operative_model_units"},
+        "reference": {"$ref": "#/$defs/point"},
+        "camera_target": {"$ref": "#/$defs/point"},
+        "target_kind": {"enum": ["legacy_origin", "captured_focal_centroid"]},
+        "focal_fields": {
+          "type": "array", "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind", "value", "position", "mass"],
+            "properties": {
+              "kind": {"enum": ["sibling_definition", "parent_value", "membership"]},
+              "value": {"type": "string", "minLength": 1},
+              "position": {"$ref": "#/$defs/point"},
+              "mass": {"type": "number", "exclusiveMinimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "bindings": {
+      "type": "array", "minItems": 1, "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "parent", "role", "units", "level"],
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "parent": {"type": "integer", "minimum": -1},
+          "role": {"enum": ["root", "primary_step", "secondary_compression", "naming_equivalent"]},
+          "units": {"type": "number", "exclusiveMinimum": 0},
+          "level": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "particles": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "definition", "slot", "position", "radius", "mass", "exact_mass", "binding", "level", "exposure", "aggregate", "label"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "definition": {"type": "string", "minLength": 1},
+          "slot": {"type": "integer", "minimum": 0},
+          "position": {"$ref": "#/$defs/point"},
+          "radius": {"type": ["number", "null"], "minimum": 0},
+          "mass": {"type": ["number", "null"], "minimum": 0},
+          "exact_mass": {"$ref": "#/$defs/decimal"},
+          "binding": {"type": "integer", "minimum": 0},
+          "level": {"type": "integer", "minimum": 0},
+          "exposure": {"enum": ["aggregate", "parts", "standalone"]},
+          "aggregate": {"type": "string", "minLength": 1},
+          "label": {"type": "string"}
+        }
+      }
+    },
+    "source": {"type": "object"}
+  },
+  "$defs": {
+    "uuid": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "decimal": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"},
+    "point": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
+  }
+}

@@ -1,9 +1,11 @@
 # Human viewport: purpose and implementation plan
 
-Status: **accepted plan in #154, 2026-10-20; implementation not yet built**. This document records Patrick's
+Status: **accepted plan in #154, 2026-10-20; first implementation under review**. This document records Patrick's
 purpose clarification and proposes the first implementation of
 [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151).
-The viewport and exporter are not built by this documentation change.
+The optional [viewport and exporter](../tools/viewport/README.md) now implement
+this first slice, with bounded CPU/browser evidence and direct-file testing
+limits recorded there. This document retains the accepted plan below.
 The native basis is accepted #149/#150/#153.
 
 ## Purpose

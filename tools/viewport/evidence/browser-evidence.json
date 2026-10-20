@@ -1,0 +1,18 @@
+{
+  "checks": 73,
+  "browser": "154.0.8037.57",
+  "transport": "in-memory exact page assets, offline browser context",
+  "direct_file_navigation": "unexecuted here: managed Chromium blocks file:// navigation",
+  "renderer": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "engine_backend": "native CPU capture; Taichi GPU unexecuted",
+  "particles": 16,
+  "snapshot_sha256": "52a048a28aff2f157e6b3a7dd5aebd62539d85630422ecb7315e52221a1db388",
+  "snapshot_bytes": 9579,
+  "metrics": {
+    "parse_ms": 3.199999988079071,
+    "build_ms": 2.7999999821186066,
+    "render_submit_ms": 21.30000001192093
+  },
+  "network_requests": 0,
+  "browser_errors": []
+}
