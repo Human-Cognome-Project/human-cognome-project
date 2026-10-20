@@ -94,8 +94,8 @@ needed only for the retained-data capture client.
 
 ```sh
 cmake -S engine -B engine/build -DHCP_WITH_VIEWPORT=ON -DHCP_WITH_WARM_INTEGRATION=ON
-cmake --build engine/build --target viewport_snapshot_test viewport_letter_capture -j 2
-ctest --test-dir engine/build -R '^viewport_snapshot_test$' --output-on-failure
+cmake --build engine/build --target viewport_snapshot_test viewport_options_test viewport_letter_capture -j 2
+ctest --test-dir engine/build -R '^viewport_(snapshot|options)_test$' --output-on-failure
 . engine/build/engine-env.sh
 ```
 
@@ -107,18 +107,40 @@ validated [paired cold sources](../../data/postgres/snapshots/2026-10-13-letter-
 The embedding owner attests those source export hashes; the client does not
 infer provenance from a DB name. Its `ColdReader` connections enforce read-only
 sessions. It publishes a supplied public recipe, acquires an owned warm pin,
-assembles a native study, captures ticks 0/8, then releases its own pin.
+assembles a native study, captures tick 0 and the final tick (8 by default),
+then releases its own pin.
 
 ```sh
-engine/build/viewport/viewport_letter_capture /tmp/hcp-view-capture
+engine/build/viewport/viewport_letter_capture /tmp/hcp-view-capture [options]
 ```
+
+Options are parsed natively; an unknown option or invalid value prints the usage
+to stderr and exits 2 before any database or engine work. With none, the
+capture is the fixed 8-tick CPU run and file names above.
+
+| Option | Meaning |
+|---|---|
+| `--backend cpu\|cuda` | Engine backend (default `cpu`). `cuda` needs a matched Taichi build with CUDA and a device; otherwise the engine's startup error is reported and the exit status is non-zero. There is no silent CPU fallback. |
+| `--ticks N` | Total completed ticks, N >= 1 (default 8). |
+| `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
+| `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
+
+`tick0` and the final tick are written as `letter-study-tick0.json` and
+`letter-study.json`. `native-evidence.json` records the backend actually passed
+to the engine (`native_cpu` or `native_cuda`), `ticks`, `dt` and `cpu_threads`
+beside its existing keys. A CUDA run is functional execution only: it is not a
+GPU performance or pinning qualification (#145).
 
 For an existing owned Linux PostgreSQL Docker container, this helper packages
 the matched executable/runtime and creates a new warm fixture itself:
 
 ```sh
-bash tools/viewport/run-capture.sh engine/build OWNED_CONTAINER RETAINED_CORE_DB RETAINED_LING_DB /tmp/hcp-view-capture
+bash tools/viewport/run-capture.sh engine/build OWNED_CONTAINER RETAINED_CORE_DB RETAINED_LING_DB /tmp/hcp-view-capture [client options]
 ```
+
+Any arguments after the output directory pass through to the client. The
+container path is CPU-only unless that container itself has GPU access and a
+CUDA-enabled build is packaged; otherwise `--backend cuda` fails as above.
 
 The helper retains that warm fixture, verifies complete cold data-only hashes
 before/after even on failure, and writes captures plus evidence to the output

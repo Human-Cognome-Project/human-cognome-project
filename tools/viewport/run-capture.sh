@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Package the native client into an existing owned PostgreSQL container.
 # Creates and retains a fresh warm fixture. Cold sources are never reset.
+# Arguments after the output directory pass through to the capture client.
 set -euo pipefail
 hcp_view_build=$(realpath "${1:?Pass engine build directory}")
 hcp_view_container=${2:?Pass owned PostgreSQL container}
@@ -57,7 +58,7 @@ docker exec --user postgres \
   --env "XDG_CACHE_HOME=/tmp/$hcp_view_db-cache" \
   "$hcp_view_container" "/tmp/$hcp_view_db/libs/$hcp_view_loader_name" \
   --library-path "/tmp/$hcp_view_db/libs" "/tmp/$hcp_view_db/viewport_letter_capture" \
-  "/tmp/$hcp_view_db-output" | tee "$hcp_view_output/native-checks.txt"
+  "/tmp/$hcp_view_db-output" "${@:6}" | tee "$hcp_view_output/native-checks.txt"
 docker cp "$hcp_view_container:/tmp/$hcp_view_db-output/." "$hcp_view_output/"
 printf '%s\n' "$hcp_view_db" > "$hcp_view_output/warm-fixture.txt"
 printf 'Retained warm fixture: %s\nCapture output: %s\n' "$hcp_view_db" "$hcp_view_output"

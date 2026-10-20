@@ -1,3 +1,4 @@
+#include "capture_options.h"
 #include "snapshot.h"
 
 #include <chrono>
@@ -5,6 +6,7 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <memory>
 
 #include "shared_manager.h"
 
@@ -26,15 +28,31 @@ warm::ObjectKey object(const std::string &s) {
 }
 int main(int argc, char **argv) {
   try {
-    if (argc != 2) {
-      std::cerr << "usage: viewport_letter_capture OUTPUT_DIRECTORY\n"
-        "HCP_WARM_TEST_CONNINFO: fresh warm DB with schema.sql; "
-        "HCP_CORE_TEST_CONNINFO/HCP_LING_TEST_CONNINFO: retained read-only sources\n";
+    viewport::Options options;
+    try {
+      options = viewport::parse_options(std::vector<std::string>(argv + 1, argv + argc));
+    } catch (const viewport::UsageError &e) {
+      std::cerr << e.what() << '\n' << viewport::usage();
       return 2;
     }
     using namespace warm;
     using namespace assembly;
-    std::filesystem::create_directories(argv[1]);
+    std::filesystem::create_directories(options.output);
+    engine::InstanceSettings settings;
+    settings.cuda = options.cuda;
+    settings.read_environment = false;
+    settings.cpu_threads = options.cpu_threads;
+    // Started before any database work. The engine's own error (for example CUDA requested
+    // on a CPU-only Taichi build) carries no deployment details and is the actionable
+    // failure: no CPU fallback.
+    std::unique_ptr<ActiveSession> started;
+    try {
+      started = std::make_unique<ActiveSession>(settings);
+    } catch (const std::exception &e) {
+      std::cerr << "viewport letter capture failed: engine startup: " << e.what() << '\n';
+      return 1;
+    }
+    ActiveSession &session = *started;
     const auto actor = new_uuid(), owner = new_uuid(), instance = new_uuid(), epoch = new_uuid();
     const auto conn = env("HCP_WARM_TEST_CONNINFO");
     Administrator admin(conn);
@@ -103,17 +121,14 @@ int main(int argc, char **argv) {
     const auto pinned = manager.acquire(ticket, consumer);
     auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)
       .focus({{GroupKind::SiblingDefinition, key(english.object)}});
-    engine::InstanceSettings settings;
-    settings.read_environment = false;
-    settings.cpu_threads = 1;
-    ActiveSession session(settings);
     field::Parameters parameters;
-    parameters.dt = 0.1f;
+    parameters.dt = float(options.dt);
     const auto handle = session.submit(logical, parameters);
-    viewport::Json evidence{{"backend", "native_cpu"}, {"ticks", 8}, {"source_calls", manager.activity().source_calls}};
-    for (std::uint64_t tick = 0; tick <= 8; ++tick) {
+    viewport::Json evidence{{"backend", settings.cuda ? "native_cuda" : "native_cpu"}, {"ticks", options.ticks},
+      {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)}, {"source_calls", manager.activity().source_calls}};
+    for (std::uint64_t tick = 0; tick <= options.ticks; ++tick) {
       if (tick) session.tick(handle, parameters);
-      if (tick != 0 && tick != 8) continue;
+      if (tick != 0 && tick != options.ticks) continue;
       auto ctx = viewport::context(logical, handle, tick, "Retained English/French/Dutch letter study");
       ctx.source = {{"kind", "retained_cold_to_warm_to_active"},
         {"core_export_sha256", "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121"},
@@ -126,13 +141,13 @@ int main(int argc, char **argv) {
       const auto report_ms = ms(report_start);
       const auto start = Clock::now();
       const auto value = viewport::snapshot(report, ctx);
-      const auto path = std::filesystem::path(argv[1]) / (tick == 0 ? "letter-study-tick0.json" : "letter-study.json");
+      const auto path = std::filesystem::path(options.output) / (tick == 0 ? "letter-study-tick0.json" : "letter-study.json");
       viewport::write(path.string(), value);
       evidence["captures"].push_back({{"tick", tick}, {"particles", value["particles"].size()},
         {"report_ms", report_ms}, {"export_ms", ms(start)}, {"bytes", std::filesystem::file_size(path)}});
     }
     manager.release(ticket, consumer);
-    viewport::write((std::filesystem::path(argv[1]) / "native-evidence.json").string(), evidence);
+    viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
   } catch (const std::exception &e) {
     // Source/SQL exceptions can carry deployment details: keep public output generic.
