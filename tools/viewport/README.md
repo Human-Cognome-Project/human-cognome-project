@@ -35,9 +35,11 @@ permitted to open the page; this tool does not change browser policies.
   extent and zero radius. Camera clipping/occlusion is separate. There is no
   subsampling or imposed particle-count cap; capacity has only been tested at
   the counts in the evidence below.
-- Every file is a static capture. A new valid file replaces the displayed
-  generation and clears selection/filters. Invalid or unsupported files show an
-  error and leave the previous capture identified. No browser action controls
+- Every opened file is a static capture, labelled **STATIC**. A new valid file
+  replaces the displayed generation and clears selection/filters (and ends any
+  folder watch). Invalid or unsupported files show an error and leave the
+  previous capture identified. A watched folder is the only way captures change
+  without a new file choice; see below. No browser action controls
   the engine, alters its inputs or looks up labels externally.
 
 The two examples contain the same **16 exposed occurrences** at publication
@@ -49,6 +51,62 @@ is explicitly supplied: centred spheres with node-local radius 0.25 for Dutch
 aggregates, 0.125 otherwise. The native preparation performs its existing unit
 conversion; the viewer uses the resulting radii. The example establishes real
 report integration, not a claim about natural language coherence or settling.
+
+### Watch a running capture
+
+**Proposed in this PR, not yet accepted.** A running native capture can write
+each coherent capture, atomically, as `latest.json` in its output directory
+every K ticks (K is the native tick frequency). Choose **Watch folder** and
+select that directory to see each new capture as it appears, while keeping the
+same spatial frame to watch whether a coherent pattern forms.
+
+- **Browser.** Needs the File System Access API, so a Chromium-based desktop
+  browser. The page asks for **read-only** access to the one folder you choose,
+  for that tab only; Chromium refuses a few system folders, so pick a dedicated
+  capture directory. Each check looks `latest.json` up by name again, so
+  a replacement file written by rename is always read whole. No server or
+  network is involved and the page cannot write to the folder. Where the API
+  is absent (for example Firefox), the control is disabled with an explanation;
+  **Open snapshot** still works and no browser policy is changed.
+  Checked: on a direct `file://` page in Chromium 145 (Playwright's
+  `chromium-1208`) `showDirectoryPicker` is a function and the page is a
+  secure context. The browser test asserts this and writes it to its results;
+  the retained evidence file below predates watch mode. The folder picker
+  itself needs a person, so the test drives watching through a page-side
+  source with the same `getFileHandle()`/`getFile()` shape. An origin-private
+  directory handle was not usable from `file://` (`SecurityError`), so a real
+  directory handle remains unverified by automation.
+- **Update frequency.** **Check every (ms)** sets only how often the viewer
+  looks, default 1000, minimum 100, remembered locally when the browser permits.
+  It is independent of simulation tick rate and of K. A file whose modified time
+  and size are unchanged is not read or parsed again, and a capture with the
+  same session, study, generation and tick is not re-applied. **Pause** stops
+  checking and applying (**Resume** catches up to the newest file) and
+  **Stop watching** ends the watch, leaving the last capture as a static display.
+- **Status.** The tag beside Capture reads STATIC for opened files, and LIVE,
+  PAUSED, WAITING (no `latest.json` yet, still polling), ERROR or STALE while
+  watching. STALE is only a display hint: no new capture for more than ten
+  checks (at least ten seconds). The Live updates panel and footer show the
+  applied tick, wall time of the last change and time since it.
+- **Same study keeps your view.** A capture with the same session and study as
+  the one displayed updates positions, masses, metadata and the inspection panel
+  in place. Camera position and target, level/exposure/search filters and the
+  selection are kept; the selection is found again by occurrence ID and is
+  cleared only if that ID is absent from the new capture or filtered out. The
+  first watched capture, and any capture with a different session or study,
+  behave exactly like opening a new file: the generation is replaced,
+  selection and filters are cleared and the camera frames it.
+- **Colour is relative within each update.** Mass ranges and legends are
+  computed per capture, as for any opened file, so a sphere's colour compares
+  it only with the same level of that capture. Colours can shift between
+  updates as the masses change; read the legend values, not the hue alone.
+- **Bad or missing files.** If `latest.json` is malformed, unsupported or
+  unreadable, the previous capture stays displayed and identified with the error,
+  and watching continues; the next valid capture recovers automatically. A
+  missing file means the run has not started and shows WAITING.
+
+The viewer controls only its own looking. It does not start, stop or configure
+the capture, and the native side does not need the page.
 
 ## Snapshot contract
 
@@ -214,6 +272,14 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
+Watch-mode checks (37 additional, 110 in all) feed the retained tick 0 and 8
+captures (107 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
+folder source: same-study camera/filter/selection preservation, updated values
+and per-capture colours, invalid/unsupported/missing files with recovery,
+unchanged files not re-read, interval and its minimum, pause/resume, stop,
+different-study replacement, opening a file during a watch, and the
+unsupported-API fallback. They show viewer behaviour, not native evidence.
 
 ## Recorded evidence and dependencies
 
@@ -232,7 +298,7 @@ integer/escaped-label cases. Synthetic cases establish UI behavior only.
 These are single-run observations on the cloud CPU, not performance guarantees.
 Native CPU integration and software browser WebGL are distinct from unexecuted
 Taichi GPU execution/pinning work under #145. Fields/edges, activity overlays,
-refresh/timeline, dynamic LoD and engine controls remain outside this tool.
+time scrubbing, dynamic LoD and engine controls remain outside this tool.
 Engine operation and tests do not require the page or the optional target.
 
 Three.js 0.180.0/OrbitControls and Ajv 8.17.1 are bundled by esbuild 0.25.10 from

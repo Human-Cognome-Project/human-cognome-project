@@ -214,11 +214,23 @@ Three.js dependency, numerical-mass colour mapping and bounded real-letter
 demonstration are accepted for this first slice. Capture-origin phase handling
 below is part of that contract. The two human purposes above are Patrick's stated intent.
 
-Edges/hulls, centroid markers, activity overlays, refresh, time scrubbing and
+Edges/hulls, centroid markers, activity overlays, time scrubbing and
 binary transport remain follow-ups. A later centroid marker needs a distinct
 symbol without invented physical extent. Any later activity display must state
 its observed phase and keep selection, motion and settledness distinct.
-Later refresh must use coherent captures independently of simulation tick rate.
+Refresh must use coherent captures independently of simulation tick rate.
+
+**Live refresh is proposed in this PR, not accepted.** The native capture client
+would write each coherent capture (snapshot v1, unchanged) atomically as
+`latest.json` every K ticks, K being the native tick frequency. The browser
+would watch that folder read-only through the File System Access API at its own
+configurable polling interval, independent of K and of simulation tick rate.
+Captures within one session and study update in place and keep the camera,
+filters and selection by occurrence ID, so the person's spatial frame stays
+stable while the model changes; a first or different session/study replaces the
+display as a new file does. Mass colour ranges stay per capture. It adds no
+engine control or network, and invalid or missing captures keep the previous one
+displayed. See the [watch behaviour](../tools/viewport/README.md#watch-a-running-capture).
 
 Dynamic LoD selection/slopes, analyst behavior, general recomposition, physics
 changes, deferred #75 and held #123 are outside this plan. GPU execution and
