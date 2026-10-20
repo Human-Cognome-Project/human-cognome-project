@@ -40,7 +40,7 @@ references, not another mandatory reading sequence.
   selective particle/centroid gates, supplied focal origin, demand counts and
   accepted/merged in #150; CPU prerequisite satisfied, GPU evidence under #145.
 - [Type-phase simplification #152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152) — accepted/merged in #153; one native activity set per type, with type-defined phases.
-- [Human viewport purpose and proposed plan](viewport-purpose-and-plan.md), [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151) — proposed read-only observation and reasoning aid: make the data shape tangible and support human visual pattern recognition; optional/removable, with no implementation in this plan.
+- [Human viewport purpose and accepted plan](viewport-purpose-and-plan.md), [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151) — plan accepted in #154 for a read-only observation and reasoning aid: make the data shape tangible and support human visual pattern recognition; optional/removable, with no implementation in this plan.
 
 Held/deferred PRs: #123 (unaccepted general identity contract), #111 (unresolved
 command atomicity/restart), and #75 (optional historical monitor draft). They
