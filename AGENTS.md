@@ -22,6 +22,17 @@ native activity, coordinate precision and owner/private boundaries. Distinguish
 new insertion from survivor updates and coordinate rebasing. Do not replace the
 settled insertion rule with random starts, a lattice or a semantic heuristic.
 
+**Continuous insertion is required (Patrick, 2026-10-20):** the running
+simulation must admit new objects and relationships while preserving existing
+positions, motion and relevant activity state. Removing supplied coordinates alone
+does not complete #156. Equal-count `FixedStudy` is a historical test limitation,
+not the operational contract. Correct growth of particle/group/edge/contact
+storage, native activity capacity, adjacency and report generations together.
+Use safe engine update boundaries and native Taichi facilities; ordinary insertion
+must not restart/reseed the construct or be deferred behind held #123. Acceptance
+must exercise repeated live insertions and a real capacity boundary on CPU and
+local GPU. These changes are required, not yet built.
+
 ## Current state
 
 Last checked: **2026-10-20**.
