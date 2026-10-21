@@ -37,7 +37,9 @@ covered by a separate test-only sequence, without altering the retained inventor
 
 Exactly two destination foreign keys differ from the original schema:
 `hcp_core.token_child.child_token_id` and
-`hcp_linguistics.token_parent.parent_token_id` may now point to the other store.
+`hcp_linguistics.token_parent.parent_token_id` may now point to the other store
+(here `hcp_core` and `hcp_linguistics` are the export's store labels, not
+required database names).
 Owner-token and all membership keys remain. The core's exact original mass
 trigger is retained; Linguistics has none. Core tokens, parents, memberships and
 every pre-existing child row were preserved. The identical rerun added zero rows.
@@ -58,25 +60,90 @@ journal for recovery there; a restored copy is evidence, not the same transactio
 of both exact compressed payloads into new empty PostgreSQL 16.15 databases.
 Counts, whole masses, NULL cells, ordered parents, membership reciprocals,
 core child links, schema/trigger definitions and core row digests pass read-back.
+The restore was also read back onto an existing PostgreSQL 16.13 server on
+2026-10-20; see [Restoring onto an existing server](#restoring-onto-an-existing-server).
 
-Use PostgreSQL/psql 16.15 or newer. From the repository root, these example names
-create new databases without replacing an existing installation:
+Use a `psql` client of 16.15 or newer (the exports were written by `pg_dump`
+16.15, whose `\restrict` / `\unrestrict` lines are `psql` meta-commands). The
+server version is a separate matter: the pair was also restored and read back
+exactly on an existing PostgreSQL **16.13** server using 16.15 client tools
+(2026-10-20). That is an observation, not a guarantee for other versions. From
+the repository root, this example creates new databases without replacing
+an existing installation. The database names are deployment configuration:
+choose them yourself and set `CORE_DB` and `LINGUISTICS_DB` (the placeholders
+below) to names that do not yet exist on the server. Ordinary engine use
+connects to the configured retained stores; this restore is for recovery or
+isolated validation, and creates a separate database only for that explicit
+purpose.
 
 ```bash
 set -euo pipefail
+: "${CORE_DB:?set to the new, empty target database name}"
+: "${LINGUISTICS_DB:?set to the new, empty target database name}"
 git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
-createdb --template=template0 --encoding=UTF8 hcp_core_seed
-createdb --template=template0 --encoding=UTF8 hcp_linguistics_seed
+createdb --template=template0 --encoding=UTF8 "$CORE_DB"
+createdb --template=template0 --encoding=UTF8 "$LINGUISTICS_DB"
 gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_core.sql.gz \
-  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_core_seed
+  | psql -X --set=ON_ERROR_STOP=1 --dbname="$CORE_DB"
 gzip -dc data/postgres/snapshots/2026-10-13-letter-seed-validation/hcp_linguistics.sql.gz \
-  | psql -X --set=ON_ERROR_STOP=1 --dbname=hcp_linguistics_seed
+  | psql -X --set=ON_ERROR_STOP=1 --dbname="$LINGUISTICS_DB"
 ```
 
-The two databases may use different local names; their token addresses are
-unchanged. Fetch the Git LFS payloads before restoring. These exports already
-contain the seed data and the two reviewed foreign-key changes; do not rerun the
+A database name is deployment configuration; the snapshot filename, date and
+label are provenance of the artifact. Neither determines the other, and token
+addresses are unchanged by whatever names are chosen. Fetch the Git LFS
+payloads before restoring. These exports already contain the seed data and the two reviewed foreign-key changes; do not rerun the
 population writer just to load the pair. The bootstrap-only mutation restriction
 described above continues to apply to the restored cross-linked stores.
+
+### Restoring onto an existing server
+
+The commands above assume a local default connection. These adjustments cover
+mounting the pair on an existing PostgreSQL server, which may be remote or
+host-installed. Nothing here relaxes the new-empty-database requirement.
+
+- **Connection settings.** Select the server through libpq configuration rather
+  than command-line arguments: a `~/.pg_service.conf` service (`[NAME]` with
+  `host`, `port`, `user`), or `PGHOST` / `PGPORT` / `PGUSER`, with the password
+  in `~/.pgpass` (mode 600). Never put credentials or private host details in
+  Git. Then, for example,
+  `createdb --maintenance-db="service=NAME" --template=template0 --encoding=UTF8 "$CORE_DB"`
+  and `psql --dbname="service=NAME dbname=$CORE_DB"` (likewise for
+  `$LINGUISTICS_DB`).
+- **Atomic restore.** Add `--single-transaction` to the `psql` restore commands
+  (alongside `ON_ERROR_STOP`). A failed restore then leaves an empty database
+  rather than a partial one.
+- **Names are local configuration.** Database names are deployment
+  configuration; the snapshot filename, date or label is artifact provenance.
+  Neither determines the other, and the former `*_seed` suffix was an example
+  conflation, not a required namespace or an instruction to create another
+  persistent database per snapshot or run. Supply the chosen names at invocation
+  (`dbname=` in a conninfo string, the `HCP_*_TEST_CONNINFO` variables, or a
+  service entry), never hard-coded in repository code. The protections against
+  restoring over populated stores stand: restore only into a new, empty
+  database, and if a database with the intended name already exists, choose a
+  different name for the new one. This guidance authorizes no rename,
+  overwrite, drop or migration of any existing database; any such change is the
+  owner's separate decision and is outside this document.
+
+#### Read-back verification
+
+After restoring, compare per-table counts with
+[RESTORE-VALIDATION.json](RESTORE-VALIDATION.json) (all ten tables) and, for the
+core, the order-independent row digest recorded under `core_after` in
+[COUNTS.json](COUNTS.json). This is the method used by `snapshot()` in
+[`tools/linguistics/populate.py`](../../../../tools/linguistics/populate.py). For
+each of `token`, `token_parent`, `token_child`, `members` and `member_of` on the
+restored core:
+
+```sql
+SELECT count(*),
+  COALESCE(sum(('x'||substr(md5(r::text),1,16))::bit(64)::bigint),0)::text AS h1,
+  COALESCE(sum(('x'||substr(md5(r::text),17,16))::bit(64)::bigint),0)::text AS h2
+FROM public.token r;  -- repeat for each table name
+```
+
+`count`, `h1` and `h2` must equal that table's `core_after` entry exactly. On
+the 2026-10-20 mount, every count and all five core digests matched.
 
 See [writer and validation instructions](../../../../docs/letter-population-writer.md).

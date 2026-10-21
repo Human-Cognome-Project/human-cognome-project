@@ -37,6 +37,14 @@ For CUDA, the current recovered tests already:
 - compare CPU/CUDA model outcomes where deterministic comparison is meaningful;
 - carry the dedicated >2^31 dense-array indexing regression on both backends.
 
+The local CUDA build recipe, target selection and runtime requirements are in
+[engine/README.md](../README.md#local-cuda-build). A 2026-10-20 build on a
+GTX 1070 passed five CUDA functional checks (see
+[CUDA-LOCAL-VALIDATION.md](CUDA-LOCAL-VALIDATION.md)); the full Gate 2 set,
+including the >2^31 indexing regression and CPU/CUDA comparison, was not
+recorded, so Gate 2 is not claimed complete. This is functional execution, not
+performance or pinning qualification.
+
 This gate belongs on hardware that actually provides the accelerator. It is not
 made a GitHub-hosted CI prerequisite.
 

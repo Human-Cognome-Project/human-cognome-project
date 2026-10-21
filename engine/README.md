@@ -104,6 +104,77 @@ ctest --test-dir engine/build --output-on-failure
 A different fork/build can still be supplied with
 `ENGINE_TAICHI_ROOT` / `ENGINE_TAICHI_BUILD`.
 
+### Local CUDA build
+
+Observed 2026-10-20 (see below) on a GTX 1070 (compute capability 6.1), NVIDIA
+driver 535.309.01, Ubuntu 24.04, LLVM/clang 15. **No CUDA toolkit or `nvcc` is
+installed or needed:** Taichi's CUDA backend emits PTX through LLVM NVPTX and
+talks to the driver's `libcuda`.
+
+1. Fetch the pinned submodules as CI does. If GitLab is unavailable, the pinned
+   Eigen commit is also on a GitHub mirror, and Git still checks out the exact
+   recorded commit:
+
+   ```sh
+   git submodule update --init --recursive || \
+   git -c 'url.https://github.com/eigen-mirror/eigen.git.insteadOf=https://gitlab.com/libeigen/eigen.git' \
+       submodule update --init --recursive
+   ```
+2. Configure the fork in a **separate** build tree (never reuse the CPU tree),
+   with the CPU recipe above but `-DTI_WITH_CUDA=ON`, and the extra OFF flags
+   the CI workflow uses: `-DTI_WITH_DX11=OFF -DTI_WITH_DX12=OFF
+   -DTI_WITH_BACKTRACE=OFF -DTI_BUILD_RHI_EXAMPLES=OFF`. Build target
+   `taichi_c_api`, for example in `engine/taichi/build-cuda`.
+3. Configure the HCP wrapper in its own tree against that build:
+
+   ```sh
+   cmake -S engine -B engine/build-cuda -G Ninja -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \
+         -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config \
+         -DENGINE_TAICHI_BUILD=engine/taichi/build-cuda -DENGINE_TAICHI_CUDA=ON
+   ```
+
+   Add `-DHCP_WITH_WARM_INTEGRATION=ON` and/or `-DHCP_WITH_VIEWPORT=ON` when
+   those clients are wanted.
+
+Observed 2026-10-20 (evidence: [CUDA-LOCAL-VALIDATION.md](docs/CUDA-LOCAL-VALIDATION.md)):
+`engine_devices` binds device 0 (the GTX 1070) and requests arch `cuda` (the
+printed arch is the request, not the actual Program backend; see the evidence
+note), and `engine_smoke_test`, `field_test`, and
+`native_activity_test --cuda`, `activity_assembly_test --cuda` and
+`active_transfer_experiment --cuda` pass. These tests likewise request CUDA
+through `settings.cuda` (`runtime.cpp:40`) and do not assert the actual Program
+backend; no backend check was recorded for them, and no transfer timing or
+pinning figures are recorded or implied. This is bounded local functional evidence for the
+existing fixture path; it does not validate engine-owned insertion (#156, not
+built), and it is not performance or pinning qualification (#145 remains open).
+
+**Target selection.** The fork JIT-compiles kernels at run time for the bound
+device: `taichi/rhi/cuda/cuda_context.cpp` reads the device's compute
+capability and sets the LLVM NVPTX target `sm_<cc>`, capped at `sm_86`, so the
+target is derived at run time from the bound device. Patrick (2026-10-20)
+expects this build to suit cards in the 1070 class (Pascal, compute capability
+6.x); this is untested beyond the 1070. Only the GTX 1070 (cc 6.1) was
+exercised; other cards, including older ones such as cc 5.0 (the runtime
+bitcode file loaded at `llvm_context.cpp:581` is named
+`cuda_runtime-cuda-nvptx64-nvidia-cuda-sm_60.bc`), are untested. Cards above
+`sm_86` receive `sm_86` code through driver forward compatibility; a more
+directed build (a raised cap and/or newer LLVM) might benefit newer cards, but
+that is unqualified. The engine binds CUDA device 0; use `CUDA_VISIBLE_DEVICES`
+(or `engine_devices --visible`) to select another card.
+
+### Running built binaries
+
+Built binaries are Linux x86_64 and assume an Ubuntu 24.04-class glibc. They
+link dynamically to `libLLVM-15.so.1` (package `libllvm15t64` on Ubuntu 24.04,
+which `llvm-15` pulls in), `libstdc++` and ICU 74. Only binaries built with
+`-DHCP_WITH_WARM_INTEGRATION=ON` (the PostgreSQL clients, such as
+`warm_active_integration` and the viewport capture tool) also link
+`libpq.so.5`. They need `TI_LIB_DIR` pointing at the staged runtime bitcode
+directory; `. <build>/engine-env.sh` sets it to `<build>/taichi-runtime`.
+CUDA runs additionally need an NVIDIA driver providing `libcuda.so.1` (tested
+with 535.309.01). CPU builds need no GPU.
+
 See [docs/BUILD-VETTING.md](docs/BUILD-VETTING.md) for the CPU/GPU/load
 qualification ladder.
 
