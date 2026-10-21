@@ -54,7 +54,7 @@ report integration, not a claim about natural language coherence or settling.
 
 ### Watch a running capture
 
-**Proposed in this PR, not yet accepted.** A running native capture can write
+**Accepted and merged in #159 on 2026-10-21.** A running native capture can write
 each coherent capture, atomically, as `latest.json` in its output directory
 every K ticks (K is the native tick frequency). Choose **Watch folder** and
 select that directory to see each new capture as it appears, while keeping the
