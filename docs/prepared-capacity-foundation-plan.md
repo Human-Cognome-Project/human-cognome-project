@@ -8,8 +8,9 @@ following [the accepted overall plan](pooled-space-live-insertion-plan.md) and
 Baseline: `main` at `6b2fac211633dd39fdebc05eb7fa1a04a205a116`.
 The accepted PR changed documents only. The
 [first mapping/adapter implementation](../engine/docs/RECORD-MAPPING.md) is
-submitted separately as the review requested; combined prepared field execution
-is not implemented.
+accepted and merged in #164 at `41310a5`. The
+[next backing/binding section](prepared-execution-backing-plan.md) is drafted
+for review; combined prepared field execution is not implemented.
 
 [The final #161 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/161#issuecomment-6322166930)
 accepts dense declarations with budgeted native presence records as the candidate

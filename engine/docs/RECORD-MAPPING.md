@@ -1,10 +1,14 @@
 # Prepared native record mapping
 
-Status: **first #162 implementation step, submitted for review, 2026-10-21**.
+Status: **first #162 implementation step, accepted and merged in #164,
+2026-10-21**, at `41310a512a137712651720b7bea5012238079900`.
 The [accepted #163 plan](../../docs/prepared-capacity-foundation-plan.md) calls
 for the mapping/adapter decision to be reviewed before wider field-kernel
 changes. This step supplies that proof. Combined prepared field execution and
-production insertion under #156 remain unbuilt.
+production insertion under #156 remain unbuilt. The
+[next backing/binding section](../../docs/prepared-execution-backing-plan.md)
+is drafted for review, following the
+[final #164 acceptance](https://github.com/Human-Cognome-Project/human-cognome-project/pull/164#issuecomment-6326052999).
 
 ## Mapping and native adapter
 
