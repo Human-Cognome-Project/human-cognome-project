@@ -3,6 +3,7 @@
 #include "taichi/rhi/device.h"
 #include "taichi/rhi/llvm/llvm_device.h"
 #include "taichi/rhi/llvm/allocator.h"
+#include "taichi/rhi/common/memory_pool_stats.h"
 #include <mutex>
 #include <vector>
 #include <memory>
@@ -24,6 +25,7 @@ class TI_DLL_EXPORT DeviceMemoryPool {
   void *allocate(std::size_t size, std::size_t alignment, bool managed = false);
   void release(std::size_t size, void *ptr, bool release_raw = false);
   void reset();
+  MemoryPoolStatistics statistics();
   explicit DeviceMemoryPool(bool merge_upon_release);
   ~DeviceMemoryPool();
 
@@ -36,6 +38,7 @@ class TI_DLL_EXPORT DeviceMemoryPool {
   std::map<void *, std::size_t> raw_memory_chunks_;
 
   std::mutex mut_allocation_;
+  MemoryPoolStatistics statistics_;
   bool merge_upon_release_ = true;
 };
 

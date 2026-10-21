@@ -2,6 +2,7 @@
 #include "taichi/common/core.h"
 #include "taichi/rhi/common/unified_allocator.h"
 #include "taichi/rhi/device.h"
+#include "taichi/rhi/common/memory_pool_stats.h"
 #include <mutex>
 #include <vector>
 #include <memory>
@@ -13,6 +14,10 @@ namespace taichi::lang {
 
 class TI_DLL_EXPORT HostMemoryPool {
  public:
+  struct Statistics : MemoryPoolStatistics {
+    // Native bump cursors include alignment gaps and exclusive allocations.
+    std::size_t cursor_bytes{0};
+  };
   static const size_t page_size;
 
   static HostMemoryPool &get_instance();
@@ -22,6 +27,7 @@ class TI_DLL_EXPORT HostMemoryPool {
                  bool exclusive = false);
   void release(std::size_t size, void *ptr);
   void reset();
+  Statistics statistics();
   HostMemoryPool();
   ~HostMemoryPool();
 
@@ -35,6 +41,7 @@ class TI_DLL_EXPORT HostMemoryPool {
 
   std::unique_ptr<UnifiedAllocator> allocator_;
   std::mutex mut_allocation_;
+  MemoryPoolStatistics statistics_;
 
   friend class UnifiedAllocator;
 };
