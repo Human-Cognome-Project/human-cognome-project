@@ -17,6 +17,7 @@ include(FindTaichiEngine)
 # host transfer. Nothing here decides what is computed.
 add_library(engine_support STATIC
     src/engine/runtime.cpp
+    src/engine/record_map.cpp
     src/engine/transfer.cpp
     src/engine/device.cpp)
 target_include_directories(engine_support PUBLIC src)
@@ -26,7 +27,8 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
-add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp)
+add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
+    src/field/prepared_capacity.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -64,6 +66,18 @@ add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
 enable_testing()
+add_executable(prepared_capacity_test tests/prepared_capacity_test.cpp)
+target_link_libraries(prepared_capacity_test PRIVATE field_core)
+add_test(NAME prepared_capacity_test COMMAND prepared_capacity_test)
+
+add_executable(record_map_test tests/record_map_test.cpp)
+target_link_libraries(record_map_test PRIVATE engine_support)
+add_test(NAME record_map_padded COMMAND record_map_test --records 70 --span 1048576 --cycles 32)
+add_test(NAME record_map_direct COMMAND record_map_test --records 70 --span 1048576 --cycles 32 --direct)
+add_test(NAME record_map_working_set COMMAND record_map_test --records 4096 --span 16777216 --cycles 32)
+set_tests_properties(record_map_padded record_map_direct record_map_working_set PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+
 add_executable(native_pool_test tests/native_pool_test.cpp)
 target_link_libraries(native_pool_test PRIVATE engine_support)
 add_test(NAME native_pool_test COMMAND native_pool_test)

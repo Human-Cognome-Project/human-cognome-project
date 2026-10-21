@@ -1,0 +1,14 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+    Start 3: prepared_capacity_test
+1/4 Test #3: prepared_capacity_test ...........   Passed    0.02 sec
+    Start 4: record_map_padded
+2/4 Test #4: record_map_padded ................   Passed    1.79 sec
+    Start 5: record_map_direct
+3/4 Test #5: record_map_direct ................   Passed    1.76 sec
+    Start 6: record_map_working_set
+4/4 Test #6: record_map_working_set ...........   Passed    2.38 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   5.95 sec

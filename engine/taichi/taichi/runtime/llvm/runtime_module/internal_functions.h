@@ -28,6 +28,49 @@ i32 refresh_counter(RuntimeContext *context) {
   return 0;
 }
 
+// Bounded access to an existing SNode allocator's prepared free list. The owner
+// provisions/recycles its nodes before use and must not mix these operations
+// with ordinary pointer activation or GC concurrently. No data-list growth.
+i32 prepared_node_acquire_index(RuntimeContext *context, i32 snode_id) {
+  auto *runtime = context->runtime;
+  if (snode_id < 0 || snode_id >= runtime->snode_capacity)
+    return -2;
+  auto *allocator = runtime->node_allocators[snode_id];
+  if (!allocator)
+    return -2;
+  i32 result = -1;
+  locked_task(&allocator->lock, [&] {
+    auto cursor = allocator->free_list_used;
+    if (cursor >= 0 && cursor < allocator->free_list->size()) {
+      auto index = allocator->free_list->get<i32>(cursor);
+      if (index < 0 || index >= allocator->data_list->size()) {
+        result = -2;
+      } else {
+        result = index;
+        allocator->free_list_used = cursor + 1;
+      }
+    }
+  });
+  return result;
+}
+
+// Quiescent, serial collection using the existing NodeManager machinery. The
+// owner validates allocation ownership (including duplicate release) first.
+// This is not safe to overlap with acquisition or another collector.
+i32 prepared_node_release_index(RuntimeContext *context,
+                                 i32 snode_id,
+                                 i32 index) {
+  auto *runtime = context->runtime;
+  if (snode_id < 0 || snode_id >= runtime->snode_capacity)
+    return -1;
+  auto *allocator = runtime->node_allocators[snode_id];
+  if (!allocator || index < 0 || index >= allocator->data_list->size())
+    return -1;
+  allocator->recycle(allocator->data_list->get_element_ptr(index));
+  node_gc(runtime, snode_id);
+  return 0;
+}
+
 i32 insert_triplet_f32(RuntimeContext *context,
                        int64 base_ptr_,
                        int i,

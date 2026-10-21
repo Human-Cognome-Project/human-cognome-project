@@ -1,0 +1,7 @@
+backend=cpu,path=bulk,potential=1048576,records=70,cycles=32,defined=1191,released=1191
+# map_setup: root_bytes=1052688,dynamic_requested_delta=8571217,host_cursor_delta_including_alignment_and_80_command_bytes=9650216
+phase,native_requested_bytes,native_chunk_bytes,native_elements,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes,trees,snode_ids,compilation_seconds
+ready,8571217,8536064,70,34,10713365,7,1074799796,10736820,1,8,0.49155
+final,8571217,8536064,70,34,10713365,7,1074799796,10736820,1,8,0.49155
+# C++ new calls/bytes (not all host/driver allocation): first_define=16/104,first_release=16/104,lookup=16/104
+record_map: PASS (storage fixtures only; no GPU qualification)

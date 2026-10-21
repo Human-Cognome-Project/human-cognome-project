@@ -692,7 +692,7 @@ struct NodeManager {
   NodeManager(LLVMRuntime *runtime,
               i32 element_size,
               i32 chunk_num_elements = -1)
-      : runtime(runtime), element_size(element_size) {
+      : runtime(runtime), lock(0), element_size(element_size) {
     // 128K elements per chunk, by default
     if (chunk_num_elements == -1) {
       chunk_num_elements = 128 * 1024;

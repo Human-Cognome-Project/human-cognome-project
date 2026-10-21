@@ -7,7 +7,7 @@ namespace cpu {
 void KernelLauncher::launch_llvm_kernel(Handle handle,
                                         LaunchContextBuilder &ctx) {
   TI_ASSERT(handle.get_launch_id() < contexts_.size());
-  auto launcher_ctx = contexts_[handle.get_launch_id()];
+  const auto &launcher_ctx = contexts_[handle.get_launch_id()];
   auto *executor = get_runtime_executor();
 
   ctx.get_context().runtime = executor->get_llvm_runtime();
@@ -35,9 +35,9 @@ void KernelLauncher::launch_llvm_kernel(Handle handle,
       DeviceAllocation *ptr =
           static_cast<DeviceAllocation *>(ctx.array_ptrs[data_ptr_idx]);
       uint64 host_ptr = (uint64)executor->get_device_alloc_info_ptr(*ptr);
-      ctx.set_array_device_allocation_type(
-          key, LaunchContextBuilder::DevAllocType::kNone);
-
+      // Preserve the binding descriptor for subsequent launches. Only the
+      // argument buffer gets the resolved pointer; array_ptrs still holds a
+      // DeviceAllocation and must not be relabelled as an external raw pointer.
       auto grad_ptr = ctx.array_ptrs[grad_ptr_idx];
       uint64 host_ptr_grad =
           grad_ptr == nullptr ? 0
