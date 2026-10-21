@@ -3,6 +3,7 @@
 #include "taichi/program/compile_config.h"
 
 #include <stdexcept>
+#include <string>
 
 namespace engine {
 
@@ -37,10 +38,25 @@ Runtime::Runtime(const InstanceSettings &settings) : settings_(settings) {
   if (settings_.cpu_threads) {
     default_compile_config.cpu_max_num_threads = *settings_.cpu_threads;
   }
-  program_ = std::make_unique<Program>(settings_.cuda ? taichi::Arch::cuda
-                                                      : taichi::Arch::x64);
+  try {
+    program_ = std::make_unique<Program>(settings_.cuda ? taichi::Arch::cuda
+                                                        : taichi::Arch::x64);
+  } catch (const std::string &error) {
+    // The fork reports fatal errors (for example a CUDA driver that refuses
+    // to initialize because no device is visible) by throwing a bare string.
+    default_compile_config = saved;
+    throw std::runtime_error("engine initialization failed: " + error);
+  } catch (...) {
+    default_compile_config = saved;
+    throw;
+  }
   default_compile_config = saved;
-  program_->materialize_runtime();
+  try {
+    program_->materialize_runtime();
+  } catch (const std::string &error) {
+    // Same bare-string convention as above.
+    throw std::runtime_error("engine initialization failed: " + error);
+  }
 }
 
 Runtime::~Runtime() {

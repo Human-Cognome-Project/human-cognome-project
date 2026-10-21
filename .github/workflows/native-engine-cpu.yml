@@ -6,6 +6,7 @@ on:
       - "engine/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
+      - "tools/viewport/native/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
   push:
@@ -15,6 +16,7 @@ on:
       - "engine/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
+      - "tools/viewport/native/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
   workflow_dispatch:
@@ -63,7 +65,7 @@ jobs:
 
       - name: Configure HCP native engine against CPU Taichi
         run: |
-          cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF -DHCP_WITH_WARM_INTEGRATION=ON
+          cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF -DHCP_WITH_WARM_INTEGRATION=ON -DHCP_WITH_VIEWPORT=ON
 
       - name: Build HCP native engine
         run: |

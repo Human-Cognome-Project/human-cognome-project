@@ -30,6 +30,9 @@ struct CudaDevice {
   bool memory_pool_path{false};
 };
 
+// True only when a CUDA device is usable: the driver loads, initializes and
+// reports at least one visible device. It initializes the driver, so the
+// visibility list (set_visible_cuda_devices) must already be set.
 bool cuda_available();
 
 // Enumerates the devices this process can see, without binding one.

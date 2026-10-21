@@ -113,6 +113,9 @@ class ActiveSession {
   field::PhaseTimes timings(const ExecutionHandle &handle) const;
   field::Demand demand(const ExecutionHandle &handle, const warm::Uuid &owner) const;
   double assembly_ms() const { return assembly_ms_; }
+  // The backend the session actually runs on, which can differ from the request
+  // (a CUDA-enabled build without a driver or device falls back to the CPU).
+  bool on_cuda() const { return runtime_->on_cuda(); }
 
  private:
   struct Execution;
