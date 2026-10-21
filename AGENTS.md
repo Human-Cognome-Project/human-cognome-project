@@ -13,6 +13,14 @@ warm recipes must not require caller-prescribed positions or velocities.
 Current mutable state belongs to Taichi execution under engine protocols;
 staging/readback/report copies are not independent placement authorities.
 
+**Optional restart-state exception:** Patrick permits optional supplied positions
+on engine restart as a calculation hedge/convenience. Validated execution
+checkpoints/restart hints are separate from immutable warm structural recipes
+and legacy fixture starts. After admission the engine owns restored state;
+normal streaming/refresh must never apply these hints to reset survivors. This
+preserves an optional recovery input, not a requirement for a full checkpoint
+subsystem. See the [plan's restart-state distinction](docs/pooled-space-live-insertion-plan.md#optional-restart-state).
+
 **Not implemented yet:** current warm records, projection requests and publication
 still require supplied initial state; refresh reloads it and restart reconstructs
 it. Their earlier acceptance is bounded fixture evidence, not authority to carry
@@ -65,6 +73,24 @@ for source findings and acceptance: stream into unused capacity while ticking,
 distinguish potential/present/awake counts, and verify no backing allocation or
 recompilation in normal admission. Use native Taichi facilities before custom
 allocation or traversal machinery.
+
+**Declaration/release refinement (Patrick, 2026-10-21):** unoccupied working
+space is potential `0x` particles with no mass, presence or fields. Its nominal
+declaration entries permit a large prepared particle span without a full
+populated payload per empty entry. Layout/LoD changes define and release items
+within that space. Follow Patrick's cost rule: declaration touches one data
+point and is near free; calculation touches at least three plus the calculation
+resource, so use required data while hot; allocation adds clerical work and
+should be avoided in hot streams. The [prepared-space implementation
+plan](docs/pooled-space-live-insertion-plan.md) is proposed for review. These
+requirements are settled; native provisioning choices remain to be measured
+and the correction is not built.
+
+Accepting that plan does not approve its proposed bootstrap/focus establishment,
+initial velocity, batch focus-update order or numerical conventions. Native
+provisioning/define-release investigation can proceed independently; production
+insertion requires reviewed conventions before implementation acceptance. A
+coordinate gauge alone does not position the first focal participants.
 
 ## Current state
 
