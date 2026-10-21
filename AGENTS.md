@@ -68,7 +68,17 @@ allocation or traversal machinery.
 
 ## Current state
 
-Last checked: **2026-10-20**.
+Last checked: **2026-10-21**.
+
+**Latest accepted follow-ups:** #157 merged deployment/restore guidance with
+independent database and snapshot names; #158 merged configurable capture and
+verification of the actual Program backend before warm writes; #159 merged
+optional read-only live folder watching, stable display-reference conversion and
+signal-safe pin cleanup. Hosted checks were green at the reviewed heads; standalone
+signal/option checks were independently rerun. Native folder-picker interaction
+remains a local verification item. These tools still use the historical supplied
+fixture layout: #156's pooled capacity/live insertion correction remains unbuilt,
+and GPU performance/pinning qualification remains open under #145.
 
 This is the repository's onboarding status snapshot. Code and executable tests
 determine what is built; accepted decisions govern intent. Check the
