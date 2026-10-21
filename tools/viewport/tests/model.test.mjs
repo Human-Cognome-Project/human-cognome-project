@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {parseSnapshot, validateSnapshot, rangesFor, massColour, selectParticles, boundsFor} from '../model.mjs';
+import {parseSnapshot, validateSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, referenceShift, pollInterval, fileStamp, resolveSelection, watchState} from '../model.mjs';
 const study = '12345678-1234-1234-1234-123456789abc';
 export function fixture() {
   const particle = (i, mass, radius, binding = 0) => ({id: `${study}/${i}`, definition: `public:${i}`, slot: i,
@@ -76,4 +76,51 @@ test('retained real native examples satisfy the public schema and phase contract
     assert.equal(value.capture.tick, name.includes('tick0') ? '0' : '8');
     assert.equal(value.frame.target_kind, 'captured_focal_centroid');
   }
+});
+test('live updates: same session+study updates, anything else replaces, identical capture is no change', () => {
+  const a = fixture(), other = '22345678-1234-1234-1234-123456789abc';
+  const update = (...m) => { const f = fixture(); m.forEach(fn => fn(f)); return f; };
+  assert.equal(classifyUpdate(null, a), 'replace');
+  assert.equal(classifyUpdate(a, update(f => f.capture.tick = '8', f => f.capture.phase = 'post_tick')), 'update');
+  assert.equal(classifyUpdate(a, update(f => f.capture.generation = other)), 'update');
+  assert.equal(classifyUpdate(a, update()), 'same');
+  assert.equal(classifyUpdate(a, update(f => f.capture.study = other)), 'replace');
+  assert.equal(classifyUpdate(a, update(f => f.capture.session = other)), 'replace');
+});
+test('live updates: selection re-resolves by occurrence ID and clears when absent or filtered out', () => {
+  const a = fixture(), b = fixture(); b.particles[1].position = [9, 9, 9]; b.particles.splice(2, 1);
+  const chosen = a.particles[1];
+  assert.equal(resolveSelection(selectParticles(b).matched, chosen.id), b.particles[1]);
+  assert.notEqual(resolveSelection(selectParticles(b).matched, chosen.id), chosen);
+  assert.equal(resolveSelection(selectParticles(b).matched, a.particles[2].id), null);
+  assert.equal(resolveSelection(selectParticles(b, {level: '1'}).matched, chosen.id), null);
+});
+test('live updates: reference shift keeps physical positions fixed without adding absolute origins', () => {
+  // Maintainer case: reference 100 -> 108, local 0 -> -8; the object stays at 100 and the camera-relative offset stays -10.
+  assert.deepEqual(referenceShift([100, 0, 0], [108, 0, 0]), [8, 0, 0]);
+  assert.deepEqual(referenceShift([5, 6, 7], [5, 6, 7]), [0, 0, 0]);
+  assert.ok(referenceShift([1, 2, 3], [1, 2, 3]).every(v => Object.is(v, 0)));
+  const old = [100, -50, 7], big = [old[0] + 2 ** 27, old[1] - 2 ** 26, old[2] + 2 ** 60], shift = referenceShift(old, big);
+  assert.deepEqual(shift, [2 ** 27, -(2 ** 26), 2 ** 60]);
+  const local = [48, -16, 0], moved = local.map((v, i) => Math.fround(v - shift[i]));
+  assert.deepEqual(moved.map((v, i) => v + shift[i]).slice(0, 2), local.slice(0, 2));
+  assert.deepEqual(referenceShift(old, old), [0, 0, 0]);
+});
+test('live updates: interval is clamped, files are compared by modified time and size', () => {
+  assert.equal(pollInterval('250'), 250); assert.equal(pollInterval(50), 100); assert.equal(pollInterval('0'), 100);
+  assert.equal(pollInterval(''), 1000); assert.equal(pollInterval('abc'), 1000); assert.equal(pollInterval(null, 400), 400);
+  assert.equal(pollInterval(1e12), 3600000); assert.equal(pollInterval(150.4), 150);
+  assert.equal(fileStamp({lastModified: 5, size: 7}), fileStamp({lastModified: 5, size: 7}));
+  assert.notEqual(fileStamp({lastModified: 5, size: 7}), fileStamp({lastModified: 6, size: 7}));
+  assert.notEqual(fileStamp({lastModified: 5, size: 7}), fileStamp({lastModified: 5, size: 8}));
+});
+test('live updates: watch state precedence and no-change hint', () => {
+  const base = {paused: false, error: null, missing: false, hasCapture: true, idleMs: 0, intervalMs: 1000};
+  assert.equal(watchState(base), 'LIVE');
+  assert.equal(watchState({...base, idleMs: 10001}), 'NO CHANGE');
+  assert.equal(watchState({...base, intervalMs: 5000, idleMs: 20000}), 'LIVE');
+  assert.equal(watchState({...base, hasCapture: false}), 'WAITING');
+  assert.equal(watchState({...base, missing: true}), 'WAITING');
+  assert.equal(watchState({...base, error: 'x', idleMs: 99999}), 'ERROR');
+  assert.equal(watchState({...base, error: 'x', paused: true}), 'PAUSED');
 });

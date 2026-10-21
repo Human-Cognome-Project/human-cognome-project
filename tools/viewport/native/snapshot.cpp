@@ -1,7 +1,11 @@
 #include "snapshot.h"
 
+#include <unistd.h>
+
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <set>
@@ -167,5 +171,20 @@ void write(const std::string &path, const Json &value) {
   out.exceptions(std::ios::failbit | std::ios::badbit);
   out << text << '\n';
   out.close();
+}
+void write_atomic(const std::string &path, const Json &value) {
+  const std::filesystem::path target(path);
+  // Unique per writer and call, in the target's directory so the rename stays atomic.
+  static std::atomic<unsigned long> counter{0};
+  const auto temp = target.parent_path() / ("." + target.filename().string() + "." +
+    std::to_string(getpid()) + "." + std::to_string(counter++) + ".tmp");
+  try {
+    write(temp.string(), value);
+    std::filesystem::rename(temp, target);  // Atomic replacement within one directory.
+  } catch (...) {
+    std::error_code ignored;
+    std::filesystem::remove(temp, ignored);
+    throw;
+  }
 }
 }  // namespace viewport

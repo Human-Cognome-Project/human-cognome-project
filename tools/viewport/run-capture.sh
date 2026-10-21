@@ -2,6 +2,8 @@
 # Package the native client into an existing owned PostgreSQL container.
 # Creates and retains a fresh warm fixture. Cold sources are never reset.
 # Arguments after the output directory pass through to the capture client.
+# Output is copied only when the client exits and signals are not forwarded:
+# use a finite --ticks here, not --every/--pace-ms for live viewing.
 set -euo pipefail
 hcp_view_build=$(realpath "${1:?Pass engine build directory}")
 hcp_view_container=${2:?Pass owned PostgreSQL container}

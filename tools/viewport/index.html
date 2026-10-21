@@ -10,12 +10,18 @@
 <body>
   <header>
     <div><span class="eyebrow">HUMAN COGNOME PROJECT / OBSERVATION TOOLS</span><h1>Study viewport</h1></div>
-    <label class="file-button">Open snapshot<input id="file" type="file" accept=".json,application/json"></label>
+    <div class="actions"><button id="watch" type="button">Watch folder</button><label class="file-button">Open snapshot<input id="file" type="file" accept=".json,application/json"></label></div>
   </header>
   <div id="error" role="alert" hidden></div>
   <main>
     <aside>
-      <section><h2>Capture <span class="tag">STATIC</span></h2><p id="capture-title">Choose a native study snapshot.</p><dl id="capture-meta"></dl></section>
+      <section><h2>Capture <span class="tag" id="mode">STATIC</span></h2><p id="capture-title">Choose a native study snapshot.</p><dl id="capture-meta"></dl></section>
+      <section id="live"><h2>Live updates</h2>
+        <p id="live-note" class="muted">Watch a folder where a running capture replaces <code>latest.json</code>. Read-only; the page only looks, at the interval below.</p>
+        <label>Check every (ms, at least 100)<input id="interval" type="number" min="100" step="100" value="1000"></label>
+        <div class="row"><button id="pause" type="button" disabled>Pause</button><button id="stop" type="button" disabled>Stop watching</button></div>
+        <dl id="live-status"></dl>
+      </section>
       <section><h2>Display filters</h2>
         <label>Conceptual level<select id="level"><option value="">All captured levels</option></select></label>
         <label>Exposure<select id="exposure"><option value="">All exposures</option><option value="aggregate">Aggregate</option><option value="parts">Parts</option><option value="standalone">Standalone</option></select></label>

@@ -94,6 +94,30 @@ main {
   grid-template-columns: 320px 1fr;
   height: calc(100vh - 92px);
 }
+.actions,
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.row {
+  gap: 8px;
+  margin: 10px 0;
+}
+.tag[data-mode=LIVE] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tag[data-mode=ERROR] {
+  color: #ffb3ad;
+  border-color: #b56b70;
+}
+.tag[data-mode="NO CHANGE"],
+.tag[data-mode=WAITING],
+.tag[data-mode=PAUSED] {
+  color: #f0d98a;
+  border-color: #8c7a3a;
+}
 aside {
   overflow-y: auto;
   background: #121925;
@@ -276,15 +300,18 @@ body:has(#error:not([hidden])) main {
   color: var(--muted);
   font-size: 10px;
 }
-#metrics {
+#metrics,
+#live-status {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 3px;
 }
-#metrics dt {
+#metrics dt,
+#live-status dt {
   margin: 0;
 }
-#metrics dd {
+#metrics dd,
+#live-status dd {
   text-align: right;
 }
 #capture-title {

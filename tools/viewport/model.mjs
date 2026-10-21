@@ -89,3 +89,29 @@ export function boundsFor(particles) {
   const centre = min.map((v, i) => v + (max[i] - v) / 2);
   return {centre, radius: Math.max(...max.map((v, i) => v - centre[i]))};
 }
+// Live watching. Updates inside one session+study keep the person's frame;
+// anything else is a new capture. Identical session/study/generation/tick is no change.
+export function classifyUpdate(previous, next) {
+  const a = previous?.capture, b = next.capture;
+  if (!a || a.session !== b.session || a.study !== b.study) return 'replace';
+  return a.generation === b.generation && a.tick === b.tick ? 'same' : 'update';
+}
+export const minPollMs = 100, defaultPollMs = 1000;
+export function pollInterval(value, fallback = defaultPollMs) {
+  const v = Math.round(Number(value));
+  return value === '' || value === null || !Number.isFinite(v) ? fallback : Math.min(3600000, Math.max(minPollMs, v));
+}
+// A reference change moves the local frame, not the objects. The viewer keeps the camera in the display frame fixed
+// at the replacing capture's reference and adds this per-axis double difference (never an absolute origin) to local
+// positions, so physical positions stay put. The result is exact whenever the new local values are the old ones minus the delta.
+export const referenceShift = (displayReference, reference) => reference.map((v, i) => v - displayReference[i]);
+export const fileStamp = file => `${file.lastModified}:${file.size}`;
+export const resolveSelection = (particles, id) => particles.find(p => p.id === id) ?? null;
+// NO CHANGE is only a display hint: no new capture for longer than ten polls (at least ten seconds).
+// It does not mean the engine stopped; the native capture interval may be longer.
+export function watchState({paused, error, missing, hasCapture, idleMs, intervalMs}) {
+  if (paused) return 'PAUSED';
+  if (error) return 'ERROR';
+  if (!hasCapture || missing) return 'WAITING';
+  return idleMs > Math.max(10000, 10 * intervalMs) ? 'NO CHANGE' : 'LIVE';
+}

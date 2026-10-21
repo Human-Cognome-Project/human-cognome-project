@@ -35,9 +35,11 @@ permitted to open the page; this tool does not change browser policies.
   extent and zero radius. Camera clipping/occlusion is separate. There is no
   subsampling or imposed particle-count cap; capacity has only been tested at
   the counts in the evidence below.
-- Every file is a static capture. A new valid file replaces the displayed
-  generation and clears selection/filters. Invalid or unsupported files show an
-  error and leave the previous capture identified. No browser action controls
+- Every opened file is a static capture, labelled **STATIC**. A new valid file
+  replaces the displayed generation and clears selection/filters (and ends any
+  folder watch). Invalid or unsupported files show an error and leave the
+  previous capture identified. A watched folder is the only way captures change
+  without a new file choice; see below. No browser action controls
   the engine, alters its inputs or looks up labels externally.
 
 The two examples contain the same **16 exposed occurrences** at publication
@@ -49,6 +51,85 @@ is explicitly supplied: centred spheres with node-local radius 0.25 for Dutch
 aggregates, 0.125 otherwise. The native preparation performs its existing unit
 conversion; the viewer uses the resulting radii. The example establishes real
 report integration, not a claim about natural language coherence or settling.
+
+### Watch a running capture
+
+**Proposed in this PR, not yet accepted.** A running native capture can write
+each coherent capture, atomically, as `latest.json` in its output directory
+every K ticks (K is the native tick frequency). Choose **Watch folder** and
+select that directory to see each new capture as it appears, while keeping the
+same spatial frame to watch whether a coherent pattern forms.
+
+- **Browser.** Needs the File System Access API, so a Chromium-based desktop
+  browser. The page asks for **read-only** access to the one folder you choose,
+  for that tab only; Chromium refuses a few system folders, so pick a dedicated
+  capture directory. Each check looks `latest.json` up by name again, so
+  a replacement file written by rename is always read whole (a read that races
+  a replacement is retried at the next check, and reported only after four consecutive failures). No server or
+  network is involved and the page cannot write to the folder. Where the API
+  is absent (for example Firefox), the control is disabled with an explanation;
+  **Open snapshot** still works and no browser policy is changed.
+  Observed locally: on a direct `file://` page in Chromium 145 (Playwright
+  `chromium-1208`) `showDirectoryPicker` is a function and the page is a
+  secure context. The browser test records this in its results (recorded, not
+  asserted), because the pinned Playwright in CI uses `chromium-1194` and the
+  API's presence depends on the build; the control follows whatever the
+  browser reports. The retained evidence file below predates watch mode. The folder picker
+  itself needs a person, so the test drives watching through a page-side
+  source with the same `getFileHandle()`/`getFile()` shape. An origin-private
+  directory handle was not usable from `file://` (`SecurityError`), so a real
+  directory handle remains unverified by automation.
+- **Update frequency.** **Check every (ms)** sets only how often the viewer
+  looks, default 1000, minimum 100, remembered locally when the browser permits.
+  It is independent of simulation tick rate and of K. A file whose modified time
+  and size are unchanged is not read or parsed again, and a capture with the
+  same session, study, generation and tick is not re-applied. Change detection
+  uses the file's modification time and size, so on filesystems with coarse
+  timestamps (for example FAT/exFAT or some NFS) two equal-length captures
+  written within that granularity can show as one. **Pause** stops
+  checking and applying (**Resume** catches up to the newest file) and
+  **Stop watching** ends the watch, leaving the last capture as a static display.
+- **Status.** The tag beside Capture reads STATIC for opened files, and LIVE,
+  PAUSED, WAITING (no `latest.json` yet, still polling), ERROR or NO CHANGE
+  while watching. NO CHANGE is only a display hint: no new capture for more than
+  ten checks (at least ten seconds). It does not mean the engine has stopped;
+  the native capture interval may exceed that threshold. The Live updates panel
+  and footer show the applied tick, wall time of the last change and time since it.
+- **Same study keeps your view.** The capture on display is the baseline. A
+  capture with the same session and study updates positions, masses, metadata
+  and the inspection panel in place, including when a watch is started or
+  restarted (for example after **Open snapshot**) on that study. Camera position
+  and target, level/exposure/search filters and the selection are kept; the
+  selection is found again by occurrence ID and is cleared only if that ID is
+  absent from the new capture or filtered out. A level filter whose level is
+  absent from the new capture resets to "All captured levels". A refresh or
+  rebase can change `frame.reference` (and so every local coordinate) with no
+  physical motion. The camera therefore stays fixed in a display frame while
+  scene content is offset by the reference difference: the display frame is
+  set by the capture that last started a new display frame (**Open snapshot**,
+  a first load, or a different session or study), and only the per-axis double
+  difference of references is added to local positions. No large absolute
+  origin enters render coordinates. The conversion itself is exact; any
+  apparent drift of objects that did not move can only come from f32 rounding
+  of the new capture's own local values, which grows with the reference jump
+  (a probe showed up to about 2 units after a 2^27 jump with ordinary f32
+  local values). A non-zero offset is listed in the capture metadata ("Display
+  offset") and flagged in the footer. **Study focus** still uses the new
+  capture's own camera target. Only when
+  nothing is displayed, or the capture has a different session or study, does
+  it behave exactly like opening a new file: the generation is replaced,
+  selection and filters are cleared and the camera frames it.
+- **Colour is relative within each update.** Mass ranges and legends are
+  computed per capture, as for any opened file, so a sphere's colour compares
+  it only with the same level of that capture. Colours can shift between
+  updates as the masses change; read the legend values, not the hue alone.
+- **Bad or missing files.** If `latest.json` is malformed, unsupported or
+  unreadable, the previous capture stays displayed and identified with the error,
+  and watching continues; the next valid capture recovers automatically. A
+  missing file means the run has not started and shows WAITING.
+
+The viewer controls only its own looking. It does not start, stop or configure
+the capture, and the native side does not need the page.
 
 ## Snapshot contract
 
@@ -94,8 +175,8 @@ needed only for the retained-data capture client.
 
 ```sh
 cmake -S engine -B engine/build -DHCP_WITH_VIEWPORT=ON -DHCP_WITH_WARM_INTEGRATION=ON
-cmake --build engine/build --target viewport_snapshot_test viewport_options_test viewport_letter_capture -j 2
-ctest --test-dir engine/build -R '^viewport_(snapshot|options)_test$' --output-on-failure
+cmake --build engine/build --target viewport_snapshot_test viewport_options_test viewport_signal_guard_test viewport_letter_capture -j 2
+ctest --test-dir engine/build -R '^viewport_(snapshot|options|signal_guard)_test$' --output-on-failure
 . engine/build/engine-env.sh
 ```
 
@@ -124,12 +205,53 @@ capture is the fixed 8-tick CPU run and file names above.
 | `--ticks N` | Total completed ticks, N >= 1 (default 8). |
 | `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
 | `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
+| `--every K` | Also capture every K completed ticks, K >= 1. Absent: tick 0 and the final tick only. |
+| `--pace-ms M` | Minimum wall-clock milliseconds between successive captures, M >= 0 (default 0). The client sleeps before a capture if needed so a small study is watchable. The simulation is unchanged: same ticks and `dt`. |
 
-`tick0` and the final tick are written as `letter-study-tick0.json` and
-`letter-study.json`. `native-evidence.json` records the backend verified on the
-constructed engine (`native_cpu` or `native_cuda`), `ticks`, `dt` and `cpu_threads`
-beside its existing keys. A CUDA run is functional execution only: it is not a
-GPU performance or pinning qualification (#145).
+`--ticks` stays finite but may be large. Tick 0 is written as
+`letter-study-tick0.json` and the final tick as `letter-study.json`. **With
+`--every`**, every capture, including those two, is also written to
+`latest.json`, so a watcher can follow one fixed path; without it no
+`latest.json` is written and the output files are exactly the fixed set. With
+`--every`, the evidence's `export_ms` includes that extra `latest.json` write.
+Intermediate `--every` captures are not kept as separate files; each is
+replaced by the next. Each file is one coherent capture (one study, generation
+and tick) taken between ticks. Files are written to a hidden, uniquely named
+temporary in the same directory, closed, then renamed over the target, so a
+reader sees the previous or the new complete file and never a partial one. The
+rename gives reader atomicity, not crash durability (no `fsync`). One writer per
+output directory is the supported use: a concurrent second writer leaves the
+final content undefined, though readers still never see a torn file.
+
+`SIGINT` or `SIGTERM` only sets a flag. The handlers are installed as soon as
+argument parsing is over, before the engine starts and before the warm acquire,
+and nothing is masked. A **first** signal at any point after that is noted: setup
+(including the lease boundary, since the acquire commits its lease before it
+returns) and the current tick finish, then the client writes the final capture
+(a signal during setup gives the tick-0 capture) with the actual completed tick
+count to `letter-study.json` (and `latest.json` with `--every`), releases its warm
+pin, writes `native-evidence.json` and exits 0. The pin is also released if the
+run fails after acquiring it, including on a bare-string exception from the
+engine, which the client catches so the stack unwinds. A **second** signal of the
+same kind, `SIGKILL`, or a signal before the handlers are installed (argument
+parsing only) takes the default action and ends the process immediately without
+releasing the pin or writing evidence; a lease left that way stays in the warm
+database. A hang inside engine start-up or a stalled database call is not
+interrupted by the first signal, so it needs a second one. A launcher that
+starts the client with `SIGINT` ignored (for example `&` from a non-interactive
+shell) is overridden: installing the handler replaces the ignore, so `SIGINT` is
+honoured from that point.
+The Docker helper copies its output only when the client exits and does not
+forward signals; use a finite `--ticks` there.
+
+`native-evidence.json` records the backend verified on the constructed engine
+(`native_cpu` or `native_cuda`), `dt`, `cpu_threads`, `every` (null when absent),
+`pace_ms`, `requested_ticks`, completed `ticks`, `stopped_by_signal` (the run
+ended before the requested ticks) and `capture_count`. To stay bounded in long
+runs, `captures` holds only the first and last captures (one entry when there
+was only one), each with tick, particles, bytes and report/export milliseconds.
+A CUDA run is functional execution only: it is not a GPU performance or pinning
+qualification (#145).
 
 For an existing owned Linux PostgreSQL Docker container, this helper packages
 the matched executable/runtime and creates a new warm fixture itself:
@@ -178,6 +300,14 @@ The browser checks real instance positions/radii/colours, stable legends,
 filter counts, camera invariance, object-list and sphere selection, generation
 replacement, malformed/unsupported files and synthetic unavailable/zero/large
 integer/escaped-label cases. Synthetic cases establish UI behavior only.
+Watch-mode checks (52 additional, 125 in all) feed the retained tick 0 and 8
+captures (123 under `HCP_VIEWPORT_IN_MEMORY=1`, which skips the direct-file and
+local-storage checks), and clearly labelled mutated UI fixtures, through a page-side
+folder source: same-study camera/filter/selection preservation, updated values
+and per-capture colours, invalid/unsupported/missing files with recovery,
+unchanged files not re-read, interval and its minimum, pause/resume, stop,
+different-study replacement, opening a file during a watch, and the
+unsupported-API fallback. They show viewer behaviour, not native evidence.
 
 ## Recorded evidence and dependencies
 
@@ -196,7 +326,7 @@ integer/escaped-label cases. Synthetic cases establish UI behavior only.
 These are single-run observations on the cloud CPU, not performance guarantees.
 Native CPU integration and software browser WebGL are distinct from unexecuted
 Taichi GPU execution/pinning work under #145. Fields/edges, activity overlays,
-refresh/timeline, dynamic LoD and engine controls remain outside this tool.
+time scrubbing, dynamic LoD and engine controls remain outside this tool.
 Engine operation and tests do not require the page or the optional target.
 
 Three.js 0.180.0/OrbitControls and Ajv 8.17.1 are bundled by esbuild 0.25.10 from
