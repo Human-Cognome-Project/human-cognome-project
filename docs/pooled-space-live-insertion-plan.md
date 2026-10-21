@@ -1,9 +1,12 @@
 # Prepared particle space and live representation
 
-Status: **proposed for review, 2026-10-21**. This plan addresses
+Status: **scope and native-first investigation sequence accepted in #160,
+2026-10-21**. This plan addresses
 [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
 and Patrick's subsequent `0x` and computational-cost clarifications. The
-correction is required and unbuilt. This PR changes documentation only.
+correction is required and unbuilt. The plan was a documentation-only change.
+The subsequent [native storage investigation](../engine/docs/PREPARED-SPACE.md)
+is bounded probe evidence, not completion of the foundation or live insertion.
 
 Accepting this plan approves its scope and native-first investigation sequence.
 It does **not** approve the bootstrap/focus-establishment, initial-velocity,
@@ -387,7 +390,8 @@ validate this correction. The viewer continues observing current positions and
 receives no placement controls. Version any snapshot-contract change explicitly;
 sidecar evidence can carry capacity/insertion measurements without expanding UI.
 
-Review is requested on the storage/provisioning sequence, retained compatibility,
-coherent live updates and proposed bootstrap/velocity/tangency/tie/exhaustion
-conventions. Patrick's `0x` model, threefold cost rule, continuous insertion and
+The storage/provisioning sequence, retained compatibility and coherent live update
+scope were accepted in #160. Its proposed initialization/numerical conventions
+remain subject to explicit review as stated above. Patrick's `0x` model,
+threefold cost rule, continuous insertion and
 LoD definition/release direction are governing requirements, not open alternatives.

@@ -1,0 +1,12 @@
+# storage-only, actual_backend=cpu,layout=pointer-cold,logical_span=1048576,padded_span=1048576,root_bytes=524288,root_page_bytes=524288,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.000000000,22,5819752,4,1074266380,5839280
+compiled,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.437156439,22,5819752,4,1074266380,5839280
+ready_empty,41616.824,0,0,0,8409420,8388608,0,0,0,0,32,0,1,4,0.437156439,24,10018152,4,1074266380,10039564
+first_define,28369.934,4,17,1048671,13201740,13172736,4,0,4,0,32,4,1,4,0.437156439,28,14810472,4,1074266380,14831884
+first_release,3.405,0,0,0,13201740,13172736,4,0,4,0,32,4,1,4,0.437156439,28,14810472,4,1074266380,14831884
+# later_define_mean_us=3.587000000,later_release_mean_us=3.596473684
+empty_enumeration_mean,159.217,0,0,0,13201740,13172736,4,0,4,0,32,4,1,4,0.437156439,28,14810472,4,1074266380,14831884
+final_empty,0.000,0,0,0,13201740,13172736,4,0,4,0,32,4,1,4,0.437156439,28,14810472,4,1074266380,14831884
+# measured_tree_dynamic_delta_bytes=13201740,accounted_tree_bytes_excluding_dynamic_alignment=13726028,accounted_bytes_per_logical_entry=13.090160,physical_objects=0,cycles=20,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=13746404,host_cursor_bytes_per_entry_including_268_buffer_bytes=13.109592
