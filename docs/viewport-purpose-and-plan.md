@@ -220,7 +220,7 @@ symbol without invented physical extent. Any later activity display must state
 its observed phase and keep selection, motion and settledness distinct.
 Refresh must use coherent captures independently of simulation tick rate.
 
-**Live refresh is proposed in this PR, not accepted.** The native capture client
+**Live refresh accepted and merged in #159 on 2026-10-21.** The native capture client
 would write each coherent capture (snapshot v1, unchanged) atomically as
 `latest.json` every K ticks, K being the native tick frequency. The browser
 would watch that folder read-only through the File System Access API at its own
