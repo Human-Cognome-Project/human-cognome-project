@@ -32,6 +32,22 @@ Dense >2^31 indexing work:
 - `taichi/program/ndarray.cpp` — widened shape-product accumulation feeding
   `Ndarray::nelement_` to `std::size_t`.
 
+Prepared record mapping and reusable launch-context corrections (#162):
+
+- `taichi/runtime/llvm/runtime_module/internal_functions.h` — bounded claim of
+  existing prepared NodeManager indexes, recycling through existing serial GC;
+  no competing allocator or free queue.
+- `taichi/runtime/llvm/runtime_module/runtime.cpp` — initialize the existing
+  allocator lock explicitly; no struct-layout/ABI change.
+- `taichi/runtime/cpu/kernel_launcher.cpp` — preserve ndarray descriptor types
+  across repeated launches; retain registered metadata by reference.
+- `taichi/runtime/cuda/kernel_launcher.cpp` — restore host argument/result
+  pointers after temporary device launch buffers; retain metadata by reference.
+
+See [mapping evidence and limits](../docs/RECORD-MAPPING.md). CUDA execution and
+driver allocations remain local qualification work. Stable native backing does
+not establish zero recurring host launch-metadata or async driver allocations.
+
 Runtime/AOT compatibility and cache work:
 
 - `taichi/inc/constants.h`

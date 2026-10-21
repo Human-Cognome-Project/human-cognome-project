@@ -15,7 +15,7 @@ bool KernelLauncher::on_cuda_device(void *ptr) {
 void KernelLauncher::launch_llvm_kernel(Handle handle,
                                         LaunchContextBuilder &ctx) {
   TI_ASSERT(handle.get_launch_id() < contexts_.size());
-  auto launcher_ctx = contexts_[handle.get_launch_id()];
+  const auto &launcher_ctx = contexts_[handle.get_launch_id()];
   auto *executor = get_runtime_executor();
   auto *cuda_module = launcher_ctx.jit_module;
   const auto &parameters = launcher_ctx.parameters;
@@ -147,6 +147,7 @@ void KernelLauncher::launch_llvm_kernel(Handle handle,
     ctx.get_context().result_buffer = (uint64 *)device_result_buffer;
   }
   char *device_arg_buffer = nullptr;
+  char *host_arg_buffer = ctx.get_context().arg_buffer;
   if (ctx.arg_buffer_size > 0) {
     CUDADriver::get_instance().malloc_async((void **)&device_arg_buffer,
                                             ctx.arg_buffer_size, nullptr);
@@ -184,6 +185,10 @@ void KernelLauncher::launch_llvm_kernel(Handle handle,
       executor->deallocate_memory_on_device(itr->second.second);
     }
   }
+  // Device launch buffers are temporary. Retain the original host bindings so
+  // a prepared LaunchContextBuilder can be launched again after synchronization.
+  ctx.get_context().arg_buffer = host_arg_buffer;
+  ctx.get_context().result_buffer = (uint64 *)host_result_buffer;
 }
 
 KernelLauncher::Handle KernelLauncher::register_llvm_kernel(
