@@ -26,7 +26,25 @@ void *HostMemoryPool::allocate(std::size_t size,
     TI_ERROR("Memory pool is already destroyed");
   }
   void *ret = allocator_->allocate(size, alignment, exclusive);
+  ++statistics_.allocation_calls;
+  statistics_.requested_bytes += size;
   return ret;
+}
+
+HostMemoryPool::Statistics HostMemoryPool::statistics() {
+  std::lock_guard<std::mutex> _(mut_allocation_);
+  Statistics result;
+  static_cast<MemoryPoolStatistics &>(result) = statistics_;
+  for (const auto &entry : raw_memory_chunks_) {
+    result.reserved_bytes += entry.second;
+  }
+  if (allocator_) {
+    for (const auto &chunk : allocator_->chunks_) {
+      result.cursor_bytes += static_cast<const char *>(chunk.head) -
+                             static_cast<const char *>(chunk.data);
+    }
+  }
+  return result;
 }
 
 void HostMemoryPool::release(std::size_t size, void *ptr) {
@@ -81,6 +99,7 @@ void *HostMemoryPool::allocate_raw_memory(std::size_t size) {
   }
 
   raw_memory_chunks_[ptr] = size;
+  ++statistics_.raw_allocation_calls;
   return ptr;
 }
 

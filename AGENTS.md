@@ -82,9 +82,10 @@ within that space. Follow Patrick's cost rule: declaration touches one data
 point and is near free; calculation touches at least three plus the calculation
 resource, so use required data while hot; allocation adds clerical work and
 should be avoided in hot streams. The [prepared-space implementation
-plan](docs/pooled-space-live-insertion-plan.md) is proposed for review. These
-requirements are settled; native provisioning choices remain to be measured
-and the correction is not built.
+plan](docs/pooled-space-live-insertion-plan.md) was accepted in #160 as scope and
+native-first investigation sequence. These requirements are settled; the native
+provisioning measurements below are diagnostic evidence under review and the
+combined correction is not built.
 
 Accepting that plan does not approve its proposed bootstrap/focus establishment,
 initial velocity, batch focus-update order or numerical conventions. Native
@@ -95,6 +96,16 @@ coordinate gauge alone does not position the first focal participants.
 ## Current state
 
 Last checked: **2026-10-21**.
+
+**Prepared-space investigation:** #160 accepted the plan's native-first sequence;
+initialization/numerical conventions remain proposals. The
+[native storage probe](engine/docs/PREPARED-SPACE.md) now compares dense declarations
+with budgeted native references, flat bitmasked storage and cold/retained/recycled
+pointer storage. It measures CPU backing, pool reservation/alignment and reuse,
+with no physical objects or placement rule. This is diagnostic evidence under
+review, not the combined foundation, continuous insertion or LoD implementation.
+Production #156 remains open/unbuilt; GPU evidence and complete host/driver
+allocation accounting remain qualification work.
 
 **Latest accepted follow-ups:** #157 merged deployment/restore guidance with
 independent database and snapshot names; #158 merged configurable capture and

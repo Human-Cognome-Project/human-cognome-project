@@ -180,6 +180,12 @@ qualification ladder.
 
 ## Current status
 
+The [prepared-space storage investigation](docs/PREPARED-SPACE.md) compares native
+lightweight declaration layouts and measures preparation, first touch and reuse.
+It implements a CPU probe and native pool diagnostics only. #160's plan is
+accepted; #156's combined capacity/live insertion correction and its physical
+initialization conventions remain unimplemented/unresolved respectively.
+
 The 2026-10-10 object-support corrections add whole-particle parent response,
 supplied-geometry radii, ordinary finite contact and a fixed-study native
 publication path. All five native CPU suites pass; settings, results and

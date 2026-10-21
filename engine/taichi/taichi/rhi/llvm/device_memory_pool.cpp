@@ -29,7 +29,10 @@ void *DeviceMemoryPool::allocate_with_cache(
     const LlvmDevice::LlvmRuntimeAllocParams &params) {
   std::lock_guard<std::mutex> _(mut_allocation_);
 
-  return allocator_->allocate(device, params);
+  auto *result = allocator_->allocate(device, params);
+  ++statistics_.allocation_calls;
+  statistics_.requested_bytes += params.size;
+  return result;
 }
 
 void *DeviceMemoryPool::allocate(std::size_t size,
@@ -37,7 +40,19 @@ void *DeviceMemoryPool::allocate(std::size_t size,
                                  bool managed) {
   std::lock_guard<std::mutex> _(mut_allocation_);
 
-  return allocate_raw_memory(size, managed);
+  auto *result = allocate_raw_memory(size, managed);
+  ++statistics_.allocation_calls;
+  statistics_.requested_bytes += size;
+  return result;
+}
+
+MemoryPoolStatistics DeviceMemoryPool::statistics() {
+  std::lock_guard<std::mutex> _(mut_allocation_);
+  auto result = statistics_;
+  for (const auto &entry : raw_memory_chunks_) {
+    result.reserved_bytes += entry.second;
+  }
+  return result;
 }
 
 void DeviceMemoryPool::release(std::size_t size, void *ptr, bool release_raw) {
@@ -88,6 +103,7 @@ void *DeviceMemoryPool::allocate_raw_memory(std::size_t size, bool managed) {
   }
 
   raw_memory_chunks_[ptr] = size;
+  ++statistics_.raw_allocation_calls;
   return ptr;
 }
 

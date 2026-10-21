@@ -1,0 +1,16 @@
+Expected failure against native archives from 92199bc, before the raw-bound repair. No large buffer was touched.
+
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+    Start 3: native_pool_test
+1/1 Test #3: native_pool_test .................***Failed    0.04 sec
+native_pool_test: native pool reused bytes outside a raw reservation
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.04 sec
+
+The following tests FAILED:
+	  3 - native_pool_test (Failed)
+Errors while running CTest

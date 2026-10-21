@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-21",
+  "scope": "Symbolic native storage probe; zero physical objects; production #156 not implemented",
+  "base_main": "1d98e89cd5992dbfbcd51054cfbcf60f887729ba",
+  "measured_taichi_subtree": "f4bbe8187cfcf19056ac51e338460e76bb5a4faa",
+  "sources": {
+    "engine/tests/prepared_space_probe.cpp": "f4e3ea09d98ce4414d3efec069cf09a6c9f3a2dc353bf041ad57ea78ee3bea57",
+    "engine/tests/native_pool_test.cpp": "fde95f20cf78d94b83d089913615d6c8ed621c1eb9cb21cb7486c0408ea52551"
+  },
+  "environment": {
+    "cpu": "AMD EPYC 9V74",
+    "arch": "x86_64",
+    "runtime_cpu_threads": 2,
+    "compiler": "Clang 15",
+    "llvm": "15",
+    "build_type": "Release"
+  },
+  "validation": {
+    "ctest_suites_passed": 26,
+    "ctest_suites_failed": 0,
+    "ctest_parallel_processes": 2,
+    "padded_70_entry_layout_cases": 5,
+    "native_pool_boundary": "Expected failure against pre-repair 92199bc archives; pass after rebuilding corrected archives",
+    "cpu_only_cuda_request": "Refused: matched Taichi build compiled without CUDA",
+    "gpu_execution": "not run",
+    "postgresql": "not run; no database changes"
+  },
+  "counter_scope": [
+    "Native dynamic requested bytes and chunk backing",
+    "Host/device pool requests and raw reservations; host aligned cursor",
+    "SNode/tree counts and cumulative compiler time",
+    "Excludes general host heap, OS residency/page faults, CUDA module loading and async driver allocations"
+  ],
+  "measurements": [
+    {
+      "file": "evidence/cpu-1048576-dense-budgeted.csv",
+      "sha256": "57309e954bae907a3f7dda8c16b87bcb975de5b3cbf01ad63729bc819bc0caed",
+      "layout": "dense-budgeted",
+      "span": 1048576,
+      "cycles": 20,
+      "host_cursor_delta": 9466084,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 9.027561,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 6.163789474,
+      "subsequent_four_release_calls_mean_us": 4.770263158,
+      "empty_enumeration_mean_us": 27.408
+    },
+    {
+      "file": "evidence/cpu-1048576-flat-bitmasked.csv",
+      "sha256": "58772f06543975e93281e95ed68b658bf39a93ed9c664ae5aaf82158aa910f99",
+      "layout": "flat-bitmasked",
+      "span": 1048576,
+      "cycles": 20,
+      "host_cursor_delta": 9588964,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 9.144749,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 22.885473684,
+      "subsequent_four_release_calls_mean_us": 20.299473684,
+      "empty_enumeration_mean_us": 18952.606
+    },
+    {
+      "file": "evidence/cpu-1048576-pointer-cold.csv",
+      "sha256": "5d8835c2973864fc34971f2ba161de305651eab044417a623f9f9be9798d63e0",
+      "layout": "pointer-cold",
+      "span": 1048576,
+      "cycles": 20,
+      "host_cursor_delta": 13746404,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 13.109592,
+      "native_first_touch_growth_bytes": 4792320,
+      "subsequent_four_definitions_mean_us": 3.587,
+      "subsequent_four_release_calls_mean_us": 3.596473684,
+      "empty_enumeration_mean_us": 159.217
+    },
+    {
+      "file": "evidence/cpu-1048576-pointer-recycled.csv",
+      "sha256": "7929a75bdc9417cd668263eba50d1f9ddfcd66b775155a9b73f33bdfbc36a914",
+      "layout": "pointer-recycled",
+      "span": 1048576,
+      "cycles": 20,
+      "host_cursor_delta": 14606564,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 13.929905,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 5.125,
+      "subsequent_four_release_calls_mean_us": 200.738210526,
+      "empty_enumeration_mean_us": 128.224
+    },
+    {
+      "file": "evidence/cpu-1048576-pointer-retained.csv",
+      "sha256": "71cff7e1e8ab63f44a96fd2a37ab5bbbbd6fba0e7afb790b9d72963e49eb8668",
+      "layout": "pointer-retained",
+      "span": 1048576,
+      "cycles": 20,
+      "host_cursor_delta": 14336228,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 13.672092,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 9.686368421,
+      "subsequent_four_release_calls_mean_us": 6.725736842,
+      "empty_enumeration_mean_us": 1997.488
+    },
+    {
+      "file": "evidence/cpu-16777216-dense-budgeted.csv",
+      "sha256": "d5e7a9d99491b82f98f3bae1676378c79749ebb4e9d61ef57d798018b2bd9b9c",
+      "layout": "dense-budgeted",
+      "span": 16777216,
+      "cycles": 20,
+      "host_cursor_delta": 25194724,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 1.501723,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 5.373789474,
+      "subsequent_four_release_calls_mean_us": 5.245263158,
+      "empty_enumeration_mean_us": 12.295
+    },
+    {
+      "file": "evidence/cpu-16777216-flat-bitmasked.csv",
+      "sha256": "d938defe664e2ba5e9c74d0adff3eaf2882afa63cedc2a04cd84ed87eb9603e2",
+      "layout": "flat-bitmasked",
+      "span": 16777216,
+      "cycles": 20,
+      "host_cursor_delta": 27283684,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 1.626234,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 21.530578947,
+      "subsequent_four_release_calls_mean_us": 27.287105263,
+      "empty_enumeration_mean_us": 297515.334
+    },
+    {
+      "file": "evidence/cpu-16777216-pointer-cold.csv",
+      "sha256": "2cbf88789fc4ae95278ea8ef170b4dcb0c771b018164a609cc42ff23c5b7d0d8",
+      "layout": "pointer-cold",
+      "span": 16777216,
+      "cycles": 20,
+      "host_cursor_delta": 21610724,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 1.2881,
+      "native_first_touch_growth_bytes": 4792320,
+      "subsequent_four_definitions_mean_us": 6.585631579,
+      "subsequent_four_release_calls_mean_us": 7.597684211,
+      "empty_enumeration_mean_us": 1740.853
+    },
+    {
+      "file": "evidence/cpu-16777216-pointer-recycled.csv",
+      "sha256": "98f9290aa056c1eeec777aa0677a06acb7091fc2061c85af45a486651b40fd3f",
+      "layout": "pointer-recycled",
+      "span": 16777216,
+      "cycles": 20,
+      "host_cursor_delta": 73457892,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 4.378432,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 13.361894737,
+      "subsequent_four_release_calls_mean_us": 2014.177157895,
+      "empty_enumeration_mean_us": 1962.556
+    },
+    {
+      "file": "evidence/cpu-16777216-pointer-retained.csv",
+      "sha256": "b7e611fc43b33b7ea8932f86cc0a8326e3a7e34cf1ef8d97130d5d8c2e422074",
+      "layout": "pointer-retained",
+      "span": 16777216,
+      "cycles": 20,
+      "host_cursor_delta": 69255396,
+      "bytes_per_entry_including_alignment_and_268_buffer_bytes": 4.127943,
+      "native_first_touch_growth_bytes": 0,
+      "subsequent_four_definitions_mean_us": 23.703105263,
+      "subsequent_four_release_calls_mean_us": 18.117263158,
+      "empty_enumeration_mean_us": 26748.978
+    }
+  ]
+}

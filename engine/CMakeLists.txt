@@ -64,6 +64,20 @@ add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
 enable_testing()
+add_executable(native_pool_test tests/native_pool_test.cpp)
+target_link_libraries(native_pool_test PRIVATE engine_support)
+add_test(NAME native_pool_test COMMAND native_pool_test)
+set_tests_properties(native_pool_test PROPERTIES TIMEOUT 30)
+
+add_executable(prepared_space_probe tests/prepared_space_probe.cpp)
+target_link_libraries(prepared_space_probe PRIVATE engine_support)
+foreach(layout dense-budgeted flat-bitmasked pointer-cold pointer-retained pointer-recycled)
+  add_test(NAME prepared_space_${layout}
+      COMMAND prepared_space_probe --layout ${layout} --span 70 --repeats 3)
+  set_tests_properties(prepared_space_${layout} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+endforeach()
+
 add_executable(engine_smoke_test tests/engine_smoke_test.cpp)
 target_include_directories(engine_smoke_test PRIVATE tests)
 target_link_libraries(engine_smoke_test PRIVATE engine_support)
