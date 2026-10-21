@@ -5,6 +5,14 @@ Status: **proposed for review, 2026-10-21**. This plan addresses
 and Patrick's subsequent `0x` and computational-cost clarifications. The
 correction is required and unbuilt. This PR changes documentation only.
 
+Accepting this plan approves its scope and native-first investigation sequence.
+It does **not** approve the bootstrap/focus-establishment, initial-velocity,
+batch focus-update, tangency, tolerance or tie conventions proposed in section 4.
+Native provisioning and define/release investigation can proceed independently.
+Production insertion must use explicitly reviewed conventions before its
+implementation is accepted; that review may be a targeted design update or
+part of the implementing PR.
+
 ## The space is preconfigured; work declares its contents
 
 Unoccupied space throughout the working expanse consists of potential `0x`
@@ -58,6 +66,11 @@ Calling an allocation “activation” or hiding it inside metadata work does no
 satisfy the rule. Report native bookkeeping separately from declaration
 assignments so hidden allocation or repeated calculation cannot be counted as
 cheap declaration.
+
+The rule guides design; measured costs determine actual behavior. Include
+metadata and relationship work caused by a declaration in those measurements.
+A narrow declaration assignment does not establish the cost of the complete
+admission/update operation or a measured bytes-per-entry result.
 
 ## Source baseline and correction surfaces
 
@@ -144,6 +157,27 @@ reset/drop/truncate, new database per ordinary run or cold identity change is
 part of this correction. Private inputs remain analyst-owned and active-only;
 the shared manager still refuses private scopes before source lookup.
 
+### Optional restart state
+
+Patrick explicitly permits optional supplied positions on engine restart as a
+calculation hedge/convenience. Preserve that recovery path: optional validated
+execution checkpoints or restart hints are separate inputs from immutable warm
+structural recipes and from legacy fixture starts. Coordinate-free structural
+requests do not prohibit an owner from supplying such optional recovery data.
+
+At an explicit restart, validate any supplied state against the owner's logical
+objects, definition/representation bindings, numerical frame/units and supported
+recovery contract before admitting it. The engine owns the restored state after
+admission. Neither ordinary streaming nor refresh may apply restart hints to
+reset running survivors. Legacy recipe starts do not automatically qualify as
+a validated checkpoint; any recovery use needs its own explicit validation and
+restart context. Private/local recovery data stays with its active owner and
+does not enter the shared manager's structural publications.
+
+No full checkpoint storage/transport subsystem is requested by this correction.
+The implementation must preserve the optional validated input distinction and
+test the supported recovery boundary without making checkpoints mandatory.
+
 ## 3. Continuous declaration and engine-owned insertion
 
 Use existing engine synchronization boundaries between native phases/ticks to
@@ -160,7 +194,9 @@ For a batch of genuinely new objects:
    identity is independent of its current numerical location/index.
 3. Use engine-owned insertion at the nearest unoccupied space to the current
    combined centroid of selected focal fields, respecting scale-correct extents.
-   Include sleepers and previously placed batch members in occupancy.
+   Use the exposed-body occupancy set below, including sleepers and previously
+   placed batch bodies. Batch focus-update ordering remains a section 4 proposal
+   requiring review before production insertion is accepted.
 4. Calculate required relationship, inclusive-centroid, universal-mass and
    contact/wake effects while their inputs are hot. Add contributions to existing
    fields and define new ones within prepared budgets. Caller contact lists are
@@ -184,10 +220,42 @@ execution explicitly unready instead of claiming continuity or restoring recipe
 starts. Preserve owner guards and explicit stale-handle/report semantics; a
 released/reused location must not let an old reference name a different object.
 
+### Occupancy at supported LoDs
+
+“Present” for an occupancy query means an **exposed physical body in the
+committed representation**, with its actual model extent. It does not mean
+every organizational or numerical record associated with that representation.
+
+| Supported representation | Bodies included in occupancy | Records that add no extra solid obstacle |
+|---|---|---|
+| Aggregate exposure | Each explicitly exposed aggregate occurrence, once, at its scale-correct model radius. | Hidden component spheres used for enclosure, dormant part alternatives and equivalent naming records. |
+| Parts exposure | Each explicitly exposed part occurrence (bytes in the bounded letter projection), once, at its own scale-correct model radius. | Its inactive aggregate alternative, hidden construction ancestors and any unexposed descendants. |
+| Mixed conceptual levels/exposures | The union of explicitly exposed physical occurrences, all converted into the common operative frame. Distinct occurrences remain distinct even if they share a definition. | No automatic second body for a shared definition, scale binding or compression/naming attachment. |
+| Centroid/organizational fields | No body from a field record alone. If an object has a separately declared physical representative, count that representative through its body record. | Sibling-definition, parent-value and membership centroids, including their participating mass; membership/construction links themselves. |
+| Sleeping physical occupants | The same bodies and extents as when awake; they still occupy space. | Sleep does not create free space or remove participation. |
+| Potential `0x` entries | None. | Empty storage, inactive alternatives and released records add no occupancy. |
+
+This preserves the existing distinction between prepared exposed particles and
+typed fields in [study preparation](../engine/src/assembly/study.cpp); it defines
+no new force, extent or LoD-selection policy. A field's participating mass is
+not an invented radius or enclosure. Occupancy coverage is independent of the
+supplied contact ledger; coverage does not itself mandate all-pairs contact
+forces or new structural relationships.
+
+For a validated representation exchange, the prospective occupancy set contains
+surviving exposed bodies and replacements already placed, excluding only bodies
+explicitly retiring in that same exchange. The old representation remains the
+externally committed state until the coherent swap. Never count an aggregate
+and its mutually exclusive part alternative as simultaneous obstacles during
+placement, or expose an intermediate gap/double representation in reports.
+
 ## 4. Numerical details proposed for insertion review
 
 The nearest-free-to-focus rule is settled. The remaining conventions below are
 proposals, not new placement policy or a requirement to reprove model mechanics.
+Plan acceptance leaves these conventions unapproved. Native storage/define-release
+investigation needs no chosen physical bootstrap layout; production insertion
+acceptance requires a reviewed initialization and numerical contract first.
 
 For newcomer radius `r`, focus `F` and current occupied centres/extents
 `(c_i, R_i)`, minimize displacement from `F` subject to
@@ -201,18 +269,22 @@ first-found free space or a prescribed lattice is insufficient.
 
 Propose the following explicit conventions for review:
 
-- First positioning in an empty construct uses a numerical gauge at local
-  `(0,0,0)`, with a separate reference, and zero initial velocity. This is not
-  a semantic/world location. The bootstrap batch must establish any selected
-  focus from its participants before applying the ordinary rule to remaining
-  objects. Initial relational instantiation remains under discussion; this
-  convention is not presented as an already accepted production decision.
+- A candidate numerical gauge is local `(0,0,0)` with a separate reference.
+  Choosing a gauge does not position the first bodies or establish their focus.
+  The first focal participants themselves have no positions yet: deriving a
+  centroid from them is therefore not a complete initialization rule. A reviewed
+  engine bootstrap sequence must resolve that dependency and establish the first
+  positions/focus before ordinary insertion can use it. Initial relational
+  instantiation remains unresolved here. Do not fill the gap with supplied
+  layouts or silently treat the gauge as an approved placement algorithm.
 - An unavailable selected focus in an existing construct is an explicit
   operation failure. Preserve explicit no-selection/legacy behavior separately;
   do not choose a replacement focus silently.
 - Insert batch members in stable occurrence/ordinal order, updating prospective
-  occupancy and focus as participants are placed. Propose zero velocity for
-  newcomers; surviving velocity remains current engine state.
+  occupancy as bodies are placed. Updating prospective focus after each placed
+  participant is a proposal, not an approved ordering. Propose zero velocity
+  for genuinely new arrivals; surviving velocity remains current engine state,
+  and optional restart-state admission follows its separate recovery contract.
 - Equal-distance candidates use a deterministic numerical direction order,
   independent of address and thread scheduling. Document the precision/tie rule
   and results for degenerate/zero-extent cases. Report an unsupported or
@@ -261,19 +333,34 @@ an unimplemented expansion path.
 
 ## Delivery and acceptance
 
+There are separate review/acceptance boundaries. Native provisioning and
+define/release investigation can proceed without resolving physical bootstrap.
+Accepting this planning PR does not select any section 4 convention. Before
+production insertion is accepted, explicitly review its bootstrap/focus sequence,
+initial motion, batch focus-update order and numerical/tie contract. The eventual
+acceptance cases below test that reviewed contract; listing them here does not
+approve an otherwise unresolved convention or authorize supplied-layout fallback.
+
 1. **Native foundation:** measured lightweight declarations, prepared backing,
    supported layout families and a narrow define/release path. Exercise unused
-   blocks and release/reuse; prove where backing and compilation occur.
+   blocks and release/reuse; prove where backing and compilation occur. Storage
+   probes may leave all entries without physical presence and require no
+   production placement convention.
 2. **Structural-to-live correction:** retained-v1 compatibility, v2 requests and
-   coherent insertion/update together. Tick a construct, stream repeated batches
-   without external starts, and continue ticking with survivors intact.
-   Continuous insertion is required in this first working path.
+   coherent insertion/update together, using the explicitly reviewed insertion
+   conventions. Tick a construct, stream repeated batches without required
+   structural starts, and continue ticking with survivors intact. Continuous
+   insertion is required in this first working path. Separately test optional
+   validated restart state and its rejection outside the supported recovery path;
+   no full checkpoint subsystem is an acceptance prerequisite.
 3. **Representation changes:** demonstrate explicit LoD redeclaration/release,
    reuse and true resource exhaustion within the same prepared construct, with
    correct mass, fields, focal bindings, state and native activity.
 4. **Real capture and reconciliation:** re-run configured source → warm → active
-   → report without supplied world starts; retain #158 backend verification and
-   #159 read-only live-capture cleanup/reference handling. Update A–D/pre-D,
+   → report to demonstrate ordinary structural inputs need no world starts.
+   Label any optional restart-hint recovery capture separately; its allowed
+   state does not become a required recipe input. Retain #158 backend verification
+   and #159 read-only live-capture cleanup/reference handling. Update A–D/pre-D,
    projection/object/field/workbench and warm guidance together as historical
    limits versus corrected behavior. Keep old evidence labelled as such.
 
@@ -286,6 +373,7 @@ compile no code. No infinite-capacity or universal latency claim is proposed.
 
 Acceptance must include free/occupied focus, empty-focus bootstrap, variable
 extents, sleeping occupants, multiple arrivals, ties and overlapping exclusions;
+aggregate/parts/mixed occupancy without extra centroid or hidden-component bodies;
 old/new fields and contacts; carried motion and unaffected sleepers; previously
 unused blocks; repeated LoD changes and released-slot reuse; exhausted supporting
 budgets, invalid input, stale handles and backend failure. Verify exact identities,
