@@ -28,6 +28,9 @@ references, not another mandatory reading sequence.
 
 ## Active implementation plans and built results
 
+- [Prepared particle space and live representation](pooled-space-live-insertion-plan.md) —
+  proposed plan for #156: lightweight `0x` declarations, reuse while data is hot,
+  prepared native backing, structural recipes and continuous engine-owned updates.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct

@@ -66,6 +66,18 @@ distinguish potential/present/awake counts, and verify no backing allocation or
 recompilation in normal admission. Use native Taichi facilities before custom
 allocation or traversal machinery.
 
+**Declaration/release refinement (Patrick, 2026-10-21):** unoccupied working
+space is potential `0x` particles with no mass, presence or fields. Its nominal
+declaration entries permit a large prepared particle span without a full
+populated payload per empty entry. Layout/LoD changes define and release items
+within that space. Follow Patrick's cost rule: declaration touches one data
+point and is near free; calculation touches at least three plus the calculation
+resource, so use required data while hot; allocation adds clerical work and
+should be avoided in hot streams. The [prepared-space implementation
+plan](docs/pooled-space-live-insertion-plan.md) is proposed for review. These
+requirements are settled; native provisioning choices remain to be measured
+and the correction is not built.
+
 ## Current state
 
 Last checked: **2026-10-21**.
