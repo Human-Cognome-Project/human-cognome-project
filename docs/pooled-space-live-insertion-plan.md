@@ -6,7 +6,9 @@ Status: **scope and native-first investigation sequence accepted in #160,
 and Patrick's subsequent `0x` and computational-cost clarifications. The
 correction is required and unbuilt. The plan was a documentation-only change.
 The subsequent [native storage investigation](../engine/docs/PREPARED-SPACE.md)
-is bounded probe evidence, not completion of the foundation or live insertion.
+was accepted in #161 as bounded probe evidence, not completion of the foundation
+or live insertion. The [next combined-capacity segment](prepared-capacity-foundation-plan.md)
+is proposed separately for review; its implementation is not built.
 
 Accepting this plan approves its scope and native-first investigation sequence.
 It does **not** approve the bootstrap/focus-establishment, initial-velocity,

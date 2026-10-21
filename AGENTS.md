@@ -84,8 +84,8 @@ resource, so use required data while hot; allocation adds clerical work and
 should be avoided in hot streams. The [prepared-space implementation
 plan](docs/pooled-space-live-insertion-plan.md) was accepted in #160 as scope and
 native-first investigation sequence. These requirements are settled; the native
-provisioning measurements below are diagnostic evidence under review and the
-combined correction is not built.
+provisioning measurements below were accepted as bounded evidence in #161 and
+the combined correction is not built.
 
 Accepting that plan does not approve its proposed bootstrap/focus establishment,
 initial velocity, batch focus-update order or numerical conventions. Native
@@ -98,14 +98,19 @@ coordinate gauge alone does not position the first focal participants.
 Last checked: **2026-10-21**.
 
 **Prepared-space investigation:** #160 accepted the plan's native-first sequence;
-initialization/numerical conventions remain proposals. The
-[native storage probe](engine/docs/PREPARED-SPACE.md) now compares dense declarations
+initialization/numerical conventions remain proposals. #161 was accepted and
+merged at `6b2fac2`, including the native allocator bound repair. The
+[native storage probe](engine/docs/PREPARED-SPACE.md) compares dense declarations
 with budgeted native references, flat bitmasked storage and cold/retained/recycled
 pointer storage. It measures CPU backing, pool reservation/alignment and reuse,
-with no physical objects or placement rule. This is diagnostic evidence under
-review, not the combined foundation, continuous insertion or LoD implementation.
-Production #156 remains open/unbuilt; GPU evidence and complete host/driver
-allocation accounting remain qualification work.
+with no physical objects or placement rule. All 26 CPU suites and eight hosted
+checks passed; dense declarations with budgeted native presence were accepted as
+the next candidate. Four symbolic bindings do not qualify general record mapping,
+relationship budgets or continuous insertion. The
+[next combined-capacity segment](docs/prepared-capacity-foundation-plan.md) is
+proposed for review, not implemented. Production #156 remains open/unbuilt;
+GPU evidence and complete host/driver allocation accounting remain qualification
+work.
 
 **Latest accepted follow-ups:** #157 merged deployment/restore guidance with
 independent database and snapshot names; #158 merged configurable capture and
