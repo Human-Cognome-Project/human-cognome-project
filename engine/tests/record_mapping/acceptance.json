@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "date": "2026-10-21",
+  "status": "CPU mapping/limits proof built; submitted for review; combined execution unbuilt",
+  "baseline_main": "7bf88199cb913c594023b3b448460444e97cfb45",
+  "native_adapter_revision": "7ade69ebc004bd28068d932206f960e7d11270ab",
+  "implementation_revision": "561f41c5012630ef52f317369cc4eef926154a2a",
+  "taichi_baseline_tree": "f4bbe8187cfcf19056ac51e338460e76bb5a4faa",
+  "taichi_measured_tree": "538522b8893de5226fd229a8098609e3129d41c3",
+  "environment": {
+    "backend": "x64",
+    "cpu": "AMD EPYC 9V74",
+    "runtime_cpu_threads": 2,
+    "compiler": "Clang 15.0.6",
+    "llvm": "15.0.6",
+    "cuda_build": false
+  },
+  "validation": {
+    "full_cpu_suites": 30,
+    "full_cpu_passed": 30,
+    "full_cpu_seconds": 195.79,
+    "final_focused_suites": 4,
+    "final_focused_passed": 4,
+    "final_focused_seconds": 5.95,
+    "sequence": "Full CPU suite, then final test-only potential-padding assertion and all four focused suites; retained profile runs use final source.",
+    "cuda_launcher_syntax": {
+      "passed": true,
+      "flag": "TI_WITH_CUDA"
+    },
+    "cuda_runtime_compile": {
+      "passed": true,
+      "flag": "ARCH_cuda"
+    },
+    "cuda_execution": false
+  },
+  "profiles": [
+    {
+      "backend": "cpu",
+      "path": "bulk",
+      "potential": 1048576,
+      "records": 70,
+      "cycles": 32,
+      "defined": 1191,
+      "released": 1191,
+      "setup": {
+        "root_bytes": 1052688,
+        "dynamic_requested_delta": 8571217,
+        "host_cursor_delta_including_alignment_and_80_command_bytes": 9650216
+      },
+      "ready": {
+        "phase": "ready",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 70,
+        "pool_calls": 34,
+        "pool_requested_bytes": 10713365,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1074799796,
+        "host_cursor_bytes": 10736820,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.49155
+      },
+      "final": {
+        "phase": "final",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 70,
+        "pool_calls": 34,
+        "pool_requested_bytes": 10713365,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1074799796,
+        "host_cursor_bytes": 10736820,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.49155
+      },
+      "cpp_new_observation": "# C++ new calls/bytes (not all host/driver allocation): first_define=16/104,first_release=16/104,lookup=16/104"
+    },
+    {
+      "backend": "cpu",
+      "path": "direct",
+      "potential": 1048576,
+      "records": 70,
+      "cycles": 32,
+      "defined": 1191,
+      "released": 1191,
+      "setup": {
+        "root_bytes": 1052688,
+        "dynamic_requested_delta": 8571217,
+        "host_cursor_delta_including_alignment_and_80_command_bytes": 9650216
+      },
+      "ready": {
+        "phase": "ready",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 70,
+        "pool_calls": 34,
+        "pool_requested_bytes": 10713365,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1074799796,
+        "host_cursor_bytes": 10736820,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.516874
+      },
+      "final": {
+        "phase": "final",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 70,
+        "pool_calls": 34,
+        "pool_requested_bytes": 10713365,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1074799796,
+        "host_cursor_bytes": 10736820,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.516874
+      },
+      "cpp_new_observation": "# C++ new calls/bytes (not all host/driver allocation): first_define=16/104,first_release=16/104,lookup=16/104"
+    },
+    {
+      "backend": "cpu",
+      "path": "bulk",
+      "potential": 16777216,
+      "records": 4096,
+      "cycles": 32,
+      "defined": 69633,
+      "released": 69633,
+      "setup": {
+        "root_bytes": 16908800,
+        "dynamic_requested_delta": 8571217,
+        "host_cursor_delta_including_alignment_and_80_command_bytes": 25505832
+      },
+      "ready": {
+        "phase": "ready",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 4096,
+        "pool_calls": 34,
+        "pool_requested_bytes": 26633397,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1090719828,
+        "host_cursor_bytes": 26656852,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.547222
+      },
+      "final": {
+        "phase": "final",
+        "native_requested_bytes": 8571217,
+        "native_chunk_bytes": 8536064,
+        "native_elements": 4096,
+        "pool_calls": 34,
+        "pool_requested_bytes": 26633397,
+        "pool_raw_calls": 7,
+        "pool_reserved_bytes": 1090719828,
+        "host_cursor_bytes": 26656852,
+        "trees": 1,
+        "snode_ids": 8,
+        "compilation_seconds": 0.547222
+      },
+      "cpp_new_observation": "# C++ new calls/bytes (not all host/driver allocation): first_define=16/104,first_release=16/104,lookup=16/104"
+    }
+  ],
+  "checks": [
+    "Empty ready state has zero definitions and exactly P allocated native cells, never padded P claims.",
+    "First definition and release preserve prepared native backing, pools, tree/SNode and compiler counters.",
+    "Arbitrary addresses map to distinct native indexes and fixed-stride numerical fixture arrays.",
+    "32 release/reuse cycles preserve surviving numerical counters and exclude holes from native bodies.",
+    "Address lookup visits present reference rows rather than the potential span.",
+    "Duplicate, invalid, stale, foreign-context, padding and exhausted claims preserve committed state.",
+    "Exhaustion leaves the native claim cursor unchanged; same-address/record reuse invalidates old incarnation.",
+    "Zero-record reservation rejects claims without consuming a generation.",
+    "Independent logical limits, zero sentinels and wide byte product/sum validation pass."
+  ],
+  "remaining": [
+    "Prepared backing for all field, relationship, reference, focus, adjacency, batch and inspection buffers.",
+    "Elimination of remaining recurring native launch parameter-index allocations (observed 16 C++ new calls / 104 bytes per sampled command).",
+    "Existing field kernels and native awake sets bound to combined live capacities, real numerical fixture updates and coherent multi-family batches.",
+    "Actual prospective scratch demand formulas/allocations and complete resource/transaction failure evidence.",
+    "CPU allocation observation omits direct malloc, page faults and physical residency.",
+    "CUDA async driver allocation/tracing and local execution under #145; syntax/bitcode compilation is not GPU execution.",
+    "Production placement/continuous insertion/LoD policy and source/report integration under #156."
+  ],
+  "source_sha256": {
+    "engine/CMakeLists.txt": "982076719f45cda83b69bf85a4e2521c8e3781568104bab1f65b0b5096ef89eb",
+    "engine/src/engine/record_map.h": "410a0ef3da2a78f5e3b0402e50ad94a87aded215490659f11c112e1af3f84667",
+    "engine/src/engine/record_map.cpp": "3cf750f606c589bd99604d04aab7163f4de7686b1ab6fe4096962237a69f564f",
+    "engine/src/field/prepared_capacity.h": "89dedd837a65c7c135f0b34881a0d931cf5d82dea8648b9278a4315bd6ed9cad",
+    "engine/src/field/prepared_capacity.cpp": "e646415568b82e07f19a24c7e246eac312fb3feb1633e7cd906aad65c2fbed6f",
+    "engine/tests/record_map_test.cpp": "737d7362124abf263608edacdd730bc43bf239a834e2f67d58ccb710ed6d8279",
+    "engine/tests/prepared_capacity_test.cpp": "56cfba25e6606c56c16214dd9722d7519e65f3ff053ffa1642c4d1aa42cdcf3e",
+    "engine/taichi/taichi/runtime/llvm/runtime_module/internal_functions.h": "ea348857262d0591862c1b5d4a5c02c1111aa4728cf06e11e412cb476c80cbc1",
+    "engine/taichi/taichi/runtime/llvm/runtime_module/runtime.cpp": "479465b1ce22afb992732226c74c72355704c946cb0ca616ae5fa10dc3a64510",
+    "engine/taichi/taichi/runtime/cpu/kernel_launcher.cpp": "1a3f16a93a749cf304eeb9325f10fb90559b2b9be9a61fe9e5c0df4f3335669a",
+    "engine/taichi/taichi/runtime/cuda/kernel_launcher.cpp": "0fc11dce121299dfdc5cc64f0bdb84e55eef0dfb0eff96a0fbb6d4995a700c08"
+  },
+  "evidence_sha256": {
+    "engine/tests/record_mapping/evidence/cpu-4096-bulk.txt": "533d303c6067e9238e375215181a0d014bbb56ed0ee86d2f41fdece370f0e313",
+    "engine/tests/record_mapping/evidence/cpu-70-bulk.txt": "338a0c742e05238b74117a9554074edb9c8a0e9053448b5efcf4f2ac3516f8d8",
+    "engine/tests/record_mapping/evidence/cpu-70-direct.txt": "41f72fdb5c3b3024b16a883caf18b9ba7678add15ac61bf8f833111f2545ff62",
+    "engine/tests/record_mapping/evidence/cpu-focused-ctest.txt": "9a1a3596730b17964bdc407bbffe811035901d9f960635d9aa0af28ce6709647",
+    "engine/tests/record_mapping/evidence/cpu-full-ctest.txt": "cdf69f468e69a4c16ddc371b303256e3368a01389eb02673e92a570f068ea8e3"
+  }
+}

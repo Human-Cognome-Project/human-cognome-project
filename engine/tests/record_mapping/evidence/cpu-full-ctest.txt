@@ -1,0 +1,66 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+      Start 18: activity_direct_test
+      Start 17: activity_parallel_test
+ 1/30 Test #17: activity_parallel_test ............   Passed   82.29 sec
+      Start 16: activity_test
+ 2/30 Test #18: activity_direct_test ..............   Passed   82.71 sec
+      Start  1: active_workbench_test
+ 3/30 Test  #1: active_workbench_test .............   Passed   25.75 sec
+      Start  2: active_transfer_experiment
+ 4/30 Test  #2: active_transfer_experiment ........   Passed   18.75 sec
+      Start 14: field_test
+ 5/30 Test #14: field_test ........................   Passed   35.50 sec
+      Start 20: activity_assembly_direct_test
+ 6/30 Test #16: activity_test .....................   Passed   85.50 sec
+      Start  6: record_map_working_set
+ 7/30 Test #20: activity_assembly_direct_test .....   Passed    7.59 sec
+      Start  4: record_map_padded
+ 8/30 Test  #6: record_map_working_set ............   Passed    2.64 sec
+      Start 26: membership_fields_native_test
+ 9/30 Test  #4: record_map_padded .................   Passed    2.23 sec
+      Start  5: record_map_direct
+10/30 Test  #5: record_map_direct .................   Passed    2.51 sec
+      Start 19: activity_assembly_test
+11/30 Test #19: activity_assembly_test ............   Passed    7.62 sec
+      Start 22: assembly_test
+12/30 Test #26: membership_fields_native_test .....   Passed   16.12 sec
+      Start 30: viewport_snapshot_test
+13/30 Test #30: viewport_snapshot_test ............   Passed    2.62 sec
+      Start 15: native_activity_test
+14/30 Test #15: native_activity_test ..............   Passed    1.31 sec
+      Start  8: prepared_space_dense-budgeted
+15/30 Test  #8: prepared_space_dense-budgeted .....   Passed    0.36 sec
+      Start 12: prepared_space_pointer-recycled
+16/30 Test #12: prepared_space_pointer-recycled ...   Passed    0.80 sec
+      Start 11: prepared_space_pointer-retained
+17/30 Test #11: prepared_space_pointer-retained ...   Passed    0.72 sec
+      Start 10: prepared_space_pointer-cold
+18/30 Test #10: prepared_space_pointer-cold .......   Passed    0.72 sec
+      Start 13: engine_smoke_test
+19/30 Test #13: engine_smoke_test .................   Passed    1.19 sec
+      Start  9: prepared_space_flat-bitmasked
+20/30 Test  #9: prepared_space_flat-bitmasked .....   Passed    0.33 sec
+      Start  7: native_pool_test
+21/30 Test  #7: native_pool_test ..................   Passed    0.02 sec
+      Start 27: index_cap_test
+22/30 Test #27: index_cap_test ....................   Passed    0.20 sec
+      Start  3: prepared_capacity_test
+23/30 Test  #3: prepared_capacity_test ............   Passed    0.02 sec
+      Start 29: viewport_signal_guard_test
+24/30 Test #29: viewport_signal_guard_test ........   Passed    0.00 sec
+      Start 28: viewport_options_test
+25/30 Test #28: viewport_options_test .............   Passed    0.00 sec
+      Start 24: letter_projection_native_test
+26/30 Test #24: letter_projection_native_test .....   Passed    0.02 sec
+      Start 21: preparation_test
+27/30 Test #21: preparation_test ..................   Passed    0.02 sec
+      Start 23: letter_projection_test
+28/30 Test #23: letter_projection_test ............   Passed    0.02 sec
+      Start 25: membership_fields_test
+29/30 Test #25: membership_fields_test ............   Passed    0.01 sec
+30/30 Test #22: assembly_test .....................   Passed   13.14 sec
+
+100% tests passed, 0 tests failed out of 30
+
+Total Test time (real) = 195.79 sec

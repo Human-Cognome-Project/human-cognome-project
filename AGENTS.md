@@ -107,8 +107,12 @@ with no physical objects or placement rule. All 26 CPU suites and eight hosted
 checks passed; dense declarations with budgeted native presence were accepted as
 the next candidate. Four symbolic bindings do not qualify general record mapping,
 relationship budgets or continuous insertion. The
-[next combined-capacity segment](docs/prepared-capacity-foundation-plan.md) is
-proposed for review, not implemented. Production #156 remains open/unbuilt;
+[next combined-capacity segment](docs/prepared-capacity-foundation-plan.md) was
+accepted and merged in #163 at `7bf8819`, releasing implementation under #162.
+Its [first mapping/adapter step](engine/docs/RECORD-MAPPING.md) is submitted
+separately for review: arbitrary native record reuse, reference guards and
+independent limit/layout arithmetic. Combined prepared field execution remains
+unbuilt. Production #156 remains open/unbuilt;
 GPU evidence and complete host/driver allocation accounting remain qualification
 work.
 
