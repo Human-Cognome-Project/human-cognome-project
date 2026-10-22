@@ -66,6 +66,11 @@ add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
 enable_testing()
+add_executable(prepared_launch_test tests/prepared_launch_test.cpp)
+target_link_libraries(prepared_launch_test PRIVATE engine_support)
+add_test(NAME prepared_launch_test COMMAND prepared_launch_test)
+set_tests_properties(prepared_launch_test PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 add_executable(prepared_capacity_test tests/prepared_capacity_test.cpp)
 target_link_libraries(prepared_capacity_test PRIVATE field_core)
 add_test(NAME prepared_capacity_test COMMAND prepared_capacity_test)

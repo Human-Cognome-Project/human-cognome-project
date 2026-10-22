@@ -57,9 +57,9 @@ i32 prepared_node_acquire_index(RuntimeContext *context, i32 snode_id) {
 // Quiescent, serial collection using the existing NodeManager machinery. The
 // owner validates allocation ownership (including duplicate release) first.
 // This is not safe to overlap with acquisition or another collector.
-i32 prepared_node_release_index(RuntimeContext *context,
-                                 i32 snode_id,
-                                 i32 index) {
+i32 prepared_node_recycle_index(RuntimeContext *context,
+                                i32 snode_id,
+                                i32 index) {
   auto *runtime = context->runtime;
   if (snode_id < 0 || snode_id >= runtime->snode_capacity)
     return -1;
@@ -67,8 +67,23 @@ i32 prepared_node_release_index(RuntimeContext *context,
   if (!allocator || index < 0 || index >= allocator->data_list->size())
     return -1;
   allocator->recycle(allocator->data_list->get_element_ptr(index));
+  return 0;
+}
+
+i32 prepared_node_collect(RuntimeContext *context, i32 snode_id) {
+  auto *runtime = context->runtime;
+  if (snode_id < 0 || snode_id >= runtime->snode_capacity ||
+      !runtime->node_allocators[snode_id])
+    return -1;
   node_gc(runtime, snode_id);
   return 0;
+}
+
+i32 prepared_node_release_index(RuntimeContext *context,
+                                i32 snode_id,
+                                i32 index) {
+  auto result = prepared_node_recycle_index(context, snode_id, index);
+  return result == 0 ? prepared_node_collect(context, snode_id) : result;
 }
 
 i32 insert_triplet_f32(RuntimeContext *context,

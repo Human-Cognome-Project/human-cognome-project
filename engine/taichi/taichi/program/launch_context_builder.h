@@ -11,6 +11,26 @@ struct RuntimeContext;
 
 class LaunchContextBuilder {
  public:
+  // Narrow LLVM prepared path: immutable flat scalar/ndarray bindings. Backend
+  // resources are owned here and must be destroyed before their Program.
+  struct Prepared {
+    struct Scalar {
+      int offset{-1};
+      DataType type{PrimitiveType::unknown};
+    };
+    void *owner{};
+    int launch_id{-1};
+    bool usable{true};
+    std::vector<Scalar> scalars;
+    std::size_t device_bytes{0};
+    std::size_t host_bytes{0};
+    virtual ~Prepared() = default;
+  };
+  struct ArrayBinding {
+    DataType type{PrimitiveType::unknown};
+    int rank{-1};
+    std::size_t elements{0};
+  };
   enum class DevAllocType : int8_t {
     kNone = 0,
     kNdarray = 1,
@@ -22,7 +42,7 @@ class LaunchContextBuilder {
   explicit LaunchContextBuilder(CallableBase *kernel);
 
   LaunchContextBuilder(LaunchContextBuilder &&) = default;
-  LaunchContextBuilder &operator=(LaunchContextBuilder &&) = default;
+  LaunchContextBuilder &operator=(LaunchContextBuilder &&other) noexcept;
   LaunchContextBuilder(const LaunchContextBuilder &) = delete;
   LaunchContextBuilder &operator=(const LaunchContextBuilder &) = delete;
 
@@ -31,6 +51,10 @@ class LaunchContextBuilder {
   // Created signed and unsigned version for argument range check of pybind
   void set_arg_int(const std::vector<int> &arg_id, int64 d);
   void set_arg_uint(const std::vector<int> &arg_id, uint64 d);
+
+  void prepare_scalars(Prepared &state) const;
+  void set_prepared_int(int arg_id, int64 value);
+  void set_prepared_float(int arg_id, float64 value);
 
   void set_array_runtime_size(const std::vector<int> &i, uint64 size);
 
@@ -138,6 +162,10 @@ class LaunchContextBuilder {
                      const ArgPack *,
                      hashing::Hasher<std::vector<int>>>
       argpack_ptrs;
+
+  std::vector<ArrayBinding> array_bindings;
+  // Last member: backend cleanup precedes destruction of borrowed host buffers.
+  std::unique_ptr<Prepared> prepared;
 };
 
 }  // namespace taichi::lang

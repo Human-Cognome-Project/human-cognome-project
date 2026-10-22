@@ -48,6 +48,26 @@ See [mapping evidence and limits](../docs/RECORD-MAPPING.md). CUDA execution and
 driver allocations remain local qualification work. Stable native backing does
 not establish zero recurring host launch-metadata or async driver allocations.
 
+Combined prepared backing/binding work under accepted #165:
+
+- `taichi/program/launch_context_builder.{h,cpp}` — frozen flat signatures,
+  array type/rank/extent metadata and native typed scalar offsets, with owned
+  backend preparation state and failure readiness.
+- `taichi/runtime/llvm/kernel_launcher.{h,cpp}` — scoped preparation and
+  owner/kernel validation; failed dispatch invalidates the prepared binding.
+- CPU/CUDA `kernel_launcher.{h,cpp}` — reuse prepared bindings. CUDA owns
+  persistent argument/result buffers through the existing device allocator,
+  completes launches before returning and attempts cleanup after failure.
+- `taichi/rhi/cuda/cuda_context.{h,cpp}` — borrow the retained launch argument
+  vectors rather than copying them per task. Driver parameter storage remains
+  valid through completion.
+- `taichi/runtime/llvm/runtime_module/internal_functions.h` — split native
+  recycling/collection so a validated batch collects once through existing GC.
+
+See [combined CPU evidence and GPU limits](../docs/PREPARED-EXECUTION.md). Rebuild
+matched component archives: native C++ context/launcher layout and interfaces
+change, while LLVM RuntimeContext/NodeManager struct layouts remain unchanged.
+
 Runtime/AOT compatibility and cache work:
 
 - `taichi/inc/constants.h`

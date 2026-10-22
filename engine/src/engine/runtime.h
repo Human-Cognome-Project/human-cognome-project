@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -92,19 +94,59 @@ struct Param {
 enum class MathMode { Default, Strict };
 class CompiledKernel {
  public:
+  class Invocation {
+   public:
+    explicit Invocation(taichi::lang::LaunchContextBuilder context)
+        : owned_(std::move(context)) {
+    }
+    explicit Invocation(taichi::lang::LaunchContextBuilder *context)
+        : borrowed_(context) {
+    }
+    taichi::lang::LaunchContextBuilder &get() {
+      return owned_ ? *owned_ : *borrowed_;
+    }
+
+   private:
+    std::optional<taichi::lang::LaunchContextBuilder> owned_;
+    taichi::lang::LaunchContextBuilder *borrowed_{};
+  };
   CompiledKernel() = default;
-  CompiledKernel(Runtime &runtime, const std::string &name,
+  CompiledKernel(Runtime &runtime,
+                 const std::string &name,
                  std::unique_ptr<taichi::lang::Block> body,
                  const std::vector<Param> &params,
                  MathMode math = MathMode::Default);
 
   taichi::lang::LaunchContextBuilder make_context();
+  Invocation invocation(bool prepared);
+  std::size_t prepared_bytes() const;
+  // Freeze a completely bound flat scalar/array context using native LLVM
+  // ownership. Shapes/arrays cannot change; use native prepared scalar setters.
+  void prepare(taichi::lang::LaunchContextBuilder &ctx);
   void launch(taichi::lang::LaunchContextBuilder &ctx);
 
  private:
   Runtime *runtime_{nullptr};
   std::unique_ptr<taichi::lang::Kernel> kernel_;
   const taichi::lang::CompiledKernelData *compiled_{nullptr};
+  std::unique_ptr<taichi::lang::LaunchContextBuilder> bound_context_;
 };
+
+inline void argument_int(taichi::lang::LaunchContextBuilder &ctx,
+                         int id,
+                         std::int64_t value) {
+  if (ctx.prepared)
+    ctx.set_prepared_int(id, value);
+  else
+    ctx.set_arg_int({id}, value);
+}
+inline void argument_float(taichi::lang::LaunchContextBuilder &ctx,
+                           int id,
+                           double value) {
+  if (ctx.prepared)
+    ctx.set_prepared_float(id, value);
+  else
+    ctx.set_arg_float({id}, value);
+}
 
 }  // namespace engine
