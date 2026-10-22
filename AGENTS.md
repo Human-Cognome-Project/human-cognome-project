@@ -114,12 +114,20 @@ merged in #164 at `41310a5`: arbitrary native record reuse, reference guards and
 independent limit/layout arithmetic. All eight hosted checks and 30 CPU suites
 passed. The [backing/binding section](docs/prepared-execution-backing-plan.md)
 was accepted and merged in #165 at `a9a63be`. Its
-[CPU implementation](engine/docs/PREPARED-EXECUTION.md) is submitted for review:
-actual combined backing/scratch, reusable typed native bindings, batched native
+[CPU implementation](engine/docs/PREPARED-EXECUTION.md) is accepted and merged
+in #166 at `4e7b193`, including the native context-origin/target-ABI correction.
+All eight hosted checks and all 37 CPU suites passed at the accepted head.
+The implementation covers actual combined backing/scratch, reusable typed native
+bindings, batched native
 recycling and initial fixtures through existing kernels. First population and
 32 ticks/inspection retain native counters with zero observed recurring C++
-allocations in both CPU host paths. Coherent changes while ticking remain
-unbuilt under #162. Lookup/collection costs and GPU driver qualification remain
+allocations in both CPU host paths. The
+[coherent-update section](docs/prepared-coherent-update-plan.md)
+is drafted for review; changes while ticking remain unbuilt under #162.
+Its carry-forward acceptance includes independent simultaneous occurrences of
+one reusable definition: separate handles/state and per-occurrence membership
+contributions, with surviving copies preserved on modification/retirement.
+Lookup/collection costs and GPU driver qualification remain
 explicit. Production #156 remains open/unbuilt;
 GPU evidence and complete host/driver allocation accounting remain qualification
 work.
