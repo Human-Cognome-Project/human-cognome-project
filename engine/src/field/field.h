@@ -301,7 +301,6 @@ class Harness {
   Demand demand_;
   FrameAnchor frame_anchor_{};
   std::unique_ptr<detail::PreparedStorage> prepared_;
-  std::unique_ptr<detail::Activity> activity_;
   HostPath path_;
   std::uint64_t generation_{0};
   PhaseTimes timings_;
@@ -317,6 +316,9 @@ class Harness {
   std::vector<float> determined_;
   std::vector<float> empty_determined_{0.0f};
 
+  // Numerical bindings complete first, then Activity bindings, then borrowed
+  // payload arrays. This order also applies during partial construction.
+  std::unique_ptr<detail::Activity> activity_;
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;
