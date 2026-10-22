@@ -1,10 +1,17 @@
 # Prepared execution: backing and reusable bindings
 
-Status: **draft for review, 2026-10-21**. This develops the second delivery
+Status: **accepted in #165, 2026-10-21; implementation under #162**.
+This develops the second delivery
 step of the [accepted #163 plan](prepared-capacity-foundation-plan.md), under
 [#162](https://github.com/Human-Cognome-Project/human-cognome-project/issues/162).
 Baseline: `main` at `41310a512a137712651720b7bea5012238079900`.
-This PR changes documents only; the combined execution below is not built.
+The accepted PR changed documents only. The
+[CPU backing/binding implementation](../engine/docs/PREPARED-EXECUTION.md) is
+submitted for review. Coherent changes while ticking remain the following step.
+
+[The final #165 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/165#issuecomment-6328267055)
+releases implementation and requires explicit completion ownership and cleanup
+of persistent launch resources on destruction and setup/dispatch failure.
 
 [#164's final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/164#issuecomment-6326052999)
 accepts the native mapping/adapter step, with all eight hosted checks and all

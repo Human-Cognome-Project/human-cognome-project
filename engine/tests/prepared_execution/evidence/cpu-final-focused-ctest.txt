@@ -1,0 +1,28 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+      Start  8: prepared_execution_letters
+      Start  9: prepared_execution_letters-direct
+ 1/11 Test  #8: prepared_execution_letters ..........   Passed   16.58 sec
+      Start  5: prepared_execution_direct
+ 2/11 Test  #9: prepared_execution_letters-direct ...   Passed   16.63 sec
+      Start  4: prepared_execution_padded
+ 3/11 Test  #5: prepared_execution_direct ...........   Passed   16.45 sec
+      Start  7: prepared_execution_large-direct
+ 4/11 Test  #4: prepared_execution_padded ...........   Passed   16.62 sec
+      Start  6: prepared_execution_large
+ 5/11 Test  #7: prepared_execution_large-direct .....   Passed    5.57 sec
+      Start 13: record_map_working_set
+ 6/11 Test  #6: prepared_execution_large ............   Passed    5.64 sec
+      Start 12: record_map_direct
+ 7/11 Test #13: record_map_working_set ..............   Passed    2.32 sec
+      Start 11: record_map_padded
+ 8/11 Test #12: record_map_direct ...................   Passed    2.12 sec
+      Start  3: prepared_launch_test
+ 9/11 Test  #3: prepared_launch_test ................   Passed    0.82 sec
+      Start 10: prepared_capacity_test
+10/11 Test #10: prepared_capacity_test ..............   Passed    0.01 sec
+11/11 Test #11: record_map_padded ...................   Passed    2.20 sec
+
+100% tests passed, 0 tests failed out of 11
+
+Total Test time (real) =  43.12 sec

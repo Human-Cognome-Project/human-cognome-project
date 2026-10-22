@@ -95,7 +95,7 @@ coordinate gauge alone does not position the first focal participants.
 
 ## Current state
 
-Last checked: **2026-10-21**.
+Last checked: **2026-10-22**.
 
 **Prepared-space investigation:** #160 accepted the plan's native-first sequence;
 initialization/numerical conventions remain proposals. #161 was accepted and
@@ -112,10 +112,15 @@ accepted and merged in #163 at `7bf8819`, releasing implementation under #162.
 Its [first mapping/adapter step](engine/docs/RECORD-MAPPING.md) was accepted and
 merged in #164 at `41310a5`: arbitrary native record reuse, reference guards and
 independent limit/layout arithmetic. All eight hosted checks and 30 CPU suites
-passed. The [next backing/binding section](docs/prepared-execution-backing-plan.md)
-is drafted for review; combined prepared field execution remains unbuilt.
-Carry forward the measured launch allocations, lookup/serial-GC costs and
-unqualified CUDA driver behavior. Production #156 remains open/unbuilt;
+passed. The [backing/binding section](docs/prepared-execution-backing-plan.md)
+was accepted and merged in #165 at `a9a63be`. Its
+[CPU implementation](engine/docs/PREPARED-EXECUTION.md) is submitted for review:
+actual combined backing/scratch, reusable typed native bindings, batched native
+recycling and initial fixtures through existing kernels. First population and
+32 ticks/inspection retain native counters with zero observed recurring C++
+allocations in both CPU host paths. Coherent changes while ticking remain
+unbuilt under #162. Lookup/collection costs and GPU driver qualification remain
+explicit. Production #156 remains open/unbuilt;
 GPU evidence and complete host/driver allocation accounting remain qualification
 work.
 

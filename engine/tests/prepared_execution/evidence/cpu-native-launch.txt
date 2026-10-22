@@ -1,0 +1,1 @@
+prepared_launch: scalars, ordinary path, signature rejection, ownership/failure cleanup PASS; new=0/0

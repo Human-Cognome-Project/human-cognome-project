@@ -180,11 +180,13 @@ qualification ladder.
 
 ## Current status
 
-The [prepared-space storage investigation](docs/PREPARED-SPACE.md) compares native
-lightweight declaration layouts and measures preparation, first touch and reuse.
-It implements a CPU probe and native pool diagnostics only. #160's plan is
-accepted; #156's combined capacity/live insertion correction and its physical
-initialization conventions remain unimplemented/unresolved respectively.
+The [storage investigation](docs/PREPARED-SPACE.md) and
+[native mapping](docs/RECORD-MAPPING.md) are accepted through #164. The
+[combined backing/binding implementation](docs/PREPARED-EXECUTION.md), following
+accepted #165, is submitted for review: empty prepared storage, reusable native
+bindings and first nonempty fixtures through existing field kernels. Coherent
+changes while ticking remain under #162; production live insertion and its
+initialization conventions remain unimplemented/unresolved under #156.
 
 The 2026-10-10 object-support corrections add whole-particle parent response,
 supplied-geometry radii, ordinary finite contact and a fixed-study native
