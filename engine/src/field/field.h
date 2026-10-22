@@ -1,4 +1,5 @@
 #pragma once
+#include "field/prepared_update.h"
 
 #include <array>
 #include <cstddef>
@@ -173,6 +174,9 @@ class Harness {
   // operation. Numerical readback uses existing reserved host arrays.
   const detail::PreparedStorage &prepared_storage() const;
   void inspect_prepared();
+  UpdateResult update_prepared(std::uint64_t expected_generation,
+                               const UpdateCommand *commands,
+                               std::size_t count);
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.
   // An empty selection retains the legacy fixed coordinate origin.
@@ -267,6 +271,9 @@ class Harness {
           const PreparedCapacity *capacity);
   void initialize_prepared_fixture(const Parameters &parameters);
   void prepare_empty_execution();
+  void prepare_update_execution();
+  void launch_update_candidate();
+  void launch_update_commit();
   void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
@@ -327,6 +334,7 @@ class Harness {
   engine::CompiledKernel centroid_;
   engine::CompiledKernel finalize_;
   engine::CompiledKernel inspection_;
+  engine::CompiledKernel update_candidate_, update_commit_;
   std::array<const void *, 7> prepared_host_addresses_{};
   std::array<std::size_t, 7> prepared_host_sizes_{};
 };

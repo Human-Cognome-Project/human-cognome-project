@@ -28,7 +28,8 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
-    src/field/prepared_capacity.cpp src/field/prepared_storage.cpp)
+    src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
+    src/field/prepared_update.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)

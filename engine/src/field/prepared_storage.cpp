@@ -47,24 +47,37 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
     result.push_back({name, physical(n), bytes, copies,
                       multiply(multiply(physical(n), bytes), copies)});
   };
-  // A host working and candidate copy, each mirrored in the backend workspace.
-  extent("particle-headers", p, sizeof(engine::RecordHandle), 4);
-  extent("field-headers", g, sizeof(engine::RecordHandle), 4);
-  extent("participation-headers", e, sizeof(RelationshipHeader), 4);
-  extent("contact-headers", c, sizeof(RelationshipHeader), 4);
-  extent("focal-references", f, sizeof(engine::RecordHandle), 4);
-  extent("batch-commands", b, sizeof(PreparedPatch), 2);
-  extent("batch-results", b, sizeof(engine::RecordResult), 2);
-  extent("retired-references", b, sizeof(engine::RecordHandle), 2);
-  extent("resolved-references", b, sizeof(engine::RecordHandle), 2);
+  // Headers and commands are host metadata; only actual typed kernel inputs
+  // have backend copies. There is no duplicate opaque reserve.
+  extent("particle-headers", p, sizeof(engine::RecordHandle), 2);
+  extent("field-headers", g, sizeof(engine::RecordHandle), 2);
+  extent("participation-headers", e, sizeof(RelationshipHeader), 2);
+  extent("contact-headers", c, sizeof(RelationshipHeader), 2);
+  extent("focal-references", f, sizeof(engine::RecordHandle), 2);
+  extent("batch-commands", b, sizeof(UpdateCommand), 1);
+  extent("batch-results", b, sizeof(engine::RecordResult), 1);
+  extent("retired-references", b, sizeof(engine::RecordHandle), 1);
+  extent("resolved-references", b, sizeof(engine::RecordHandle), 1);
   // Sentinels belong to each of the eight separate logical CSR arrays.
   extent("prospective-csr",
          6 * physical(p) + 2 * physical(g) + 2 * physical(e) + 2 * physical(c),
-         sizeof(int), 2);
-  extent("csr-counts", std::max(p, g), sizeof(int), 2);
-  extent("csr-cursors", std::max(p, g), sizeof(int), 2);
-  extent("validation", p + g + e + c, sizeof(int), 2);
-  extent("derived-results", 8 * physical(g) + 1, sizeof(float), 2);
+         sizeof(int), 1);
+  extent("csr-counts", std::max(p, g), sizeof(int), 1);
+  extent("csr-cursors", std::max(p, g), sizeof(int), 1);
+  extent("validation", 2 * (p + g) + e + c, sizeof(int), 2);
+  extent("derived-results", 14 * physical(g) + 12, sizeof(float), 2);
+  extent("candidate-edges", 2 * physical(e), sizeof(int), 2);
+  extent("candidate-shares", e, sizeof(float), 2);
+  extent("candidate-group-offsets", 2 * physical(g), sizeof(int), 1);
+  extent("candidate-group-order", e, sizeof(int), 1);
+  extent("destination-records", p + g, sizeof(int), 2);
+  extent("native-claim-inputs", 3 * physical(b), sizeof(int), 1);
+  extent("new-fixture-rows", 12 * physical(b), sizeof(float), 2);
+  extent("candidate-status", 1, sizeof(int), 2);
+  extent("inspection-motion", 3 * physical(p) + 6 * physical(g), sizeof(float),
+         1);
+  extent("inspection-state", 2 * (physical(p) + physical(g)), sizeof(int), 1);
+  extent("inspection-focus", 11, sizeof(float), 1);
   extent("inspection-flags", p + g, sizeof(int), 2);
   extent("inspection-counts", 4, sizeof(std::int64_t), 2);
   extent("activity-reset-zeros", std::max(3 * physical(p), 6 * physical(g)),
@@ -87,10 +100,11 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
-  // Flat rank <=2, no gradients: each argument is at most 24 ABI bytes,
-  // plus native scalar-cache and source-array metadata slots for every
-  // argument.
-  constexpr std::size_t parameters = 122, contexts = 20, abi_per_arg = 24;
+  // Candidate: 14; commit: 15. The two additional families bring the total to
+  // 151 parameters/22 contexts. Flat rank <=2, no gradients: each argument is
+  // at most 24 ABI bytes, plus native scalar-cache and source-array metadata
+  // slots for every argument.
+  constexpr std::size_t parameters = 151, contexts = 22, abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
   return parameters * (abi_per_arg + sizeof(Scalar) + sizeof(Array)) +
@@ -101,20 +115,10 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda) {
 std::size_t PreparedStorage::required_scratch(const BudgetDemand &l,
                                               bool cuda) {
   auto result = workspace_bytes(l);
-  const auto p = physical(l[Budget::Particles]),
-             g = physical(l[Budget::Fields]), f = physical(l[Budget::Focus]),
-             b = physical(l[Budget::Batch]);
-  const auto host_only =
-      std::max(3 * p, 6 * g) * sizeof(int) + 2 * f * sizeof(int);
-  const auto map_bytes =
-      4 * (3 + 10 * b) * sizeof(std::int64_t) + 20 * sizeof(std::int64_t);
-  const auto backend =
-      (result - host_only - map_bytes) / 2 -
-      physical(l[Budget::Particles] + l[Budget::Fields]) * sizeof(int) -
-      4 * sizeof(std::int64_t);
-  if (backend > (std::size_t{1} << 30))
-    throw std::invalid_argument(
-        "prepared workspace exceeds supported byte axis");
+  for (const auto &entry : workspace_layout(l))
+    if (entry.count > (std::size_t{1} << 30))
+      throw std::invalid_argument(
+          "prepared typed workspace exceeds supported axis");
   add(result, binding_reserve_bytes(cuda));
   return result;
 }
@@ -155,31 +159,45 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   prospective_csr.resize(6 * p + 2 * g + 2 * e + 2 * k);
   counts.resize(std::max(p, g));
   cursors.resize(std::max(p, g));
-  validation.resize(physical(l[Budget::Particles] + l[Budget::Fields] +
+  validation.resize(physical(2 * (l[Budget::Particles] + l[Budget::Fields]) +
                              l[Budget::Participation] + l[Budget::Contacts]));
-  derived.resize(8 * g + 1);
+  derived.resize(14 * g + 12);
   inspection_flags.resize(physical(l[Budget::Particles] + l[Budget::Fields]));
-  const auto reset_bytes = std::max(3 * p, 6 * g) * sizeof(int);
-  const auto focal_host_bytes = 2 * f * sizeof(int);
-  const auto map_bytes =
-      4 * (3 + 10 * b) * sizeof(std::int64_t) + 20 * sizeof(std::int64_t);
-  auto mirror =
-      (workspace_bytes(l) - reset_bytes - focal_host_bytes - map_bytes) / 2;
-  // Inspection has its own typed backend arrays, not duplicate bytes in blob.
-  mirror -= inspection_flags.size() * sizeof(int) + sizeof(inspection_counts);
-  if (mirror > (std::size_t{1} << 30))
-    throw std::invalid_argument(
-        "prepared workspace exceeds supported byte axis");
+  destinations.resize(physical(l[Budget::Particles] + l[Budget::Fields]));
+  claim_addresses.resize(b);
+  claim_kinds.resize(b);
+  command_indexes.resize(b);
+  candidate_edges.resize(2 * e);
+  candidate_shares.resize(e);
+  new_rows.resize(12 * b);
+  inspection_state.resize(2 * (p + g));
+  inspection_motion.resize(3 * p + 6 * g);
   using namespace taichi::lang;
-  backend_workspace = std::make_unique<Ndarray>(&r.program(), PrimitiveType::u8,
-                                                std::vector<int>{int(mirror)});
+  const auto array = [&](DataType type, int rows, int n) {
+    return std::make_unique<Ndarray>(
+        &r.program(), type,
+        rows == 1 ? std::vector<int>{n} : std::vector<int>{rows, n});
+  };
+  validation_array = array(PrimitiveType::i32, 1, int(validation.size()));
+  derived_array = array(PrimitiveType::f32, 1, int(derived.size()));
+  destinations_array = array(PrimitiveType::i32, 1, int(destinations.size()));
+  candidate_edges_array = array(PrimitiveType::i32, 2, int(e));
+  candidate_shares_array = array(PrimitiveType::f32, 1, int(e));
+  new_rows_array = array(PrimitiveType::f32, 12, int(b));
+  candidate_status_array = array(PrimitiveType::i32, 1, 1);
+  candidate_offsets_array = array(PrimitiveType::i32, 2, int(g));
+  candidate_order_array = array(PrimitiveType::i32, 1, int(e));
+  for (auto *a :
+       {validation_array.get(), derived_array.get(), destinations_array.get(),
+        candidate_edges_array.get(), candidate_shares_array.get(),
+        new_rows_array.get(), candidate_status_array.get(),
+        candidate_offsets_array.get(), candidate_order_array.get()})
+    r.program().fill_ndarray_fast_u32(a, 0);
   inspection_flags_array =
       std::make_unique<Ndarray>(&r.program(), PrimitiveType::i32,
                                 std::vector<int>{int(inspection_flags.size())});
   inspection_counts_array = std::make_unique<Ndarray>(
       &r.program(), PrimitiveType::i64, std::vector<int>{4});
-  // Touch every reserved backend byte during setup, without model objects.
-  r.program().fill_ndarray_fast_u32(backend_workspace.get(), 0);
   engine::upload(*inspection_flags_array, inspection_flags.data(),
                  inspection_flags.size() * sizeof(int));
   engine::upload(*inspection_counts_array, inspection_counts.data(),

@@ -44,6 +44,9 @@ class Activity {
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
   void set_frame_anchor(const FrameAnchor &anchor);
+  const taichi::lang::Ndarray &selected_slots() const {
+    return *selected_slots_array_;
+  }
   void begin(Harness &h, bool all_loaded, bool invalidate, bool radial);
   void touch(Harness &h, float gravity);
   void touch_contacts(Harness &h, float stiffness);
