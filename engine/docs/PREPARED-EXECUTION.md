@@ -1,6 +1,6 @@
 # Combined prepared backing and native bindings
 
-Status: **CPU implementation submitted for review, 2026-10-22**. Implements
+Status: **accepted and merged in #166 at `4e7b193`, 2026-10-22**. Implements
 the [backing/binding section accepted in #165](../../docs/prepared-execution-backing-plan.md)
 under #162, following #164's accepted record mapping. Baseline `main`:
 `a9a63be117a27975a9ae2727d0763717febfbb1d`.
@@ -9,6 +9,9 @@ The prepared Harness finishes setup empty, then runs initial labelled fixtures
 through the existing field kernels and retains the execution for subsequent
 ticks. Coherent changes to a ticking construct, production insertion and the
 remaining #156 integration are not implemented by this step.
+All eight hosted checks and all 37 CPU suites passed at the accepted head
+`34c01e0`. The [next coherent-update section](../../docs/prepared-coherent-update-plan.md)
+is drafted for review; its implementation remains unbuilt.
 
 ## Working storage and native selection
 
