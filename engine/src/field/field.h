@@ -22,6 +22,11 @@ namespace field {
 
 namespace detail {
 class Activity;
+class PreparedStorage;
+}  // namespace detail
+class PreparedCapacity;
+namespace testing {
+struct PreparedFixtureAccess;
 }
 enum class TickMode { Selective, AllLoaded };
 using FrameAnchor = std::array<double, 3>;
@@ -121,28 +126,71 @@ struct Parameters {
 // same packed layout as the device arrays.
 class Harness {
  public:
-  Harness(engine::Runtime &runtime, int particle_count, int group_count,
-          int edge_count, int contact_count = 0,
+  Harness(engine::Runtime &runtime,
+          int particle_count,
+          int group_count,
+          int edge_count,
+          int contact_count = 0,
+          HostPath path = HostPath::BulkCopy);
+  Harness(engine::Runtime &runtime,
+          const PreparedCapacity &capacity,
           HostPath path = HostPath::BulkCopy);
   ~Harness();
 
-  int particle_count() const { return particles_; }
-  int group_count() const { return groups_; }
-  int edge_count() const { return edges_; }
-  int contact_count() const { return contacts_; }
-  bool ready() const { return ready_; }
+  int particle_count() const {
+    return particles_;
+  }
+  int group_count() const {
+    return groups_;
+  }
+  int edge_count() const {
+    return edges_;
+  }
+  int contact_count() const {
+    return contacts_;
+  }
+  bool ready() const {
+    return ready_;
+  }
+  bool prepared() const {
+    return bool(prepared_);
+  }
+  int particle_capacity() const {
+    return particles_;
+  }
+  int field_capacity() const {
+    return groups_;
+  }
+  int participation_capacity() const {
+    return edges_;
+  }
+  int contact_capacity() const {
+    return contacts_;
+  }
+  std::size_t present_particles() const;
+  std::size_t present_fields() const;
+  // Borrowed diagnostics, valid until destruction or the next synchronized
+  // operation. Numerical readback uses existing reserved host arrays.
+  const detail::PreparedStorage &prepared_storage() const;
+  void inspect_prepared();
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.
   // An empty selection retains the legacy fixed coordinate origin.
   void set_focus(const std::vector<int> &groups);
-  const Demand &demand() const { return demand_; }
-  const FrameAnchor &frame_anchor() const { return frame_anchor_; }
+  const Demand &demand() const {
+    return demand_;
+  }
+  const FrameAnchor &frame_anchor() const {
+    return frame_anchor_;
+  }
   // Positions are local numerical values. Add this reference in double only
   // when interpreting an explicitly downloaded result in supplied coordinates.
   double supplied_position(int axis, int slot) const {
     return frame_anchor_.at(axis) + particle(kPosX + axis, slot);
   }
-  const PhaseTimes &timings() const { return timings_; }
+  const PhaseTimes &timings() const {
+    return timings_;
+  }
 
   // Host staging, in the packed layout above.
   std::vector<float> particle_data;
@@ -164,12 +212,18 @@ class Harness {
   float particle(int f, int i) const {
     return particle_data[offset(f, particles_, i)];
   }
-  float &group(int f, int i) { return group_data[offset(f, groups_, i)]; }
-  float group(int f, int i) const { return group_data[offset(f, groups_, i)]; }
+  float &group(int f, int i) {
+    return group_data[offset(f, groups_, i)];
+  }
+  float group(int f, int i) const {
+    return group_data[offset(f, groups_, i)];
+  }
   float &edge_float(int f, int i) {
     return edge_float_data[offset(f, edges_, i)];
   }
-  int &edge_int(int f, int i) { return edge_int_data[offset(f, edges_, i)]; }
+  int &edge_int(int f, int i) {
+    return edge_int_data[offset(f, edges_, i)];
+  }
   int &contact_int(int f, int i) {
     return contact_int_data[offset(f, contacts_, i)];
   }
@@ -197,17 +251,32 @@ class Harness {
 
   // Products of the primary pass, one per particle, written by the determiner
   // stage. Speed for now: the stage exists to hold the shape.
-  const std::vector<float> &determined() const { return determined_; }
+  const std::vector<float> &determined() const {
+    return determined_;
+  }
 
  private:
   friend class detail::Activity;
+  friend struct testing::PreparedFixtureAccess;
+  Harness(engine::Runtime &runtime,
+          int particle_count,
+          int group_count,
+          int edge_count,
+          int contact_count,
+          HostPath path,
+          const PreparedCapacity *capacity);
+  void initialize_prepared_fixture(const Parameters &parameters);
+  void prepare_empty_execution();
+  void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
   }
   void validate_staging() const;
   template <class T>
-  void bind(taichi::lang::LaunchContextBuilder &ctx, int argument,
-            const taichi::lang::Ndarray *array, std::vector<T> &values,
+  void bind(taichi::lang::LaunchContextBuilder &ctx,
+            int argument,
+            const taichi::lang::Ndarray *array,
+            std::vector<T> &values,
             std::vector<int> shape);
 
   void launch_clear(bool seed);
@@ -231,6 +300,7 @@ class Harness {
   std::uint64_t exposed_fields_{0};
   Demand demand_;
   FrameAnchor frame_anchor_{};
+  std::unique_ptr<detail::PreparedStorage> prepared_;
   std::unique_ptr<detail::Activity> activity_;
   HostPath path_;
   std::uint64_t generation_{0};
@@ -254,6 +324,9 @@ class Harness {
   engine::CompiledKernel determine_;
   engine::CompiledKernel centroid_;
   engine::CompiledKernel finalize_;
+  engine::CompiledKernel inspection_;
+  std::array<const void *, 7> prepared_host_addresses_{};
+  std::array<std::size_t, 7> prepared_host_sizes_{};
 };
 
 }  // namespace field

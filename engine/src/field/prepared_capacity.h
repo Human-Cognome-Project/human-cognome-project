@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 
 namespace field {
 enum class Budget {
@@ -34,6 +35,14 @@ struct BudgetFailure {
     return budget != Budget::Count;
   }
 };
+const char *budget_name(Budget budget);
+class CapacityError final : public std::invalid_argument {
+ public:
+  explicit CapacityError(BudgetFailure failure)
+      : std::invalid_argument(budget_name(failure.budget)), failure(failure) {
+  }
+  const BudgetFailure failure;
+};
 struct DenseShape {
   const char *name;
   std::size_t rows, stride, element_bytes, bytes;
@@ -57,5 +66,4 @@ class PreparedCapacity {
  private:
   BudgetDemand limits_;
 };
-const char *budget_name(Budget budget);
 }  // namespace field

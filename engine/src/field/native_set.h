@@ -38,9 +38,18 @@ struct NativeSet {
   void deactivate(taichi::lang::IRBuilder &b, taichi::lang::Stmt *index) const {
     operation(b, cells, index, taichi::lang::SNodeOpType::deactivate);
   }
+  taichi::lang::Stmt *active(taichi::lang::IRBuilder &b,
+                             taichi::lang::Stmt *index) const {
+    using namespace taichi::lang;
+    auto *ptr = b.create_global_ptr(cells, {index});
+    ptr->is_cell_access = true;
+    return b.insert(
+        Stmt::make_typed<SNodeOpStmt>(SNodeOpType::is_active, cells, ptr));
+  }
 
  private:
-  static void operation(taichi::lang::IRBuilder &b, taichi::lang::SNode *node,
+  static void operation(taichi::lang::IRBuilder &b,
+                        taichi::lang::SNode *node,
                         taichi::lang::Stmt *index,
                         taichi::lang::SNodeOpType op) {
     using namespace taichi::lang;

@@ -32,8 +32,14 @@ enum Counter {
 // source identities, private codes, or compiler specialization values.
 class Activity {
  public:
-  Activity(engine::Runtime &runtime, int particles, int groups, int edges,
-           int contacts);
+  Activity(engine::Runtime &runtime,
+           int particles,
+           int groups,
+           int edges,
+           int contacts,
+           PreparedStorage *prepared = nullptr);
+  void provision();
+  std::size_t prepared_binding_bytes() const;
   void reset();
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
@@ -58,6 +64,8 @@ class Activity {
  private:
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
+  PreparedStorage *prepared_{};
+  std::vector<int> zero_workspace_;
   std::vector<int> selected_slots_;
   std::vector<int> selected_groups_;
   std::array<float, 3> fixed_origin_{};

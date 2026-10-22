@@ -12,6 +12,7 @@
 #include "engine/packed_view.h"
 #include "engine/transfer.h"
 #include "field/activity.h"
+#include "field/prepared_storage.h"
 
 namespace field {
 namespace {
@@ -35,13 +36,17 @@ Stmt *load(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &index) {
   return b.create_global_load(b.create_external_ptr(array, index));
 }
 
-void store(IRBuilder &b, ArgLoadStmt *array, const std::vector<Stmt *> &index,
+void store(IRBuilder &b,
+           ArgLoadStmt *array,
+           const std::vector<Stmt *> &index,
            Stmt *value) {
   b.create_global_store(b.create_external_ptr(array, index), value);
 }
 
-void accumulate(IRBuilder &b, ArgLoadStmt *array,
-                const std::vector<Stmt *> &index, Stmt *value) {
+void accumulate(IRBuilder &b,
+                ArgLoadStmt *array,
+                const std::vector<Stmt *> &index,
+                Stmt *value) {
   b.create_atomic_add(b.create_external_ptr(array, index), value);
 }
 
@@ -74,8 +79,40 @@ std::size_t storage_size(int fields, int count) {
 
 }  // namespace
 
-Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
-                 int edge_count, int contact_count, HostPath path)
+Harness::Harness(engine::Runtime &runtime,
+                 int particle_count,
+                 int group_count,
+                 int edge_count,
+                 int contact_count,
+                 HostPath path)
+    : Harness(runtime,
+              particle_count,
+              group_count,
+              edge_count,
+              contact_count,
+              path,
+              nullptr) {
+}
+
+Harness::Harness(engine::Runtime &runtime,
+                 const PreparedCapacity &capacity,
+                 HostPath path)
+    : Harness(runtime,
+              int(capacity.limits()[Budget::Particles]),
+              int(capacity.limits()[Budget::Fields]),
+              int(capacity.limits()[Budget::Participation]),
+              int(capacity.limits()[Budget::Contacts]),
+              path,
+              &capacity) {
+}
+
+Harness::Harness(engine::Runtime &runtime,
+                 int particle_count,
+                 int group_count,
+                 int edge_count,
+                 int contact_count,
+                 HostPath path,
+                 const PreparedCapacity *capacity)
     : runtime_(&runtime),
       particles_(particle_count),
       groups_(group_count),
@@ -88,6 +125,16 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
   if (particle_count < 0 || group_count < 0 || edge_count < 0 ||
       contact_count < 0) {
     throw std::invalid_argument("field::Harness: counts must be non-negative");
+  }
+  if (capacity) {
+    const auto required = detail::PreparedStorage::required_scratch(
+        capacity->limits(), runtime.on_cuda());
+    if (required > capacity->limits()[Budget::ScratchBytes])
+      throw CapacityError({Budget::ScratchBytes, required,
+                           capacity->limits()[Budget::ScratchBytes]});
+    prepared_ = std::make_unique<detail::PreparedStorage>(runtime, *capacity);
+    generation_ =
+        1;  // Checked binding schema, not a committed object generation.
   }
   // Empty logical arrays still need nonzero allocation/transfer sizes in
   // the RHI. Their real loop counts and host accessor strides stay zero.
@@ -131,8 +178,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
                                                  std::vector<int>{1});
   }
-  activity_ = std::make_unique<detail::Activity>(runtime, particles_, groups_,
-                                                 edges_, contacts_);
+  activity_ = std::make_unique<detail::Activity>(
+      runtime, particles_, groups_, edges_, contacts_, prepared_.get());
   timings_.allocation_ms =
       elapsed(allocation_start) - activity_->compilation_ms;
   // These kernels embed Activity's SNode layout; CHI IR cache names below
@@ -191,6 +238,13 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
           b.create_range_for(b.get_int32(0), mass_count, false, 1, 0, true);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
+      std::optional<IRBuilder::IfGuard> presence_guard;
+      if (prepared_)
+        presence_guard.emplace(b.get_if_guard(
+            b.create_if(
+                detail::NativeSet{prepared_->particles.bindings().presence}
+                    .active(b, i)),
+            true));
       store(b, universal, {b.get_int32(0)},
             b.create_add(load(b, universal, {b.get_int32(0)}),
                          load(b, particles, at(b, kMass, i))));
@@ -368,7 +422,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         for (int axis = 0; axis < 3; ++axis) {
           auto *delta = axis == 0 ? dx : (axis == 1 ? dy : dz);
           Stmt *force = b.create_mul(scale, delta);
-          if (side == 1) force = b.create_neg(force);
+          if (side == 1)
+            force = b.create_neg(force);
           store(b, particles, at(b, kForceX + axis, p),
                 b.create_add(load(b, particles, at(b, kForceX + axis, p)),
                              force));
@@ -778,11 +833,15 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
   }
   timings_.compilation_ms =
       activity_->compilation_ms + elapsed(compilation_start);
+  if (prepared_)
+    prepare_empty_execution();
 }
 
 template <class T>
-void Harness::bind(LaunchContextBuilder &ctx, int argument,
-                   const Ndarray *array, std::vector<T> &values,
+void Harness::bind(LaunchContextBuilder &ctx,
+                   int argument,
+                   const Ndarray *array,
+                   std::vector<T> &values,
                    std::vector<int> shape) {
   engine::PackedView<T> view(values, std::move(shape), generation_);
   if (path_ == HostPath::BulkCopy) {
@@ -800,10 +859,16 @@ Harness::~Harness() = default;
 
 // Activity launches share the exact same checked payload binding on both host
 // paths; keep the template bodies private to this implementation.
-template void Harness::bind<float>(LaunchContextBuilder &, int, const Ndarray *,
-                                   std::vector<float> &, std::vector<int>);
-template void Harness::bind<int>(LaunchContextBuilder &, int, const Ndarray *,
-                                 std::vector<int> &, std::vector<int>);
+template void Harness::bind<float>(LaunchContextBuilder &,
+                                   int,
+                                   const Ndarray *,
+                                   std::vector<float> &,
+                                   std::vector<int>);
+template void Harness::bind<int>(LaunchContextBuilder &,
+                                 int,
+                                 const Ndarray *,
+                                 std::vector<int> &,
+                                 std::vector<int>);
 
 void Harness::set_tick_mode(TickMode mode) {
   runtime_->synchronize();
@@ -812,7 +877,11 @@ void Harness::set_tick_mode(TickMode mode) {
 }
 
 void Harness::set_focus(const std::vector<int> &groups) {
-  if (!ready_) throw std::logic_error("focus requires seeded field geometry");
+  if (prepared_)
+    throw std::logic_error(
+        "prepared focal configuration is fixture-only in this slice");
+  if (!ready_)
+    throw std::logic_error("focus requires seeded field geometry");
   std::set<int> distinct;
   for (int g : groups)
     if (g < 0 || g >= groups_ || !distinct.insert(g).second)
@@ -840,7 +909,8 @@ void Harness::set_focus(const std::vector<int> &groups) {
     if (shift != FrameAnchor{}) {
       auto local = particle_data;
       for (int slot = 0; slot < particles_; ++slot) {
-        if (particle(kMass, slot) == 0) continue;
+        if (particle(kMass, slot) == 0)
+          continue;
         for (int axis = 0; axis < 3; ++axis) {
           const double value =
               double(particle(kPosX + axis, slot)) - shift[axis];
@@ -882,6 +952,10 @@ void Harness::validate_staging() const {
   for (int i = 0; i < particles_; ++i) {
     const float mass = particle_data[offset(kMass, particles_, i)];
     const float radius = particle_data[offset(kRadius, particles_, i)];
+    if (prepared_ &&
+        ((prepared_->particle_headers[i].record >= 0) != (mass > 0)))
+      throw std::invalid_argument(
+          "fixture mass and native particle presence disagree");
     if (mass < 0.0f || radius < 0.0f) {
       throw std::invalid_argument(
           "field::Harness::upload: negative mass or radius");
@@ -897,7 +971,7 @@ void Harness::validate_staging() const {
   }
   // The kernels address device memory directly with these indices; an
   // out-of-range one would read or write past the array, not fail.
-  for (int e = 0; e < edges_; ++e) {
+  for (int e = 0; e < (prepared_ ? int(prepared_->live.edges) : edges_); ++e) {
     const int p = edge_int_data[offset(kEdgeParticle, edges_, e)];
     const int g = edge_int_data[offset(kEdgeGroup, edges_, e)];
     if (p < 0 || p >= particles_ || g < 0 || g >= groups_) {
@@ -905,6 +979,10 @@ void Harness::validate_staging() const {
                               std::to_string(e) +
                               " names a particle or group out of range");
     }
+    if (prepared_ && (prepared_->particle_headers[p].record < 0 ||
+                      prepared_->field_headers[g].record < 0))
+      throw std::invalid_argument(
+          "fixture participation names absent endpoint");
     const float share = edge_float_data[offset(kShare, edges_, e)];
     if (particle_data[offset(kMass, particles_, p)] == 0.0f || share <= 0.0f ||
         share > 1.0f) {
@@ -912,7 +990,8 @@ void Harness::validate_staging() const {
           "field::Harness::upload: invalid participation");
     }
   }
-  for (int k = 0; k < contacts_; ++k) {
+  for (int k = 0; k < (prepared_ ? int(prepared_->live.contacts) : contacts_);
+       ++k) {
     const int a = contact_int_data[offset(kContactA, contacts_, k)];
     const int b = contact_int_data[offset(kContactB, contacts_, k)];
     if (a < 0 || a >= particles_ || b < 0 || b >= particles_) {
@@ -936,9 +1015,14 @@ void Harness::invalidate() {
   demand_ = {};
 }
 
-void Harness::publish(const Parameters &p) { publish(p, frame_anchor_); }
+void Harness::publish(const Parameters &p) {
+  publish(p, frame_anchor_);
+}
 
 void Harness::publish(const Parameters &p, const FrameAnchor &anchor) {
+  if (prepared_)
+    throw std::logic_error(
+        "legacy publication cannot reset a prepared execution");
   invalidate();
   validate_parameters(p);
   for (double coordinate : anchor)
@@ -951,12 +1035,15 @@ void Harness::publish(const Parameters &p, const FrameAnchor &anchor) {
 }
 
 void Harness::upload() {
+  if (prepared_)
+    throw std::logic_error("legacy upload cannot reset a prepared execution");
   invalidate();
   validate_staging();
   activity_->index(edge_int_data, contact_int_data);
   exposed_ = 0;
   for (int p = 0; p < particles_; ++p)
-    if (particle(kMass, p) > 0) ++exposed_;
+    if (particle(kMass, p) > 0)
+      ++exposed_;
   std::vector<bool> live_groups(groups_, false);
   for (int e = 0; e < edges_; ++e)
     if (particle(kMass, edge_int(kEdgeParticle, e)) * edge_float(kShare, e) > 0)
@@ -999,6 +1086,17 @@ void Harness::upload() {
 }
 
 void Harness::download() {
+  if (prepared_) {
+    if (!ready_)
+      throw std::logic_error(
+          "unready prepared execution cannot report current values");
+    try {
+      validate_prepared_bindings();
+    } catch (...) {
+      ready_ = false;
+      throw;
+    }
+  }
   const auto start = Clock::now();
   runtime_->synchronize();
   if (path_ == HostPath::BulkCopy) {
@@ -1038,122 +1136,218 @@ bool Harness::uploaded_payload_matches() {
 }
 
 void Harness::launch_clear(bool seed) {
-  auto ctx = clear_.make_context();
-  bind(ctx, 0, particle_array_.get(), particle_data,
-       {kParticleFieldCount, std::max(particles_, 1)});
-  bind(ctx, 1, group_array_.get(), group_data,
-       {kGroupFieldCount, std::max(groups_, 1)});
-  ctx.set_arg_int({2}, particles_);
-  ctx.set_arg_int({3}, groups_);
-  bind(ctx, 4, universal_array_.get(), universal_data, {1});
-  ctx.set_arg_int({5}, seed);
-  ctx.set_arg_ndarray({6}, *activity_->particle_flags);
-  ctx.set_arg_int({7}, seed ? particles_ : 0);
+  auto call = clear_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    bind(ctx, 0, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 1, group_array_.get(), group_data,
+         {kGroupFieldCount, std::max(groups_, 1)});
+  }
+  engine::argument_int(ctx, 2, particles_);
+  engine::argument_int(ctx, 3, groups_);
+  if (!ctx.prepared) {
+    bind(ctx, 4, universal_array_.get(), universal_data, {1});
+  }
+  engine::argument_int(ctx, 5, seed);
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *activity_->particle_flags);
+  }
+  engine::argument_int(ctx, 7, seed ? particles_ : 0);
   clear_.launch(ctx);
 }
 
 void Harness::launch_force(const Parameters &p) {
-  auto ctx = force_.make_context();
-  bind(ctx, 0, edge_int_array_.get(), edge_int_data,
-       {kEdgeIntFieldCount, std::max(edges_, 1)});
-  bind(ctx, 1, edge_float_array_.get(), edge_float_data,
-       {kEdgeFloatFieldCount, std::max(edges_, 1)});
-  bind(ctx, 2, particle_array_.get(), particle_data,
-       {kParticleFieldCount, std::max(particles_, 1)});
-  bind(ctx, 3, group_array_.get(), group_data,
-       {kGroupFieldCount, std::max(groups_, 1)});
-  ctx.set_arg_int({4}, particles_);
-  ctx.set_arg_int({5}, groups_);
-  ctx.set_arg_int({6}, edges_);
-  ctx.set_arg_float({7}, p.gravity);
-  ctx.set_arg_ndarray({8}, *activity_->particle_flags);
-  ctx.set_arg_ndarray({9}, *activity_->counters);
-  ctx.set_arg_ndarray({10}, *activity_->particle_offsets);
-  ctx.set_arg_ndarray({11}, *activity_->particle_edges);
+  auto call = force_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    bind(ctx, 0, edge_int_array_.get(), edge_int_data,
+         {kEdgeIntFieldCount, std::max(edges_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 1, edge_float_array_.get(), edge_float_data,
+         {kEdgeFloatFieldCount, std::max(edges_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 2, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 3, group_array_.get(), group_data,
+         {kGroupFieldCount, std::max(groups_, 1)});
+  }
+  engine::argument_int(ctx, 4, particles_);
+  engine::argument_int(ctx, 5, groups_);
+  engine::argument_int(ctx, 6, edges_);
+  engine::argument_float(ctx, 7, p.gravity);
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({8}, *activity_->particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({9}, *activity_->counters);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({10}, *activity_->particle_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({11}, *activity_->particle_edges);
+  }
   force_.launch(ctx);
 }
 
 void Harness::launch_contact(const Parameters &p) {
-  auto ctx = contact_.make_context();
-  bind(ctx, 0, contact_int_array_.get(), contact_int_data,
-       {kContactIntFieldCount, std::max(contacts_, 1)});
-  bind(ctx, 1, particle_array_.get(), particle_data,
-       {kParticleFieldCount, std::max(particles_, 1)});
-  ctx.set_arg_int({2}, contacts_);
-  ctx.set_arg_float({3}, p.contact_stiffness);
-  ctx.set_arg_ndarray({4}, *activity_->particle_flags);
-  ctx.set_arg_ndarray({5}, *activity_->counters);
-  ctx.set_arg_ndarray({6}, *activity_->contact_a_offsets);
-  ctx.set_arg_ndarray({7}, *activity_->contact_a_edges);
-  ctx.set_arg_ndarray({8}, *activity_->contact_b_offsets);
-  ctx.set_arg_ndarray({9}, *activity_->contact_b_edges);
-  ctx.set_arg_int({10}, particles_);
+  auto call = contact_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    bind(ctx, 0, contact_int_array_.get(), contact_int_data,
+         {kContactIntFieldCount, std::max(contacts_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 1, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+  }
+  engine::argument_int(ctx, 2, contacts_);
+  engine::argument_float(ctx, 3, p.contact_stiffness);
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({4}, *activity_->particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *activity_->counters);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *activity_->contact_a_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({7}, *activity_->contact_a_edges);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({8}, *activity_->contact_b_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({9}, *activity_->contact_b_edges);
+  }
+  engine::argument_int(ctx, 10, particles_);
   contact_.launch(ctx);
 }
 
 void Harness::launch_integrate(const Parameters &p) {
-  auto ctx = integrate_.make_context();
-  bind(ctx, 0, particle_array_.get(), particle_data,
-       {kParticleFieldCount, std::max(particles_, 1)});
-  ctx.set_arg_int({1}, particles_);
-  ctx.set_arg_float({2}, p.dt);
-  bind(ctx, 3, universal_array_.get(), universal_data, {1});
-  ctx.set_arg_float({4}, p.reach_strength);
-  ctx.set_arg_ndarray({5}, *activity_->particle_flags);
-  ctx.set_arg_ndarray({6}, *activity_->particle_delta);
-  ctx.set_arg_ndarray({7}, *activity_->focus);
-  ctx.set_arg_ndarray({8}, *activity_->counters);
-  bind(ctx, 9, edge_int_array_.get(), edge_int_data,
-       {kEdgeIntFieldCount, std::max(edges_, 1)});
-  ctx.set_arg_ndarray({10}, *activity_->particle_offsets);
-  ctx.set_arg_ndarray({11}, *activity_->particle_edges);
+  auto call = integrate_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    bind(ctx, 0, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+  }
+  engine::argument_int(ctx, 1, particles_);
+  engine::argument_float(ctx, 2, p.dt);
+  if (!ctx.prepared) {
+    bind(ctx, 3, universal_array_.get(), universal_data, {1});
+  }
+  engine::argument_float(ctx, 4, p.reach_strength);
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *activity_->particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *activity_->particle_delta);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({7}, *activity_->focus);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({8}, *activity_->counters);
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 9, edge_int_array_.get(), edge_int_data,
+         {kEdgeIntFieldCount, std::max(edges_, 1)});
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({10}, *activity_->particle_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({11}, *activity_->particle_edges);
+  }
   integrate_.launch(ctx);
 }
 
 void Harness::launch_determine() {
-  auto ctx = determine_.make_context();
-  bind(ctx, 0, particle_array_.get(), particle_data,
-       {kParticleFieldCount, std::max(particles_, 1)});
-  bind(ctx, 1, determined_array_.get(),
-       particles_ ? determined_ : empty_determined_, {std::max(particles_, 1)});
-  ctx.set_arg_int({2}, particles_);
+  auto call = determine_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    bind(ctx, 0, particle_array_.get(), particle_data,
+         {kParticleFieldCount, std::max(particles_, 1)});
+  }
+  if (!ctx.prepared) {
+    bind(ctx, 1, determined_array_.get(),
+         particles_ ? determined_ : empty_determined_,
+         {std::max(particles_, 1)});
+  }
+  engine::argument_int(ctx, 2, particles_);
   determine_.launch(ctx);
 }
 
 void Harness::launch_centroid(const Parameters &, bool seed) {
   {
-    auto ctx = centroid_.make_context();
-    bind(ctx, 0, edge_int_array_.get(), edge_int_data,
-         {kEdgeIntFieldCount, std::max(edges_, 1)});
-    bind(ctx, 1, edge_float_array_.get(), edge_float_data,
-         {kEdgeFloatFieldCount, std::max(edges_, 1)});
-    bind(ctx, 2, particle_array_.get(), particle_data,
-         {kParticleFieldCount, std::max(particles_, 1)});
-    bind(ctx, 3, group_array_.get(), group_data,
-         {kGroupFieldCount, std::max(groups_, 1)});
-    ctx.set_arg_int({4}, particles_);
-    ctx.set_arg_int({5}, groups_);
-    ctx.set_arg_int({6}, edges_);
-    ctx.set_arg_ndarray({7}, *activity_->group_flags);
-    ctx.set_arg_ndarray({8}, *activity_->counters);
-    ctx.set_arg_int({9}, seed);
-    ctx.set_arg_ndarray({10}, *activity_->group_offsets);
-    ctx.set_arg_ndarray({11}, *activity_->group_edges);
+    auto call = centroid_.invocation(bool(prepared_));
+    auto &ctx = call.get();
+    if (!ctx.prepared) {
+      bind(ctx, 0, edge_int_array_.get(), edge_int_data,
+           {kEdgeIntFieldCount, std::max(edges_, 1)});
+    }
+    if (!ctx.prepared) {
+      bind(ctx, 1, edge_float_array_.get(), edge_float_data,
+           {kEdgeFloatFieldCount, std::max(edges_, 1)});
+    }
+    if (!ctx.prepared) {
+      bind(ctx, 2, particle_array_.get(), particle_data,
+           {kParticleFieldCount, std::max(particles_, 1)});
+    }
+    if (!ctx.prepared) {
+      bind(ctx, 3, group_array_.get(), group_data,
+           {kGroupFieldCount, std::max(groups_, 1)});
+    }
+    engine::argument_int(ctx, 4, particles_);
+    engine::argument_int(ctx, 5, groups_);
+    engine::argument_int(ctx, 6, edges_);
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({7}, *activity_->group_flags);
+    }
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({8}, *activity_->counters);
+    }
+    engine::argument_int(ctx, 9, seed);
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({10}, *activity_->group_offsets);
+    }
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({11}, *activity_->group_edges);
+    }
     centroid_.launch(ctx);
   }
   {
-    auto ctx = finalize_.make_context();
-    bind(ctx, 0, group_array_.get(), group_data,
-         {kGroupFieldCount, std::max(groups_, 1)});
-    ctx.set_arg_int({1}, groups_);
-    ctx.set_arg_ndarray({2}, *activity_->group_flags);
-    ctx.set_arg_ndarray({3}, *activity_->group_delta);
-    ctx.set_arg_ndarray({4}, *activity_->counters);
+    auto call = finalize_.invocation(bool(prepared_));
+    auto &ctx = call.get();
+    if (!ctx.prepared) {
+      bind(ctx, 0, group_array_.get(), group_data,
+           {kGroupFieldCount, std::max(groups_, 1)});
+    }
+    engine::argument_int(ctx, 1, groups_);
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({2}, *activity_->group_flags);
+    }
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({3}, *activity_->group_delta);
+    }
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({4}, *activity_->counters);
+    }
     finalize_.launch(ctx);
   }
 }
 
 void Harness::seed_centroids(const Parameters &p) {
+  if (prepared_)
+    throw std::logic_error("legacy seed cannot reset a prepared execution");
   const auto start = Clock::now();
   ready_ = false;
   if (!uploaded_) {
@@ -1174,38 +1368,235 @@ void Harness::seed_centroids(const Parameters &p) {
   timings_.seed_ms += elapsed(start);
 }
 
+const detail::PreparedStorage &Harness::prepared_storage() const {
+  if (!prepared_)
+    throw std::logic_error("not a prepared execution");
+  return *prepared_;
+}
+std::size_t Harness::present_particles() const {
+  return prepared_ ? prepared_->live.particles : exposed_;
+}
+std::size_t Harness::present_fields() const {
+  return prepared_ ? prepared_->live.fields : exposed_fields_;
+}
+
+void Harness::validate_prepared_bindings() const {
+  if (!prepared_)
+    return;
+  const std::array<const void *, 7> addresses{
+      particle_data.data(), group_data.data(),       edge_float_data.data(),
+      edge_int_data.data(), contact_int_data.data(), determined_.data(),
+      universal_data.data()};
+  const std::array<std::size_t, 7> sizes{
+      particle_data.size(), group_data.size(),       edge_float_data.size(),
+      edge_int_data.size(), contact_int_data.size(), determined_.size(),
+      universal_data.size()};
+  if (addresses != prepared_host_addresses_ || sizes != prepared_host_sizes_)
+    throw std::logic_error("prepared host buffers changed identity or shape");
+}
+
+void Harness::prepare_empty_execution() {
+  auto &s = *prepared_;
+  prepared_host_addresses_ = {particle_data.data(),    group_data.data(),
+                              edge_float_data.data(),  edge_int_data.data(),
+                              contact_int_data.data(), determined_.data(),
+                              universal_data.data()};
+  prepared_host_sizes_ = {particle_data.size(),    group_data.size(),
+                          edge_float_data.size(),  edge_int_data.size(),
+                          contact_int_data.size(), determined_.size(),
+                          universal_data.size()};
+  activity_->provision();
+  activity_->index(edge_int_data, contact_int_data);
+  if (path_ == HostPath::BulkCopy) {
+    for (auto *array :
+         {particle_array_.get(), group_array_.get(), edge_float_array_.get(),
+          edge_int_array_.get(), contact_int_array_.get(),
+          determined_array_.get(), universal_array_.get()})
+      runtime_->program().fill_ndarray_fast_u32(array, 0);
+  }
+  activity_->reset();
+  launch_clear(true);
+  launch_centroid({}, true);
+  launch_determine();
+  activity_->clear();
+
+  IRBuilder b;
+  auto *flags = array_param(b, 0, PrimitiveType::i32, 1);
+  auto *counts = array_param(b, 1, PrimitiveType::i64, 1);
+  for (int i = 0; i < 4; ++i)
+    store(b, counts, {b.get_int32(i)}, b.get_int64(0));
+  for (int type = 0; type < 2; ++type) {
+    auto *presence =
+        type ? s.fields.bindings().presence : s.particles.bindings().presence;
+    const auto awake =
+        type ? activity_->centroids : activity_->particle_activity;
+    const int n = type ? groups_ : particles_, offset = type ? particles_ : 0;
+    auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(n), false,
+                                    runtime_->cpu_threads());
+    auto guard = b.get_loop_guard(loop);
+    auto *row = b.get_loop_index(loop);
+    auto *present = detail::NativeSet{presence}.active(b, row);
+    auto *active = awake.active(b, row);
+    store(b, flags, {b.create_add(row, b.get_int32(offset))},
+          b.create_add(b.create_cast(present, PrimitiveType::i32),
+                       b.create_mul(b.create_cast(active, PrimitiveType::i32),
+                                    b.get_int32(2))));
+    accumulate(b, counts, {b.get_int32(type * 2)},
+               b.create_cast(present, PrimitiveType::i64));
+    accumulate(b, counts, {b.get_int32(type * 2 + 1)},
+               b.create_cast(active, PrimitiveType::i64));
+  }
+  inspection_ = engine::CompiledKernel(
+      *runtime_,
+      "prepared_inspection_" +
+          std::to_string(s.particles.bindings().presence->id),
+      b.extract_ir(),
+      {engine::Param::array(PrimitiveType::i32),
+       engine::Param::array(PrimitiveType::i64)});
+  ready_ = true;
+  uploaded_ = true;
+  invalidated_ = false;
+  tick({});  // Actual empty dispatch for every numerical family, with stable
+             // bindings.
+  inspect_prepared();
+  s.binding_bytes = activity_->prepared_binding_bytes() +
+                    s.particles.prepared_bytes() + s.fields.prepared_bytes() +
+                    inspection_.prepared_bytes();
+  for (const auto *kernel : {&clear_, &force_, &contact_, &integrate_,
+                             &determine_, &centroid_, &finalize_})
+    s.binding_bytes += kernel->prepared_bytes();
+  if (s.binding_bytes >
+      detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()))
+    throw std::runtime_error(
+        "prepared binding signature exceeds declared reservation");
+  s.manifest.push_back(
+      {"prepared-binding-payload", s.binding_bytes, 1, 1, s.binding_bytes});
+  s.manifest.push_back(
+      {"unused-binding-reserve",
+       detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()) -
+           s.binding_bytes,
+       1, 1,
+       detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()) -
+           s.binding_bytes});
+  if (s.inspection_counts != std::array<std::int64_t, 4>{} ||
+      universal_data[0] != 0)
+    throw std::runtime_error("prepared execution did not finish empty");
+}
+
+void Harness::inspect_prepared() {
+  if (!prepared_ || !ready_)
+    throw std::logic_error("prepared execution is not ready");
+  try {
+    validate_prepared_bindings();
+    auto &s = *prepared_;
+    auto call = inspection_.invocation(true);
+    auto &ctx = call.get();
+    if (!ctx.prepared) {
+      ctx.set_arg_ndarray({0}, *s.inspection_flags_array);
+      ctx.set_arg_ndarray({1}, *s.inspection_counts_array);
+    }
+    inspection_.launch(ctx);
+    runtime_->synchronize();
+    engine::readback(*s.inspection_flags_array, s.inspection_flags.data(),
+                     s.inspection_flags.size() * sizeof(int));
+    engine::readback(*s.inspection_counts_array, s.inspection_counts.data(),
+                     sizeof(s.inspection_counts));
+    download();
+    if (path_ == HostPath::BulkCopy)
+      engine::readback(*universal_array_, universal_data.data(), sizeof(float));
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
+}
+
+void Harness::initialize_prepared_fixture(const Parameters &p) {
+  if (!prepared_ || !ready_ || prepared_->populated)
+    throw std::logic_error(
+        "fixture initialization requires an empty prepared execution");
+  auto &s = *prepared_;
+  const auto failure = s.check(s.live, 0);
+  if (failure.exhausted())
+    throw std::invalid_argument("prepared fixture capacity exhausted");
+  if (s.live.particles != s.particles.size() ||
+      s.live.fields != s.fields.size())
+    throw std::invalid_argument("fixture counts and native presence disagree");
+  try {
+    validate_prepared_bindings();
+    validate_staging();
+    exposed_ = s.live.particles;
+    std::fill_n(s.validation.data(), groups_, 0);
+    for (std::size_t i = 0; i < s.live.edges; ++i)
+      s.validation[edge_int(kEdgeGroup, int(i))] = 1;
+    exposed_fields_ =
+        std::count(s.validation.begin(), s.validation.begin() + groups_, 1);
+    activity_->index(edge_int_data, contact_int_data);
+    if (path_ == HostPath::BulkCopy) {
+      engine::upload(*particle_array_, particle_data.data(),
+                     particle_data.size() * sizeof(float));
+      engine::upload(*group_array_, group_data.data(),
+                     group_data.size() * sizeof(float));
+      engine::upload(*edge_float_array_, edge_float_data.data(),
+                     edge_float_data.size() * sizeof(float));
+      engine::upload(*edge_int_array_, edge_int_data.data(),
+                     edge_int_data.size() * sizeof(int));
+      engine::upload(*contact_int_array_, contact_int_data.data(),
+                     contact_int_data.size() * sizeof(int));
+    }
+    activity_->reset();
+    launch_clear(true);
+    launch_centroid(p, true);
+    launch_determine();
+    activity_->clear();
+    runtime_->synchronize();
+    previous_parameters_ = p;
+    invalidated_ = true;
+    s.populated = true;
+    ++s.generation;
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
+}
+
 void Harness::tick(const Parameters &p) {
   if (!ready_) {
     throw std::logic_error(
         "field::Harness: successful publication required before tick");
   }
   validate_parameters(p);
-  const auto start = std::chrono::steady_clock::now();
-  const bool parameters_changed =
-      p.gravity != previous_parameters_.gravity ||
-      p.dt != previous_parameters_.dt ||
-      p.contact_stiffness != previous_parameters_.contact_stiffness ||
-      p.reach_strength != previous_parameters_.reach_strength;
-  activity_->begin(*this, mode_ == TickMode::AllLoaded,
-                   invalidated_ || parameters_changed, p.reach_strength != 0);
-  launch_clear(false);
-  launch_force(p);
-  launch_contact(p);
-  launch_integrate(p);
-  launch_determine();
-  activity_->touch_contacts(*this, p.contact_stiffness);
-  activity_->mark(*this, mode_ == TickMode::AllLoaded);
-  launch_centroid(p, false);
-  activity_->touch(*this, p.gravity);
-  runtime_->synchronize();
-  demand_ = activity_->report(exposed_, exposed_fields_);
-  demand_.frame_anchor = frame_anchor_;
-  demand_.tick_ms = std::chrono::duration<double, std::milli>(
-                        std::chrono::steady_clock::now() - start)
-                        .count();
-  previous_parameters_ = p;
-  invalidated_ = false;
-  timings_.kernel_ms += elapsed(start);
+  try {
+    validate_prepared_bindings();
+    const auto start = std::chrono::steady_clock::now();
+    const bool parameters_changed =
+        p.gravity != previous_parameters_.gravity ||
+        p.dt != previous_parameters_.dt ||
+        p.contact_stiffness != previous_parameters_.contact_stiffness ||
+        p.reach_strength != previous_parameters_.reach_strength;
+    activity_->begin(*this, mode_ == TickMode::AllLoaded,
+                     invalidated_ || parameters_changed, p.reach_strength != 0);
+    launch_clear(false);
+    launch_force(p);
+    launch_contact(p);
+    launch_integrate(p);
+    launch_determine();
+    activity_->touch_contacts(*this, p.contact_stiffness);
+    activity_->mark(*this, mode_ == TickMode::AllLoaded);
+    launch_centroid(p, false);
+    activity_->touch(*this, p.gravity);
+    runtime_->synchronize();
+    demand_ = activity_->report(exposed_, exposed_fields_);
+    demand_.frame_anchor = frame_anchor_;
+    demand_.tick_ms = std::chrono::duration<double, std::milli>(
+                          std::chrono::steady_clock::now() - start)
+                          .count();
+    previous_parameters_ = p;
+    invalidated_ = false;
+    timings_.kernel_ms += elapsed(start);
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
 }
 
 }  // namespace field
