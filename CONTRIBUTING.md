@@ -4,9 +4,10 @@ HCP accepts code, research, testing, documentation and architecture critique. Th
 
 ## Start here
 
-Follow the [canonical reading paths](AGENTS.md#reading-paths), including the
-Covenant and Charter. Check the [current state](AGENTS.md#current-state)
-before selecting work. Agents read AGENTS.md in full.
+Begin with [orientation](docs/onboarding/README.md), then follow its
+[reading paths](docs/onboarding/README.md#reading-paths), including the Covenant
+and Charter. Check [current state](AGENTS.md#current-state) before selecting work.
+Agents read AGENTS.md in full.
 
 ## Current architecture
 
@@ -41,6 +42,9 @@ Code and executable evidence establish what is built; accepted decisions govern
 intent. AGENTS is the maintained summary. If these disagree, identify and reconcile
 the discrepancy rather than treating a summary as proof or an old fixture as the
 production contract.
+
+The audit trail lets a future reader reconstruct what was accepted, on which
+evidence and with which limits, without access to the original chat.
 
 For a PR, read its scope, the owning plan's acceptance criteria, the latest
 maintainer findings, then the evidence tied to the reviewed source revision.
@@ -101,7 +105,9 @@ human-cognome-project/
 ├── data/
 │   └── postgres/snapshots/
 ├── docs/
+│   └── onboarding/        # orientation and first native check
 ├── tools/
+│   ├── viewport/          # optional read-only study inspection
 │   └── legacy-extraction/  # retained read-only migration toolkit
 ├── archive/
 └── review/

@@ -7,7 +7,10 @@ step of the [accepted #163 plan](prepared-capacity-foundation-plan.md), under
 Baseline: `main` at `41310a512a137712651720b7bea5012238079900`.
 The accepted PR changed documents only. The
 [CPU backing/binding implementation](../engine/docs/PREPARED-EXECUTION.md) is
-submitted for review. Coherent changes while ticking remain the following step.
+accepted and merged in #166 at `4e7b193`, including the originating-context and
+target-ABI correction. All eight hosted checks and all 37 CPU suites passed.
+The [coherent-update section](prepared-coherent-update-plan.md) was accepted in #167;
+its implementation remains the following step under #162.
 
 [The final #165 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/165#issuecomment-6328267055)
 releases implementation and requires explicit completion ownership and cleanup

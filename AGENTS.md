@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-22**, after #166 merged.
+Last checked: **2026-10-22**, after #167 merged.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -22,7 +22,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
 | Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
-| Active implementation | #162 continues with coherent changes while ticking under the [capacity plan](docs/prepared-capacity-foundation-plan.md); #156 owns the [production placement/insertion correction](docs/pooled-space-live-insertion-plan.md), including accepted-work realignment. Initialization/numerical conventions remain proposals. |
+| Active implementation | #167 accepted the [coherent-update plan](docs/prepared-coherent-update-plan.md), releasing its bounded implementation under #162 and the [capacity plan](docs/prepared-capacity-foundation-plan.md); the updater remains unbuilt; #156 owns the [production placement/insertion correction](docs/pooled-space-live-insertion-plan.md), including accepted-work realignment. Initialization/numerical conventions remain proposals. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | #145 owns actual GPU execution, allocation/transfer and pinning qualification. CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
