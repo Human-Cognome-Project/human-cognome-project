@@ -134,6 +134,8 @@ std::size_t CompiledKernel::prepared_bytes() const {
 }
 
 void CompiledKernel::prepare(LaunchContextBuilder &ctx) {
+  // Native preparation verifies the original Kernel/Program and target ABI;
+  // wrappers cannot stamp a foreign context with this kernel's launch ID.
   auto &launcher =
       runtime_->program().get_program_impl()->get_kernel_launcher();
   dynamic_cast<taichi::lang::LLVM::KernelLauncher &>(launcher).prepare_kernel(

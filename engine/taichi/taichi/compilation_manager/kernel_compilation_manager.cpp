@@ -81,6 +81,21 @@ const CompiledKernelData &KernelCompilationManager::load_or_compile(
                                                   caps, kernel_def);
 }
 
+bool KernelCompilationManager::owns_compiled_kernel(
+    const Kernel &kernel_def,
+    const CompiledKernelData &data) const {
+  const auto &key = kernel_def.get_cached_kernel_key();
+  if (key.empty())
+    return false;
+  const auto pending = caching_kernels_.find(key);
+  if (pending != caching_kernels_.end() &&
+      pending->second.compiled_kernel_data.get() == &data)
+    return true;
+  const auto cached = cached_data_.kernels.find(key);
+  return cached != cached_data_.kernels.end() &&
+         cached->second.compiled_kernel_data.get() == &data;
+}
+
 void KernelCompilationManager::dump() {
   if (caching_kernels_.empty()) {
     return;

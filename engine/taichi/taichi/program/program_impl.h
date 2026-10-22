@@ -165,6 +165,12 @@ class ProgramImpl {
 
   KernelCompilationManager &get_kernel_compilation_manager();
 
+  bool owns_compiled_kernel(const Kernel &kernel,
+                            const CompiledKernelData &data) const {
+    return kernel_com_mgr_ &&
+           kernel_com_mgr_->owns_compiled_kernel(kernel, data);
+  }
+
   KernelLauncher &get_kernel_launcher();
 
   virtual DeviceCapabilityConfig get_device_caps() {

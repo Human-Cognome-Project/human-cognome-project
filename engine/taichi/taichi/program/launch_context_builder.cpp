@@ -3,6 +3,7 @@
 #include <taichi/program/context.h>
 #undef TI_RUNTIME_HOST
 #include "fp16.h"
+#include "taichi/program/kernel.h"
 #include <cstring>
 #include <limits>
 #include <stdexcept>
@@ -35,6 +36,11 @@ LaunchContextBuilder::LaunchContextBuilder(CallableBase *kernel)
   array_bindings.resize(kernel->parameter_list.size());
 }
 
+LaunchContextBuilder::LaunchContextBuilder(Kernel *kernel)
+    : LaunchContextBuilder(static_cast<CallableBase *>(kernel)) {
+  originating_kernel_ = kernel;
+}
+
 LaunchContextBuilder &LaunchContextBuilder::operator=(
     LaunchContextBuilder &&other) noexcept {
   if (this == &other)
@@ -43,6 +49,7 @@ LaunchContextBuilder &LaunchContextBuilder::operator=(
   // Default memberwise assignment would replace those buffers first.
   prepared.reset();
   kernel_ = other.kernel_;
+  originating_kernel_ = other.originating_kernel_;
   owned_ctx_ = std::move(other.owned_ctx_);
   ctx_ = other.ctx_;
   arg_buffer_ = std::move(other.arg_buffer_);

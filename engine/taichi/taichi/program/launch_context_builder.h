@@ -8,6 +8,7 @@
 namespace taichi::lang {
 
 struct RuntimeContext;
+class Kernel;
 
 class LaunchContextBuilder {
  public:
@@ -40,6 +41,14 @@ class LaunchContextBuilder {
   };
 
   explicit LaunchContextBuilder(CallableBase *kernel);
+  explicit LaunchContextBuilder(Kernel *kernel);
+
+  const Kernel *originating_kernel() const {
+    return originating_kernel_;
+  }
+  const StructType *result_type() const {
+    return ret_type_;
+  }
 
   LaunchContextBuilder(LaunchContextBuilder &&) = default;
   LaunchContextBuilder &operator=(LaunchContextBuilder &&other) noexcept;
@@ -124,6 +133,8 @@ class LaunchContextBuilder {
  private:
   TypedConstant fetch_ret_impl(int offset, const Type *dt);
   CallableBase *kernel_;
+  // Generic/AOT CallableBase contexts retain the ordinary path only.
+  const Kernel *originating_kernel_{nullptr};
   std::unique_ptr<RuntimeContext> owned_ctx_;
   // |ctx_| *almost* always points to |owned_ctx_|. However, it is possible
   // that the caller passes a RuntimeContext pointer externally. In that case,
