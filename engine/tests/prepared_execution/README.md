@@ -12,6 +12,11 @@ and the aggregate-letter, byte-only and mixed membership fixtures. Supplied
 starts belong only to the test adapter. Each profile ends preparation empty,
 then performs its first nonempty use and 32 ticks through existing kernels.
 
+The [origin-guard follow-up](origin-guard-acceptance.json) separately pins the
+#166 review correction and its validation. The original profile measurements
+above keep their original source pins; the follow-up exercises the corrected
+native setup boundary and reruns the prepared execution checks.
+
 Raw profile rows use these columns:
 
 | Row | Columns after row name |

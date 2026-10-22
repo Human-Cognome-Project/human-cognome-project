@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "review_followup": "origin-guard-acceptance.json",
   "date": "2026-10-22",
   "status": "Combined backing/native bindings and first-fixture CPU proof built; submitted for review",
   "baseline_main": "a9a63be117a27975a9ae2727d0763717febfbb1d",

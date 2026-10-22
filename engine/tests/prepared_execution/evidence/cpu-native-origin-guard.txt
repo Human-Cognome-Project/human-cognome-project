@@ -1,0 +1,2 @@
+prepared origin: wrapper/native kernel, ndarray/scalar ABI, foreign runtime, unchanged rejection and rightful reuse PASS
+prepared_launch: scalars, ordinary path, signature rejection, ownership/failure cleanup PASS; new=0/0

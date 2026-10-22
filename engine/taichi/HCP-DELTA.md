@@ -55,6 +55,12 @@ Combined prepared backing/binding work under accepted #165:
   backend preparation state and failure readiness.
 - `taichi/runtime/llvm/kernel_launcher.{h,cpp}` — scoped preparation and
   owner/kernel validation; failed dispatch invalidates the prepared binding.
+  The #166 correction checks originating Kernel/Program, the exact existing
+  compilation record and actual target ABI before registering or acquiring
+  launch resources. Typed context construction retains native origin metadata.
+- `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}` and
+  `taichi/program/program_impl.h` — read-only ownership lookup in the existing
+  compilation caches, without lazy compiler creation or a new registry.
 - CPU/CUDA `kernel_launcher.{h,cpp}` — reuse prepared bindings. CUDA owns
   persistent argument/result buffers through the existing device allocator,
   completes launches before returning and attempts cleanup after failure.

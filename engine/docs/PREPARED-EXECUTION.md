@@ -74,6 +74,18 @@ Engine wrappers retain the contexts and stable shapes. Scalar changes use
 native typed setters; array rebinding and stale/foreign kernel contexts are
 rejected. The ordinary launch path remains available for other signatures.
 
+Preparation records and checks the context's originating Kernel and Program.
+Before registration or binding mutation, the native boundary verifies the
+Program's executor and its existing compilation record for the exact target,
+then compares compiled parameter/return types, layouts and buffer sizes with
+the source context. The ownership lookup reads the existing compiler cache;
+it creates no second registry and cannot create a compiler on a rejected path.
+This also rejects scalar/array ABI mismatches behind a shared cache key.
+Contexts without native Kernel provenance use the ordinary launch path.
+[The #166 review correction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/166#issuecomment-6339361944)
+and [follow-up evidence](../tests/prepared_execution/origin-guard-acceptance.json)
+cover unprepared foreign contexts and successful rightful reuse after rejection.
+
 BulkCopy uses owned backend arrays and fixed host staging. CpuDirect borrows
 fully reserved host arrays. Harness checks host pointer identity and length
 before prepared work/readback; invalidating those buffers makes execution
