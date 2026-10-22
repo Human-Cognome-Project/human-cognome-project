@@ -28,7 +28,8 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
-    src/field/prepared_capacity.cpp src/field/prepared_storage.cpp)
+    src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
+    src/field/prepared_update.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -87,6 +88,25 @@ foreach(mode padded direct large large-direct letters letters-direct)
   endif()
   add_test(NAME prepared_execution_${mode} COMMAND prepared_execution_test ${mode_args})
   set_tests_properties(prepared_execution_${mode} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
+
+add_executable(prepared_update_test tests/prepared_update_test.cpp)
+target_include_directories(prepared_update_test PRIVATE tests)
+target_link_libraries(prepared_update_test PRIVATE study_assembly membership_fields)
+foreach(mode padded direct large large-direct letters letters-direct)
+  set(mode_args)
+  if(mode MATCHES "large")
+    list(APPEND mode_args --large)
+  endif()
+  if(mode MATCHES "letters")
+    list(APPEND mode_args --letters)
+  endif()
+  if(mode MATCHES "direct")
+    list(APPEND mode_args --direct)
+  endif()
+  add_test(NAME prepared_update_${mode} COMMAND prepared_update_test ${mode_args})
+  set_tests_properties(prepared_update_${mode} PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
 endforeach()
 

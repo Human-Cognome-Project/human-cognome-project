@@ -1,7 +1,7 @@
 #pragma once
 
 // Only test code may supply numerical starts to the prepared path. This is
-// initial fixture population, not an operational streaming/update interface.
+// initial population and new-row update staging, not production initialization.
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -22,6 +22,26 @@ struct FixtureSource {
   std::vector<int> focus;
 };
 struct PreparedFixtureAccess {
+  static void stage_new(Harness &h,
+                        int command,
+                        const std::array<float, kParticleFieldCount> &row) {
+    auto &s = *h.prepared_;
+    const auto b =
+        std::max(s.capacity.limits()[Budget::Batch], std::uint64_t{1});
+    if (command < 0 ||
+        std::uint64_t(command) >= s.capacity.limits()[Budget::Batch])
+      throw std::invalid_argument("fixture start command out of range");
+    float speed2 = 0;
+    for (int f = 0; f < kParticleFieldCount; ++f) {
+      s.new_rows[f * b + command] = row[f];
+      if (f >= kVelX && f <= kVelZ)
+        speed2 += row[f] * row[f];
+    }
+    s.new_rows[11 * b + command] = std::sqrt(speed2);
+  }
+  static void inject_failure(Harness &h, int point) {
+    h.prepared_->failure_point = point;
+  }
   static int field_kind(Harness &h, const engine::RecordHandle &handle) {
     return h.prepared_->fields.inspect(handle).kind;
   }

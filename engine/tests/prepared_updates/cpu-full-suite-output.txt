@@ -1,0 +1,2900 @@
+Start testing: Oct 22 14:42 UTC
+----------------------------------------------------------
+11/43 Testing: prepared_update_direct
+11/43 Test: prepared_update_direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_direct" start time: Oct 22 14:42 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=padded,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=254414,index_visits=78528,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=5074829,first_update=56,31_ordinary_updates=1243,32_ticks=4208,32_inspections=314
+before_updates,39345426,39223296,83,113,41516498,38,1074828720,41588144,3,23,3.78461
+after_32_updates_ticks_inspections,39345426,39223296,83,113,41516498,38,1074828720,41588144,3,23,3.78461
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+after_first_maximum_update,100893844,39223296,83,262,104162908,91,1074836912,103241136,5,53,8.76284
+maximum-batch,P=70,B=32,full-bank,last-record,retirement,reuse,C++new=0 PASS
+ordinary rejection/no-op/independent P,G,E,C,R,B peaks and stale generation PASS
+local structural wakes, unchanged sleepers, global U/focus wakes, exact pending-motion repair PASS
+failure after claims/numerical/topology writes refuses tick/inspection and cleans up PASS
+<end of output>
+Test time =  52.67 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_direct" end time: Oct 22 14:43 UTC
+"prepared_update_direct" time elapsed: 00:00:52
+----------------------------------------------------------
+
+10/43 Testing: prepared_update_padded
+10/43 Test: prepared_update_padded
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_padded" start time: Oct 22 14:42 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=padded,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=254414,index_visits=78528,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=5033286,first_update=107,31_ordinary_updates=2266,32_ticks=9873,32_inspections=642
+before_updates,39345426,39223296,83,120,41524630,45,1074836852,41596276,3,23,3.74227
+after_32_updates_ticks_inspections,39345426,39223296,83,120,41524630,45,1074836852,41596276,3,23,3.74227
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+after_first_maximum_update,100893844,39223296,83,283,104187276,112,1074845044,103249268,5,53,8.79242
+maximum-batch,P=70,B=32,full-bank,last-record,retirement,reuse,C++new=0 PASS
+ordinary rejection/no-op/independent P,G,E,C,R,B peaks and stale generation PASS
+local structural wakes, unchanged sleepers, global U/focus wakes, exact pending-motion repair PASS
+failure after claims/numerical/topology writes refuses tick/inspection and cleans up PASS
+<end of output>
+Test time =  53.18 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_padded" end time: Oct 22 14:43 UTC
+"prepared_update_padded" time elapsed: 00:00:53
+----------------------------------------------------------
+
+31/43 Testing: activity_direct_test
+31/43 Test: activity_direct_test
+Command: "/workspace/human-cognome-project/engine/build/activity_test" "--direct" "--parallel"
+Directory: /workspace/human-cognome-project/engine/build
+"activity_direct_test" start time: Oct 22 14:43 UTC
+Output:
+----------------------------------------------------------
+DEMAND,scenario,tick,P,N,G,exposed_G,E,exposed_E,evaluated,skipped,moved,woken,force_requests,force_evaluations,zero_response,force_skipped,gate_checks,gate_rejected,geometry_rejected,touch_visits,force_mask_visits,centroid_gate_visits,centroid_mask_visits,flagged,recomputed,touched_edges,reduced_edges,native_particles,native_centroids,zero_response_touches,invalidation_particle_visits,tick_ms
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,239.715
+DEMAND,fixed-point-all-loaded,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,233.69
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,2,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.475533
+DEMAND,fixed-point-all-loaded,2,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.463155
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,3,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.375315
+DEMAND,fixed-point-all-loaded,3,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.298371
+ok   coincident balanced particles never pass positional wake gate
+ok   fixed point skips repeated force and centroid work
+ok   native inactive traversal omits calculation and adjacency bodies; tick time still includes native list generation and launches
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   parameter invalidation reevaluates work without automatically waking particles
+ok   publication reseeds and clears previous demand generation
+ok   publication invalidates persistent exclusions
+ok   mass change publication rebuilds cached group mass and invalidates old work
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,1,3,3,1,1,3,3,3,0,1,1,3,0,3,0,6,2,0,4,0,3,0,1,1,1,3,3,1,3,3,246.05
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,2,3,3,1,1,3,3,1,2,1,0,1,0,1,2,2,0,0,4,0,3,0,1,1,1,3,1,1,3,0,0.740837
+ok   changed centroid rejects exact zero-gravity responses before next particle activation
+ok   changed centroid with no resulting displacement does not wake stationary particles
+ok   unchanged interaction inputs justify actual force omission, not a speed heuristic
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,1,3,3,2,2,4,4,3,0,1,1,4,2,2,0,8,2,0,3,0,2,0,1,1,1,2,3,1,1,3,238.255
+ok   initial combined forces balance while one supplied moving member perturbs one field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,2,3,3,2,2,4,4,2,1,2,1,3,2,1,1,6,0,0,5,0,4,0,1,1,3,2,2,2,1,0,0.588219
+ok   one changed field wakes the particle using both connected fields, including unchanged field
+ok   tiny participation-mass ratio does not propagate to the massive unchanged field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,any-active-once,2,3,3,1,1,3,3,2,1,2,0,2,2,0,1,4,0,0,2,0,3,0,1,1,2,3,2,1,0,0,0.680748
+ok   multiple qualifying interactions recompute once, including sleeping member, even if motion cancels
+ok   ordinary centroid preserves finite small positive mass without an epsilon denominator
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,collective-centroid,1,4,4,1,1,4,4,4,0,3,3,4,0,4,0,8,1,0,7,0,4,0,1,1,3,4,4,1,4,4,272.372
+ok   collective sub-ULP member effects combine before centroid gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,1,4,4,1,1,4,4,4,0,1,1,4,0,4,0,8,3,0,1,0,4,0,0,0,1,0,4,1,0,4,278.909
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,2,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,1,0,4,0,0,0,1,0,1,1,0,0,0.566868
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,3,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,5,0,4,0,1,1,1,4,1,1,4,0,0.345671
+ok   retained cross-tick centroid contributions eventually trigger placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   seeded centroid rounding residue combines with later small motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   individually insufficient field contributions combine before particle positional gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,1,2,2,1,1,2,2,2,0,0,0,2,1,1,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,268.59
+ok   velocity changes are retained when current position does not change
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,2,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1.00505
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,3,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.576965
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,4,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.54684
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,5,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.610133
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,6,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.859292
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,7,2,2,1,1,2,2,1,1,1,1,1,1,0,1,2,0,0,1,0,2,0,0,0,1,0,1,1,0,0,0.539859
+ok   carried acceleration accumulates to a later positional wake
+ok   fixed full state can sleep with nonzero stored speed at dt zero
+ok   dt invalidation preserves and resumes previously carried motion
+ok   duplicate focal fields rejected
+ok   unbound focal field rejected
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+DEMAND,focal-origin,4,2,2,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0.379181
+ok   selected focal centroid changes actual origin-dependent radial integration
+ok   multiple focal fields form the ordinary mass-weighted centroid
+ok   demand distinguishes loaded field capacity from exposed fields
+ok   mass-zero unused group cannot establish mathematical focus
+ok   explicitly clearing focus restores legacy origin and invalidates radial calculation
+DEMAND,local-motion-zero,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,308.867
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.539859
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.374224
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.359953
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,297.849
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.647459
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.349026
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.348206
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,2,0,1,1,1,2,6,1,0,6,308.133
+DEMAND,bounded-ripple-all-loaded,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,10,0,5,5,1,10,6,5,0,6,249.235
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,2,6,6,5,5,10,10,2,4,1,1,3,3,0,7,9,1,0,6,0,4,0,2,2,2,4,2,2,0,0,0.542978
+DEMAND,bounded-ripple-all-loaded,2,6,6,5,5,10,10,6,0,1,1,10,8,2,0,20,5,0,6,0,10,0,5,5,2,10,6,5,0,6,0.438685
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,3,6,6,5,5,10,10,3,3,3,2,5,5,0,5,14,0,0,11,0,6,0,3,3,5,6,3,3,0,0,0.466265
+DEMAND,bounded-ripple-all-loaded,3,6,6,5,5,10,10,6,0,3,2,10,8,2,0,22,3,0,11,0,10,0,5,5,5,10,6,5,0,6,0.38755
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,4,6,6,5,5,10,10,4,2,1,1,7,7,0,3,14,3,1,6,0,4,0,2,2,2,4,4,2,1,0,0.343235
+DEMAND,bounded-ripple-all-loaded,4,6,6,5,5,10,10,6,0,1,1,10,8,2,0,19,5,1,6,0,10,0,5,5,2,10,6,5,1,6,0.36755
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,5,6,6,5,5,10,10,4,2,4,3,7,7,0,3,18,0,1,15,0,8,0,4,4,7,8,4,4,1,0,0.328704
+DEMAND,bounded-ripple-all-loaded,5,6,6,5,5,10,10,6,0,4,3,10,8,2,0,23,2,1,15,0,10,0,5,5,7,10,6,5,1,6,0.325939
+ok   ripple stops at unaffected massive participant and leaves its other field dormant
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   body-contact dependencies preserve equal/opposite whole-particle motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,420.162
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.739548
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.4079
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.345509
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.347682
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,354.748
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.744488
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.658061
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.533397
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.60292
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+140 activity checks
+PASS activity_test
+<end of output>
+Test time =  89.27 sec
+----------------------------------------------------------
+Test Passed.
+"activity_direct_test" end time: Oct 22 14:44 UTC
+"activity_direct_test" time elapsed: 00:01:29
+----------------------------------------------------------
+
+30/43 Testing: activity_parallel_test
+30/43 Test: activity_parallel_test
+Command: "/workspace/human-cognome-project/engine/build/activity_test" "--parallel"
+Directory: /workspace/human-cognome-project/engine/build
+"activity_parallel_test" start time: Oct 22 14:43 UTC
+Output:
+----------------------------------------------------------
+DEMAND,scenario,tick,P,N,G,exposed_G,E,exposed_E,evaluated,skipped,moved,woken,force_requests,force_evaluations,zero_response,force_skipped,gate_checks,gate_rejected,geometry_rejected,touch_visits,force_mask_visits,centroid_gate_visits,centroid_mask_visits,flagged,recomputed,touched_edges,reduced_edges,native_particles,native_centroids,zero_response_touches,invalidation_particle_visits,tick_ms
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,240.921
+DEMAND,fixed-point-all-loaded,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,282.117
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,2,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.303468
+DEMAND,fixed-point-all-loaded,2,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.244461
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,3,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.178214
+DEMAND,fixed-point-all-loaded,3,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.20318
+ok   coincident balanced particles never pass positional wake gate
+ok   fixed point skips repeated force and centroid work
+ok   native inactive traversal omits calculation and adjacency bodies; tick time still includes native list generation and launches
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   parameter invalidation reevaluates work without automatically waking particles
+ok   publication reseeds and clears previous demand generation
+ok   publication invalidates persistent exclusions
+ok   mass change publication rebuilds cached group mass and invalidates old work
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,1,3,3,1,1,3,3,3,0,1,1,3,0,3,0,6,2,0,4,0,3,0,1,1,1,3,3,1,3,3,335.062
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,2,3,3,1,1,3,3,1,2,1,0,1,0,1,2,2,0,0,4,0,3,0,1,1,1,3,1,1,3,0,0.737914
+ok   changed centroid rejects exact zero-gravity responses before next particle activation
+ok   changed centroid with no resulting displacement does not wake stationary particles
+ok   unchanged interaction inputs justify actual force omission, not a speed heuristic
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,1,3,3,2,2,4,4,3,0,1,1,4,2,2,0,8,2,0,3,0,2,0,1,1,1,2,3,1,1,3,286.856
+ok   initial combined forces balance while one supplied moving member perturbs one field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,2,3,3,2,2,4,4,2,1,2,1,3,2,1,1,6,0,0,5,0,4,0,1,1,3,2,2,2,1,0,0.694127
+ok   one changed field wakes the particle using both connected fields, including unchanged field
+ok   tiny participation-mass ratio does not propagate to the massive unchanged field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,any-active-once,2,3,3,1,1,3,3,2,1,2,0,2,2,0,1,4,0,0,2,0,3,0,1,1,2,3,2,1,0,0,0.675651
+ok   multiple qualifying interactions recompute once, including sleeping member, even if motion cancels
+ok   ordinary centroid preserves finite small positive mass without an epsilon denominator
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,collective-centroid,1,4,4,1,1,4,4,4,0,3,3,4,0,4,0,8,1,0,7,0,4,0,1,1,3,4,4,1,4,4,237.649
+ok   collective sub-ULP member effects combine before centroid gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,1,4,4,1,1,4,4,4,0,1,1,4,0,4,0,8,3,0,1,0,4,0,0,0,1,0,4,1,0,4,267.545
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,2,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,1,0,4,0,0,0,1,0,1,1,0,0,0.996474
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,3,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,5,0,4,0,1,1,1,4,1,1,4,0,0.57503
+ok   retained cross-tick centroid contributions eventually trigger placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   seeded centroid rounding residue combines with later small motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   individually insufficient field contributions combine before particle positional gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,1,2,2,1,1,2,2,2,0,0,0,2,1,1,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,339.959
+ok   velocity changes are retained when current position does not change
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,2,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,2.4114
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,3,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.529153
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,4,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.534551
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,5,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.540751
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,6,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.54716
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,7,2,2,1,1,2,2,1,1,1,1,1,1,0,1,2,0,0,1,0,2,0,0,0,1,0,1,1,0,0,0.402356
+ok   carried acceleration accumulates to a later positional wake
+ok   fixed full state can sleep with nonzero stored speed at dt zero
+ok   dt invalidation preserves and resumes previously carried motion
+ok   duplicate focal fields rejected
+ok   unbound focal field rejected
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+DEMAND,focal-origin,4,2,2,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0.491788
+ok   selected focal centroid changes actual origin-dependent radial integration
+ok   multiple focal fields form the ordinary mass-weighted centroid
+ok   demand distinguishes loaded field capacity from exposed fields
+ok   mass-zero unused group cannot establish mathematical focus
+ok   explicitly clearing focus restores legacy origin and invalidates radial calculation
+DEMAND,local-motion-zero,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,341.315
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.492449
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.275388
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.286434
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,291.219
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.808217
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.706446
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.725824
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,2,0,1,1,1,2,6,1,0,6,320.764
+DEMAND,bounded-ripple-all-loaded,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,10,0,5,5,1,10,6,5,0,6,341.83
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,2,6,6,5,5,10,10,2,4,1,1,3,3,0,7,9,1,0,6,0,4,0,2,2,2,4,2,2,0,0,0.561486
+DEMAND,bounded-ripple-all-loaded,2,6,6,5,5,10,10,6,0,1,1,10,8,2,0,20,5,0,6,0,10,0,5,5,2,10,6,5,0,6,0.45568
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,3,6,6,5,5,10,10,3,3,3,2,5,5,0,5,14,0,0,11,0,6,0,3,3,5,6,3,3,0,0,0.345668
+DEMAND,bounded-ripple-all-loaded,3,6,6,5,5,10,10,6,0,3,2,10,8,2,0,22,3,0,11,0,10,0,5,5,5,10,6,5,0,6,0.389463
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,4,6,6,5,5,10,10,4,2,1,1,7,7,0,3,14,3,1,6,0,4,0,2,2,2,4,4,2,1,0,0.392487
+DEMAND,bounded-ripple-all-loaded,4,6,6,5,5,10,10,6,0,1,1,10,8,2,0,19,5,1,6,0,10,0,5,5,2,10,6,5,1,6,0.373569
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,5,6,6,5,5,10,10,4,2,4,3,7,7,0,3,18,0,1,15,0,8,0,4,4,7,8,4,4,1,0,0.358678
+DEMAND,bounded-ripple-all-loaded,5,6,6,5,5,10,10,6,0,4,3,10,8,2,0,23,2,1,15,0,10,0,5,5,7,10,6,5,1,6,0.344646
+ok   ripple stops at unaffected massive participant and leaves its other field dormant
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   body-contact dependencies preserve equal/opposite whole-particle motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,422.769
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,1.07524
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.532678
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.521191
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.525096
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,281.611
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.750788
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.624702
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.519576
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.503814
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+140 activity checks
+PASS activity_test
+<end of output>
+Test time =  89.32 sec
+----------------------------------------------------------
+Test Passed.
+"activity_parallel_test" end time: Oct 22 14:44 UTC
+"activity_parallel_test" time elapsed: 00:01:29
+----------------------------------------------------------
+
+14/43 Testing: prepared_update_letters
+14/43 Test: prepared_update_letters
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--letters"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_letters" start time: Oct 22 14:44 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=letters,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=10517,index_visits=9856,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4693037,first_update=87,31_ordinary_updates=3014,32_ticks=8995,32_inspections=812
+before_updates,39345426,39223296,83,121,41528726,46,1074840948,41600372,4,26,3.49577
+after_32_updates_ticks_inspections,39345426,39223296,83,121,41528726,46,1074840948,41600372,4,26,3.49577
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=bytes,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12619,index_visits=10240,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4869904,first_update=137,31_ordinary_updates=3015,32_ticks=12468,32_inspections=1374
+before_updates,100893844,39223296,83,285,104187952,114,1074853236,103257460,7,59,8.83266
+after_32_updates_ticks_inspections,100893844,39223296,83,285,104187952,114,1074853236,103257460,7,59,8.83266
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=mixed,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12402,index_visits=10048,upload_bytes=588288,readback_bytes=3328,syncs=160,collections=31,C++new=0
+phase_us,setup=4888666,first_update=143,31_ordinary_updates=3434,32_ticks=13306,32_inspections=1618
+before_updates,162442262,39223296,83,449,166847218,182,1074865524,164914548,10,92,14.1178
+after_32_updates_ticks_inspections,162442262,39223296,83,449,166847218,182,1074865524,164914548,10,92,14.1178
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+complete-English-definition,two-plus-third,all-parent-and-membership-bindings,independent-modify-retire PASS
+<end of output>
+Test time =  26.77 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_letters" end time: Oct 22 14:45 UTC
+"prepared_update_letters" time elapsed: 00:00:26
+----------------------------------------------------------
+
+15/43 Testing: prepared_update_letters-direct
+15/43 Test: prepared_update_letters-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--letters" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_letters-direct" start time: Oct 22 14:45 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=letters,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=10517,index_visits=9856,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=5005562,first_update=102,31_ordinary_updates=2226,32_ticks=6634,32_inspections=505
+before_updates,39345426,39223296,83,114,41520594,39,1074832816,41592240,4,26,3.72371
+after_32_updates_ticks_inspections,39345426,39223296,83,114,41520594,39,1074832816,41592240,4,26,3.72371
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=bytes,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12619,index_visits=10240,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4789577,first_update=70,31_ordinary_updates=3269,32_ticks=8548,32_inspections=529
+before_updates,100893844,39223296,83,264,104167876,93,1074845104,103249328,7,59,8.8511
+after_32_updates_ticks_inspections,100893844,39223296,83,264,104167876,93,1074845104,103249328,7,59,8.8511
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=mixed,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12402,index_visits=10048,upload_bytes=444928,readback_bytes=3328,syncs=160,collections=31,C++new=0
+phase_us,setup=4965794,first_update=116,31_ordinary_updates=3113,32_ticks=7431,32_inspections=624
+before_updates,162442262,39223296,83,414,166815174,147,1074857392,164906416,10,92,14.1457
+after_32_updates_ticks_inspections,162442262,39223296,83,414,166815174,147,1074857392,164906416,10,92,14.1457
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+complete-English-definition,two-plus-third,all-parent-and-membership-bindings,independent-modify-retire PASS
+<end of output>
+Test time =  27.17 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_letters-direct" end time: Oct 22 14:45 UTC
+"prepared_update_letters-direct" time elapsed: 00:00:27
+----------------------------------------------------------
+
+8/43 Testing: prepared_execution_letters
+8/43 Test: prepared_execution_letters
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test" "--letters"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_letters" start time: Oct 22 14:45 UTC
+Output:
+----------------------------------------------------------
+profile=letters,backend=cpu,path=bulk,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=5,live_E=10,live_C=1,selected_F=1,references_used=30,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=320,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,83,173,63736786,69,1074845044,63837556,5,33,4.73938
+after_32_ticks,61548418,39223296,83,173,63736786,69,1074845044,63837556,5,33,4.73938
+numerical,particles,11,70,4,1,1,3080
+numerical,groups,8,9,4,1,1,288
+numerical,edge-floats,1,280,4,1,1,1120
+numerical,edge-integers,2,280,4,1,1,2240
+numerical,contacts,2,140,4,1,1,1120
+numerical,determiners,1,70,4,1,1,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,1,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+profile=bytes,backend=cpu,path=bulk,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=6,live_E=12,live_C=1,selected_F=1,references_used=35,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=384,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,123096836,39223296,83,337,126389512,137,1074857332,125494644,8,66,9.45618
+after_32_ticks,123096836,39223296,83,337,126389512,137,1074857332,125494644,8,66,9.45618
+numerical,particles,11,70,4,1,1,3080
+numerical,groups,8,9,4,1,1,288
+numerical,edge-floats,1,280,4,1,1,1120
+numerical,edge-integers,2,280,4,1,1,2240
+numerical,contacts,2,140,4,1,1,1120
+numerical,determiners,1,70,4,1,1,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,1,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+profile=mixed,backend=cpu,path=bulk,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=8,live_E=11,live_C=1,selected_F=1,references_used=35,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=192,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,184645254,39223296,83,501,189042370,205,1074869620,187151732,11,99,14.7765
+after_32_ticks,184645254,39223296,83,501,189042370,205,1074869620,187151732,11,99,14.7765
+numerical,particles,11,70,4,1,1,3080
+numerical,groups,8,9,4,1,1,288
+numerical,edge-floats,1,280,4,1,1,1120
+numerical,edge-integers,2,280,4,1,1,2240
+numerical,contacts,2,140,4,1,1,1120
+numerical,determiners,1,70,4,1,1,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,1,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+<end of output>
+Test time =  20.55 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_letters" end time: Oct 22 14:45 UTC
+"prepared_execution_letters" time elapsed: 00:00:20
+----------------------------------------------------------
+
+29/43 Testing: activity_test
+29/43 Test: activity_test
+Command: "/workspace/human-cognome-project/engine/build/activity_test"
+Directory: /workspace/human-cognome-project/engine/build
+"activity_test" start time: Oct 22 14:44 UTC
+Output:
+----------------------------------------------------------
+DEMAND,scenario,tick,P,N,G,exposed_G,E,exposed_E,evaluated,skipped,moved,woken,force_requests,force_evaluations,zero_response,force_skipped,gate_checks,gate_rejected,geometry_rejected,touch_visits,force_mask_visits,centroid_gate_visits,centroid_mask_visits,flagged,recomputed,touched_edges,reduced_edges,native_particles,native_centroids,zero_response_touches,invalidation_particle_visits,tick_ms
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,231.982
+DEMAND,fixed-point-all-loaded,1,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,237.953
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,2,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.624183
+DEMAND,fixed-point-all-loaded,2,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.513329
+ok   coincident balanced particles never pass positional wake gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,fixed-point,3,2,2,1,1,2,2,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.477756
+DEMAND,fixed-point-all-loaded,3,2,2,1,1,2,2,2,0,0,0,2,2,0,0,4,2,0,0,0,2,0,1,1,0,2,2,1,0,2,0.494401
+ok   coincident balanced particles never pass positional wake gate
+ok   fixed point skips repeated force and centroid work
+ok   native inactive traversal omits calculation and adjacency bodies; tick time still includes native list generation and launches
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   parameter invalidation reevaluates work without automatically waking particles
+ok   publication reseeds and clears previous demand generation
+ok   publication invalidates persistent exclusions
+ok   mass change publication rebuilds cached group mass and invalidates old work
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,1,3,3,1,1,3,3,3,0,1,1,3,0,3,0,6,2,0,4,0,3,0,1,1,1,3,3,1,3,3,312.551
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,ineffective-touch,2,3,3,1,1,3,3,1,2,1,0,1,0,1,2,2,0,0,4,0,3,0,1,1,1,3,1,1,3,0,0.254176
+ok   changed centroid rejects exact zero-gravity responses before next particle activation
+ok   changed centroid with no resulting displacement does not wake stationary particles
+ok   unchanged interaction inputs justify actual force omission, not a speed heuristic
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,1,3,3,2,2,4,4,3,0,1,1,4,2,2,0,8,2,0,3,0,2,0,1,1,1,2,3,1,1,3,236.989
+ok   initial combined forces balance while one supplied moving member perturbs one field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,all-connected-fields,2,3,3,2,2,4,4,2,1,2,1,3,2,1,1,6,0,0,5,0,4,0,1,1,3,2,2,2,1,0,0.367634
+ok   one changed field wakes the particle using both connected fields, including unchanged field
+ok   tiny participation-mass ratio does not propagate to the massive unchanged field
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,any-active-once,2,3,3,1,1,3,3,2,1,2,0,2,2,0,1,4,0,0,2,0,3,0,1,1,2,3,2,1,0,0,0.239955
+ok   multiple qualifying interactions recompute once, including sleeping member, even if motion cancels
+ok   ordinary centroid preserves finite small positive mass without an epsilon denominator
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,collective-centroid,1,4,4,1,1,4,4,4,0,3,3,4,0,4,0,8,1,0,7,0,4,0,1,1,3,4,4,1,4,4,292.888
+ok   collective sub-ULP member effects combine before centroid gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,1,4,4,1,1,4,4,4,0,1,1,4,0,4,0,8,3,0,1,0,4,0,0,0,1,0,4,1,0,4,345.048
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,2,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,1,0,4,0,0,0,1,0,1,1,0,0,0.238202
+ok   sub-ULP centroid contribution retained without premature placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,accumulated-centroid,3,4,4,1,1,4,4,1,3,1,0,1,0,1,3,2,0,0,5,0,4,0,1,1,1,4,1,1,4,0,0.130442
+ok   retained cross-tick centroid contributions eventually trigger placement
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   seeded centroid rounding residue combines with later small motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   individually insufficient field contributions combine before particle positional gate
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,1,2,2,1,1,2,2,2,0,0,0,2,1,1,0,4,2,0,0,0,0,0,0,0,0,0,2,0,0,2,322.631
+ok   velocity changes are retained when current position does not change
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,2,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.68979
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,3,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.612345
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,4,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.496154
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,5,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.476555
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,6,2,2,1,1,2,2,1,1,0,0,1,1,0,1,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0.451107
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,carried-motion,7,2,2,1,1,2,2,1,1,1,1,1,1,0,1,2,0,0,1,0,2,0,0,0,1,0,1,1,0,0,0.570123
+ok   carried acceleration accumulates to a later positional wake
+ok   fixed full state can sleep with nonzero stored speed at dt zero
+ok   dt invalidation preserves and resumes previously carried motion
+ok   duplicate focal fields rejected
+ok   unbound focal field rejected
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   translated selected-focus calculation preserves relative motion within 1e-4
+DEMAND,focal-origin,4,2,2,1,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0.337289
+ok   selected focal centroid changes actual origin-dependent radial integration
+ok   multiple focal fields form the ordinary mass-weighted centroid
+ok   demand distinguishes loaded field capacity from exposed fields
+ok   mass-zero unused group cannot establish mathematical focus
+ok   explicitly clearing focus restores legacy origin and invalidates radial calculation
+DEMAND,local-motion-zero,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,296.189
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.632496
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.47961
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-zero,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.442886
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,1,3,3,2,2,3,3,3,0,1,1,3,0,3,0,6,2,0,3,0,2,0,1,1,1,2,3,1,2,3,279.367
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,2,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.562121
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,3,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.455073
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+DEMAND,local-motion-2pow27,4,3,3,2,2,3,3,1,2,1,0,1,0,1,2,2,0,0,3,0,2,0,1,1,1,2,1,1,2,0,0.388624
+ok   independent unit-motion expectation survives large coordinate translation
+ok   local displacement propagates to one centroid with sleeping members
+ok   translated study preserves continued eligibility and ineffective-touch rejection
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,2,0,1,1,1,2,6,1,0,6,305.273
+DEMAND,bounded-ripple-all-loaded,1,6,6,5,5,10,10,6,0,1,1,10,8,2,0,18,5,0,3,0,10,0,5,5,1,10,6,5,0,6,356.215
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,2,6,6,5,5,10,10,2,4,1,1,3,3,0,7,9,1,0,6,0,4,0,2,2,2,4,2,2,0,0,2.42559
+DEMAND,bounded-ripple-all-loaded,2,6,6,5,5,10,10,6,0,1,1,10,8,2,0,20,5,0,6,0,10,0,5,5,2,10,6,5,0,6,0.714677
+ok   wake ripple does not jump unpublished field dependencies
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,3,6,6,5,5,10,10,3,3,3,2,5,5,0,5,14,0,0,11,0,6,0,3,3,5,6,3,3,0,0,0.837879
+DEMAND,bounded-ripple-all-loaded,3,6,6,5,5,10,10,6,0,3,2,10,8,2,0,22,3,0,11,0,10,0,5,5,5,10,6,5,0,6,0.755567
+ok   wake ripple does not jump unpublished field dependencies
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,4,6,6,5,5,10,10,4,2,1,1,7,7,0,3,14,3,1,6,0,4,0,2,2,2,4,4,2,1,0,0.669089
+DEMAND,bounded-ripple-all-loaded,4,6,6,5,5,10,10,6,0,1,1,10,8,2,0,19,5,1,6,0,10,0,5,5,2,10,6,5,1,6,0.634338
+ok   qualifying disturbance reaches next linked particle
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,bounded-ripple,5,6,6,5,5,10,10,4,2,4,3,7,7,0,3,18,0,1,15,0,8,0,4,4,7,8,4,4,1,0,0.546908
+DEMAND,bounded-ripple-all-loaded,5,6,6,5,5,10,10,6,0,4,3,10,8,2,0,23,2,1,15,0,10,0,5,5,7,10,6,5,1,6,0.551235
+ok   ripple stops at unaffected massive participant and leaves its other field dormant
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+ok   body-contact dependencies preserve equal/opposite whole-particle motion
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,343.876
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.604002
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.517665
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.607748
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-low-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.351239
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,1,70,70,0,0,0,0,70,0,1,1,0,0,0,0,70,69,0,2,0,0,0,0,0,0,0,70,0,0,70,310.909
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,2,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.743829
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,3,70,70,0,0,0,0,3,67,1,0,0,0,0,0,3,2,0,2,0,0,0,0,0,0,0,3,0,0,0,0.515241
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,4,70,70,0,0,0,0,3,67,1,1,0,0,0,0,3,2,0,1,0,0,0,0,0,0,0,3,0,0,0,0.698863
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+ok   selective result agrees with all-loaded reference within stated fixture tolerance
+DEMAND,contact-phase-high-source,5,70,70,0,0,0,0,2,68,2,1,0,0,0,0,2,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0.512878
+ok   contact touches survive particle consumption and enter calculation only at the following type phase across both pointer directions
+ok   sleeping contact target responds at the expected step without propagating through an unmoved peer
+140 activity checks
+PASS activity_test
+<end of output>
+Test time =  84.99 sec
+----------------------------------------------------------
+Test Passed.
+"activity_test" end time: Oct 22 14:46 UTC
+"activity_test" time elapsed: 00:01:24
+----------------------------------------------------------
+
+9/43 Testing: prepared_execution_letters-direct
+9/43 Test: prepared_execution_letters-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test" "--letters" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_letters-direct" start time: Oct 22 14:45 UTC
+Output:
+----------------------------------------------------------
+profile=letters,backend=cpu,path=direct,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=5,live_E=10,live_C=1,selected_F=1,references_used=30,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=320,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,83,159,63728266,55,1074836912,63829424,5,33,5.36924
+after_32_ticks,61548418,39223296,83,159,63728266,55,1074836912,63829424,5,33,5.36924
+numerical,particles,11,70,4,1,0,3080
+numerical,groups,8,9,4,1,0,288
+numerical,edge-floats,1,280,4,1,0,1120
+numerical,edge-integers,2,280,4,1,0,2240
+numerical,contacts,2,140,4,1,0,1120
+numerical,determiners,1,70,4,1,0,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,0,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+profile=bytes,backend=cpu,path=direct,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=6,live_E=12,live_C=1,selected_F=1,references_used=35,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=384,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,123096836,39223296,83,309,126372416,109,1074849200,125486512,8,66,10.7365
+after_32_ticks,123096836,39223296,83,309,126372416,109,1074849200,125486512,8,66,10.7365
+numerical,particles,11,70,4,1,0,3080
+numerical,groups,8,9,4,1,0,288
+numerical,edge-floats,1,280,4,1,0,1120
+numerical,edge-integers,2,280,4,1,0,2240
+numerical,contacts,2,140,4,1,0,1120
+numerical,determiners,1,70,4,1,0,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,0,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+profile=mixed,backend=cpu,path=direct,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=2,present_G=8,live_E=11,live_C=1,selected_F=1,references_used=35,awake_P=2,awake_G=0,ticks=32,evaluated=64,forces=192,contacts=64
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,184645254,39223296,83,459,189016646,163,1074861488,187143600,11,99,15.9227
+after_32_ticks,184645254,39223296,83,459,189016646,163,1074861488,187143600,11,99,15.9227
+numerical,particles,11,70,4,1,0,3080
+numerical,groups,8,9,4,1,0,288
+numerical,edge-floats,1,280,4,1,0,1120
+numerical,edge-integers,2,280,4,1,0,2240
+numerical,contacts,2,140,4,1,0,1120
+numerical,determiners,1,70,4,1,0,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,0,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+<end of output>
+Test time =  22.24 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_letters-direct" end time: Oct 22 14:46 UTC
+"prepared_execution_letters-direct" time elapsed: 00:00:22
+----------------------------------------------------------
+
+5/43 Testing: prepared_execution_direct
+5/43 Test: prepared_execution_direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_direct" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+profile=padded,backend=cpu,path=direct,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=56,present_G=7,live_E=277,live_C=137,selected_F=7,references_used=898,awake_P=56,awake_G=0,ticks=32,evaluated=1792,forces=8864,contacts=8768
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,83,158,63729858,54,1074832816,63825328,4,30,5.10573
+after_32_ticks,61548418,39223296,83,158,63729858,54,1074832816,63825328,4,30,5.10573
+numerical,particles,11,70,4,1,0,3080
+numerical,groups,8,9,4,1,0,288
+numerical,edge-floats,1,280,4,1,0,1120
+numerical,edge-integers,2,280,4,1,0,2240
+numerical,contacts,2,140,4,1,0,1120
+numerical,determiners,1,70,4,1,0,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,0,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+independent limits, pre-allocation scratch rejection, stale host shape and zero capacity PASS
+<end of output>
+Test time =  21.29 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_direct" end time: Oct 22 14:46 UTC
+"prepared_execution_direct" time elapsed: 00:00:21
+----------------------------------------------------------
+
+13/43 Testing: prepared_update_large-direct
+13/43 Test: prepared_update_large-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--large" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_large-direct" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=working-set,path=direct,cycles=32,generation=33,scratch=4815924,bindings=8128,structural_visits=274987730,index_visits=4603520,upload_bytes=23142032,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4768895,first_update=8175,31_ordinary_updates=288323,32_ticks=88014,32_inspections=3768
+before_updates,39345426,39223296,4490,113,58253946,38,1091566168,58325592,3,23,3.50486
+after_32_updates_ticks_inspections,39345426,39223296,4490,113,58253946,38,1091566168,58325592,3,23,3.50486
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+after_first_maximum_update,100893844,39223296,4490,262,138019108,91,1091574360,119978584,5,53,8.26563
+maximum-batch,P=4096,B=256,full-bank,last-record,retirement,reuse,C++new=0 PASS
+<end of output>
+Test time =  12.06 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_large-direct" end time: Oct 22 14:46 UTC
+"prepared_update_large-direct" time elapsed: 00:00:12
+----------------------------------------------------------
+
+12/43 Testing: prepared_update_large
+12/43 Test: prepared_update_large
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_large" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=working-set,path=bulk,cycles=32,generation=33,scratch=4815924,bindings=8128,structural_visits=274987730,index_visits=4603520,upload_bytes=31530640,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4297885,first_update=7562,31_ordinary_updates=237502,32_ticks=74232,32_inspections=3884
+before_updates,39345426,39223296,4490,120,58720926,45,1092033148,58792572,3,23,3.13637
+after_32_updates_ticks_inspections,39345426,39223296,4490,120,58720926,45,1092033148,58792572,3,23,3.13637
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+after_first_maximum_update,100893844,39223296,4490,283,139420020,112,1092041340,120445564,5,53,8.32468
+maximum-batch,P=4096,B=256,full-bank,last-record,retirement,reuse,C++new=0 PASS
+<end of output>
+Test time =  12.01 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_large" end time: Oct 22 14:46 UTC
+"prepared_update_large" time elapsed: 00:00:12
+----------------------------------------------------------
+
+1/43 Testing: active_workbench_test
+1/43 Test: active_workbench_test
+Command: "/workspace/human-cognome-project/engine/build/active_workbench_test"
+Directory: /workspace/human-cognome-project/engine/build
+"active_workbench_test" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+ok   shared tools available and required-local inputs availability are distinct
+ok   supplied local generation preserves study and changes generation identity
+ok   foreign analyst local snapshot rejected
+ok   foreign instance local value rejected
+ok   local object requires full couplets
+ok   typed span schema/byte count/generation exact
+ok   typed span row bounds checked
+ok   typed span shape mismatch rejected
+ok   unsealed span generation rejected
+ok   missing local inputs never execution-ready
+ok   two independent studies seeded and ready in one session
+ok   mixed local/shared live objects retain scope, origin and explicit units
+ok   only supplied local sibling/context fields added; repeated context deduplicated
+ok   initial f32 values survive bulk transfer exactly
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   bounded nonzero-dt execution preserves live mass and analyst snapshot provenance
+ok   joint report restricted to active owner
+ok   tick updates execution accumulators independently of immutable initial recipe
+ok   equal-count refresh reseeds and invalidates old generation
+ok   old generation report rejected after refresh
+ok   incomplete refresh fails closed without manager fallback
+ok   incomplete publication leaves study non-runnable
+ok   ticking failed publication rejected
+ok   valid equal-count refresh recovers failed study
+ok   invalid numerical publication fails closed
+PHASE integration assembly_ms=1.97097 allocation_ms=1.71904 compile_or_cache_ms=1566.78 upload_ms=0.016365 seed_ms=304.697 kernels_ms=321.569 report_ms=0.002795
+ok   host logical inputs and local version survive controlled Program teardown
+ok   restart builds a new study identity from retained inputs
+ok   old session handle rejected after restart
+ok   old session report rejected after restart
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   reconstructed initial scalar transfer bit patterns exact
+ok   private geometry, placements and context never rewrite shared source definitions/recipe
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,1,3,3,1,1,6,6,2,15,17,3,6,11,5,325.077
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,2,3,1,1,0,6,6,0,6,17,1,6,11,0,1.24007
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,3,3,1,1,0,6,6,0,6,17,1,6,11,0,0.429706
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,4,3,1,1,0,6,6,0,6,17,1,6,11,0,0.334616
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,1,3,3,1,1,6,6,2,15,17,3,6,11,5,297.746
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,2,3,1,1,0,6,6,0,6,17,1,6,11,0,0.720237
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,3,3,1,1,0,6,6,0,6,17,1,6,11,0,0.56015
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,4,3,1,1,0,6,6,0,6,17,1,6,11,0,0.441124
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,1,3,3,1,1,6,6,2,15,17,3,6,11,5,278.551
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,2,3,1,1,0,6,6,0,6,17,1,6,11,0,0.622583
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,3,3,1,1,0,6,6,0,6,17,1,6,11,0,0.354425
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,4,3,1,1,0,6,6,0,6,17,1,6,11,0,0.338722
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,1,3,3,1,1,6,6,2,15,17,3,6,11,5,239.267
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,2,3,1,1,0,6,6,0,6,17,1,6,11,0,0.575541
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,3,3,1,1,0,6,6,0,6,17,1,6,11,0,0.309377
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,4,3,1,1,0,6,6,0,6,17,1,6,11,0,0.345991
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+140 active workbench checks
+PASS active_workbench_test
+<end of output>
+Test time =  27.07 sec
+----------------------------------------------------------
+Test Passed.
+"active_workbench_test" end time: Oct 22 14:46 UTC
+"active_workbench_test" time elapsed: 00:00:27
+----------------------------------------------------------
+
+27/43 Testing: field_test
+27/43 Test: field_test
+Command: "/workspace/human-cognome-project/engine/build/field_test"
+Directory: /workspace/human-cognome-project/engine/build
+"field_test" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+--   cpu: centroid
+ok   cpu: centroid x
+ok   cpu: centroid y
+ok   cpu: centroid mass
+--   cpu: calibration
+--   cpu: met at 0.998000
+ok   cpu: meets at the centroid in about one time unit
+ok   cpu: meets at the midpoint
+--   cpu: coincidence
+ok   cpu: coincident particles stay finite
+--   cpu: singleton group
+ok   cpu: singleton stays finite
+ok   cpu: singleton stays put, nothing left to pull it
+ok   cpu: repeated participating mass sets the centre centroid
+ok   cpu: repeated shares add whole-particle force
+ok   cpu: total mass absorbs proportional force
+ok   cpu: parent response has no internal application offset
+--   cpu: brake
+ok   cpu: brake is ~1 well short of the destination
+ok   cpu: brake is well below 1 on overshoot
+--   cpu: stability
+--   cpu: stability farthest excursion observed 2138.431885
+ok   cpu: 400 ticks stay finite
+ok   cpu: positions stay bounded
+ok   cpu: determiners ran on the products
+ok   cpu: contact at distance 0.500000 follows summed radii
+ok   cpu: contact at distance 0.500000 is equal and opposite
+ok   cpu: contact at distance 0.500000 stays finite
+ok   cpu: contact at distance 1.000000 follows summed radii
+ok   cpu: contact at distance 1.000000 is equal and opposite
+ok   cpu: contact at distance 1.000000 stays finite
+ok   cpu: contact at distance 1.500000 follows summed radii
+ok   cpu: contact at distance 1.500000 is equal and opposite
+ok   cpu: contact at distance 1.500000 stays finite
+ok   cpu: contact at distance 0.000000 follows summed radii
+ok   cpu: contact at distance 0.000000 is equal and opposite
+ok   cpu: contact at distance 0.000000 stays finite
+ok   cpu: coincidence gate does not separate centres
+--   cpu: radial damping without universal attraction
+ok   cpu: resting sole particle stays finite
+ok   cpu: without universal attraction, a sole particle at rest stays put
+ok   cpu: dampened outward runaway stays finite
+ok   cpu: radial dampening bleeds off outward runaway speed
+ok   cpu: radial damping at the origin stays finite
+ok   cpu: a particle at the origin does not move
+--   cpu: staged index validation
+ok   cpu: in-range edges and contacts upload
+ok   cpu: upload alone cannot tick unseeded centroids
+ok   cpu: edge particle past the count is refused
+ok   cpu: edge group past the count is refused
+ok   cpu: negative edge particle is refused
+ok   cpu: contact particle past the count is refused
+ok   cpu: negative count is refused
+ok   cpu: negative prepared radius refused
+ok   cpu: non-finite prepared radius refused
+ok   cpu: zero participation refused
+ok   cpu: field reference to a free slot refused
+ok   cpu: moving free slot refused
+ok   cpu: initial publication initializes free determiner state
+ok   cpu: malformed staging size refused
+ok   cpu: contact reference to a free slot refused
+--   no cuda on this host, cpu only
+PASS field_test
+<end of output>
+Test time =  36.45 sec
+----------------------------------------------------------
+Test Passed.
+"field_test" end time: Oct 22 14:47 UTC
+"field_test" time elapsed: 00:00:36
+----------------------------------------------------------
+
+2/43 Testing: active_transfer_experiment
+2/43 Test: active_transfer_experiment
+Command: "/workspace/human-cognome-project/engine/build/active_transfer_experiment"
+Directory: /workspace/human-cognome-project/engine/build
+"active_transfer_experiment" start time: Oct 22 14:46 UTC
+Output:
+----------------------------------------------------------
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=few-dense path=copy P=16 N=16 G=4096 E=65536 K=0 pack_ms=0.086207 allocation_ms=1.3856 compile_or_cache_ms=1791.94 upload_ms=0.414182 seed_ms=374.715 first_ms=305.472 steady_ms=0.468229 report_ms=0.041992 payload_upload_bytes=918216 payload_download_bytes=263680 minor_faults=6844 major_faults=0 max_centroid_error=0 max_force_error=0.000228882
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=few-dense path=cpu-direct P=16 N=16 G=4096 E=65536 K=0 pack_ms=0.093799 allocation_ms=2.1958 compile_or_cache_ms=1864.67 upload_ms=0.000941 seed_ms=277.132 first_ms=253.803 steady_ms=0.527493 report_ms=0.000141 payload_upload_bytes=0 payload_download_bytes=0 minor_faults=2335 major_faults=0 max_centroid_error=0 max_force_error=0.000228882
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=many-low path=copy P=4096 N=4096 G=32 E=8192 K=0 pack_ms=0.043764 allocation_ms=2.22033 compile_or_cache_ms=1534.72 upload_ms=0.10255 seed_ms=262.806 first_ms=303.182 steady_ms=0.65814 report_ms=0.045516 payload_upload_bytes=279560 payload_download_bytes=395264 minor_faults=2243 major_faults=0 max_centroid_error=0 max_force_error=1.72115e-09
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=many-low path=cpu-direct P=4096 N=4096 G=32 E=8192 K=0 pack_ms=0.047279 allocation_ms=2.3406 compile_or_cache_ms=1706.75 upload_ms=0.000631 seed_ms=363.624 first_ms=341.271 steady_ms=0.520179 report_ms=0.00016 payload_upload_bytes=0 payload_download_bytes=0 minor_faults=1343 major_faults=0 max_centroid_error=0 max_force_error=1.72115e-09
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=matched-uniform path=copy P=4096 N=4096 G=4096 E=65536 K=0 pack_ms=0.357047 allocation_ms=3.32774 compile_or_cache_ms=1869.39 upload_ms=0.67676 seed_ms=335.907 first_ms=339.915 steady_ms=0.813035 report_ms=0.092236 payload_upload_bytes=1097736 payload_download_bytes=655360 minor_faults=2074 major_faults=0 max_centroid_error=0 max_force_error=2.34486e-10
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=matched-uniform path=cpu-direct P=4096 N=4096 G=4096 E=65536 K=0 pack_ms=0.323636 allocation_ms=3.49124 compile_or_cache_ms=2009.69 upload_ms=0.001032 seed_ms=276.994 first_ms=267.601 steady_ms=0.636477 report_ms=0.00014 payload_upload_bytes=0 payload_download_bytes=0 minor_faults=1538 major_faults=0 max_centroid_error=0 max_force_error=2.34486e-10
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=matched-skew path=copy P=4096 N=4096 G=4096 E=65536 K=0 pack_ms=0.111654 allocation_ms=3.20008 compile_or_cache_ms=1794.45 upload_ms=0.504293 seed_ms=311.849 first_ms=273.882 steady_ms=0.768579 report_ms=0.080539 payload_upload_bytes=1097736 payload_download_bytes=655360 minor_faults=1717 major_faults=0 max_centroid_error=0 max_force_error=0.000228882
+ok   uploaded payload is not ready before seeding
+ok   all five packed f32/i32 spans match exact transfer bit patterns
+ok   synthetic field mass exact
+ok   density fixture centroid error within recorded 1e-3 budget
+ok   density fixture first-force error within abs 0.005 + rel 0.001 budget
+MEASURE case=matched-skew path=cpu-direct P=4096 N=4096 G=4096 E=65536 K=0 pack_ms=0.068612 allocation_ms=4.19167 compile_or_cache_ms=1709.38 upload_ms=0.000771 seed_ms=368.324 first_ms=353.159 steady_ms=0.634891 report_ms=0.00016 payload_upload_bytes=0 payload_download_bytes=0 minor_faults=2592 major_faults=0 max_centroid_error=0 max_force_error=0.000228882
+PASS active_transfer_experiment
+<end of output>
+Test time =  19.57 sec
+----------------------------------------------------------
+Test Passed.
+"active_transfer_experiment" end time: Oct 22 14:47 UTC
+"active_transfer_experiment" time elapsed: 00:00:19
+----------------------------------------------------------
+
+7/43 Testing: prepared_execution_large-direct
+7/43 Test: prepared_execution_large-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test" "--large" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_large-direct" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+profile=working-set,backend=cpu,path=direct,V=16777216,P=4096,G=257,E=16384,C=8192,R=53762,F=257,B=256,scratch_bytes=4815924,binding_bytes=8128,present_P=3276,present_G=255,live_E=16381,live_C=8189,selected_F=255,references_used=52926,awake_P=3276,awake_G=0,ticks=32,evaluated=104832,forces=524192,contacts=524096
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,4490,158,80813146,54,1091570264,80562776,4,30,5.65133
+after_32_ticks,61548418,39223296,4490,158,80813146,54,1091570264,80562776,4,30,5.65133
+numerical,particles,11,4096,4,1,0,180224
+numerical,groups,8,257,4,1,0,8224
+numerical,edge-floats,1,16384,4,1,0,65536
+numerical,edge-integers,2,16384,4,1,0,131072
+numerical,contacts,2,8192,4,1,0,65536
+numerical,determiners,1,4096,4,1,0,16384
+numerical,particle-flags,2,4096,4,0,1,32768
+numerical,particle-delta,3,4096,4,0,1,49152
+numerical,group-flags,2,257,4,0,1,2056
+numerical,group-delta,6,257,4,0,1,6168
+numerical,particle-offsets,2,4096,4,0,1,32768
+numerical,group-offsets,2,257,4,0,1,2056
+numerical,contact-a-offsets,2,4096,4,0,1,32768
+numerical,contact-b-offsets,2,4096,4,0,1,32768
+numerical,particle-edge-order,1,16384,4,0,1,65536
+numerical,group-edge-order,1,16384,4,0,1,65536
+numerical,contact-a-order,1,8192,4,0,1,32768
+numerical,contact-b-order,1,8192,4,0,1,32768
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,257,4,0,1,1028
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,0,4
+native_root,particle-map,16908800
+native_root,field-map,16712
+native_root,awake,2304
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+<end of output>
+Test time =   7.87 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_large-direct" end time: Oct 22 14:47 UTC
+"prepared_execution_large-direct" time elapsed: 00:00:07
+----------------------------------------------------------
+
+6/43 Testing: prepared_execution_large
+6/43 Test: prepared_execution_large
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_large" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+profile=working-set,backend=cpu,path=bulk,V=16777216,P=4096,G=257,E=16384,C=8192,R=53762,F=257,B=256,scratch_bytes=4815924,binding_bytes=8128,present_P=3276,present_G=255,live_E=16381,live_C=8189,selected_F=255,references_used=52926,awake_P=3276,awake_G=0,ticks=32,evaluated=104832,forces=524192,contacts=524096
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,4490,172,81707622,68,1092037244,81029756,4,30,5.44466
+after_32_ticks,61548418,39223296,4490,172,81707622,68,1092037244,81029756,4,30,5.44466
+numerical,particles,11,4096,4,1,1,180224
+numerical,groups,8,257,4,1,1,8224
+numerical,edge-floats,1,16384,4,1,1,65536
+numerical,edge-integers,2,16384,4,1,1,131072
+numerical,contacts,2,8192,4,1,1,65536
+numerical,determiners,1,4096,4,1,1,16384
+numerical,particle-flags,2,4096,4,0,1,32768
+numerical,particle-delta,3,4096,4,0,1,49152
+numerical,group-flags,2,257,4,0,1,2056
+numerical,group-delta,6,257,4,0,1,6168
+numerical,particle-offsets,2,4096,4,0,1,32768
+numerical,group-offsets,2,257,4,0,1,2056
+numerical,contact-a-offsets,2,4096,4,0,1,32768
+numerical,contact-b-offsets,2,4096,4,0,1,32768
+numerical,particle-edge-order,1,16384,4,0,1,65536
+numerical,group-edge-order,1,16384,4,0,1,65536
+numerical,contact-a-order,1,8192,4,0,1,32768
+numerical,contact-b-order,1,8192,4,0,1,32768
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,257,4,0,1,1028
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,1,4
+native_root,particle-map,16908800
+native_root,field-map,16712
+native_root,awake,2304
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+<end of output>
+Test time =   7.80 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_large" end time: Oct 22 14:47 UTC
+"prepared_execution_large" time elapsed: 00:00:07
+----------------------------------------------------------
+
+39/43 Testing: membership_fields_native_test
+39/43 Test: membership_fields_native_test
+Command: "/workspace/human-cognome-project/engine/build/membership_fields_native_test"
+Directory: /workspace/human-cognome-project/engine/build
+"membership_fields_native_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+ok   NULL naming anchors add no definitions, slots or particles
+ok   native handoff adds only reached membership fields and active membership edges
+ok   typed field/occurrence keys and exact whole-mass counts survive native handoff once each
+ok   all existing ordered parent and sibling edges remain unchanged
+ok   repeated a source ordinals still create separate contributions to one parent field
+ok   duplicate explicit requests collapse only for the same membership field/live occurrence
+ok   membership on an inactive aggregate rejected
+ok   membership on an inactive byte rejected
+ok   membership on an unknown occurrence rejected
+ok   empty membership occurrence rejected
+ok   empty membership field rejected
+ok   membership fields cannot bind a different study with identical counts/definitions
+ok   identical object keys cannot collide across sibling, parent-value and membership field kinds
+ok   membership response executes the existing native CPU backend
+ok   CPU: baseline and contextual fields are ready after centroid seeding
+ok   CPU: every native field centroid agrees with exact participating counts before first force
+ok   CPU: aggregate/parts/mixed profiles conserve each contextual membership mass
+ok   CPU: membership fields use existing slot/group/share arrays without a new kernel
+ok   CPU: seeded first force matches independent inclusive-centroid calculation
+ok   CPU: force added by memberships matches the isolated membership-edge calculation
+ok   CPU: contextual response acts on selected live letters/byte parts
+ok   CPU: inactive alternatives remain inert despite shared definitions
+ok   CPU: French's shared byte/character receives no English membership response
+ok   CPU: ticking leaves all pinned source memberships and definitions unchanged
+ok   CPU: baseline and contextual fields are ready after centroid seeding
+ok   CPU: every native field centroid agrees with exact participating counts before first force
+ok   CPU: aggregate/parts/mixed profiles conserve each contextual membership mass
+ok   CPU: membership fields use existing slot/group/share arrays without a new kernel
+ok   CPU: seeded first force matches independent inclusive-centroid calculation
+ok   CPU: force added by memberships matches the isolated membership-edge calculation
+ok   CPU: contextual response acts on selected live letters/byte parts
+ok   CPU: inactive alternatives remain inert despite shared definitions
+ok   CPU: French's shared byte/character receives no English membership response
+ok   CPU: ticking leaves all pinned source memberships and definitions unchanged
+ok   CPU: baseline and contextual fields are ready after centroid seeding
+ok   CPU: every native field centroid agrees with exact participating counts before first force
+ok   CPU: aggregate/parts/mixed profiles conserve each contextual membership mass
+ok   CPU: membership fields use existing slot/group/share arrays without a new kernel
+ok   CPU: seeded first force matches independent inclusive-centroid calculation
+ok   CPU: force added by memberships matches the isolated membership-edge calculation
+ok   CPU: contextual response acts on selected live letters/byte parts
+ok   CPU: inactive alternatives remain inert despite shared definitions
+ok   CPU: French's shared byte/character receives no English membership response
+ok   CPU: ticking leaves all pinned source memberships and definitions unchanged
+44 native membership checks
+PASS membership_fields_native_test
+<end of output>
+Test time =  13.90 sec
+----------------------------------------------------------
+Test Passed.
+"membership_fields_native_test" end time: Oct 22 14:47 UTC
+"membership_fields_native_test" time elapsed: 00:00:13
+----------------------------------------------------------
+
+4/43 Testing: prepared_execution_padded
+4/43 Test: prepared_execution_padded
+Command: "/workspace/human-cognome-project/engine/build/prepared_execution_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_execution_padded" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+profile=padded,backend=cpu,path=bulk,V=1048576,P=70,G=9,E=280,C=140,R=928,F=9,B=32,scratch_bytes=110964,binding_bytes=8128,present_P=56,present_G=7,live_E=277,live_C=137,selected_F=7,references_used=898,awake_P=56,awake_G=0,ticks=32,evaluated=1792,forces=8864,contacts=8768
+phase,native_requested_bytes,native_chunks,native_elements,pool_calls,pool_requested,pool_raw_calls,pool_reserved,host_cursor,trees,snode_ids,compile_seconds
+ready_empty,61548418,39223296,83,172,63745326,68,1074840948,63833460,4,30,5.22064
+after_32_ticks,61548418,39223296,83,172,63745326,68,1074840948,63833460,4,30,5.22064
+numerical,particles,11,70,4,1,1,3080
+numerical,groups,8,9,4,1,1,288
+numerical,edge-floats,1,280,4,1,1,1120
+numerical,edge-integers,2,280,4,1,1,2240
+numerical,contacts,2,140,4,1,1,1120
+numerical,determiners,1,70,4,1,1,280
+numerical,particle-flags,2,70,4,0,1,560
+numerical,particle-delta,3,70,4,0,1,840
+numerical,group-flags,2,9,4,0,1,72
+numerical,group-delta,6,9,4,0,1,216
+numerical,particle-offsets,2,70,4,0,1,560
+numerical,group-offsets,2,9,4,0,1,72
+numerical,contact-a-offsets,2,70,4,0,1,560
+numerical,contact-b-offsets,2,70,4,0,1,560
+numerical,particle-edge-order,1,280,4,0,1,1120
+numerical,group-edge-order,1,280,4,0,1,1120
+numerical,contact-a-order,1,140,4,0,1,560
+numerical,contact-b-order,1,140,4,0,1,560
+numerical,focus,11,1,4,0,1,44
+numerical,selected-focus,1,9,4,0,1,36
+numerical,counters,1,18,8,0,1,144
+numerical,universal-mass,1,1,4,1,1,4
+native_root,particle-map,1052688
+native_root,field-map,536
+native_root,awake,80
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+C++ new: first population=0/0,recurring=0/0; PASS
+independent limits, pre-allocation scratch rejection, stale host shape and zero capacity PASS
+<end of output>
+Test time =  21.03 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_execution_padded" end time: Oct 22 14:47 UTC
+"prepared_execution_padded" time elapsed: 00:00:21
+----------------------------------------------------------
+
+33/43 Testing: activity_assembly_direct_test
+33/43 Test: activity_assembly_direct_test
+Command: "/workspace/human-cognome-project/engine/build/activity_assembly_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"activity_assembly_direct_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+ok   typed focal key binds the actual English membership field, without a group particle
+ok   two retained English letter objects establish the mathematical focal origin
+ok   prepared letter object integrates relative to focal field, not global coordinate zero
+ok   same text with wrong field kind cannot select focus
+ok   duplicate typed focal field rejected
+ok   invalid focal refresh fails closed
+ok   invalid focal generation cannot execute
+ok   valid supplied focal generation reseeds and recovers readiness
+ok   preparation subtracts supplied double reference before narrowing to f32
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   preparation subtracts supplied double reference before narrowing to f32
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+16 focal assembly checks
+PASS activity_assembly_test
+<end of output>
+Test time =   7.38 sec
+----------------------------------------------------------
+Test Passed.
+"activity_assembly_direct_test" end time: Oct 22 14:47 UTC
+"activity_assembly_direct_test" time elapsed: 00:00:07
+----------------------------------------------------------
+
+32/43 Testing: activity_assembly_test
+32/43 Test: activity_assembly_test
+Command: "/workspace/human-cognome-project/engine/build/activity_assembly_test"
+Directory: /workspace/human-cognome-project/engine/build
+"activity_assembly_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+ok   typed focal key binds the actual English membership field, without a group particle
+ok   two retained English letter objects establish the mathematical focal origin
+ok   prepared letter object integrates relative to focal field, not global coordinate zero
+ok   same text with wrong field kind cannot select focus
+ok   duplicate typed focal field rejected
+ok   invalid focal refresh fails closed
+ok   invalid focal generation cannot execute
+ok   valid supplied focal generation reseeds and recovers readiness
+ok   preparation subtracts supplied double reference before narrowing to f32
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   preparation subtracts supplied double reference before narrowing to f32
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+ok   translated language objects preserve independently expected local motion and centroid propagation
+16 focal assembly checks
+PASS activity_assembly_test
+<end of output>
+Test time =   7.10 sec
+----------------------------------------------------------
+Test Passed.
+"activity_assembly_test" end time: Oct 22 14:47 UTC
+"activity_assembly_test" time elapsed: 00:00:07
+----------------------------------------------------------
+
+19/43 Testing: record_map_working_set
+19/43 Test: record_map_working_set
+Command: "/workspace/human-cognome-project/engine/build/record_map_test" "--records" "4096" "--span" "16777216" "--cycles" "32"
+Directory: /workspace/human-cognome-project/engine/build
+"record_map_working_set" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+backend=cpu,path=bulk,potential=16777216,records=4096,cycles=32,defined=69633,released=69633
+# map_setup: root_bytes=16908800,dynamic_requested_delta=8571217,host_cursor_delta_including_alignment_and_80_command_bytes=25505936
+phase,native_requested_bytes,native_chunk_bytes,native_elements,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes,trees,snode_ids,compilation_seconds
+ready,8571217,8536064,4096,36,26633501,9,1090719932,26656956,1,8,0.680333
+final,8571217,8536064,4096,36,26633501,9,1090719932,26656956,1,8,0.680333
+# C++ new calls/bytes (not all host/driver allocation): first_define=0/0,first_release=0/0,lookup=0/0
+record_map: PASS (storage fixtures only; no GPU qualification)
+<end of output>
+Test time =   2.61 sec
+----------------------------------------------------------
+Test Passed.
+"record_map_working_set" end time: Oct 22 14:47 UTC
+"record_map_working_set" time elapsed: 00:00:02
+----------------------------------------------------------
+
+35/43 Testing: assembly_test
+35/43 Test: assembly_test
+Command: "/workspace/human-cognome-project/engine/build/assembly_test"
+Directory: /workspace/human-cognome-project/engine/build
+"assembly_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+ok   cpu: native study SNode tree registered
+ok   cpu: initial study ready after publication
+ok   cpu: parent-value and sibling fields remain distinct
+ok   cpu: parent value spans ordinals and preserves repeated 11 contributions
+ok   cpu: exact parent counts reach numerical participating mass
+ok   cpu initial: centroids seeded from target before first force
+ok   cpu initial: first force agrees with independent inclusive-centroid calculation
+ok   cpu: repeated definitions have independent mutable positions and force
+--   cpu: fixed study 401 ticks; farthest=202.379486 min separation=230.750992 max movement=0.006307
+ok   cpu: prepared objects interact and remain finite within fixture bound
+ok   cpu: unreferenced free slots remain finite and inert
+ok   cpu: relationship refresh publishes successfully
+ok   cpu refreshed: centroids seeded from target before first force
+ok   cpu refreshed: first force agrees with independent inclusive-centroid calculation
+ok   cpu: malformed publication reports error and is non-runnable
+ok   cpu: failed publication refuses tick
+ok   cpu: explicit valid republication restores readiness
+ok   cpu: fixed-study count change refused without implicit recomposition
+ok   cpu: aggregate selection excludes exposed parts from mass and fields
+ok   cpu: exposed parts exclude aggregate, preserve total structural mass
+ok   cpu: empty/all-free study with capacity 0 stays inert
+ok   cpu: empty/all-free study with capacity 3 stays inert
+--   no cuda on this host, cpu only
+PASS assembly_test
+<end of output>
+Test time =  11.91 sec
+----------------------------------------------------------
+Test Passed.
+"assembly_test" end time: Oct 22 14:47 UTC
+"assembly_test" time elapsed: 00:00:11
+----------------------------------------------------------
+
+18/43 Testing: record_map_direct
+18/43 Test: record_map_direct
+Command: "/workspace/human-cognome-project/engine/build/record_map_test" "--records" "70" "--span" "1048576" "--cycles" "32" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"record_map_direct" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+backend=cpu,path=direct,potential=1048576,records=70,cycles=32,defined=1191,released=1191
+# map_setup: root_bytes=1052688,dynamic_requested_delta=8571217,host_cursor_delta_including_alignment_and_80_command_bytes=9650320
+phase,native_requested_bytes,native_chunk_bytes,native_elements,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes,trees,snode_ids,compilation_seconds
+ready,8571217,8536064,70,36,10713469,9,1074799900,10736924,1,8,0.625121
+final,8571217,8536064,70,36,10713469,9,1074799900,10736924,1,8,0.625121
+# C++ new calls/bytes (not all host/driver allocation): first_define=0/0,first_release=0/0,lookup=0/0
+record_map: PASS (storage fixtures only; no GPU qualification)
+<end of output>
+Test time =   2.26 sec
+----------------------------------------------------------
+Test Passed.
+"record_map_direct" end time: Oct 22 14:47 UTC
+"record_map_direct" time elapsed: 00:00:02
+----------------------------------------------------------
+
+17/43 Testing: record_map_padded
+17/43 Test: record_map_padded
+Command: "/workspace/human-cognome-project/engine/build/record_map_test" "--records" "70" "--span" "1048576" "--cycles" "32"
+Directory: /workspace/human-cognome-project/engine/build
+"record_map_padded" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+backend=cpu,path=bulk,potential=1048576,records=70,cycles=32,defined=1191,released=1191
+# map_setup: root_bytes=1052688,dynamic_requested_delta=8571217,host_cursor_delta_including_alignment_and_80_command_bytes=9650320
+phase,native_requested_bytes,native_chunk_bytes,native_elements,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes,trees,snode_ids,compilation_seconds
+ready,8571217,8536064,70,36,10713469,9,1074799900,10736924,1,8,0.579608
+final,8571217,8536064,70,36,10713469,9,1074799900,10736924,1,8,0.579608
+# C++ new calls/bytes (not all host/driver allocation): first_define=0/0,first_release=0/0,lookup=0/0
+record_map: PASS (storage fixtures only; no GPU qualification)
+<end of output>
+Test time =   2.29 sec
+----------------------------------------------------------
+Test Passed.
+"record_map_padded" end time: Oct 22 14:47 UTC
+"record_map_padded" time elapsed: 00:00:02
+----------------------------------------------------------
+
+3/43 Testing: prepared_launch_test
+3/43 Test: prepared_launch_test
+Command: "/workspace/human-cognome-project/engine/build/prepared_launch_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_launch_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+prepared origin: wrapper/native kernel, ndarray/scalar ABI, foreign runtime, unchanged rejection and rightful reuse PASS
+prepared_launch: scalars, ordinary path, signature rejection, ownership/failure cleanup PASS; new=0/0
+<end of output>
+Test time =   1.07 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_launch_test" end time: Oct 22 14:47 UTC
+"prepared_launch_test" time elapsed: 00:00:01
+----------------------------------------------------------
+
+43/43 Testing: viewport_snapshot_test
+43/43 Test: viewport_snapshot_test
+Command: "/workspace/human-cognome-project/engine/build/viewport/viewport_snapshot_test"
+Directory: /workspace/human-cognome-project/engine/build/viewport
+"viewport_snapshot_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+45 viewport snapshot checks passed
+<end of output>
+Test time =   2.48 sec
+----------------------------------------------------------
+Test Passed.
+"viewport_snapshot_test" end time: Oct 22 14:47 UTC
+"viewport_snapshot_test" time elapsed: 00:00:02
+----------------------------------------------------------
+
+28/43 Testing: native_activity_test
+28/43 Test: native_activity_test
+Command: "/workspace/human-cognome-project/engine/build/native_activity_test"
+Directory: /workspace/human-cognome-project/engine/build
+"native_activity_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+ok   inactive type sets have zero calculation-body entries
+ok   CPU native leaf bits are live: a peer activated inside traversal can enter that same calculation loop
+ok   padded native capacity traverses all 70 requested logical slots without activating padding
+ok   4096 parallel native activations across pointer blocks collapse to two particle entries
+ok   particle phase consumes fixed entries, retains carried activity and collapses centroid touches
+ok   centroid phase consumes its own bit and reactivates particles once without running their calculation phase
+ok   centroid placement retains the consumed sleeping member contribution
+ok   following particle phase calculates each of four selected entries once and consumes fixed activity
+ok   centroid without further effects consumes activity without erasing particle numerical state
+ok   subsequent inactive particle phase enters no calculation body
+ok   type-phase consumption preserves all untouched numerical values
+11 native activity checks
+PASS native_activity_test
+<end of output>
+Test time =   1.15 sec
+----------------------------------------------------------
+Test Passed.
+"native_activity_test" end time: Oct 22 14:47 UTC
+"native_activity_test" time elapsed: 00:00:01
+----------------------------------------------------------
+
+25/43 Testing: prepared_space_pointer-recycled
+25/43 Test: prepared_space_pointer-recycled
+Command: "/workspace/human-cognome-project/engine/build/prepared_space_probe" "--layout" "pointer-recycled" "--span" "70" "--repeats" "3"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_space_pointer-recycled" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+# storage-only, actual_backend=cpu,layout=pointer-recycled,logical_span=70,padded_span=128,root_bytes=64,root_page_bytes=4096,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.000000000,22,5299560,4,1073746188,5319088
+compiled,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.421999693,22,5299560,4,1073746188,5319088
+ready_empty,128603.310,0,0,0,13341004,13303808,4,4,0,0,1,0,1,4,0.421999693,32,14429544,4,1073746188,14450956
+first_define,23.174,4,17,165,13341004,13303808,4,4,3,0,1,3,1,4,0.421999693,32,14429544,4,1073746188,14450956
+first_release,15.993,0,0,0,13341004,13303808,4,4,0,0,1,0,1,4,0.421999693,32,14429544,4,1073746188,14450956
+# later_define_mean_us=7.892000000,later_release_mean_us=16.850000000
+empty_enumeration_mean,12.922,0,0,0,13341004,13303808,4,4,0,0,1,0,1,4,0.421999693,32,14429544,4,1073746188,14450956
+final_empty,0.000,0,0,0,13341004,13303808,4,4,0,0,1,0,1,4,0.421999693,32,14429544,4,1073746188,14450956
+# measured_tree_dynamic_delta_bytes=13341004,accounted_tree_bytes_excluding_dynamic_alignment=13345100,accounted_bytes_per_logical_entry=190644.285714,physical_objects=0,cycles=3,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=13365476,host_cursor_bytes_per_entry_including_268_buffer_bytes=190935.371429
+<end of output>
+Test time =   0.67 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_space_pointer-recycled" end time: Oct 22 14:47 UTC
+"prepared_space_pointer-recycled" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/43 Testing: prepared_space_pointer-cold
+23/43 Test: prepared_space_pointer-cold
+Command: "/workspace/human-cognome-project/engine/build/prepared_space_probe" "--layout" "pointer-cold" "--span" "70" "--repeats" "3"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_space_pointer-cold" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+# storage-only, actual_backend=cpu,layout=pointer-cold,logical_span=70,padded_span=128,root_bytes=64,root_page_bytes=4096,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.000000000,22,5299560,4,1073746188,5319088
+compiled,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.415153742,22,5299560,4,1073746188,5319088
+ready_empty,37417.771,0,0,0,8409420,8388608,0,0,0,0,1,0,1,4,0.415153742,24,9497960,4,1073746188,9519372
+first_define,22238.141,4,17,165,13201740,13172736,3,0,3,0,1,3,1,4,0.415153742,28,14290280,4,1073746188,14311692
+first_release,4.897,0,0,0,13201740,13172736,3,0,3,0,1,3,1,4,0.415153742,28,14290280,4,1073746188,14311692
+# later_define_mean_us=13.279500000,later_release_mean_us=4.832000000
+empty_enumeration_mean,15.380,0,0,0,13201740,13172736,3,0,3,0,1,3,1,4,0.415153742,28,14290280,4,1073746188,14311692
+final_empty,0.000,0,0,0,13201740,13172736,3,0,3,0,1,3,1,4,0.415153742,28,14290280,4,1073746188,14311692
+# measured_tree_dynamic_delta_bytes=13201740,accounted_tree_bytes_excluding_dynamic_alignment=13205836,accounted_bytes_per_logical_entry=188654.800000,physical_objects=0,cycles=3,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=13226212,host_cursor_bytes_per_entry_including_268_buffer_bytes=188945.885714
+<end of output>
+Test time =   0.63 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_space_pointer-cold" end time: Oct 22 14:47 UTC
+"prepared_space_pointer-cold" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/43 Testing: prepared_space_pointer-retained
+24/43 Test: prepared_space_pointer-retained
+Command: "/workspace/human-cognome-project/engine/build/prepared_space_probe" "--layout" "pointer-retained" "--span" "70" "--repeats" "3"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_space_pointer-retained" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+# storage-only, actual_backend=cpu,layout=pointer-retained,logical_span=70,padded_span=128,root_bytes=64,root_page_bytes=4096,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.000000000,22,5299560,4,1073746188,5319088
+compiled,0.000,0,0,0,4211020,4194304,0,0,0,0,0,0,1,4,0.420362949,22,5299560,4,1073746188,5319088
+ready_empty,66950.991,0,0,0,13201740,13172736,4,0,4,0,1,4,1,4,0.420362949,28,14290280,4,1073746188,14311692
+first_define,23.034,4,17,165,13201740,13172736,4,0,4,0,1,4,1,4,0.420362949,28,14290280,4,1073746188,14311692
+first_release,2.724,0,0,0,13201740,13172736,4,0,4,0,1,4,1,4,0.420362949,28,14290280,4,1073746188,14311692
+# later_define_mean_us=6.860000000,later_release_mean_us=2.639000000
+empty_enumeration_mean,25.361,0,0,0,13201740,13172736,4,0,4,0,1,4,1,4,0.420362949,28,14290280,4,1073746188,14311692
+final_empty,0.000,0,0,0,13201740,13172736,4,0,4,0,1,4,1,4,0.420362949,28,14290280,4,1073746188,14311692
+# measured_tree_dynamic_delta_bytes=13201740,accounted_tree_bytes_excluding_dynamic_alignment=13205836,accounted_bytes_per_logical_entry=188654.800000,physical_objects=0,cycles=3,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=13226212,host_cursor_bytes_per_entry_including_268_buffer_bytes=188945.885714
+<end of output>
+Test time =   0.60 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_space_pointer-retained" end time: Oct 22 14:47 UTC
+"prepared_space_pointer-retained" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/43 Testing: prepared_space_dense-budgeted
+21/43 Test: prepared_space_dense-budgeted
+Command: "/workspace/human-cognome-project/engine/build/prepared_space_probe" "--layout" "dense-budgeted" "--span" "70" "--repeats" "3"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_space_dense-budgeted" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+# storage-only, actual_backend=cpu,layout=dense-budgeted,logical_span=70,padded_span=128,root_bytes=148,root_page_bytes=4096,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4204664,4194304,0,0,0,0,0,0,1,5,0.000000000,17,5293204,4,1073746188,5304588
+compiled,0.000,0,0,0,4204664,4194304,0,0,0,0,0,0,1,5,0.158011913,17,5293204,4,1073746188,5304588
+ready_empty,26841.156,0,0,0,8403064,8388608,0,0,0,0,0,1,1,5,0.158011913,19,9491604,4,1073746188,9502988
+first_define,21.582,4,17,165,8403064,8388608,0,0,0,0,0,1,1,5,0.158011913,19,9491604,4,1073746188,9502988
+first_release,3.966,0,0,0,8403064,8388608,0,0,0,0,0,1,1,5,0.158011913,19,9491604,4,1073746188,9502988
+# later_define_mean_us=9.254000000,later_release_mean_us=4.066000000
+empty_enumeration_mean,10.348,0,0,0,8403064,8388608,0,0,0,0,0,1,1,5,0.158011913,19,9491604,4,1073746188,9502988
+final_empty,0.000,0,0,0,8403064,8388608,0,0,0,0,0,1,1,5,0.158011913,19,9491604,4,1073746188,9502988
+# measured_tree_dynamic_delta_bytes=8403064,accounted_tree_bytes_excluding_dynamic_alignment=8407160,accounted_bytes_per_logical_entry=120102.285714,physical_objects=0,cycles=3,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=8417508,host_cursor_bytes_per_entry_including_268_buffer_bytes=120250.114286
+<end of output>
+Test time =   0.33 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_space_dense-budgeted" end time: Oct 22 14:48 UTC
+"prepared_space_dense-budgeted" time elapsed: 00:00:00
+----------------------------------------------------------
+
+22/43 Testing: prepared_space_flat-bitmasked
+22/43 Test: prepared_space_flat-bitmasked
+Command: "/workspace/human-cognome-project/engine/build/prepared_space_probe" "--layout" "flat-bitmasked" "--span" "70" "--repeats" "3"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_space_flat-bitmasked" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+# storage-only, actual_backend=cpu,layout=flat-bitmasked,logical_span=70,padded_span=128,root_bytes=144,root_page_bytes=4096,payload_bytes=256,output_bytes=12,cuda_reservation_gb=0
+phase,elapsed_us,definitions,sum_codes,sum_indices,native_requested_bytes,native_chunk_bytes,pointer_elements,free_elements,free_used,recycled_elements,parent_list_elements,leaf_list_elements,trees,snode_ids,compilation_seconds,pool_calls,pool_requested_bytes,pool_raw_calls,pool_reserved_bytes,host_cursor_bytes
+materialized,0.000,0,0,0,4202576,4194304,0,0,0,0,0,0,1,3,0.000000000,16,5291116,4,1073746188,5300492
+compiled,0.000,0,0,0,4202576,4194304,0,0,0,0,0,0,1,3,0.119351864,16,5291116,4,1073746188,5300492
+ready_empty,21895.004,0,0,0,8400976,8388608,0,0,0,0,0,1,1,3,0.119351864,18,9489516,4,1073746188,9498892
+first_define,14.772,4,17,165,8400976,8388608,0,0,0,0,0,1,1,3,0.119351864,18,9489516,4,1073746188,9498892
+first_release,2.775,0,0,0,8400976,8388608,0,0,0,0,0,1,1,3,0.119351864,18,9489516,4,1073746188,9498892
+# later_define_mean_us=5.994000000,later_release_mean_us=2.689000000
+empty_enumeration_mean,22.129,0,0,0,8400976,8388608,0,0,0,0,0,1,1,3,0.119351864,18,9489516,4,1073746188,9498892
+final_empty,0.000,0,0,0,8400976,8388608,0,0,0,0,0,1,1,3,0.119351864,18,9489516,4,1073746188,9498892
+# measured_tree_dynamic_delta_bytes=8400976,accounted_tree_bytes_excluding_dynamic_alignment=8405072,accounted_bytes_per_logical_entry=120072.457143,physical_objects=0,cycles=3,result=PASS
+# host_cursor_delta_including_alignment_and_buffers=8413412,host_cursor_bytes_per_entry_including_268_buffer_bytes=120191.600000
+<end of output>
+Test time =   0.27 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_space_flat-bitmasked" end time: Oct 22 14:48 UTC
+"prepared_space_flat-bitmasked" time elapsed: 00:00:00
+----------------------------------------------------------
+
+40/43 Testing: index_cap_test
+40/43 Test: index_cap_test
+Command: "/workspace/human-cognome-project/engine/build/index_cap_test"
+Directory: /workspace/human-cognome-project/engine/build
+"index_cap_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+--   cpu: index cap, N=1090000000 (2N=2180000000, 2^31=2147483648)
+ok   cpu: N fits an Ndarray axis
+ok   cpu: 2N exceeds 2^31 (test is meaningful)
+[W 10/22/26 14:48:00.580 1590849] TaichiWarning
+Ndarray index might be out of int32 boundary but int64 indexing is not supported yet.
+ok   cpu: HIGH cell's flattened offset exceeds 2^31
+ok   cpu: LOW cell {0,0} round-trips (got 42)
+ok   cpu: HIGH cell {1,N-1} (offset 2N-1=2179999999 > 2^31) round-trips (got 199, expected 199)
+ok   cpu: LOW cell unchanged by the HIGH write (got 42)
+--   cuda unavailable on this host: GPU index-cap check skipped
+PASS index_cap_test
+<end of output>
+Test time =   0.17 sec
+----------------------------------------------------------
+Test Passed.
+"index_cap_test" end time: Oct 22 14:48 UTC
+"index_cap_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+26/43 Testing: engine_smoke_test
+26/43 Test: engine_smoke_test
+Command: "/workspace/human-cognome-project/engine/build/engine_smoke_test"
+Directory: /workspace/human-cognome-project/engine/build
+"engine_smoke_test" start time: Oct 22 14:47 UTC
+Output:
+----------------------------------------------------------
+--   configuration
+ok   environment capacity is read
+ok   explicit capacity overrides the environment
+ok   environment can be ignored, and nothing leaked
+--   arch cpu
+ok   cpu: launch thread count set
+ok   cpu: tree added
+ok   cpu: snode identifiers issued
+ok   cpu: trees coexist
+ok   cpu: field written and read back, scale 1
+ok   cpu: field written and read back, scale 7
+ok   cpu: second tree holds its own values
+ok   cpu: first tree unchanged
+--   sparse cpu
+ok   cpu: struct-for visited every active cell
+--   cuda unavailable on this host: GPU checks skipped
+PASS engine_smoke_test
+<end of output>
+Test time =   0.93 sec
+----------------------------------------------------------
+Test Passed.
+"engine_smoke_test" end time: Oct 22 14:48 UTC
+"engine_smoke_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+42/43 Testing: viewport_signal_guard_test
+42/43 Test: viewport_signal_guard_test
+Command: "/workspace/human-cognome-project/engine/build/viewport/viewport_signal_guard_test"
+Directory: /workspace/human-cognome-project/engine/build/viewport
+"viewport_signal_guard_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+7 viewport signal guard checks passed
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"viewport_signal_guard_test" end time: Oct 22 14:48 UTC
+"viewport_signal_guard_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/43 Testing: native_pool_test
+20/43 Test: native_pool_test
+Command: "/workspace/human-cognome-project/engine/build/native_pool_test"
+Directory: /workspace/human-cognome-project/engine/build
+"native_pool_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+PASS: native raw bounds, cursor/request accounting and reset
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"native_pool_test" end time: Oct 22 14:48 UTC
+"native_pool_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/43 Testing: prepared_capacity_test
+16/43 Test: prepared_capacity_test
+Command: "/workspace/human-cognome-project/engine/build/prepared_capacity_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_capacity_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+prepared_capacity: independent limits, fixed strides, zero limits and overflow PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_capacity_test" end time: Oct 22 14:48 UTC
+"prepared_capacity_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+36/43 Testing: letter_projection_test
+36/43 Test: letter_projection_test
+Command: "/workspace/human-cognome-project/engine/build/letter_projection_test"
+Directory: /workspace/human-cognome-project/engine/build
+"letter_projection_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+ok   five aggregates and thirteen byte alternatives; no character/nibble particles
+ok   letter-only normalization ignores dormant byte detail
+ok   English/French A retain distinct language identities with one shared core parent
+ok   all source rows, revisions and unknown stored masses preserved
+ok   Dutch aggregate retains 4+2+4 ordered scalar contributions
+ok   repeated a parents remain distinct contributions to the same field
+ok   Dutch exact five-byte sequence conserves mass 10
+ok   character/byte ordinals round-trip with full owner and pinned source character
+ok   whole-value character equivalence exists only for single-scalar letters
+ok   slots include inactive alternatives in entry/path order
+ok   normalization leaves supplied definition inputs unchanged
+ok   two uses of A have distinct alternatives, one active aggregate and one active byte
+ok   mixed normalization assigns root bytes and primary-step letters before native prepare
+ok   native occurrence identity retains full uint64 entry
+ok   every new projection has a distinct study identity, including equal-count exposure changes
+ok   byte-only keeps inactive letter alternatives at primary binding
+ok   equal-count exposure change creates a new study rather than refreshing live identity
+ok   exposed bytes retain ten ordered nibble contributions; no active letter contribution
+ok   valid three/four-byte source scalar projects exact byte and nibble occurrences
+ok   valid three/four-byte source scalar projects exact byte and nibble occurrences
+ok   missing persisted parts rejected
+ok   repeated persisted part rejected
+ok   reordered persisted parts rejected
+ok   duplicate occurrence identity rejected
+ok   malformed occurrence path rejected
+ok   wrong definition at a recorded byte position rejected
+ok   invalid source ordinal rejected
+ok   malformed source hex rejected
+ok   mass-preserving wrong ordered nibble values rejected
+ok   unnormalized mixed layout rejected
+ok   inactive contact endpoint rejected
+ok   inconsistent pinned dependency revision rejected
+ok   two revisions of one object in one study rejected
+ok   stored zero is not substituted for unknown parent mass
+ok   unknown live mass rejected
+ok   exact integer overflow rejected
+ok   missing supplied geometry rejected
+ok   non-finite supplied initial state rejected
+ok   source-form case mismatch rejected without casefolding
+ok   source form missing combining scalar rejected
+ok   canonically equivalent spelling rejected without normalization
+ok   missing explicit byte placement rejected
+ok   repeated input byte path rejected
+ok   extraneous byte placement rejected
+ok   malformed input byte path rejected
+ok   duplicate request entry rejected
+ok   normalization cannot silently replace an existing recipe
+ok   stale requested letter revision rejected
+ok   opaque definition identity preserves instance scope
+ok   invalid/overlong/surrogate/out-of-range source UTF-8 rejected
+ok   invalid/overlong/surrogate/out-of-range source UTF-8 rejected
+ok   invalid/overlong/surrogate/out-of-range source UTF-8 rejected
+ok   invalid/overlong/surrogate/out-of-range source UTF-8 rejected
+53 projection checks
+PASS letter_projection_test
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"letter_projection_test" end time: Oct 22 14:48 UTC
+"letter_projection_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+37/43 Testing: letter_projection_native_test
+37/43 Test: letter_projection_native_test
+Command: "/workspace/human-cognome-project/engine/build/letter_projection_native_test"
+Directory: /workspace/human-cognome-project/engine/build
+"letter_projection_native_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+ok   letter-only: reserve all alternatives; publish only the selected occurrences
+ok   letter-only: explicit normalized bindings precede native preparation
+ok   letter-only: supplied position/radius/velocity use 1 or 64; exact mass unchanged
+ok   letter-only: native values retain full typed occurrence and object identity
+ok   letter-only: byte nibble parents and aggregate character parents survive handoff
+ok   letter-only: contacts reach only explicitly selected live occurrences
+ok   letter-only: incompatible native binding refused
+ok   letter-only: layout shape must match normalized recipe
+ok   byte-only: reserve all alternatives; publish only the selected occurrences
+ok   byte-only: explicit normalized bindings precede native preparation
+ok   byte-only: supplied position/radius/velocity use 1 or 64; exact mass unchanged
+ok   byte-only: native values retain full typed occurrence and object identity
+ok   byte-only: byte nibble parents and aggregate character parents survive handoff
+ok   byte-only: contacts reach only explicitly selected live occurrences
+ok   byte-only: incompatible native binding refused
+ok   byte-only: layout shape must match normalized recipe
+ok   mixed: reserve all alternatives; publish only the selected occurrences
+ok   mixed: explicit normalized bindings precede native preparation
+ok   mixed: supplied position/radius/velocity use 1 or 64; exact mass unchanged
+ok   mixed: native values retain full typed occurrence and object identity
+ok   mixed: byte nibble parents and aggregate character parents survive handoff
+ok   mixed: contacts reach only explicitly selected live occurrences
+ok   mixed: incompatible native binding refused
+ok   mixed: layout shape must match normalized recipe
+ok   scaled coordinate f32 overflow rejected
+ok   scaled velocity f32 overflow rejected
+ok   scaled supplied radius f32 overflow rejected
+ok   mixed multi-scalar/repeated fixture reserves all distinct occurrences
+ok   repeated a contribution retains source ordinal, exact mass and whole-particle share
+ok   repeated a contribution retains source ordinal, exact mass and whole-particle share
+ok   ordered repeated parents share one parent-value field
+ok   active masses conserve 8+8+10+2 across aggregate and byte views
+ok   native contributions match typed active parents plus one sibling edge per live occurrence
+ok   every typed ordinal/contribution reaches native participation exactly once
+ok   compression/naming attachments inherit normalized 1:1 units independent of depth
+ok   English/French A produce two sibling fields and one shared core parent field
+ok   English/French A preserve distinct native linguistic definitions
+ok   each language A contributes its verified character mass to the shared parent field
+PASS letter_projection_native_test
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"letter_projection_native_test" end time: Oct 22 14:48 UTC
+"letter_projection_native_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+34/43 Testing: preparation_test
+34/43 Test: preparation_test
+Command: "/workspace/human-cognome-project/engine/build/preparation_test"
+Directory: /workspace/human-cognome-project/engine/build
+"preparation_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+ok   supplied spheres enclosed from supplied centroid
+ok   enclosure is translation invariant
+ok   unequal coincident radii use maximum extent
+ok   missing geometry refused
+ok   negative radius refused
+ok   infinite radius refused
+ok   non-finite centroid refused
+ok   non-finite component centre refused
+ok   only explicit primary steps multiply scale, independent of depth/id
+ok   positions and velocities share operative conversion
+ok   radii inherit the same 1:1 compression frame with outward rounding
+ok   scale preserves structural mass and cold/occurrence identity
+ok   unrelated SNode scale attachment refused
+ok   repeated definition cannot share mutable slot
+ok   operative coordinate overflow refused
+ok   missing structural count refused rather than inferred
+ok   duplicate ordinal refused
+ok   duplicate unordered contact refused
+PASS preparation_test
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"preparation_test" end time: Oct 22 14:48 UTC
+"preparation_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+41/43 Testing: viewport_options_test
+41/43 Test: viewport_options_test
+Command: "/workspace/human-cognome-project/engine/build/viewport/viewport_options_test"
+Directory: /workspace/human-cognome-project/engine/build/viewport
+"viewport_options_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+61 viewport option checks passed
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"viewport_options_test" end time: Oct 22 14:48 UTC
+"viewport_options_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+38/43 Testing: membership_fields_test
+38/43 Test: membership_fields_test
+Command: "/workspace/human-cognome-project/engine/build/membership_fields_test"
+Directory: /workspace/human-cognome-project/engine/build
+"membership_fields_test" start time: Oct 22 14:48 UTC
+Output:
+----------------------------------------------------------
+ok   two uses of A each reach three membership fields
+ok   direct/alphabet-mediated English and ancestor paths deduplicate per occurrence
+ok   field kinds, full occurrence identities, pinned groups and exact counts retained
+ok   NULL naming anchors add metadata/fields without particles or parent changes
+ok   membership traversal preserves every source definition and membership
+ok   core byte classification is not the owning language's membership graph
+ok   mixed exposure emits memberships only for the three active occurrences
+ok   English/French byte occurrences use exactly the same pinned byte definition
+ok   shared byte definitions retain independent owner-context memberships without language leakage
+ok   active aggregate and byte uses contribute their own whole mass once per field
+ok   inactive aggregate/byte alternative has no membership participation
+ok   inactive aggregate/byte alternative has no membership participation
+ok   inactive aggregate/byte alternative has no membership participation
+ok   aa-combining-accent, Dutch and multibyte fixtures contribute exact mass 8+10+4
+ok   membership preparation leaves repeated source a ordinals separate
+ok   aa-combining-accent, Dutch and multibyte fixtures contribute exact mass 8+10+4
+ok   byte exposure conserves membership mass with one edge per target and byte position
+ok   each exposed byte uses its mass and its distinct character/byte path
+ok   twenty-two ordered nibble contributions survive contextual membership preparation
+ok   absent source ancestry stays absent; no inferred group paths
+ok   missing pinned membership endpoint rejected before handoff
+ok   inconsistent membership revision rejected
+ok   indirect upward membership cycle rejected
+ok   self membership cycle rejected
+ok   duplicate direct source row rejected; multiple valid paths remain supported
+25 membership value checks
+PASS membership_fields_test
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"membership_fields_test" end time: Oct 22 14:48 UTC
+"membership_fields_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 22 14:48 UTC

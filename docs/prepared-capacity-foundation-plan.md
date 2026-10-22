@@ -12,8 +12,9 @@ accepted and merged in #164 at `41310a5`. The
 [next backing/binding section](prepared-execution-backing-plan.md) was accepted
 in #165; its [CPU implementation](../engine/docs/PREPARED-EXECUTION.md) is
 accepted and merged in #166 at `4e7b193`. The
-[coherent-update section](prepared-coherent-update-plan.md) was accepted in #167;
-its implementation remains open; changes while ticking remain unbuilt.
+[coherent-update section](prepared-coherent-update-plan.md) was accepted in
+#167 at `284b45d`; its [bounded implementation](../engine/docs/PREPARED-UPDATES.md)
+is submitted for review under #162. Production #156 remains open.
 
 [The final #161 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/161#issuecomment-6322166930)
 accepts dense declarations with budgeted native presence records as the candidate

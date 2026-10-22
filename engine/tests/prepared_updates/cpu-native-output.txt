@@ -1,0 +1,559 @@
+Start testing: Oct 22 14:49 UTC
+----------------------------------------------------------
+11/43 Testing: prepared_update_direct
+11/43 Test: prepared_update_direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_direct" start time: Oct 22 14:49 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=padded,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=254414,index_visits=78528,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4376338,first_update=72,31_ordinary_updates=1778,32_ticks=4584,32_inspections=404
+before_updates,39345426,39223296,83,113,41516498,38,1074828720,41588144,3,23,3.23674
+after_32_updates_ticks_inspections,39345426,39223296,83,113,41516498,38,1074828720,41588144,3,23,3.23674
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+ready_empty_for_maximum_batches,100893844,39223296,83,262,104162908,91,1074836912,103241136,5,53,9.09406
+after_first_maximum_update,100893844,39223296,83,262,104162908,91,1074836912,103241136,5,53,9.09406
+rejected_batch,status=4,budget=particles,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+after_full_recycle_and_reuse,100893844,39223296,83,262,104162908,91,1074836912,103241136,5,53,9.09406
+maximum-batch,P=70,B=32,full-bank,last-record,retirement,reuse,C++new=0 PASS
+rejected_batch,status=1,budget=none,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=1,budget=none,us=2,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=5,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=6,budget=none,us=30,upload_bytes=324,readback_bytes=4,syncs=1
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=particles,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=fields,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=participation,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=contacts,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=batch,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=6,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=25,upload_bytes=324,readback_bytes=4,syncs=1
+rejected_batch,status=4,budget=references,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=references,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=fields,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+ordinary rejection/no-op/independent P,G,E,C,R,B peaks and stale generation PASS
+rejected_batch,status=2,budget=none,us=3,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=2,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=1,budget=none,us=4,upload_bytes=0,readback_bytes=0,syncs=0
+local structural wakes, unchanged sleepers, global U/focus wakes, exact pending-motion repair PASS
+failure after claims/numerical/topology writes refuses tick/inspection and cleans up PASS
+<end of output>
+Test time =  56.21 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_direct" end time: Oct 22 14:50 UTC
+"prepared_update_direct" time elapsed: 00:00:56
+----------------------------------------------------------
+
+10/43 Testing: prepared_update_padded
+10/43 Test: prepared_update_padded
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_padded" start time: Oct 22 14:49 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=padded,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=254414,index_visits=78528,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4495992,first_update=52,31_ordinary_updates=1329,32_ticks=4656,32_inspections=390
+before_updates,39345426,39223296,83,120,41524630,45,1074836852,41596276,3,23,3.28737
+after_32_updates_ticks_inspections,39345426,39223296,83,120,41524630,45,1074836852,41596276,3,23,3.28737
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+ready_empty_for_maximum_batches,100893844,39223296,83,283,104187276,112,1074845044,103249268,5,53,9.11179
+after_first_maximum_update,100893844,39223296,83,283,104187276,112,1074845044,103249268,5,53,9.11179
+rejected_batch,status=4,budget=particles,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+after_full_recycle_and_reuse,100893844,39223296,83,283,104187276,112,1074845044,103249268,5,53,9.11179
+maximum-batch,P=70,B=32,full-bank,last-record,retirement,reuse,C++new=0 PASS
+rejected_batch,status=1,budget=none,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=1,budget=none,us=2,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=5,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=6,budget=none,us=31,upload_bytes=324,readback_bytes=4,syncs=1
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=particles,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=fields,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=participation,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=contacts,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=batch,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=6,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=26,upload_bytes=324,readback_bytes=4,syncs=1
+rejected_batch,status=4,budget=references,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=references,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=4,budget=fields,us=1,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=0,upload_bytes=0,readback_bytes=0,syncs=0
+ordinary rejection/no-op/independent P,G,E,C,R,B peaks and stale generation PASS
+rejected_batch,status=2,budget=none,us=4,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=2,budget=none,us=2,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=1,budget=none,us=3,upload_bytes=0,readback_bytes=0,syncs=0
+local structural wakes, unchanged sleepers, global U/focus wakes, exact pending-motion repair PASS
+failure after claims/numerical/topology writes refuses tick/inspection and cleans up PASS
+<end of output>
+Test time =  56.46 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_padded" end time: Oct 22 14:50 UTC
+"prepared_update_padded" time elapsed: 00:00:56
+----------------------------------------------------------
+
+14/43 Testing: prepared_update_letters
+14/43 Test: prepared_update_letters
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--letters"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_letters" start time: Oct 22 14:50 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=letters,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=10517,index_visits=9856,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4287013,first_update=121,31_ordinary_updates=2653,32_ticks=11000,32_inspections=1092
+before_updates,39345426,39223296,83,121,41528726,46,1074840948,41600372,4,26,3.1626
+after_32_updates_ticks_inspections,39345426,39223296,83,121,41528726,46,1074840948,41600372,4,26,3.1626
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=bytes,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12619,index_visits=10240,upload_bytes=591760,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4654945,first_update=207,31_ordinary_updates=1007,32_ticks=3759,32_inspections=288
+before_updates,100893844,39223296,83,285,104187952,114,1074853236,103257460,7,59,8.14275
+after_32_updates_ticks_inspections,100893844,39223296,83,285,104187952,114,1074853236,103257460,7,59,8.14275
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=mixed,path=bulk,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12402,index_visits=10048,upload_bytes=588288,readback_bytes=3328,syncs=160,collections=31,C++new=0
+phase_us,setup=4517448,first_update=46,31_ordinary_updates=824,32_ticks=4071,32_inspections=326
+before_updates,162442262,39223296,83,449,166847218,182,1074865524,164914548,10,92,13.1053
+after_32_updates_ticks_inspections,162442262,39223296,83,449,166847218,182,1074865524,164914548,10,92,13.1053
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+complete-English-definition,two-plus-third,all-parent-and-membership-bindings,independent-modify-retire PASS
+<end of output>
+Test time =  25.67 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_letters" end time: Oct 22 14:50 UTC
+"prepared_update_letters" time elapsed: 00:00:25
+----------------------------------------------------------
+
+15/43 Testing: prepared_update_letters-direct
+15/43 Test: prepared_update_letters-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--letters" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_letters-direct" start time: Oct 22 14:50 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=letters,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=10517,index_visits=9856,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4334258,first_update=91,31_ordinary_updates=3098,32_ticks=10689,32_inspections=1662
+before_updates,39345426,39223296,83,114,41520594,39,1074832816,41592240,4,26,3.19439
+after_32_updates_ticks_inspections,39345426,39223296,83,114,41520594,39,1074832816,41592240,4,26,3.19439
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=bytes,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12619,index_visits=10240,upload_bytes=448400,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4561932,first_update=105,31_ordinary_updates=2404,32_ticks=9604,32_inspections=1027
+before_updates,100893844,39223296,83,264,104167876,93,1074845104,103249328,7,59,8.20555
+after_32_updates_ticks_inspections,100893844,39223296,83,264,104167876,93,1074845104,103249328,7,59,8.20555
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+updates,profile=mixed,path=direct,cycles=32,generation=33,scratch=110964,bindings=8128,structural_visits=12402,index_visits=10048,upload_bytes=444928,readback_bytes=3328,syncs=160,collections=31,C++new=0
+phase_us,setup=4722800,first_update=62,31_ordinary_updates=2028,32_ticks=4907,32_inspections=380
+before_updates,162442262,39223296,83,414,166815174,147,1074857392,164906416,10,92,13.1834
+after_32_updates_ticks_inspections,162442262,39223296,83,414,166815174,147,1074857392,164906416,10,92,13.1834
+workspace,particle-headers,70,24,2,3360
+workspace,field-headers,9,24,2,432
+workspace,participation-headers,280,64,2,35840
+workspace,contact-headers,140,64,2,17920
+workspace,focal-references,9,24,1,216
+workspace,batch-commands,32,120,1,3840
+workspace,batch-results,32,48,1,1536
+workspace,retired-references,32,24,1,768
+workspace,resolved-references,32,24,1,768
+workspace,prospective-csr,1278,4,1,5112
+workspace,csr-counts,70,4,1,280
+workspace,csr-cursors,70,4,1,280
+workspace,validation,569,4,2,4552
+workspace,derived-results,138,4,1,552
+workspace,candidate-edges,560,4,2,4480
+workspace,candidate-shares,280,4,2,2240
+workspace,candidate-group-offsets,18,4,1,72
+workspace,candidate-group-order,280,4,1,1120
+workspace,destination-records,79,4,2,632
+workspace,native-claim-inputs,96,4,1,384
+workspace,new-fixture-rows,384,4,2,3072
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,264,4,1,1056
+workspace,inspection-state,158,4,1,632
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,79,4,2,632
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,210,4,1,840
+workspace,selected-focus-host,9,4,2,72
+workspace,map-batch-buffers,323,8,4,10336
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+complete-English-definition,two-plus-third,all-parent-and-membership-bindings,independent-modify-retire PASS
+<end of output>
+Test time =  25.49 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_letters-direct" end time: Oct 22 14:50 UTC
+"prepared_update_letters-direct" time elapsed: 00:00:25
+----------------------------------------------------------
+
+13/43 Testing: prepared_update_large-direct
+13/43 Test: prepared_update_large-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--large" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_large-direct" start time: Oct 22 14:50 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=working-set,path=direct,cycles=32,generation=33,scratch=4815924,bindings=8128,structural_visits=274987730,index_visits=4603520,upload_bytes=23142032,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4532424,first_update=8302,31_ordinary_updates=267185,32_ticks=90545,32_inspections=3042
+before_updates,39345426,39223296,4490,113,58253946,38,1091566168,58325592,3,23,3.36178
+after_32_updates_ticks_inspections,39345426,39223296,4490,113,58253946,38,1091566168,58325592,3,23,3.36178
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+ready_empty_for_maximum_batches,100893844,39223296,4490,262,138019108,91,1091574360,119978584,5,53,8.18886
+after_first_maximum_update,100893844,39223296,4490,262,138019108,91,1091574360,119978584,5,53,8.18886
+rejected_batch,status=4,budget=particles,us=13,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=11,upload_bytes=0,readback_bytes=0,syncs=0
+after_full_recycle_and_reuse,100893844,39223296,4490,262,138019108,91,1091574360,119978584,5,53,8.18886
+maximum-batch,P=4096,B=256,full-bank,last-record,retirement,reuse,C++new=0 PASS
+<end of output>
+Test time =  11.78 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_large-direct" end time: Oct 22 14:50 UTC
+"prepared_update_large-direct" time elapsed: 00:00:11
+----------------------------------------------------------
+
+12/43 Testing: prepared_update_large
+12/43 Test: prepared_update_large
+Command: "/workspace/human-cognome-project/engine/build/prepared_update_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_update_large" start time: Oct 22 14:50 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+updates,profile=working-set,path=bulk,cycles=32,generation=33,scratch=4815924,bindings=8128,structural_visits=274987730,index_visits=4603520,upload_bytes=31530640,readback_bytes=6304,syncs=222,collections=62,C++new=0
+phase_us,setup=4561593,first_update=8188,31_ordinary_updates=254767,32_ticks=100794,32_inspections=3713
+before_updates,39345426,39223296,4490,120,58720926,45,1092033148,58792572,3,23,3.39088
+after_32_updates_ticks_inspections,39345426,39223296,4490,120,58720926,45,1092033148,58792572,3,23,3.39088
+workspace,particle-headers,4096,24,2,196608
+workspace,field-headers,257,24,2,12336
+workspace,participation-headers,16384,64,2,2097152
+workspace,contact-headers,8192,64,2,1048576
+workspace,focal-references,257,24,1,6168
+workspace,batch-commands,256,120,1,30720
+workspace,batch-results,256,48,1,12288
+workspace,retired-references,256,24,1,6144
+workspace,resolved-references,256,24,1,6144
+workspace,prospective-csr,74242,4,1,296968
+workspace,csr-counts,4096,4,1,16384
+workspace,csr-cursors,4096,4,1,16384
+workspace,validation,33025,4,2,264200
+workspace,derived-results,3610,4,1,14440
+workspace,candidate-edges,32768,4,2,262144
+workspace,candidate-shares,16384,4,2,131072
+workspace,candidate-group-offsets,514,4,1,2056
+workspace,candidate-group-order,16384,4,1,65536
+workspace,destination-records,4353,4,2,34824
+workspace,native-claim-inputs,768,4,1,3072
+workspace,new-fixture-rows,3072,4,2,24576
+workspace,candidate-status,1,4,2,8
+workspace,inspection-motion,13830,4,1,55320
+workspace,inspection-state,8706,4,1,34824
+workspace,inspection-focus,11,4,1,44
+workspace,inspection-flags,4353,4,2,34824
+workspace,inspection-counts,4,8,2,64
+workspace,activity-reset-zeros,12288,4,1,49152
+workspace,selected-focus-host,257,4,2,2056
+workspace,map-batch-buffers,2563,8,4,82016
+workspace,map-single-command-buffers,10,8,2,160
+workspace,prepared-binding-payload,8128,1,1,8128
+workspace,unused-binding-reserve,1536,1,1,1536
+ready_empty_for_maximum_batches,100893844,39223296,4490,283,139420020,112,1092041340,120445564,5,53,8.20858
+after_first_maximum_update,100893844,39223296,4490,283,139420020,112,1092041340,120445564,5,53,8.20858
+rejected_batch,status=4,budget=particles,us=11,upload_bytes=0,readback_bytes=0,syncs=0
+rejected_batch,status=3,budget=none,us=8,upload_bytes=0,readback_bytes=0,syncs=0
+after_full_recycle_and_reuse,100893844,39223296,4490,283,139420020,112,1092041340,120445564,5,53,8.20858
+maximum-batch,P=4096,B=256,full-bank,last-record,retirement,reuse,C++new=0 PASS
+<end of output>
+Test time =  11.78 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_update_large" end time: Oct 22 14:50 UTC
+"prepared_update_large" time elapsed: 00:00:11
+----------------------------------------------------------
+
+End testing: Oct 22 14:50 UTC

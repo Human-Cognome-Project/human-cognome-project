@@ -1,12 +1,12 @@
 # Prepared execution: coherent updates between ticks
 
-Status: **accepted in #167, 2026-10-22; implementation under #162**. This develops the remaining
+Status: **accepted in #167, merged at `284b45d`, 2026-10-22**. This develops the remaining
 coherent-update section of the [accepted #163 foundation](prepared-capacity-foundation-plan.md)
 under [#162](https://github.com/Human-Cognome-Project/human-cognome-project/issues/162).
 Baseline: `main` at `4e7b1932efe2527786a98660a54ef042c985b718`, the merge of
-#166. The accepted PR changed documents only; the update boundary below is not built.
-[Maintainer acceptance](https://github.com/Human-Cognome-Project/human-cognome-project/pull/167#issuecomment-6342453057)
-released this bounded implementation at merge `284b45d`.
+#166. The accepted PR changed documents only. The
+[bounded implementation](../engine/docs/PREPARED-UPDATES.md) is now submitted for
+review under #162; this remains its governing contract.
 
 ## Accepted baseline and next result
 
@@ -271,6 +271,7 @@ new manifests and raw evidence; keep malloc, residency and driver-observation
 limits explicit. Local CUDA commands must reject CPU fallback and record driver
 pool/allocation behavior under #145. CPU success does not qualify GPU execution.
 
-Acceptance covers the command/reference boundary, selective history repair,
-global wake rules, peak reservations and repeated-occurrence acceptance.
-It does not approve new production initialization or focus-selection conventions.
+The [acceptance review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/167#issuecomment-6342453057)
+released implementation of this command/reference boundary, selective history
+repair, global wake rules, peak reservations and repeated-occurrence proof.
+It approves no new production initialization or focus-selection conventions.

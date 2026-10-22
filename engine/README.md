@@ -183,7 +183,8 @@ qualification ladder.
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)
-was accepted in #167 and its implementation remains open under #162; [object-support results](docs/OBJECT-SUPPORT-RESULTS.md)
+was accepted in #167 and its [bounded implementation](docs/PREPARED-UPDATES.md)
+was accepted in #169 under #162; [object-support results](docs/OBJECT-SUPPORT-RESULTS.md)
 record the earlier slice. Production placement/live insertion and GPU
 allocation/transfer qualification retain their own acceptance work.
 

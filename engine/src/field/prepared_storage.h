@@ -8,16 +8,9 @@
 
 #include "engine/record_map.h"
 #include "field/prepared_capacity.h"
+#include "field/prepared_update.h"
 
 namespace field::detail {
-// Fixed-width internal staging only. There are no supplied coordinates or
-// velocities in this structural command. Coherent multi-family commit follows.
-struct PreparedPatch {
-  std::int32_t operation{}, kind{}, address{};
-  engine::RecordHandle first, second;
-  std::uint64_t ordinal{};
-  float share{};
-};
 struct RelationshipHeader {
   engine::RecordHandle first, second;
   std::uint64_t ordinal{};
@@ -57,17 +50,27 @@ class PreparedStorage {
       prospective_particles, prospective_fields;
   std::vector<RelationshipHeader> edges, contacts, prospective_edges,
       prospective_contacts;
-  std::vector<engine::RecordHandle> focal, prospective_focal;
-  std::vector<PreparedPatch> commands;
+  std::vector<engine::RecordHandle> focal;
+  std::vector<UpdateCommand> commands;
   std::vector<engine::RecordResult> results;
   std::vector<engine::RecordHandle> retired, resolved;
   std::vector<int> prospective_csr, counts, cursors, validation;
-  std::vector<float> derived;
-  // One typed backend reserve mirrors the packed workspace bytes. Individual
-  // prospective update views are not yet a coherent updater. CSR construction
-  // already uses the reserved host offsets/counts/cursors on initial fixture
-  // use.
-  std::unique_ptr<taichi::lang::Ndarray> backend_workspace;
+  // Scratch indexes are candidate row names, never a replacement allocator.
+  std::vector<int> destinations, claim_addresses, claim_kinds, command_indexes;
+  std::vector<int> candidate_edges;
+  std::vector<float> candidate_shares, new_rows;
+  std::array<int, 1> candidate_status{};
+  std::unique_ptr<taichi::lang::Ndarray> validation_array, derived_array,
+      destinations_array, candidate_edges_array, candidate_shares_array,
+      new_rows_array, candidate_status_array, candidate_offsets_array,
+      candidate_order_array;
+  // Complete activity/history readback, reserved before readiness.
+  std::vector<int> inspection_state;
+  std::vector<float> inspection_motion;
+  std::array<float, 11> inspection_focus{};
+  std::uint64_t inspected_generation{};
+  // Only the private test adapter can request injected failures.
+  int failure_point{};
   std::vector<int> inspection_flags;
   std::array<std::int64_t, 4> inspection_counts{};
   std::unique_ptr<taichi::lang::Ndarray> inspection_flags_array,

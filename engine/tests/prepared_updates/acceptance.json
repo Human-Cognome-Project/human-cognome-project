@@ -1,0 +1,3167 @@
+{
+  "status": "CPU implementation submitted for review; not GPU qualification",
+  "source_pin": "862e5e89c61827f10b2482390a53f8955a3b72e3",
+  "baseline_merge": "284b45db3c8f6a421772947caee9a604ffa4534b",
+  "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad",
+  "compiler": "Debian clang version 15.0.6",
+  "backend": "CPU-only LLVM; 2 engine CPU workers per test; CTest -j2",
+  "checks": {
+    "full_native_suites_passed": 43,
+    "elapsed_seconds": 343.6,
+    "final_focused_suites_passed": 6,
+    "final_focused_elapsed_seconds": 93.73,
+    "source_scope": "Full 43-suite run uses the same final runtime code and complete-occurrence assertions. Six update suites were then rebuilt/rerun at source_pin after diagnostic-only test logging additions; profiles and binary hashes below describe that final run.",
+    "profiles": 10,
+    "update_tick_cycles": 320,
+    "complete_definition_cases": 2,
+    "maximum_batch_full_bank_cases": 4,
+    "cuda_cpu_build_refusal": "Exit 1: matched build compiled without CUDA; not GPU execution"
+  },
+  "limits": [
+    "C++ new/new[] observation excludes direct malloc, physical residency/page faults and driver internals.",
+    "Native counters measure known live maps/awake layouts and global requested/pool/compiler counters; not universal allocator proof.",
+    "Scratch totals exclude fixed C++ object/container overhead, manifest metadata and compiler memory.",
+    "No GPU execution, driver allocation/pinning, browser interaction or failed-device recovery is qualified.",
+    "Production placement/initialization, source/owner/report integration, focus replacement and general LoD remain outside this fixture foundation."
+  ],
+  "profiles": [
+    {
+      "actual_backend": "cpu",
+      "profile": "padded",
+      "path": "direct",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 254414,
+      "index_visits": 78528,
+      "upload_bytes": 448400,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4376338,
+        "first_update": 72,
+        "31_ordinary_updates": 1778,
+        "32_ticks": 4584,
+        "32_inspections": 404
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 113,
+        "pool_requested_bytes": 41516498,
+        "pool_raw_calls": 38,
+        "pool_reserved_bytes": 1074828720,
+        "aligned_host_cursor": 41588144,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.23674
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 113,
+        "pool_requested_bytes": 41516498,
+        "pool_raw_calls": 38,
+        "pool_reserved_bytes": 1074828720,
+        "aligned_host_cursor": 41588144,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.23674
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "padded",
+      "path": "bulk",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 254414,
+      "index_visits": 78528,
+      "upload_bytes": 591760,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4495992,
+        "first_update": 52,
+        "31_ordinary_updates": 1329,
+        "32_ticks": 4656,
+        "32_inspections": 390
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 120,
+        "pool_requested_bytes": 41524630,
+        "pool_raw_calls": 45,
+        "pool_reserved_bytes": 1074836852,
+        "aligned_host_cursor": 41596276,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.28737
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 120,
+        "pool_requested_bytes": 41524630,
+        "pool_raw_calls": 45,
+        "pool_reserved_bytes": 1074836852,
+        "aligned_host_cursor": 41596276,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.28737
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "letters",
+      "path": "bulk",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 10517,
+      "index_visits": 9856,
+      "upload_bytes": 591760,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4287013,
+        "first_update": 121,
+        "31_ordinary_updates": 2653,
+        "32_ticks": 11000,
+        "32_inspections": 1092
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 121,
+        "pool_requested_bytes": 41528726,
+        "pool_raw_calls": 46,
+        "pool_reserved_bytes": 1074840948,
+        "aligned_host_cursor": 41600372,
+        "tree_count": 4,
+        "snode_ids": 26,
+        "compile_seconds": 3.1626
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 121,
+        "pool_requested_bytes": 41528726,
+        "pool_raw_calls": 46,
+        "pool_reserved_bytes": 1074840948,
+        "aligned_host_cursor": 41600372,
+        "tree_count": 4,
+        "snode_ids": 26,
+        "compile_seconds": 3.1626
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "bytes",
+      "path": "bulk",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 12619,
+      "index_visits": 10240,
+      "upload_bytes": 591760,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4654945,
+        "first_update": 207,
+        "31_ordinary_updates": 1007,
+        "32_ticks": 3759,
+        "32_inspections": 288
+      },
+      "before": {
+        "native_requested_bytes": 100893844,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 285,
+        "pool_requested_bytes": 104187952,
+        "pool_raw_calls": 114,
+        "pool_reserved_bytes": 1074853236,
+        "aligned_host_cursor": 103257460,
+        "tree_count": 7,
+        "snode_ids": 59,
+        "compile_seconds": 8.14275
+      },
+      "after": {
+        "native_requested_bytes": 100893844,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 285,
+        "pool_requested_bytes": 104187952,
+        "pool_raw_calls": 114,
+        "pool_reserved_bytes": 1074853236,
+        "aligned_host_cursor": 103257460,
+        "tree_count": 7,
+        "snode_ids": 59,
+        "compile_seconds": 8.14275
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "mixed",
+      "path": "bulk",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 12402,
+      "index_visits": 10048,
+      "upload_bytes": 588288,
+      "readback_bytes": 3328,
+      "syncs": 160,
+      "collections": 31,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4517448,
+        "first_update": 46,
+        "31_ordinary_updates": 824,
+        "32_ticks": 4071,
+        "32_inspections": 326
+      },
+      "before": {
+        "native_requested_bytes": 162442262,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 449,
+        "pool_requested_bytes": 166847218,
+        "pool_raw_calls": 182,
+        "pool_reserved_bytes": 1074865524,
+        "aligned_host_cursor": 164914548,
+        "tree_count": 10,
+        "snode_ids": 92,
+        "compile_seconds": 13.1053
+      },
+      "after": {
+        "native_requested_bytes": 162442262,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 449,
+        "pool_requested_bytes": 166847218,
+        "pool_raw_calls": 182,
+        "pool_reserved_bytes": 1074865524,
+        "aligned_host_cursor": 164914548,
+        "tree_count": 10,
+        "snode_ids": 92,
+        "compile_seconds": 13.1053
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "letters",
+      "path": "direct",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 10517,
+      "index_visits": 9856,
+      "upload_bytes": 448400,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4334258,
+        "first_update": 91,
+        "31_ordinary_updates": 3098,
+        "32_ticks": 10689,
+        "32_inspections": 1662
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 114,
+        "pool_requested_bytes": 41520594,
+        "pool_raw_calls": 39,
+        "pool_reserved_bytes": 1074832816,
+        "aligned_host_cursor": 41592240,
+        "tree_count": 4,
+        "snode_ids": 26,
+        "compile_seconds": 3.19439
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 114,
+        "pool_requested_bytes": 41520594,
+        "pool_raw_calls": 39,
+        "pool_reserved_bytes": 1074832816,
+        "aligned_host_cursor": 41592240,
+        "tree_count": 4,
+        "snode_ids": 26,
+        "compile_seconds": 3.19439
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "bytes",
+      "path": "direct",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 12619,
+      "index_visits": 10240,
+      "upload_bytes": 448400,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4561932,
+        "first_update": 105,
+        "31_ordinary_updates": 2404,
+        "32_ticks": 9604,
+        "32_inspections": 1027
+      },
+      "before": {
+        "native_requested_bytes": 100893844,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 264,
+        "pool_requested_bytes": 104167876,
+        "pool_raw_calls": 93,
+        "pool_reserved_bytes": 1074845104,
+        "aligned_host_cursor": 103249328,
+        "tree_count": 7,
+        "snode_ids": 59,
+        "compile_seconds": 8.20555
+      },
+      "after": {
+        "native_requested_bytes": 100893844,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 264,
+        "pool_requested_bytes": 104167876,
+        "pool_raw_calls": 93,
+        "pool_reserved_bytes": 1074845104,
+        "aligned_host_cursor": 103249328,
+        "tree_count": 7,
+        "snode_ids": 59,
+        "compile_seconds": 8.20555
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "mixed",
+      "path": "direct",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 110964,
+      "bindings": 8128,
+      "structural_visits": 12402,
+      "index_visits": 10048,
+      "upload_bytes": 444928,
+      "readback_bytes": 3328,
+      "syncs": 160,
+      "collections": 31,
+      "C++new": 0,
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32
+      },
+      "phase_us": {
+        "setup": 4722800,
+        "first_update": 62,
+        "31_ordinary_updates": 2028,
+        "32_ticks": 4907,
+        "32_inspections": 380
+      },
+      "before": {
+        "native_requested_bytes": 162442262,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 414,
+        "pool_requested_bytes": 166815174,
+        "pool_raw_calls": 147,
+        "pool_reserved_bytes": 1074857392,
+        "aligned_host_cursor": 164906416,
+        "tree_count": 10,
+        "snode_ids": 92,
+        "compile_seconds": 13.1834
+      },
+      "after": {
+        "native_requested_bytes": 162442262,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_calls": 414,
+        "pool_requested_bytes": 166815174,
+        "pool_raw_calls": 147,
+        "pool_reserved_bytes": 1074857392,
+        "aligned_host_cursor": 164906416,
+        "tree_count": 10,
+        "snode_ids": 92,
+        "compile_seconds": 13.1834
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "working-set",
+      "path": "direct",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 4815924,
+      "bindings": 8128,
+      "structural_visits": 274987730,
+      "index_visits": 4603520,
+      "upload_bytes": 23142032,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256
+      },
+      "phase_us": {
+        "setup": 4532424,
+        "first_update": 8302,
+        "31_ordinary_updates": 267185,
+        "32_ticks": 90545,
+        "32_inspections": 3042
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_calls": 113,
+        "pool_requested_bytes": 58253946,
+        "pool_raw_calls": 38,
+        "pool_reserved_bytes": 1091566168,
+        "aligned_host_cursor": 58325592,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.36178
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_calls": 113,
+        "pool_requested_bytes": 58253946,
+        "pool_raw_calls": 38,
+        "pool_reserved_bytes": 1091566168,
+        "aligned_host_cursor": 58325592,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.36178
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    },
+    {
+      "actual_backend": "cpu",
+      "profile": "working-set",
+      "path": "bulk",
+      "cycles": 32,
+      "generation": 33,
+      "scratch": 4815924,
+      "bindings": 8128,
+      "structural_visits": 274987730,
+      "index_visits": 4603520,
+      "upload_bytes": 31530640,
+      "readback_bytes": 6304,
+      "syncs": 222,
+      "collections": 62,
+      "C++new": 0,
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256
+      },
+      "phase_us": {
+        "setup": 4561593,
+        "first_update": 8188,
+        "31_ordinary_updates": 254767,
+        "32_ticks": 100794,
+        "32_inspections": 3713
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_calls": 120,
+        "pool_requested_bytes": 58720926,
+        "pool_raw_calls": 45,
+        "pool_reserved_bytes": 1092033148,
+        "aligned_host_cursor": 58792572,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.39088
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_calls": 120,
+        "pool_requested_bytes": 58720926,
+        "pool_raw_calls": 45,
+        "pool_reserved_bytes": 1092033148,
+        "aligned_host_cursor": 58792572,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compile_seconds": 3.39088
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 8128,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 8128
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1536,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1536
+        }
+      ]
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "path": "cpu-ctest.txt",
+      "sha256": "6e732baca819acc0aca54299eb30aacb53e64a875153348cb9299cef8764f2d1"
+    },
+    {
+      "path": "cpu-native-output.txt",
+      "sha256": "84d9b42959a8b161d2df28459d160bcdd6cdc4aa9abd300875308d7888e6e116"
+    },
+    {
+      "path": "cpu-update-ctest.txt",
+      "sha256": "c53d203d0e39bcbdf55f7a403f6eb83a3c3e35169fc9e7ac3319ab2464224f3e"
+    },
+    {
+      "path": "cpu-full-suite-output.txt",
+      "sha256": "c1e8917d0acd5245d4cbd25345f0f4389bdc0a1d9a2276948d3f556e6e682b76"
+    },
+    {
+      "path": "cpu-no-cuda-refusal.txt",
+      "sha256": "fb70f748225500a6d86fc8386054db8b6fd3cf4c96c4202c0ecdef06d206eb92"
+    }
+  ],
+  "built_artifacts": [
+    {
+      "path": "engine/build/prepared_update_test",
+      "sha256": "c68e068041cf46f2ed6b5bdcf0db01761e9a573c0e53f4600a67b5ef50c1366d"
+    },
+    {
+      "path": "engine/taichi/build-review/libtaichi_core_static.a",
+      "sha256": "a1b534ab48b6579f782c143a5f12ce9bd0e2d18976a9dfd83bfb6037f851e73f"
+    },
+    {
+      "path": "engine/taichi/build-review/libtaichi_c_api.so",
+      "sha256": "0ef9881d4240555389f9cc67cb122430db9b43c6e952e328023673e35ce08157"
+    },
+    {
+      "path": "engine/build/taichi-runtime/runtime_x64.bc",
+      "sha256": "7f5e6efd7dca6c28d83573043bf160d49b5ac2f9e07b636741ebde35374631b5"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "engine/CMakeLists.txt",
+      "sha256": "cb551114e28723444ff616a4598c7e8393f1d3586716420303d29ab4f5226e0f"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.cpp",
+      "sha256": "23de25e16038b9e9f4d85d045d5cd719cbadc63de31c5a41151eb97b2ffb250b"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.h",
+      "sha256": "664e12e2b5d1c0b8bc99be8238ce95a91c437313ade9e41688b82f4f2c80853c"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.cmake",
+      "sha256": "f04262a935423c560a27cdfb1abdbae8aae318ffcb666e19f76b3cf92c45fed5"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.cpp",
+      "sha256": "d833c027c7a15b4fc47172d856ccc4d2918e0b8a2793c52fee32ddf279ba18f5"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.h",
+      "sha256": "4b064d571b0a586a2b9e2aeb59ac4f7b020997c516ed0eb3766a03c5d908a52a"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.cmake",
+      "sha256": "89809e126cca7b5f5e4c544f6e1223771b8f72e1f096931fb50dc876c114bc9d"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.cpp",
+      "sha256": "958f7739d1bb14040b1023a7c522807dec2270294609ffff610c59108877a85e"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.h",
+      "sha256": "15c2829fc18c3c767789cad68a8a402b19a3bc69f54ffd364de958df24581ac0"
+    },
+    {
+      "path": "engine/src/assembly/study.cpp",
+      "sha256": "fb5096f434b96c5637e66ca5afaf6fff985f53380b2f0b652fbee3432cefcac1"
+    },
+    {
+      "path": "engine/src/assembly/study.h",
+      "sha256": "594264b0610214dfda38c93065811963faf8eca1dc6d2d95571ba55f2ed999c9"
+    },
+    {
+      "path": "engine/src/assembly/study_input.h",
+      "sha256": "0f1152ae1548fb80e5e96748eb86d581c83b427cd8f0b4fd842d11c1a06742a9"
+    },
+    {
+      "path": "engine/src/engine/device.cpp",
+      "sha256": "1fad58d180a1be0faf63338a14ce436192e1403461bf090183c2520db383bb23"
+    },
+    {
+      "path": "engine/src/engine/device.h",
+      "sha256": "483d2e6e947a05615295003c5f4a133884adc4d33ebc6bdcd06349fed1cd50dc"
+    },
+    {
+      "path": "engine/src/engine/packed_view.h",
+      "sha256": "ea5d527ffc2791ec56e9aaca1b115d4e9b724a39cbf4a4671ebf0d31b57bbc07"
+    },
+    {
+      "path": "engine/src/engine/record_map.cpp",
+      "sha256": "e978ae24aa45d90e7a774e93821bf47be1a11cc0c48155d545c29aa21de24e1b"
+    },
+    {
+      "path": "engine/src/engine/record_map.h",
+      "sha256": "0d52abf37963d89e63a99bf57f6df4b873569a6805487f6b0f8cfc73d4c53dc2"
+    },
+    {
+      "path": "engine/src/engine/runtime.cpp",
+      "sha256": "ab1f3cba4d3ddeb3915544c4e9f3d73b90e25e502c0e995739a310fa47291190"
+    },
+    {
+      "path": "engine/src/engine/runtime.h",
+      "sha256": "684f47ae0a1e24c384b87c6e09809383b398969b53985ff0faa3ac2cd8c6a12f"
+    },
+    {
+      "path": "engine/src/engine/transfer.cpp",
+      "sha256": "3c49d322f9d7dae76004132a9fa4fe8a0864218d464749a812891f8fb3776d87"
+    },
+    {
+      "path": "engine/src/engine/transfer.h",
+      "sha256": "f0e107fda11cd4a8f977d21d84743bf3ad4e44883c1b41ac3a0ceffcda8170fc"
+    },
+    {
+      "path": "engine/src/field/activity.cpp",
+      "sha256": "dd92a96c8e862be57d371773f580166ad2519c2900dc084bc366eb30ffd1627e"
+    },
+    {
+      "path": "engine/src/field/activity.h",
+      "sha256": "f61a227928222c4f0258e660cbc3d937890d7456963ba9fd9b20cce6cae3eb70"
+    },
+    {
+      "path": "engine/src/field/centroid_math.h",
+      "sha256": "c6ef2c2bec138ca58b7d8c8d75396bd025ca842c60ede2b324163f93fea30fee"
+    },
+    {
+      "path": "engine/src/field/field.cpp",
+      "sha256": "7a012465af5ef29fe0a787e292db54114588d1f759e3b44dc1215882edf31cc6"
+    },
+    {
+      "path": "engine/src/field/field.h",
+      "sha256": "b039330b1677d1033fe0a72c980f16ff14bd7af4e58327d31d6b082c7459ccec"
+    },
+    {
+      "path": "engine/src/field/native_set.h",
+      "sha256": "7c56243bf36ea3a41ed122b38a267fd08e66e86dfdbd166dd701e4ecf0956a95"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.cpp",
+      "sha256": "e646415568b82e07f19a24c7e246eac312fb3feb1633e7cd906aad65c2fbed6f"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.h",
+      "sha256": "aaaed274fcf7c7251488d99f0cf73ed749bd4c07c7aa2fbf1dc111eda5b84422"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.cpp",
+      "sha256": "f76e0ac9919a750254971bafea47098e542ba3d7f85a67d83a1b4ffed887c423"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.h",
+      "sha256": "d2feaa3d396ab4160602478767a6fccfe325ef4a9402265c8261a88b4b55088f"
+    },
+    {
+      "path": "engine/src/field/prepared_update.cpp",
+      "sha256": "e1118c8f5559c227d7092656043ec6b01ba305aa96ddf0e20f892afdce5aefa8"
+    },
+    {
+      "path": "engine/src/field/prepared_update.h",
+      "sha256": "c865c98140587b2044029c571dba712b3a5702a15715fe6a9093d7d8f96d8b0f"
+    },
+    {
+      "path": "engine/tests/allocation_observation.h",
+      "sha256": "93bc59586fa003c92fc6a63c5b8a2b36376e5a5977cf3f3f12e23477f553ed21"
+    },
+    {
+      "path": "engine/tests/letter_projection_fixture.h",
+      "sha256": "d9e2b85d5bb70c43d4d84b0722c0407efba396a209c98915a31b14bec86c552e"
+    },
+    {
+      "path": "engine/tests/membership_fixture.h",
+      "sha256": "9787ec0feb4f73b9f69f236c7aa7816da12705eaef0aac2719ed2fcbda1884bc"
+    },
+    {
+      "path": "engine/tests/prepared_capacity_test.cpp",
+      "sha256": "56cfba25e6606c56c16214dd9722d7519e65f3ff053ffa1642c4d1aa42cdcf3e"
+    },
+    {
+      "path": "engine/tests/prepared_execution_test.cpp",
+      "sha256": "ce8717c601f0de504e4881288b321d32cec80b69d7e57c15476bd8dcc864e8b9"
+    },
+    {
+      "path": "engine/tests/prepared_fixture.h",
+      "sha256": "64fb10f1b893cef5eb0dabd2f8a021e0dd25f004f1331596095838f08aade56f"
+    },
+    {
+      "path": "engine/tests/prepared_launch_test.cpp",
+      "sha256": "cf2fd0afc60a4eeaa2f2c31aaa747e479c08a8542f4d58356922b675c180ef53"
+    },
+    {
+      "path": "engine/tests/prepared_metrics.h",
+      "sha256": "230bed3cb63771c6a5cd45f018d21bfaaab1d2c58694e4328393729ad84e3c32"
+    },
+    {
+      "path": "engine/tests/prepared_sources.h",
+      "sha256": "88c213b4b29fa278233090b8b7aa6896bfef67dce15b1f236c28d67014d85b21"
+    },
+    {
+      "path": "engine/tests/prepared_space_probe.cpp",
+      "sha256": "f4e3ea09d98ce4414d3efec069cf09a6c9f3a2dc353bf041ad57ea78ee3bea57"
+    },
+    {
+      "path": "engine/tests/prepared_update_test.cpp",
+      "sha256": "639381add519efc676fa977cb25e295e982284b2fff0f199527614b352a45046"
+    }
+  ]
+}

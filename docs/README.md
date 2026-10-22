@@ -35,7 +35,8 @@ references, not another mandatory reading sequence.
   [backing/binding plan](prepared-execution-backing-plan.md) — accepted #163/#165
   stages under #162; [prepared execution](../engine/docs/PREPARED-EXECUTION.md)
   records #166's merged bounded implementation. The [coherent-update plan](prepared-coherent-update-plan.md)
-  is accepted in #167; its implementation remains open under #162.
+  is accepted in #167; [bounded coherent updates](../engine/docs/PREPARED-UPDATES.md)
+  were accepted in #169. Production lifecycle integration remains under #156.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct

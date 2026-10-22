@@ -12,6 +12,7 @@
 #include "engine/packed_view.h"
 #include "engine/transfer.h"
 #include "field/activity.h"
+#include "field/centroid_math.h"
 #include "field/prepared_storage.h"
 
 namespace field {
@@ -783,32 +784,17 @@ Harness::Harness(engine::Runtime &runtime,
       auto *m = load(b, groups, at(b, kAccM, i));
       // Ordinary weighted mean: preserve every positive mass, substitute one
       // only for the exact empty-mass case.
-      auto *denom =
-          b.create_add(m, b.create_sub(b.get_float32(1), b.create_sgn(m)));
       Stmt *changed = b.get_int32(0);
       for (int pair : {0, 1, 2}) {
         auto *before = load(b, groups, at(b, kCenX + pair, i));
         auto *offset = load(b, groups, at(b, kAccX + pair, i));
         // Widen the final origin addition so a distant seed anchor cannot
         // introduce an extra f32 rounding before publishing the f32 centre.
-        const auto wide = PrimitiveType::f64;
-        auto *before_wide = b.create_cast(before, wide);
-        auto *offset_wide = b.create_cast(offset, wide);
-        auto *next = b.create_select(
-            b.create_cmp_gt(m, b.get_float32(0)),
-            b.create_cast(
-                b.create_add(
-                    before_wide,
-                    b.create_div(offset_wide, b.create_cast(denom, wide))),
-                PrimitiveType::f32),
-            b.get_float32(0));
+        const auto coordinate =
+            detail::centroid_coordinate(b, before, offset, m);
+        auto *next = coordinate.value;
+        auto *pending = coordinate.residue;
         store(b, gd, at(b, 3 + pair, i), before);
-        auto *pending = b.create_cast(
-            b.create_sub(offset_wide,
-                         b.create_mul(b.create_sub(b.create_cast(next, wide),
-                                                   before_wide),
-                                      b.create_cast(m, wide))),
-            PrimitiveType::f32);
         store(b, gd, at(b, pair, i), pending);
         changed = b.create_logical_or(changed, b.create_cmp_ne(next, before));
         store(b, groups, at(b, kCenX + pair, i), next);
@@ -1453,15 +1439,17 @@ void Harness::prepare_empty_execution() {
       b.extract_ir(),
       {engine::Param::array(PrimitiveType::i32),
        engine::Param::array(PrimitiveType::i64)});
+  prepare_update_execution();
   ready_ = true;
   uploaded_ = true;
   invalidated_ = false;
   tick({});  // Actual empty dispatch for every numerical family, with stable
              // bindings.
   inspect_prepared();
-  s.binding_bytes = activity_->prepared_binding_bytes() +
-                    s.particles.prepared_bytes() + s.fields.prepared_bytes() +
-                    inspection_.prepared_bytes();
+  s.binding_bytes =
+      activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
+      s.fields.prepared_bytes() + inspection_.prepared_bytes() +
+      update_candidate_.prepared_bytes() + update_commit_.prepared_bytes();
   for (const auto *kernel : {&clear_, &force_, &contact_, &integrate_,
                              &determine_, &centroid_, &finalize_})
     s.binding_bytes += kernel->prepared_bytes();
@@ -1501,9 +1489,22 @@ void Harness::inspect_prepared() {
                      s.inspection_flags.size() * sizeof(int));
     engine::readback(*s.inspection_counts_array, s.inspection_counts.data(),
                      sizeof(s.inspection_counts));
+    engine::readback(*activity_->particle_flags, s.inspection_state.data(),
+                     2 * std::size_t(std::max(particles_, 1)) * sizeof(int));
+    engine::readback(*activity_->group_flags,
+                     s.inspection_state.data() + 2 * std::max(particles_, 1),
+                     2 * std::size_t(std::max(groups_, 1)) * sizeof(int));
+    engine::readback(*activity_->particle_delta, s.inspection_motion.data(),
+                     3 * std::size_t(std::max(particles_, 1)) * sizeof(float));
+    engine::readback(*activity_->group_delta,
+                     s.inspection_motion.data() + 3 * std::max(particles_, 1),
+                     6 * std::size_t(std::max(groups_, 1)) * sizeof(float));
+    engine::readback(*activity_->focus, s.inspection_focus.data(),
+                     sizeof(s.inspection_focus));
     download();
     if (path_ == HostPath::BulkCopy)
       engine::readback(*universal_array_, universal_data.data(), sizeof(float));
+    s.inspected_generation = s.generation;
   } catch (...) {
     ready_ = false;
     throw;

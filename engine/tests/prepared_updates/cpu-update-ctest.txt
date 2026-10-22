@@ -1,0 +1,18 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+    Start 11: prepared_update_direct
+    Start 10: prepared_update_padded
+1/6 Test #11: prepared_update_direct ...........   Passed   56.21 sec
+    Start 14: prepared_update_letters
+2/6 Test #10: prepared_update_padded ...........   Passed   56.46 sec
+    Start 15: prepared_update_letters-direct
+3/6 Test #14: prepared_update_letters ..........   Passed   25.67 sec
+    Start 13: prepared_update_large-direct
+4/6 Test #15: prepared_update_letters-direct ...   Passed   25.49 sec
+    Start 12: prepared_update_large
+5/6 Test #13: prepared_update_large-direct .....   Passed   11.78 sec
+6/6 Test #12: prepared_update_large ............   Passed   11.78 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =  93.73 sec
