@@ -83,7 +83,7 @@ void Harness::prepare_update_execution() {
              integer = engine::Param::scalar(i);
   const int p = particles_, g = groups_, gs = std::max(g, 1), n = p + g,
             threads = runtime_->cpu_threads();
-  // Validation: [P state | G state | P wake | G spare | E edits | C edits].
+  // Validation: [P state | G state | P wake | E edits | C edits].
   // State 0 absent, -1 retired, P=1 survivor/>=2 command+2;
   // G=1 untouched/2 changed/>=3 command+3. Scratch row names are remapped to
   // actual NodeManager results only after numerical preflight succeeds.
@@ -533,7 +533,7 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
       case UpdateOp::RemoveContact: {
         const bool edge = cmd.operation != UpdateOp::RemoveContact;
         const auto live = edge ? s.live.edges : s.live.contacts;
-        const int offset = 2 * n + (edge ? 0 : edges_);
+        const int offset = 2 * p + g + (edge ? 0 : edges_);
         if (cmd.generation != s.generation || cmd.row >= live)
           return reject(UpdateStatus::Stale);
         if (s.validation[offset + cmd.row])
@@ -627,7 +627,7 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     const auto final = edge ? candidate.edges : candidate.contacts;
     const auto insert =
         edge ? UpdateOp::InsertParticipation : UpdateOp::InsertContact;
-    const int offset = 2 * n + (edge ? 0 : edges_);
+    const int offset = 2 * p + g + (edge ? 0 : edges_);
     for (std::size_t c = 0; c < count; ++c)
       if (s.commands[c].operation == insert && s.commands[c].position >= final)
         return false;

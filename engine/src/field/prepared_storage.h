@@ -50,12 +50,11 @@ class PreparedStorage {
       prospective_particles, prospective_fields;
   std::vector<RelationshipHeader> edges, contacts, prospective_edges,
       prospective_contacts;
-  std::vector<engine::RecordHandle> focal, prospective_focal;
+  std::vector<engine::RecordHandle> focal;
   std::vector<UpdateCommand> commands;
   std::vector<engine::RecordResult> results;
   std::vector<engine::RecordHandle> retired, resolved;
   std::vector<int> prospective_csr, counts, cursors, validation;
-  std::vector<float> derived;
   // Scratch indexes are candidate row names, never a replacement allocator.
   std::vector<int> destinations, claim_addresses, claim_kinds, command_indexes;
   std::vector<int> candidate_edges;

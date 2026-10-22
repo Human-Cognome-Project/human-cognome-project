@@ -1,7 +1,7 @@
 #pragma once
 
 // Only test code may supply numerical starts to the prepared path. This is
-// initial fixture population, not an operational streaming/update interface.
+// initial population and new-row update staging, not production initialization.
 #include <algorithm>
 #include <cmath>
 #include <vector>

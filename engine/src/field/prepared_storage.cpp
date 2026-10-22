@@ -53,7 +53,7 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   extent("field-headers", g, sizeof(engine::RecordHandle), 2);
   extent("participation-headers", e, sizeof(RelationshipHeader), 2);
   extent("contact-headers", c, sizeof(RelationshipHeader), 2);
-  extent("focal-references", f, sizeof(engine::RecordHandle), 2);
+  extent("focal-references", f, sizeof(engine::RecordHandle), 1);
   extent("batch-commands", b, sizeof(UpdateCommand), 1);
   extent("batch-results", b, sizeof(engine::RecordResult), 1);
   extent("retired-references", b, sizeof(engine::RecordHandle), 1);
@@ -64,8 +64,8 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
          sizeof(int), 1);
   extent("csr-counts", std::max(p, g), sizeof(int), 1);
   extent("csr-cursors", std::max(p, g), sizeof(int), 1);
-  extent("validation", 2 * (p + g) + e + c, sizeof(int), 2);
-  extent("derived-results", 14 * physical(g) + 12, sizeof(float), 2);
+  extent("validation", 2 * p + g + e + c, sizeof(int), 2);
+  extent("derived-results", 14 * physical(g) + 12, sizeof(float), 1);
   extent("candidate-edges", 2 * physical(e), sizeof(int), 2);
   extent("candidate-shares", e, sizeof(float), 2);
   extent("candidate-group-offsets", 2 * physical(g), sizeof(int), 1);
@@ -151,7 +151,6 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   contacts.resize(k);
   prospective_contacts.resize(k);
   focal.resize(f);
-  prospective_focal.resize(f);
   commands.resize(b);
   results.resize(b);
   retired.resize(b);
@@ -159,9 +158,8 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   prospective_csr.resize(6 * p + 2 * g + 2 * e + 2 * k);
   counts.resize(std::max(p, g));
   cursors.resize(std::max(p, g));
-  validation.resize(physical(2 * (l[Budget::Particles] + l[Budget::Fields]) +
+  validation.resize(physical(2 * l[Budget::Particles] + l[Budget::Fields] +
                              l[Budget::Participation] + l[Budget::Contacts]));
-  derived.resize(14 * g + 12);
   inspection_flags.resize(physical(l[Budget::Particles] + l[Budget::Fields]));
   destinations.resize(physical(l[Budget::Particles] + l[Budget::Fields]));
   claim_addresses.resize(b);
@@ -179,7 +177,7 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
         rows == 1 ? std::vector<int>{n} : std::vector<int>{rows, n});
   };
   validation_array = array(PrimitiveType::i32, 1, int(validation.size()));
-  derived_array = array(PrimitiveType::f32, 1, int(derived.size()));
+  derived_array = array(PrimitiveType::f32, 1, int(14 * g + 12));
   destinations_array = array(PrimitiveType::i32, 1, int(destinations.size()));
   candidate_edges_array = array(PrimitiveType::i32, 2, int(e));
   candidate_shares_array = array(PrimitiveType::f32, 1, int(e));
