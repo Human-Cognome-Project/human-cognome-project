@@ -1,16 +1,16 @@
 # Documentation
 
-Start with the [current state](../AGENTS.md#current-state) and
+Start with [orientation](onboarding/README.md) and the [current state](../AGENTS.md#current-state) and
 [canonical reading paths](../AGENTS.md#reading-paths). This index supplies
 references, not another mandatory reading sequence.
 
-## Warm-cache plan development
+## Warm-cache contracts and bounded results
 
 - [Root-addressed warm knowledge cache layout](warm-knowledge-cache-layout.md) —
   PostgreSQL shared toolbox, host assembly workbench and separate execution
   surface; reconciled with the analyst-owned active-only private boundary.
 - [Concrete warm toolbox implementation proposal](warm-toolbox-implementation-plan.md) —
-  proposed PostgreSQL publication, persisted initial recipes, source-preserving
+  accepted PostgreSQL publication, persisted initial recipes, source-preserving
   byte exposure and normalized scale, membership preparation and existing
   packed-SoA hot handoff; accepted in #137, with staged work tracked by #139.
 - [Stage A native warm storage](../kernels/database/warm/README.md) — accepted
@@ -29,8 +29,12 @@ references, not another mandatory reading sequence.
 ## Active implementation plans and built results
 
 - [Prepared particle space and live representation](pooled-space-live-insertion-plan.md) —
-  proposed plan for #156: lightweight `0x` declarations, reuse while data is hot,
+  scope/investigation plan accepted in #160 for #156; production correction remains open: lightweight `0x` declarations, reuse while data is hot,
   prepared native backing, structural recipes and continuous engine-owned updates.
+- [Prepared capacity foundation](prepared-capacity-foundation-plan.md) and
+  [backing/binding plan](prepared-execution-backing-plan.md) — accepted #163/#165
+  stages under #162; [prepared execution](../engine/docs/PREPARED-EXECUTION.md)
+  records #166's merged bounded implementation. Coherent updates remain open.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct
@@ -43,11 +47,11 @@ references, not another mandatory reading sequence.
   selective particle/centroid gates, supplied focal origin, demand counts and
   accepted/merged in #150; CPU prerequisite satisfied, GPU evidence under #145.
 - [Type-phase simplification #152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152) — accepted/merged in #153; one native activity set per type, with type-defined phases.
-- [Human viewport purpose and plan](viewport-purpose-and-plan.md), [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151) — accepted in #154; [optional implementation](../tools/viewport/README.md) is ready for review with real letter-study captures and bounded native/browser evidence.
+- [Human viewport purpose and plan](viewport-purpose-and-plan.md), [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151) — accepted in #154; [optional implementation](../tools/viewport/README.md) was accepted in #155, with capture/watch follow-ups in #158/#159. It remains optional; see its component evidence for limits.
 
 Held/deferred PRs: #123 (unaccepted general identity contract), #111 (unresolved
 command atomicity/restart), and #75 (optional historical monitor draft). They
-are not prerequisites for the current bounded work. See [guidance](../AGENTS.md#active-and-deferred-work--2026-10-19).
+are not prerequisites for the current bounded work. See [guidance](../AGENTS.md#active-and-deferred-work).
 
 ## Current system map
 
