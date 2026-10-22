@@ -10,8 +10,10 @@ through the existing field kernels and retains the execution for subsequent
 ticks. Coherent changes to a ticking construct, production insertion and the
 remaining #156 integration are not implemented by this step.
 All eight hosted checks and all 37 CPU suites passed at the accepted head
-`34c01e0`. The [next coherent-update section](../../docs/prepared-coherent-update-plan.md)
-is drafted for review; its implementation remains unbuilt.
+`34c01e0`. The [coherent-update plan](../../docs/prepared-coherent-update-plan.md)
+was accepted in #167 at `284b45d`; its [implementation](PREPARED-UPDATES.md)
+is now submitted for review. The remaining description records #166
+historically; the new implementation supersedes its workspace/binding totals.
 
 ## Working storage and native selection
 
@@ -209,6 +211,5 @@ Tests reject CPU fallback. Record GPU/driver, pool mode and actual driver
 allocation traces separately; CpuDirect is CPU-only. Cloud CPU results do not
 qualify GPU behavior, pinning or the browser.
 
-The next #162 step must apply coherent record/relationship changes while ticking,
-preserve survivors and untouched reduction residue, handle mass/focus wake
-dependencies and prove failure publication. #162 and #156 remain open.
+The [coherent-update implementation](PREPARED-UPDATES.md) now supplies the next
+#162 step for review, with separate source-pinned evidence. #162 and #156 remain open.

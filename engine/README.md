@@ -185,9 +185,10 @@ The [storage investigation](docs/PREPARED-SPACE.md) and
 [combined backing/binding implementation](docs/PREPARED-EXECUTION.md), following
 accepted #165, is accepted and merged in #166: empty prepared storage, reusable
 native bindings and first nonempty fixtures through existing field kernels.
-The [coherent-update section](../docs/prepared-coherent-update-plan.md) is drafted
-for review under #162; production live insertion and its
-initialization conventions remain unimplemented/unresolved under #156.
+The [coherent-update plan](../docs/prepared-coherent-update-plan.md) was accepted
+in #167 at `284b45d`; its [implementation](docs/PREPARED-UPDATES.md) is submitted
+for review under #162. Production live insertion and its initialization
+conventions remain unimplemented/unresolved under #156.
 
 The 2026-10-10 object-support corrections add whole-particle parent response,
 supplied-geometry radii, ordinary finite contact and a fixed-study native

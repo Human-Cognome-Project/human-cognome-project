@@ -123,7 +123,11 @@ recycling and initial fixtures through existing kernels. First population and
 32 ticks/inspection retain native counters with zero observed recurring C++
 allocations in both CPU host paths. The
 [coherent-update section](docs/prepared-coherent-update-plan.md)
-is drafted for review; changes while ticking remain unbuilt under #162.
+was accepted in #167 and merged at `284b45d`. Its
+[bounded CPU implementation](engine/docs/PREPARED-UPDATES.md) is submitted for
+review under #162: repeated structural commits preserve survivor state and
+untouched history, with separate wake and failure rules. This is a fixture
+foundation; production #156 remains open/unbuilt.
 Its carry-forward acceptance includes independent simultaneous occurrences of
 one reusable definition: separate handles/state and per-occurrence membership
 contributions, with surviving copies preserved on modification/retirement.
