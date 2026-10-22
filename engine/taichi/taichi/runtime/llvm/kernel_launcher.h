@@ -17,6 +17,11 @@ class KernelLauncher : public lang::KernelLauncher {
 
   void launch_kernel(const lang::CompiledKernelData &compiled_kernel_data,
                      LaunchContextBuilder &ctx) override;
+  void prepare_kernel(const lang::CompiledKernelData &compiled_kernel_data,
+                      LaunchContextBuilder &ctx);
+  virtual std::unique_ptr<LaunchContextBuilder::Prepared> prepare_llvm_kernel(
+      Handle handle,
+      LaunchContextBuilder &ctx);
 
   virtual void launch_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) = 0;
   virtual Handle register_llvm_kernel(

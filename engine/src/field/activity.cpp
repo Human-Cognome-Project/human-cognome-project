@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "engine/transfer.h"
+#include "field/prepared_storage.h"
 
 namespace field::detail {
 namespace {
@@ -22,7 +23,9 @@ std::vector<Stmt *> cell(IRBuilder &b, int row, Stmt *i) {
 Stmt *read(IRBuilder &b, ArgLoadStmt *a, const std::vector<Stmt *> &at) {
   return b.create_global_load(b.create_external_ptr(a, at));
 }
-void write(IRBuilder &b, ArgLoadStmt *a, const std::vector<Stmt *> &at,
+void write(IRBuilder &b,
+           ArgLoadStmt *a,
+           const std::vector<Stmt *> &at,
            Stmt *v) {
   b.create_global_store(b.create_external_ptr(a, at), v);
 }
@@ -30,20 +33,36 @@ void count(IRBuilder &b, ArgLoadStmt *c, int which) {
   b.create_atomic_add(b.create_external_ptr(c, {b.get_int32(which)}),
                       b.get_int64(1));
 }
-std::unique_ptr<Ndarray> allocate(engine::Runtime &r, DataType t, int rows,
+std::unique_ptr<Ndarray> allocate(engine::Runtime &r,
+                                  DataType t,
+                                  int rows,
                                   int n) {
   return std::make_unique<Ndarray>(&r.program(), t,
                                    std::vector<int>{rows, std::max(n, 1)});
 }
 }  // namespace
 
-Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
+Activity::Activity(engine::Runtime &r,
+                   int p,
+                   int g,
+                   int e,
+                   int k,
+                   PreparedStorage *prepared)
     : runtime_(r),
       p_(p),
       g_(g),
       e_(e),
       k_(k),
-      selected_slots_(std::max(g, 1), 0) {
+      prepared_(prepared),
+      zero_workspace_(std::max({3 * std::size_t(std::max(p, 1)),
+                                6 * std::size_t(std::max(g, 1))}),
+                      0),
+      selected_slots_(
+          std::max(
+              prepared ? int(prepared->capacity.limits()[Budget::Focus]) : g,
+              1),
+          0) {
+  selected_groups_.reserve(selected_slots_.size());
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   particle_activity = NativeSet::attach(*root, p);
   centroids = NativeSet::attach(*root, g);
@@ -68,8 +87,9 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
                                        std::vector<int>{CounterCount});
   focus = std::make_unique<Ndarray>(&r.program(), PrimitiveType::f32,
                                     std::vector<int>{11});
-  selected_slots_array_ = std::make_unique<Ndarray>(
-      &r.program(), PrimitiveType::i32, std::vector<int>{std::max(g, 1)});
+  selected_slots_array_ =
+      std::make_unique<Ndarray>(&r.program(), PrimitiveType::i32,
+                                std::vector<int>{int(selected_slots_.size())});
   // The fork caches CHI IR by name, not an IR hash. Each kernel below embeds
   // this tree's SNode ids, so its name must distinguish the execution layout.
   // CHI IR is memory-cached only, never restored from the offline disk cache.
@@ -162,6 +182,13 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
           threads);
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
+      std::optional<IRBuilder::IfGuard> presence_guard;
+      if (prepared_)
+        presence_guard.emplace(b.get_if_guard(
+            b.create_if(
+                NativeSet{prepared_->particles.bindings().presence}.active(b,
+                                                                           p)),
+            true));
       count(b, c, InvalidatedSlots);
       auto live = b.get_if_guard(
           b.create_if(b.create_cmp_gt(read(b, particles, cell(b, kMass, p)),
@@ -175,6 +202,12 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
           threads);
       auto guard = b.get_loop_guard(loop);
       auto *g = b.get_loop_index(loop);
+      std::optional<IRBuilder::IfGuard> presence_guard;
+      if (prepared_)
+        presence_guard.emplace(b.get_if_guard(
+            b.create_if(
+                NativeSet{prepared_->fields.bindings().presence}.active(b, g)),
+            true));
       auto live = b.get_if_guard(
           b.create_if(b.create_cmp_gt(read(b, groups, cell(b, kCenM, g)),
                                       b.get_float32(0))),
@@ -366,6 +399,7 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
   }
   {
     IRBuilder b;
+    auto *flags = array(b, 0, i32);
     for (const auto &set : {particle_activity, centroids}) {
       auto *loop = b.create_struct_for(set.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
@@ -376,11 +410,23 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
       auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(entry.second),
                                       false, threads);
       auto guard = b.get_loop_guard(loop);
-      entry.first.activate(b, b.get_loop_index(loop));
+      auto *row = b.get_loop_index(loop);
+      const bool group = entry.first.cells == centroids.cells;
+      std::optional<IRBuilder::IfGuard> presence_guard;
+      if (prepared_)
+        presence_guard.emplace(b.get_if_guard(
+            b.create_if(
+                NativeSet{group ? prepared_->fields.bindings().presence
+                                : prepared_->particles.bindings().presence}
+                    .active(b, row)),
+            true));
+      entry.first.activate(b, row);
+      if (group)
+        write(b, flags, cell(b, Flagged, row), b.get_int32(1));
     }
     reset_ = engine::CompiledKernel(
         r, "activity_reset_" + std::to_string(particle_activity.cells->id),
-        b.extract_ir(), {}, engine::MathMode::Strict);
+        b.extract_ir(), {ia}, engine::MathMode::Strict);
   }
   {
     IRBuilder b;
@@ -399,40 +445,43 @@ Activity::Activity(engine::Runtime &r, int p, int g, int e, int k)
 }
 
 void Activity::reset() {
-  const auto zero = [](Ndarray &a, std::size_t n) {
-    std::vector<int> values(n,
-                            0);  // f32 zero and i32 zero have identical bits.
-    engine::upload(a, values.data(), n * sizeof(int));
+  const auto zero = [&](Ndarray &a, std::size_t n) {
+    engine::upload(a, zero_workspace_.data(), n * sizeof(int));
   };
   zero(*particle_flags, ParticleStateCount * std::size_t(std::max(p_, 1)));
   zero(*particle_delta, 3 * std::size_t(std::max(p_, 1)));
   zero(*group_flags, GroupStateCount * std::size_t(std::max(g_, 1)));
   zero(*group_delta, 6 * std::size_t(std::max(g_, 1)));
-  const std::vector<std::int64_t> count_zero(CounterCount, 0);
-  engine::upload(*counters, count_zero.data(),
-                 count_zero.size() * sizeof(std::int64_t));
-  std::vector<float> origin(11, 0);
+  const std::array<std::int64_t, CounterCount> count_zero{};
+  engine::upload(*counters, count_zero.data(), sizeof(count_zero));
+  std::array<float, 11> origin{};
   std::copy(fixed_origin_.begin(), fixed_origin_.end(), origin.begin() + 8);
-  engine::upload(*focus, origin.data(), origin.size() * sizeof(float));
-  std::vector<int> ps(ParticleStateCount * std::size_t(std::max(p_, 1)), 0),
-      gs(GroupStateCount * std::size_t(std::max(g_, 1)), 0);
-  std::fill_n(gs.begin(), g_, 1);
-  engine::upload(*particle_flags, ps.data(), ps.size() * sizeof(int));
-  engine::upload(*group_flags, gs.data(), gs.size() * sizeof(int));
+  engine::upload(*focus, origin.data(), sizeof(origin));
   engine::upload(*selected_slots_array_, selected_slots_.data(),
                  selected_slots_.size() * sizeof(int));
-  auto context = reset_.make_context();
+  auto call = reset_.invocation(bool(prepared_));
+  auto &context = call.get();
+  if (!context.prepared)
+    context.set_arg_ndarray({0}, *group_flags);
   reset_.launch(context);
 }
 void Activity::set_focus(const std::vector<int> &groups) {
-  std::set<int> unique;
-  for (int g : groups)
-    if (g < 0 || g >= g_ || !unique.insert(g).second)
+  if (groups.size() > selected_slots_.size())
+    throw std::invalid_argument("focus capacity exhausted");
+  for (std::size_t i = 0; i < groups.size(); ++i) {
+    const int g = groups[i];
+    if (g < 0 || g >= g_ ||
+        std::find(groups.begin(), groups.begin() + i, g) != groups.begin() + i)
       throw std::invalid_argument(
           "focus requires distinct prepared field slots");
+    if (prepared_ && prepared_->field_headers[g].record < 0)
+      throw std::invalid_argument("focus requires present field");
+  }
   runtime_.synchronize();
   std::fill(selected_slots_.begin(), selected_slots_.end(), 0);
-  selected_groups_.assign(unique.begin(), unique.end());
+  selected_groups_.assign(groups.begin(), groups.end());
+  if (!prepared_)
+    std::sort(selected_groups_.begin(), selected_groups_.end());
   std::copy(selected_groups_.begin(), selected_groups_.end(),
             selected_slots_.begin());
   engine::upload(*selected_slots_array_, selected_slots_.data(),
@@ -444,119 +493,256 @@ void Activity::set_frame_anchor(const FrameAnchor &anchor) {
 }
 void Activity::index(const std::vector<int> &edges,
                      const std::vector<int> &contacts) {
-  const auto build = [](int nodes, int links, const std::vector<int> &source,
-                        int row, Ndarray &offset_array, Ndarray &order_array) {
+  const auto build = [&](int nodes, int capacity, int links,
+                         const std::vector<int> &source, int row,
+                         Ndarray &offset_array, Ndarray &order_array,
+                         int *offsets, int *order, int *counts, int *next) {
     const auto stride = std::size_t(std::max(nodes, 1));
-    std::vector<int> offsets(2 * stride, 0), order(std::max(links, 1), 0),
-        counts(nodes, 0);
+    std::fill_n(offsets, 2 * stride, 0);
+    std::fill_n(order, std::max(capacity, 1), 0);
+    std::fill_n(counts, nodes, 0);
     for (int e = 0; e < links; ++e)
-      ++counts[source[std::size_t(row) * links + e]];
+      ++counts[source[std::size_t(row) * capacity + e]];
     int cursor = 0;
     for (int n = 0; n < nodes; ++n) {
       offsets[n] = cursor;
+      next[n] = cursor;
       cursor += counts[n];
       offsets[stride + n] = cursor;
     }
-    std::vector<int> next(offsets.begin(), offsets.begin() + nodes);
     for (int e = 0; e < links; ++e)
-      order[next[source[std::size_t(row) * links + e]]++] = e;
-    engine::upload(offset_array, offsets.data(), offsets.size() * sizeof(int));
-    engine::upload(order_array, order.data(), order.size() * sizeof(int));
+      order[next[source[std::size_t(row) * capacity + e]]++] = e;
+    engine::upload(offset_array, offsets, 2 * stride * sizeof(int));
+    engine::upload(order_array, order, std::max(capacity, 1) * sizeof(int));
   };
-  build(p_, e_, edges, kEdgeParticle, *particle_offsets, *particle_edges);
-  build(g_, e_, edges, kEdgeGroup, *group_offsets, *group_edges);
-  build(p_, k_, contacts, kContactA, *contact_a_offsets, *contact_a_edges);
-  build(p_, k_, contacts, kContactB, *contact_b_offsets, *contact_b_edges);
+  std::vector<int> owned;
+  if (!prepared_)
+    owned.resize(
+        6 * std::size_t(std::max(p_, 1)) + 2 * std::size_t(std::max(g_, 1)) +
+        2 * std::size_t(std::max(e_, 1)) + 2 * std::size_t(std::max(k_, 1)) +
+        2 * std::size_t(std::max({p_, g_, 1})));
+  int *scratch = prepared_ ? prepared_->prospective_csr.data() : owned.data();
+  int *counts = prepared_
+                    ? prepared_->counts.data()
+                    : owned.data() + owned.size() - 2 * std::max({p_, g_, 1});
+  int *next =
+      prepared_ ? prepared_->cursors.data() : counts + std::max({p_, g_, 1});
+  const int elive = prepared_ ? int(prepared_->live.edges) : e_;
+  const int klive = prepared_ ? int(prepared_->live.contacts) : k_;
+  const auto one = [&](int nodes, int capacity, int live,
+                       const std::vector<int> &source, int row,
+                       Ndarray &offset_array, Ndarray &order_array) {
+    int *offsets = scratch;
+    int *order = offsets + 2 * std::max(nodes, 1);
+    build(nodes, capacity, live, source, row, offset_array, order_array,
+          offsets, order, counts, next);
+    scratch = order + std::max(capacity, 1);
+  };
+  one(p_, e_, elive, edges, kEdgeParticle, *particle_offsets, *particle_edges);
+  one(g_, e_, elive, edges, kEdgeGroup, *group_offsets, *group_edges);
+  one(p_, k_, klive, contacts, kContactA, *contact_a_offsets, *contact_a_edges);
+  one(p_, k_, klive, contacts, kContactB, *contact_b_offsets, *contact_b_edges);
 }
+
 void Activity::begin(Harness &h, bool all, bool invalid, bool radial) {
-  auto ctx = begin_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
-         {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
-         {kGroupFieldCount, std::max(g_, 1)});
-  ctx.set_arg_ndarray({2}, *particle_flags);
-  ctx.set_arg_ndarray({3}, *particle_delta);
-  ctx.set_arg_ndarray({4}, *group_flags);
-  ctx.set_arg_ndarray({5}, *counters);
-  ctx.set_arg_ndarray({6}, *focus);
-  ctx.set_arg_ndarray({7}, *selected_slots_array_);
-  ctx.set_arg_int({8}, p_);
-  ctx.set_arg_int({9}, g_);
-  ctx.set_arg_int({10}, all);
-  ctx.set_arg_int({11}, invalid);
-  ctx.set_arg_int({12}, int(selected_groups_.size()));
-  ctx.set_arg_int({13}, radial);
+  auto call = begin_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+           {kParticleFieldCount, std::max(p_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+           {kGroupFieldCount, std::max(g_, 1)});
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({2}, *particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({3}, *particle_delta);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({4}, *group_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *counters);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *focus);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({7}, *selected_slots_array_);
+  }
+  engine::argument_int(ctx, 8, p_);
+  engine::argument_int(ctx, 9, g_);
+  engine::argument_int(ctx, 10, all);
+  engine::argument_int(ctx, 11, invalid);
+  engine::argument_int(ctx, 12, int(selected_groups_.size()));
+  engine::argument_int(ctx, 13, radial);
   begin_.launch(ctx);
 }
 void Activity::touch(Harness &h, float gravity) {
-  auto ctx = touch_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
-         {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
-         {kGroupFieldCount, std::max(g_, 1)});
-  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
-         {kEdgeIntFieldCount, std::max(e_, 1)});
-  h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data,
-         {kEdgeFloatFieldCount, std::max(e_, 1)});
-  ctx.set_arg_ndarray({4}, *group_flags);
-  ctx.set_arg_ndarray({5}, *group_delta);
-  ctx.set_arg_ndarray({6}, *counters);
-  ctx.set_arg_ndarray({7}, *group_offsets);
-  ctx.set_arg_ndarray({8}, *group_edges);
-  ctx.set_arg_float({9}, gravity);
+  auto call = touch_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+           {kParticleFieldCount, std::max(p_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+           {kGroupFieldCount, std::max(g_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
+           {kEdgeIntFieldCount, std::max(e_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data,
+           {kEdgeFloatFieldCount, std::max(e_, 1)});
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({4}, *group_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *group_delta);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *counters);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({7}, *group_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({8}, *group_edges);
+  }
+  engine::argument_float(ctx, 9, gravity);
   touch_.launch(ctx);
 }
 void Activity::touch_contacts(Harness &h, float stiffness) {
-  if (k_ == 0 || stiffness == 0) return;
-  auto ctx = contact_touch_.make_context();
-  ctx.set_arg_ndarray({0}, *particle_flags);
-  ctx.set_arg_ndarray({1}, *counters);
-  ctx.set_arg_ndarray({2}, *contact_a_offsets);
-  ctx.set_arg_ndarray({3}, *contact_a_edges);
-  ctx.set_arg_ndarray({4}, *contact_b_offsets);
-  ctx.set_arg_ndarray({5}, *contact_b_edges);
-  h.bind(ctx, 6, h.contact_int_array_.get(), h.contact_int_data,
-         {kContactIntFieldCount, std::max(k_, 1)});
+  if ((!prepared_ && k_ == 0) || stiffness == 0)
+    return;
+  auto call = contact_touch_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({0}, *particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({1}, *counters);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({2}, *contact_a_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({3}, *contact_a_edges);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({4}, *contact_b_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *contact_b_edges);
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 6, h.contact_int_array_.get(), h.contact_int_data,
+           {kContactIntFieldCount, std::max(k_, 1)});
+  }
   contact_touch_.launch(ctx);
 }
 void Activity::mark(Harness &h, bool all) {
-  auto ctx = mark_.make_context();
-  h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
-         {kParticleFieldCount, std::max(p_, 1)});
-  h.bind(ctx, 1, h.group_array_.get(), h.group_data,
-         {kGroupFieldCount, std::max(g_, 1)});
-  h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
-         {kEdgeIntFieldCount, std::max(e_, 1)});
-  h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data,
-         {kEdgeFloatFieldCount, std::max(e_, 1)});
-  ctx.set_arg_ndarray({4}, *particle_flags);
-  ctx.set_arg_ndarray({5}, *particle_delta);
-  ctx.set_arg_ndarray({6}, *group_flags);
-  ctx.set_arg_ndarray({7}, *group_delta);
-  ctx.set_arg_ndarray({8}, *counters);
-  ctx.set_arg_int({9}, all);
-  ctx.set_arg_int({10}, g_);
-  ctx.set_arg_ndarray({11}, *group_offsets);
-  ctx.set_arg_ndarray({12}, *group_edges);
+  auto call = mark_.invocation(bool(prepared_));
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+           {kParticleFieldCount, std::max(p_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+           {kGroupFieldCount, std::max(g_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 2, h.edge_int_array_.get(), h.edge_int_data,
+           {kEdgeIntFieldCount, std::max(e_, 1)});
+  }
+  if (!ctx.prepared) {
+    h.bind(ctx, 3, h.edge_float_array_.get(), h.edge_float_data,
+           {kEdgeFloatFieldCount, std::max(e_, 1)});
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({4}, *particle_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({5}, *particle_delta);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({6}, *group_flags);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({7}, *group_delta);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({8}, *counters);
+  }
+  engine::argument_int(ctx, 9, all);
+  engine::argument_int(ctx, 10, g_);
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({11}, *group_offsets);
+  }
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({12}, *group_edges);
+  }
   mark_.launch(ctx);
 }
 void Activity::clear() {
-  auto ctx = clear_.make_context();
+  auto call = clear_.invocation(bool(prepared_));
+  auto &ctx = call.get();
   clear_.launch(ctx);
 }
+
+void Activity::provision() {
+  if (!prepared_)
+    return;
+  IRBuilder b;
+  for (const auto &entry :
+       {std::make_pair(particle_activity, p_), std::make_pair(centroids, g_)}) {
+    auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(entry.second),
+                                    false, runtime_.cpu_threads());
+    auto guard = b.get_loop_guard(loop);
+    entry.first.activate(b, b.get_loop_index(loop));
+  }
+  // Exercise native traversal high-water marks, then clear leaves. Pointer
+  // backing remains prepared. No physical kernel runs with these setup bits.
+  for (const auto &set : {particle_activity, centroids}) {
+    auto *loop = b.create_struct_for(set.cells, false, runtime_.cpu_threads());
+    auto guard = b.get_loop_guard(loop);
+    set.deactivate(b, b.get_loop_index(loop));
+  }
+  engine::CompiledKernel provision(
+      runtime_,
+      "activity_provision_" + std::to_string(particle_activity.cells->id),
+      b.extract_ir(), {});
+  auto context = provision.make_context();
+  provision.launch(context);
+  runtime_.synchronize();
+}
+
+std::size_t Activity::prepared_binding_bytes() const {
+  return begin_.prepared_bytes() + touch_.prepared_bytes() +
+         contact_touch_.prepared_bytes() + mark_.prepared_bytes() +
+         reset_.prepared_bytes() + clear_.prepared_bytes();
+}
 Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
-  std::vector<std::int64_t> c(CounterCount);
-  std::vector<float> origin(8);
+  std::array<std::int64_t, CounterCount> c{};
+  std::array<float, 8> origin{};
   engine::readback(*counters, c.data(), c.size() * sizeof(std::int64_t));
   engine::readback(*focus, origin.data(), origin.size() * sizeof(float));
   Demand d;
-  d.particles_loaded = p_;
+  d.particles_loaded = prepared_ ? prepared_->live.particles : p_;
   d.particles_exposed = exposed;
-  d.fields_loaded = g_;
+  d.fields_loaded = prepared_ ? prepared_->live.fields : g_;
   d.fields_exposed = fields_exposed;
-  d.edges_loaded = e_;
+  const auto live_edges = prepared_ ? prepared_->live.edges : std::size_t(e_);
+  d.edges_loaded = live_edges;
   d.edges_exposed =
-      e_;  // Validated edges reference exposed positive-mass particles.
+      live_edges;  // Validated edges reference exposed positive-mass particles.
   d.particles_evaluated = c[Evaluated];
   d.particles_skipped = exposed - c[Evaluated];
   d.particles_moved = c[Moved];
@@ -564,7 +750,7 @@ Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
   d.force_requests = c[ForceRequests];
   d.force_evaluations = c[Forces];
   d.force_zero_response = c[ForceRequests] - c[Forces];
-  d.force_skipped = e_ - c[ForceRequests];
+  d.force_skipped = live_edges - c[ForceRequests];
   d.contact_evaluations = c[Contacts];
   d.gate_checks =
       c[Evaluated] + std::uint64_t(c[GeometryChecks]) + c[ForceRequests];

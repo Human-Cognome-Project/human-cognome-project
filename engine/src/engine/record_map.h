@@ -36,6 +36,7 @@ struct RecordBindings {
   taichi::lang::SNode *presence{}, *address{}, *incarnation{}, *declaration{};
   taichi::lang::SNode *allocator{};  // Diagnostics for the native NodeManager.
   int potential_capacity{0}, record_capacity{0};
+  int batch_capacity{1};
 };
 
 // Lightweight potential bytes + independently bounded native record references.
@@ -48,7 +49,8 @@ class PreparedRecordMap {
  public:
   PreparedRecordMap(Runtime &runtime,
                     int potential_capacity,
-                    int record_capacity);
+                    int record_capacity,
+                    int batch_capacity = 1);
   ~PreparedRecordMap();
   PreparedRecordMap(const PreparedRecordMap &) = delete;
   PreparedRecordMap &operator=(const PreparedRecordMap &) = delete;
@@ -58,10 +60,21 @@ class PreparedRecordMap {
   RecordResult inspect(const RecordHandle &handle);
   RecordResult set_kind(const RecordHandle &handle, int kind);
   RecordResult release(const RecordHandle &handle);
+  // Homogeneous, prevalidated map batches; no multi-family transaction implied.
+  // Results are caller-owned, capacity >= count. No work or generation for
+  // zero.
+  RecordStatus define_batch(const int *addresses,
+                            const int *kinds,
+                            std::size_t count,
+                            RecordResult *results);
+  RecordStatus release_batch(const RecordHandle *handles,
+                             std::size_t count,
+                             RecordResult *results);
   const RecordBindings &bindings() const;
   std::size_t size() const;
   std::uint64_t generation() const;
   bool ready() const;
+  std::size_t prepared_bytes() const;
 
  private:
   struct Impl;

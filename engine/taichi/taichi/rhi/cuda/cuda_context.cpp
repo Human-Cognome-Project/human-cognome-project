@@ -107,8 +107,8 @@ std::string CUDAContext::get_device_name() {
 
 void CUDAContext::launch(void *func,
                          const std::string &task_name,
-                         std::vector<void *> arg_pointers,
-                         std::vector<int> arg_sizes,
+                         const std::vector<void *> &arg_pointers,
+                         const std::vector<int> &arg_sizes,
                          unsigned grid_dim,
                          unsigned block_dim,
                          std::size_t dynamic_shared_mem_bytes) {
@@ -159,7 +159,7 @@ void CUDAContext::launch(void *func,
     }
     driver_.launch_kernel(func, grid_dim, 1, 1, block_dim, 1, 1,
                           dynamic_shared_mem_bytes, stream_,
-                          arg_pointers.data(), nullptr);
+                          const_cast<void **>(arg_pointers.data()), nullptr);
   }
   if (profiler_)
     profiler_->stop(task_handle);

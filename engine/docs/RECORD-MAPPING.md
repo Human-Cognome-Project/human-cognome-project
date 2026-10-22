@@ -85,6 +85,11 @@ without exposing the one-cell layout sentinel as a record.
 
 ## Budgets and launch bindings
 
+The following allocation observations describe the accepted #164 head.
+The [subsequent backing/binding implementation](PREPARED-EXECUTION.md) removes
+the measured recurring C++ allocations on the prepared CPU path and adds map
+batches; its evidence is separate. The retained #164 measurements stay historical.
+
 [`PreparedCapacity`](../src/field/prepared_capacity.h) validates independent
 potential, particle, field, participation, contact, reference, selected-focus,
 batch and scratch-byte limits before allocation. It computes the 22 current

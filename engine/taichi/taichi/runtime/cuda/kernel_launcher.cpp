@@ -1,8 +1,83 @@
 #include "taichi/runtime/cuda/kernel_launcher.h"
 #include "taichi/rhi/cuda/cuda_context.h"
+#include <stdexcept>
 
 namespace taichi::lang {
 namespace cuda {
+namespace {
+struct PreparedCUDA final : LaunchContextBuilder::Prepared {
+  LlvmRuntimeExecutor *executor;
+  DeviceAllocation arguments{}, results{};
+  void *argument_ptr{}, *result_ptr{};
+  RuntimeContext context{};
+  std::vector<void *> argument_pointers{&context};
+  std::vector<int> argument_sizes;
+  explicit PreparedCUDA(LlvmRuntimeExecutor *e) : executor(e) {
+  }
+  ~PreparedCUDA() override {
+    // Program/executor outlive the bound context. Also handles partial setup
+    // and dispatch failure: wait before freeing, then attempt both releases.
+    // A failed device cannot be promised recoverable by host RAII.
+    try {
+      executor->synchronize();
+    } catch (...) {
+    }
+    for (auto allocation : {arguments, results})
+      if (allocation.device) {
+        try {
+          allocation.device->dealloc_memory(allocation);
+        } catch (...) {
+        }
+      }
+  }
+};
+}  // namespace
+
+std::unique_ptr<LaunchContextBuilder::Prepared>
+KernelLauncher::prepare_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) {
+  auto *executor = get_runtime_executor();
+  auto state = std::make_unique<PreparedCUDA>(executor);
+  ctx.prepare_scalars(*state);
+  state->host_bytes = state->argument_pointers.capacity() * sizeof(void *) +
+                      state->argument_sizes.capacity() * sizeof(int);
+  CUDAContext::get_instance().make_current();
+  for (const auto &entry : contexts_.at(handle.get_launch_id()).parameters) {
+    if (!entry.second.is_array)
+      continue;
+    const auto &key = entry.first;
+    auto data = key;
+    data.push_back(TypeFactory::DATA_PTR_POS_IN_NDARRAY);
+    auto grad = key;
+    grad.push_back(TypeFactory::GRAD_PTR_POS_IN_NDARRAY);
+    if (ctx.device_allocation_type.at(key) !=
+            LaunchContextBuilder::DevAllocType::kNdarray ||
+        !ctx.array_ptrs.at(data) || ctx.array_ptrs.at(grad) ||
+        !ctx.array_runtime_sizes.at(key))
+      throw std::invalid_argument(
+          "prepared CUDA requires bound backend ndarrays");
+    if (static_cast<DeviceAllocation *>(ctx.array_ptrs.at(data))->device !=
+        executor->llvm_device())
+      throw std::invalid_argument("prepared array belongs to another device");
+    auto *ptr = executor->get_device_alloc_info_ptr(
+        *static_cast<DeviceAllocation *>(ctx.array_ptrs.at(data)));
+    ctx.set_ndarray_ptrs(key, reinterpret_cast<uint64>(ptr), 0);
+  }
+  const auto allocate = [&](std::size_t bytes, DeviceAllocation &allocation,
+                            void *&ptr) {
+    Device::AllocParams params;
+    params.size = bytes;
+    auto *device = executor->llvm_device();
+    if (device->allocate_memory(params, &allocation) != RhiResult::success)
+      throw std::runtime_error("prepared CUDA launch buffer allocation failed");
+    ptr = device->get_memory_addr(allocation);
+    state->device_bytes += bytes;
+  };
+  allocate(std::max(ctx.arg_buffer_size, std::size_t{1}), state->arguments,
+           state->argument_ptr);
+  allocate(std::max(ctx.result_buffer_size, sizeof(uint64)), state->results,
+           state->result_ptr);
+  return state;
+}
 
 bool KernelLauncher::on_cuda_device(void *ptr) {
   unsigned int attr_val = 0;
@@ -22,6 +97,32 @@ void KernelLauncher::launch_llvm_kernel(Handle handle,
   const auto &offloaded_tasks = launcher_ctx.offloaded_tasks;
 
   CUDAContext::get_instance().make_current();
+
+  if (ctx.prepared) {
+    auto &prepared = static_cast<PreparedCUDA &>(*ctx.prepared);
+    auto &driver = CUDADriver::get_instance();
+    // Each launch completes before returning, protecting pageable host argument
+    // storage and persistent device buffers without an overlapping owner.
+    prepared.context = ctx.get_context();
+    prepared.context.runtime = executor->get_llvm_runtime();
+    prepared.context.arg_buffer = static_cast<char *>(prepared.argument_ptr);
+    prepared.context.result_buffer = static_cast<uint64 *>(prepared.result_ptr);
+    if (ctx.arg_buffer_size)
+      driver.memcpy_host_to_device_async(prepared.argument_ptr,
+                                         ctx.get_context().arg_buffer,
+                                         ctx.arg_buffer_size, nullptr);
+    for (const auto &task : offloaded_tasks)
+      cuda_module->launch(task.name, task.grid_dim, task.block_dim, 0,
+                          prepared.argument_pointers, prepared.argument_sizes);
+    if (ctx.result_buffer_size)
+      driver.memcpy_device_to_host_async(ctx.get_context().result_buffer,
+                                         prepared.result_ptr,
+                                         ctx.result_buffer_size, nullptr);
+    // Host argument/result ownership is complete when launch returns. Ordinary
+    // launch retains its existing async behavior; no overlap is claimed here.
+    executor->synchronize();
+    return;
+  }
 
   // |transfers| is only used for external arrays whose data is originally on
   // host. They are first transferred onto device and that device pointer is

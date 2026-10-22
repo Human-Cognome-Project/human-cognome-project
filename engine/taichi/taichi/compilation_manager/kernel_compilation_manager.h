@@ -63,6 +63,11 @@ class KernelCompilationManager final {
                                             const DeviceCapabilityConfig &caps,
                                             const Kernel &kernel_def);
 
+  // Read-only provenance check against this Program's existing compilation
+  // records. Does not compile, load, register or stamp a launch handle.
+  bool owns_compiled_kernel(const Kernel &kernel_def,
+                            const CompiledKernelData &data) const;
+
   // Dump the cached data in memory to disk
   void dump();
 

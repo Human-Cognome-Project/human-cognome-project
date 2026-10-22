@@ -3,6 +3,10 @@
 #include <taichi/program/context.h>
 #undef TI_RUNTIME_HOST
 #include "fp16.h"
+#include "taichi/program/kernel.h"
+#include <cstring>
+#include <limits>
+#include <stdexcept>
 
 namespace taichi::lang {
 
@@ -29,10 +33,44 @@ LaunchContextBuilder::LaunchContextBuilder(CallableBase *kernel)
       result_buffer_size(kernel->ret_size) {
   ctx_->result_buffer = (uint64 *)result_buffer_.get();
   ctx_->arg_buffer = arg_buffer_.get();
+  array_bindings.resize(kernel->parameter_list.size());
+}
+
+LaunchContextBuilder::LaunchContextBuilder(Kernel *kernel)
+    : LaunchContextBuilder(static_cast<CallableBase *>(kernel)) {
+  originating_kernel_ = kernel;
+}
+
+LaunchContextBuilder &LaunchContextBuilder::operator=(
+    LaunchContextBuilder &&other) noexcept {
+  if (this == &other)
+    return *this;
+  // Complete the displaced binding before releasing its borrowed host buffers.
+  // Default memberwise assignment would replace those buffers first.
+  prepared.reset();
+  kernel_ = other.kernel_;
+  originating_kernel_ = other.originating_kernel_;
+  owned_ctx_ = std::move(other.owned_ctx_);
+  ctx_ = other.ctx_;
+  arg_buffer_ = std::move(other.arg_buffer_);
+  result_buffer_ = std::move(other.result_buffer_);
+  ret_type_ = other.ret_type_;
+  arg_buffer_size = other.arg_buffer_size;
+  args_type = other.args_type;
+  result_buffer_size = other.result_buffer_size;
+  array_runtime_sizes = std::move(other.array_runtime_sizes);
+  device_allocation_type = std::move(other.device_allocation_type);
+  array_ptrs = std::move(other.array_ptrs);
+  argpack_ptrs = std::move(other.argpack_ptrs);
+  array_bindings = std::move(other.array_bindings);
+  prepared = std::move(other.prepared);
+  return *this;
 }
 
 void LaunchContextBuilder::set_arg_float(const std::vector<int> &arg_id,
                                          float64 d) {
+  if (prepared)
+    throw std::logic_error("use prepared scalar setter on a frozen context");
   auto dt = kernel_->args_type->get_element_type(arg_id);
   TI_ASSERT_INFO(dt->is<PrimitiveType>(),
                  "Assigning scalar value to external (numpy) array argument is "
@@ -113,6 +151,8 @@ template void LaunchContextBuilder::set_struct_arg(std::vector<int> arg_indices,
 
 void LaunchContextBuilder::set_arg_int(const std::vector<int> &arg_id,
                                        int64 d) {
+  if (prepared)
+    throw std::logic_error("use prepared scalar setter on a frozen context");
   auto dt = kernel_->args_type->get_element_type(arg_id);
 
   TI_ASSERT_INFO(dt->is<PrimitiveType>(),
@@ -167,6 +207,8 @@ void LaunchContextBuilder::set_struct_arg_impl(std::vector<int> arg_indices,
                                                T v) {
   int offset = args_type->get_element_offset(arg_indices);
   TI_ASSERT(offset + sizeof(T) <= arg_buffer_size);
+  if (prepared)
+    throw std::logic_error("cannot mutate frozen argument metadata");
   *(T *)(ctx_->arg_buffer + offset) = v;
 }
 
@@ -223,6 +265,8 @@ void LaunchContextBuilder::set_arg_external_array_with_shape(
     uint64 size,
     const std::vector<int64> &shape,
     uintptr_t grad_ptr) {
+  if (prepared)
+    throw std::logic_error("cannot rebind a prepared external array");
   TI_ASSERT_INFO(
       kernel_->nested_parameters[arg_id].is_array,
       "Assigning external (numpy) array to scalar argument is not allowed.");
@@ -239,6 +283,110 @@ void LaunchContextBuilder::set_arg_external_array_with_shape(
     set_struct_arg(concatenate_vector<int>(arg_id, {0, (int32)i}),
                    (int32)shape[i]);
   }
+  const auto &parameter = kernel_->nested_parameters.at(arg_id);
+  if (arg_id.size() == 1 && parameter.ptype == ParameterType::kNdarray) {
+    auto type = parameter.get_dtype()
+                    ->as<StructType>()
+                    ->get_element_type({TypeFactory::DATA_PTR_POS_IN_NDARRAY})
+                    ->as<PointerType>()
+                    ->get_pointee_type();
+    auto &binding = array_bindings.at(arg_id[0]);
+    binding.type = type;
+    binding.rank = int(shape.size());
+    const auto bytes = data_type_size(binding.type);
+    binding.elements = bytes > 0 && size % bytes == 0 ? size / bytes : 0;
+  }
+}
+
+void LaunchContextBuilder::prepare_scalars(Prepared &state) const {
+  if (prepared)
+    throw std::logic_error("context is already prepared");
+  state.scalars.resize(kernel_->parameter_list.size());
+  for (const auto &entry : kernel_->nested_parameters) {
+    if (entry.first.size() != 1)
+      throw std::invalid_argument("prepared launch requires flat parameters");
+    const auto &p = entry.second;
+    if (p.is_argpack || p.needs_grad)
+      throw std::invalid_argument("unsupported prepared argpack/gradient");
+    if (p.is_array) {
+      if (p.ptype != ParameterType::kNdarray || !p.element_shape.empty() ||
+          p.total_dim < 1 || p.total_dim > 2)
+        throw std::invalid_argument(
+            "prepared arrays require flat rank-1/2 ndarrays");
+      const auto *pointer =
+          p.get_dtype()
+              ->as<StructType>()
+              ->get_element_type({TypeFactory::DATA_PTR_POS_IN_NDARRAY})
+              ->as<PointerType>();
+      if (!pointer->get_pointee_type()->is<PrimitiveType>())
+        throw std::invalid_argument(
+            "prepared ndarray element is not primitive");
+      const auto &binding = array_bindings.at(entry.first[0]);
+      if (binding.rank != int(p.total_dim) ||
+          binding.type != DataType(pointer->get_pointee_type()))
+        throw std::invalid_argument(
+            "prepared array type/rank differs from signature");
+      std::size_t elements = 1;
+      for (int axis = 0; axis < binding.rank; ++axis) {
+        const int offset =
+            args_type->get_element_offset({entry.first[0], 0, axis});
+        int32 dimension;
+        std::memcpy(&dimension, arg_buffer_.get() + offset, sizeof(dimension));
+        if (dimension <= 0 ||
+            elements > std::numeric_limits<std::size_t>::max() / dimension)
+          throw std::invalid_argument("invalid prepared array extent");
+        elements *= dimension;
+      }
+      if (elements != binding.elements)
+        throw std::invalid_argument(
+            "prepared array extent differs from bound storage");
+      continue;
+    }
+    auto type = p.get_dtype();
+    if (type != PrimitiveType::i32 && type != PrimitiveType::i64 &&
+        type != PrimitiveType::f32 && type != PrimitiveType::f64)
+      throw std::invalid_argument("unsupported prepared scalar type");
+    auto &slot = state.scalars.at(entry.first[0]);
+    slot.offset = args_type->get_element_offset(entry.first);
+    slot.type = type;
+    if (slot.offset < 0 ||
+        std::size_t(slot.offset) + data_type_size(type) > arg_buffer_size)
+      throw std::invalid_argument("prepared scalar outside argument buffer");
+  }
+}
+
+void LaunchContextBuilder::set_prepared_int(int arg_id, int64 value) {
+  if (!prepared || !prepared->usable || arg_id < 0 ||
+      std::size_t(arg_id) >= prepared->scalars.size())
+    throw std::invalid_argument("invalid prepared scalar argument");
+  const auto &slot = prepared->scalars[arg_id];
+  if (slot.offset < 0)
+    throw std::invalid_argument("prepared argument is an array");
+  if (slot.type == PrimitiveType::i32) {
+    const int32 v = static_cast<int32>(value);
+    std::memcpy(arg_buffer_.get() + slot.offset, &v, sizeof(v));
+  } else if (slot.type == PrimitiveType::i64) {
+    std::memcpy(arg_buffer_.get() + slot.offset, &value, sizeof(value));
+  } else {
+    throw std::invalid_argument("prepared argument requires floating value");
+  }
+}
+
+void LaunchContextBuilder::set_prepared_float(int arg_id, float64 value) {
+  if (!prepared || !prepared->usable || arg_id < 0 ||
+      std::size_t(arg_id) >= prepared->scalars.size())
+    throw std::invalid_argument("invalid prepared scalar argument");
+  const auto &slot = prepared->scalars[arg_id];
+  if (slot.offset < 0)
+    throw std::invalid_argument("prepared argument is an array");
+  if (slot.type == PrimitiveType::f32) {
+    const float32 v = static_cast<float32>(value);
+    std::memcpy(arg_buffer_.get() + slot.offset, &v, sizeof(v));
+  } else if (slot.type == PrimitiveType::f64) {
+    std::memcpy(arg_buffer_.get() + slot.offset, &value, sizeof(value));
+  } else {
+    throw std::invalid_argument("prepared argument requires integer value");
+  }
 }
 
 void LaunchContextBuilder::set_arg_ndarray(const std::vector<int> &arg_id,
@@ -247,6 +395,9 @@ void LaunchContextBuilder::set_arg_ndarray(const std::vector<int> &arg_id,
   TI_ASSERT_INFO(arr.shape.size() <= taichi_max_num_indices,
                  "External array cannot have > {max_num_indices} indices");
   set_arg_ndarray_impl(arg_id, ptr, arr.shape);
+  if (arg_id.size() == 1)
+    array_bindings.at(arg_id[0]) = {arr.dtype, int(arr.shape.size()),
+                                    arr.get_nelement()};
 }
 
 void LaunchContextBuilder::set_arg_argpack(const std::vector<int> &arg_id,
@@ -309,6 +460,8 @@ void LaunchContextBuilder::set_arg_ndarray_impl(const std::vector<int> &arg_id,
                                                 intptr_t devalloc_ptr,
                                                 const std::vector<int> &shape,
                                                 intptr_t devalloc_ptr_grad) {
+  if (prepared)
+    throw std::logic_error("cannot rebind a prepared array");
   // Set array ptr
   array_ptrs[concatenate_vector<int>(
       arg_id, {TypeFactory::DATA_PTR_POS_IN_NDARRAY})] = (void *)devalloc_ptr;

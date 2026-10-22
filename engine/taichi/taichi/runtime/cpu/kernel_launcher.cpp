@@ -1,8 +1,38 @@
 #include "taichi/runtime/cpu/kernel_launcher.h"
 #include "taichi/rhi/arch.h"
+#include <stdexcept>
 
 namespace taichi::lang {
 namespace cpu {
+
+std::unique_ptr<LaunchContextBuilder::Prepared>
+KernelLauncher::prepare_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) {
+  auto state = std::make_unique<LaunchContextBuilder::Prepared>();
+  ctx.prepare_scalars(*state);
+  for (const auto &entry : contexts_.at(handle.get_launch_id()).parameters) {
+    if (!entry.second.is_array)
+      continue;
+    const auto &key = entry.first;
+    auto data = key;
+    data.push_back(TypeFactory::DATA_PTR_POS_IN_NDARRAY);
+    auto grad = key;
+    grad.push_back(TypeFactory::GRAD_PTR_POS_IN_NDARRAY);
+    auto type = ctx.device_allocation_type.at(key);
+    auto *ptr = ctx.array_ptrs.at(data);
+    if (!ptr || ctx.array_runtime_sizes.at(key) == 0 || ctx.array_ptrs.at(grad))
+      throw std::invalid_argument("invalid prepared CPU array binding");
+    if (type == LaunchContextBuilder::DevAllocType::kNdarray) {
+      if (static_cast<DeviceAllocation *>(ptr)->device !=
+          get_runtime_executor()->llvm_device())
+        throw std::invalid_argument("prepared array belongs to another device");
+      ptr = get_runtime_executor()->get_device_alloc_info_ptr(
+          *static_cast<DeviceAllocation *>(ptr));
+    } else if (type != LaunchContextBuilder::DevAllocType::kNone)
+      throw std::invalid_argument("unsupported prepared CPU binding");
+    ctx.set_ndarray_ptrs(key, reinterpret_cast<uint64>(ptr), 0);
+  }
+  return state;
+}
 
 void KernelLauncher::launch_llvm_kernel(Handle handle,
                                         LaunchContextBuilder &ctx) {
@@ -11,6 +41,11 @@ void KernelLauncher::launch_llvm_kernel(Handle handle,
   auto *executor = get_runtime_executor();
 
   ctx.get_context().runtime = executor->get_llvm_runtime();
+  if (ctx.prepared) {
+    for (auto task : launcher_ctx.task_funcs)
+      task(&ctx.get_context());
+    return;
+  }
   // For taichi ndarrays, context.array_ptrs saves pointer to its
   // |DeviceAllocation|, CPU backend actually want to use the raw ptr here.
   const auto &parameters = launcher_ctx.parameters;

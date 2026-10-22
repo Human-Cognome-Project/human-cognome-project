@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-22",
+  "environment": "Clang/LLVM 15.0.6, matched CPU native build flags; source checks only",
+  "working_directory": "/workspace/human-cognome-project",
+  "environment_setup": "source /workspace/.hcp-setup/env.sh",
+  "checks": [
+    {
+      "command": "/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang++  -I/workspace/human-cognome-project/engine/taichi -I/workspace/human-cognome-project/engine/taichi/external/eigen -I/workspace/human-cognome-project/engine/taichi/external/spdlog/include -I/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/include -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call  -Wno-unused-but-set-variable  -DTI_ARCH_x64 -march=nehalem -DTI_PASS_EXCEPTION_TO_PYTHON -DTI_INCLUDED -DTI_WITH_LLVM -O3 -DNDEBUG -std=gnu++17 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -fsyntax-only -DTI_WITH_CUDA /workspace/human-cognome-project/engine/taichi/taichi/runtime/cuda/kernel_launcher.cpp",
+      "exit_code": 0
+    },
+    {
+      "command": "/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang++  -I/workspace/human-cognome-project/engine/taichi -I/workspace/human-cognome-project/engine/taichi/external/eigen -I/workspace/human-cognome-project/engine/taichi/external/spdlog/include -I/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/include -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call  -Wno-unused-but-set-variable  -DTI_ARCH_x64 -march=nehalem -DTI_PASS_EXCEPTION_TO_PYTHON -DTI_INCLUDED -DTI_WITH_LLVM -O3 -DNDEBUG -std=gnu++17 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -fsyntax-only -DTI_WITH_CUDA /workspace/human-cognome-project/engine/taichi/taichi/rhi/cuda/cuda_context.cpp",
+      "exit_code": 0
+    },
+    {
+      "command": "clang -c engine/taichi/taichi/runtime/llvm/runtime_module/runtime.cpp -o /tmp/hcp-prepared-runtime-cuda.bc -fno-exceptions -emit-llvm -std=c++17 -D ARCH_cuda -I engine/taichi",
+      "exit_code": 0
+    }
+  ],
+  "cuda_execution": false
+}
