@@ -498,6 +498,7 @@ void reject_and_preserve(
     std::uint64_t generation = std::numeric_limits<std::uint64_t>::max()) {
   Snapshot before(h);
   UpdateResult result;
+  const auto rejection_start = std::chrono::steady_clock::now();
   no_new([&] {
     result = h.update_prepared(
         generation == std::numeric_limits<std::uint64_t>::max()
@@ -505,6 +506,10 @@ void reject_and_preserve(
             : generation,
         commands, count);
   });
+  const auto rejection_us =
+      std::chrono::duration_cast<std::chrono::microseconds>(
+          std::chrono::steady_clock::now() - rejection_start)
+          .count();
   require(result.status == expected &&
               (budget == Budget::Count || result.failure.budget == budget),
           "wrong ordinary update rejection");
@@ -514,6 +519,11 @@ void reject_and_preserve(
     require(!result.upload_bytes && !result.readback_bytes &&
                 !result.synchronizations,
             "no-op performed physical work");
+  std::cout << "rejected_batch,status=" << int(result.status)
+            << ",budget=" << budget_name(result.failure.budget)
+            << ",us=" << rejection_us << ",upload_bytes=" << result.upload_bytes
+            << ",readback_bytes=" << result.readback_bytes
+            << ",syncs=" << result.synchronizations << '\n';
 }
 void rejections(engine::Runtime &runtime, HostPath path) {
   BudgetDemand limits;
@@ -750,6 +760,148 @@ void wakes_and_residue(engine::Runtime &runtime, HostPath path) {
   std::cout << "local structural wakes, unchanged sleepers, global U/focus "
                "wakes, exact pending-motion repair PASS\n";
 }
+// Replicate the complete prepared definition binding, rather than merely a
+// body with one membership: sibling, ordered value parents and every deduped
+// membership field are independently present for each English occurrence.
+void complete_occurrences(engine::Runtime &runtime, HostPath path) {
+  const auto source = prepared_sources::letters(runtime, 0);
+  const auto immutable = source;
+  BudgetDemand limits;
+  limits.values = {1048576, 70, 9, 280, 140, 928, 9, 32, 0};
+  Harness h(runtime, PreparedCapacity(scratch(limits, runtime.on_cuda())),
+            path);
+  PreparedFixtureAccess::Input init(70, 9, 32, 9);
+  Parameters params;
+  params.gravity = params.contact_stiffness = params.reach_strength = 0;
+  params.dt = 0.5f;
+  PreparedFixtureAccess::load(h, source, init, params, false);
+  h.tick(params);
+  h.inspect_prepared();
+  const auto &s = h.prepared_storage();
+  const auto first = init.particle_rows[0], second = init.particle_rows[1];
+  std::array<UpdateCommand, 32> commands{};
+  commands[0] = define(true, 987654);
+  std::size_t count = 1, memberships = 0;
+  for (const auto &edge : source.edges)
+    if (edge.particle == 0) {
+      commands[count] = ::edge(UpdateRef::pending(0),
+                               UpdateRef::existing(init.field_rows[edge.group]),
+                               count - 1, edge.ordinal);
+      ++count;
+      commands[count - 1].share = edge.share;
+      if (source.kinds[edge.group] == 3) {
+        ++memberships;
+        require(std::count_if(source.edges.begin(), source.edges.end(),
+                              [&](const auto &other) {
+                                return other.particle == 0 &&
+                                       other.group == edge.group;
+                              }) == 1,
+                "definition membership paths did not deduplicate within "
+                "occurrence");
+      }
+    }
+  require(memberships >= 2 && count < commands.size(),
+          "incomplete shared-definition fixture");
+  const auto preserved = [&](const Snapshot &before, RecordHandle handle) {
+    const int row = handle.record;
+    for (int f = 0; f < 11; ++f)
+      require(bits(h.particle(f, row), before.particles[f * 70 + row]),
+              "independent occurrence state changed at boundary");
+    require(bits(h.determined()[row], before.determined[row]),
+            "independent occurrence determiner changed");
+    for (int f = 0; f < 2; ++f)
+      require(s.inspection_state[f * 70 + row] == before.state[f * 70 + row],
+              "independent occurrence motion flags changed");
+    for (int f = 0; f < 3; ++f)
+      require(
+          bits(s.inspection_motion[f * 70 + row], before.motion[f * 70 + row]),
+          "independent occurrence motion history changed");
+  };
+  auto start = source.particles[0];
+  start[kPosX] = 7;
+  start[kVelX] = -0.03125f;
+  Snapshot before(h);
+  UpdateResult result;
+  no_new([&] {
+    PreparedFixtureAccess::stage_new(h, 0, start);
+    result = h.update_prepared(s.generation, commands.data(), count);
+  });
+  require(result.status == UpdateStatus::Ok,
+          "third complete occurrence failed admission");
+  no_new([&] { h.inspect_prepared(); });
+  const auto third = s.resolved[0];
+  require(!same(first, second) && !same(second, third) && !same(first, third),
+          "complete occurrences share runtime identity");
+  preserved(before, first);
+  preserved(before, second);
+  for (int group = 0; group < int(source.kinds.size()); ++group) {
+    float mass = 0;
+    int first_count = 0, second_count = 0, third_count = 0;
+    for (std::size_t e = 0; e < s.live.edges; ++e)
+      if (s.edges[e].second.record == init.field_rows[group].record) {
+        const auto &contribution = s.edges[e];
+        mass +=
+            h.particle(kMass, contribution.first.record) * contribution.share;
+        first_count += same(contribution.first, first);
+        second_count += same(contribution.first, second);
+        third_count += same(contribution.first, third);
+      }
+    require(near(h.group(kCenM, init.field_rows[group].record), mass) &&
+                first_count == 1 && second_count == 1 && third_count == 1,
+            "complete definition bindings were conflated across occurrences");
+  }
+  h.tick(params);
+  h.inspect_prepared();
+  const auto member = std::find_if(
+      s.edges.begin(), s.edges.begin() + s.live.edges, [&](const auto &edge) {
+        return same(edge.first, first) &&
+               source.kinds[edge.second.address] == 3;
+      });
+  require(member != s.edges.begin() + s.live.edges,
+          "original membership not found");
+  auto modify = edge(UpdateRef::existing(first),
+                     UpdateRef::existing(member->second), 0, member->ordinal);
+  modify.operation = UpdateOp::ReplaceParticipation;
+  modify.row = member - s.edges.begin();
+  modify.generation = s.generation;
+  modify.share = 0.5f;
+  Snapshot before_modify(h);
+  no_new([&] { result = h.update_prepared(s.generation, &modify, 1); });
+  require(result.status == UpdateStatus::Ok,
+          "one-occurrence membership edit failed");
+  no_new([&] { h.inspect_prepared(); });
+  preserved(before_modify, second);
+  preserved(before_modify, third);
+  h.tick(params);
+  h.inspect_prepared();
+  count = 0;
+  for (std::size_t e = 0; e < s.live.edges; ++e)
+    if (same(s.edges[e].first, first))
+      commands[count++] = remove(true, e, s.generation);
+  for (std::size_t c = 0; c < s.live.contacts; ++c)
+    if (same(s.contacts[c].first, first) || same(s.contacts[c].second, first))
+      commands[count++] = remove(false, c, s.generation);
+  commands[count++] = retire(true, first);
+  Snapshot before_retire(h);
+  no_new([&] {
+    result = h.update_prepared(s.generation, commands.data(), count);
+  });
+  require(result.status == UpdateStatus::Ok,
+          "complete occurrence retirement failed");
+  no_new([&] { h.inspect_prepared(); });
+  preserved(before_retire, second);
+  preserved(before_retire, third);
+  require(
+      s.live.particles == 2 && s.particle_headers[first.record].record < 0 &&
+          s.particle_headers[second.record].incarnation == second.incarnation &&
+          s.particle_headers[third.record].incarnation == third.incarnation,
+      "retiring one occurrence removed a surviving copy");
+  require(source.particles == immutable.particles &&
+              source.edges.size() == immutable.edges.size(),
+          "complete reusable definition was mutated");
+  std::cout << "complete-English-definition,two-plus-third,all-parent-and-"
+               "membership-bindings,independent-modify-retire PASS\n";
+}
 void maximum_batches(engine::Runtime &runtime,
                      HostPath path,
                      BudgetDemand limits) {
@@ -760,6 +912,7 @@ void maximum_batches(engine::Runtime &runtime,
   std::vector<UpdateCommand> commands(b);
   prepared_test::Metrics metrics(runtime, PreparedFixtureAccess::nodes(h));
   const auto ready = metrics.sample();
+  ready.print("ready_empty_for_maximum_batches");
   for (std::size_t begin = 0; begin < p; begin += b) {
     const auto count = std::min(b, p - begin);
     UpdateResult result;
@@ -816,6 +969,7 @@ void maximum_batches(engine::Runtime &runtime,
   reject_and_preserve(h, commands.data(), 1, UpdateStatus::Stale);
   require(ready.same_backing(metrics.sample()),
           "recycled use acquired native backing");
+  metrics.sample().print("after_full_recycle_and_reuse");
   std::cout << "maximum-batch,P=" << p << ",B=" << b
             << ",full-bank,last-record,retirement,reuse,C++new=0 PASS\n";
 }
@@ -911,6 +1065,8 @@ int main(int argc, char **argv) {
     else
       repeated(runtime, path, limits, prepared_sources::working(limits),
                large ? "working-set" : "padded");
+    if (letters)
+      complete_occurrences(runtime, path);
     if (!letters)
       maximum_batches(runtime, path, limits);
     if (!large && !letters) {
