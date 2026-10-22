@@ -180,31 +180,13 @@ qualification ladder.
 
 ## Current status
 
-The [storage investigation](docs/PREPARED-SPACE.md) and
-[native mapping](docs/RECORD-MAPPING.md) are accepted through #164. The
-[combined backing/binding implementation](docs/PREPARED-EXECUTION.md), following
-accepted #165, is accepted and merged in #166: empty prepared storage, reusable
-native bindings and first nonempty fixtures through existing field kernels.
-The [coherent-update plan](../docs/prepared-coherent-update-plan.md) was accepted
-in #167 at `284b45d`; its [implementation](docs/PREPARED-UPDATES.md) is submitted
-for review under #162. Production live insertion and its initialization
-conventions remain unimplemented/unresolved under #156.
+See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
+held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
+backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)
+was accepted in #167 and its [bounded implementation](docs/PREPARED-UPDATES.md)
+was accepted in #169 under #162; [object-support results](docs/OBJECT-SUPPORT-RESULTS.md)
+record the earlier slice. Production placement/live insertion and GPU
+allocation/transfer qualification retain their own acceptance work.
 
-The 2026-10-10 object-support corrections add whole-particle parent response,
-supplied-geometry radii, ordinary finite contact and a fixed-study native
-publication path. All five native CPU suites pass; settings, results and
-remaining boundaries are in [docs/OBJECT-SUPPORT-RESULTS.md](docs/OBJECT-SUPPORT-RESULTS.md).
-
-The native workspace was recovered from a local development branch on
-2026-09-24 after the repository had already been reorganized around an
-off-direction Python prototype.
-
-The recovered record contains substantial functional validation on LLVM CPU and
-CUDA, including the field model and a >2^31 dense-array indexing test. The code
-does viable calculations, but the complete recovered stack is still only
-partially vetted. Performance and scaling under realistic HCP load have not
-been established.
-
-Historical machine-specific measurements and development decisions are retained
-under `docs/`; read their dates and status labels rather than treating every
-measurement as a current guarantee.
+Historical machine-specific measurements and development decisions remain under
+`docs/`; read their dates and scope rather than treating each as a current guarantee.

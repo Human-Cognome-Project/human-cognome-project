@@ -6,9 +6,11 @@ The September repository reconciliation is complete, and a subsequent recovery p
 
 ## Start here
 
-Use the [current state](AGENTS.md#current-state) and
-[role-based reading paths](AGENTS.md#reading-paths) for built, proposed and held
-work, settled address roots and the active data priority.
+Start with [orientation](docs/onboarding/README.md) for objects, fields and
+component boundaries, then the [current state](AGENTS.md#current-state) for
+built, held and active work. [First run](docs/onboarding/FIRST-RUN.md) leads to
+one native CPU smoke check and an optional retained visual capture.
+Agents read [AGENTS.md](AGENTS.md) in full before working.
 
 ## Current system shape
 

@@ -4,9 +4,10 @@ HCP accepts code, research, testing, documentation and architecture critique. Th
 
 ## Start here
 
-Follow the [canonical reading paths](AGENTS.md#reading-paths), including the
-Covenant and Charter. Check the [current state](AGENTS.md#current-state)
-before selecting work. Agents read AGENTS.md in full.
+Begin with [orientation](docs/onboarding/README.md), then follow its
+[reading paths](docs/onboarding/README.md#reading-paths), including the Covenant
+and Charter. Check [current state](AGENTS.md#current-state) before selecting work.
+Agents read AGENTS.md in full.
 
 ## Current architecture
 
@@ -26,26 +27,43 @@ The harness is the physics engine's control surface. Analyst functions are futur
 
 Database/cache/record/WAL kernels are separate autonomous components whose system role is to support the future analyst and keep its working surfaces current. Inbox/outbox endpoints and scheduling form common kernel-network infrastructure; configuration/topology, serialization bridges and thread management are later implementation work.
 
-## Current implementation sequence
-
-The [model realignment plan](docs/model-realignment-plan.md) records the current
-conceptual-LoD versus 1:1 compression contract, component-derived extents,
-whole-particle response and corona-disabled experiment. Follow its staged PRs
-and acceptance criteria. Historical fixed-size, positional-response and string
-geometry requirements are superseded. The [bounded object-support slice](engine/docs/OBJECT-SUPPORT-RESULTS.md)
-is built. General view/recomposition contract #123 remains held for revision;
-that hold does not reopen accepted bounded work or block data bootstrap.
-Related work: #106, #115, #116, #118, #119 and #120.
-
 ## Where work is currently useful
 
-- **Language seed data — current priority.** Complete language-letter and punctuation endpoints in shared Linguistics (`02`), with ordered core parents, additive core child listings and membership reciprocals, following the [language plan](docs/language-component-unicode-plan.md). Individual letters are the initial test objects. Address/population proposals require their own review; native object-library assembly follows its accepted contracts.
+Use [AGENTS current state](AGENTS.md#current-state) and
+[active and deferred work](AGENTS.md#active-and-deferred-work) to choose work.
+This page does not maintain a second priority queue. Follow the owning issue's
+accepted plan and latest review disposition before implementing or writing data.
+Research contributions remain welcome under `research/`; they do not silently
+change runtime contracts.
 
-- **Native engine validation and harness evolution.** Preserve the C++ `engine_support` / `field_core` boundary, vet the recovered native field implementation against the settled design record, and continue developing the wider harness as the future analyst's engine control surface. The planner Python prototype is archived and must not become runtime code.
-- **Kernel-network build/test work.** Keep `kernels/database/`, `kernels/wal/`, and `network/endpoint/` independently buildable while their interfaces stabilize.
-- **Analyst-supporting data surfaces.** Database/cache/WAL work should improve the surfaces the future analyst will consume; it should not invent analyst reasoning.
-- **Topology/bridge design.** Configuration, local-memory endpoint mapping, serialization/transmission bridges and lower-frequency activation remain future implementation areas.
-- **Research and validation.** Research lives under `research/`; validation artifacts should remain distinguishable from runtime implementation.
+## Reading evidence and status
+
+Code and executable evidence establish what is built; accepted decisions govern
+intent. AGENTS is the maintained summary. If these disagree, identify and reconcile
+the discrepancy rather than treating a summary as proof or an old fixture as the
+production contract.
+
+The audit trail lets a future reader reconstruct what was accepted, on which
+evidence and with which limits, without access to the original chat.
+
+For a PR, read its scope, the owning plan's acceptance criteria, the latest
+maintainer findings, then the evidence tied to the reviewed source revision.
+Distinguish tests personally run, hosted CI results and contributor-retained
+logs. Source hashes identify inputs; they do not by themselves prove behavior.
+A merged plan authorizes only its stated scope and does not mean it is implemented.
+
+Keep claims bounded: fixture execution is not production insertion; requested
+CUDA is not verified CUDA; functional execution is not performance/pinning
+qualification; visible motion is not established linguistic settling.
+A held proposal is not an implementation contract. Record remaining work by its
+owning issue rather than burying it in acceptance prose.
+
+When a merge or review changes Built/Held/Active status, update
+[AGENTS current state](AGENTS.md#current-state) and remove conflicting status
+claims from entry points. Keep detailed measurements and source pins with the
+component evidence. Onboarding links to those records rather than copying them.
+If a build target/path changes, update the [first-run check](docs/onboarding/FIRST-RUN.md)
+with the same change; its named test must remain part of hosted CI.
 
 ## Technical standards
 
@@ -87,7 +105,9 @@ human-cognome-project/
 ├── data/
 │   └── postgres/snapshots/
 ├── docs/
+│   └── onboarding/        # orientation and first native check
 ├── tools/
+│   ├── viewport/          # optional read-only study inspection
 │   └── legacy-extraction/  # retained read-only migration toolkit
 ├── archive/
 └── review/
