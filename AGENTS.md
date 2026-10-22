@@ -1,314 +1,139 @@
 # Agent guidance
 
-This file is the operational entry point for AI coding/review agents working on HCP.
-
-## Placement correction — 2026-10-20
-
-**Immediate governing correction:** [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
-audits accepted A–D and current engine code, not just open proposals. New objects
-are inserted by the engine at the **nearest unoccupied space to the current
-centre of focus**, respecting extents and occupied space. Subsequent relative
-motion follows the model's mass and field mechanics. Structural definitions and
-warm recipes must not require caller-prescribed positions or velocities.
-Current mutable state belongs to Taichi execution under engine protocols;
-staging/readback/report copies are not independent placement authorities.
-
-**Optional restart-state exception:** Patrick permits optional supplied positions
-on engine restart as a calculation hedge/convenience. Validated execution
-checkpoints/restart hints are separate from immutable warm structural recipes
-and legacy fixture starts. After admission the engine owns restored state;
-normal streaming/refresh must never apply these hints to reset survivors. This
-preserves an optional recovery input, not a requirement for a full checkpoint
-subsystem. See the [plan's restart-state distinction](docs/pooled-space-live-insertion-plan.md#optional-restart-state).
-
-**Not implemented yet:** current warm records, projection requests and publication
-still require supplied initial state; refresh reloads it and restart reconstructs
-it. Their earlier acceptance is bounded fixture evidence, not authority to carry
-that production requirement forward. #156 lists the exact code, schema, lifecycle,
-extent/contact, documentation and acceptance corrections. Preserve existing data,
-native activity, coordinate precision and owner/private boundaries. Distinguish
-new insertion from survivor updates and coordinate rebasing. Do not replace the
-settled insertion rule with random starts, a lattice or a semantic heuristic.
-
-**Continuous insertion is required (Patrick, 2026-10-20):** the running
-simulation must admit new objects and relationships while preserving existing
-positions, motion and relevant activity state. Removing supplied coordinates alone
-does not complete #156. Equal-count `FixedStudy` is a historical test limitation,
-not the operational contract. Correct growth of particle/group/edge/contact
-storage, native activity capacity, adjacency and report generations together.
-Use safe engine update boundaries and native Taichi facilities; ordinary insertion
-must not restart/reseed the construct or be deferred behind held #123. Acceptance
-must exercise repeated live insertions within prepared capacity, unused native
-blocks and separately capacity exhaustion/expansion on CPU and local GPU. These changes are required, not yet built.
-
-## Allocation foundation correction — 2026-10-20
-
-Patrick clarified that available **potential particle capacity**, **present
-objects**, and **awake calculation work** are distinct. In earlier GPU estimates,
-“active particles” means present objects, not just elements selected by the
-per-phase binary activity gate. Sleeping objects retain presence, mass and field
-participation; unused potential capacity contributes none.
-
-The intended SNode structure under `ti.root` defines available object space.
-Its live configuration expresses the representation. Ordinary stream admission
-claims/redeclares prepared capacity; it must not require a new study, backing
-allocation or compilation for each arrival. Prepare supporting field, relationship,
-contact and activity capacity too. Capacity exhaustion/expansion is a separate
-resource operation. Native sparse address capacity alone does not establish
-allocation-free first use: inspect the fork's backing/activation behaviour and
-measure setup, first touch and ordinary admission separately.
-
-Slot/index topology does not prescribe physical coordinates. Space acquires
-relevant coordinates through field interactions between structures. Once focus
-exists, the engine inserts newcomers at its nearest unoccupied space; it preserves
-the current state of existing objects. The same foundation must support LoD
-representation changes within prepared capacity, with primary scale and 1:1
-compression kept distinct. Initial relational instantiation and detailed view
-selection remain under discussion.
-
-This supersedes fixed-study/equal-count and caller-placement assumptions as
-production requirements. They describe built bounded fixtures only. The correction
-is **required, not yet implemented**. See [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
-for source findings and acceptance: stream into unused capacity while ticking,
-distinguish potential/present/awake counts, and verify no backing allocation or
-recompilation in normal admission. Use native Taichi facilities before custom
-allocation or traversal machinery.
-
-**Declaration/release refinement (Patrick, 2026-10-21):** unoccupied working
-space is potential `0x` particles with no mass, presence or fields. Its nominal
-declaration entries permit a large prepared particle span without a full
-populated payload per empty entry. Layout/LoD changes define and release items
-within that space. Follow Patrick's cost rule: declaration touches one data
-point and is near free; calculation touches at least three plus the calculation
-resource, so use required data while hot; allocation adds clerical work and
-should be avoided in hot streams. The [prepared-space implementation
-plan](docs/pooled-space-live-insertion-plan.md) was accepted in #160 as scope and
-native-first investigation sequence. These requirements are settled; the native
-provisioning measurements below were accepted as bounded evidence in #161 and
-the combined correction is not built.
-
-Accepting that plan does not approve its proposed bootstrap/focus establishment,
-initial velocity, batch focus-update order or numerical conventions. Native
-provisioning/define-release investigation can proceed independently; production
-insertion requires reviewed conventions before implementation acceptance. A
-coordinate gauge alone does not position the first focal participants.
+Read this file in full before coding or reviewing. Start from current `main`
+unless a task names another integration branch. Component instructions still apply.
+For an introduction, see [orientation](docs/onboarding/README.md); for a local
+native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-22**.
+Last checked: **2026-10-22**, after #166 merged.
 
-**Prepared-space investigation:** #160 accepted the plan's native-first sequence;
-initialization/numerical conventions remain proposals. #161 was accepted and
-merged at `6b2fac2`, including the native allocator bound repair. The
-[native storage probe](engine/docs/PREPARED-SPACE.md) compares dense declarations
-with budgeted native references, flat bitmasked storage and cold/retained/recycled
-pointer storage. It measures CPU backing, pool reservation/alignment and reuse,
-with no physical objects or placement rule. All 26 CPU suites and eight hosted
-checks passed; dense declarations with budgeted native presence were accepted as
-the next candidate. Four symbolic bindings do not qualify general record mapping,
-relationship budgets or continuous insertion. The
-[next combined-capacity segment](docs/prepared-capacity-foundation-plan.md) was
-accepted and merged in #163 at `7bf8819`, releasing implementation under #162.
-Its [first mapping/adapter step](engine/docs/RECORD-MAPPING.md) was accepted and
-merged in #164 at `41310a5`: arbitrary native record reuse, reference guards and
-independent limit/layout arithmetic. All eight hosted checks and 30 CPU suites
-passed. The [backing/binding section](docs/prepared-execution-backing-plan.md)
-was accepted and merged in #165 at `a9a63be`. Its
-[CPU implementation](engine/docs/PREPARED-EXECUTION.md) is submitted for review:
-actual combined backing/scratch, reusable typed native bindings, batched native
-recycling and initial fixtures through existing kernels. First population and
-32 ticks/inspection retain native counters with zero observed recurring C++
-allocations in both CPU host paths. Coherent changes while ticking remain
-unbuilt under #162. Lookup/collection costs and GPU driver qualification remain
-explicit. Production #156 remains open/unbuilt;
-GPU evidence and complete host/driver allocation accounting remain qualification
-work.
+This is the maintained status entry point. Code and executable evidence determine
+what is built; accepted decisions govern intended behavior. A conflict between
+them and this summary is drift to investigate, not permission to silently pick
+one. Check [open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls)
+and latest maintainer dispositions before implementing. Update this section when
+a merge or review changes Built/Held/Active status; other entry points link here.
 
-**Latest accepted follow-ups:** #157 merged deployment/restore guidance with
-independent database and snapshot names; #158 merged configurable capture and
-verification of the actual Program backend before warm writes; #159 merged
-optional read-only live folder watching, stable display-reference conversion and
-signal-safe pin cleanup. Hosted checks were green at the reviewed heads; standalone
-signal/option checks were independently rerun. Native folder-picker interaction
-remains a local verification item. These tools still use the historical supplied
-fixture layout: #156's pooled capacity/live insertion correction remains unbuilt,
-and GPU performance/pinning qualification remains open under #145.
-
-This is the repository's onboarding status snapshot. Code and executable tests
-determine what is built; accepted decisions govern intent. Check the
-[open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls)
-and their latest review comments before starting work. Update this section when
-a merge or review changes these statuses; other entry points link here.
-
-| State | Scope and evidence |
+| State | Scope, limits and owning evidence |
 |---|---|
-| Built | Native C++ engine and bounded object support: whole-particle response, supplied-layout enclosure, variable-radius contact and fixed-study publication. See [results](engine/docs/OBJECT-SUPPORT-RESULTS.md) and [object model](docs/first-stage-data-object-model.md). General recomposition and group-centroid assembly remain planned. |
-| Retained data | [Full UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md), merged through #130, covers all valid Unicode scalars. This is separate from acceptance of #111's population/controller code. |
-| Built bootstrap data preparation | [Linguistic seed preparation](tools/linguistics/README.md), corrected in #131: 20-language candidate batch, distinct linguistic endpoints, core child additions and read-only validation. Accepted addresses are now retained in the seed ledger. |
-| Retained/populated cold data | [#136](https://github.com/Human-Cognome-Project/human-cognome-project/pull/136) merged the [bounded letter writer and recovery checks](docs/letter-population-writer.md) implementing #132. The isolated populated pair retains 2,772 Linguistics tokens and 2,741 additive core child links, with exact read-back, zero-row rerun and paired-restore evidence. [Paired exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) are ready for local handoff; installation into existing user stores is not asserted. |
-| Accepted staged plan | [#137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/137) merged at `50bd968`; [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139) governs A–D. A/B/C/D are accepted and merged (#141/#143/#146/#149). Pre-D design #147 and bounded release #148 remain the D contract. #150 is accepted/merged; bounded local GPU validation may proceed under #145. #91 retains its remaining follow-up work. |
-| Stage A accepted/merged | [Native warm storage](kernels/database/warm/README.md), PR #141 merged at `e7acdea`: separate PostgreSQL schema, scoped immutable tools, full supplied initial recipes, transactional publication, read-only cold adapter, epochs and owned pins. [90 native PostgreSQL checks](kernels/database/warm/acceptance.json) pass with unchanged complete cold-data hashes, including explicit cross-writer temporary references and finite-subnormal round-trips. |
-| Stage B accepted/merged | [Native letter/byte projection](engine/docs/LETTER-PROJECTION.md), PR #143 merged at `6ccd5a3`: Stage A values, exact UTF-8/ordered parents, distinct occurrence paths, explicit exposure normalization and bounded native input handoff. [53 pure and 38 native preparation checks](engine/tests/letter_projection/acceptance.json) pass. |
-| Stage C accepted/merged | [Membership evidence](engine/docs/MEMBERSHIP-FIELDS.md), [#146](https://github.com/Human-Cognome-Project/human-cognome-project/pull/146), head `8508ee3`: contextual memberships per live occurrence, byte-owner inheritance, exact contributions and distinct field kinds through the existing kernel. 25 pure and 44 native checks pass, with CPU seeded response in all exposure profiles; existing regression suites and all nine hosted checks pass. Merged in #146 at `43f418a`. |
-| Pre-D design accepted | [Host workbench design](docs/pre-d-hot-workbench-design.md), accepted in #147; bounded adapters accepted/merged in #149. [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145) retains actual GPU transfer/pinning measurements. Broader rollups, dynamic view selection and process-failure hosting remain unbuilt. |
-| Stage D accepted/merged | [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149) accepted and merged at `867c310`, after nine green hosted checks. Its [active workbench](engine/docs/ACTIVE-WORKBENCH.md) includes separate supplied local inputs, owner/generation guards, failed-refresh invalidation, controlled restart and both host paths. The #150 revision integrates that baseline and reruns combined CPU/PostgreSQL acceptance. The #150 CPU-review prerequisite is now satisfied; actual GPU evidence remains under #145. |
-| Effective motion accepted/merged | [#150](https://github.com/Human-Cognome-Project/human-cognome-project/pull/150), revised after the #91 absolute-origin finding: subtract a supplied nearby reference in double before f32 projection; integrate and gate in local coordinates. BulkCopy and CpuDirect share activity bindings. Independent offsets 0 / `2^27` retain unit motion, continued eligibility and centroid propagation. All 17 CPU suites, 180 PostgreSQL-to-active checks and 90 Stage A regression checks pass with unchanged full cold-data hashes. [Exact rules](engine/docs/ACTIVE-FIELD-MODEL.md) and [evidence](engine/tests/activity/acceptance.json). Accepted and merged in #150 at `755bcefb8a50e1dcfe07c7da692f81da15fb78af` after eight green hosted checks, including the native CPU workflow with PostgreSQL integration. Native SNode masks gate particle and centroid traversal with retained sleeping payloads. #153 completes #152's removal of redundant particle banks under the type-defined phase contract. Bounded local GPU validation may proceed under #145; GPU performance and pinning are not yet validated. #91 remains open for its other follow-ups. Combined-destination/brake reach remains open. |
-| Type-phase correction accepted/merged | [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152): one native particle set and one centroid set; no promotion or per-tick particle-bank clearing. Native cell operations replace dummy marker writes. Motion remains internal numerical state; contact activity writes follow particle consumption. All 17 CPU suites pass, including 140 activity checks on each of three configurations, 11 native phase/layout checks and 140 workbench checks; 180 PostgreSQL-to-active checks pass with unchanged cold-data hashes. [Separate evidence](engine/tests/type_phase/acceptance.json). The 70-slot fixture verifies power-of-two storage padding, both contact index directions and no stationary-peer cascade. Accepted/merged in #153 at `503c043af7dc097cf2ee6eb18a2ea81061535d1d` on 2026-10-20 after eight green hosted checks. #152 is complete; #151 remains a separate optional follow-up. |
-| Held | [#123](https://github.com/Human-Cognome-Project/human-cognome-project/pull/123): general view/identity contract needs revision; not an accepted implementation contract. This does not block the separately accepted bounded object-support slice or data bootstrap. |
-| Held | [#111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/111): command atomicity, restart validation and branch documentation reconciliation remain unresolved. The extracted snapshot has corrected read-only reproduction guidance. |
-| Deferred draft | [#75](https://github.com/Human-Cognome-Project/human-cognome-project/pull/75): optional read-only monitor. Its all-edge baseline and old skip-machinery hold are historical after #150. Reconcile with current reporting before revival; not a prerequisite for #151/#152 or local GPU tests. |
+| Retained cold data | Full valid-scalar [UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md); [paired letter exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) from #136 retain 2,772 Linguistics tokens and 2,741 additive core child links. Population is separate from installation into user stores and from held #111. [Writer contract](docs/letter-population-writer.md). |
+| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
+| Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
+| Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
+| Active implementation | #162 continues with coherent changes while ticking under the [capacity plan](docs/prepared-capacity-foundation-plan.md); #156 owns the [production placement/insertion correction](docs/pooled-space-live-insertion-plan.md), including accepted-work realignment. Initialization/numerical conventions remain proposals. |
+| Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
+| Local qualification | #145 owns actual GPU execution, allocation/transfer and pinning qualification. CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
+| Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
+| Deferred | #75 historical read-only monitor; reconcile its all-edge baseline with current reporting before revival. It is not a viewport/GPU prerequisite. General analyst, dynamic view selection/recomposition and process-failure hosting remain unbuilt. |
 
-**Active data priority:** use the retained language-letter/punctuation endpoints,
-ordered core parents and membership reciprocals to define the first native
-letter/byte assembly and warm-cache handoff. Individual letters are the current
-test objects. The initial seed batch is populated; broader coverage and native
-cache assembly remain follow-up work. No new analyst implementation or general
-physics qualification gate is introduced here.
+<a id="active-and-deferred-work--2026-10-19"></a>
+<a id="active-and-deferred-work--2026-10-20"></a>
 
-**Settled roots:** `00` = common computational core; `02` = shared multilingual
-Linguistics, with `02.FS.LR.00.*` reserved for language-frame word components.
-Current plans assign no new meaning to `01`; the old English `01` /
-common `01.00` layout is superseded. The initial seed map is accepted in #132; further allocations require review.
-Patrick reserved `y*` for personal data and `z*` for temporary objects on
-2026-10-15 in #137. These name first-symbol prefix families, not stored wildcards
-or concrete object allocations. Internal subdivisions, delegation and eventual
-lifetime remain deferred; no additional expansion blocks are assigned.
+## Active and deferred work
 
-**Near-term storage follow-up:** [#134](https://github.com/Human-Cognome-Project/human-cognome-project/issues/134)
-tracks exact ranges for reverse child listings, starting with current-data
-measurements. Common words may have low traversal value but retain complete
-cold references. Range storage is not built and does not change #132's current
-row-based population contract. See [the detailed direction](kernels/database/WORKING-SET-AND-LEDGER.md#range-compressed-reverse-child-listings-patrick-2026-10-13).
+- Continue #162/#156 through their accepted, bounded stages. Held #123 must not
+  defer required preservation of existing live state during insertion.
+- Use retained letters as current test objects. Broader linguistic coverage and
+  word-level seeding require their own accepted data contracts; do not infer
+  production allocations or new writes from an onboarding summary.
+- #134 tracks exact range-compressed reverse child navigation; it is not built
+  and does not change the accepted row-based seed writer. Common words retain
+  complete cold references even when traversal value is low.
+- #138 tracks endpoint subclassification and digit/operator placement separately.
+- Dynamic LoD selection, slopes/transitions, initial test granularities and
+  private/temp root subdivisions await discussion. Do not invent policies.
 
-**Warm-cache implementation:** The [accepted A–D contract](docs/warm-toolbox-implementation-plan.md)
-and [layout](docs/warm-knowledge-cache-layout.md) preserve warm as the toolbox and
-hot as the host workbench where objects and relationships are assembled; backend
-execution memory is where their numerical projection runs together. Stage A
-stores supplied recipes; B/C supply projection and contextual fields. D was
-released in #148 after #147 acceptance and accepted/merged in #149. It adds
-supplied active inputs and controlled session lifetime, not analyst reasoning,
-general rollups or process-failure isolation. Ordinary vectors are not pinned;
-GPU allocation/transfer qualification remains open in #145.
+<a id="placement-correction--2026-10-20"></a>
+<a id="allocation-foundation-correction--2026-10-20"></a>
 
-**GPU handoff sequencing (Patrick, 2026-10-17):** complete and CPU-validate
-#91's effective-motion mechanism first. A changed centroid alone does not wake
-all dependents; test the combined positional effect, and evaluate every connected
-field of a woken particle. Combine centroid would-move flags with any-active,
-then place each flagged centroid once including sleeping members. Preserve
-carried motion and changed-input invalidation, and account for collective effects.
-Selected focal fields define the mathematical origin by ordinary centroid
-calculation, including the origin-dependent radial dampener. Report actual force
-evaluations separately from gate/adjacency visits, skipped/woken particles and
-flagged/recomputed centroids. The precise motion/resolution predicates must be
-stated; no arbitrary global epsilon or observed-zero-speed sleep rule is implied.
-Stage D and #150 are accepted. Native binary scheduling, corrected local
-mathematics and combined CPU evidence satisfy the prerequisite for Patrick's
-bounded local GPU validation under #145. This is permission to test, not a claim
-of GPU or pinning qualification. #91's remaining formula/resolution/readback work
-and dynamic LoD slopes remain open.
+## Required placement and allocation behavior
 
-**Native activity by type (Patrick, 2026-10-19):** [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
-clarifies one binary activity flag per calculable element. Type defines phase;
-"this/next tick" describes the flow, not a separate element scheduling state.
-Native traversal selects active particles before reading their motion state;
-particle effects activate centroids and centroid effects activate particles.
-The focused revision uses one particle set and one centroid set, with native
-SNode activation/deactivation and compiler list generation. No particle banks,
-promotion, epochs, timestamps, custom queues or loaded-array scheduler scans.
-Fixed full-state particles consume activity; changing motion retains the bit.
-Contact activity writes occur after all particle calculations/consumption,
-before centroid propagation. Preserve pre-integration contact forces and test
-sleeping targets on both sides of source indices and across pointer blocks.
-Sleeping numerical/member values remain resident. Moving/PriorMoving belongs
-to active numerical work, not a separate activity policy. See the
-[type-phase rules](engine/docs/ACTIVE-FIELD-MODEL.md#native-binary-activity).
-The CPU live-bit probe shows why peer activation during consuming traversal can
-enter that same loop. Native metadata/propagation cost remains distinct from
-numeric work and is not a hardware speed claim. #151 stays a separate optional
-viewport, to consider after this focused correction.
+These requirements supersede caller-placement and fixed/equal-count assumptions
+in accepted A–D work as well as proposals. They are **not all implemented**.
+The [#156 plan](docs/pooled-space-live-insertion-plan.md) owns the correction;
+the [#163 plan](docs/prepared-capacity-foundation-plan.md) and
+[#165 section](docs/prepared-execution-backing-plan.md) own bounded preparation.
 
-**Focus-scoped LoD (Patrick, 2026-10-18):** [notes on #91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91#issuecomment-6251014344)
-record intended n-dimensional study anchoring, an expressed 3D neighbourhood and
-an ordinary centroid origin. The finest required LoD sets the floor; compatible
-category scope, capacity and source completeness govern intended surrounding
-rollup. This is not a universal absolute 3D map or a hard Euclidean ring policy.
-Built facilities remain supplied fixed-study roles/exposure/focus, local numerical
-coordinates and bounded workbench execution. Dynamic selection, step sloping,
-transitions and initial test granularities await discussion. Do not invent those
-rules, a relevance heuristic or analyst behavior from the notes.
+- New objects enter at the nearest unoccupied space to the current centre of
+  focus, respecting extents and sleeping occupants. Subsequent motion follows
+  mass and fields. Do not substitute random starts, a lattice or semantic placement.
+- Structural definitions/warm recipes must not require initial positions or
+  velocities. Current mutable state belongs to Taichi under engine protocols;
+  staging/readback/report copies are not independent state authorities.
+- Optional restart positions are a calculation convenience, separate from
+  immutable recipes and fixture starts. Normal refresh must not reset survivors.
+  This exception does not require a general checkpoint subsystem.
+- Ordinary streaming claims prepared capacity without new backing allocation,
+  layout rebuilding or compilation per arrival. Prepare particle, field,
+  relationship, contact, activity, adjacency and reporting capacity together.
+  Exhaustion/expansion is a separate resource operation.
+- Potential capacity, present objects and awake calculation work are distinct.
+  Unused `0x` declarations have no mass/presence/fields and need no populated
+  payload per entry. Sleeping objects retain numerical state, mass and membership.
+- The SNode structure under `ti.root` supplies available space; live configuration
+  expresses representation. Slot topology does not prescribe physical coordinates.
+  Preserve LoD changes within capacity, distinguishing primary scale from 1:1
+  compression. Reuse data while hot; avoid allocation clerical work in streams.
+- Native sparse address capacity does not prove backing is provisioned. Measure
+  setup, first touch and reuse separately. Acceptance must exercise unused blocks,
+  repeated insertion while ticking, survivor state, and separate exhaustion on CPU
+  and local GPU. Removing supplied coordinates alone does not complete #156.
+- One assembled definition may have many simultaneous live occurrences. Each has
+  its own handle/state and contributes its own mass and participation. Deduplicate
+  membership paths per target field **and occurrence**, not across copies.
+  Inserting, changing or retiring one copy must preserve the others; see
+  [#162 acceptance clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/162#issuecomment-6340088128).
+- Bootstrap/focus establishment, initial velocity, batch focus-update order and
+  numerical conventions remain proposals. A coordinate gauge alone does not place
+  the first focal participants. Native preparation can proceed independently.
 
-**Private/local boundary (Patrick, 2026-10-16):** the analyst alone supplies its
-private/local information at active hot assembly. The cache manager has no role
-in accessing those DB codes/data or publishing, acquiring or refreshing them in
-warm storage. Exclude private namespaces/handles from the manager's authorized
-request/source path and reject attempted private scopes **before source lookup**;
-do not read and then filter, redact or classify. This protects model/entity
-private stores; public entity knowledge can remain shared. Joint numerical
-reporting returns to the analyst-owned workbench, with no private-source or joint
-result propagation through manager reporting. Use supplied private fixtures;
-analyst reasoning and real private DB access are not implemented here.
+## Activity, focus and privacy
 
-A's isolated scoped-storage tests are built capabilities, not authority to route
-private data through the manager. That earlier plan wording is superseded; no
-blanket change to `z*` temporary ownership or retained fixtures is authorized.
-Warm publication, workbench assembly completeness and execution readiness are
-separate outcomes. Native test clients do not implement an analyst or scheduler.
-The accepted `y*` / `z*` reservations still require explicitly authorized concrete
-bindings, and their internal production layout remains deferred.
-[#138](https://github.com/Human-Cognome-Project/human-cognome-project/issues/138)
-tracks endpoint sub-classification and numeric/operator coverage/placement as a
-separate follow-up, preserving seed identities and adding no gate on that milestone.
+Use fork-native activation/deactivation and traversal before custom machinery.
+One binary activity set per particle type selects work; type determines phase.
+Particle calculation/consumption precedes contact activity propagation, then
+centroid propagation activates particles for the following particle phase.
+No particle banks, promotion, scheduling epochs/timestamps, custom queues or
+loaded-array scheduler scans. Motion states belong inside active numerical work.
 
-## Active and deferred work — 2026-10-20
+A changed centroid alone does not wake every dependent: test the combined
+positional effect; a woken particle evaluates every connected field. Combine
+centroid would-move flags with any-active and place each flagged centroid once,
+including sleeping members. Preserve carried motion and changed-input invalidation.
+Keep pre-integration contact forces and sleeping-target checks on both index sides
+and across pointer blocks. Separate numerical force work from gate/adjacency and
+native metadata costs. No arbitrary epsilon or zero-speed sleep rule is implied.
+The [active field model](engine/docs/ACTIVE-FIELD-MODEL.md) owns exact predicates.
 
-- **Completed cleanup:** #152, accepted in #153; type-defined binary activity phases. Do not turn
-  current/next bookkeeping into an independent scheduling policy.
-- **Optional human observation and analysis:** #151, separate read-only browser
-  viewport with camera navigation and per-LoD relative-mass colouring. Patrick's
-  two purposes are making data shape tangible and using human visual pattern
-  recognition/intuitive quantitative judgment. The [purpose and implementation
-  plan](docs/viewport-purpose-and-plan.md) is accepted in #154. The optional
-  [exporter/viewer](tools/viewport/README.md) is accepted/merged in #155 at
-  `8898a776671cc87be966e3612e855f826bb2282c` on 2026-10-20 after all nine
-  hosted checks passed, including native CPU and direct-file offline browser
-  validation. Evidence includes 16-occurrence real CPU captures and 37 exporter
-  checks. #151 is complete. The tool remains removable and is not a long-term
-  engine requirement; native GPU execution/pinning remains unverified under #145.
-- **Hardware validation:** #145, local GPU execution and allocation/transfer
-  evidence. #150's CPU review is complete; #152's simplification is accepted in #153,
-  not a claim that GPU tests or pinning have already passed.
-- **Held/deferred from this track:** #123 general view/identity contract and #111
-  command atomicity/restart work retain unresolved findings; neither is accepted
-  or required by the bounded letter/workbench path. Retained UTF data is separate.
-- **Pending discussion:** dynamic LoD selection, step slopes/transitions and test
-  granularities; private/temp root subdivisions. Do not invent policies for them.
-- **Separate follow-ups:** #134 range-compressed navigation and #138 endpoint
-  subclassification/digit/operator placement remain outside this milestone.
-  General analyst, recomposition and process-failure hosting remain unbuilt.
+Selected focal fields define the origin by ordinary combined centroid calculation,
+including the origin-dependent radial dampener. The finest required conceptual
+LoD sets the floor; compatible category scope, capacity and data completeness
+govern intended surrounding rollup. This is not a universal absolute 3D map or
+hard Euclidean ring policy. Dynamic selection, slopes and transitions remain
+unbuilt; [#91 notes](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91#issuecomment-6251014344)
+are not authority to invent analyst relevance rules.
 
-**Type-defined activity phases (Patrick, 2026-10-19):** element type determines
-when it calculates; one binary activity flag selects work at that phase's entry.
-Particles activate centroids for the centroid phase; centroids activate particles
-for the following particle phase. “This/next tick” describes that order, not an
-independent scheduling policy. #150's duplicate current/next particle sets were
-implementation details, not a contract. [#152](https://github.com/Human-Cognome-Project/human-cognome-project/issues/152)
-is completed in accepted #153 with one native set per type, stored motion state,
-ordered contact propagation and concrete CPU phase/activation evidence above.
+Private/local information enters only at the analyst-owned active hot boundary.
+The cache manager must reject private namespaces/handles **before source lookup**;
+it must not read, filter, redact, publish, acquire or refresh private DB data.
+Joint reports return to the active owner, never through manager reporting.
+Public entity knowledge may remain shared. Use supplied private fixtures; actual
+private DB access and analyst reasoning are not implemented. Earlier isolated
+Stage A scoped-storage tests do not authorize a private manager path.
+Warm publication, assembly completeness and execution readiness are separate.
+No blanket change to temporary ownership or retained fixtures is authorized.
 
-## Reading paths
+## Addressing
 
-This is the canonical onboarding map, shared by README, CONTRIBUTING and the
-documentation index. Read the common path, then the row relevant to your work.
-Agents also read this file in full. Component-specific instructions still apply.
-
-| Audience | Read in order |
-|---|---|
-| Everyone | [Covenant](covenant.md) → [Charter](charter.md) → current state above → [NAPIER system guide](docs/napier-system-guide.md), observing built/planned labels. |
-| Agents | This file → [model realignment plan](docs/model-realignment-plan.md) → component README, accepted plan and tests. |
-| Engine / geometry / LoD | [Engine architecture](engine/ARCHITECTURE.md) → [active field model](engine/docs/ACTIVE-FIELD-MODEL.md) → [realignment plan](docs/model-realignment-plan.md) → [built results](engine/docs/OBJECT-SUPPORT-RESULTS.md). Check #123's latest disposition for general identity/recomposition work. |
-| Data / linguistics | [Language component plan](docs/language-component-unicode-plan.md) → [first-stage object model](docs/first-stage-data-object-model.md) → [working set and ledger](kernels/database/WORKING-SET-AND-LEDGER.md) → component README/tests. Check the status of population proposals before implementing their allocations or writes. |
-| Reviewers | Current state above → changed component's accepted plan and code → PR description, latest review findings and applicable acceptance criteria. |
-| Repository structure | [Reorganization record](REORGANIZATION.md) → relevant component architecture. Historical folder placement is not an architecture contract. |
+`00` is common computational core; `02` is shared multilingual Linguistics;
+`02.FS.LR.00.*` is reserved for language-frame word components. The old English
+`01` / common `01.00` layout is superseded; no new meaning is assigned to `01`.
+The #132 seed map is accepted; further allocations require review.
+`y*` personal and `z*` temporary are first-symbol prefix families, not stored
+wildcards or concrete object allocations. Concrete bindings need authorization;
+internal subdivision, delegation, lifetime and expansion blocks remain deferred.
 
 ## Architecture invariants
 
@@ -334,13 +159,9 @@ Agents also read this file in full. Component-specific instructions still apply.
 - Do not restore universal fixed diameter, beads-on-string geometry, positional parent offsets or rotation.
 - Do not reset/drop persistent databases as routine validation.
 
-## Current development state
+<a id="current-model-realignment-2026-10-09"></a>
 
-The structural repository reconciliation is complete on `main`. Native engine recovery restored the C++ workspace and curated Taichi fork; hosted CI builds and tests the native CPU path from source. Further architecture and performance work is tracked separately from the reorganization.
-
-Branch new work from current `main` unless a specific recovery/integration branch is explicitly named for the task.
-
-## Current model realignment (2026-10-09)
+## Model contract
 
 Follow the [conversion and continuation plan](docs/model-realignment-plan.md)
 for sequencing, dependencies and verification. Its dated decisions supersede
@@ -380,6 +201,16 @@ conflicting historical model requirements; code still determines what is built.
   underlying core character values or encode group containment as parents.
   Existing record-integrity findings are not cleared by
   documentation merges; check current PR/issue state before execution.
+
+## Reading paths
+
+The [orientation role table](docs/onboarding/README.md#reading-paths) is the
+canonical reading map. Agents read this file in full, then the owning component
+README, accepted plan and tests. Read the [Covenant](covenant.md) and
+[Charter](charter.md) before contributing. Research and recovered history are
+references for relevant tasks, not a prerequisite for a first native check.
+
+<a id="current-development-state"></a>
 
 ## Work discipline
 
