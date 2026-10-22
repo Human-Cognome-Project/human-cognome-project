@@ -11,7 +11,7 @@ ticks. Coherent changes to a ticking construct, production insertion and the
 remaining #156 integration are not implemented by this step.
 All eight hosted checks and all 37 CPU suites passed at the accepted head
 `34c01e0`. The [next coherent-update section](../../docs/prepared-coherent-update-plan.md)
-is drafted for review; its implementation remains unbuilt.
+was accepted in #167; its implementation remains unbuilt.
 
 ## Working storage and native selection
 
