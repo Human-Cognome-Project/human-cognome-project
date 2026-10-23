@@ -15,6 +15,21 @@ subthreshold positional residual as noise. Do not accumulate that discarded
 rounding detail into later ticks. Contributions combine before quantization;
 individual field contributions are not independently filtered out.
 
+Calculation precision and effective stored precision are independently adjustable;
+the f64-to-f32 example is not a fixed pairing or a requirement to halve widths.
+Patrick's “f30 versus f32” example means a finer-grained reduction of retained
+precision to suppress positional jitter, rather than restricting the control to
+native f16/f32/f64 choices. Such a setting could be represented by quantizing
+within a wider native container; it does not imply native hardware f30 support
+or an already selected custom floating-point format.
+
+Any reduction of retained precision provides a quantization/noise-filter control.
+Choose the reduction at each scale empirically for useful model physics and
+recoverable relationships, not solely for computational convenience. Exact
+significand/exponent treatment, rounding rule, container/encoding and LoD mapping
+remain undecided. Coarser precision suppresses subthreshold changes but still
+requires boundary/oscillation tests; it is not a blanket guarantee of stability.
+
 This is quantization damping, not gradual decay of an accumulated remainder.
 It is an intentional resolution-dependent control, not a claim of physically
 equivalent trajectories across precision profiles. Outer-LoD precision pairings,
