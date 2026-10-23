@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-23**, after #171 merge and the precision/view/catalogue clarifications.
+Last checked: **2026-10-23**, after #171 merge, #175 review and the documentation/issue reconciliation.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -19,11 +19,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | State | Scope, limits and owning evidence |
 |---|---|
 | Retained cold data | Full valid-scalar [UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md); [paired letter exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) from #136 retain 2,772 Linguistics tokens and 2,741 additive core child links. Population is separate from installation into user stores and from held #111. [Writer contract](docs/letter-population-writer.md). |
-| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
+| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under the now-completed #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
 | Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
-| Active follow-up | #162/#156 retain implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
+| Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. [PR #175](https://github.com/Human-Cognome-Project/human-cognome-project/pull/175) supplies a reviewed partial Segment 2 geometry query, pending final CI/merge; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | Patrick deferred full GPU testing until the remaining core operation matrix passes CPU acceptance; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
@@ -47,7 +47,8 @@ catalogue and recipe/download root, with schema/addresses still undecided.
 
 ## Active and deferred work
 
-- Continue #162/#156 through their accepted, bounded stages. Held #123 must not
+- Continue #156 through the accepted #170 stages. #162's bounded foundation and
+  #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
 - Use retained letters as current test objects. Broader linguistic coverage and
   word-level seeding require their own accepted data contracts; do not infer

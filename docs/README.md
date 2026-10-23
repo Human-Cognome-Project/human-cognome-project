@@ -28,6 +28,9 @@ references, not another mandatory reading sequence.
 
 ## Active implementation plans and built results
 
+- [Documentation and issue reconciliation](documentation-status-review-2026-10-23.md) —
+  current-facing drift corrections, explicit completed-stage handoffs and retained open work.
+
 - [Precision, exposure and concept catalogue](precision-exposure-and-concept-catalogue.md) —
   confirmed 2026-10-23 directions and unresolved calibration under #172/#115/#173;
   separates intended numerical changes from built evidence.

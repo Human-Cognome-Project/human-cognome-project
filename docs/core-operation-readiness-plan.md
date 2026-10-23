@@ -1,5 +1,12 @@
 # Complete the core operation path before full GPU qualification
 
+**Issue handoff (2026-10-23):** #162's original bounded foundation is accepted and
+closed; #156 now owns the remaining operation matrix. Historical requests below
+to keep #162 open are superseded by this explicit handoff. #171 completed Segment 1;
+[PR #175](https://github.com/Human-Cognome-Project/human-cognome-project/pull/175)
+is a reviewed partial Segment 2 current-geometry query awaiting final CI/merge.
+It does not implement placement, contact installation or candidate-tick publication.
+
 **2026-10-23 follow-up:** [Precision, exposure and concept-catalogue decisions](precision-exposure-and-concept-catalogue.md)
 record the latest intended direction. #172 owns math-core precision/quantization
 and reconciliation of existing residue/rebase requirements before revised arithmetic

@@ -1,5 +1,11 @@
 # Warm knowledge cache: root-addressed layout
 
+**Current disposition (2026-10-23):** Original A–D completed through #149; #139 is
+closed. D is no longer awaiting implementation. #171 adds [coordinate-free v2 recipes](../kernels/database/warm/STRUCTURAL-RECIPES.md)
+while preserving the supplied-state v1 fixture described below. #156/#170 own
+continuous operational integration; #145 retains device/transfer qualification.
+The historical stage-release statements below are not current gates.
+
 **2026-10-16 status:** Accepted through merged #137 and staged in #139. Native
 [Stage A storage](../kernels/database/warm/README.md) is accepted and merged
 in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)

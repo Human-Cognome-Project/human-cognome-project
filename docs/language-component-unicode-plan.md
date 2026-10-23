@@ -1,12 +1,21 @@
 # Language letter endpoints over shared Unicode value trees
 
+**Lexical continuation (2026-10-23):** After letter testing, use a separate word
+list (not yet selected) for structural word tools, then LDOCE ingestion through
+its supplied phases; defer Kaikki lexical expansion until that path stabilizes.
+The older broad Kaikki coverage goals below are future coverage, not the current
+first-ingestion order. See [concept catalogue direction](precision-exposure-and-concept-catalogue.md#conceptdb-compositional-recipes-across-media)
+and #173. Do not preseed the source's semantic relationships as centroid answers.
+
 Status: **Plan accepted in PR #127, with Patrick's membership clarification,
 2026-10-11; language-letter endpoints and core child listings corrected by
 Patrick on 2026-10-12.** The [bulk bootstrap preparation and read-only export validator](../tools/linguistics/README.md)
 are now implemented, with reproducible source/manifest evidence. The accepted
 bounded writer adds isolated persistent memberships and reciprocal construction
-links. Existing-store population awaits implementation review and explicit
-targets; general warm aggregation remains planned.
+links. #136 completed retained language-letter population and paired export validation:
+2,772 Linguistics tokens and 2,741 additive core child links. Bounded warm A–D
+landed through #149 and coordinate-free v2 recipes in #171. Installation into a
+particular user's stores is separate; engine-owned admission remains under #156.
 
 ## Intended result
 

@@ -1,5 +1,15 @@
 # Architecture
 
+**Historical conceptual sketch — current implementation guidance supersedes it.**
+This document preserves earlier model reasoning; it is not a current engine
+contract. In particular, unused potential slots have **no physical presence,
+mass or field effects**, and slot adjacency does not assign physical position.
+Do not implement the undefined-nibble vacuum mechanics below from this record.
+For current architecture and settled requirements use [orientation](onboarding/README.md),
+[AGENTS](../AGENTS.md), the [realignment plan](model-realignment-plan.md) and
+the [core operation plan](core-operation-readiness-plan.md). Primary LoD,
+1:1 compression and native per-type activity retain their explicit distinctions.
+
 **One operation, one field, one addressing scheme.** Prerequisite reading:
 [physics-basis.md](physics-basis.md).
 
