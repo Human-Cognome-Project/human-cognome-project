@@ -25,7 +25,11 @@ The [follow-up disposition](https://github.com/Human-Cognome-Project/human-cogno
 accepts the complete contract, including contact publication, D1–D7 and all four
 implementation segments. This acceptance is not runtime completion or GPU
 qualification. Segment 1's [structural recipe implementation](../kernels/database/warm/STRUCTURAL-RECIPES.md)
-is submitted separately; the remaining engine/lifecycle/CPU exit work is unbuilt.
+is accepted and merged in #171. The first portion of Segment 2 adds
+[native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) for review:
+current occupancy/focus and bounded candidate contact discovery. Placement,
+admission/contact installation, candidate ticks and the remaining lifecycle/CPU
+exit work are unbuilt; the full requirements below still apply.
 
 ## Result and finite operation set
 

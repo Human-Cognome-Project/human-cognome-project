@@ -76,6 +76,13 @@ int main() {
     invalid[Budget::Participation] = (std::uint64_t{1} << 30) + 1;
     rejects<std::invalid_argument>([&] { PreparedCapacity bad(invalid); });
     invalid = limits;
+    invalid[Budget::GeometryWork] = std::uint64_t{1} << 63;
+    rejects<std::invalid_argument>([&] { PreparedCapacity bad(invalid); });
+    invalid[Budget::GeometryWork] = std::numeric_limits<std::int64_t>::max();
+    require(PreparedCapacity(invalid).limits()[Budget::GeometryWork] ==
+                invalid[Budget::GeometryWork],
+            "wide work limit narrowed to logical axis");
+    invalid = limits;
     invalid[Budget::ScratchBytes] = std::numeric_limits<std::size_t>::max();
     rejects<std::overflow_error>([&] { PreparedCapacity bad(invalid); });
     auto large = limits;
