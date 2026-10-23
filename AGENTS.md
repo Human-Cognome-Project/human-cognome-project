@@ -36,8 +36,10 @@ a merge or review changes Built/Held/Active status; other entry points link here
 
 See [precision, exposure and concept catalogue](docs/precision-exposure-and-concept-catalogue.md).
 #172 owns the requested math-core work: higher-precision combined calculation,
-lower-precision stored positions, and discard of subthreshold positional rounding
-residuals. This supersedes indefinite residual carry as intended policy for that
+configurable significand trimming of stored positions, and discard of subthreshold
+positional rounding residuals. Retain as much precision as viable; f64 calculation
+may retain an f64 storage container with trimmed terminal bits. Do not default to
+f64→f32 or any fixed per-LoD reduction ladder. This supersedes indefinite residual carry as intended policy for that
 new path; the built arithmetic remains unchanged until reviewed conversion.
 Do not confuse rounding residue with physical velocity or centroid mass accounting.
 #115 records global/per-object exposure controls, separate from awake/sleep and

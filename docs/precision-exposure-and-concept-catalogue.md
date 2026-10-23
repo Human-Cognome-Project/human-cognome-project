@@ -7,13 +7,19 @@ Owning issues: [precision #172](https://github.com/Human-Cognome-Project/human-c
 
 ## Calculation precision and stored movement
 
-Pair calculation/storage precision with the expressed conceptual LoD. The focal
-example is f64 combined field calculation with f32 stored positions: promote the
-stored value exactly, calculate the combined effect, then round the resulting
-position to storage precision. If the stored value does not change, discard the
-subthreshold positional residual as noise. Do not accumulate that discarded
-rounding detail into later ticks. Contributions combine before quantization;
-individual field contributions are not independently filtered out.
+Retain as much of the calculation precision as is viable without unwanted
+positional jitter. Start with configurable **significand trimming**, not an
+assumed full native-container reduction. For example, f64 calculations may
+publish quantized positions in an f64 container, retaining all but the calibrated
+terminal significand bits. The earlier f64-to-f32 example is illustrative only;
+it is neither the default nor the acceptance target.
+
+Calculate the combined effect before quantizing the resulting position. If the
+quantized stored value does not change, discard the subthreshold positional
+residual as noise; do not accumulate it into later ticks. Individual field
+contributions are not independently filtered out. The number of retained bits
+and its mapping to conceptual LoD remain calibration choices, not a fixed step
+or order of reduction.
 
 Calculation precision and effective stored precision are independently adjustable;
 the f64-to-f32 example is not a fixed pairing or a requirement to halve widths.
@@ -77,6 +83,27 @@ the storage/compute tradeoff and requires backend capability and cost checks.
 “Trimming” names the intended precision reduction, not a settled instruction to
 truncate bits: the rounding rule remains to be calibrated. The per-LoD choices
 remain open; no fixed container pairing or reduction ladder is established.
+
+### Agent planning boundary
+
+A proposed implementation must expose calculation format, stored container and
+effective retained significand precision as distinct choices. Do not assume
+f32 storage merely because much of the current HCP ABI uses it. If the selected
+profile retains an f64 container, extend and validate the relevant HCP storage,
+kernel bindings, transfer/readback and resource accounting end to end.
+
+Taichi's existing f64 capability supplies the starting substrate, not an already
+implemented HCP precision selector. Promote operands before the intended wider
+arithmetic. Avoid an unconditional narrowing cast before configurable
+quantization, which would discard the precision this direction is meant to keep.
+Preserve the chosen native exponent range for the initial significand-trimming
+approach; a different exponent/encoding scheme needs its own justification.
+Specify rounding, finite-range behavior and boundary tests in the plan.
+
+A whole-container reduction may be proposed later where calibrated physics and
+hardware costs justify it. Neither f64→f32 nor a fixed per-LoD precision ladder
+is authorized as an automatic default. Bring a bounded plan under #172 before
+implementing the new numerical policy; no runtime change is made by these notes.
 
 ## Model exposure and analytical view
 
