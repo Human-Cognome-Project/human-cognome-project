@@ -61,6 +61,23 @@ implementing the revised precision path. Existing evidence remains valid for the
 source/profile it tested; it does not prove the new policy. Measure backend
 capability, precision, cost and memory use explicitly.
 
+### Two independent precision controls
+
+Patrick clarified the distinction on 2026-10-23:
+
+- **Native calculation width:** larger container steps select the calculation
+  precision and hardware cost appropriate to the work.
+- **Retained significand precision:** trimming terminal binary digits provides
+  finer control of stored-position quantization and jitter within a container.
+
+Tune these independently. Reducing retained bits inside an f32 container does
+not by itself reduce allocation or transfer bytes, nor promise faster arithmetic.
+It changes the expressed resolution. Changing the actual native format changes
+the storage/compute tradeoff and requires backend capability and cost checks.
+“Trimming” names the intended precision reduction, not a settled instruction to
+truncate bits: the rounding rule remains to be calibrated. The per-LoD choices
+remain open; no fixed container pairing or reduction ladder is established.
+
 ## Model exposure and analytical view
 
 Provide two levels of exposure control: a global study switch and a per-object
