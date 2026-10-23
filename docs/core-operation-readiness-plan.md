@@ -16,6 +16,12 @@ asks for the remaining integration boundary. Full device/driver qualification
 continues under [#145](https://github.com/Human-Cognome-Project/human-cognome-project/issues/145)
 after the CPU exit below. Earlier bounded GPU observations remain historical.
 
+The [#170 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/170#issuecomment-6367507146)
+accepts D1–D6 within their stated limits. This revision clarifies the contact
+transaction and its resource/test obligations below. That clarification remains
+subject to review; D7 still requires Patrick's modeling disposition. The complete
+implementation contract is pending those two items, with no runtime work claimed.
+
 ## Result and finite operation set
 
 One prepared execution must accept structural letter/byte objects from the
@@ -31,7 +37,7 @@ not mean every deferred research feature in the issue tracker.
 |---|---|
 | Prepare / empty ready | Independently bounded potential, payload, fields, relationships, activity, placement/contact work, identities, transport and report storage; warmed bindings; no physical objects. |
 | First structural submission | No required world starts; reviewed empty-focus bootstrap; complete positive focal mass before populated readiness. |
-| Tick | Existing force/contact/integration/determiner/type-phase rules with current data, sleeping contributors and local-coordinate precision. |
+| Tick | Existing force/contact/integration/determiner/type-phase rules with current data, sleeping contributors and local-coordinate precision; candidate movement and resulting contact coverage validate before publication. |
 | Admit another occurrence | Engine-owned nearest-unoccupied placement at current focus, including sleepers and earlier arrivals; distinct occurrence state and full parent/membership bindings. |
 | Refresh / structural edit | Changed counts, new/retired fields, memberships/shares and explicit contacts; only genuinely new/replaced physical rows initialize; survivors keep current state. |
 | Remove / reuse | Explicit dependency removal, correct mass/focus/contact/activity effects, native recycling and stale-reference rejection. |
@@ -61,18 +67,20 @@ mutation; they cannot be silently counted as tested operations.
 | [Host views](../engine/src/engine/packed_view.h), [transfer](../engine/src/engine/transfer.cpp), CUDA backend | Stable vector views and synchronous transfer; CUDA host-readable/writable allocation is managed memory. | Explicit host-surface capability/lifetime and a reusable backend-pinned comparison path; no claim that vectors or managed memory are pinned slabs. |
 | [Capture](../tools/viewport/native/letter_capture.cpp) | Supplied starts and fixture radii; actual-backend checks, read-only watching and cleanup already exist. | Capture the corrected structural-to-live path and its operations; keep the viewer observational. |
 
-## Decisions proposed for this review
+## Decision status
 
 The settled rule is nearest unoccupied space to the current combined focal
-centroid, with actual extents. These proposals complete the initialization and
-lifecycle details left unapproved by #160. Review should explicitly cover D1–D7;
-acceptance covering them releases implementation without another routine
-permission step. A scope-only acceptance must identify any decision left open.
+centroid, with actual extents. These conventions complete the initialization and
+lifecycle details left unapproved by #160. The #170 review accepts D1–D6 as
+bounded here, including D6's exact-representability limit; D7 remains pending.
+Acceptance of the complete contract releases the four implementation segments
+without another routine permission step. A scope-only acceptance must identify
+any decision left open.
 
-| ID | Proposed convention |
+| ID | Convention |
 |---|---|
 | D1 — bootstrap | Require an explicit nonempty focal selection for populated operational admission. Validate its prospective structural membership first. Select the first exposed participant of the first selected field in canonical source occurrence order as the bootstrap anchor; place that participant at local zero. This explicitly establishes the first body, not merely a coordinate gauge. Place remaining bodies by the same nearest-free rule using the combined centroid of the already placed focal contributions; use the anchor until another focal contribution exists. All selected fields need positive mass before readiness. Empty prepared execution remains valid. No automatic focus selection or caller layout fallback. |
-| D2 — ordinary batches | Freeze the validated focal point at batch entry, process newcomers in canonical occurrence/path order and update prospective occupancy after each placement. Recompute affected fields and final focal controls once for coherent publication. Bootstrap is the explicitly separate D1 case. This replaces #160's tentative per-arrival focus-update proposal if accepted. |
+| D2 — ordinary batches | Freeze the validated focal point at batch entry, process newcomers in canonical occurrence/path order and update prospective occupancy after each placement. Recompute affected fields and final focal controls once for coherent publication. Bootstrap is the explicitly separate D1 case. This replaces #160's tentative per-arrival focus-update proposal. |
 | D3 — new motion | Genuinely new bodies start with engine-owned zero velocity, zero force/displacement and motion flags, initial speed zero, and an awake bit. Existing fields then provide interaction through normal phases. No launch kick, all-coincident placeholder layout or survivor reset. |
 | D4 — geometry / ties | Tangency is admissible. Validate stored coordinates against outward-rounded operative extents; use a documented coordinate/ULP-derived search certificate, never a fixed physical clearance. Resolve equally admissible minima deterministically in the operative frame, then source order. Genuine zero extents keep their existing geometric meaning; missing geometry must not be replaced with zero or a universal fixture radius. Cross-backend dynamic trajectories need mathematical coherence rather than bitwise equality. |
 | D5 — restart | Structural restart is sufficient. Optional supplied positions are a separate owner-bound restart input, checked against definition revision, occurrence, exposure, units/frame and occupancy. Reject invalid hints before replacing a healthy execution; allow an explicit retry without hints. Starts stored in v1 recipes are never automatic hints. Position-only recovery uses D3 for initial motion; a full velocity/checkpoint format is not introduced implicitly. |
@@ -80,8 +88,12 @@ permission step. A scope-only acceptance must identify any decision left open.
 | D7 — bounded exchange | Support explicit aggregate↔declared-byte-parts changes for existing letter occurrences, without automatic LoD selection. Preserve untouched physical records exactly. For the replaced logical occurrence, derive its current mass-weighted centre and linear velocity from outgoing execution state in the common operative frame. Transfer that velocity to replacement bodies and use the old logical centre as a continuity reference for their engine-owned relative instantiation. Retire the old alternative only at coherent publication; never import recipe starts. The relationship between this continuity reference and the nearest-to-focus insertion target must be explicitly accepted before exchange implementation; see below. |
 
 D7 has a real contract boundary: changing the representation of an existing
-logical object differs from adding a genuinely new occurrence. The recommended
-interpretation is to preserve the outgoing logical centre as the exchange's
+logical object differs from adding a genuinely new occurrence. “Replacement”
+here means the aggregate or constituent particles expressed by that **same
+occurrence** after an explicit representation/LoD change: for the current tests,
+one aggregate letter particle ↔ its declared byte particles. It does not mean a
+newly submitted object or automatic LoD selection. The recommended
+interpretation is to use the outgoing logical centre as the exchange's
 placement target, using the same extent-aware nearest-free mechanism for its
 replacement bodies; genuinely new occurrences continue to target global focus.
 That is an **exchange-specific proposal**, not an already accepted exception to
@@ -218,14 +230,54 @@ native acceleration is unavailable; record its actual cost and do not scan V.
 No custom loaded-array scheduler, hidden per-arrival allocation or silently
 truncated pair list is acceptable.
 
-Stage entering/leaving generated pairs coherently. Current contact forces read
-the correct pre-integration state. Activity propagation to peers follows complete
-particle consumption; it cannot make a sleeping peer execute early in that same
-particle traversal. Post-integration discoveries schedule the following particle
-phase. Preserve explicit pair coverage as requested even when not currently
-penetrating; remove only derived coverage whose criterion no longer holds.
-Contact capacity/work exhaustion has an explicit safe boundary and status before
-advancing the affected tick; no healthy partial force calculation is published.
+Contact/work exhaustion is an ordinary **unchanged, healthy rejection**, including
+when motion would create excess contacts. It therefore needs a candidate tick,
+not overflow discovery after modifying committed positions. This transactional
+path is new work; #169's existing live numerical tick does not supply it.
+
+1. Under exclusive execution ownership, reconcile/preflight current contact
+   coverage and prepare bounded transaction scratch from current backend state.
+   Until publication, committed numerical arrays, activity bits, history,
+   contacts/adjacency and execution bookkeeping remain unchanged. Do not first
+   call a live activity reset/consume or clear live force/history buffers.
+2. Evaluate the existing force, integration, determiner and dependent centroid/
+   focal calculations into prepared candidate outputs. Contact forces read the
+   pre-integration state and its validated coverage. Reuse the accepted numerical
+   kernel logic; introduce no second solver. Derive transaction-local consume/
+   wake effects through native type-phase activity/presence machinery, including
+   ordinary invalidations. Keep one persistent native awake set per type; scratch
+   intents are neither a second scheduler nor another population of particles.
+   A sleeping peer cannot execute early because candidate propagation woke it.
+3. Discover and compact prospective derived contacts against **candidate
+   post-integration positions**, retaining sleeping occupants. Validate the
+   explicit/derived union, both CSR directions, all pair/work/compaction limits
+   and pending activity effects before any committed write. Preserve requested
+   explicit pairs even when not penetrating; remove only derived coverage whose
+   criterion no longer holds. Post-integration discoveries affect the following
+   particle phase, not the force evaluation already staged for this tick.
+4. Synchronize and inspect candidate completion/status. Only after all ordinary
+   rejection checks pass, copy the affected candidate numerical/control outputs,
+   install the complete contact/adjacency changes and apply the ordered native
+   consume/wake effects. Publish the completed tick, frame and any topology/
+   reference-generation changes together after completion. No report, source
+   update or next tick may observe the intermediate copies.
+
+On a named capacity/work rejection, discard scratch and return attempted demand
+separately from the last completed report. Preserve committed positions, velocities,
+forces, speed/motion state, displacement, centroid accumulators and residue/history,
+focus/universal controls, native activity, contacts/adjacency, counts, parameter/
+invalidation bookkeeping, frame and generation exactly; readiness stays true.
+Do not download and restore a host snapshot or replay survivors to obtain this
+guarantee. Scratch may be overwritten by the next attempt. Its P/G-sized numerical
+storage and overlapping contact copies must be reserved and charged under §5;
+ordinary batch scratch alone is insufficient for a tick touching all bodies.
+
+An unexpected backend failure that makes candidate completion unreliable, or a
+failure after committed copying begins, follows the explicit unready disposition.
+It cannot be reported as an unchanged resource rejection. Expected contact/work
+exhaustion must always be detected before that publication boundary. These rules
+add a numerical transaction boundary, without changing the accepted force law,
+integration order or particle/centroid phase predicates.
 
 Extend #169's native commit, candidate reduction and wake machinery for generated
 initialization, selection and exchange. Preserve survivor numerical/motion state,
@@ -290,6 +342,8 @@ backend copies and binding signatures for every added family, including:
 | Occupancy/current geometry views | Present-body capacity P, exact coordinate/radius widths and borrowing lifetime; no payload per V. |
 | Placement candidates/certificates | Named finite work bound, actual records/stack or native node capacity, interval/error/status outputs, and overlapping batch candidates. |
 | Generated contacts | Explicit plus derived pair demand, ordered/deduped candidate and committed copies, both CSR directions, overflow/status outputs. |
+| Candidate tick numerical/control state | P/G-capacity outputs for all fields modified by a tick, including force, velocity, position, speed, motion/displacement, centroid accumulators and residue/previous centres, focus/universal controls, counters and pending bookkeeping. Charge simultaneous committed and candidate storage; no payload per V. |
+| Candidate tick activity and publication | Bounded consume/wake intents for P/G, contact/CSR construction work, candidate status/demand, generation/frame staging and warmed bindings. Account for native activity effects without a second persistent scheduler. |
 | Focus/rebase/exchange | Selected-field limit F, old-plus-new P/G/R peaks, numerical/history/control candidate extents and optional recovery rows. |
 | Owner bindings/source diff | Fixed-width or bounded interned keys, metadata bytes, P/G/E/C bindings, staged commands/results/retirements and total bootstrap input; no growing hot std::map/string registry. |
 | Reports/capture | Reserved live-row packing, handles/provenance, generation/frame and inspection outputs; owned snapshot copies/JSON formatting explicitly separate. |
@@ -300,6 +354,33 @@ work/key/pin limits must be named/configurable and versioned, not hidden margins
 Keep #169's current/final/peak P/G/E/C/R/F/B checks; unsupported shapes and
 insufficient setup reservations fail before allocation. First use and maximum
 supported batches must use provisioned backing and warmed actual bindings.
+
+For example, retaining the current complete row layouts for candidate numerical
+outputs requires `15*max(P,1) + 14*max(G,1) + 12` f32 elements: particle payload
+11, speed 1 and displacement 3; group payload 8 and history 6; focal controls 11
+and universal mass 1. Add `2*max(P,1) + 2*max(G,1)` i32 motion/group flags and
+the current 18 i64 counters, then separately charge transaction-local activity
+intents, bookkeeping, status and candidate contacts/adjacency/index workspace.
+This is an illustrative complete-layout numerical subtotal, not a new total S
+or permission to omit native metadata, alignment or backend/host copies. A
+smaller changed-column layout or reuse of existing scratch requires an explicit
+lifetime/alias proof. Structural-batch candidate rows cannot cover a maximum tick.
+
+The implementation manifest must give exact candidate/live peak bytes and
+lifetimes for each supported profile, including overlap with placement/exchange
+scratch and old/new contact lists and both CSR directions. Serialize these
+operations under the execution owner; reuse memory only after its previous use
+has completed. Releasing outgoing contacts does not fund storage needed to
+validate their replacement. Prepare and warm the first/maximal tick paths too.
+
+Measure backend-to-candidate reads/copies, candidate numerical/contact work,
+status synchronization, successful publication copies and native bit updates
+separately. Record bytes and completion barriers on success and rejection for
+BulkCopy, CpuDirect and the eventual CUDA path. Candidate numerics remain
+backend-resident; no mandatory full numerical host round trip or host rollback
+is introduced. Any host inspection/staging copies are additional accounted
+storage and transfers. The atomic rejection guarantee has these real memory
+and calculation costs; it is not a declaration-only operation.
 
 CPU BulkCopy and CpuDirect preserve backend authority and their checked lifetimes.
 For the GPU handoff, finish the capability/ownership plumbing for reusable native
@@ -350,7 +431,8 @@ specific conventions are accepted:
    isolated migration proof; all prior cold/v1 data unchanged. Retain an explicit
    legacy fixture route and the optional recovery-input distinction.
 2. **Engine admission:** D1–D4 bootstrap/nearest search, intrinsic extent/occupancy,
-   contact coverage, prepared work/transport resources and native commit wiring.
+   contact coverage, candidate-tick transaction/publication, prepared work/transport
+   resources and native commit wiring.
    Real structural batches must tick in the same execution without survivor replay.
 3. **Operational lifecycle:** bounded source/owner diff, refresh/removal/replacement,
    focus/rebase, D7 representation exchange and D5 controlled restart/reporting.
@@ -386,7 +468,21 @@ Required proof includes:
   being mislabeled bitwise preservation of replaced coordinates.
 - Contact entry/exit during continued motion, sleeping targets on both index
   sides/across blocks, explicit/derived deduplication, source order and capacity
-  failures before partial force/integration work.
+  failures before committed force/integration changes.
+- A focused tick transaction case starts with valid within-capacity coverage,
+  then motion creates excess derived pairs. For both CPU host paths, require a
+  named contact-capacity rejection with bitwise unchanged committed positions,
+  velocities, forces, speed/motion/displacement, native activity, centroid and
+  residue/history, focus/universal controls, contact lists/CSR, counts,
+  parameter/invalidation bookkeeping, frame and generation; execution remains
+  ready and the previous report remains the last completed result. Separately
+  exhaust discovery/compaction work while final pair demand fits. Verify a
+  subsequent accepted tick against an independent matching execution after an
+  explicit valid adjustment, proving failed candidates leave no history or wake
+  effects. Check prepared backing/bindings and no host-restore/reseed workaround.
+  Distinguish injected backend/publication failures, which make execution unready,
+  from these ordinary finite-resource rejections. Carry these cases to the GPU
+  matrix after CPU acceptance.
 - Independent new work/key/report/pin limits and existing P/G/E/C/R/F/B/S peaks,
   stale/foreign owner/session/row references, no-ops, malformed geometry/recovery,
   unavailable local input, pre/post-mutation failure and cleanup. Old valid
