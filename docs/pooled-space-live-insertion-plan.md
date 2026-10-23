@@ -4,11 +4,14 @@ Status: **scope and native-first investigation sequence accepted in #160,
 2026-10-21**. This plan addresses
 [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156)
 and Patrick's subsequent `0x` and computational-cost clarifications. The
-correction is required and unbuilt. The plan was a documentation-only change.
-The subsequent [native storage investigation](../engine/docs/PREPARED-SPACE.md)
-was accepted in #161 as bounded probe evidence, not completion of the foundation
-or live insertion. The [next combined-capacity segment](prepared-capacity-foundation-plan.md)
-is proposed separately for review; its implementation is not built.
+production correction remains incomplete. The accepted PR changed documents only.
+The [storage investigation](../engine/docs/PREPARED-SPACE.md),
+[combined-capacity foundation](prepared-capacity-foundation-plan.md) and
+[coherent updater](../engine/docs/PREPARED-UPDATES.md) are now accepted through
+#161/#164/#166/#169. They are bounded foundation evidence. The remaining
+[core operation readiness plan](core-operation-readiness-plan.md) is proposed
+for review before full GPU testing; its initialization/exchange conventions
+are not approved by the earlier scope acceptance.
 
 Accepting this plan approves its scope and native-first investigation sequence.
 It does **not** approve the bootstrap/focus-establishment, initial-velocity,
