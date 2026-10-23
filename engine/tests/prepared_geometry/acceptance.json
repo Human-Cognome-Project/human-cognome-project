@@ -3214,7 +3214,7 @@
     },
     {
       "path": "engine/tests/prepared_geometry/cpu-native-output.txt",
-      "sha256": "1297650eefc840e21ee38ebce3b0dc5c45dfeea2966a7e18e02f3fce7c95274e"
+      "sha256": "9f971a83b3ac502722f98eaba42bc4fb2df58e2914903658df3db87287e1a0ff"
     }
   ]
 }
