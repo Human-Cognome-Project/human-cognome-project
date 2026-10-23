@@ -2,7 +2,7 @@
   "status": "CPU geometry-preflight implementation submitted for review; partial Segment 2; not GPU qualification",
   "source_pin": "519ae7916b96d06d1c1c33b1e3c415bf13ceb5d7",
   "baseline_merge": "c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66",
-  "backend_tree": "519ae7916b96d06d1c1c33b1e3c415bf13ceb5d7",
+  "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad",
   "compiler": "Clang/LLVM 15.0.6",
   "backend": "CPU-only matched native build; geometry modes use four CPU workers; existing tests retain their configured workers; CTest -j2",
   "checks": {
