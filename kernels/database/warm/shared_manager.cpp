@@ -31,6 +31,10 @@ void SharedManager::gate(const Bundle &b) const {
   }
   for (const auto &g : b.geometry) gate(g.object);
   for (const auto &o : b.occurrences) gate(o.definition);
+  for (const auto &o : b.structural_occurrences)
+    gate(o.definition);
+  for (const auto &f : b.focal_fields)
+    gate(f.object);
 }
 std::optional<ColdRecord> SharedManager::read(const ObjectKey &object) {
   gate(object);

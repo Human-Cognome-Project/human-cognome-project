@@ -28,7 +28,10 @@ placement from private information. See the [design](../../../docs/pre-d-hot-wor
 
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,
-geometry and initial occurrences/selections/contacts. A bundle does not contain
+intrinsic geometry and versioned occurrences/selections/contacts. The
+[structural recipe segment](STRUCTURAL-RECIPES.md) adds coordinate-free v2
+publication, explicit focal selection and retained-v1 compatibility under #170.
+A bundle does not contain
 live GPU slots or mutable engine state. The accepted version-1 layout is Root for
 letter-only exposure, or Root plus its primary letter child when bytes are exposed.
 Stage A checks that a supplied recipe follows that contract; it does not generate
@@ -43,6 +46,9 @@ only the `warm_toolbox` schema, revokes public access, and fails if that schema
 already exists. It contains PK/FK tables, no triggers or stored procedures and
 no reverse-search indexes. Addresses remain paired Base62 `text[] COLLATE "C"`.
 Never apply this schema to either retained cold database.
+The original `schema.sql` remains v1. V2 requires the explicit, transactional
+[migration 002](migrations/002-structural-recipes.sql); no client automatically
+migrates an existing store. V1 clients/fixtures continue to use the original rows.
 
 - `Administrator::configure` installs a complete trusted root directory in one
   transaction. Shared `00` and `02` must carry the same validated pair epoch;

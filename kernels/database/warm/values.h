@@ -132,6 +132,18 @@ struct Occurrence {
   int node{0};
   Point position, velocity;  // Immutable initial inputs, in node-local units.
 };
+// Recipe v2: structural identity only, including inactive alternatives. No
+// execution slot, world position, velocity or recovery hint can be stored here.
+struct StructuralOccurrence {
+  OccurrenceId id;
+  ObjectKey definition;
+  int node{0};
+};
+enum class FieldKind { SiblingDefinition, ParentValue, Membership };
+struct FocalField {
+  FieldKind kind;
+  ObjectKey object;
+};
 enum class Exposure { Aggregate, Parts };
 struct Selection {
   std::uint64_t entry{0};
@@ -151,10 +163,19 @@ struct Bundle {
   std::vector<Occurrence> occurrences;
   std::vector<Selection> selections;
   std::vector<Contact> contacts;
+  // Versioned alternatives: v1 uses occurrences, v2 uses these structural rows.
+  // Mixing versions is rejected, rather than discarding supplied initial state.
+  std::vector<StructuralOccurrence> structural_occurrences;
+  std::vector<FocalField> focal_fields;
 };
 
 // Validate a supplied normalized recipe, rather than derive one (Stage B).
 void validate(const Bundle &bundle);
+// Explicit legacy-to-operational adapter. Original v1 rows remain unchanged;
+// caller supplies a distinct publication identity and explicit focal selection.
+// Legacy starts are discarded, never treated as restart hints.
+Bundle structural_from_v1(const Bundle &legacy, BundleRef publication,
+                          std::vector<FocalField> focal_fields);
 std::string tool_body(
     const Tool &tool);  // Canonical exact immutable-body comparison.
 void validate_directory(const std::vector<Binding> &bindings);

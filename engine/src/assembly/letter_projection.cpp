@@ -148,6 +148,9 @@ ScaleRole role(warm::ScaleRole r) {
 
 warm::Bundle normalize_letters(warm::Bundle b,
                                const std::vector<LetterRequest> &requests) {
+  need(b.recipe_version == 1 && b.structural_occurrences.empty() &&
+           b.focal_fields.empty(),
+       "legacy normalization requires recipe v1");
   need(b.nodes.empty() && b.occurrences.empty() && b.selections.empty(),
        "normalization requires definitions, not an existing occurrence recipe");
   need(!requests.empty() && requests.size() <= std::size_t(INT32_MAX) / 2,
@@ -187,6 +190,45 @@ warm::Bundle normalize_letters(warm::Bundle b,
   return b;
 }
 
+warm::Bundle normalize_structural_letters(
+    warm::Bundle b,
+    const std::vector<StructuralLetterRequest> &requests) {
+  need(b.nodes.empty() && b.occurrences.empty() &&
+           b.structural_occurrences.empty() && b.selections.empty(),
+       "structural normalization requires definitions only");
+  need(b.recipe_version == 1 || b.recipe_version == 2,
+       "unsupported recipe version");
+  need(!requests.empty() && requests.size() <= std::size_t(INT32_MAX) / 2,
+       "empty/oversized letter request");
+  b.recipe_version = 2;
+  const auto tools = index(b);
+  const bool parts = std::any_of(
+      requests.begin(), requests.end(),
+      [](const auto &r) { return r.exposure == warm::Exposure::Parts; });
+  b.nodes = {{-1, warm::ScaleRole::Root}};
+  if (parts)
+    b.nodes.push_back({0, warm::ScaleRole::PrimaryStep});
+  std::set<std::uint64_t> entries;
+  for (const auto &r : requests) {
+    need(entries.insert(r.entry).second, "duplicate request entry");
+    const auto expected = expand(tools, get(tools, r.letter));
+    need(expected.size() <
+             std::size_t(INT32_MAX) - b.structural_occurrences.size(),
+         "native occurrence capacity overflow");
+    b.structural_occurrences.push_back(
+        {{r.entry, {}}, r.letter.object, parts ? 1 : 0});
+    warm::Selection selection{r.entry, r.exposure, {}};
+    for (const auto &v : expected) {
+      const warm::OccurrenceId id{r.entry, v.path};
+      b.structural_occurrences.push_back({id, v.byte.object, 0});
+      selection.parts.push_back(id);
+    }
+    b.selections.push_back(std::move(selection));
+  }
+  warm::validate(b);
+  return b;
+}
+
 bool operator==(const OccurrenceKey &a, const OccurrenceKey &b) {
   return a.study == b.study && a.source == b.source;
 }
@@ -204,10 +246,17 @@ LetterProjection project_letters(const warm::Bundle &b) {
   out.study_ = warm::new_uuid();
   out.recipe_ = b;
   const auto tools = index(b);
-  std::map<warm::OccurrenceId, const warm::Occurrence *> ordered;
+  std::map<warm::OccurrenceId, warm::StructuralOccurrence> ordered;
+  std::map<warm::OccurrenceId, const warm::Occurrence *> legacy;
   std::set<warm::ObjectKey> used;
   for (const auto &o : b.occurrences) {
-    ordered.emplace(o.id, &o);
+    ordered.emplace(o.id,
+                    warm::StructuralOccurrence{o.id, o.definition, o.node});
+    legacy.emplace(o.id, &o);
+    used.insert(o.definition);
+  }
+  for (const auto &o : b.structural_occurrences) {
+    ordered.emplace(o.id, o);
     used.insert(o.definition);
   }
   std::map<warm::OccurrenceId, ByteProvenance> provenance;
@@ -215,7 +264,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
   std::set<warm::OccurrenceId> active;
   for (const auto &s : b.selections) {
     const warm::OccurrenceId aggregate{s.entry, {}};
-    const auto &letter = *tools.at(ordered.at(aggregate)->definition);
+    const auto &letter = *tools.at(ordered.at(aggregate).definition);
     const auto expanded = expand(tools, letter);
     if (letter.parents.size() == 1)
       equivalent.emplace(aggregate, letter.parents[0].target);
@@ -233,7 +282,8 @@ LetterProjection project_letters(const warm::Bundle &b) {
     else
       active.insert(s.parts.begin(), s.parts.end());
   }
-  out.input_.capacity = int(ordered.size());  // A validation checked i32 bound.
+  if (b.recipe_version == 1)
+    out.input_.capacity = int(ordered.size());
   for (const auto &id : used) {
     const auto &t = *tools.at(id);
     const auto &g =
@@ -245,21 +295,25 @@ LetterProjection project_letters(const warm::Bundle &b) {
     for (const auto &p : t.parents)
       d.parents.push_back(
           {warm::key(p.target.object), p.ordinal, p.contribution});
-    out.input_.definitions.push_back(std::move(d));
+    out.structural_input_.definitions.push_back(std::move(d));
   }
-  for (const auto &[id, ptr] : ordered) {
-    const auto &o = *ptr;
+  for (const auto &[id, o] : ordered) {
     const auto &t = *tools.at(o.definition);
     const OccurrenceKey k{out.study_, id};
-    const auto slot = int(out.occurrences_.size());
+    const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
     ProjectedOccurrence record{k,  t.ref, slot, o.node, active.count(id) != 0,
                                {}, {}};
     if (provenance.count(id)) record.byte = provenance.at(id);
     if (equivalent.count(id)) record.complete_character = equivalent.at(id);
     out.occurrences_.push_back(record);
-    out.input_.occurrences.push_back({occurrence_text(k),
-                                      warm::key(o.definition), slot, o.node,
-                                      point(o.position), point(o.velocity)});
+    out.structural_input_.occurrences.push_back(
+        {occurrence_text(k), warm::key(o.definition), o.node});
+    if (b.recipe_version == 1) {
+      const auto &initial = *legacy.at(id);
+      out.input_.occurrences.push_back(
+          {occurrence_text(k), warm::key(o.definition), slot, o.node,
+           point(initial.position), point(initial.velocity)});
+    }
     if (record.active)
       for (const auto &p : t.parents)
         out.parents_.push_back({k,
@@ -275,15 +329,26 @@ LetterProjection project_letters(const warm::Bundle &b) {
                             : Exposure::Parts};
     for (const auto &id : s.parts)
       selection.parts.push_back(occurrence_text({out.study_, id}));
-    out.input_.selections.push_back(std::move(selection));
+    out.structural_input_.selections.push_back(std::move(selection));
   }
   for (const auto &c : b.contacts)
-    out.input_.contacts.push_back({occurrence_text({out.study_, c.a}),
-                                   occurrence_text({out.study_, c.b})});
+    out.structural_input_.contacts.push_back(
+        {occurrence_text({out.study_, c.a}),
+         occurrence_text({out.study_, c.b})});
+  for (const auto &f : b.focal_fields)
+    out.structural_input_.focal_fields.push_back(
+        {static_cast<GroupKind>(f.kind), warm::key(f.object)});
+  if (b.recipe_version == 1) {
+    out.input_.definitions = out.structural_input_.definitions;
+    out.input_.selections = out.structural_input_.selections;
+    out.input_.contacts = out.structural_input_.contacts;
+  }
   return out;
 }
 
 StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
+  need(recipe_.recipe_version == 1,
+       "legacy numerical binding requires recipe v1");
   need(nodes.size() == recipe_.nodes.size(),
        "native layout differs from normalized recipe");
   for (std::size_t i = 0; i < nodes.size(); ++i)
@@ -291,6 +356,21 @@ StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
              nodes[i].role == role(recipe_.nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = input_;
+  input.nodes = nodes;
+  return input;
+}
+StructuralStudyInput LetterProjection::bind_structure(
+    const std::vector<StudyNode> &nodes) const {
+  need(
+      recipe_.recipe_version == 2,
+      "structural binding requires recipe v2; explicitly adapt legacy recipes");
+  need(nodes.size() == recipe_.nodes.size(),
+       "native layout differs from normalized recipe");
+  for (std::size_t i = 0; i < nodes.size(); ++i)
+    need(nodes[i].layout && nodes[i].parent == recipe_.nodes[i].parent &&
+             nodes[i].role == role(recipe_.nodes[i].role),
+         "native binding differs from normalized exposure");
+  auto input = structural_input_;
   input.nodes = nodes;
   return input;
 }

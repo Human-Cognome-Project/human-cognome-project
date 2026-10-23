@@ -145,6 +145,16 @@ Toolbox::Toolbox(const std::string &s, Context c)
        "invalid trusted role");
 }
 Toolbox::~Toolbox() = default;
+int Toolbox::schema_version() {
+  auto r = pg_->query("SELECT to_regclass('warm_toolbox.recipe_schema')");
+  if (PQgetisnull(r.get(), 0, 0))
+    return 1;
+  r = pg_->query(
+      "SELECT version FROM warm_toolbox.recipe_schema WHERE singleton");
+  need(PQntuples(r.get()) == 1 && cell(r, 0, 0) == "2",
+       "unsupported warm recipe schema");
+  return 2;
+}
 void Toolbox::read_authority(const ObjectKey &o) const {
   key(o);
   if (!o.scope.nil() && o.scope != context_.instance)
@@ -226,6 +236,8 @@ Prepared Toolbox::prepare(Bundle request,
   for (auto &t : request.tools)
     if (!candidate.references_.count(t.ref.object)) t.author = context_.actor;
   validate(request);
+  need(request.recipe_version == 1 || schema_version() == 2,
+       "structural recipe requires warm schema migration 002");
   candidate.bundle_ = std::move(request);
   candidate.bindings_ = used_bindings(candidate.bundle_);
   bool can_prepare = false;
@@ -488,18 +500,35 @@ BundleRef Toolbox::publish(Prepared candidate,
            "vx,vy,vz",
            p);
   }
+  const std::string suffix = b.recipe_version == 2 ? "_v2" : "";
+  for (const auto &o : b.structural_occurrences) {
+    p = params(b.ref);
+    append(p, o.id);
+    append(p, o.definition);
+    p.push_back(std::to_string(o.node));
+    insert(*pg_, "bundle_occurrence_v2",
+           "selection,bundle_revision,entry,path,scope,address,node", p);
+  }
+  for (std::size_t i = 0; i < b.focal_fields.size(); ++i) {
+    p = params(b.ref);
+    p.push_back(std::to_string(i));
+    p.push_back(std::to_string(int(b.focal_fields[i].kind)));
+    append(p, b.focal_fields[i].object);
+    insert(*pg_, "bundle_focus_v2",
+           "selection,bundle_revision,ordinal,kind,scope,address", p);
+  }
   for (const auto &s : b.selections) {
     p = params(b.ref);
     p.push_back(std::to_string(s.entry));
     p.push_back(std::to_string(int(s.exposure)));
-    insert(*pg_, "bundle_selection", "selection,bundle_revision,entry,exposure",
-           p);
+    insert(*pg_, "bundle_selection" + suffix,
+           "selection,bundle_revision,entry,exposure", p);
     for (std::size_t i = 0; i < s.parts.size(); ++i) {
       p = params(b.ref);
       p.push_back(std::to_string(s.entry));
       p.push_back(std::to_string(i));
       p.push_back(path_array(s.parts[i].path));
-      insert(*pg_, "bundle_part",
+      insert(*pg_, "bundle_part" + suffix,
              "selection,bundle_revision,entry,ordinal,path", p);
     }
   }
@@ -508,7 +537,7 @@ BundleRef Toolbox::publish(Prepared candidate,
     p.push_back(std::to_string(i));
     append(p, b.contacts[i].a);
     append(p, b.contacts[i].b);
-    insert(*pg_, "bundle_contact",
+    insert(*pg_, "bundle_contact" + suffix,
            "selection,bundle_revision,ordinal,a_entry,a_path,b_entry,b_path",
            p);
   }
@@ -566,6 +595,11 @@ Acquired Toolbox::read_bundle(const BundleRef &ref) {
   b.owner = Uuid(cell(r, 0, 0));
   b.creator = Uuid(cell(r, 0, 1));
   b.recipe_version = std::stoi(cell(r, 0, 2));
+  need(b.recipe_version == 1 || b.recipe_version == 2,
+       "unsupported recipe version");
+  need(b.recipe_version == 1 || schema_version() == 2,
+       "structural recipe requires warm schema migration 002");
+  const std::string suffix = b.recipe_version == 2 ? "_v2" : "";
   if (b.owner != context_.instance) throw Unauthorized("bundle owner");
   r = pg_->query(
       "SELECT scope,array_to_string(address,'.'),revision,x,y,z FROM "
@@ -599,30 +633,51 @@ Acquired Toolbox::read_bundle(const BundleRef &ref) {
     b.nodes.push_back(
         {PQgetisnull(r.get(), i, 0) ? -1 : std::stoi(cell(r, i, 0)),
          ScaleRole(std::stoi(cell(r, i, 1)))});
-  r = pg_->query(
-      "SELECT "
-      "entry,array_to_string(path,','),scope,array_to_string("
-      "address,'.'),node,px,py,pz,vx,vy,vz "
-      "FROM warm_toolbox.bundle_occurrence WHERE selection=$1 AND "
-      "bundle_revision=$2 ORDER BY entry,path",
-      p);
-  for (int i = 0; i < PQntuples(r.get()); ++i)
-    b.occurrences.push_back({occurrence_id(r, i, 0), object(r, i, 2),
-                             std::stoi(cell(r, i, 4)), point(r, i, 5),
-                             point(r, i, 8)});
-  r = pg_->query(
-      "SELECT entry,exposure FROM warm_toolbox.bundle_selection "
-      "WHERE selection=$1 AND bundle_revision=$2 ORDER BY entry",
-      p);
+  if (b.recipe_version == 1) {
+    r = pg_->query(
+        "SELECT "
+        "entry,array_to_string(path,','),scope,array_to_string(address,'.'),"
+        "node,px,py,pz,vx,vy,vz FROM warm_toolbox.bundle_occurrence "
+        "WHERE selection=$1 AND bundle_revision=$2 ORDER BY entry,path",
+        p);
+    for (int i = 0; i < PQntuples(r.get()); ++i)
+      b.occurrences.push_back({occurrence_id(r, i, 0), object(r, i, 2),
+                               std::stoi(cell(r, i, 4)), point(r, i, 5),
+                               point(r, i, 8)});
+  } else {
+    r = pg_->query(
+        "SELECT "
+        "entry,array_to_string(path,','),scope,array_to_string(address,'.'),"
+        "node FROM warm_toolbox.bundle_occurrence_v2 "
+        "WHERE selection=$1 AND bundle_revision=$2 ORDER BY entry,path",
+        p);
+    for (int i = 0; i < PQntuples(r.get()); ++i)
+      b.structural_occurrences.push_back(
+          {occurrence_id(r, i, 0), object(r, i, 2), std::stoi(cell(r, i, 4))});
+    r = pg_->query("SELECT kind,scope,array_to_string(address,'.') FROM "
+                   "warm_toolbox.bundle_focus_v2 "
+                   "WHERE selection=$1 AND bundle_revision=$2 ORDER BY ordinal",
+                   p);
+    for (int i = 0; i < PQntuples(r.get()); ++i)
+      b.focal_fields.push_back(
+          {FieldKind(std::stoi(cell(r, i, 0))), object(r, i, 1)});
+  }
+  r = pg_->query("SELECT entry,exposure FROM warm_toolbox.bundle_selection" +
+                     suffix +
+                     " "
+                     "WHERE selection=$1 AND bundle_revision=$2 ORDER BY entry",
+                 p);
   for (int i = 0; i < PQntuples(r.get()); ++i) {
     Selection s{
         std::stoull(cell(r, i, 0)), Exposure(std::stoi(cell(r, i, 1))), {}};
     auto sp = p;
     sp.push_back(std::to_string(s.entry));
     auto parts = pg_->query(
-        "SELECT entry,array_to_string(path,',') FROM warm_toolbox.bundle_part "
-        "WHERE selection=$1 AND bundle_revision=$2 AND entry=$3 ORDER BY "
-        "ordinal",
+        "SELECT entry,array_to_string(path,',') FROM warm_toolbox.bundle_part" +
+            suffix +
+            " "
+            "WHERE selection=$1 AND bundle_revision=$2 AND entry=$3 ORDER BY "
+            "ordinal",
         sp);
     for (int j = 0; j < PQntuples(parts.get()); ++j)
       s.parts.push_back(occurrence_id(parts, j, 0));
@@ -631,8 +686,10 @@ Acquired Toolbox::read_bundle(const BundleRef &ref) {
   r = pg_->query(
       "SELECT "
       "a_entry,array_to_string(a_path,','),b_entry,array_to_string("
-      "b_path,',') FROM warm_toolbox.bundle_contact "
-      "WHERE selection=$1 AND bundle_revision=$2 ORDER BY ordinal",
+      "b_path,',') FROM warm_toolbox.bundle_contact" +
+          suffix +
+          " "
+          "WHERE selection=$1 AND bundle_revision=$2 ORDER BY ordinal",
       p);
   for (int i = 0; i < PQntuples(r.get()); ++i)
     b.contacts.push_back({occurrence_id(r, i, 0), occurrence_id(r, i, 2)});

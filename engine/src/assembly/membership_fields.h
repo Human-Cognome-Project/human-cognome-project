@@ -22,6 +22,9 @@ class MembershipFields {
   // Caller still owns layout, runtime and (in D) any warm pins/materialization.
   StudyInput bind(const LetterProjection &projection,
                   const std::vector<StudyNode> &nodes) const;
+  StructuralStudyInput bind_structure(
+      const LetterProjection &projection,
+      const std::vector<StudyNode> &nodes) const;
 
  private:
   MembershipFields() = default;

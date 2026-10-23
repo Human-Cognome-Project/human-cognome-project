@@ -1,9 +1,9 @@
 # Complete the core operation path before full GPU qualification
 
-Status: **proposed for review, 2026-10-23**. Baseline: `main` at
+Status: **accepted in #170, 2026-10-23**. Baseline: `main` at
 `768e2228cf3794b607469e7582020750b47ded6b`, the merge of #169. Patrick's current
 direction is to finish the core operation set and CPU acceptance before using
-full local GPU testing as the next gate. This PR changes documents only.
+full local GPU testing as the next gate. The planning PR changed documents only.
 
 This is the remaining integration workstream under
 [#156](https://github.com/Human-Cognome-Project/human-cognome-project/issues/156),
@@ -21,8 +21,11 @@ accepts D1–D6 within their stated limits. This revision clarifies the contact
 transaction and its resource/test obligations below. Patrick subsequently
 confirmed D7: expansion/compression targets the object's current position, or
 nearest unoccupied position; nearest-to-focus is for genuinely new placements.
-The contact clarification remains subject to review before accepting the complete
-implementation contract. No runtime work is claimed.
+The [follow-up disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/170#issuecomment-6367936097)
+accepts the complete contract, including contact publication, D1–D7 and all four
+implementation segments. This acceptance is not runtime completion or GPU
+qualification. Segment 1's [structural recipe implementation](../kernels/database/warm/STRUCTURAL-RECIPES.md)
+is submitted separately; the remaining engine/lifecycle/CPU exit work is unbuilt.
 
 ## Result and finite operation set
 
@@ -59,6 +62,10 @@ mutation; they cannot be silently counted as tested operations.
 
 ## Current source gaps
 
+This table records the accepted #169 baseline. Segment 1's versioned structural
+surfaces are described in the implementation link above; later corrections below
+remain the implementation contract rather than a claim of completed runtime work.
+
 | Surface | Current behavior | Correction |
 |---|---|---|
 | [Warm values](../kernels/database/warm/values.h), [validation](../kernels/database/warm/values.cpp), [schema](../kernels/database/warm/schema.sql), [toolbox](../kernels/database/warm/toolbox.cpp) | Bundle recipe version 1; every occurrence persists mandatory position/velocity columns. | Versioned coordinate-free structural recipe and additive retained-data compatibility. |
@@ -77,9 +84,8 @@ lifecycle details left unapproved by #160. The #170 review accepts D1–D6 as
 bounded here, including D6's exact-representability limit. Patrick confirmed D7
 on 2026-10-23: “current position (or nearest) for expansion/compression,” with
 nearest unoccupied to focus reserved for new placements.
-Acceptance of the complete contract releases the four implementation segments
-without another routine permission step. A scope-only acceptance must identify
-any decision left open.
+The complete contract is accepted and releases the four implementation segments
+without another routine permission step.
 
 | ID | Convention |
 |---|---|

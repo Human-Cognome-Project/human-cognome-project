@@ -189,9 +189,11 @@ record the earlier slice. Production placement/live insertion and GPU
 allocation/transfer qualification retain their own acceptance work.
 
 The [remaining core operation plan](../docs/core-operation-readiness-plan.md)
-is proposed for review after #169 acceptance. It covers the structural-to-live
+is accepted in #170 after #169. It covers the structural-to-live
 lifecycle and complete CPU operation matrix before full local GPU testing.
-No additional runtime capability is claimed by this planning work.
+Its first [structural recipe segment](../kernels/database/warm/STRUCTURAL-RECIPES.md)
+adds v2 storage/projection compatibility; engine admission and the enduring
+operational lifecycle still require the later segments.
 
 Historical machine-specific measurements and development decisions remain under
 `docs/`; read their dates and scope rather than treating each as a current guarantee.

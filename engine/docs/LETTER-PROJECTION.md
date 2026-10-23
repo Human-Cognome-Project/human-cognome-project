@@ -1,5 +1,13 @@
 # Native letter/byte projection — Stage B
 
+The supplied-state path below is retained as the **legacy v1 fixture**. The
+[#170 structural segment](../../kernels/database/warm/STRUCTURAL-RECIPES.md) adds
+`normalize_structural_letters` and `bind_structure` for v2: all alternatives have
+structural identities, intrinsic geometry and explicit focus, with no world
+starts or numerical slots. It preserves the same exact UTF-8 construction and
+membership accounting. Native engine-owned admission and enduring workbench
+integration remain later segments; v2 cannot call the legacy numerical `bind`.
+
 Accepted and merged in [#143](https://github.com/Human-Cognome-Project/human-cognome-project/pull/143)
 at `6ccd5a3`, closing #142,
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).

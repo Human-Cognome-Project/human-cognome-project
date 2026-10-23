@@ -174,7 +174,12 @@ void validate(const Bundle &b) {
   identity(b.ref.revision);
   identity(b.owner);
   identity(b.creator);
-  need(b.recipe_version == 1, "unsupported recipe version");
+  need(b.recipe_version == 1 || b.recipe_version == 2,
+       "unsupported recipe version");
+  need(b.recipe_version == 1
+           ? b.structural_occurrences.empty() && b.focal_fields.empty()
+           : b.occurrences.empty(),
+       "mixed legacy and structural recipe inputs");
   std::map<std::string, const Tool *> tools;
   for (const auto &t : b.tools) {
     identity(t.ref.revision);
@@ -236,20 +241,28 @@ void validate(const Bundle &b) {
       need(std::isfinite(s.radius) && s.radius >= 0, "invalid sphere");
     }
   }
-  need(!b.occurrences.empty() && b.occurrences.size() <= std::size_t(INT32_MAX),
-       "empty/oversized recipe");
-  std::map<OccurrenceId, const Occurrence *> occurrences;
-  for (const auto &o : b.occurrences) {
+  const auto count = b.recipe_version == 1 ? b.occurrences.size()
+                                           : b.structural_occurrences.size();
+  need(count > 0 && count <= std::size_t(INT32_MAX), "empty/oversized recipe");
+  std::map<OccurrenceId, StructuralOccurrence> occurrences;
+  auto add = [&](const StructuralOccurrence &o) {
     need((o.id.path.empty() || o.id.path.size() == 2) &&
-             occurrences.emplace(o.id, &o).second,
+             occurrences.emplace(o.id, o).second,
          "invalid/duplicate occurrence path");
     const auto it = tools.find(key(o.definition));
     need(it != tools.end() && it->second->mass && *it->second->mass > 0 &&
              geometry.count(key(o.definition)),
          "missing live mass/geometry");
-    point(o.position);
-    point(o.velocity);
-  }
+  };
+  if (b.recipe_version == 1)
+    for (const auto &o : b.occurrences) {
+      point(o.position);
+      point(o.velocity);
+      add({o.id, o.definition, o.node});
+    }
+  else
+    for (const auto &o : b.structural_occurrences)
+      add(o);
   std::set<OccurrenceId> selected, active;
   bool parts_exposed = false;
   for (const auto &s : b.selections) {
@@ -259,7 +272,7 @@ void validate(const Bundle &b) {
     need(occurrences.count(aggregate) && selected.insert(aggregate).second &&
              !s.parts.empty(),
          "missing/overlapping aggregate");
-    const auto &letter = *tools.at(key(occurrences.at(aggregate)->definition));
+    const auto &letter = *tools.at(key(occurrences.at(aggregate).definition));
     std::vector<OccurrenceId> expected;
     for (const auto &character : letter.parents) {
       const auto &c = target(character.target);
@@ -271,7 +284,7 @@ void validate(const Bundle &b) {
                               {character.ordinal, std::uint32_t(byte)}};
         need(occurrences.count(id) && selected.insert(id).second,
              "missing/overlapping byte part");
-        const auto &byte_tool = *tools.at(key(occurrences.at(id)->definition));
+        const auto &byte_tool = *tools.at(key(occurrences.at(id).definition));
         const auto &byte_ref = ascii_byte ? c.ref : c.parents[byte].target;
         need(byte_tool.ref == byte_ref &&
                  byte_tool.mass == std::optional<std::uint64_t>(2) &&
@@ -292,15 +305,39 @@ void validate(const Bundle &b) {
   }
   need(selected.size() == occurrences.size(),
        "stray occurrence outside selections");
-  need(b.nodes.size() == (parts_exposed ? 2u : 1u) && b.nodes[0].parent == -1 &&
-           b.nodes[0].role == ScaleRole::Root,
-       "invalid normalized root layout");
-  if (parts_exposed)
-    need(b.nodes[1].parent == 0 && b.nodes[1].role == ScaleRole::PrimaryStep,
-         "invalid primary letter binding");
-  for (const auto &o : b.occurrences)
-    need(o.node == (parts_exposed && o.id.path.empty() ? 1 : 0),
-         "binding inconsistent with supplied exposure");
+  if (b.recipe_version == 1) {
+    need(b.nodes.size() == (parts_exposed ? 2u : 1u) &&
+             b.nodes[0].parent == -1 && b.nodes[0].role == ScaleRole::Root,
+         "invalid normalized root layout");
+    if (parts_exposed)
+      need(b.nodes[1].parent == 0 && b.nodes[1].role == ScaleRole::PrimaryStep,
+           "invalid primary letter binding");
+    for (const auto &[unused, o] : occurrences)
+      need(o.node == (parts_exposed && o.id.path.empty() ? 1 : 0),
+           "binding inconsistent with supplied exposure");
+  } else {
+    need(!b.nodes.empty() && b.nodes.size() <= std::size_t(INT32_MAX) &&
+             b.nodes[0].parent == -1 && b.nodes[0].role == ScaleRole::Root,
+         "invalid structural root layout");
+    std::vector<int> primary_depth(b.nodes.size(), 0);
+    for (std::size_t i = 1; i < b.nodes.size(); ++i) {
+      const auto &n = b.nodes[i];
+      need(n.parent >= 0 && std::size_t(n.parent) < i &&
+               (n.role == ScaleRole::PrimaryStep ||
+                n.role == ScaleRole::SecondaryCompression ||
+                n.role == ScaleRole::NamingEquivalent),
+           "invalid structural role/parent");
+      primary_depth[i] =
+          primary_depth[n.parent] + (n.role == ScaleRole::PrimaryStep);
+      need(primary_depth[i] <= (parts_exposed ? 1 : 0),
+           "unsupported structural primary depth");
+    }
+    for (const auto &[unused, o] : occurrences)
+      need(o.node >= 0 && std::size_t(o.node) < primary_depth.size() &&
+               primary_depth[o.node] ==
+                   (parts_exposed && o.id.path.empty() ? 1 : 0),
+           "structural binding inconsistent with exposure");
+  }
   std::set<std::pair<OccurrenceId, OccurrenceId>> contacts;
   for (const auto &c : b.contacts) {
     need(active.count(c.a) && active.count(c.b) && !(c.a == c.b),
@@ -308,5 +345,49 @@ void validate(const Bundle &b) {
     need(contacts.emplace(std::min(c.a, c.b), std::max(c.a, c.b)).second,
          "duplicate contact");
   }
+  if (b.recipe_version == 2) {
+    using Field = std::pair<int, ObjectKey>;
+    std::set<Field> available, selected_fields;
+    for (const auto &id : active) {
+      const auto &t = *tools.at(key(occurrences.at(id).definition));
+      available.emplace(int(FieldKind::SiblingDefinition), t.ref.object);
+      for (const auto &p : t.parents)
+        available.emplace(int(FieldKind::ParentValue), p.target.object);
+      const auto &owner =
+          *tools.at(key(occurrences.at({id.entry, {}}).definition));
+      std::set<ObjectKey> reached;
+      std::function<void(const Tool &)> follow = [&](const Tool &member) {
+        for (const auto &g : member.member_of)
+          if (reached.insert(g.object).second) {
+            available.emplace(int(FieldKind::Membership), g.object);
+            follow(target(g));
+          }
+      };
+      follow(owner);
+    }
+    need(!b.focal_fields.empty(), "structural recipe requires explicit focus");
+    for (const auto &f : b.focal_fields) {
+      const Field field{int(f.kind), f.object};
+      need(available.count(field) && selected_fields.insert(field).second,
+           "missing, inactive or duplicate focal field");
+    }
+  }
+}
+Bundle structural_from_v1(const Bundle &legacy, BundleRef publication,
+                          std::vector<FocalField> focal_fields) {
+  validate(legacy);
+  need(legacy.recipe_version == 1, "adapter requires a legacy v1 recipe");
+  need(!(legacy.ref.selection == publication.selection &&
+         legacy.ref.revision == publication.revision),
+       "structural adapter requires a distinct publication identity");
+  auto out = legacy;
+  out.ref = std::move(publication);
+  out.recipe_version = 2;
+  for (const auto &o : legacy.occurrences)
+    out.structural_occurrences.push_back({o.id, o.definition, o.node});
+  out.occurrences.clear();
+  out.focal_fields = std::move(focal_fields);
+  validate(out);
+  return out;
 }
 }  // namespace warm
