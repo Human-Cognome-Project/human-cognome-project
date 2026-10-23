@@ -1,5 +1,12 @@
 # Active field model and tick dependencies
 
+**Later direction (2026-10-23, not implemented):** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
+introduces LoD-dependent calculation/storage precision with discarded subthreshold
+positional rounding residuals. The carried-residue mechanics/evidence below remain
+the built baseline; reconcile them through a reviewed numerical conversion rather
+than silently retaining or deleting all remainder/physical-state fields. See the
+[decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
+
 **Status (2026-10-19):** The native object-support corrections approved in
 [#124](https://github.com/Human-Cognome-Project/human-cognome-project/pull/124)
 and [#125](https://github.com/Human-Cognome-Project/human-cognome-project/pull/125)

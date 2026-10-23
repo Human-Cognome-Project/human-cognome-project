@@ -1,5 +1,12 @@
 # Complete the core operation path before full GPU qualification
 
+**2026-10-23 follow-up:** [Precision, exposure and concept-catalogue decisions](precision-exposure-and-concept-catalogue.md)
+record the latest intended direction. #172 owns math-core precision/quantization
+and reconciliation of existing residue/rebase requirements before revised arithmetic
+is implemented. #115 owns global/per-object exposure controls (not a new GPU gate);
+#173 owns the cross-media concept recipe catalogue. Existing implementation/evidence
+below remains scoped to its original numerical profile.
+
 Status: **accepted in #170, 2026-10-23**. Baseline: `main` at
 `768e2228cf3794b607469e7582020750b47ded6b`, the merge of #169. Patrick's current
 direction is to finish the core operation set and CPU acceptance before using
