@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-23**, after #171 acceptance and merge; native geometry follow-up in progress.
+Last checked: **2026-10-23**, after #171 acceptance and merge; native geometry follow-up submitted for review.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between

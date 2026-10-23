@@ -132,7 +132,13 @@ from the successful result, and remains borrowed until the next inspection.
 ## CPU evidence and remaining work
 
 The [retained evidence](../tests/prepared_geometry) pins source, backend and
-build artifacts. Eight modes cover P=70/P=4,096, both CPU host paths, sparse
+build artifacts. All **52 CPU suites passed in 378.65 seconds**, including the
+eight geometry modes. With geometry enabled, the two existing capacity profiles
+reserve 127,364 and 5,637,524 scratch bytes respectively. Actual bindings are
+9,928 bytes against an 11,776-byte reserve in both CPU paths. Profiles with
+GeometryWork=0 retain their earlier scratch/binding totals.
+
+Eight modes cover P=70/P=4,096, both CPU host paths, sparse
 holes including the last row, and maximum P/G/E/C source fixtures. Tests include
 sleeping/coincident bodies, explicit/derived deduplication, preserved source
 order/orientation, complete two-sided CSR, current focus after motion, 32 repeated
@@ -147,6 +153,11 @@ aligned cursor, tree/SNode and compiler counters are checked from setup through
 first population and reuse. These observations exclude arbitrary direct malloc,
 physical residency/page faults and driver internals. Timings are local bounded
 observations, not a throughput promise.
+
+The maximal P=4,096/C=8,192 profiles perform 142,604,288 comparison-work units;
+their first populated queries measured 59.4 ms (BulkCopy) and 89.0 ms (CpuDirect)
+in this concurrent CPU run. These timings exclude setup and explicit candidate
+inspection, and should not be generalized to GPU or other hardware.
 
 Reproduce using the matched [native build](PREPARED-EXECUTION.md#reproduction):
 
