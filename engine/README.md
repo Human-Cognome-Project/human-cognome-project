@@ -188,5 +188,10 @@ was accepted in #169 under #162; [object-support results](docs/OBJECT-SUPPORT-RE
 record the earlier slice. Production placement/live insertion and GPU
 allocation/transfer qualification retain their own acceptance work.
 
+The [remaining core operation plan](../docs/core-operation-readiness-plan.md)
+is proposed for review after #169 acceptance. It covers the structural-to-live
+lifecycle and complete CPU operation matrix before full local GPU testing.
+No additional runtime capability is claimed by this planning work.
+
 Historical machine-specific measurements and development decisions remain under
 `docs/`; read their dates and scope rather than treating each as a current guarantee.
