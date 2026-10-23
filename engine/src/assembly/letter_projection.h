@@ -22,11 +22,21 @@ struct LetterRequest {
   std::vector<BytePlacement> bytes;  // Every alternative, in source order.
 };
 
-// Fill A's normalized recipe from pinned definitions, supplied geometry,
-// contacts and explicit placements. Input nodes/occurrences/selections must be
+// Legacy v1 fixture: fill A's normalized recipe from pinned definitions,
+// supplied geometry, contacts and explicit placements. Input nodes/occurrences/selections must be
 // empty. Metadata/ToolRefs belong to the caller; this allocates no addresses.
 warm::Bundle normalize_letters(warm::Bundle definitions,
                                const std::vector<LetterRequest> &requests);
+struct StructuralLetterRequest {
+  std::uint64_t entry{0};
+  warm::ToolRef letter;
+  warm::Exposure exposure{warm::Exposure::Aggregate};
+};
+// Recipe v2. Exact byte alternatives are derived from pinned construction;
+// caller supplies intrinsic geometry and explicit focus, never world starts.
+warm::Bundle normalize_structural_letters(
+    warm::Bundle definitions,
+    const std::vector<StructuralLetterRequest> &requests);
 
 struct OccurrenceKey {
   warm::Uuid study;
@@ -46,7 +56,8 @@ struct ByteProvenance {
 struct ProjectedOccurrence {
   OccurrenceKey key;
   warm::ToolRef definition;
-  int slot{0}, node{0};
+  int slot{-1};  // Legacy-v1 fixture metadata only; v2 has none.
+  int node{0};
   bool active{false};
   std::optional<ByteProvenance> byte;
   // Only a single-scalar aggregate has complete-character equivalence.
@@ -67,10 +78,14 @@ class LetterProjection {
     return occurrences_;
   }
   const std::vector<ParentContribution> &parents() const { return parents_; }
-  // Minimal native value handoff. Caller owns real SNodes; native prepare
+  // Legacy v1 numerical handoff. Caller owns real SNodes; native prepare
   // verifies their structure and converts local geometry/state. No SNode
   // creation, engine staging, DB acquisition or live refresh happens here.
   StudyInput bind(const std::vector<StudyNode> &nodes) const;
+  // V2 structural handoff, with no numerical slots/starts. Native admission is
+  // a later segment; this does not silently call the legacy numerical prepare.
+  StructuralStudyInput bind_structure(
+      const std::vector<StudyNode> &nodes) const;
 
  private:
   LetterProjection() = default;
@@ -80,9 +95,10 @@ class LetterProjection {
   std::vector<ProjectedOccurrence> occurrences_;
   std::vector<ParentContribution> parents_;
   StudyInput input_;
+  StructuralStudyInput structural_input_;
 };
 
-// Validate an A-compatible normalized recipe, including exact source-form
+// Validate a versioned normalized recipe, including exact source-form
 // UTF-8, and project it into a NEW study. No mutable cross-study identity.
 LetterProjection project_letters(const warm::Bundle &recipe);
 

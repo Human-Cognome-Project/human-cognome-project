@@ -39,3 +39,5 @@ hcp_warm_fingerprint > "$hcp_warm_evidence/cold-after.sha256"
 cmp "$hcp_warm_evidence/cold-before.sha256" "$hcp_warm_evidence/cold-after.sha256"
 printf 'Complete cold data fingerprints unchanged. Retained warm fixture: %s\nEvidence: %s\n' \
   "$hcp_warm_database" "$hcp_warm_evidence"
+bash "$hcp_warm_source/run_structural_acceptance.sh" "$hcp_warm_build" \
+  "$hcp_warm_container" "$hcp_warm_core" "$hcp_warm_ling"

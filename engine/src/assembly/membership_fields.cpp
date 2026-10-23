@@ -77,4 +77,15 @@ StudyInput MembershipFields::bind(const LetterProjection &projection,
         {occurrence_text(edge.occurrence), warm::key(edge.field.object)});
   return input;
 }
+StructuralStudyInput MembershipFields::bind_structure(
+    const LetterProjection &projection,
+    const std::vector<StudyNode> &nodes) const {
+  need(study_ == projection.study(),
+       "membership: fields belong to another study");
+  auto input = projection.bind_structure(nodes);
+  for (const auto &edge : contributions_)
+    input.memberships.push_back(
+        {occurrence_text(edge.occurrence), warm::key(edge.field.object)});
+  return input;
+}
 }  // namespace assembly

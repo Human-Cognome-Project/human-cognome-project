@@ -80,4 +80,19 @@ struct StudyInput {
   std::vector<Membership> memberships;
   std::vector<FocalField> focal_fields;
 };
+// Operational structural handoff. Native preparation/admission will assign
+// payload records and initialize numerical state; source projection cannot.
+struct StructuralOccurrence {
+  std::string id, definition;
+  int study_node{-1};
+};
+struct StructuralStudyInput {
+  std::vector<StudyNode> nodes;
+  std::vector<Definition> definitions;
+  std::vector<StructuralOccurrence> occurrences;
+  std::vector<Selection> selections;
+  std::vector<Contact> contacts;
+  std::vector<Membership> memberships;
+  std::vector<FocalField> focal_fields;
+};
 }  // namespace assembly

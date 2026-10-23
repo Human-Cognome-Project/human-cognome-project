@@ -48,6 +48,9 @@ class Toolbox {
  public:
   Toolbox(const std::string &conninfo, Context trusted_context);
   ~Toolbox();
+  // 1: retained original schema; 2: additive structural tables installed.
+  // Does not migrate or write. Unsupported metadata is an explicit error.
+  int schema_version();
   Binding resolve(const ObjectKey &object);
   // Existing roots and their stored dependency closure are read, never claimed.
   // Omit their bodies from supplied_recipe; any overlapping supplied dependency
