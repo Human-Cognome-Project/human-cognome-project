@@ -18,9 +18,11 @@ after the CPU exit below. Earlier bounded GPU observations remain historical.
 
 The [#170 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/170#issuecomment-6367507146)
 accepts D1–D6 within their stated limits. This revision clarifies the contact
-transaction and its resource/test obligations below. That clarification remains
-subject to review; D7 still requires Patrick's modeling disposition. The complete
-implementation contract is pending those two items, with no runtime work claimed.
+transaction and its resource/test obligations below. Patrick subsequently
+confirmed D7: expansion/compression targets the object's current position, or
+nearest unoccupied position; nearest-to-focus is for genuinely new placements.
+The contact clarification remains subject to review before accepting the complete
+implementation contract. No runtime work is claimed.
 
 ## Result and finite operation set
 
@@ -72,7 +74,9 @@ mutation; they cannot be silently counted as tested operations.
 The settled rule is nearest unoccupied space to the current combined focal
 centroid, with actual extents. These conventions complete the initialization and
 lifecycle details left unapproved by #160. The #170 review accepts D1–D6 as
-bounded here, including D6's exact-representability limit; D7 remains pending.
+bounded here, including D6's exact-representability limit. Patrick confirmed D7
+on 2026-10-23: “current position (or nearest) for expansion/compression,” with
+nearest unoccupied to focus reserved for new placements.
 Acceptance of the complete contract releases the four implementation segments
 without another routine permission step. A scope-only acceptance must identify
 any decision left open.
@@ -85,24 +89,20 @@ any decision left open.
 | D4 — geometry / ties | Tangency is admissible. Validate stored coordinates against outward-rounded operative extents; use a documented coordinate/ULP-derived search certificate, never a fixed physical clearance. Resolve equally admissible minima deterministically in the operative frame, then source order. Genuine zero extents keep their existing geometric meaning; missing geometry must not be replaced with zero or a universal fixture radius. Cross-backend dynamic trajectories need mathematical coherence rather than bitwise equality. |
 | D5 — restart | Structural restart is sufficient. Optional supplied positions are a separate owner-bound restart input, checked against definition revision, occurrence, exposure, units/frame and occupancy. Reject invalid hints before replacing a healthy execution; allow an explicit retry without hints. Starts stored in v1 recipes are never automatic hints. Position-only recovery uses D3 for initial motion; a full velocity/checkpoint format is not introduced implicitly. |
 | D6 — focus / rebase | Only explicit supported focal-field requests change selection. Validate positive participating mass, then recompute the ordered combined centroid and its wake effects. A coordinate rebase is a separate engine operation: translate all present positions, published/previous centres and focal controls consistently, update the double reference, retain velocities, displacement vectors and weighted residue. Publish once; do not rebuild or reseed the study. Quantify f32 representability/error and reject unsupported transforms before mutation. |
-| D7 — bounded exchange | Support explicit aggregate↔declared-byte-parts changes for existing letter occurrences, without automatic LoD selection. Preserve untouched physical records exactly. For the replaced logical occurrence, derive its current mass-weighted centre and linear velocity from outgoing execution state in the common operative frame. Transfer that velocity to replacement bodies and use the old logical centre as a continuity reference for their engine-owned relative instantiation. Retire the old alternative only at coherent publication; never import recipe starts. The relationship between this continuity reference and the nearest-to-focus insertion target must be explicitly accepted before exchange implementation; see below. |
+| D7 — bounded exchange | Support explicit aggregate↔declared-byte-parts changes for existing letter occurrences, without automatic LoD selection. Preserve untouched physical records exactly. For the replaced logical occurrence, derive its current mass-weighted centre and linear velocity from outgoing execution state in the common operative frame. Transfer that velocity to replacement bodies. Their engine-owned placement targets the outgoing logical centre (the current position for an aggregate), using the nearest unoccupied position when extents/occupancy require it. Retire the old alternative only at coherent publication; never import recipe starts. Nearest-to-study-focus placement is reserved for genuinely new occurrences. |
 
 D7 has a real contract boundary: changing the representation of an existing
 logical object differs from adding a genuinely new occurrence. “Replacement”
 here means the aggregate or constituent particles expressed by that **same
 occurrence** after an explicit representation/LoD change: for the current tests,
 one aggregate letter particle ↔ its declared byte particles. It does not mean a
-newly submitted object or automatic LoD selection. The recommended
-interpretation is to use the outgoing logical centre as the exchange's
-placement target, using the same extent-aware nearest-free mechanism for its
-replacement bodies; genuinely new occurrences continue to target global focus.
-That is an **exchange-specific proposal**, not an already accepted exception to
-Patrick's insertion rule. Review must approve it or select the alternative that
-replacement bodies also target global focus, with the resulting relocation
-reported explicitly. Do not quietly implement either interpretation. This is
-the one exchange decision requiring explicit disposition in this plan.
+newly submitted object or automatic LoD selection. Patrick's clarification
+settles the distinction: use the outgoing logical centre as the exchange's
+placement target, with extent-aware nearest-free placement for the expressed
+bodies. Genuinely new occurrences target the current study focus. A representation
+change does not itself move an existing object back toward that study focus.
 
-For both interpretations, prospective occupancy excludes the outgoing mutually
+Prospective occupancy excludes the outgoing mutually
 exclusive alternative while retaining all unrelated occupants. Keep old-plus-new
 native claim peaks from #169: same-batch retirement cannot fund claims. Reject an
 exchange that does not fit, even when its final representation would fit.

@@ -11,8 +11,9 @@ The [storage investigation](../engine/docs/PREPARED-SPACE.md),
 #161/#164/#166/#169. They are bounded foundation evidence. The remaining
 [core operation readiness plan](core-operation-readiness-plan.md) is under
 review in #170 before full GPU testing. Its initial review accepts bounded
-D1–D6; the contact transaction clarification and Patrick's D7 disposition remain
-pending. Those conventions were not approved by #160's earlier scope acceptance.
+D1–D6; Patrick confirmed D7's current-position/nearest-free expansion/compression
+target. The contact transaction clarification remains pending review. Those
+conventions were not approved by #160's earlier scope acceptance.
 
 Accepting this plan approves its scope and native-first investigation sequence.
 It does **not** approve the bootstrap/focus-establishment, initial-velocity,

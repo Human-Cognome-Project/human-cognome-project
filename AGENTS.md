@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-23**, after #169 acceptance and #170's initial plan review.
+Last checked: **2026-10-23**, after #170's initial review and Patrick's D7 clarification.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -23,7 +23,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
-| Active follow-up | #162 remains open for acceptance/handoff tracking. #156 owns the remaining [core operation readiness plan](docs/core-operation-readiness-plan.md) in #170: structural recipes, engine admission, source/owner/report lifecycle, explicit focus/representation operations and restart. Initial review accepts bounded D1–D6; the contact transaction clarification and Patrick's D7 disposition remain pending. Runtime work is unbuilt. General LoD selection remains deferred. |
+| Active follow-up | #162 remains open for acceptance/handoff tracking. #156 owns the remaining [core operation readiness plan](docs/core-operation-readiness-plan.md) in #170: structural recipes, engine admission, source/owner/report lifecycle, explicit focus/representation operations and restart. Initial review accepts bounded D1–D6; Patrick confirmed D7's current-position/nearest-free exchange target. The contact transaction clarification remains pending review. Runtime work is unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | Patrick deferred full GPU testing until the remaining core operation matrix passes CPU acceptance; see the [proposed plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
@@ -88,9 +88,11 @@ the [#163 plan](docs/prepared-capacity-foundation-plan.md) and
   [#162 acceptance clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/162#issuecomment-6340088128).
 - #170's review accepts the bounded D1–D6 bootstrap, motion, batch, geometry,
   restart and focus/rebase conventions in the [remaining plan](docs/core-operation-readiness-plan.md#decision-status).
-  The complete contract still awaits contact-transaction review and Patrick's
-  D7 exchange-target decision. A coordinate gauge alone does not place the first
-  focal participants; keep accepted conventions separate from built capability.
+  Patrick confirmed D7: expansion/compression targets current position or nearest
+  unoccupied; nearest-to-focus applies to genuinely new placements. The complete
+  contract still awaits contact-transaction review. A coordinate gauge alone does
+  not place first focal participants; keep accepted conventions separate from
+  built capability.
 
 ## Activity, focus and privacy
 
