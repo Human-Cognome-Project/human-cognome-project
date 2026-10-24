@@ -1,0 +1,81 @@
+4/54 Testing: precision_direct
+4/54 Test: precision_direct
+Command: "/workspace/human-cognome-project/engine/build/precision_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"precision_direct" start time: Oct 24 14:20 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct
+before_32_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.127765
+after_32_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.127765
+boundaries,32_32_direct,cases=7776,invalid=360,cycles=32,host_bytes=94608,backend_bytes=0,bindings=216,first_us=59.859,cpp_new=0 PASS
+before_64_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.557389
+after_64_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.557389
+boundaries,64_64_direct,cases=17172,invalid=265,cycles=32,host_bytes=277344,backend_bytes=0,bindings=216,first_us=167.017,cpp_new=0 PASS
+before_32_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.901594
+after_32_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,0.901594
+boundaries,32_64_direct,cases=17172,invalid=795,cycles=32,host_bytes=276048,backend_bytes=0,bindings=216,first_us=135.801,cpp_new=0 PASS
+before_64_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.04593
+after_64_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.04593
+boundaries,64_32_direct,cases=7776,invalid=4560,cycles=32,host_bytes=95904,backend_bytes=0,bindings=216,first_us=83.213,cpp_new=0 PASS
+arithmetic_before_32_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.08317
+arithmetic_after_32_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.08317
+arithmetic,32_32_direct,retained=21,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=224,backend_bytes=0,bindings=312,cpp_new=0 PASS
+arithmetic_before_64_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.11685
+arithmetic_after_64_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.11685
+arithmetic,64_64_direct,retained=50,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=368,backend_bytes=0,bindings=320,cpp_new=0 PASS
+arithmetic_before_32_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.15261
+arithmetic_after_32_64_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.15261
+arithmetic,32_64_direct,retained=50,discard_cycles=32,scalar_updates=32,boundary_trials=0,host_bytes=304,backend_bytes=0,bindings=312,cpp_new=0 PASS
+arithmetic_before_64_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.1903
+arithmetic_after_64_32_direct,0,0,0,9,1084176,1,1073741824,1085480,0,0,1.1903
+arithmetic,64_32_direct,retained=21,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=288,backend_bytes=0,bindings=320,cpp_new=0 PASS
+precision transport, primitive and arithmetic PASS
+<end of output>
+Test time =   1.70 sec
+----------------------------------------------------------
+Test Passed.
+"precision_direct" end time: Oct 24 14:20 UTC
+"precision_direct" time elapsed: 00:00:01
+----------------------------------------------------------
+
+3/54 Testing: precision_bulk
+3/54 Test: precision_bulk
+Command: "/workspace/human-cognome-project/engine/build/precision_test"
+Directory: /workspace/human-cognome-project/engine/build
+"precision_bulk" start time: Oct 24 14:20 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk
+before_32_32_bulk,0,0,0,12,1178784,4,1073836432,1180088,0,0,0.124066
+after_32_32_bulk,0,0,0,12,1178784,4,1073836432,1180088,0,0,0.124066
+boundaries,32_32_bulk,cases=7776,invalid=360,cycles=32,host_bytes=94608,backend_bytes=94608,bindings=216,first_us=81.38,cpp_new=0 PASS
+before_64_64_bulk,0,0,0,15,1456128,7,1074019168,1362824,0,0,0.464337
+after_64_64_bulk,0,0,0,15,1456128,7,1074019168,1362824,0,0,0.464337
+boundaries,64_64_bulk,cases=17172,invalid=265,cycles=32,host_bytes=277344,backend_bytes=277344,bindings=216,first_us=167.347,cpp_new=0 PASS
+before_32_64_bulk,0,0,0,18,1732176,10,1074017872,1361528,0,0,0.859916
+after_32_64_bulk,0,0,0,18,1732176,10,1074017872,1361528,0,0,0.859916
+boundaries,32_64_bulk,cases=17172,invalid=795,cycles=32,host_bytes=276048,backend_bytes=276048,bindings=216,first_us=134.659,cpp_new=0 PASS
+before_64_32_bulk,0,0,0,21,1828080,13,1073837728,1181384,0,0,0.975484
+after_64_32_bulk,0,0,0,21,1828080,13,1073837728,1181384,0,0,0.975484
+boundaries,64_32_bulk,cases=7776,invalid=4560,cycles=32,host_bytes=95904,backend_bytes=95904,bindings=216,first_us=85.796,cpp_new=0 PASS
+arithmetic_before_32_32_bulk,0,0,0,25,1828304,17,1073742048,1085704,0,0,1.0332
+arithmetic_after_32_32_bulk,0,0,0,25,1828304,17,1073742048,1085704,0,0,1.0332
+arithmetic,32_32_bulk,retained=21,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=224,backend_bytes=224,bindings=312,cpp_new=0 PASS
+arithmetic_before_64_64_bulk,0,0,0,29,1828672,21,1073742192,1085848,0,0,1.07713
+arithmetic_after_64_64_bulk,0,0,0,29,1828672,21,1073742192,1085848,0,0,1.07713
+arithmetic,64_64_bulk,retained=50,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=368,backend_bytes=368,bindings=320,cpp_new=0 PASS
+arithmetic_before_32_64_bulk,0,0,0,33,1828976,25,1073742128,1085784,0,0,1.11725
+arithmetic_after_32_64_bulk,0,0,0,33,1828976,25,1073742128,1085784,0,0,1.11725
+arithmetic,32_64_bulk,retained=50,discard_cycles=32,scalar_updates=32,boundary_trials=0,host_bytes=304,backend_bytes=304,bindings=312,cpp_new=0 PASS
+arithmetic_before_64_32_bulk,0,0,0,37,1829264,29,1073742112,1085768,0,0,1.15125
+arithmetic_after_64_32_bulk,0,0,0,37,1829264,29,1073742112,1085768,0,0,1.15125
+arithmetic,64_32_bulk,retained=21,discard_cycles=32,scalar_updates=32,boundary_trials=32,host_bytes=288,backend_bytes=288,bindings=320,cpp_new=0 PASS
+precision transport, primitive and arithmetic PASS
+<end of output>
+Test time =   1.62 sec
+----------------------------------------------------------
+Test Passed.
+"precision_bulk" end time: Oct 24 14:20 UTC
+"precision_bulk" time elapsed: 00:00:01
+----------------------------------------------------------

@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-23**, after #174 documentation integration and #175 geometry acceptance.
+Last checked: **2026-10-24**, after #176 plan acceptance; native precision prerequisites for review.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -60,8 +60,10 @@ later live centroid conversion must reconcile #177 and #172.
   then audit the later live conversion. Production rounding remains open.
   #172 and #177 govern the eventual precision/LoD-centroid integration;
   accepting this plan does not implement that integration.
-
-
+  The [first native implementation](engine/docs/NATIVE-PRECISION.md) is submitted
+  for review, with f64 packed transport, experimental bit clearing and a source
+  state audit. It leaves live tick behavior unchanged and explicitly rejects
+  narrowing values in the fork's unsupported FTZ subnormal/underflow range.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
