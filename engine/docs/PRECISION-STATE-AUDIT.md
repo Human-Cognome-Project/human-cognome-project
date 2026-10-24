@@ -8,9 +8,14 @@ support and add experimental numerical helpers; the live surfaces below remain
 at their audited behavior. This is a conversion inventory, not implementation
 of a precision-controlled field path or #177's cascade.
 
-The later [candidate-only upward operation](CENTROID-CASCADE.md), prepared for
-review under #180, reads the resident body/participation surfaces below without
+The later [candidate-only upward operation](CENTROID-CASCADE.md), accepted in
+#182 under #180, reads the resident body/participation surfaces below without
 replacing their live arithmetic, history or physical publication.
+
+The proposed [weighted accounting continuation](../../docs/weighted-centroid-accounting-plan.md)
+also identifies exact assembly counts retained before the prepared field boundary
+but absent from its committed relationship metadata. Carrying those counts is
+proposed work, not an implemented widening of the audited share/physical state.
 
 ## State owners and publication sites
 

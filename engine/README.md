@@ -193,6 +193,11 @@ with optional experimental trimming at expressed comparisons. Whole/disjoint
 cohorts are first-component restrictions; live field/force/phase conversion
 remains unbuilt.
 
+The next [weighted accounting plan](../docs/weighted-centroid-accounting-plan.md)
+is proposed for review: carry existing exact source counts through prepared
+commits before extending candidate comparisons to fractional/overlapping inputs.
+It does not release live arithmetic or phase changes.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)
