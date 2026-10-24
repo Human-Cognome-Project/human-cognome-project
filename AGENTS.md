@@ -47,9 +47,10 @@ a merge or review changes Built/Held/Active status; other entry points link here
   private/temp root subdivisions await discussion. Do not invent policies.
 - #172 owns the requested math-core precision work. The [native precision and
   truncation plan](docs/native-precision-truncation-plan.md) is proposed for review:
-  qualify f64 transport and native significand truncation first, audit physical
-  state versus rounding residue, then review the coherent live conversion.
-  Calculation format, stored container and retained precision are independent.
+  qualify f64 transport and an experimental significand-truncation primitive,
+  audit physical state versus rounding residue, then review live conversion with
+  #177's LoD-local centroid cascade. Production rounding remains open;
+  calculation format, stored container and retained precision are independent.
 
 <a id="placement-correction--2026-10-20"></a>
 <a id="allocation-foundation-correction--2026-10-20"></a>

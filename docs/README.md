@@ -39,7 +39,8 @@ references, not another mandatory reading sequence.
   were accepted in #169. Production lifecycle integration remains under #156.
 - [Native precision and positional truncation](native-precision-truncation-plan.md) —
   proposed bounded #172 plan for f32/f64 numerical primitives, typed transport,
-  significand truncation and the source/state audit before live math conversion.
+  an experimental truncation primitive and the source/state audit before live
+  conversion with #177's LoD-local centroid cascade; production rounding is open.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct
