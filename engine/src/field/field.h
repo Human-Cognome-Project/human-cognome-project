@@ -1,5 +1,6 @@
 #pragma once
 #include "field/prepared_update.h"
+#include "field/prepared_geometry.h"
 
 #include <array>
 #include <cstddef>
@@ -174,6 +175,13 @@ class Harness {
   // operation. Numerical readback uses existing reserved host arrays.
   const detail::PreparedStorage &prepared_storage() const;
   void inspect_prepared();
+  // Read-only current-backend preflight, enabled by a nonzero setup
+  // GeometryWork reservation. Does not install contacts or advance a tick.
+  GeometryResult query_prepared_geometry(
+      std::uint64_t expected_generation,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  const GeometryInspection &inspect_prepared_geometry(
+      const GeometryResult &query);
   UpdateResult update_prepared(std::uint64_t expected_generation,
                                const UpdateCommand *commands,
                                std::size_t count);
@@ -272,6 +280,11 @@ class Harness {
   void initialize_prepared_fixture(const Parameters &parameters);
   void prepare_empty_execution();
   void prepare_update_execution();
+  void prepare_geometry_execution();
+  void launch_geometry_collect();
+  void launch_geometry_source_order();
+  void launch_geometry_discover();
+  void launch_geometry_finalize();
   void launch_update_candidate();
   void launch_update_commit();
   void validate_prepared_bindings() const;
@@ -335,6 +348,8 @@ class Harness {
   engine::CompiledKernel finalize_;
   engine::CompiledKernel inspection_;
   engine::CompiledKernel update_candidate_, update_commit_;
+  engine::CompiledKernel geometry_collect_, geometry_source_order_,
+      geometry_discover_, geometry_finalize_;
   std::array<const void *, 7> prepared_host_addresses_{};
   std::array<std::size_t, 7> prepared_host_sizes_{};
 };

@@ -73,6 +73,7 @@ class PreparedRecordMap {
   const RecordBindings &bindings() const;
   std::size_t size() const;
   std::uint64_t generation() const;
+  std::uint64_t context() const;
   bool ready() const;
   std::size_t prepared_bytes() const;
 

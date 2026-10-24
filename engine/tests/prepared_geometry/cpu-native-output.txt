@@ -1,0 +1,511 @@
+17/52 Testing: prepared_geometry_direct
+17/52 Test: prepared_geometry_direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_direct" start time: Oct 23 18:15 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,83,126,41525922,51,1074838104,41597528,3,23,3.5063
+after_query_cycles,39345426,39223296,83,126,41525922,51,1074838104,41597528,3,23,3.5063
+manifest,particle-headers,70,24,2,3360
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,120,1,3840
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 70 direct holes/motion/rejections PASS; S=127364 work=33 first_query_us=128.189 bindings=9928
+<end of output>
+Test time =  34.80 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_direct" end time: Oct 23 18:16 UTC
+"prepared_geometry_direct" time elapsed: 00:00:34
+----------------------------------------------------------
+
+16/52 Testing: prepared_geometry_padded
+16/52 Test: prepared_geometry_padded
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_padded" start time: Oct 23 18:16 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,83,133,41534054,58,1074846236,41605660,3,23,3.44598
+after_query_cycles,39345426,39223296,83,133,41534054,58,1074846236,41605660,3,23,3.44598
+manifest,particle-headers,70,24,2,3360
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,120,1,3840
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 70 bulk holes/motion/rejections PASS; S=127364 work=33 first_query_us=136.311 bindings=9928
+<end of output>
+Test time =  39.16 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_padded" end time: Oct 23 18:16 UTC
+"prepared_geometry_padded" time elapsed: 00:00:39
+----------------------------------------------------------
+
+19/52 Testing: prepared_geometry_large-direct
+19/52 Test: prepared_geometry_large-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--large" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_large-direct" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,4490,126,58794802,51,1092106984,58866408,3,23,3.79019
+after_query_cycles,39345426,39223296,4490,126,58794802,51,1092106984,58866408,3,23,3.79019
+manifest,particle-headers,4096,24,2,196608
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,120,1,30720
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 4096 direct holes/motion/rejections PASS; S=5637524 work=33 first_query_us=240.776 bindings=9928
+<end of output>
+Test time =   5.27 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_large-direct" end time: Oct 23 18:18 UTC
+"prepared_geometry_large-direct" time elapsed: 00:00:05
+----------------------------------------------------------
+
+18/52 Testing: prepared_geometry_large
+18/52 Test: prepared_geometry_large
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_large" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,4490,133,59261782,58,1092573964,59333388,3,23,3.55874
+after_query_cycles,39345426,39223296,4490,133,59261782,58,1092573964,59333388,3,23,3.55874
+manifest,particle-headers,4096,24,2,196608
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,120,1,30720
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 4096 bulk holes/motion/rejections PASS; S=5637524 work=33 first_query_us=337.21 bindings=9928
+<end of output>
+Test time =   5.16 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_large" end time: Oct 23 18:18 UTC
+"prepared_geometry_large" time elapsed: 00:00:05
+----------------------------------------------------------
+
+21/52 Testing: prepared_geometry_maximum-direct
+21/52 Test: prepared_geometry_maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--maximum" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_maximum-direct" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,83,126,41525922,51,1074838104,41597528,3,23,3.77366
+after_query_cycles,39345426,39223296,83,126,41525922,51,1074838104,41597528,3,23,3.77366
+manifest,particle-headers,70,24,2,3360
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,120,1,3840
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 70 direct maximum PASS; S=127364 work=41615 first_query_us=123.683 bindings=9928
+<end of output>
+Test time =   5.40 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_maximum-direct" end time: Oct 23 18:18 UTC
+"prepared_geometry_maximum-direct" time elapsed: 00:00:05
+----------------------------------------------------------
+
+20/52 Testing: prepared_geometry_maximum
+20/52 Test: prepared_geometry_maximum
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_maximum" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,83,133,41534054,58,1074846236,41605660,3,23,3.87113
+after_query_cycles,39345426,39223296,83,133,41534054,58,1074846236,41605660,3,23,3.87113
+manifest,particle-headers,70,24,2,3360
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,120,1,3840
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 70 bulk maximum PASS; S=127364 work=41615 first_query_us=199.756 bindings=9928
+<end of output>
+Test time =   5.44 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_maximum" end time: Oct 23 18:18 UTC
+"prepared_geometry_maximum" time elapsed: 00:00:05
+----------------------------------------------------------
+
+23/52 Testing: prepared_geometry_large-maximum-direct
+23/52 Test: prepared_geometry_large-maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--large" "--maximum" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_large-maximum-direct" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,4490,126,58794802,51,1092106984,58866408,3,23,3.63504
+after_query_cycles,39345426,39223296,4490,126,58794802,51,1092106984,58866408,3,23,3.63504
+manifest,particle-headers,4096,24,2,196608
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,120,1,30720
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 4096 direct maximum PASS; S=5637524 work=142604288 first_query_us=89032.3 bindings=9928
+<end of output>
+Test time =   5.28 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_large-maximum-direct" end time: Oct 23 18:18 UTC
+"prepared_geometry_large-maximum-direct" time elapsed: 00:00:05
+----------------------------------------------------------
+
+22/52 Testing: prepared_geometry_large-maximum
+22/52 Test: prepared_geometry_large-maximum
+Command: "/workspace/human-cognome-project/engine/build/prepared_geometry_test" "--large" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"prepared_geometry_large-maximum" start time: Oct 23 18:18 UTC
+Output:
+----------------------------------------------------------
+after_setup,39345426,39223296,4490,133,59261782,58,1092573964,59333388,3,23,3.68341
+after_query_cycles,39345426,39223296,4490,133,59261782,58,1092573964,59333388,3,23,3.68341
+manifest,particle-headers,4096,24,2,196608
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,120,1,30720
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,4,2,32
+manifest,prepared-binding-payload,9928,1,1,9928
+manifest,unused-binding-reserve,1848,1,1,1848
+geometry 4096 bulk maximum PASS; S=5637524 work=142604288 first_query_us=59435.2 bindings=9928
+<end of output>
+Test time =   5.19 sec
+----------------------------------------------------------
+Test Passed.
+"prepared_geometry_large-maximum" end time: Oct 23 18:18 UTC
+"prepared_geometry_large-maximum" time elapsed: 00:00:05
+----------------------------------------------------------

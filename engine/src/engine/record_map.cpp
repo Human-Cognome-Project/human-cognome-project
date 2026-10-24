@@ -644,6 +644,9 @@ std::size_t PreparedRecordMap::size() const {
 std::uint64_t PreparedRecordMap::generation() const {
   return impl_->committed;
 }
+std::uint64_t PreparedRecordMap::context() const {
+  return impl_->context;
+}
 bool PreparedRecordMap::ready() const {
   return impl_->usable;
 }

@@ -192,8 +192,10 @@ The [remaining core operation plan](../docs/core-operation-readiness-plan.md)
 is accepted in #170 after #169. It covers the structural-to-live
 lifecycle and complete CPU operation matrix before full local GPU testing.
 Its first [structural recipe segment](../kernels/database/warm/STRUCTURAL-RECIPES.md)
-adds v2 storage/projection compatibility; engine admission and the enduring
-operational lifecycle still require the later segments.
+is accepted and merged in #171. The first portion of Segment 2 supplies
+[native geometry preflight](docs/PREPARED-GEOMETRY.md) for review. It reads current
+occupancy/focus and prepares candidate contacts; placement, contact installation,
+transactional ticks and the enduring operational lifecycle remain unbuilt.
 
 Historical machine-specific measurements and development decisions remain under
 `docs/`; read their dates and scope rather than treating each as a current guarantee.

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include "engine/transfer.h"
 #include "field/activity.h"
 #include "field/prepared_storage.h"
 
@@ -22,6 +23,11 @@ struct FixtureSource {
   std::vector<int> focus;
 };
 struct PreparedFixtureAccess {
+  static void read_contacts(Harness &h) {
+    if (h.path_ == HostPath::BulkCopy)
+      engine::readback(*h.contact_int_array_, h.contact_int_data.data(),
+                       h.contact_int_data.size() * sizeof(int));
+  }
   static void stage_new(Harness &h,
                         int command,
                         const std::array<float, kParticleFieldCount> &row) {

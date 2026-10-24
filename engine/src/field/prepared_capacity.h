@@ -16,6 +16,7 @@ enum class Budget {
   Focus,
   Batch,
   ScratchBytes,
+  GeometryWork,  // Pair tests and deterministic source/union ordering tests.
   Count
 };
 struct BudgetDemand {

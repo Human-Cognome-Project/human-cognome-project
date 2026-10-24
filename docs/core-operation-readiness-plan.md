@@ -4,7 +4,7 @@
 closed; #156 now owns the remaining operation matrix. Historical requests below
 to keep #162 open are superseded by this explicit handoff. #171 completed Segment 1;
 [PR #175](https://github.com/Human-Cognome-Project/human-cognome-project/pull/175)
-is a reviewed partial Segment 2 current-geometry query awaiting final CI/merge.
+is accepted as a partial Segment 2 current-geometry query, with 52 hosted CPU suites passing.
 It does not implement placement, contact installation or candidate-tick publication.
 
 **2026-10-23 follow-up:** [Precision, exposure and concept-catalogue decisions](precision-exposure-and-concept-catalogue.md)
@@ -39,7 +39,7 @@ The [follow-up disposition](https://github.com/Human-Cognome-Project/human-cogno
 accepts the complete contract, including contact publication, D1–D7 and all four
 implementation segments. This acceptance is not runtime completion or GPU
 qualification. Segment 1's [structural recipe implementation](../kernels/database/warm/STRUCTURAL-RECIPES.md)
-is submitted separately; the remaining engine/lifecycle/CPU exit work is unbuilt.
+was accepted and merged in #171. The [current native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) in #175 supplies bounded current occupancy/focus and candidate contact queries. Placement/admission, contact installation, candidate motion publication and remaining lifecycle/CPU exit work are still unbuilt.
 
 ## Result and finite operation set
 
