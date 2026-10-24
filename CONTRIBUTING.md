@@ -65,6 +65,17 @@ component evidence. Onboarding links to those records rather than copying them.
 If a build target/path changes, update the [first-run check](docs/onboarding/FIRST-RUN.md)
 with the same change; its named test must remain part of hosted CI.
 
+## Issues and bounded PRs
+
+Use a persistent issue for a larger concern spanning decisions or multiple PRs.
+Record the problem, accepted direction, open questions, dependencies and acceptance
+criteria there; link the owning repository contract rather than duplicating it.
+Each plan or implementation PR names its owning issue and the acceptance subset it
+delivers. Use `Refs #N` for partial work and `Closes #N` only when the full issue's
+acceptance is satisfied. Update the issue with reviewed source/evidence and
+remaining work after a merge. A plan merge does not close its implementation issue.
+Small self-contained fixes need not acquire a new umbrella issue.
+
 ## Technical standards
 
 - **Preserve history.** No force-push/history rewrite for cleanup. Normal Git history is the recovery path for moved or removed current-tree files.

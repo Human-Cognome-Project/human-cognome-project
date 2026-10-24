@@ -1,0 +1,3220 @@
+{
+  "status": "CPU geometry-preflight implementation submitted for review; partial Segment 2; not GPU qualification",
+  "source_pin": "519ae7916b96d06d1c1c33b1e3c415bf13ceb5d7",
+  "baseline_merge": "c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66",
+  "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad",
+  "compiler": "Clang/LLVM 15.0.6",
+  "backend": "CPU-only matched native build; geometry modes use four CPU workers; existing tests retain their configured workers; CTest -j2",
+  "checks": {
+    "full_native_suites_passed": 52,
+    "geometry_modes_passed": 8,
+    "elapsed_seconds": 378.65,
+    "sparse_query_tick_cycles": 128,
+    "source_scope": "All final runtime/test code compiled and exercised together in the retained 52-suite run."
+  },
+  "limits": [
+    "Current-state queries only; no placement, live contact installation or candidate tick publication.",
+    "Quadratic pair/source/union work is a bounded baseline; no accelerated spatial search or throughput claim.",
+    "GeometryWork bounds comparisons; presence compaction, validation and CSR have additional separately described bounded linear work.",
+    "C++ new/new[] observation excludes arbitrary direct malloc, physical residency/page faults and driver internals.",
+    "Scratch includes payloads and binding reserve; fixed C++ object/container overhead, compiler memory and native root/pool alignment are separate.",
+    "No GPU execution, pinning or driver allocation qualification; no database changes."
+  ],
+  "profiles": [
+    {
+      "name": "prepared_geometry_direct",
+      "path": "direct",
+      "fixture": "holes/motion/rejections",
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 127364
+      },
+      "first_populated_query_us": 128.189,
+      "required_work": 33,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 41525922,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1074838104,
+        "aligned_host_cursor": 41597528,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.5063
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 41525922,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1074838104,
+        "aligned_host_cursor": 41597528,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.5063
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_padded",
+      "path": "bulk",
+      "fixture": "holes/motion/rejections",
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 127364
+      },
+      "first_populated_query_us": 136.311,
+      "required_work": 33,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 41534054,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1074846236,
+        "aligned_host_cursor": 41605660,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.44598
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 41534054,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1074846236,
+        "aligned_host_cursor": 41605660,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.44598
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_large-direct",
+      "path": "direct",
+      "fixture": "holes/motion/rejections",
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 5637524
+      },
+      "first_populated_query_us": 240.776,
+      "required_work": 33,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 58794802,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1092106984,
+        "aligned_host_cursor": 58866408,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.79019
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 58794802,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1092106984,
+        "aligned_host_cursor": 58866408,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.79019
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_large",
+      "path": "bulk",
+      "fixture": "holes/motion/rejections",
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 5637524
+      },
+      "first_populated_query_us": 337.21,
+      "required_work": 33,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 59261782,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1092573964,
+        "aligned_host_cursor": 59333388,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.55874
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 59261782,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1092573964,
+        "aligned_host_cursor": 59333388,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.55874
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_maximum-direct",
+      "path": "direct",
+      "fixture": "maximum",
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 127364
+      },
+      "first_populated_query_us": 123.683,
+      "required_work": 41615,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 41525922,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1074838104,
+        "aligned_host_cursor": 41597528,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.77366
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 41525922,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1074838104,
+        "aligned_host_cursor": 41597528,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.77366
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_maximum",
+      "path": "bulk",
+      "fixture": "maximum",
+      "limits": {
+        "V": 1048576,
+        "P": 70,
+        "G": 9,
+        "E": 280,
+        "C": 140,
+        "R": 928,
+        "F": 9,
+        "B": 32,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 127364
+      },
+      "first_populated_query_us": 199.756,
+      "required_work": 41615,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 41534054,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1074846236,
+        "aligned_host_cursor": 41605660,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.87113
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 83,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 41534054,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1074846236,
+        "aligned_host_cursor": 41605660,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.87113
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 3840
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 552
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 3072
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1056
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 210,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 840
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_large-maximum-direct",
+      "path": "direct",
+      "fixture": "maximum",
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 5637524
+      },
+      "first_populated_query_us": 89032.3,
+      "required_work": 142604288,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 58794802,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1092106984,
+        "aligned_host_cursor": 58866408,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.63504
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 126,
+        "pool_requested_bytes": 58794802,
+        "pool_raw_allocation_calls": 51,
+        "pool_reserved_bytes": 1092106984,
+        "aligned_host_cursor": 58866408,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.63504
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    },
+    {
+      "name": "prepared_geometry_large-maximum",
+      "path": "bulk",
+      "fixture": "maximum",
+      "limits": {
+        "V": 16777216,
+        "P": 4096,
+        "G": 257,
+        "E": 16384,
+        "C": 8192,
+        "R": 53762,
+        "F": 257,
+        "B": 256,
+        "GeometryWork": 268435456,
+        "ScratchBytes": 5637524
+      },
+      "first_populated_query_us": 59435.2,
+      "required_work": 142604288,
+      "actual_bindings": 9928,
+      "readback_bytes_per_successful_query": 272,
+      "explicit_syncs_per_successful_query": 3,
+      "observed_linked_cpp_new_calls": 0,
+      "before": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 59261782,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1092573964,
+        "aligned_host_cursor": 59333388,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.68341
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "native_chunk_bytes": 39223296,
+        "native_elements": 4490,
+        "pool_allocation_calls": 133,
+        "pool_requested_bytes": 59261782,
+        "pool_raw_allocation_calls": 58,
+        "pool_reserved_bytes": 1092573964,
+        "aligned_host_cursor": 59333388,
+        "tree_count": 3,
+        "snode_ids": 23,
+        "compilation_seconds": 3.68341
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 120,
+          "copies": 1,
+          "bytes": 30720
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 14440
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24576
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 55320
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 44
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 12288,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 49152
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 9928,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 9928
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 1848,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 1848
+        }
+      ]
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "engine/CMakeLists.txt",
+      "sha256": "5b1277b7bd10cff1925afe600ab355960a118cddb7cd7f257dfb84ca13664435"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.cpp",
+      "sha256": "23de25e16038b9e9f4d85d045d5cd719cbadc63de31c5a41151eb97b2ffb250b"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.h",
+      "sha256": "664e12e2b5d1c0b8bc99be8238ce95a91c437313ade9e41688b82f4f2c80853c"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.cmake",
+      "sha256": "f04262a935423c560a27cdfb1abdbae8aae318ffcb666e19f76b3cf92c45fed5"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.cpp",
+      "sha256": "71a73593de3ca084945e6ad4999e5dc5e87c31119260b737ad516678f2f97765"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.h",
+      "sha256": "8629bd859b37f60c1dfc8b1aeb52d9fb33a7f3ecf99b0dace45c1e44dd3d03ec"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.cmake",
+      "sha256": "89809e126cca7b5f5e4c544f6e1223771b8f72e1f096931fb50dc876c114bc9d"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.cpp",
+      "sha256": "4f4fefb6d94c2858ad2cb352c4fe27d880cf428057f46b25c4162f8e4155ef7f"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.h",
+      "sha256": "cb701dda0aabff8a41572594d62e0af01f8dcf3d1c8b40dd5289141146b400d5"
+    },
+    {
+      "path": "engine/src/assembly/study.cpp",
+      "sha256": "fb5096f434b96c5637e66ca5afaf6fff985f53380b2f0b652fbee3432cefcac1"
+    },
+    {
+      "path": "engine/src/assembly/study.h",
+      "sha256": "594264b0610214dfda38c93065811963faf8eca1dc6d2d95571ba55f2ed999c9"
+    },
+    {
+      "path": "engine/src/assembly/study_input.h",
+      "sha256": "cfe0d42598f1355dd5c6f412bceefd23af6848dc8f12c4a89ea90e55641276ea"
+    },
+    {
+      "path": "engine/src/engine/device.cpp",
+      "sha256": "1fad58d180a1be0faf63338a14ce436192e1403461bf090183c2520db383bb23"
+    },
+    {
+      "path": "engine/src/engine/device.h",
+      "sha256": "483d2e6e947a05615295003c5f4a133884adc4d33ebc6bdcd06349fed1cd50dc"
+    },
+    {
+      "path": "engine/src/engine/packed_view.h",
+      "sha256": "ea5d527ffc2791ec56e9aaca1b115d4e9b724a39cbf4a4671ebf0d31b57bbc07"
+    },
+    {
+      "path": "engine/src/engine/record_map.cpp",
+      "sha256": "ced792202404bb6e8dee6852d099b5ac536263a30a9429eeeaa1a50541434f7d"
+    },
+    {
+      "path": "engine/src/engine/record_map.h",
+      "sha256": "692242b381718daa8964c172a55d44cb45323a5b721e858e43b99f07a757d150"
+    },
+    {
+      "path": "engine/src/engine/runtime.cpp",
+      "sha256": "ab1f3cba4d3ddeb3915544c4e9f3d73b90e25e502c0e995739a310fa47291190"
+    },
+    {
+      "path": "engine/src/engine/runtime.h",
+      "sha256": "684f47ae0a1e24c384b87c6e09809383b398969b53985ff0faa3ac2cd8c6a12f"
+    },
+    {
+      "path": "engine/src/engine/transfer.cpp",
+      "sha256": "3c49d322f9d7dae76004132a9fa4fe8a0864218d464749a812891f8fb3776d87"
+    },
+    {
+      "path": "engine/src/engine/transfer.h",
+      "sha256": "f0e107fda11cd4a8f977d21d84743bf3ad4e44883c1b41ac3a0ceffcda8170fc"
+    },
+    {
+      "path": "engine/src/field/activity.cpp",
+      "sha256": "dd92a96c8e862be57d371773f580166ad2519c2900dc084bc366eb30ffd1627e"
+    },
+    {
+      "path": "engine/src/field/activity.h",
+      "sha256": "f61a227928222c4f0258e660cbc3d937890d7456963ba9fd9b20cce6cae3eb70"
+    },
+    {
+      "path": "engine/src/field/centroid_math.h",
+      "sha256": "c6ef2c2bec138ca58b7d8c8d75396bd025ca842c60ede2b324163f93fea30fee"
+    },
+    {
+      "path": "engine/src/field/contact_math.h",
+      "sha256": "ecf7c82cfbea1e181c81dc5b9c0c8b9fa1680e7977e6c9e87b78ec9a53b1c009"
+    },
+    {
+      "path": "engine/src/field/field.cpp",
+      "sha256": "2573a83b8f094ad9bd4ee2fceffaee1dbcd766dde7bfa4b3bec6db38b0e03362"
+    },
+    {
+      "path": "engine/src/field/field.h",
+      "sha256": "ab89ee81675cec9112d29f5e75988596df820fad120e5217889e66c220e7e696"
+    },
+    {
+      "path": "engine/src/field/native_set.h",
+      "sha256": "7c56243bf36ea3a41ed122b38a267fd08e66e86dfdbd166dd701e4ecf0956a95"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.cpp",
+      "sha256": "6388d92de1ab993144a1404cea6ccae581f5c12fab1c2170570bf4a8980129cb"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.h",
+      "sha256": "c05027723655bcdbff7897a6bf5ed18a9cea990b2eb9965e1021f4e3c9dc9ca9"
+    },
+    {
+      "path": "engine/src/field/prepared_geometry.cpp",
+      "sha256": "8953864dee2012ef5bb381ad2118fe9b440f468523fda0bb6901cb4c4cd9141c"
+    },
+    {
+      "path": "engine/src/field/prepared_geometry.h",
+      "sha256": "9c6506ad09bdf3676f65d84cd2d7cf7bbae231ee5d204488002ff13c09706774"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.cpp",
+      "sha256": "ee54902ea0bff972c03d44b45aa5f2e719fc7a51280dd253f25de6409945048a"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.h",
+      "sha256": "2568425e0a04df81ab1289949a9ff77dc512acf673a7471f9475f69b3879d118"
+    },
+    {
+      "path": "engine/src/field/prepared_update.cpp",
+      "sha256": "e1118c8f5559c227d7092656043ec6b01ba305aa96ddf0e20f892afdce5aefa8"
+    },
+    {
+      "path": "engine/src/field/prepared_update.h",
+      "sha256": "c865c98140587b2044029c571dba712b3a5702a15715fe6a9093d7d8f96d8b0f"
+    },
+    {
+      "path": "engine/tests/allocation_observation.h",
+      "sha256": "93bc59586fa003c92fc6a63c5b8a2b36376e5a5977cf3f3f12e23477f553ed21"
+    },
+    {
+      "path": "engine/tests/prepared_capacity_test.cpp",
+      "sha256": "f2a639a1e67a28177d165b2d8478851324ec5f3a77f044c455644574a756c16d"
+    },
+    {
+      "path": "engine/tests/prepared_execution_test.cpp",
+      "sha256": "6e4285866aaa2164ceaa4236426fc6ca0e7dbacfe71ef2119537fa9f74c56262"
+    },
+    {
+      "path": "engine/tests/prepared_fixture.h",
+      "sha256": "ee83e5361d263c6876f25839410a0e31fd49236e03207d97feb2c24bcab6901a"
+    },
+    {
+      "path": "engine/tests/prepared_geometry_test.cpp",
+      "sha256": "2288df5a7d9476e76d1c2b7195e4c8b319a5f539c77e784d99066b269bae86ff"
+    },
+    {
+      "path": "engine/tests/prepared_metrics.h",
+      "sha256": "230bed3cb63771c6a5cd45f018d21bfaaab1d2c58694e4328393729ad84e3c32"
+    },
+    {
+      "path": "engine/tests/prepared_update_test.cpp",
+      "sha256": "9bfae1d713d4b55c2dd2a78359a07bc48d718ab0245897874962e3b6cbcf989a"
+    }
+  ],
+  "built_artifacts": [
+    {
+      "path": "engine/build/prepared_geometry_test",
+      "bytes": 6109376,
+      "sha256": "9aa4f7a4ad081b3696477f148a7aea758a1c0071a8c87b4f19f7b404614fc41a"
+    },
+    {
+      "path": "engine/build/libfield_core.a",
+      "bytes": 1772776,
+      "sha256": "f9d65b76158ccd92e10a09afd77a478425eeb7e815237ada1ade9010d67784c8"
+    },
+    {
+      "path": "engine/build/libengine_support.a",
+      "bytes": 962580,
+      "sha256": "56688a1c6a4b2658a98e85e84e48c317e3417ca9e475204f49586d1e06c5801c"
+    },
+    {
+      "path": "engine/taichi/build-review/libtaichi_core_static.a",
+      "bytes": 52334664,
+      "sha256": "a1b534ab48b6579f782c143a5f12ce9bd0e2d18976a9dfd83bfb6037f851e73f"
+    },
+    {
+      "path": "engine/build/taichi-runtime/runtime_x64.bc",
+      "bytes": 131972,
+      "sha256": "7f5e6efd7dca6c28d83573043bf160d49b5ac2f9e07b636741ebde35374631b5"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "path": "engine/tests/prepared_geometry/cpu-ctest.txt",
+      "sha256": "7c33e916a14106f135c340bbdbe40ea52082f2375c5691ac2b2dd19c2af31a2d"
+    },
+    {
+      "path": "engine/tests/prepared_geometry/cpu-native-output.txt",
+      "sha256": "9f971a83b3ac502722f98eaba42bc4fb2df58e2914903658df3db87287e1a0ff"
+    }
+  ]
+}

@@ -9,6 +9,7 @@
 #include "engine/record_map.h"
 #include "field/prepared_capacity.h"
 #include "field/prepared_update.h"
+#include "field/prepared_geometry.h"
 
 namespace field::detail {
 struct RelationshipHeader {
@@ -34,7 +35,7 @@ class PreparedStorage {
   static std::vector<StorageExtent> workspace_layout(
       const BudgetDemand &limits);
   static std::size_t workspace_bytes(const BudgetDemand &limits);
-  static std::size_t binding_reserve_bytes(bool cuda);
+  static std::size_t binding_reserve_bytes(bool cuda, bool geometry = false);
   static std::size_t required_scratch(const BudgetDemand &limits, bool cuda);
 
   PreparedStorage(engine::Runtime &runtime, const PreparedCapacity &capacity);
@@ -44,6 +45,7 @@ class PreparedStorage {
   PreparedCounts live;
   bool populated{false};
   std::uint64_t generation{0};
+  std::uint64_t completed_ticks{0};  // Observation provenance, never activity.
   std::size_t binding_bytes{0};
   std::vector<StorageExtent> manifest;
   std::vector<engine::RecordHandle> particle_headers, field_headers,
@@ -75,5 +77,15 @@ class PreparedStorage {
   std::array<std::int64_t, 4> inspection_counts{};
   std::unique_ptr<taichi::lang::Ndarray> inspection_flags_array,
       inspection_counts_array;
+  std::unique_ptr<taichi::lang::Ndarray> geometry_rows, geometry_temporary,
+      geometry_pairs, geometry_flags, geometry_source_order, geometry_group_end,
+      geometry_source_map, geometry_permutation, geometry_offsets,
+      geometry_cursors, geometry_orders, geometry_counters, geometry_focus;
+  std::array<std::int64_t, 16> geometry_counts{};
+  std::array<float, 4> geometry_focal{};
+  GeometryInspection geometry_inspection;
+  GeometryResult geometry_last;
+  std::uint64_t geometry_query{0};
+  bool geometry_valid{false};
 };
 }  // namespace field::detail

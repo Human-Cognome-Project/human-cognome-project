@@ -1,11 +1,11 @@
 # Native precision and positional significand truncation
 
-Status: **proposed bounded plan for review, 2026-10-23**.
+Status: **accepted bounded prerequisite plan in #176, 2026-10-23; implementation pending**.
 Owner: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: `main` at `c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66` (#171).
 The current [direction notes in PR #174](https://github.com/Human-Cognome-Project/human-cognome-project/blob/2eaabcd668c468c72cfe39bb1db36b4060c88584/docs/precision-exposure-and-concept-catalogue.md)
-are an unmerged documentation dependency. #175 separately supplies the reviewed
-current-geometry query; it is not part of this plan's baseline or deliverable.
+were merged in #174. #175's current-geometry query is also accepted and merged;
+it is not part of this plan's original baseline or first-slice deliverable.
 
 Patrick's clarification in this discussion is the governing intent: use f64
 calculation where its specificity benefits the result, reduce calculation width

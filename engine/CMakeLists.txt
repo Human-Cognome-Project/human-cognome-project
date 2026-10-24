@@ -29,7 +29,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
     src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
-    src/field/prepared_update.cpp)
+    src/field/prepared_update.cpp src/field/prepared_geometry.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -107,6 +107,24 @@ foreach(mode padded direct large large-direct letters letters-direct)
   endif()
   add_test(NAME prepared_update_${mode} COMMAND prepared_update_test ${mode_args})
   set_tests_properties(prepared_update_${mode} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
+
+add_executable(prepared_geometry_test tests/prepared_geometry_test.cpp)
+target_link_libraries(prepared_geometry_test PRIVATE field_core)
+foreach(mode padded direct large large-direct maximum maximum-direct large-maximum large-maximum-direct)
+  set(mode_args)
+  if(mode MATCHES "large")
+    list(APPEND mode_args --large)
+  endif()
+  if(mode MATCHES "maximum")
+    list(APPEND mode_args --maximum)
+  endif()
+  if(mode MATCHES "direct")
+    list(APPEND mode_args --direct)
+  endif()
+  add_test(NAME prepared_geometry_${mode} COMMAND prepared_geometry_test ${mode_args})
+  set_tests_properties(prepared_geometry_${mode} PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
 endforeach()
 

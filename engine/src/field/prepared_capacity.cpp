@@ -23,6 +23,9 @@ DenseShape shape(const char *name,
 }
 }  // namespace
 PreparedCapacity::PreparedCapacity(BudgetDemand limits) : limits_(limits) {
+  if (limits[Budget::GeometryWork] > std::uint64_t(INT64_MAX))
+    throw std::invalid_argument(
+        "geometry work exceeds signed native counter range");
   for (std::size_t i = 0; i < static_cast<std::size_t>(Budget::ScratchBytes);
        ++i) {
     if (limits.values[i] > (std::uint64_t{1} << 30))
@@ -81,9 +84,10 @@ std::size_t PreparedCapacity::numerical_bytes() const {
   return total;
 }
 const char *budget_name(Budget budget) {
-  static const char *names[]{
-      "potential",  "particles", "fields", "participation", "contacts",
-      "references", "focus",     "batch",  "scratch-bytes", "none"};
+  static const char *names[]{"potential",     "particles", "fields",
+                             "participation", "contacts",  "references",
+                             "focus",         "batch",     "scratch-bytes",
+                             "geometry-work", "none"};
   const auto i = static_cast<std::size_t>(budget);
   return names[i <= static_cast<std::size_t>(Budget::Count)
                    ? i

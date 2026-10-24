@@ -1051,10 +1051,10 @@ int main(int argc, char **argv) {
     const auto path = direct ? HostPath::CpuDirect : HostPath::BulkCopy;
     BudgetDemand limits;
     limits.values =
-        large ? std::array<std::uint64_t, 9>{16777216, 4096, 257, 16384, 8192,
-                                             53762,    257,  256, 0}
-              : std::array<std::uint64_t, 9>{1048576, 70, 9,  280, 140,
-                                             928,     9,  32, 0};
+        large
+            ? decltype(limits.values){16777216, 4096, 257, 16384, 8192,
+                                      53762,    257,  256, 0}
+            : decltype(limits.values){1048576, 70, 9, 280, 140, 928, 9, 32, 0};
     if (letters)
       for (int mode = 0; mode < 3; ++mode)
         repeated(runtime, path, limits,

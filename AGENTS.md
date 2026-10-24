@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-23**, after #170 plan acceptance and structural segment implementation.
+Last checked: **2026-10-23**, after #174 documentation integration and #175 geometry acceptance.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -19,11 +19,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | State | Scope, limits and owning evidence |
 |---|---|
 | Retained cold data | Full valid-scalar [UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md); [paired letter exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) from #136 retain 2,772 Linguistics tokens and 2,741 additive core child links. Population is separate from installation into user stores and from held #111. [Writer contract](docs/letter-population-writer.md). |
-| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
+| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under the now-completed #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
 | Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
-| Active follow-up | #162/#156 retain implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) implements coordinate-free v2 values/storage/projection and retained-v1 compatibility for review. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
+| Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | Patrick deferred full GPU testing until the remaining core operation matrix passes CPU acceptance; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
@@ -32,9 +32,38 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
+## Latest model direction — 2026-10-23
+
+See [precision, exposure and concept catalogue](docs/precision-exposure-and-concept-catalogue.md).
+#172 owns the requested math-core work: higher-precision combined calculation,
+configurable significand trimming of stored positions, and discard of subthreshold
+positional rounding residuals. Retain as much precision as viable; f64 calculation
+may retain an f64 storage container with trimmed terminal bits. Do not default to
+f64→f32 or any fixed per-LoD reduction ladder. This supersedes indefinite residual carry as intended policy for that
+new path; the built arithmetic remains unchanged until reviewed conversion.
+Do not confuse rounding residue with physical velocity or centroid mass accounting.
+#115 records global/per-object exposure controls, separate from awake/sleep and
+browser visibility; visual parity with analytical needs is unproven and these
+controls do not add a GPU gate. #173 owns concept.db as the cross-media centroid
+catalogue and recipe/download root, with schema/addresses still undecided.
+
+#177 owns the new LoD-local centroid cascade: resolve finest-exposed local fields,
+aggregate through successive exposed comparisons to the coarsest level, with
+provisional downward whole-object response. Exact matching/propagation/type-phase
+ordering remains to be planned. #176's precision primitives are separable;
+later live centroid conversion must reconcile #177 and #172.
+
 ## Active and deferred work
 
-- Continue #162/#156 through their accepted, bounded stages. Held #123 must not
+- #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
+  qualify f64 transport and an experimental significand-clearing primitive,
+  then audit the later live conversion. Production rounding remains open.
+  #172 and #177 govern the eventual precision/LoD-centroid integration;
+  accepting this plan does not implement that integration.
+
+
+- Continue #156 through the accepted #170 stages. #162's bounded foundation and
+  #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
 - Use retained letters as current test objects. Broader linguistic coverage and
   word-level seeding require their own accepted data contracts; do not infer
@@ -45,12 +74,6 @@ a merge or review changes Built/Held/Active status; other entry points link here
 - #138 tracks endpoint subclassification and digit/operator placement separately.
 - Dynamic LoD selection, slopes/transitions, initial test granularities and
   private/temp root subdivisions await discussion. Do not invent policies.
-- #172 owns the requested math-core precision work. The [native precision and
-  truncation plan](docs/native-precision-truncation-plan.md) is proposed for review:
-  qualify f64 transport and an experimental significand-truncation primitive,
-  audit physical state versus rounding residue, then review live conversion with
-  #177's LoD-local centroid cascade. Production rounding remains open;
-  calculation format, stored container and retained precision are independent.
 
 <a id="placement-correction--2026-10-20"></a>
 <a id="allocation-foundation-correction--2026-10-20"></a>
@@ -113,7 +136,9 @@ A changed centroid alone does not wake every dependent: test the combined
 positional effect; a woken particle evaluates every connected field. Combine
 centroid would-move flags with any-active and place each flagged centroid once,
 including sleeping members. Preserve carried motion and changed-input invalidation.
-Keep pre-integration contact forces and sleeping-target checks on both index sides
+For the new precision path, reconcile carried rounding-residue requirements
+through #172; the historical contract below is evidence of built behavior, not
+a veto on the new direction. Keep pre-integration contact forces and sleeping-target checks on both index sides
 and across pointer blocks. Separate numerical force work from gate/adjacency and
 native metadata costs. No arbitrary epsilon or zero-speed sleep rule is implied.
 The [active field model](engine/docs/ACTIVE-FIELD-MODEL.md) owns exact predicates.

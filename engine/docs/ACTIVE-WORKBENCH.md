@@ -1,5 +1,13 @@
 # Bounded active workbench — Stage D
 
+**Current scope (2026-10-23):** This is the retained bounded **v1/FixedStudy**
+workbench. #153 completed the type-phase simplification previously requested in
+#152. Earlier local-test prerequisites below are historical; the full operational
+GPU handoff now follows [#170's integrated CPU exit](../../docs/core-operation-readiness-plan.md).
+[#171 structural v2](../../kernels/database/warm/STRUCTURAL-RECIPES.md) is built,
+but enduring owner refresh, admission and lifecycle remain under #156. Do not
+copy supplied-start/equal-count refresh behavior into that operational path.
+
 Accepted/merged in [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149)
 at `867c310`, under [#148](https://github.com/Human-Cognome-Project/human-cognome-project/issues/148),
 after A/B/C and [design #147](../../docs/pre-d-hot-workbench-design.md) acceptance.

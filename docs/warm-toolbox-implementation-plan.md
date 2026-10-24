@@ -1,5 +1,12 @@
 # First warm toolbox and hot letter study
 
+**Current disposition (2026-10-23):** The bounded A–D tracker #139 is complete
+through #149; #153 completed the #152 type-phase simplification. Initial supplied
+positions and equal-count refresh below describe the retained v1 fixture.
+[#171 v2](../kernels/database/warm/STRUCTURAL-RECIPES.md) removes mandatory starts
+from structural recipes. #156/#170 own the remaining operational lifecycle, and
+#145 retains hardware/transfer qualification.
+
 Status: **Accepted in #137, merged at `50bd968`, 2026-10-15.**
 [#139](https://github.com/Human-Cognome-Project/human-cognome-project/issues/139)
 governs staged implementation. [Stage A](../kernels/database/warm/README.md) is

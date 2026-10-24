@@ -88,6 +88,21 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
          4);  // two maps, host+backend
   extent("map-single-command-buffers", 10, sizeof(std::int64_t),
          2);  // two maps, backend only
+  if (l[Budget::GeometryWork]) {
+    extent("geometry-occupied-rows", p, sizeof(int), 2);
+    extent("geometry-temporary-pairs", 4 * physical(c), sizeof(int), 1);
+    extent("geometry-pairs", 2 * physical(c), sizeof(int), 2);
+    extent("geometry-pair-flags", c, sizeof(int), 2);
+    extent("geometry-source-order", c, sizeof(int), 1);
+    extent("geometry-source-group-end", c, sizeof(int), 1);
+    extent("geometry-source-map", c, sizeof(int), 2);
+    extent("geometry-permutation", c, sizeof(int), 1);
+    extent("geometry-offsets", 4 * physical(p), sizeof(int), 2);
+    extent("geometry-cursors", 2 * physical(p), sizeof(int), 1);
+    extent("geometry-orders", 2 * physical(c), sizeof(int), 2);
+    extent("geometry-counters", 16, sizeof(std::int64_t), 2);
+    extent("geometry-focus", 4, sizeof(float), 2);
+  }
   return result;
 }
 std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l) {
@@ -96,7 +111,7 @@ std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l) {
     add(result, entry.bytes);
   return result;
 }
-std::size_t PreparedStorage::binding_reserve_bytes(bool cuda) {
+std::size_t PreparedStorage::binding_reserve_bytes(bool cuda, bool geometry) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
@@ -104,7 +119,9 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda) {
   // 151 parameters/22 contexts. Flat rank <=2, no gradients: each argument is
   // at most 24 ABI bytes, plus native scalar-cache and source-array metadata
   // slots for every argument.
-  constexpr std::size_t parameters = 151, contexts = 22, abi_per_arg = 24;
+  // Geometry adds collect/source-order/discover/finalize: 10+4+9+10 arguments.
+  const std::size_t parameters = geometry ? 184 : 151,
+                    contexts = geometry ? 26 : 22, abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
   return parameters * (abi_per_arg + sizeof(Scalar) + sizeof(Array)) +
@@ -119,7 +136,7 @@ std::size_t PreparedStorage::required_scratch(const BudgetDemand &l,
     if (entry.count > (std::size_t{1} << 30))
       throw std::invalid_argument(
           "prepared typed workspace exceeds supported axis");
-  add(result, binding_reserve_bytes(cuda));
+  add(result, binding_reserve_bytes(cuda, l[Budget::GeometryWork] != 0));
   return result;
 }
 PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
@@ -185,6 +202,35 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   candidate_status_array = array(PrimitiveType::i32, 1, 1);
   candidate_offsets_array = array(PrimitiveType::i32, 2, int(g));
   candidate_order_array = array(PrimitiveType::i32, 1, int(e));
+  if (l[Budget::GeometryWork]) {
+    geometry_rows = array(PrimitiveType::i32, 1, int(p));
+    geometry_temporary = array(PrimitiveType::i32, 4, int(k));
+    geometry_pairs = array(PrimitiveType::i32, 2, int(k));
+    geometry_flags = array(PrimitiveType::i32, 1, int(k));
+    geometry_source_order = array(PrimitiveType::i32, 1, int(k));
+    geometry_group_end = array(PrimitiveType::i32, 1, int(k));
+    geometry_source_map = array(PrimitiveType::i32, 1, int(k));
+    geometry_permutation = array(PrimitiveType::i32, 1, int(k));
+    geometry_offsets = array(PrimitiveType::i32, 4, int(p));
+    geometry_cursors = array(PrimitiveType::i32, 2, int(p));
+    geometry_orders = array(PrimitiveType::i32, 2, int(k));
+    geometry_counters = array(PrimitiveType::i64, 1, 16);
+    geometry_focus = array(PrimitiveType::f32, 1, 4);
+    for (auto *a :
+         {geometry_rows.get(), geometry_temporary.get(), geometry_pairs.get(),
+          geometry_flags.get(), geometry_source_order.get(),
+          geometry_group_end.get(), geometry_source_map.get(),
+          geometry_permutation.get(), geometry_offsets.get(),
+          geometry_cursors.get(), geometry_orders.get(),
+          geometry_counters.get(), geometry_focus.get()})
+      r.program().fill_ndarray_fast_u32(a, 0);
+    geometry_inspection.occupied_rows.resize(p);
+    geometry_inspection.pairs.resize(2 * k);
+    geometry_inspection.pair_flags.resize(k);
+    geometry_inspection.source_to_pair.resize(k);
+    geometry_inspection.offsets.resize(4 * p);
+    geometry_inspection.orders.resize(2 * k);
+  }
   for (auto *a :
        {validation_array.get(), derived_array.get(), destinations_array.get(),
         candidate_edges_array.get(), candidate_shares_array.get(),

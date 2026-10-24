@@ -28,6 +28,18 @@ references, not another mandatory reading sequence.
 
 ## Active implementation plans and built results
 
+- [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
+  in #176 for f64 transport, an experimental quantization primitive and a source/state
+  audit. Live precision and centroid integration remains under #172/#177.
+
+
+- [Documentation and issue reconciliation](documentation-status-review-2026-10-23.md) —
+  current-facing drift corrections, explicit completed-stage handoffs and retained open work.
+
+- [Precision, exposure and concept catalogue](precision-exposure-and-concept-catalogue.md) —
+  confirmed 2026-10-23 directions and unresolved calibration under #172/#115/#173;
+  separates intended numerical changes from built evidence.
+
 - [Prepared particle space and live representation](pooled-space-live-insertion-plan.md) —
   scope/investigation plan accepted in #160 for #156; production correction remains open: lightweight `0x` declarations, reuse while data is hot,
   prepared native backing, structural recipes and continuous engine-owned updates.
@@ -37,10 +49,6 @@ references, not another mandatory reading sequence.
   records #166's merged bounded implementation. The [coherent-update plan](prepared-coherent-update-plan.md)
   is accepted in #167; [bounded coherent updates](../engine/docs/PREPARED-UPDATES.md)
   were accepted in #169. Production lifecycle integration remains under #156.
-- [Native precision and positional truncation](native-precision-truncation-plan.md) —
-  proposed bounded #172 plan for f32/f64 numerical primitives, typed transport,
-  an experimental truncation primitive and the source/state audit before live
-  conversion with #177's LoD-local centroid cascade; production rounding is open.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct

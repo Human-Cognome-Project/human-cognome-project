@@ -13,6 +13,7 @@
 #include "engine/transfer.h"
 #include "field/activity.h"
 #include "field/centroid_math.h"
+#include "field/contact_math.h"
 #include "field/prepared_storage.h"
 
 namespace field {
@@ -407,17 +408,11 @@ Harness::Harness(engine::Runtime &runtime,
                                 load(b, particles, at(b, kPosY, a)));
         auto *dz = b.create_sub(load(b, particles, at(b, kPosZ, bp)),
                                 load(b, particles, at(b, kPosZ, a)));
-        auto *d2 = b.create_add(
-            b.create_add(b.create_mul(dx, dx), b.create_mul(dy, dy)),
-            b.create_mul(dz, dz));
-        auto *live = b.create_sgn(d2);
-        auto *safe = b.create_add(d2, b.create_sub(b.get_float32(1), live));
-        auto *inv = b.create_rsqrt(safe);
-        auto *distance = b.create_mul(safe, inv);
-        auto *radii = b.create_add(load(b, particles, at(b, kRadius, a)),
-                                   load(b, particles, at(b, kRadius, bp)));
-        auto *penetration =
-            b.create_max(b.create_sub(radii, distance), b.get_float32(0));
+        const auto geometry = detail::contact_geometry(
+            b, {dx, dy, dz}, load(b, particles, at(b, kRadius, a)),
+            load(b, particles, at(b, kRadius, bp)));
+        auto *live = geometry.live, *inv = geometry.inverse,
+             *penetration = geometry.penetration;
         auto *scale = b.create_neg(b.create_mul(
             b.create_mul(stiffness, penetration), b.create_mul(live, inv)));
         for (int axis = 0; axis < 3; ++axis) {
@@ -1440,12 +1435,20 @@ void Harness::prepare_empty_execution() {
       {engine::Param::array(PrimitiveType::i32),
        engine::Param::array(PrimitiveType::i64)});
   prepare_update_execution();
+  prepare_geometry_execution();
   ready_ = true;
   uploaded_ = true;
   invalidated_ = false;
   tick({});  // Actual empty dispatch for every numerical family, with stable
              // bindings.
   inspect_prepared();
+  s.completed_ticks = 0;  // Setup warming is not a published model tick.
+  if (s.capacity.limits()[Budget::GeometryWork]) {
+    const auto empty = query_prepared_geometry(0);
+    if (empty.status != GeometryStatus::Ok || empty.present || empty.contacts)
+      throw std::runtime_error("geometry preparation did not finish empty");
+    s.geometry_valid = false;
+  }
   s.binding_bytes =
       activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
       s.fields.prepared_bytes() + inspection_.prepared_bytes() +
@@ -1453,19 +1456,19 @@ void Harness::prepare_empty_execution() {
   for (const auto *kernel : {&clear_, &force_, &contact_, &integrate_,
                              &determine_, &centroid_, &finalize_})
     s.binding_bytes += kernel->prepared_bytes();
-  if (s.binding_bytes >
-      detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()))
+  if (s.capacity.limits()[Budget::GeometryWork])
+    for (const auto *kernel : {&geometry_collect_, &geometry_source_order_,
+                               &geometry_discover_, &geometry_finalize_})
+      s.binding_bytes += kernel->prepared_bytes();
+  const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
+      runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0);
+  if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");
   s.manifest.push_back(
       {"prepared-binding-payload", s.binding_bytes, 1, 1, s.binding_bytes});
-  s.manifest.push_back(
-      {"unused-binding-reserve",
-       detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()) -
-           s.binding_bytes,
-       1, 1,
-       detail::PreparedStorage::binding_reserve_bytes(runtime_->on_cuda()) -
-           s.binding_bytes});
+  s.manifest.push_back({"unused-binding-reserve", reserve - s.binding_bytes, 1,
+                        1, reserve - s.binding_bytes});
   if (s.inspection_counts != std::array<std::int64_t, 4>{} ||
       universal_data[0] != 0)
     throw std::runtime_error("prepared execution did not finish empty");
@@ -1566,6 +1569,9 @@ void Harness::tick(const Parameters &p) {
         "field::Harness: successful publication required before tick");
   }
   validate_parameters(p);
+  if (prepared_ &&
+      prepared_->completed_ticks == std::numeric_limits<std::uint64_t>::max())
+    throw std::overflow_error("completed tick observation counter exhausted");
   try {
     validate_prepared_bindings();
     const auto start = std::chrono::steady_clock::now();
@@ -1594,6 +1600,8 @@ void Harness::tick(const Parameters &p) {
     previous_parameters_ = p;
     invalidated_ = false;
     timings_.kernel_ms += elapsed(start);
+    if (prepared_)
+      ++prepared_->completed_ticks;
   } catch (...) {
     ready_ = false;
     throw;
