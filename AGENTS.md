@@ -66,6 +66,10 @@ later live centroid conversion must reconcile #177 and #172.
   in #178: f64 packed transport, experimental bit clearing and a source state
   audit; all eight hosted checks and 54 CPU suites passed. It leaves live tick behavior unchanged and explicitly rejects
   narrowing values in the fork's unsupported FTZ subnormal/underflow range.
+- The [upward centroid integration plan](docs/upward-centroid-integration-plan.md)
+  is proposed under #172/#177: evaluate explicit bounded comparison hierarchies
+  on current backend data, with per-comparison numerical boundaries and no
+  internal distance multiplier. It does not release live force/phase conversion.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
