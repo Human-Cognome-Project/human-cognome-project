@@ -29,7 +29,7 @@ references, not another mandatory reading sequence.
 ## Active implementation plans and built results
 
 - [Current-state upward centroid integration](upward-centroid-integration-plan.md) —
-  proposed first #172/#177 candidate slice: explicit comparison hierarchy,
+  accepted #180 plan for the first #172/#177 candidate slice (implementation pending): explicit comparison hierarchy,
   current backend contributions, f64 reductions and publication boundaries.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted

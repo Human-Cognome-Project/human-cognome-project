@@ -1,6 +1,6 @@
 # Current-state upward centroid integration
 
-Status: **proposed bounded plan for review, 2026-10-24**.
+Status: **accepted bounded plan in #180, 2026-10-24; implementation pending**.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: `main` at `798b49a`, following accepted #178 and the #179 clarification.
@@ -8,7 +8,7 @@ The [precision primitives](../engine/docs/NATIVE-PRECISION.md) are built; the
 [state audit](../engine/docs/PRECISION-STATE-AUDIT.md) identifies the later live
 conversion. This proposes its next component, not a complete live profile.
 
-## Proposed first slice
+## Accepted first slice
 
 Add a bounded **upward centroid candidate operation on current backend data**.
 Evaluate an explicitly supplied comparison hierarchy from its finest local
@@ -24,7 +24,7 @@ It is a current-state numerical component of later live integration, not a secon
 solver or another source of physical state. Existing ticks and coherent updates
 remain intact. #156/#170 admission and candidate-tick publication remain outstanding.
 
-Acceptance releases this first candidate slice only. Proposed review decisions:
+Acceptance releases this first candidate slice only. Accepted bounded decisions:
 
 1. Start with an explicit fixed hierarchy and whole-body contributions; reject
    fractional participation and ambiguous overlapping child ownership.
