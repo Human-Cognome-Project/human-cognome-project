@@ -1,6 +1,7 @@
 # Native precision and positional significand truncation
 
-Status: **accepted bounded prerequisite plan in #176, 2026-10-23; implementation pending**.
+Status: **accepted bounded prerequisite plan in #176, 2026-10-23; first slice accepted in #178, 2026-10-24**.
+Live precision/centroid integration remains pending under #172/#177.
 Owner: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: `main` at `c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66` (#171).
 The current [direction notes in PR #174](https://github.com/Human-Cognome-Project/human-cognome-project/blob/2eaabcd668c468c72cfe39bb1db36b4060c88584/docs/precision-exposure-and-concept-catalogue.md)

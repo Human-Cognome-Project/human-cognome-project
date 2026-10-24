@@ -180,6 +180,12 @@ qualification ladder.
 
 ## Current status
 
+The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
+first #172 slice, accepted in #178: double packed transport, an experimental significand
+clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.md).
+The existing field kernels remain at their original profile; #172/#177 retain
+the later numerical and LoD-centroid conversion.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)

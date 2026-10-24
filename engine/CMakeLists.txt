@@ -17,6 +17,7 @@ include(FindTaichiEngine)
 # host transfer. Nothing here decides what is computed.
 add_library(engine_support STATIC
     src/engine/runtime.cpp
+    src/engine/precision.cpp
     src/engine/record_map.cpp
     src/engine/transfer.cpp
     src/engine/device.cpp)
@@ -67,6 +68,18 @@ add_executable(engine_devices apps/engine_devices.cpp)
 target_link_libraries(engine_devices PRIVATE engine_support)
 
 enable_testing()
+add_executable(precision_test tests/precision_test.cpp)
+target_link_libraries(precision_test PRIVATE engine_support)
+foreach(mode bulk direct)
+  if(mode STREQUAL "direct")
+    set(precision_args --direct)
+  else()
+    set(precision_args)
+  endif()
+  add_test(NAME precision_${mode} COMMAND precision_test ${precision_args})
+  set_tests_properties(precision_${mode} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
 add_executable(prepared_launch_test tests/prepared_launch_test.cpp)
 target_link_libraries(prepared_launch_test PRIVATE engine_support)
 add_test(NAME prepared_launch_test COMMAND prepared_launch_test)
