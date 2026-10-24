@@ -47,6 +47,12 @@ browser visibility; visual parity with analytical needs is unproven and these
 controls do not add a GPU gate. #173 owns concept.db as the cross-media centroid
 catalogue and recipe/download root, with schema/addresses still undecided.
 
+#177 owns the new LoD-local centroid cascade: resolve finest-exposed local fields,
+aggregate through successive exposed comparisons to the coarsest level, with
+provisional downward whole-object response. Exact matching/propagation/type-phase
+ordering remains to be planned. #176's precision primitives are separable;
+later live centroid conversion must reconcile #177 and #172.
+
 ## Active and deferred work
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and

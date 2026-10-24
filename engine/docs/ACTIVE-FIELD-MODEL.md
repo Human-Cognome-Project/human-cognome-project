@@ -1,5 +1,12 @@
 # Active field model and tick dependencies
 
+**LoD cascade direction (2026-10-23, unimplemented):** [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+requires local finest-exposed centroid resolution compounded through successive
+exposed comparison levels to the current coarsest level. Downward proportional
+response is provisionally agreed; matching and scheduling remain open. The flat
+baseline below is not the final multilevel algorithm. See the [decision notes](../../docs/precision-exposure-and-concept-catalogue.md#lod-local-centroid-cascade)
+and reconcile the later live precision conversion under #172.
+
 **Later direction (2026-10-23, not implemented):** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 introduces LoD-dependent calculation/storage precision with discarded subthreshold
 positional rounding residuals. The carried-residue mechanics/evidence below remain

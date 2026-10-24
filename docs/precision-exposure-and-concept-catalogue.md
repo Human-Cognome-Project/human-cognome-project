@@ -129,6 +129,41 @@ assumption, not an accepted universal correspondence.
 These view-scaling controls are not an additional GPU-testing gate. They remain
 separate from the requested math-core work and the existing operational CPU exit.
 
+## LoD-local centroid cascade
+
+Direction confirmed 2026-10-23; [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+owns the separate plan. Field matching and effective centroids depend on the
+exposed conceptual LoD. Resolve local centroids at the finest exposed level,
+compound their weighted contributions into the next exposed comparison level,
+and continue to the current coarsest expressed level. A nested field participates
+at each level where it is expressed. One flat all-scale centroid with only a
+distance multiplier is not the intended general calculation.
+
+The downward flow is provisionally agreed: a coarser response acts proportionally
+on the represented whole and propagates to exposed components alongside their
+local responses. Exact field matching, propagation and tick ordering remain open.
+Specify how contributions and responses combine without counting a rollup and its
+components as additional independent mass or duplicating the same influence.
+
+Tree the calculation for locality without assuming that the entire membership
+graph is a simple tree. Preserve per-field/per-occurrence identity and the
+construction/membership distinction. Secondary compression/naming remains 1:1;
+storage nesting alone does not add a centroid comparison level. No rotation,
+internal application offsets or second persistent scheduler is introduced.
+
+Resolve upward dependencies, downward influence, sleeping-member inclusion,
+invalidation and wakes within native type phases. Do not infer same-tick recursion
+or repeated integration. Precision and quantization boundaries at each comparison
+level must be explicit; their interaction with rebasing, accepted displacement
+and discarded positional detail belongs in the joint #172/#177 integration plan.
+
+PR #176's typed transport and quantization primitives are separable prerequisites.
+Their acceptance does not select the final live centroid algorithm. A fresh
+ordered reduction can be a local building block; later live integration must
+support the exposed hierarchy rather than freeze the flat baseline.
+Require independently checked multilevel fixtures before claiming this direction
+implemented. Existing single-level evidence remains scoped to its tested model.
+
 ## concept.db: compositional recipes across media
 
 concept.db is intended as the master catalogue of established conceptual centroid
