@@ -10,6 +10,10 @@ fraction bits are independent. Existing field/tick/update/geometry behavior is
 unchanged. No live numerical selector or LoD cascade is added; production
 rounding and the #172/#177 integration remain separate work.
 
+The subsequent [#180 candidate operation](CENTROID-CASCADE.md) is prepared for
+review. It reuses the checked mask for current-state upward f64 reductions;
+the live conversion and production rounding remain outstanding.
+
 ## Native interface and numerical boundary
 
 [Precision](../src/engine/precision.h) specifies calculation and storage formats

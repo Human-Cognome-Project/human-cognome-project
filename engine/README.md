@@ -186,6 +186,13 @@ clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.m
 The existing field kernels remain at their original profile; #172/#177 retain
 the later numerical and LoD-centroid conversion.
 
+The accepted [#180 plan](../docs/upward-centroid-integration-plan.md) now has a
+[candidate-only upward operation](docs/CENTROID-CASCADE.md) prepared for review.
+It reduces current native values through an explicit bounded hierarchy in f64,
+with optional experimental trimming at expressed comparisons. Whole/disjoint
+cohorts are first-component restrictions; live field/force/phase conversion
+remains unbuilt.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)

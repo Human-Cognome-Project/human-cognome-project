@@ -1,6 +1,8 @@
 # Current-state upward centroid integration
 
-Status: **accepted bounded plan in #180, 2026-10-24; implementation pending**.
+Status: **accepted bounded plan in #180, 2026-10-24**.
+The [candidate-only implementation](../engine/docs/CENTROID-CASCADE.md) is
+prepared for review; the live conversion described below remains outstanding.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: `main` at `798b49a`, following accepted #178 and the #179 clarification.

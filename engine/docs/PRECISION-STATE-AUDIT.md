@@ -8,6 +8,10 @@ support and add experimental numerical helpers; the live surfaces below remain
 at their audited behavior. This is a conversion inventory, not implementation
 of a precision-controlled field path or #177's cascade.
 
+The later [candidate-only upward operation](CENTROID-CASCADE.md), prepared for
+review under #180, reads the resident body/participation surfaces below without
+replacing their live arithmetic, history or physical publication.
+
 ## State owners and publication sites
 
 | State | Current owner/width and writers | Consumers and conversion obligation |
