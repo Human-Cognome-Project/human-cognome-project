@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #176 plan acceptance; native precision prerequisites for review.
+Last checked: **2026-10-24**, after #178 precision prerequisite acceptance and centroid-cascade clarification.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -48,8 +48,10 @@ controls do not add a GPU gate. #173 owns concept.db as the cross-media centroid
 catalogue and recipe/download root, with schema/addresses still undecided.
 
 #177 owns the new LoD-local centroid cascade: resolve finest-exposed local fields,
-aggregate through successive exposed comparisons to the coarsest level, with
-provisional downward whole-object response. Exact matching/propagation/type-phase
+aggregate upward until the exposed study resolves to one centroid at its resulting
+scale. Internal aggregation adds no distance scaling; scale factors belong only
+to actual conceptual LoD transitions, with secondary compression/naming at 1:1.
+Downward whole-object response remains provisional. Exact matching/propagation/type-phase
 ordering remains to be planned. #176's precision primitives are separable;
 later live centroid conversion must reconcile #177 and #172.
 
@@ -60,9 +62,9 @@ later live centroid conversion must reconcile #177 and #172.
   then audit the later live conversion. Production rounding remains open.
   #172 and #177 govern the eventual precision/LoD-centroid integration;
   accepting this plan does not implement that integration.
-  The [first native implementation](engine/docs/NATIVE-PRECISION.md) is submitted
-  for review, with f64 packed transport, experimental bit clearing and a source
-  state audit. It leaves live tick behavior unchanged and explicitly rejects
+  The [first native implementation](engine/docs/NATIVE-PRECISION.md) was accepted
+  in #178: f64 packed transport, experimental bit clearing and a source state
+  audit; all eight hosted checks and 54 CPU suites passed. It leaves live tick behavior unchanged and explicitly rejects
   narrowing values in the fork's unsupported FTZ subnormal/underflow range.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

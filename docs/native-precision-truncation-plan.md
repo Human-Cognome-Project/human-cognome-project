@@ -1,6 +1,7 @@
 # Native precision and positional significand truncation
 
-Status: **accepted bounded prerequisite plan in #176, 2026-10-23; implementation pending**.
+Status: **accepted bounded prerequisite plan in #176, 2026-10-23; first slice accepted in #178, 2026-10-24**.
+Live precision/centroid integration remains pending under #172/#177.
 Owner: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: `main` at `c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66` (#171).
 The current [direction notes in PR #174](https://github.com/Human-Cognome-Project/human-cognome-project/blob/2eaabcd668c468c72cfe39bb1db36b4060c88584/docs/precision-exposure-and-concept-catalogue.md)
@@ -156,7 +157,12 @@ choice must not become a default flat all-scale algorithm.
 Later live conversion must reconcile #177: resolve local centroids and field
 matches at the finest exposed conceptual LoD, compound weighted contributions
 through successive exposed comparison levels, and continue to the coarsest
-currently expressed level. Review calculation format, stored container, retained
+currently expressed level until the exposed study resolves to one centroid at
+its resulting scale. Internal centroid aggregation adds no distance multiplier;
+reserve distance scaling for actual conceptual LoD transitions. A hierarchy
+edge alone is not a scale transition, and secondary compression/naming stays
+1:1. This clarification does not change the first primitive slice.
+Review calculation format, stored container, retained
 precision and publication/quantization boundaries **at each comparison level**.
 Account for contributions once within each comparison; rollup and components
 do not create extra independent physical mass. Preserve occurrence identity and

@@ -181,7 +181,7 @@ qualification ladder.
 ## Current status
 
 The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
-first #172 slice for review: double packed transport, an experimental significand
+first #172 slice, accepted in #178: double packed transport, an experimental significand
 clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.md).
 The existing field kernels remain at their original profile; #172/#177 retain
 the later numerical and LoD-centroid conversion.

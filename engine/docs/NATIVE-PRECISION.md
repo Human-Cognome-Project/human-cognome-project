@@ -1,6 +1,6 @@
 # Native precision prerequisites
 
-Status: **implemented for review, 2026-10-24**, first slice of the
+Status: **accepted in #178, 2026-10-24**, first slice of the
 [#176 accepted plan](../../docs/native-precision-truncation-plan.md) under #172.
 Baseline: `925d8c7ac8175ca6afe399c631fd35e710d4cfcc`, after #174/#175/#176.
 

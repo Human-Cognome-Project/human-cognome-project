@@ -135,9 +135,16 @@ Direction confirmed 2026-10-23; [#177](https://github.com/Human-Cognome-Project/
 owns the separate plan. Field matching and effective centroids depend on the
 exposed conceptual LoD. Resolve local centroids at the finest exposed level,
 compound their weighted contributions into the next exposed comparison level,
-and continue to the current coarsest expressed level. A nested field participates
+and continue until the exposed study resolves to one centroid, at whatever scale
+that occurs. A nested field participates
 at each level where it is expressed. One flat all-scale centroid with only a
 distance multiplier is not the intended general calculation.
+
+Clarified 2026-10-24: internal centroid steps use hierarchical, mass-weighted
+aggregation without additional distance multipliers. Reserve distance scaling
+for actual conceptual LoD transitions. A hierarchy edge alone is not a scale
+transition; secondary compression/naming remains 1:1. Transition-factor
+calibration remains open. This separates aggregation from force response.
 
 The downward flow is provisionally agreed: a coarser response acts proportionally
 on the represented whole and propagates to exposed components alongside their
