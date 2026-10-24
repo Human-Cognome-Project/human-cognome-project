@@ -28,6 +28,10 @@ references, not another mandatory reading sequence.
 
 ## Active implementation plans and built results
 
+- [Current-state upward centroid integration](upward-centroid-integration-plan.md) —
+  accepted #180 plan for the first #172/#177 candidate slice (implementation pending): explicit comparison hierarchy,
+  current backend contributions, f64 reductions and publication boundaries.
+
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
   audit. Live precision and centroid integration remains under #172/#177.
