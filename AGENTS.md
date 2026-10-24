@@ -55,6 +55,13 @@ Downward whole-object response remains provisional. Exact matching/propagation/t
 ordering remains to be planned. #176's precision primitives are separable;
 later live centroid conversion must reconcile #177 and #172.
 
+Resolution-cycle clarification (2026-10-24): trial native propagation across ticks.
+Initialize all exposed centroids, then aggregate current published inputs in the
+normal type phases; nested up/down ripples may take several ticks to settle.
+Coherent settling and perturbation recovery are the gate, not a complete cascade
+within every tick. Measure time/work to settle. #180's full upward candidate query
+is not a required per-tick scheduler; one-tick lag remains a trial assumption.
+
 ## Active and deferred work
 
 - #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
