@@ -29,8 +29,15 @@ references, not another mandatory reading sequence.
 ## Active implementation plans and built results
 
 - [Current-state upward centroid integration](upward-centroid-integration-plan.md) —
-  accepted #180 plan for the first #172/#177 candidate slice (implementation pending): explicit comparison hierarchy,
-  current backend contributions, f64 reductions and publication boundaries.
+  accepted #180 plan, implemented and accepted in #182: explicit comparison
+  hierarchy, current backend contributions, f64 reductions and publication
+  boundaries; all eight hosted checks and 62 CPU suites passed. Candidate-only,
+  with #181's settling-across-ticks direction retained for later live integration.
+
+- [Source counts and weighted centroid comparisons](weighted-centroid-accounting-plan.md) —
+  accepted #183 plan (implementation pending): preserve exact count provenance, then
+  qualify fractional contributions and compatible overlaps without duplicate
+  mass or recovery of discarded child detail. Live propagation remains separate.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
