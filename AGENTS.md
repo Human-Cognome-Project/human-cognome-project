@@ -45,6 +45,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 - #138 tracks endpoint subclassification and digit/operator placement separately.
 - Dynamic LoD selection, slopes/transitions, initial test granularities and
   private/temp root subdivisions await discussion. Do not invent policies.
+- #172 owns the requested math-core precision work. The [native precision and
+  truncation plan](docs/native-precision-truncation-plan.md) is proposed for review:
+  qualify f64 transport and native significand truncation first, audit physical
+  state versus rounding residue, then review the coherent live conversion.
+  Calculation format, stored container and retained precision are independent.
 
 <a id="placement-correction--2026-10-20"></a>
 <a id="allocation-foundation-correction--2026-10-20"></a>

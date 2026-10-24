@@ -37,6 +37,9 @@ references, not another mandatory reading sequence.
   records #166's merged bounded implementation. The [coherent-update plan](prepared-coherent-update-plan.md)
   is accepted in #167; [bounded coherent updates](../engine/docs/PREPARED-UPDATES.md)
   were accepted in #169. Production lifecycle integration remains under #156.
+- [Native precision and positional truncation](native-precision-truncation-plan.md) —
+  proposed bounded #172 plan for f32/f64 numerical primitives, typed transport,
+  significand truncation and the source/state audit before live math conversion.
 - [Model realignment plan](model-realignment-plan.md) — settled directions,
   built bounded support and remaining work; #123 is held for revision.
 - [Language component plan](language-component-unicode-plan.md) — distinct
