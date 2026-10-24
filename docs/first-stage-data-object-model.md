@@ -1,5 +1,12 @@
 # First-stage data-object model
 
+**Current scope (2026-10-23):** The supplied-slot/position/velocity records below
+are the retained **legacy fixed-study fixture**, not the operational input contract.
+[#171 structural recipes](../kernels/database/warm/STRUCTURAL-RECIPES.md) supply
+coordinate-free v2 occurrences and projection. The [core operation plan](core-operation-readiness-plan.md)
+under #156 owns engine admission, continuous lifecycle and integration. Intrinsic
+component geometry remains valid input; ordinary world starts do not.
+
 Status: **Native record/preparation slice built and tested, 2026-10-10.**
 The engine corrections approved in #124/#125 have passed their focused checks.
 Continue object modeling from this contract; no further general physics

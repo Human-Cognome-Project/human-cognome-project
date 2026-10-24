@@ -26,13 +26,18 @@ used. Prerequisites: [physics-basis.md](physics-basis.md), [architecture.md](arc
    unread slot on the transformation. **Nothing happens for free**: every compression's cost appears
    on the ledger, including our own.
 
-## First placement: the lexical landing lattice
+## Current lexical sequence — 2026-10-23
 
-**Kaikki/Wiktionary goes first** because it supplies the full range of words across time for most
-known languages — so every element ever ingested afterward arrives already connected: each word in
-it is a pinned endpoint whose partner near the present exists. Etymologies are pre-drafted temporal
-flows. Reconstructed proto-forms are placed but flagged model-produced. The lattice arrives two
-singularities deep (Wiktionary → Kaikki → us); the corpus that lands on it continuously audits it.
+Letter testing precedes structural word tools from a separate word list to be
+acquired later. Then ingest LDOCE through its supplied phases to develop
+concept.db; defer Kaikki until that path stabilizes. This supersedes the former
+Kaikki-first lexical-lattice sequence.
+
+Word tools supply construction, not preseeded semantic/centroid answers from
+dictionary JSON keys. Source relationships provide the recovery target against
+which future analysis is checked. See [concept catalogue direction](precision-exposure-and-concept-catalogue.md)
+and #173. No source acquisition, schema allocation or analyst implementation is
+authorized by this ordering note.
 
 ## The addressing precept (operational form)
 

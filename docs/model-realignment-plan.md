@@ -1,5 +1,12 @@
 # Model realignment: conversion and continuation plan
 
+**2026-10-23 follow-up:** [Precision, exposure and concept-catalogue decisions](precision-exposure-and-concept-catalogue.md)
+record the latest intended direction. #172 owns math-core precision/quantization
+and reconciliation of existing residue/rebase requirements before revised arithmetic
+is implemented. #115 owns global/per-object exposure controls (not a new GPU gate);
+#173 owns the cross-media concept recipe catalogue. Existing implementation/evidence
+below remains scoped to its original numerical profile.
+
 ## Allocation foundation correction — 2026-10-20
 
 Patrick clarified that available **potential particle capacity**, **present

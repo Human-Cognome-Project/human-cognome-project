@@ -1,5 +1,13 @@
 # database/cache — data protocol & address-layout notes
 
+**Current implementation pointer (2026-10-23):** Later dated model decisions
+supersede the older state descriptions below. Language-letter data was populated
+in #136; bounded warm A–D are complete and #171 adds [coordinate-free v2](warm/STRUCTURAL-RECIPES.md).
+[Current state](../../AGENTS.md) and [new model directions](../../docs/precision-exposure-and-concept-catalogue.md)
+own status and precision/view/concept decisions. The manager serves shared tools;
+private/local input stays at the active owner boundary. Warm completion is not
+hot execution readiness (#94). General command atomicity remains open (#110).
+
 > **Later addressing decision (2026-09-26):** Base-50 sizes and examples
 > below describe earlier work; the current codec and literal `text[]` key use
 > byte-ordered Base62. See [paired-address decision](../../docs/address-encoding-transition.md)

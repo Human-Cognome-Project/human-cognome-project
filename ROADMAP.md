@@ -1,5 +1,13 @@
 # Roadmap
 
+**Current work map (2026-10-23):** The dated roadmap below retains the September
+sequence. Use [AGENTS](AGENTS.md#current-state) for current status: bounded A–D
+(#139) and prepared storage/updates (#162) are complete; #156/#170 own remaining
+operational integration, #172 the revised math-core precision path, #115 view
+scaling, #173 the concept recipe catalogue, and #145 actual GPU qualification.
+[Documentation review](docs/documentation-status-review-2026-10-23.md) records
+this reconciliation without converting future goals into built capability.
+
 This roadmap reflects the repository and implementation state after the September 2026 development split. It replaces the August roadmap that still described the field engine as future work.
 
 ## 0. Repository reconciliation — initial structural pass complete

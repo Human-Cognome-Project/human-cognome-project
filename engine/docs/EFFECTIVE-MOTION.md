@@ -1,5 +1,12 @@
 # Effective-motion CPU evidence
 
+**Later direction (2026-10-23, not implemented):** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
+introduces LoD-dependent calculation/storage precision with discarded subthreshold
+positional rounding residuals. The carried-residue mechanics/evidence below remain
+the built baseline; reconcile them through a reviewed numerical conversion rather
+than silently retaining or deleting all remainder/physical-state fields. See the
+[decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
+
 Status: #150 accepted/merged; #152 type-phase revision for review, 2026-10-19, under
 [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
 The [active field model](ACTIVE-FIELD-MODEL.md#current-selective-tick-and-the-effective-motion-predicate)

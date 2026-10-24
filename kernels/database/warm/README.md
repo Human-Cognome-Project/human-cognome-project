@@ -1,5 +1,11 @@
 # Native warm toolbox — Stage A
 
+**Current status (2026-10-23):** Bounded A–D are complete through #149; #139 is
+closed. #171 added [coordinate-free v2 recipes and retained-v1 compatibility](STRUCTURAL-RECIPES.md).
+The original schema and supplied-state fixtures below remain v1; v2 requires the
+explicit additive migration, never automatic migration of a retained store.
+#156 owns enduring operational integration, and #145 GPU/transfer qualification.
+
 Implements the storage slice of the [accepted #137 contract](../../../docs/warm-toolbox-implementation-plan.md)
 and [#140](https://github.com/Human-Cognome-Project/human-cognome-project/issues/140).
 Accepted and merged in #141 at `e7acdea`. This module supplies native C++/libpq
