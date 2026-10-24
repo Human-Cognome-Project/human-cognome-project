@@ -1,5 +1,19 @@
 # Complete the core operation path before full GPU qualification
 
+**Issue handoff (2026-10-23):** #162's original bounded foundation is accepted and
+closed; #156 now owns the remaining operation matrix. Historical requests below
+to keep #162 open are superseded by this explicit handoff. #171 completed Segment 1;
+[PR #175](https://github.com/Human-Cognome-Project/human-cognome-project/pull/175)
+is accepted as a partial Segment 2 current-geometry query, with 52 hosted CPU suites passing.
+It does not implement placement, contact installation or candidate-tick publication.
+
+**2026-10-23 follow-up:** [Precision, exposure and concept-catalogue decisions](precision-exposure-and-concept-catalogue.md)
+record the latest intended direction. #172 owns math-core precision/quantization
+and reconciliation of existing residue/rebase requirements before revised arithmetic
+is implemented. #115 owns global/per-object exposure controls (not a new GPU gate);
+#173 owns the cross-media concept recipe catalogue. Existing implementation/evidence
+below remains scoped to its original numerical profile.
+
 Status: **accepted in #170, 2026-10-23**. Baseline: `main` at
 `768e2228cf3794b607469e7582020750b47ded6b`, the merge of #169. Patrick's current
 direction is to finish the core operation set and CPU acceptance before using
@@ -25,11 +39,7 @@ The [follow-up disposition](https://github.com/Human-Cognome-Project/human-cogno
 accepts the complete contract, including contact publication, D1–D7 and all four
 implementation segments. This acceptance is not runtime completion or GPU
 qualification. Segment 1's [structural recipe implementation](../kernels/database/warm/STRUCTURAL-RECIPES.md)
-is accepted and merged in #171. The first portion of Segment 2 adds
-[native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) for review:
-current occupancy/focus and bounded candidate contact discovery. Placement,
-admission/contact installation, candidate ticks and the remaining lifecycle/CPU
-exit work are unbuilt; the full requirements below still apply.
+was accepted and merged in #171. The [current native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) in #175 supplies bounded current occupancy/focus and candidate contact queries. Placement/admission, contact installation, candidate motion publication and remaining lifecycle/CPU exit work are still unbuilt.
 
 ## Result and finite operation set
 
