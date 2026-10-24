@@ -80,9 +80,9 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   distance multiplier and is not a mandatory per-tick solve. Live precision,
   forces, wakes and settling-cycle integration remain outstanding.
 - The [weighted comparison accounting plan](docs/weighted-centroid-accounting-plan.md)
-  is proposed under #177/#172: retain exact source counts at the prepared
+  is accepted in #183 under #177/#172 (implementation pending): retain exact source counts at the prepared
   boundary, then extend candidate comparisons to source-compatible fractional
-  and overlapping contributions. No implementation is released by this proposal;
+  and overlapping contributions. Implement Segment A first, then Segment B in separate reviewed PRs;
   live ripple/precision/response integration still needs its bounded contract.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

@@ -35,7 +35,7 @@ references, not another mandatory reading sequence.
   with #181's settling-across-ticks direction retained for later live integration.
 
 - [Source counts and weighted centroid comparisons](weighted-centroid-accounting-plan.md) —
-  proposed next #177/#172 component: preserve exact count provenance, then
+  accepted #183 plan (implementation pending): preserve exact count provenance, then
   qualify fractional contributions and compatible overlaps without duplicate
   mass or recovery of discarded child detail. Live propagation remains separate.
 

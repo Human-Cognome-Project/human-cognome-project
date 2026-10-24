@@ -1,12 +1,12 @@
 # Source counts and weighted centroid comparisons
 
-Status: **proposed for review, 2026-10-24**. Baseline: `main` at
+Status: **accepted in #183, 2026-10-24; implementation pending**. Baseline: `main` at
 `768493a28d1fcb5608179145c86346ba7489d9ed`, following accepted #182 and #181.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172);
 operational integration remains under #156/#170.
 
-## Proposed next component
+## Accepted next component
 
 Preserve exact source contribution counts at the prepared boundary, then extend
 the accepted [upward candidate operation](../engine/docs/CENTROID-CASCADE.md) to
@@ -14,7 +14,7 @@ source-backed fractional contributions and compatible overlapping cohorts.
 This supplies accounting needed by the later live ripple path. It does not
 replace that path with an obligatory full query on every tick.
 
-Acceptance of this plan would release the two implementation segments below.
+Acceptance releases the two implementation segments below in sequence.
 Both remain candidate-only: no live centre replacement, forces, body motion,
 wakes, new scheduler, database write or analyst matching policy. The first
 segment preserves source metadata without changing the existing f32 physics.
@@ -59,7 +59,7 @@ The bounded test adapter can prepare a real `PreparedStudy`, bind its independen
 occurrences to native handles and commit those exact values. This is not general
 production admission or a replacement FixedStudy lifecycle.
 
-Proposed rules:
+Accepted rules:
 
 - Exact accounting is either supplied or explicitly unavailable. Zero is not a
   valid supplied denominator/count. Existing commands without this metadata
