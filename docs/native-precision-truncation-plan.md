@@ -156,7 +156,12 @@ choice must not become a default flat all-scale algorithm.
 Later live conversion must reconcile #177: resolve local centroids and field
 matches at the finest exposed conceptual LoD, compound weighted contributions
 through successive exposed comparison levels, and continue to the coarsest
-currently expressed level. Review calculation format, stored container, retained
+currently expressed level until the exposed study resolves to one centroid at
+its resulting scale. Internal centroid aggregation adds no distance multiplier;
+reserve distance scaling for actual conceptual LoD transitions. A hierarchy
+edge alone is not a scale transition, and secondary compression/naming stays
+1:1. This clarification does not change the first primitive slice.
+Review calculation format, stored container, retained
 precision and publication/quantization boundaries **at each comparison level**.
 Account for contributions once within each comparison; rollup and components
 do not create extra independent physical mass. Preserve occurrence identity and

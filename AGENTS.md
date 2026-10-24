@@ -48,8 +48,10 @@ controls do not add a GPU gate. #173 owns concept.db as the cross-media centroid
 catalogue and recipe/download root, with schema/addresses still undecided.
 
 #177 owns the new LoD-local centroid cascade: resolve finest-exposed local fields,
-aggregate through successive exposed comparisons to the coarsest level, with
-provisional downward whole-object response. Exact matching/propagation/type-phase
+aggregate upward until the exposed study resolves to one centroid at its resulting
+scale. Internal aggregation adds no distance scaling; scale factors belong only
+to actual conceptual LoD transitions, with secondary compression/naming at 1:1.
+Downward whole-object response remains provisional. Exact matching/propagation/type-phase
 ordering remains to be planned. #176's precision primitives are separable;
 later live centroid conversion must reconcile #177 and #172.
 
