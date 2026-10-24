@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #182 candidate-cascade acceptance; #181 settling clarification retained.
+Last checked: **2026-10-24**, after #183 accounting-plan acceptance; Segment A prepared for review.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -80,9 +80,11 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   distance multiplier and is not a mandatory per-tick solve. Live precision,
   forces, wakes and settling-cycle integration remain outstanding.
 - The [weighted comparison accounting plan](docs/weighted-centroid-accounting-plan.md)
-  is accepted in #183 under #177/#172 (implementation pending): retain exact source counts at the prepared
-  boundary, then extend candidate comparisons to source-compatible fractional
-  and overlapping contributions. Implement Segment A first, then Segment B in separate reviewed PRs;
+  is accepted in #183 under #177/#172. [Segment A](engine/docs/SOURCE-COUNTS.md)
+  is implemented for review: retain exact source counts through prepared commits,
+  without changing legacy physics; all 66 native CPU suites passed on its
+  [pinned source](engine/tests/source_counts/README.md). Segment B's source-compatible fractional/
+  overlapping candidate comparisons remain pending, in a separate reviewed PR;
   live ripple/precision/response integration still needs its bounded contract.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

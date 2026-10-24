@@ -35,9 +35,10 @@ references, not another mandatory reading sequence.
   with #181's settling-across-ticks direction retained for later live integration.
 
 - [Source counts and weighted centroid comparisons](weighted-centroid-accounting-plan.md) —
-  accepted #183 plan (implementation pending): preserve exact count provenance, then
-  qualify fractional contributions and compatible overlaps without duplicate
-  mass or recovery of discarded child detail. Live propagation remains separate.
+  accepted #183 plan; [Segment A](../engine/docs/SOURCE-COUNTS.md) preserves exact
+  count provenance and is prepared for review. Segment B will qualify fractional
+  contributions and compatible overlaps without duplicate mass or recovery of
+  discarded child detail. Live propagation remains separate.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state

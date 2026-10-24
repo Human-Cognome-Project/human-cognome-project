@@ -20,6 +20,11 @@ focus replacement/rebasing, general LoD exchanges and private-manager behavior
 remain outside this slice. FixedStudy/ActiveSession retain their historical
 behavior. No database or Python runtime is added.
 
+The [#183 Segment A extension](SOURCE-COUNTS.md) is prepared for review: optional
+exact structural mass/count provenance commits with source generation and
+survives ordered-row compaction, without changing the legacy f32 arithmetic.
+Its resource/evidence record follows this historical baseline separately.
+
 ## Reference and commit boundary
 
 [Commands and references](../src/field/prepared_update.h) distinguish full native
