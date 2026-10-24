@@ -9,7 +9,7 @@
 namespace engine {
 // Synchronous borrowed view: its vector owner must remain alive and unchanged
 // until the enclosing upload/launch + synchronize returns. Never an async
-// lease. Only scalar f32/i32 arrays cross this boundary, never C++ object
+// lease. Only scalar f32/f64/i32 arrays cross this boundary, never C++ object
 // bytes.
 template <class T>
 class PackedView {
@@ -20,9 +20,10 @@ class PackedView {
         shape_(std::move(shape)),
         generation_(generation) {
     static_assert(
-        (std::is_same<T, float>::value || std::is_same<T, int>::value) &&
-            sizeof(T) == 4,
-        "packed ABI requires f32/i32");
+        (std::is_same<T, float>::value && sizeof(T) == 4) ||
+            (std::is_same<T, double>::value && sizeof(T) == 8) ||
+            (std::is_same<T, int>::value && sizeof(T) == 4),
+        "packed ABI requires f32/f64/i32");
     std::size_t n = 1;
     if (shape_.empty() || !generation_)
       throw std::invalid_argument("packed schema");
