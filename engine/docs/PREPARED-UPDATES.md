@@ -1,6 +1,6 @@
 # Coherent prepared structural updates
 
-Status: **implemented for review under #162, 2026-10-22**. The contract was
+Status: **accepted in #184 under #162, 2026-10-22**. The contract was
 accepted in [#167](https://github.com/Human-Cognome-Project/human-cognome-project/pull/167#issuecomment-6342453057)
 and merged at `284b45d`. This extends the accepted [#166 backing/binding
 baseline](PREPARED-EXECUTION.md). #162 and #156 remain open pending their
@@ -19,6 +19,11 @@ nearest-unoccupied placement/initialization, source/owner/report integration,
 focus replacement/rebasing, general LoD exchanges and private-manager behavior
 remain outside this slice. FixedStudy/ActiveSession retain their historical
 behavior. No database or Python runtime is added.
+
+The [#183 Segment A extension](SOURCE-COUNTS.md) is accepted in #184: optional
+exact structural mass/count provenance commits with source generation and
+survives ordered-row compaction, without changing the legacy f32 arithmetic.
+Its resource/evidence record follows this historical baseline separately.
 
 ## Reference and commit boundary
 

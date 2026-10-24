@@ -194,9 +194,10 @@ cohorts are first-component restrictions; live field/force/phase conversion
 remains unbuilt.
 
 The next [weighted accounting plan](../docs/weighted-centroid-accounting-plan.md)
-is accepted in #183 (implementation pending): carry existing exact source counts through prepared
-commits before extending candidate comparisons to fractional/overlapping inputs.
-It does not release live arithmetic or phase changes.
+is accepted in #183. Its [Segment A implementation](docs/SOURCE-COUNTS.md) carries
+existing exact source counts through prepared commits and is accepted in #184.
+Fractional/overlapping candidate arithmetic remains Segment B; live arithmetic
+and phase changes retain their separate contract.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded

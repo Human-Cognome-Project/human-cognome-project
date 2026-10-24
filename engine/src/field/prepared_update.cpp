@@ -477,6 +477,10 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   std::fill(s.resolved.begin(), s.resolved.end(), RecordHandle{});
   std::copy(s.particle_headers.begin(), s.particle_headers.end(),
             s.prospective_particles.begin());
+  std::copy(s.source_masses.begin(), s.source_masses.end(),
+            s.prospective_source_masses.begin());
+  std::fill(s.prospective_source_counts.begin(),
+            s.prospective_source_counts.end(), 0);
   std::copy(s.field_headers.begin(), s.field_headers.end(),
             s.prospective_fields.begin());
   for (int row = 0; row < p; ++row) {
@@ -491,6 +495,13 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   std::size_t pclaims = 0, gclaims = 0;
   for (std::size_t c = 0; c < count; ++c) {
     const auto &cmd = s.commands[c];
+    if ((cmd.exact_mass &&
+         (cmd.operation != UpdateOp::DefineParticle || !*cmd.exact_mass)) ||
+        (cmd.exact_count &&
+         ((cmd.operation != UpdateOp::InsertParticipation &&
+           cmd.operation != UpdateOp::ReplaceParticipation) ||
+          !*cmd.exact_count)))
+      return reject(UpdateStatus::InvalidInput);
     switch (cmd.operation) {
       case UpdateOp::DefineParticle:
         ++pclaims;
@@ -516,9 +527,10 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
         s.validation[offset + h.record] = -1;
         (particle ? s.prospective_particles
                   : s.prospective_fields)[h.record] = {};
-        if (particle)
+        if (particle) {
+          s.prospective_source_masses[h.record] = 0;
           --candidate.particles;
-        else
+        } else
           --candidate.fields;
         break;
       }
@@ -601,8 +613,10 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     s.resolved[c] = {0, c + 1, cmd.address, row};
     headers[row] = s.resolved[c];
     s.validation[offset + row] = int(c) + (particle ? 2 : 3);
-    if (particle)
+    if (particle) {
+      s.prospective_source_masses[row] = cmd.exact_mass.value_or(0);
       s.validation[n + row] = 1;
+    }
   }
   const auto resolve = [&](const UpdateRef &ref, bool particle,
                            RecordHandle &out) {
@@ -656,8 +670,11 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
         const int edit = s.validation[offset + source];
         if (edit)
           command = &s.commands[edit - 1];
-        else
+        else {
           next[row] = old[source];
+          if (edge)
+            s.prospective_source_counts[row] = s.source_counts[source];
+        }
         ++source;
       }
       if (command) {
@@ -667,6 +684,8 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
           return false;
         value.ordinal = command->ordinal;
         value.share = edge ? command->share : 0;
+        if (edge)
+          s.prospective_source_counts[row] = command->exact_count.value_or(0);
         if ((edge && (!std::isfinite(value.share) || !(value.share > 0) ||
                       value.share > 1)) ||
             (!edge && same(value.first, value.second)))
@@ -681,6 +700,15 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
           !same(a, s.prospective_particles[a.record]) || b.record < 0 ||
           b.record >= (edge ? g : p) || !same(b, second_headers[b.record]))
         return false;
+      if (edge && s.prospective_source_counts[row]) {
+        const auto denominator = s.prospective_source_masses[a.record];
+        const auto numerator = s.prospective_source_counts[row];
+        if (!denominator || numerator > denominator ||
+            next[row].share !=
+                static_cast<float>(static_cast<double>(numerator) /
+                                   static_cast<double>(denominator)))
+          return false;
+      }
     }
     return true;
   };
@@ -692,7 +720,8 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
       candidate.contacts != s.live.contacts;
   for (std::size_t row = 0; row < std::min(candidate.edges, s.live.edges);
        ++row)
-    changed |= !same(s.edges[row], s.prospective_edges[row]);
+    changed |= !same(s.edges[row], s.prospective_edges[row]) ||
+               s.source_counts[row] != s.prospective_source_counts[row];
   for (std::size_t row = 0; row < std::min(candidate.contacts, s.live.contacts);
        ++row)
     changed |= !same(s.contacts[row], s.prospective_contacts[row]);
@@ -868,16 +897,21 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     // below cannot leave a healthy partial generation.
     for (std::size_t c = 0; c < count; ++c) {
       const auto &cmd = s.commands[c];
-      if (cmd.operation == UpdateOp::RetireParticle)
+      if (cmd.operation == UpdateOp::RetireParticle) {
         s.particle_headers[cmd.first.handle.record] = {};
+        s.source_masses[cmd.first.handle.record] = 0;
+      }
       if (cmd.operation == UpdateOp::RetireField)
         s.field_headers[cmd.first.handle.record] = {};
-      if (cmd.operation == UpdateOp::DefineParticle)
+      if (cmd.operation == UpdateOp::DefineParticle) {
         s.particle_headers[s.resolved[c].record] = s.resolved[c];
+        s.source_masses[s.resolved[c].record] = cmd.exact_mass.value_or(0);
+      }
       if (cmd.operation == UpdateOp::DefineField)
         s.field_headers[s.resolved[c].record] = s.resolved[c];
     }
     s.edges.swap(s.prospective_edges);
+    s.source_counts.swap(s.prospective_source_counts);
     s.contacts.swap(s.prospective_contacts);
     s.live = candidate;
     std::fill(edge_int_data.begin(), edge_int_data.end(), 0);

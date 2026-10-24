@@ -1,0 +1,275 @@
+38/66 Testing: source_counts_large-direct
+38/66 Test: source_counts_large-direct
+Command: "/workspace/human-cognome-project/engine/build/source_counts_test" "--large" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"source_counts_large-direct" start time: Oct 24 22:04 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+known_after_setup,78690852,39223296,4490,235,115653460,93,1109620256,115791392,6,47,6.2256081104278564
+known_after_cycles,78690852,39223296,4490,235,115653460,93,1109620256,115791392,6,47,6.2256081104278564
+legacy_after_setup,78690852,39223296,4490,235,115653460,93,1109620256,115791392,6,47,6.2256081104278564
+legacy_after_cycles,78690852,39223296,4490,235,115653460,93,1109620256,115791392,6,47,6.2256081104278564
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,20478,64,2,2621184
+manifest,source-counts,20478,8,2,327648
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,82430,4,1,329720
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,37119,4,2,296952
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,40956,4,2,327648
+manifest,candidate-shares,20478,4,2,163824
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,20478,4,1,81912
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,cascade-node-headers,1,88,1,88
+manifest,cascade-cohort-handles,1,24,1,24
+manifest,cascade-node-controls,8,4,2,64
+manifest,cascade-reference-controls,3,4,2,24
+manifest,cascade-children,1,4,2,8
+manifest,cascade-order,1,4,2,8
+manifest,cascade-fraction-masks,1,8,2,16
+manifest,cascade-parent-rank,1,4,2,8
+manifest,cascade-level-offset-cursor,2,4,2,16
+manifest,cascade-values,7,8,2,112
+manifest,cascade-valid,1,4,2,8
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,prepared-binding-payload,9304,1,1,9304
+manifest,unused-binding-reserve,1768,1,1,1768
+source_counts,4096,direct,rows=20478,S=5923492,bindings=9304,command_bytes=152,optional_bytes=16,source_integer_bytes=8,wide_mass=9223372036854775931,setup_pair_us=8528223.7919999994,loading_pair_us=1022933.235,count_only_edit_us=9796.3230000000003,cycles_with_inspection_pair_us=1203203.0789999999,cycles=32,cpp_new=0 PASS
+<end of output>
+Test time =  11.03 sec
+----------------------------------------------------------
+Test Passed.
+"source_counts_large-direct" end time: Oct 24 22:04 UTC
+"source_counts_large-direct" time elapsed: 00:00:11
+----------------------------------------------------------
+
+37/66 Testing: source_counts_large
+37/66 Test: source_counts_large
+Command: "/workspace/human-cognome-project/engine/build/source_counts_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"source_counts_large" start time: Oct 24 22:04 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+known_after_setup,78690852,39223296,4490,249,116685676,107,1110652472,116823608,6,47,6.2180211544036865
+known_after_cycles,78690852,39223296,4490,249,116685676,107,1110652472,116823608,6,47,6.2180211544036865
+legacy_after_setup,78690852,39223296,4490,249,116685676,107,1110652472,116823608,6,47,6.2180211544036865
+legacy_after_cycles,78690852,39223296,4490,249,116685676,107,1110652472,116823608,6,47,6.2180211544036865
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,20478,64,2,2621184
+manifest,source-counts,20478,8,2,327648
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,82430,4,1,329720
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,37119,4,2,296952
+manifest,derived-results,3610,4,1,14440
+manifest,candidate-edges,40956,4,2,327648
+manifest,candidate-shares,20478,4,2,163824
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,20478,4,1,81912
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,4,2,24576
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,4,1,55320
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,12288,4,1,49152
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,cascade-node-headers,1,88,1,88
+manifest,cascade-cohort-handles,1,24,1,24
+manifest,cascade-node-controls,8,4,2,64
+manifest,cascade-reference-controls,3,4,2,24
+manifest,cascade-children,1,4,2,8
+manifest,cascade-order,1,4,2,8
+manifest,cascade-fraction-masks,1,8,2,16
+manifest,cascade-parent-rank,1,4,2,8
+manifest,cascade-level-offset-cursor,2,4,2,16
+manifest,cascade-values,7,8,2,112
+manifest,cascade-valid,1,4,2,8
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,prepared-binding-payload,9304,1,1,9304
+manifest,unused-binding-reserve,1768,1,1,1768
+source_counts,4096,bulk,rows=20478,S=5923492,bindings=9304,command_bytes=152,optional_bytes=16,source_integer_bytes=8,wide_mass=9223372036854775931,setup_pair_us=8327442.1789999995,loading_pair_us=1031240.535,count_only_edit_us=7890.8739999999998,cycles_with_inspection_pair_us=1176801.0279999999,cycles=32,cpp_new=0 PASS
+<end of output>
+Test time =  10.79 sec
+----------------------------------------------------------
+Test Passed.
+"source_counts_large" end time: Oct 24 22:04 UTC
+"source_counts_large" time elapsed: 00:00:10
+----------------------------------------------------------
+
+35/66 Testing: source_counts_padded
+35/66 Test: source_counts_padded
+Command: "/workspace/human-cognome-project/engine/build/source_counts_test"
+Directory: /workspace/human-cognome-project/engine/build
+"source_counts_padded" start time: Oct 24 22:04 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+known_after_setup,78690852,39223296,83,249,81971004,107,1075937800,82108936,6,47,6.0520927906036377
+known_after_cycles,78690852,39223296,83,249,81971004,107,1075937800,82108936,6,47,6.0520927906036377
+legacy_after_setup,78690852,39223296,83,249,81971004,107,1075937800,82108936,6,47,6.0520927906036377
+legacy_after_cycles,78690852,39223296,83,249,81971004,107,1075937800,82108936,6,47,6.0520927906036377
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,348,64,2,44544
+manifest,source-counts,348,8,2,5568
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1414,4,1,5656
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,637,4,2,5096
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,696,4,2,5568
+manifest,candidate-shares,348,4,2,2784
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,348,4,1,1392
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,cascade-node-headers,1,88,1,88
+manifest,cascade-cohort-handles,1,24,1,24
+manifest,cascade-node-controls,8,4,2,64
+manifest,cascade-reference-controls,3,4,2,24
+manifest,cascade-children,1,4,2,8
+manifest,cascade-order,1,4,2,8
+manifest,cascade-fraction-masks,1,8,2,16
+manifest,cascade-parent-rank,1,4,2,8
+manifest,cascade-level-offset-cursor,2,4,2,16
+manifest,cascade-values,7,8,2,112
+manifest,cascade-valid,1,4,2,8
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,prepared-binding-payload,9304,1,1,9304
+manifest,unused-binding-reserve,1768,1,1,1768
+source_counts,70,bulk,rows=348,S=132396,bindings=9304,command_bytes=152,optional_bytes=16,source_integer_bytes=8,wide_mass=9223372036854775931,setup_pair_us=8204210.352,loading_pair_us=1876.4390000000001,count_only_edit_us=56.694000000000003,cycles_with_inspection_pair_us=19330.189999999999,cycles=32,cpp_new=0 PASS
+<end of output>
+Test time =   8.39 sec
+----------------------------------------------------------
+Test Passed.
+"source_counts_padded" end time: Oct 24 22:05 UTC
+"source_counts_padded" time elapsed: 00:00:08
+----------------------------------------------------------
+
+36/66 Testing: source_counts_direct
+36/66 Test: source_counts_direct
+Command: "/workspace/human-cognome-project/engine/build/source_counts_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"source_counts_direct" start time: Oct 24 22:05 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu
+known_after_setup,78690852,39223296,83,235,81953108,93,1075919904,82091040,6,47,5.9954235553741455
+known_after_cycles,78690852,39223296,83,235,81953108,93,1075919904,82091040,6,47,5.9954235553741455
+legacy_after_setup,78690852,39223296,83,235,81953108,93,1075919904,82091040,6,47,5.9954235553741455
+legacy_after_cycles,78690852,39223296,83,235,81953108,93,1075919904,82091040,6,47,5.9954235553741455
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,348,64,2,44544
+manifest,source-counts,348,8,2,5568
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1414,4,1,5656
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,637,4,2,5096
+manifest,derived-results,138,4,1,552
+manifest,candidate-edges,696,4,2,5568
+manifest,candidate-shares,348,4,2,2784
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,348,4,1,1392
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,4,2,3072
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,4,1,1056
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,4,1,44
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,210,4,1,840
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,cascade-node-headers,1,88,1,88
+manifest,cascade-cohort-handles,1,24,1,24
+manifest,cascade-node-controls,8,4,2,64
+manifest,cascade-reference-controls,3,4,2,24
+manifest,cascade-children,1,4,2,8
+manifest,cascade-order,1,4,2,8
+manifest,cascade-fraction-masks,1,8,2,16
+manifest,cascade-parent-rank,1,4,2,8
+manifest,cascade-level-offset-cursor,2,4,2,16
+manifest,cascade-values,7,8,2,112
+manifest,cascade-valid,1,4,2,8
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,prepared-binding-payload,9304,1,1,9304
+manifest,unused-binding-reserve,1768,1,1,1768
+source_counts,70,direct,rows=348,S=132396,bindings=9304,command_bytes=152,optional_bytes=16,source_integer_bytes=8,wide_mass=9223372036854775931,setup_pair_us=8154856.2819999997,loading_pair_us=2035.9349999999999,count_only_edit_us=60.048999999999999,cycles_with_inspection_pair_us=24462.171999999999,cycles=32,cpp_new=0 PASS
+<end of output>
+Test time =   8.35 sec
+----------------------------------------------------------
+Test Passed.
+"source_counts_direct" end time: Oct 24 22:05 UTC
+"source_counts_direct" time elapsed: 00:00:08
+----------------------------------------------------------

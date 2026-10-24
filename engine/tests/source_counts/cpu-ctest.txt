@@ -1,0 +1,138 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+      Start 53: activity_direct_test
+      Start 13: prepared_update_direct
+ 1/66 Test #13: prepared_update_direct ...................   Passed   49.11 sec
+      Start 12: prepared_update_padded
+ 2/66 Test #53: activity_direct_test .....................   Passed   73.01 sec
+      Start 52: activity_parallel_test
+ 3/66 Test #12: prepared_update_padded ...................   Passed   45.96 sec
+      Start 27: cascade_direct
+ 4/66 Test #27: cascade_direct ...........................   Passed   37.33 sec
+      Start 26: cascade_padded
+ 5/66 Test #52: activity_parallel_test ...................   Passed   70.16 sec
+      Start 51: activity_test
+ 6/66 Test #26: cascade_padded ...........................   Passed   37.51 sec
+      Start 18: prepared_geometry_padded
+ 7/66 Test #18: prepared_geometry_padded .................   Passed   31.13 sec
+      Start 19: prepared_geometry_direct
+ 8/66 Test #51: activity_test ............................   Passed   71.61 sec
+      Start 17: prepared_update_letters-direct
+ 9/66 Test #19: prepared_geometry_direct .................   Passed   31.23 sec
+      Start 16: prepared_update_letters
+10/66 Test #17: prepared_update_letters-direct ...........   Passed   21.83 sec
+      Start 10: prepared_execution_letters
+11/66 Test #16: prepared_update_letters ..................   Passed   22.33 sec
+      Start 11: prepared_execution_letters-direct
+12/66 Test #10: prepared_execution_letters ...............   Passed   18.16 sec
+      Start  7: prepared_execution_direct
+13/66 Test #11: prepared_execution_letters-direct ........   Passed   17.90 sec
+      Start  1: active_workbench_test
+14/66 Test  #7: prepared_execution_direct ................   Passed   17.84 sec
+      Start 49: field_test
+15/66 Test  #1: active_workbench_test ....................   Passed   21.87 sec
+      Start 15: prepared_update_large-direct
+16/66 Test #49: field_test ...............................   Passed   29.13 sec
+      Start 14: prepared_update_large
+17/66 Test #15: prepared_update_large-direct .............   Passed   10.18 sec
+      Start 38: source_counts_large-direct
+18/66 Test #14: prepared_update_large ....................   Passed   10.51 sec
+      Start 37: source_counts_large
+19/66 Test #38: source_counts_large-direct ...............   Passed   11.03 sec
+      Start  2: active_transfer_experiment
+20/66 Test #37: source_counts_large ......................   Passed   10.79 sec
+      Start  6: prepared_execution_padded
+21/66 Test  #2: active_transfer_experiment ...............   Passed   15.68 sec
+      Start 35: source_counts_padded
+22/66 Test #35: source_counts_padded .....................   Passed    8.39 sec
+      Start 36: source_counts_direct
+23/66 Test  #6: prepared_execution_padded ................   Passed   17.37 sec
+      Start  8: prepared_execution_large
+24/66 Test  #8: prepared_execution_large .................   Passed    6.31 sec
+      Start  9: prepared_execution_large-direct
+25/66 Test #36: source_counts_direct .....................   Passed    8.35 sec
+      Start 62: membership_fields_native_test
+26/66 Test  #9: prepared_execution_large-direct ..........   Passed    6.20 sec
+      Start 23: prepared_geometry_maximum-direct
+27/66 Test #23: prepared_geometry_maximum-direct .........   Passed    4.53 sec
+      Start 21: prepared_geometry_large-direct
+28/66 Test #62: membership_fields_native_test ............   Passed   11.75 sec
+      Start 20: prepared_geometry_large
+29/66 Test #21: prepared_geometry_large-direct ...........   Passed    4.43 sec
+      Start 22: prepared_geometry_maximum
+30/66 Test #20: prepared_geometry_large ..................   Passed    4.53 sec
+      Start 25: prepared_geometry_large-maximum-direct
+31/66 Test #22: prepared_geometry_maximum ................   Passed    4.36 sec
+      Start 24: prepared_geometry_large-maximum
+32/66 Test #25: prepared_geometry_large-maximum-direct ...   Passed    4.56 sec
+      Start 32: cascade_large-maximum
+33/66 Test #24: prepared_geometry_large-maximum ..........   Passed    4.87 sec
+      Start 55: activity_assembly_direct_test
+34/66 Test #32: cascade_large-maximum ....................   Passed    4.42 sec
+      Start 33: cascade_large-maximum-direct
+35/66 Test #55: activity_assembly_direct_test ............   Passed    5.71 sec
+      Start 28: cascade_large
+36/66 Test #33: cascade_large-maximum-direct .............   Passed    4.14 sec
+      Start 29: cascade_large-direct
+37/66 Test #28: cascade_large ............................   Passed    4.26 sec
+      Start 30: cascade_maximum
+38/66 Test #29: cascade_large-direct .....................   Passed    4.30 sec
+      Start 57: assembly_test
+39/66 Test #30: cascade_maximum ..........................   Passed    4.10 sec
+      Start 31: cascade_maximum-direct
+40/66 Test #31: cascade_maximum-direct ...................   Passed    4.09 sec
+      Start 54: activity_assembly_test
+41/66 Test #57: assembly_test ............................   Passed    9.83 sec
+      Start 41: record_map_working_set
+42/66 Test #41: record_map_working_set ...................   Passed    2.43 sec
+      Start 40: record_map_direct
+43/66 Test #54: activity_assembly_test ...................   Passed    5.74 sec
+      Start 39: record_map_padded
+44/66 Test #40: record_map_direct ........................   Passed    2.03 sec
+      Start 66: viewport_snapshot_test
+45/66 Test #39: record_map_padded ........................   Passed    2.22 sec
+      Start  4: precision_direct
+46/66 Test #66: viewport_snapshot_test ...................   Passed    2.18 sec
+      Start  3: precision_bulk
+47/66 Test  #4: precision_direct .........................   Passed    1.37 sec
+      Start  5: prepared_launch_test
+48/66 Test  #5: prepared_launch_test .....................   Passed    0.90 sec
+      Start 50: native_activity_test
+49/66 Test  #3: precision_bulk ...........................   Passed    1.42 sec
+      Start 47: prepared_space_pointer-recycled
+50/66 Test #47: prepared_space_pointer-recycled ..........   Passed    0.55 sec
+      Start 46: prepared_space_pointer-retained
+51/66 Test #50: native_activity_test .....................   Passed    1.06 sec
+      Start 45: prepared_space_pointer-cold
+52/66 Test #46: prepared_space_pointer-retained ..........   Passed    0.55 sec
+      Start 48: engine_smoke_test
+53/66 Test #45: prepared_space_pointer-cold ..............   Passed    0.57 sec
+      Start 43: prepared_space_dense-budgeted
+54/66 Test #43: prepared_space_dense-budgeted ............   Passed    0.25 sec
+      Start 44: prepared_space_flat-bitmasked
+55/66 Test #48: engine_smoke_test ........................   Passed    0.86 sec
+      Start 63: index_cap_test
+56/66 Test #44: prepared_space_flat-bitmasked ............   Passed    0.27 sec
+      Start 42: native_pool_test
+57/66 Test #42: native_pool_test .........................   Passed    0.01 sec
+      Start 34: prepared_capacity_test
+58/66 Test #34: prepared_capacity_test ...................   Passed    0.01 sec
+      Start 60: letter_projection_native_test
+59/66 Test #60: letter_projection_native_test ............   Passed    0.02 sec
+      Start 65: viewport_signal_guard_test
+60/66 Test #65: viewport_signal_guard_test ...............   Passed    0.00 sec
+      Start 58: letter_projection_test
+61/66 Test #58: letter_projection_test ...................   Passed    0.01 sec
+      Start 56: preparation_test
+62/66 Test #56: preparation_test .........................   Passed    0.01 sec
+      Start 61: membership_fields_test
+63/66 Test #63: index_cap_test ...........................   Passed    0.17 sec
+      Start 59: structural_recipe_test
+64/66 Test #59: structural_recipe_test ...................   Passed    0.00 sec
+      Start 64: viewport_options_test
+65/66 Test #64: viewport_options_test ....................   Passed    0.00 sec
+66/66 Test #61: membership_fields_test ...................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 66
+
+Total Test time (real) = 401.74 sec

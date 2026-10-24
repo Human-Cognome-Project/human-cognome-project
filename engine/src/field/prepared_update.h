@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "engine/record_map.h"
 #include "field/prepared_capacity.h"
 
@@ -37,6 +39,10 @@ struct UpdateCommand {
   // retain their relative order; two insertions cannot occupy one position.
   std::uint64_t position{};
   float share{1};
+  // Source provenance only; never a numerical mass override. Nullopt means
+  // unavailable, while an explicitly supplied zero is invalid.
+  std::optional<std::uint64_t> exact_mass;   // DefineParticle only
+  std::optional<std::uint64_t> exact_count;  // Insert/ReplaceParticipation only
 };
 enum class UpdateStatus {
   Ok,

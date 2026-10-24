@@ -13,9 +13,10 @@ The later [candidate-only upward operation](CENTROID-CASCADE.md), accepted in
 replacing their live arithmetic, history or physical publication.
 
 The accepted [#183 weighted accounting continuation](../../docs/weighted-centroid-accounting-plan.md)
-also identifies exact assembly counts retained before the prepared field boundary
-but absent from its committed relationship metadata. Carrying those counts is
-planned work, not an implemented widening of the audited share/physical state.
+identified exact assembly counts lost at the prepared field boundary. Its
+[Segment A implementation](SOURCE-COUNTS.md), accepted in #184, retains them
+in committed/prospective source tables. It does not widen the audited numerical
+share or physical state; weighted candidate arithmetic remains Segment B.
 
 ## State owners and publication sites
 

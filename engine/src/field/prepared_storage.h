@@ -52,8 +52,14 @@ class PreparedStorage {
   std::vector<StorageExtent> manifest;
   std::vector<engine::RecordHandle> particle_headers, field_headers,
       prospective_particles, prospective_fields;
+  // By present-record capacity, not potential address. Structural denominator
+  // provenance is independent of the resident numerical physical mass. Zero
+  // encodes unavailable here; explicitly supplied zero is rejected on input.
+  std::vector<std::uint64_t> source_masses, prospective_source_masses;
   std::vector<RelationshipHeader> edges, contacts, prospective_edges,
       prospective_contacts;
+  // Ordered participation rows only; contacts have no count payload.
+  std::vector<std::uint64_t> source_counts, prospective_source_counts;
   std::vector<engine::RecordHandle> focal;
   std::vector<UpdateCommand> commands;
   std::vector<engine::RecordResult> results;
