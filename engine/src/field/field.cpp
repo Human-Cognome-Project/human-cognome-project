@@ -13,6 +13,7 @@
 #include "engine/transfer.h"
 #include "field/activity.h"
 #include "field/centroid_math.h"
+#include "field/centroid_cascade.h"
 #include "field/contact_math.h"
 #include "field/prepared_storage.h"
 
@@ -1449,6 +1450,8 @@ void Harness::prepare_empty_execution() {
       throw std::runtime_error("geometry preparation did not finish empty");
     s.geometry_valid = false;
   }
+  if (s.capacity.limits()[Budget::CascadeNodes])
+    centroid_cascade_ = std::make_unique<detail::CentroidCascade>(*this);
   s.binding_bytes =
       activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
       s.fields.prepared_bytes() + inspection_.prepared_bytes() +
@@ -1460,8 +1463,11 @@ void Harness::prepare_empty_execution() {
     for (const auto *kernel : {&geometry_collect_, &geometry_source_order_,
                                &geometry_discover_, &geometry_finalize_})
       s.binding_bytes += kernel->prepared_bytes();
+  if (centroid_cascade_)
+    s.binding_bytes += centroid_cascade_->binding_bytes();
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
-      runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0);
+      runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
+      s.capacity.limits()[Budget::CascadeNodes] != 0);
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");

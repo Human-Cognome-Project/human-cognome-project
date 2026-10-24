@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #178 precision prerequisite acceptance and centroid-cascade clarification.
+Last checked: **2026-10-24**, after #182 candidate-cascade acceptance; #181 settling clarification retained.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -74,9 +74,11 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   audit; all eight hosted checks and 54 CPU suites passed. It leaves live tick behavior unchanged and explicitly rejects
   narrowing values in the fork's unsupported FTZ subnormal/underflow range.
 - The [upward centroid integration plan](docs/upward-centroid-integration-plan.md)
-  is accepted in #180 under #172/#177 (implementation pending): evaluate explicit bounded comparison hierarchies
-  on current backend data, with per-comparison numerical boundaries and no
-  internal distance multiplier. It does not release live force/phase conversion.
+  is accepted in #180 under #172/#177. The [candidate-only implementation](engine/docs/CENTROID-CASCADE.md)
+  is accepted in #182: current backend f64 hierarchy evaluation, with all eight
+  hosted checks and 62 CPU suites passing. This explicit query adds no internal
+  distance multiplier and is not a mandatory per-tick solve. Live precision,
+  forces, wakes and settling-cycle integration remain outstanding.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.

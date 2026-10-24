@@ -17,6 +17,11 @@ enum class Budget {
   Batch,
   ScratchBytes,
   GeometryWork,  // Pair tests and deterministic source/union ordering tests.
+  CascadeNodes,
+  CascadeLinks,
+  CascadeReferences,
+  CascadeLevels,  // Dependency rounds, not conceptual LoD or SNode depth.
+  CascadeWork,
   Count
 };
 struct BudgetDemand {

@@ -35,7 +35,9 @@ class PreparedStorage {
   static std::vector<StorageExtent> workspace_layout(
       const BudgetDemand &limits);
   static std::size_t workspace_bytes(const BudgetDemand &limits);
-  static std::size_t binding_reserve_bytes(bool cuda, bool geometry = false);
+  static std::size_t binding_reserve_bytes(bool cuda,
+                                           bool geometry = false,
+                                           bool cascade = false);
   static std::size_t required_scratch(const BudgetDemand &limits, bool cuda);
 
   PreparedStorage(engine::Runtime &runtime, const PreparedCapacity &capacity);

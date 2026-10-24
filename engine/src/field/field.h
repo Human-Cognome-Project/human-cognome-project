@@ -1,6 +1,7 @@
 #pragma once
 #include "field/prepared_update.h"
 #include "field/prepared_geometry.h"
+#include "field/cascade.h"
 
 #include <array>
 #include <cstddef>
@@ -25,6 +26,7 @@ namespace field {
 namespace detail {
 class Activity;
 class PreparedStorage;
+class CentroidCascade;
 }  // namespace detail
 class PreparedCapacity;
 namespace testing {
@@ -185,6 +187,16 @@ class Harness {
   UpdateResult update_prepared(std::uint64_t expected_generation,
                                const UpdateCommand *commands,
                                std::size_t count);
+  // Every bind attempt invalidates the previous hierarchy/candidate. Ordinary
+  // failure leaves physical execution healthy; retry is an explicit bind.
+  CascadeBinding bind_centroid_cascade(
+      std::uint64_t expected_generation,
+      const CascadeSpec &spec,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  CascadeResult query_centroid_cascade(
+      std::uint64_t expected_generation,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  const CascadeInspection &inspect_centroid_cascade(const CascadeResult &);
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.
   // An empty selection retains the legacy fixed coordinate origin.
@@ -269,6 +281,7 @@ class Harness {
 
  private:
   friend class detail::Activity;
+  friend class detail::CentroidCascade;
   friend struct testing::PreparedFixtureAccess;
   Harness(engine::Runtime &runtime,
           int particle_count,
@@ -336,9 +349,10 @@ class Harness {
   std::vector<float> determined_;
   std::vector<float> empty_determined_{0.0f};
 
-  // Numerical bindings complete first, then Activity bindings, then borrowed
-  // payload arrays. This order also applies during partial construction.
+  // Numerical and cascade bindings complete before Activity and borrowed
+  // source payload arrays, including during partial construction.
   std::unique_ptr<detail::Activity> activity_;
+  std::unique_ptr<detail::CentroidCascade> centroid_cascade_;
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;
