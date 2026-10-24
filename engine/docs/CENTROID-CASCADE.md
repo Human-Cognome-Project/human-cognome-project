@@ -1,9 +1,17 @@
 # Current-state upward centroid candidates
 
-Status: **implementation for review, 2026-10-24**, following the accepted
+Status: **accepted in #182, 2026-10-24**, following the accepted
 [#180 plan](../../docs/upward-centroid-integration-plan.md) under #172/#177.
 This is the candidate-only component. Live field replacement, forces, wakes,
 motion, transactional ticks and downward response remain outstanding.
+
+## Resolution-cycle boundary
+
+The [#181 settling clarification](../../docs/upward-centroid-integration-plan.md#resolution-cycle-clarification--2026-10-24)
+governs later live integration. This explicit complete candidate evaluation is
+not a mandatory per-tick hierarchy solve. Trial propagation across ordinary
+native ticks and judge coherent settling and perturbation recovery; these
+candidate tests do not qualify that live cycle.
 
 ## Native operation
 

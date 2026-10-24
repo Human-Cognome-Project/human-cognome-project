@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #180 candidate-cascade plan acceptance.
+Last checked: **2026-10-24**, after #182 candidate-cascade acceptance; #181 settling clarification retained.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -55,6 +55,13 @@ Downward whole-object response remains provisional. Exact matching/propagation/t
 ordering remains to be planned. #176's precision primitives are separable;
 later live centroid conversion must reconcile #177 and #172.
 
+Resolution-cycle clarification (2026-10-24): trial native propagation across ticks.
+Initialize all exposed centroids, then aggregate current published inputs in the
+normal type phases; nested up/down ripples may take several ticks to settle.
+Coherent settling and perturbation recovery are the gate, not a complete cascade
+within every tick. Measure time/work to settle. #180's full upward candidate query
+is not a required per-tick scheduler; one-tick lag remains a trial assumption.
+
 ## Active and deferred work
 
 - #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
@@ -67,12 +74,11 @@ later live centroid conversion must reconcile #177 and #172.
   audit; all eight hosted checks and 54 CPU suites passed. It leaves live tick behavior unchanged and explicitly rejects
   narrowing values in the fork's unsupported FTZ subnormal/underflow range.
 - The [upward centroid integration plan](docs/upward-centroid-integration-plan.md)
-  is accepted in #180 under #172/#177. Its [candidate implementation](engine/docs/CENTROID-CASCADE.md)
-  is prepared for review: evaluate explicit bounded comparison hierarchies
-  on current backend data, with per-comparison numerical boundaries and no
-  internal distance multiplier. All 62 native CPU suites passed on the
-  [pinned implementation](engine/tests/cascade/README.md). It does not release
-  live force/phase conversion.
+  is accepted in #180 under #172/#177. The [candidate-only implementation](engine/docs/CENTROID-CASCADE.md)
+  is accepted in #182: current backend f64 hierarchy evaluation, with all eight
+  hosted checks and 62 CPU suites passing. This explicit query adds no internal
+  distance multiplier and is not a mandatory per-tick solve. Live precision,
+  forces, wakes and settling-cycle integration remain outstanding.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
