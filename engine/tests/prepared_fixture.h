@@ -28,6 +28,25 @@ struct PreparedFixtureAccess {
       engine::readback(*h.contact_int_array_, h.contact_int_data.data(),
                        h.contact_int_data.size() * sizeof(int));
   }
+  static void read_relationships(Harness &h) {
+    read_contacts(h);
+    if (h.path_ == HostPath::BulkCopy) {
+      engine::readback(*h.edge_int_array_, h.edge_int_data.data(),
+                       h.edge_int_data.size() * sizeof(int));
+      engine::readback(*h.edge_float_array_, h.edge_float_data.data(),
+                       h.edge_float_data.size() * sizeof(float));
+    }
+  }
+  // Deliberate source fault injection for candidate-only rejection tests.
+  // Refresh all body values first; do not upload stale observation staging.
+  static void inject_position_value(Harness &h, int row, float value) {
+    h.inspect_prepared();
+    h.particle_data[kPosX * h.particle_capacity() + row] = value;
+    if (h.path_ == HostPath::BulkCopy)
+      engine::upload(*h.particle_array_, h.particle_data.data(),
+                     h.particle_data.size() * sizeof(float));
+    h.runtime_->synchronize();
+  }
   static void stage_new(Harness &h,
                         int command,
                         const std::array<float, kParticleFieldCount> &row) {

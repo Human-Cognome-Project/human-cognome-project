@@ -35,6 +35,10 @@ void Precision::require_backend(const Runtime &runtime) const {
       !is_extension_supported(runtime.arch(), Extension::data64))
     throw std::runtime_error("actual backend does not advertise data64");
 }
+std::uint64_t Precision::fraction_mask() const {
+  const int drop = fraction_bits(storage_) - retained_;
+  return ~((std::uint64_t{1} << drop) - 1);
+}
 namespace {
 Stmt *word(IRBuilder &b, Real type, std::uint64_t value) {
   return type == Real::F32
@@ -81,10 +85,8 @@ QuantizedPosition truncate_position(IRBuilder &b,
   auto *valid =
       b.create_logical_and(input_valid, finite(b, p.storage(), converted));
   auto *safe = b.create_select(valid, converted, zero(b, p.storage()));
-  const int drop = fraction_bits(p.storage()) - p.retained_fraction_bits();
-  const std::uint64_t mask = ~((std::uint64_t{1} << drop) - 1);
-  auto *cleared =
-      b.create_and(bits(b, p.storage(), safe), word(b, p.storage(), mask));
+  auto *cleared = b.create_and(bits(b, p.storage(), safe),
+                               word(b, p.storage(), p.fraction_mask()));
   return {b.create_bit_cast(cleared, native_type(p.storage())), valid};
 }
 }  // namespace engine::numeric

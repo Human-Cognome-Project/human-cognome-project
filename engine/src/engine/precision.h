@@ -23,6 +23,7 @@ class Precision {
     return retained_;
   }
   void require_backend(const Runtime &runtime) const;
+  std::uint64_t fraction_mask() const;
 
  private:
   Real calculation_, storage_;
