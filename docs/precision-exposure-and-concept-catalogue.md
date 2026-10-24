@@ -171,6 +171,41 @@ support the exposed hierarchy rather than freeze the flat baseline.
 Require independently checked multilevel fixtures before claiming this direction
 implemented. Existing single-level evidence remains scoped to its tested model.
 
+## Resolution cycle clarification — 2026-10-24
+
+**Coherent settling is the acceptance gate, not complete hierarchical resolution
+within each tick.** Trial the ordinary native phase/activity flow before adding
+synchronization to force an entire bottom-up and downward solve into one tick.
+
+The initial pass calculates all exposed centroids. Thereafter, each centroid
+aggregates the currently published contributions available in its normal phase;
+nested changes may propagate upward and responses downward over subsequent
+ticks until the model settles. The single final centroid describes the hierarchy's
+eventual resolution, not a requirement to reach a fresh global answer every tick.
+A one-tick propagation lag is accepted for trial, not proven stable at every depth
+or coupling. This is not a new inertia coefficient or a new delay scheduler.
+
+Preserve mass/contribution accounting, publication/quantization boundaries and
+native binary activity. Sleeping cannot suppress an unresolved consequential
+change; distinguish genuine settling from quiescence caused by lost propagation.
+Internal centroid steps add no distance scaling; conceptual LoD transitions alone
+carry scaling and compression/naming remains 1:1.
+
+For live integration, evaluate settling and recovery after insertion/perturbation
+at several hierarchy depths, including oscillation and delayed propagation.
+Record ticks, elapsed time and active particle/field work to settle; a few extra
+ticks are acceptable. Define and report the tested settling criterion rather
+than inventing a universal tolerance or demanding per-tick trajectory equality.
+Expected ample hardware headroom motivates the simpler trial; particle counts
+and frame rates are not established performance guarantees.
+
+The accepted #180 full upward candidate evaluation remains a bounded numerical
+component/reference. It is not a mandatory per-tick execution pattern, nor evidence
+that the live ripple cycle is implemented. Review the forthcoming implementation
+against that distinction; do not add hierarchy barriers, recursive substeps or a
+second scheduler merely to obtain same-tick fidelity. Exact live publication and
+wake mechanics still need their bounded implementation contract.
+
 ## concept.db: compositional recipes across media
 
 concept.db is intended as the master catalogue of established conceptual centroid
