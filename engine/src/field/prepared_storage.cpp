@@ -51,8 +51,10 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   // Headers and commands are host metadata; only actual typed kernel inputs
   // have backend copies. There is no duplicate opaque reserve.
   extent("particle-headers", p, sizeof(engine::RecordHandle), 2);
+  extent("source-masses", p, sizeof(std::uint64_t), 2);
   extent("field-headers", g, sizeof(engine::RecordHandle), 2);
   extent("participation-headers", e, sizeof(RelationshipHeader), 2);
+  extent("source-counts", e, sizeof(std::uint64_t), 2);
   extent("contact-headers", c, sizeof(RelationshipHeader), 2);
   extent("focal-references", f, sizeof(engine::RecordHandle), 1);
   extent("batch-commands", b, sizeof(UpdateCommand), 1);
@@ -168,10 +170,14 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   manifest = workspace_layout(l);
   particle_headers.resize(p);
   prospective_particles.resize(p);
+  source_masses.resize(p);
+  prospective_source_masses.resize(p);
   field_headers.resize(g);
   prospective_fields.resize(g);
   edges.resize(e);
   prospective_edges.resize(e);
+  source_counts.resize(e);
+  prospective_source_counts.resize(e);
   contacts.resize(k);
   prospective_contacts.resize(k);
   focal.resize(f);
