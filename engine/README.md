@@ -195,7 +195,7 @@ remains unbuilt.
 
 The next [weighted accounting plan](../docs/weighted-centroid-accounting-plan.md)
 is accepted in #183. Its [Segment A implementation](docs/SOURCE-COUNTS.md) carries
-existing exact source counts through prepared commits and is prepared for review.
+existing exact source counts through prepared commits and is accepted in #184.
 Fractional/overlapping candidate arithmetic remains Segment B; live arithmetic
 and phase changes retain their separate contract.
 

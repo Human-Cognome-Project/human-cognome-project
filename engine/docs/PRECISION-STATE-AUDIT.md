@@ -14,7 +14,7 @@ replacing their live arithmetic, history or physical publication.
 
 The accepted [#183 weighted accounting continuation](../../docs/weighted-centroid-accounting-plan.md)
 identified exact assembly counts lost at the prepared field boundary. Its
-[Segment A implementation](SOURCE-COUNTS.md), prepared for review, retains them
+[Segment A implementation](SOURCE-COUNTS.md), accepted in #184, retains them
 in committed/prospective source tables. It does not widen the audited numerical
 share or physical state; weighted candidate arithmetic remains Segment B.
 

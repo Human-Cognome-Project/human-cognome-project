@@ -1,6 +1,6 @@
 # Exact source counts in prepared execution
 
-Status: **Segment A implementation for review, 2026-10-24**, under the
+Status: **Segment A accepted in #184, 2026-10-24**, under the
 [#183 accepted accounting plan](../../docs/weighted-centroid-accounting-plan.md)
 and #177/#172. Baseline: `f8c4203dc67376479d5a7018d870f9906406fc69`.
 Segment B's weighted candidate arithmetic remains pending.

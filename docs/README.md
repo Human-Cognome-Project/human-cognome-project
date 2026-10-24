@@ -36,7 +36,7 @@ references, not another mandatory reading sequence.
 
 - [Source counts and weighted centroid comparisons](weighted-centroid-accounting-plan.md) —
   accepted #183 plan; [Segment A](../engine/docs/SOURCE-COUNTS.md) preserves exact
-  count provenance and is prepared for review. Segment B will qualify fractional
+  count provenance and is accepted in #184. Segment B will qualify fractional
   contributions and compatible overlaps without duplicate mass or recovery of
   discarded child detail. Live propagation remains separate.
 
