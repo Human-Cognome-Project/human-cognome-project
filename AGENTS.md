@@ -55,6 +55,13 @@ later live centroid conversion must reconcile #177 and #172.
 
 ## Active and deferred work
 
+- #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
+  qualify f64 transport and an experimental significand-clearing primitive,
+  then audit the later live conversion. Production rounding remains open.
+  #172 and #177 govern the eventual precision/LoD-centroid integration;
+  accepting this plan does not implement that integration.
+
+
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.

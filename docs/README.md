@@ -28,6 +28,11 @@ references, not another mandatory reading sequence.
 
 ## Active implementation plans and built results
 
+- [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
+  in #176 for f64 transport, an experimental quantization primitive and a source/state
+  audit. Live precision and centroid integration remains under #172/#177.
+
+
 - [Documentation and issue reconciliation](documentation-status-review-2026-10-23.md) —
   current-facing drift corrections, explicit completed-stage handoffs and retained open work.
 
