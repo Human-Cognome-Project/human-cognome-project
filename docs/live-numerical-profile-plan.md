@@ -264,6 +264,10 @@ after the #156 CPU operation exit, under #145.
 
 ## Following live hierarchy contract
 
+The [C2a handoff plan](live-hierarchy-handoff-plan.md), accepted in #188 after
+#187, develops this continuation. It releases the native collision and
+publication investigation/probe only; it does not release hierarchy/response installation.
+
 After C1 acceptance, propose the next small release under #177 using #185's
 validated source-compatible comparisons and the new live typed state. It must
 resolve these actual remaining seams before installing a hierarchy:

@@ -7,11 +7,14 @@ response is provisionally agreed; matching and scheduling remain open. The flat
 baseline below is not the final multilevel algorithm. See the [decision notes](../../docs/precision-exposure-and-concept-catalogue.md#lod-local-centroid-cascade)
 and reconcile the later live precision conversion under #172.
 
-**Later direction (2026-10-23, not implemented):** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
-introduces LoD-dependent calculation/storage precision with discarded subthreshold
-positional rounding residuals. The carried-residue mechanics/evidence below remain
-the built baseline; reconcile them through a reviewed numerical conversion rather
-than silently retaining or deleting all remainder/physical-state fields. See the
+**Numerical status (2026-10-25):** [C1](LIVE-NUMERICAL-PROFILE.md) is accepted in
+#187 under #172/#177: selected single-level f64 state, exact source ratios,
+discarded positional detail and distinct physical/history state. Default legacy
+f32 retains the carried-residue behavior described below. These historical
+predicates are not a description of C1 or a multilevel implementation.
+The [live hierarchy handoff plan](../../docs/live-hierarchy-handoff-plan.md)
+is accepted in #188 for the native investigation/probe only; a proven same-type
+consume/publication protocol and local/inherited response remain unimplemented. See the
 [decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
 
 **Status (2026-10-19):** The native object-support corrections approved in

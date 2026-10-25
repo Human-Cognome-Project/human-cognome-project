@@ -206,6 +206,11 @@ f64 live state, count-based weights, explicit positional publication, preserved
 physical/history state and native activity. Persistent sub-grid work is a
 provisional measured watch point; live hierarchy and #156 operations remain open.
 
+The next [live hierarchy handoff plan](../docs/live-hierarchy-handoff-plan.md)
+is accepted in #188. Its release is limited to a native same-type investigation,
+collision and publication probe (implementation pending); comparison ownership, inherited response and coupled
+settling/recovery need their concrete integration contract before installation.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)
