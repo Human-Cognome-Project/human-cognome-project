@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-25**, after #187 C1 acceptance; C2a native hierarchy handoff proposal for review under #177/#172.
+Last checked: **2026-10-25**, after #187 C1 acceptance; C2a native hierarchy handoff plan accepted in #188 under #177/#172; probe implementation pending.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -101,9 +101,9 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   a provisional trial choice and an explicit cost/settling watch point.
   Live hierarchy consume/publication cuts and inherited response remain a
   following bounded contract, with #181's settling-across-ticks direction intact.
-- The [live hierarchy handoff proposal](docs/live-hierarchy-handoff-plan.md)
-  follows #187 under #177/#172. It is **for review**, proposing C2a's native
-  same-type collision/publication probe first. No hierarchy installation or
+- The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
+  follows #187 under #177/#172. It is **accepted in #188**, releasing C2a's native
+  same-type collision/publication investigation and probe only. Implementation is pending. No hierarchy installation or
   inherited-response implementation is released. Comparison identity, a proven
   native handoff, explicit response ownership and coupled settling/recovery
   remain the following integration contract.

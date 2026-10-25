@@ -1,20 +1,20 @@
 # Live hierarchy handoff and response ownership
 
-Status: **proposal for review, 2026-10-25**. Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+Status: **accepted in #188, 2026-10-25; C2a implementation pending**. Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: merged C1, `848fa4bb51a103422ba3ec2afce02eb93d91c873` (#187).
 
 C1 supplies the [single-level live f64 profile](../engine/docs/LIVE-NUMERICAL-PROFILE.md).
-All nine hosted checks passed on reviewed `fd3c520`; the personally inspected
+All nine hosted checks passed on reviewed `fd3c520`; the maintainer-inspected
 native job 121160291530 reports 82/82 suites in 685.51 seconds. Its acceptance
 commit `145349f` changes six Markdown files only. Contributor evidence remains
 separately [source-pinned](../engine/tests/numerical_profile/README.md).
 
 The next seam is same-type centroid propagation. The existing cross-type wake
 sequence cannot simply be reused for child-to-parent notifications. This plan
-proposes **C2a: a bounded native handoff investigation and executable probe**.
+releases **C2a: a bounded native handoff investigation and executable probe**.
 It also records the contracts that must be resolved before installing live
-hierarchy or inherited response. Acceptance would release C2a only, in its own
+hierarchy or inherited response. Acceptance releases C2a only, in its own
 implementation PR. The remainder below is a following review boundary.
 
 ## Existing behavior and the specific gap
@@ -49,7 +49,7 @@ it must also preserve input/publication coherence and prevent a later phase
 from consuming an unevaluated new activation. No worker/record visitation order
 is a supported contract. A quiet activity mask cannot demonstrate resolution.
 
-## C2a: released work if this proposal is accepted
+## C2a: accepted investigation and probe release
 
 1. Trace the actual fork facilities available through native C++ IR/runtime:
    list generation and reuse, live leaf tests, native atomic operations,
@@ -219,7 +219,7 @@ costs. Do not allocate, rebuild layout or compile per ordinary poll/update.
 One native activity set per existing type remains the constraint; no second
 awake mask, scheduling epoch, custom queue or loaded-array scheduler is released.
 
-The review sequence is C2a plan acceptance → native probe implementation/evidence
+The review sequence is accepted C2a plan → native probe implementation/evidence
 and review → concrete live hierarchy/response contract → separately reviewed
-implementation and settling/recovery evidence. This proposal closes none of
+implementation and settling/recovery evidence. This plan closes none of
 #177/#172/#156/#145 and adds no immediate GPU gate.

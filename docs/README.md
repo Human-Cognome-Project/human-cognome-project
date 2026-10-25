@@ -48,8 +48,8 @@ references, not another mandatory reading sequence.
   a measured trial watch point; hierarchy/response remains separate.
 
 - [Live hierarchy handoff and response ownership](live-hierarchy-handoff-plan.md) —
-  proposal for review after C1. Proposes C2a's native same-type handoff probe
-  first, with comparison identity, response ownership and multilevel settling
+  accepted #188 plan after C1. Releases C2a's native same-type handoff investigation
+  and probe only (implementation pending), with comparison identity, response ownership and multilevel settling
   obligations before a separately released live integration.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
