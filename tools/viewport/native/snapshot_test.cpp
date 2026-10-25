@@ -87,6 +87,27 @@ int main() {
     check(roundtrip["frame"]["reference"][1].get<double>() == modified.frame_anchor[1], "f64 round trip");
     check(roundtrip["particles"][0]["exact_mass"] == "9223372036854775811", "large mass string");
     const int slot = modified.prepared.particles[0].occurrence.slot;
+    auto wide_report = report;
+    wide_report.numerical_profile = field::NumericalProfile::trial(48, 47);
+    wide_report.particles64.assign(report.particles.begin(),
+                                   report.particles.end());
+    wide_report.groups64.assign(report.groups.begin(), report.groups.end());
+    wide_report.determined64.assign(report.determined.begin(),
+                                    report.determined.end());
+    wide_report.particles.clear();
+    wide_report.groups.clear();
+    wide_report.determined.clear();
+    const double precise = 1 + std::ldexp(1., -40);
+    wide_report.particles64[slot] = precise;
+    const auto wide_json =
+        Json::parse(viewport::snapshot(wide_report, ctx).dump());
+    check(wide_json["particles"][0]["position"][0].get<double>() == precise &&
+              wide_json["numerics"]["storage_bits"] == 64 &&
+              wide_json["numerics"]["body_fraction_bits"] == 48,
+          "f64 report publication metadata and value round trip");
+    wide_report.particles.push_back(0);
+    rejects([&] { viewport::snapshot(wide_report, ctx); },
+            "mixed float/double report rejected");
     modified.particles[field::kPosX * modified.prepared.capacity + slot] = std::nextafter(1.0f, 2.0f);
     const auto floats = Json::parse(viewport::snapshot(modified, ctx).dump());
     check(floats["particles"][0]["position"][0].get<float>() == std::nextafter(1.0f, 2.0f), "f32 round trip");

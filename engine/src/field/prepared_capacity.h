@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "field/numerical_profile.h"
+
 namespace field {
 enum class Budget {
   Potential,
@@ -60,7 +62,8 @@ struct DenseShape {
 // not allocate backing, bind kernels, or certify scratch for a future batch.
 class PreparedCapacity {
  public:
-  explicit PreparedCapacity(BudgetDemand limits);
+  explicit PreparedCapacity(BudgetDemand limits, NumericalProfile profile = {});
+  const NumericalProfile &profile() const { return profile_; }
   const BudgetDemand &limits() const {
     return limits_;
   }
@@ -73,5 +76,6 @@ class PreparedCapacity {
 
  private:
   BudgetDemand limits_;
+  NumericalProfile profile_;
 };
 }  // namespace field

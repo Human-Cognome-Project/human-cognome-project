@@ -27,6 +27,9 @@ enum Counter {
   InvalidatedSlots,
   CounterCount
 };
+inline constexpr int TrialAttempts = CounterCount,
+                     TrialErrors = CounterCount + 1,
+                     TrialCounterCount = CounterCount + 2;
 
 // Numerical control state belongs to the execution session. It carries no
 // source identities, private codes, or compiler specialization values.
@@ -48,15 +51,16 @@ class Activity {
     return *selected_slots_array_;
   }
   void begin(Harness &h, bool all_loaded, bool invalidate, bool radial);
-  void touch(Harness &h, float gravity);
-  void touch_contacts(Harness &h, float stiffness);
+  void touch(Harness &h, double gravity);
+  void touch_contacts(Harness &h, double stiffness);
   void mark(Harness &h, bool all_loaded);
   void clear();  // Publication only; type phases consume their own activity.
   Demand report(std::uint64_t exposed, std::uint64_t fields_exposed);
   NativeSet particle_activity, centroids;
   double compilation_ms{0};
   std::unique_ptr<taichi::lang::Ndarray> particle_flags, particle_delta;
-  // pending weighted member motion xyz, previous published centroid xyz.
+  // XYZ: legacy pending weighted motion/remainder; trial transient reduction
+  // anchor, cleared at publication. XYZ+3: previous published centre in both.
   std::unique_ptr<taichi::lang::Ndarray> group_flags, group_delta, counters,
       focus;
   // Stable source order and one writer per numerical reduction.
@@ -68,10 +72,15 @@ class Activity {
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
   PreparedStorage *prepared_{};
+  bool wide() const;
+  taichi::lang::Stmt *real(taichi::lang::IRBuilder &b, double x) const {
+    return real_constant(b, wide(), x);
+  }
   std::vector<int> zero_workspace_;
   std::vector<int> selected_slots_;
   std::vector<int> selected_groups_;
   std::array<float, 3> fixed_origin_{};
+  std::array<double, 3> fixed_origin64_{};
   std::unique_ptr<taichi::lang::Ndarray> selected_slots_array_;
   engine::CompiledKernel begin_, touch_, contact_touch_, mark_, reset_, clear_;
 };

@@ -8,8 +8,9 @@
 
 #include "engine/record_map.h"
 #include "field/prepared_capacity.h"
-#include "field/prepared_update.h"
 #include "field/prepared_geometry.h"
+#include "field/prepared_update.h"
+#include "field/real_buffer.h"
 
 namespace field::detail {
 struct RelationshipHeader {
@@ -33,16 +34,20 @@ struct StorageExtent {
 class PreparedStorage {
  public:
   static std::vector<StorageExtent> workspace_layout(
-      const BudgetDemand &limits);
-  static std::size_t workspace_bytes(const BudgetDemand &limits);
-  static std::size_t binding_reserve_bytes(bool cuda,
-                                           bool geometry = false,
+      const BudgetDemand &limits, NumericalProfile profile = {});
+  static std::size_t workspace_bytes(const BudgetDemand &limits,
+                                     NumericalProfile profile = {});
+  static std::size_t binding_reserve_bytes(bool cuda, bool geometry = false,
                                            bool cascade = false,
-                                           bool weighted = false);
-  static std::size_t required_scratch(const BudgetDemand &limits, bool cuda);
+                                           bool weighted = false,
+                                           bool wide = false);
+  static std::size_t required_scratch(const BudgetDemand &limits, bool cuda,
+                                      NumericalProfile profile = {});
 
   PreparedStorage(engine::Runtime &runtime, const PreparedCapacity &capacity);
   BudgetFailure check(const PreparedCounts &counts, std::size_t batch) const;
+  bool prepare_ratios(bool prospective, std::size_t count,
+                      std::uint64_t &visits);
   const PreparedCapacity capacity;
   engine::PreparedRecordMap particles, fields;
   PreparedCounts live;
@@ -69,7 +74,14 @@ class PreparedStorage {
   // Scratch indexes are candidate row names, never a replacement allocator.
   std::vector<int> destinations, claim_addresses, claim_kinds, command_indexes;
   std::vector<int> candidate_edges;
-  std::vector<float> candidate_shares, new_rows;
+  std::vector<float> candidate_shares;
+  RealBuffer new_row_values, inspection_motion_values;
+  std::vector<float> &new_rows{new_row_values.legacy()};
+  // Trial-only flat descriptor: E raw counts, E denominators, G structural
+  // has-other-occurrence flags. Committed/prospective host and native copies.
+  std::vector<std::uint64_t> live_ratios, candidate_ratios;
+  std::unique_ptr<taichi::lang::Ndarray> live_ratios_array,
+      candidate_ratios_array;
   std::array<int, 1> candidate_status{};
   std::unique_ptr<taichi::lang::Ndarray> validation_array, derived_array,
       destinations_array, candidate_edges_array, candidate_shares_array,
@@ -77,8 +89,12 @@ class PreparedStorage {
       candidate_order_array;
   // Complete activity/history readback, reserved before readiness.
   std::vector<int> inspection_state;
-  std::vector<float> inspection_motion;
+  std::vector<float> &inspection_motion{inspection_motion_values.legacy()};
+  const std::vector<double> &motion64() const {
+    return inspection_motion_values.doubles();
+  }
   std::array<float, 11> inspection_focus{};
+  std::array<double, 11> inspection_focus64{};
   std::uint64_t inspected_generation{};
   // Only the private test adapter can request injected failures.
   int failure_point{};
@@ -92,6 +108,7 @@ class PreparedStorage {
       geometry_cursors, geometry_orders, geometry_counters, geometry_focus;
   std::array<std::int64_t, 16> geometry_counts{};
   std::array<float, 4> geometry_focal{};
+  std::array<double, 4> geometry_focal64{};
   GeometryInspection geometry_inspection;
   GeometryResult geometry_last;
   std::uint64_t geometry_query{0};

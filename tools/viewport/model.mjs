@@ -29,7 +29,9 @@ export function validateSnapshot(value) {
     ids.add(p.id); slots.add(p.slot);
     requireValue(p.id.startsWith(`${capture.study}/`) && p.aggregate.startsWith(`${capture.study}/`), 'Mixed study occurrence identities.');
     requireValue(bindings[p.binding] && p.level === bindings[p.binding].level, 'Missing or inconsistent conceptual binding.');
-    requireValue([...p.position, p.radius, p.mass].every(v => v === null || Math.fround(v) === v), 'Particle scalars must preserve the native f32 representation.');
+    requireValue([...p.position, p.radius, p.mass].every(v => v === null ||
+      (Number.isFinite(v) && (value.numerics?.profile === 'trial_f64' || Math.fround(v) === v))),
+    'Particle scalars must preserve the declared native representation.');
     decimal(p.exact_mass);
   }
   const focalIds = new Set();

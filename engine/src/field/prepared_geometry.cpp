@@ -54,11 +54,16 @@ void invalid(IRBuilder &b, ArgLoadStmt *stats, Stmt *condition) {
   b.create_atomic_or(b.create_external_ptr(stats, {b.get_int32(Invalid)}),
                      b.get_int64(1));
 }
-void finite(IRBuilder &b, ArgLoadStmt *stats, Stmt *v) {
-  invalid(
-      b, stats,
-      b.create_logical_not(b.create_cmp_le(
-          b.create_abs(v), b.get_float32(std::numeric_limits<float>::max()))));
+void finite(IRBuilder &b, ArgLoadStmt *stats, Stmt *v, bool wide) {
+  invalid(b, stats,
+          b.create_logical_not(
+              wide ? detail::supported_real(b, v)
+                   : b.create_cmp_le(
+                         b.create_abs(v),
+                         detail::real_constant(
+                             b, wide,
+                             wide ? std::numeric_limits<double>::max()
+                                  : std::numeric_limits<float>::max()))));
 }
 Stmt *key(IRBuilder &b, ArgLoadStmt *pairs, Stmt *row) {
   auto *a = read(b, pairs, at(b, 0, row)), *c = read(b, pairs, at(b, 1, row));
@@ -73,8 +78,7 @@ void Harness::prepare_geometry_execution() {
   auto &s = *prepared_;
   if (!s.capacity.limits()[Budget::GeometryWork])
     return;
-  const auto f = PrimitiveType::f32, i = PrimitiveType::i32,
-             wide = PrimitiveType::i64;
+  const auto f = real_type(), i = PrimitiveType::i32, wide = PrimitiveType::i64;
   const auto fa = engine::Param::array(f, 2), fv = engine::Param::array(f),
              ia = engine::Param::array(i, 2), iv = engine::Param::array(i),
              cv = engine::Param::array(wide),
@@ -91,8 +95,7 @@ void Harness::prepare_geometry_execution() {
          *scount = b.create_arg_load({9}, i, false, 0);
     for (int j = 0; j < 16; ++j)
       put(b, stats, j, b.get_int64(0));
-    for (int j = 0; j < 4; ++j)
-      put(b, focal, j, b.get_float32(0));
+    for (int j = 0; j < 4; ++j) put(b, focal, j, real(b, 0));
     put(b, stats, Sources, b.create_cast(scount, wide));
     put(b, stats, CompactionSlots, b.get_int64(particles_));
     {
@@ -123,13 +126,14 @@ void Harness::prepare_geometry_execution() {
       write(b, rows, {next}, row);
       count(b, stats, Present);
       for (int field : {kPosX, kPosY, kPosZ, kMass, kRadius})
-        finite(b, stats, read(b, particles, at(b, field, row)));
+        finite(b, stats, read(b, particles, at(b, field, row)),
+               profile_.wide());
       invalid(b, stats,
               b.create_logical_or(
                   b.create_cmp_le(read(b, particles, at(b, kMass, row)),
-                                  b.get_float32(0)),
+                                  real(b, 0)),
                   b.create_cmp_lt(read(b, particles, at(b, kRadius, row)),
-                                  b.get_float32(0))));
+                                  real(b, 0))));
     }
     {
       auto *loop = b.create_range_for(b.get_int32(0), scount, false, threads);
@@ -173,7 +177,7 @@ void Harness::prepare_geometry_execution() {
     std::array<AllocaStmt *, 4> sum;
     for (auto &v : sum) {
       v = b.create_local_var(f);
-      b.create_local_store(v, b.get_float32(0));
+      b.create_local_store(v, real(b, 0));
     }
     {
       auto *loop =
@@ -190,15 +194,15 @@ void Harness::prepare_geometry_execution() {
         {
           auto present = b.get_if_guard(live, true);
           auto *mass = read(b, groups, at(b, kCenM, row));
-          finite(b, stats, mass);
-          auto *positive = b.create_if(b.create_cmp_gt(mass, b.get_float32(0)));
+          finite(b, stats, mass, profile_.wide());
+          auto *positive = b.create_if(b.create_cmp_gt(mass, real(b, 0)));
           {
             auto good = b.get_if_guard(positive, true);
             b.create_local_store(
                 sum[3], b.create_add(b.create_local_load(sum[3]), mass));
             for (int axis = 0; axis < 3; ++axis) {
               auto *centre = read(b, groups, at(b, kCenX + axis, row));
-              finite(b, stats, centre);
+              finite(b, stats, centre, profile_.wide());
               b.create_local_store(
                   sum[axis],
                   b.create_add(
@@ -224,16 +228,16 @@ void Harness::prepare_geometry_execution() {
     }
     auto *mass = b.create_local_load(sum[3]);
     auto *denom =
-        b.create_add(mass, b.create_sub(b.get_float32(1), b.create_sgn(mass)));
-    finite(b, stats, mass);
+        b.create_add(mass, b.create_sub(real(b, 1), b.create_sgn(mass)));
+    finite(b, stats, mass, profile_.wide());
     put(b, focal, 3, mass);
     for (int axis = 0; axis < 3; ++axis) {
       auto *value = b.create_select(
-          b.create_cmp_gt(mass, b.get_float32(0)),
+          b.create_cmp_gt(mass, real(b, 0)),
           b.create_add(get(b, old_focus, axis),
                        b.create_div(b.create_local_load(sum[axis]), denom)),
-          b.get_float32(0));
-      finite(b, stats, value);
+          real(b, 0));
+      finite(b, stats, value, profile_.wide());
       put(b, focal, axis, value);
     }
     geometry_collect_ = engine::CompiledKernel(
@@ -307,15 +311,14 @@ void Harness::prepare_geometry_execution() {
                                    read(b, particles, at(b, kPosX + axis, a)));
       const auto geometry = detail::contact_geometry(
           b, delta, read(b, particles, at(b, kRadius, a)),
-          read(b, particles, at(b, kRadius, c)));
-      finite(b, stats, geometry.squared);
-      finite(b, stats, geometry.radii);
-      finite(b, stats, geometry.distance);
+          read(b, particles, at(b, kRadius, c)), profile_.wide());
+      finite(b, stats, geometry.squared, profile_.wide());
+      finite(b, stats, geometry.radii, profile_.wide());
+      finite(b, stats, geometry.distance, profile_.wide());
       auto *derived = b.create_logical_or(
-          b.create_cmp_gt(geometry.penetration, b.get_float32(0)),
-          b.create_logical_and(
-              b.create_cmp_eq(geometry.squared, b.get_float32(0)),
-              b.create_cmp_gt(geometry.radii, b.get_float32(0))));
+          b.create_cmp_gt(geometry.penetration, real(b, 0)),
+          b.create_logical_and(b.create_cmp_eq(geometry.squared, real(b, 0)),
+                               b.create_cmp_gt(geometry.radii, real(b, 0))));
       auto *explicit_pair = b.create_local_var(i),
            *first_source = b.create_local_var(i),
            *group_end = b.create_local_var(i);
@@ -492,9 +495,9 @@ void Harness::launch_geometry_collect() {
   auto call = geometry_collect_.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
-    bind(ctx, 1, group_array_.get(), group_data,
+    bind(ctx, 1, group_array_.get(), group_values_,
          {kGroupFieldCount, std::max(groups_, 1)});
     bind(ctx, 2, contact_int_array_.get(), contact_int_data,
          {kContactIntFieldCount, std::max(contacts_, 1)});
@@ -526,7 +529,7 @@ void Harness::launch_geometry_discover() {
   auto call = geometry_discover_.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
     bind(ctx, 1, contact_int_array_.get(), contact_int_data,
          {kContactIntFieldCount, std::max(contacts_, 1)});
@@ -562,6 +565,7 @@ void Harness::launch_geometry_finalize() {
 GeometryResult Harness::query_prepared_geometry(std::uint64_t expected,
                                                 std::uint64_t work) {
   GeometryResult answer;
+  answer.numerical_profile = profile_;
   if (!prepared_ || !ready_)
     return answer;
   auto &s = *prepared_;
@@ -599,18 +603,25 @@ GeometryResult Harness::query_prepared_geometry(std::uint64_t expected,
     ++answer.synchronizations;
     engine::readback(*s.geometry_counters, s.geometry_counts.data(),
                      sizeof(s.geometry_counts));
-    engine::readback(*s.geometry_focus, s.geometry_focal.data(),
-                     sizeof(s.geometry_focal));
-    answer.readback_bytes +=
-        sizeof(s.geometry_counts) + sizeof(s.geometry_focal);
+    engine::readback(*s.geometry_focus,
+                     profile_.wide()
+                         ? static_cast<void *>(s.geometry_focal64.data())
+                         : s.geometry_focal.data(),
+                     4 * profile_.bytes());
+    answer.readback_bytes += sizeof(s.geometry_counts) + 4 * profile_.bytes();
     answer.present = s.geometry_counts[Present];
     answer.awake = s.geometry_counts[Awake];
     answer.source_contacts = s.geometry_counts[Sources];
     answer.presence_entries = s.geometry_counts[PresenceEntries];
     answer.compaction_slots = s.geometry_counts[CompactionSlots];
     answer.focus = GeometryFocus(s.geometry_counts[Focus]);
-    answer.focal_mass = s.geometry_focal[3];
-    std::copy_n(s.geometry_focal.begin(), 3, answer.focal_point.begin());
+    if (profile_.wide()) {
+      answer.focal_mass = s.geometry_focal64[3];
+      std::copy_n(s.geometry_focal64.begin(), 3, answer.focal_point.begin());
+    } else {
+      answer.focal_mass = s.geometry_focal[3];
+      std::copy_n(s.geometry_focal.begin(), 3, answer.focal_point.begin());
+    }
     if (s.geometry_counts[Invalid] || answer.present != s.live.particles)
       return finish(GeometryStatus::InvalidNumerics);
     const auto pair_tests =

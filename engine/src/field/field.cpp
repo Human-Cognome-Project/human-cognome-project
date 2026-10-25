@@ -67,8 +67,9 @@ Stmt *scalar_param(IRBuilder &b, int id, DataType dt) {
   return b.create_arg_load({id}, dt, /*is_ptr=*/false, /*arg_depth=*/0);
 }
 
-void validate_parameters(const Parameters &p) {
-  for (float value : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength}) {
+void validate_parameters(const Parameters64 &p) {
+  for (double value :
+       {p.gravity, p.dt, p.contact_stiffness, p.reach_strength}) {
     if (!std::isfinite(value) || value < 0.0f) {
       throw std::invalid_argument(
           "field: parameters must be finite and non-negative");
@@ -109,14 +110,11 @@ Harness::Harness(engine::Runtime &runtime,
               &capacity) {
 }
 
-Harness::Harness(engine::Runtime &runtime,
-                 int particle_count,
-                 int group_count,
-                 int edge_count,
-                 int contact_count,
-                 HostPath path,
+Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
+                 int edge_count, int contact_count, HostPath path,
                  const PreparedCapacity *capacity)
     : runtime_(&runtime),
+      profile_(capacity ? capacity->profile() : NumericalProfile{}),
       particles_(particle_count),
       groups_(group_count),
       edges_(edge_count),
@@ -129,9 +127,14 @@ Harness::Harness(engine::Runtime &runtime,
       contact_count < 0) {
     throw std::invalid_argument("field::Harness: counts must be non-negative");
   }
+  if (profile_.wide())
+    engine::numeric::Precision(engine::numeric::Real::F64,
+                               engine::numeric::Real::F64,
+                               profile_.body_fraction_bits)
+        .require_backend(runtime);
   if (capacity) {
     const auto required = detail::PreparedStorage::required_scratch(
-        capacity->limits(), runtime.on_cuda());
+        capacity->limits(), runtime.on_cuda(), profile_);
     if (required > capacity->limits()[Budget::ScratchBytes])
       throw CapacityError({Budget::ScratchBytes, required,
                            capacity->limits()[Budget::ScratchBytes]});
@@ -141,13 +144,17 @@ Harness::Harness(engine::Runtime &runtime,
   }
   // Empty logical arrays still need nonzero allocation/transfer sizes in
   // the RHI. Their real loop counts and host accessor strides stay zero.
-  particle_data.assign(storage_size(kParticleFieldCount, particles_), 0.0f);
-  group_data.assign(storage_size(kGroupFieldCount, groups_), 0.0f);
+  for (auto *values : {&particle_values_, &group_values_, &universal_values_,
+                       &determined_values_, &empty_determined_values_})
+    values->configure(profile_.wide());
+  empty_determined_values_.assign(particles_ ? 0 : 1, 0);
+  particle_values_.assign(storage_size(kParticleFieldCount, particles_), 0.0f);
+  group_values_.assign(storage_size(kGroupFieldCount, groups_), 0.0f);
   edge_float_data.assign(storage_size(kEdgeFloatFieldCount, edges_), 0.0f);
   edge_int_data.assign(storage_size(kEdgeIntFieldCount, edges_), 0);
   contact_int_data.assign(storage_size(kContactIntFieldCount, contacts_), 0);
-  determined_.assign(particles_, 0.0f);
-  universal_data.assign(1, 0.0f);
+  determined_values_.assign(particles_, 0.0f);
+  universal_values_.assign(1, 0.0f);
 
   // Each dense array below is 2-axis {num_fields, num_items} rather than a
   // single flat {num_fields * num_items} axis: a 1-D Ndarray shape is a
@@ -159,10 +166,10 @@ Harness::Harness(engine::Runtime &runtime,
   Program &program = runtime.program();
   if (path_ == HostPath::BulkCopy) {
     particle_array_ = std::make_unique<Ndarray>(
-        &program, PrimitiveType::f32,
+        &program, real_type(),
         std::vector<int>{kParticleFieldCount, std::max(particles_, 1)});
     group_array_ = std::make_unique<Ndarray>(
-        &program, PrimitiveType::f32,
+        &program, real_type(),
         std::vector<int>{kGroupFieldCount, std::max(groups_, 1)});
     edge_float_array_ = std::make_unique<Ndarray>(
         &program, PrimitiveType::f32,
@@ -173,13 +180,12 @@ Harness::Harness(engine::Runtime &runtime,
     contact_int_array_ = std::make_unique<Ndarray>(
         &program, PrimitiveType::i32,
         std::vector<int>{kContactIntFieldCount, std::max(contacts_, 1)});
-    determined_array_ =
-        std::make_unique<Ndarray>(&program, PrimitiveType::f32,
-                                  std::vector<int>{std::max(particles_, 1)});
+    determined_array_ = std::make_unique<Ndarray>(
+        &program, real_type(), std::vector<int>{std::max(particles_, 1)});
     // The universal mass: one cell, the total mass of the construct with each
     // particle counted exactly once, computed during publication.
-    universal_array_ = std::make_unique<Ndarray>(&program, PrimitiveType::f32,
-                                                 std::vector<int>{1});
+    universal_array_ =
+        std::make_unique<Ndarray>(&program, real_type(), std::vector<int>{1});
   }
   activity_ = std::make_unique<detail::Activity>(
       runtime, particles_, groups_, edges_, contacts_, prepared_.get());
@@ -199,12 +205,12 @@ Harness::Harness(engine::Runtime &runtime,
   // than one group). Three offloaded tasks, one compilation.
   {
     IRBuilder b;
-    auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *groups = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
-    auto *universal = array_param(b, 4, PrimitiveType::f32, /*total_dim=*/1);
+    auto *particles = array_param(b, 0, real_type(), /*total_dim=*/2);
+    auto *groups = array_param(b, 1, real_type(), /*total_dim=*/2);
+    auto *universal = array_param(b, 4, real_type(), /*total_dim=*/1);
     auto *seed = scalar_param(b, 5, PrimitiveType::i32);
     auto *mass_count = scalar_param(b, 7, PrimitiveType::i32);
-    auto *zero = b.get_float32(0.0f);
+    auto *zero = real(b, 0.0f);
     {
       auto *loop = b.create_struct_for(activity_->particle_activity.cells,
                                        false, threads);
@@ -248,6 +254,12 @@ Harness::Harness(engine::Runtime &runtime,
                 detail::NativeSet{prepared_->particles.bindings().presence}
                     .active(b, i)),
             true));
+      if (profile_.wide())
+        for (int axis = 0; axis < 3; ++axis)
+          store(b, particles, at(b, kPosX + axis, i),
+                detail::publish_position(
+                    b, load(b, particles, at(b, kPosX + axis, i)),
+                    profile_.body_fraction_bits));
       store(b, universal, {b.get_int32(0)},
             b.create_add(load(b, universal, {b.get_int32(0)}),
                          load(b, particles, at(b, kMass, i))));
@@ -256,11 +268,11 @@ Harness::Harness(engine::Runtime &runtime,
         runtime,
         "field_clear_" + std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
-        {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
+        {engine::Param::array(real_type(), /*total_dim=*/2),
+         engine::Param::array(real_type(), /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::array(PrimitiveType::f32),
+         engine::Param::array(real_type()),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::array(PrimitiveType::i32, 2),
          engine::Param::scalar(PrimitiveType::i32)},
@@ -270,14 +282,16 @@ Harness::Harness(engine::Runtime &runtime,
   // Each candidate visits every connected field in stable source order.
   {
     IRBuilder b;
+    auto *ratios =
+        profile_.wide() ? array_param(b, 12, PrimitiveType::u64, 1) : nullptr;
     auto *edge_i = array_param(b, 0, PrimitiveType::i32, /*total_dim=*/2);
     auto *edge_f = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
-    auto *particles = array_param(b, 2, PrimitiveType::f32, /*total_dim=*/2);
-    auto *groups = array_param(b, 3, PrimitiveType::f32, /*total_dim=*/2);
+    auto *particles = array_param(b, 2, real_type(), /*total_dim=*/2);
+    auto *groups = array_param(b, 3, real_type(), /*total_dim=*/2);
     auto *n = scalar_param(b, 4, PrimitiveType::i32);
     auto *g = scalar_param(b, 5, PrimitiveType::i32);
     auto *e = scalar_param(b, 6, PrimitiveType::i32);
-    auto *gravity = scalar_param(b, 7, PrimitiveType::f32);
+    auto *gravity = scalar_param(b, 7, real_type());
     auto *counters = array_param(b, 9, PrimitiveType::i64, 1);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
     auto *order = array_param(b, 11, PrimitiveType::i32, 1);
@@ -296,17 +310,33 @@ Harness::Harness(engine::Runtime &runtime,
       auto member_guard = b.get_loop_guard(members);
       auto *k = load(b, order, {b.get_loop_index(members)});
       auto *grp = load(b, edge_i, at(b, kEdgeGroup, k));
-      auto *share = load(b, edge_f, at(b, kShare, k));
+      auto *share = profile_.wide() ? detail::source_ratio(b, ratios, k,
+                                                           std::max(edges_, 1))
+                                    : load(b, edge_f, at(b, kShare, k));
       count_work(b, counters, detail::ForceRequests);
+      if (profile_.wide()) {
+        auto corrupt =
+            b.get_if_guard(b.create_if(b.create_cmp_ne(
+                               b.create_cast(share, PrimitiveType::f32),
+                               load(b, edge_f, at(b, kShare, k)))),
+                           true);
+        count_work(b, counters, detail::TrialErrors);
+      }
       auto *m1 = b.create_mul(load(b, particles, at(b, kMass, p)), share);
       auto *gm = load(b, groups, at(b, kCenM, grp));
       // Evaluate the exact zero-response cases before potentially overflowing
       // intermediates, rather than multiplying infinity by a zero gate.
-      auto response =
-          b.get_if_guard(b.create_if(b.create_logical_and(
-                             b.create_cmp_ne(gm, m1),
-                             b.create_cmp_ne(gravity, b.get_float32(0)))),
-                         true);
+      auto response = b.get_if_guard(
+          b.create_if(b.create_logical_and(
+              profile_.wide()
+                  ? b.create_cmp_ne(
+                        load(b, ratios,
+                             {b.create_add(
+                                 grp, b.get_int32(2 * std::max(edges_, 1)))}),
+                        b.get_uint64(0))
+                  : b.create_cmp_ne(gm, m1),
+              b.create_cmp_ne(gravity, real(b, 0)))),
+          true);
       count_work(b, counters, detail::Forces);
 
       auto *cx = load(b, particles, at(b, kPosX, p));
@@ -331,7 +361,7 @@ Harness::Harness(engine::Runtime &runtime,
       auto *live = b.create_sgn(d2);
       // Guard the rsqrt input against d2==0 without touching any d2>0 value:
       // safe == d2 where d2>0, == 1 where d2==0, so rsqrt is always finite.
-      auto *safe = b.create_add(d2, b.create_sub(b.get_float32(1.0f), live));
+      auto *safe = b.create_add(d2, b.create_sub(real(b, 1.0f), live));
       auto *inv = b.create_rsqrt(safe);
       auto *inv3 = b.create_mul(inv, b.create_mul(inv, inv));
 
@@ -358,18 +388,20 @@ Harness::Harness(engine::Runtime &runtime,
         runtime,
         "field_force_" + std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
-        {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::f32),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i64),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i32)},
+        detail::ratio_parameters(
+            {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
+             engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
+             engine::Param::array(real_type(), /*total_dim=*/2),
+             engine::Param::array(real_type(), /*total_dim=*/2),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::scalar(real_type()),
+             engine::Param::array(PrimitiveType::i32, 2),
+             engine::Param::array(PrimitiveType::i64),
+             engine::Param::array(PrimitiveType::i32, 2),
+             engine::Param::array(PrimitiveType::i32)},
+            profile_.wide()),
         engine::MathMode::Strict);
   }
 
@@ -378,9 +410,9 @@ Harness::Harness(engine::Runtime &runtime,
   {
     IRBuilder b;
     auto *pairs = array_param(b, 0, PrimitiveType::i32, 2);
-    auto *particles = array_param(b, 1, PrimitiveType::f32, 2);
+    auto *particles = array_param(b, 1, real_type(), 2);
     auto *count = scalar_param(b, 2, PrimitiveType::i32);
-    auto *stiffness = scalar_param(b, 3, PrimitiveType::f32);
+    auto *stiffness = scalar_param(b, 3, real_type());
     auto *counters = array_param(b, 5, PrimitiveType::i64, 1);
     auto *a_offsets = array_param(b, 6, PrimitiveType::i32, 2);
     auto *a_order = array_param(b, 7, PrimitiveType::i32, 1);
@@ -411,7 +443,7 @@ Harness::Harness(engine::Runtime &runtime,
                                 load(b, particles, at(b, kPosZ, a)));
         const auto geometry = detail::contact_geometry(
             b, {dx, dy, dz}, load(b, particles, at(b, kRadius, a)),
-            load(b, particles, at(b, kRadius, bp)));
+            load(b, particles, at(b, kRadius, bp)), profile_.wide());
         auto *live = geometry.live, *inv = geometry.inverse,
              *penetration = geometry.penetration;
         auto *scale = b.create_neg(b.create_mul(
@@ -433,9 +465,9 @@ Harness::Harness(engine::Runtime &runtime,
             std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
         {engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::f32, 2),
+         engine::Param::array(real_type(), 2),
          engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::f32),
+         engine::Param::scalar(real_type()),
          engine::Param::array(PrimitiveType::i32, 2),
          engine::Param::array(PrimitiveType::i64),
          engine::Param::array(PrimitiveType::i32, 2),
@@ -450,13 +482,13 @@ Harness::Harness(engine::Runtime &runtime,
   // velocity dampening.
   {
     IRBuilder b;
-    auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *dt = scalar_param(b, 2, PrimitiveType::f32);
-    auto *universal = array_param(b, 3, PrimitiveType::f32, /*total_dim=*/1);
-    auto *reach_strength = scalar_param(b, 4, PrimitiveType::f32);
+    auto *particles = array_param(b, 0, real_type(), /*total_dim=*/2);
+    auto *dt = scalar_param(b, 2, real_type());
+    auto *universal = array_param(b, 3, real_type(), /*total_dim=*/1);
+    auto *reach_strength = scalar_param(b, 4, real_type());
     auto *ps = array_param(b, 5, PrimitiveType::i32, 2);
-    auto *pd = array_param(b, 6, PrimitiveType::f32, 2);
-    auto *origin = array_param(b, 7, PrimitiveType::f32, 1);
+    auto *pd = array_param(b, 6, real_type(), 2);
+    auto *origin = array_param(b, 7, real_type(), 1);
     auto *counters = array_param(b, 8, PrimitiveType::i64, 1);
     auto *edges = array_param(b, 9, PrimitiveType::i32, 2);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
@@ -484,7 +516,7 @@ Harness::Harness(engine::Runtime &runtime,
       // The whole mass absorbs the force the share raised.
       auto *mass_live = b.create_sgn(mass);
       auto *safe_mass =
-          b.create_add(mass, b.create_sub(b.get_float32(1.0f), mass_live));
+          b.create_add(mass, b.create_sub(real(b, 1.0f), mass_live));
       auto *step_over_mass =
           b.create_div(b.create_mul(dt, mass_live), safe_mass);
       auto *vx =
@@ -514,7 +546,7 @@ Harness::Harness(engine::Runtime &runtime,
       // against, rather than attenuating carried momentum or dividing by
       // zero.
       auto *live = b.create_sgn(reach);
-      auto *safe = b.create_add(reach, b.create_sub(b.get_float32(1.0f), live));
+      auto *safe = b.create_add(reach, b.create_sub(real(b, 1.0f), live));
       auto *ratio = b.create_div(travel, safe);
       auto *ratio2 = b.create_mul(ratio, ratio);
       // Negligible while the step is a real margin short of the reach,
@@ -544,7 +576,7 @@ Harness::Harness(engine::Runtime &runtime,
       // The same exact d==0 gate used elsewhere: no radial direction, no
       // dampening, at the origin.
       auto *plive = b.create_sgn(pd2);
-      auto *psafe = b.create_add(pd2, b.create_sub(b.get_float32(1.0f), plive));
+      auto *psafe = b.create_add(pd2, b.create_sub(real(b, 1.0f), plive));
       auto *pinv = b.create_rsqrt(psafe);
       auto *rux = b.create_mul(px, pinv);
       auto *ruy = b.create_mul(py, pinv);
@@ -552,13 +584,13 @@ Harness::Harness(engine::Runtime &runtime,
 
       auto *m_universal = load(b, universal, {b.get_int32(0)});
       auto *total_live = b.create_sgn(m_universal);
-      auto *safe_total = b.create_add(
-          m_universal, b.create_sub(b.get_float32(1.0f), total_live));
+      auto *safe_total =
+          b.create_add(m_universal, b.create_sub(real(b, 1.0f), total_live));
       // reach_ratio == reach_strength / (M/d2) == threshold / field-strength.
       auto *reach_ratio =
           b.create_div(b.create_mul(reach_strength, pd2), safe_total);
-      auto *excess = b.create_max(
-          b.create_sub(reach_ratio, b.get_float32(1.0f)), b.get_float32(0.0f));
+      auto *excess =
+          b.create_max(b.create_sub(reach_ratio, real(b, 1.0f)), real(b, 0.0f));
       // D == 1 inside the reach (bulk untouched), D -> 0 far outside
       // (escape velocity bled off).
       auto *dampen = b.create_exp(b.create_neg(excess));
@@ -568,10 +600,9 @@ Harness::Harness(engine::Runtime &runtime,
           b.create_mul(vz, ruz));
       // Only the outward radial component is dampened -- inward motion is
       // untouched.
-      auto *outward = b.create_max(vr, b.get_float32(0.0f));
+      auto *outward = b.create_max(vr, real(b, 0.0f));
       auto *factor = b.create_mul(
-          b.create_mul(outward, b.create_sub(b.get_float32(1.0f), dampen)),
-          plive);
+          b.create_mul(outward, b.create_sub(real(b, 1.0f), dampen)), plive);
 
       vx = b.create_sub(vx, b.create_mul(factor, rux));
       vy = b.create_sub(vy, b.create_mul(factor, ruy));
@@ -581,11 +612,22 @@ Harness::Harness(engine::Runtime &runtime,
       store(b, particles, at(b, kVelY, i), vy);
       store(b, particles, at(b, kVelZ, i), vz);
 
-      Stmt *moved = b.get_int32(0), *continued = b.get_int32(0);
+      Stmt *moved = b.get_int32(0), *continued = b.get_int32(0),
+           *attempted = b.get_int32(0);
       for (int pair : {0, 1, 2}) {
         const int pos_field = kPosX + pair;
         Stmt *v = pair == 0 ? vx : (pair == 1 ? vy : vz);
-        auto *next = b.create_add(old_position[pair], b.create_mul(v, dt));
+        auto *trial = b.create_add(old_position[pair], b.create_mul(v, dt));
+        attempted = b.create_logical_or(
+            attempted, b.create_cmp_ne(trial, old_position[pair]));
+        if (profile_.wide()) {
+          detail::mark_nonfinite(b, counters, trial, detail::TrialErrors);
+          detail::mark_nonfinite(b, counters, v, detail::TrialErrors);
+        }
+        auto *next = profile_.wide()
+                         ? detail::publish_position(b, trial,
+                                                    profile_.body_fraction_bits)
+                         : trial;
         store(b, pd, at(b, pair, i), b.create_sub(next, old_position[pair]));
         moved = b.create_logical_or(moved,
                                     b.create_cmp_ne(next, old_position[pair]));
@@ -597,10 +639,17 @@ Harness::Harness(engine::Runtime &runtime,
         // Motion history is numerical state inside active work. Retain this
         // one activity bit while the full state changes; otherwise consume it
         // before later contact/centroid phases can reactivate the particle.
-        auto fixed = b.get_if_guard(b.create_if(b.create_logical_not(
-                                        b.create_logical_or(continued, moved))),
-                                    true);
+        auto fixed = b.get_if_guard(
+            b.create_if(b.create_logical_not(b.create_logical_or(
+                continued, profile_.wide()
+                               ? b.create_logical_or(moved, attempted)
+                               : moved))),
+            true);
         activity_->particle_activity.deactivate(b, i);
+      }
+      if (profile_.wide()) {
+        auto attempted_guard = b.get_if_guard(b.create_if(attempted), true);
+        count_work(b, counters, detail::TrialAttempts);
       }
       auto *motion = b.create_if(moved);
       {
@@ -634,14 +683,13 @@ Harness::Harness(engine::Runtime &runtime,
         "field_integrate_" +
             std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
-        {engine::Param::array(PrimitiveType::f32, 2),
+        {engine::Param::array(real_type(), 2),
          engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::f32),
-         engine::Param::array(PrimitiveType::f32),
-         engine::Param::scalar(PrimitiveType::f32),
+         engine::Param::scalar(real_type()), engine::Param::array(real_type()),
+         engine::Param::scalar(real_type()),
          engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::f32, 2),
-         engine::Param::array(PrimitiveType::f32),
+         engine::Param::array(real_type(), 2),
+         engine::Param::array(real_type()),
          engine::Param::array(PrimitiveType::i64),
          engine::Param::array(PrimitiveType::i32, 2),
          engine::Param::array(PrimitiveType::i32, 2),
@@ -654,8 +702,10 @@ Harness::Harness(engine::Runtime &runtime,
   // cached speed is still correct. Continuing particles update it here.
   {
     IRBuilder b;
-    auto *particles = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
-    auto *out = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/1);
+    auto *error_counts =
+        profile_.wide() ? array_param(b, 3, PrimitiveType::i64, 1) : nullptr;
+    auto *particles = array_param(b, 0, real_type(), /*total_dim=*/2);
+    auto *out = array_param(b, 1, real_type(), /*total_dim=*/1);
     auto *loop =
         b.create_struct_for(activity_->particle_activity.cells, false, threads);
     {
@@ -664,30 +714,35 @@ Harness::Harness(engine::Runtime &runtime,
       auto *vx = load(b, particles, at(b, kVelX, i));
       auto *vy = load(b, particles, at(b, kVelY, i));
       auto *vz = load(b, particles, at(b, kVelZ, i));
-      store(b, out, {i},
-            b.create_sqrt(b.create_add(
-                b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
-                b.create_mul(vz, vz))));
+      auto *speed = b.create_sqrt(
+          b.create_add(b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
+                       b.create_mul(vz, vz)));
+      if (profile_.wide())
+        detail::mark_nonfinite(b, error_counts, speed, detail::TrialErrors);
+      store(b, out, {i}, speed);
     }
+    std::vector<engine::Param> params{
+        engine::Param::array(real_type(), 2), engine::Param::array(real_type()),
+        engine::Param::scalar(PrimitiveType::i32)};
+    if (profile_.wide())
+      params.push_back(engine::Param::array(PrimitiveType::i64));
     determine_ = engine::CompiledKernel(
         runtime,
         "field_determine_" +
             std::to_string(activity_->particle_activity.cells->id),
-        b.extract_ir(),
-        {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32),
-         engine::Param::scalar(PrimitiveType::i32)},
-        engine::MathMode::Strict);
+        b.extract_ir(), params, engine::MathMode::Strict);
   }
 
   // Centroid: the consolidation. A reduction over the same edge list the
   // force pass streamed, into per-group accumulators.
   {
     IRBuilder b;
+    auto *ratios =
+        profile_.wide() ? array_param(b, 12, PrimitiveType::u64, 1) : nullptr;
     auto *edge_i = array_param(b, 0, PrimitiveType::i32, /*total_dim=*/2);
     auto *edge_f = array_param(b, 1, PrimitiveType::f32, /*total_dim=*/2);
-    auto *particles = array_param(b, 2, PrimitiveType::f32, /*total_dim=*/2);
-    auto *groups = array_param(b, 3, PrimitiveType::f32, /*total_dim=*/2);
+    auto *particles = array_param(b, 2, real_type(), /*total_dim=*/2);
+    auto *groups = array_param(b, 3, real_type(), /*total_dim=*/2);
     auto *n = scalar_param(b, 4, PrimitiveType::i32);
     auto *g = scalar_param(b, 5, PrimitiveType::i32);
     auto *e = scalar_param(b, 6, PrimitiveType::i32);
@@ -695,6 +750,8 @@ Harness::Harness(engine::Runtime &runtime,
     auto *seed = scalar_param(b, 9, PrimitiveType::i32);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
     auto *order = array_param(b, 11, PrimitiveType::i32, 1);
+    auto *anchor_work =
+        profile_.wide() ? array_param(b, 7, real_type(), 2) : nullptr;
     (void)n;
     (void)g;
     (void)e;
@@ -706,19 +763,27 @@ Harness::Harness(engine::Runtime &runtime,
       auto *grp = b.get_loop_index(loop);
       // Native centroid entries are activated during integration, after clear.
       for (int axis = 0; axis < 3; ++axis)
-        store(b, groups, at(b, kAccX + axis, grp), b.get_float32(0));
+        store(b, groups, at(b, kAccX + axis, grp), real(b, 0));
+      if (profile_.wide()) {
+        store(b, groups, at(b, kAccM, grp), real(b, 0));
+        for (int axis = 0; axis < 3; ++axis)
+          store(b, anchor_work, at(b, axis, grp), real(b, 0));
+      }
       // Seed around a member position rather than coordinate zero, preserving
       // the initial rounding residue that later small motions can combine with.
       {
         auto *begin = load(b, offsets, at(b, 0, grp));
         auto *end = load(b, offsets, at(b, 1, grp));
-        auto initial = b.get_if_guard(b.create_if(b.create_logical_and(
-                                          seed, b.create_cmp_lt(begin, end))),
-                                      true);
+        auto initial =
+            b.get_if_guard(b.create_if(b.create_logical_and(
+                               profile_.wide() ? b.get_int32(1) : seed,
+                               b.create_cmp_lt(begin, end))),
+                           true);
         auto *first = load(b, order, {begin});
         auto *anchor = load(b, edge_i, at(b, kEdgeParticle, first));
         for (int axis = 0; axis < 3; ++axis)
-          store(b, groups, at(b, kCenX + axis, grp),
+          store(b, profile_.wide() ? anchor_work : groups,
+                at(b, profile_.wide() ? axis : kCenX + axis, grp),
                 load(b, particles, at(b, kPosX + axis, anchor)));
       }
       auto *members = b.create_range_for(load(b, offsets, at(b, 0, grp)),
@@ -727,18 +792,28 @@ Harness::Harness(engine::Runtime &runtime,
       auto member_guard = b.get_loop_guard(members);
       auto *k = load(b, order, {b.get_loop_index(members)});
       auto *p = load(b, edge_i, at(b, kEdgeParticle, k));
-      auto *share = load(b, edge_f, at(b, kShare, k));
+      auto *share = profile_.wide() ? detail::source_ratio(b, ratios, k,
+                                                           std::max(edges_, 1))
+                                    : load(b, edge_f, at(b, kShare, k));
       count_work(b, counters, detail::ReducedEdges);
       auto *m = b.create_mul(load(b, particles, at(b, kMass, p)), share);
+      if (profile_.wide()) {
+        auto bad =
+            b.get_if_guard(b.create_if(b.create_cmp_le(m, real(b, 0))), true);
+        count_work(b, counters, detail::TrialErrors);
+      }
       for (int pair : {0, 1, 2}) {
-        auto *pos = b.create_sub(load(b, particles, at(b, kPosX + pair, p)),
-                                 load(b, groups, at(b, kCenX + pair, grp)));
+        auto *pos = b.create_sub(
+            load(b, particles, at(b, kPosX + pair, p)),
+            load(b, profile_.wide() ? anchor_work : groups,
+                 at(b, profile_.wide() ? pair : kCenX + pair, grp)));
         store(b, groups, at(b, kAccX + pair, grp),
               b.create_add(load(b, groups, at(b, kAccX + pair, grp)),
                            b.create_mul(m, pos)));
       }
       {
-        auto initial = b.get_if_guard(b.create_if(seed), true);
+        auto initial = b.get_if_guard(
+            b.create_if(profile_.wide() ? b.get_int32(1) : seed), true);
         store(b, groups, at(b, kAccM, grp),
               b.create_add(load(b, groups, at(b, kAccM, grp)), m));
       }
@@ -748,27 +823,30 @@ Harness::Harness(engine::Runtime &runtime,
         "field_centroid_" +
             std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
-        {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i64),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i32)},
+        detail::ratio_parameters(
+            {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
+             engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
+             engine::Param::array(real_type(), /*total_dim=*/2),
+             engine::Param::array(real_type(), /*total_dim=*/2),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::array(
+                 profile_.wide() ? real_type() : PrimitiveType::i32, 2),
+             engine::Param::array(PrimitiveType::i64),
+             engine::Param::scalar(PrimitiveType::i32),
+             engine::Param::array(PrimitiveType::i32, 2),
+             engine::Param::array(PrimitiveType::i32)},
+            profile_.wide()),
         engine::MathMode::Strict);
   }
 
   // Publish: divide the accumulators through and hand them to the next tick.
   {
     IRBuilder b;
-    auto *groups = array_param(b, 0, PrimitiveType::f32, /*total_dim=*/2);
+    auto *groups = array_param(b, 0, real_type(), /*total_dim=*/2);
     auto *gs = array_param(b, 2, PrimitiveType::i32, 2);
-    auto *gd = array_param(b, 3, PrimitiveType::f32, 2);
+    auto *gd = array_param(b, 3, real_type(), 2);
     auto *counters = array_param(b, 4, PrimitiveType::i64, 1);
     {
       auto *loop =
@@ -786,8 +864,14 @@ Harness::Harness(engine::Runtime &runtime,
         auto *offset = load(b, groups, at(b, kAccX + pair, i));
         // Widen the final origin addition so a distant seed anchor cannot
         // introduce an extra f32 rounding before publishing the f32 centre.
-        const auto coordinate =
-            detail::centroid_coordinate(b, before, offset, m);
+        const auto coordinate = detail::centroid_coordinate(
+            b, profile_.wide() ? load(b, gd, at(b, pair, i)) : before, offset,
+            m, profile_);
+        if (profile_.wide()) {
+          detail::mark_nonfinite(b, counters, coordinate.trial,
+                                 detail::TrialErrors);
+          detail::mark_nonfinite(b, counters, m, detail::TrialErrors);
+        }
         auto *next = coordinate.value;
         auto *pending = coordinate.residue;
         store(b, gd, at(b, 3 + pair, i), before);
@@ -806,10 +890,10 @@ Harness::Harness(engine::Runtime &runtime,
         "field_publish_centroids_" +
             std::to_string(activity_->particle_activity.cells->id),
         b.extract_ir(),
-        {engine::Param::array(PrimitiveType::f32, /*total_dim=*/2),
+        {engine::Param::array(real_type(), /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
          engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::f32, 2),
+         engine::Param::array(real_type(), 2),
          engine::Param::array(PrimitiveType::i64)},
         engine::MathMode::Strict);
   }
@@ -837,6 +921,14 @@ void Harness::bind(LaunchContextBuilder &ctx,
   }
 }
 
+void Harness::bind(LaunchContextBuilder &ctx, int argument,
+                   const Ndarray *array, detail::RealBuffer &values,
+                   std::vector<int> shape) {
+  if (values.wide())
+    bind(ctx, argument, array, values.doubles(), std::move(shape));
+  else
+    bind(ctx, argument, array, values.legacy(), std::move(shape));
+}
 Harness::~Harness() = default;
 
 // Activity launches share the exact same checked payload binding on both host
@@ -905,7 +997,7 @@ void Harness::set_focus(const std::vector<int> &groups) {
       }
       activity_->set_focus(groups);
       std::copy(local.begin(), local.end(), particle_data.begin());
-      publish(previous_parameters_, next_anchor);
+      publish(previous_parameters_.legacy(), next_anchor);
       return;
     }
   }
@@ -914,8 +1006,9 @@ void Harness::set_focus(const std::vector<int> &groups) {
 }
 
 void Harness::validate_staging() const {
-  if (particle_data.size() != storage_size(kParticleFieldCount, particles_) ||
-      group_data.size() != storage_size(kGroupFieldCount, groups_) ||
+  if (particle_values_.size() !=
+          storage_size(kParticleFieldCount, particles_) ||
+      group_values_.size() != storage_size(kGroupFieldCount, groups_) ||
       edge_float_data.size() != storage_size(kEdgeFloatFieldCount, edges_) ||
       edge_int_data.size() != storage_size(kEdgeIntFieldCount, edges_) ||
       contact_int_data.size() !=
@@ -923,17 +1016,22 @@ void Harness::validate_staging() const {
     throw std::invalid_argument(
         "field::Harness::upload: staging size mismatch");
   }
-  for (const auto *data : {&particle_data, &group_data, &edge_float_data}) {
-    for (float value : *data) {
-      if (!std::isfinite(value)) {
+  for (const auto *data : {&particle_values_, &group_values_}) {
+    for (std::size_t i = 0; i < data->size(); ++i) {
+      const double value = (*data)[i];
+      if (!std::isfinite(value) ||
+          (profile_.wide() && !NumericalProfile::supported_real(value))) {
         throw std::invalid_argument(
             "field::Harness::upload: non-finite staging");
       }
     }
   }
+  for (float value : edge_float_data)
+    if (!std::isfinite(value))
+      throw std::invalid_argument("nonfinite source share");
   for (int i = 0; i < particles_; ++i) {
-    const float mass = particle_data[offset(kMass, particles_, i)];
-    const float radius = particle_data[offset(kRadius, particles_, i)];
+    const double mass = particle_values_[offset(kMass, particles_, i)];
+    const double radius = particle_values_[offset(kRadius, particles_, i)];
     if (prepared_ &&
         ((prepared_->particle_headers[i].record >= 0) != (mass > 0)))
       throw std::invalid_argument(
@@ -944,7 +1042,7 @@ void Harness::validate_staging() const {
     }
     if (mass == 0.0f) {
       for (int f = 0; f < kParticleFieldCount; ++f) {
-        if (particle_data[offset(f, particles_, i)] != 0.0f) {
+        if (particle_values_[offset(f, particles_, i)] != 0.0f) {
           throw std::invalid_argument(
               "field::Harness::upload: free slot must be zero");
         }
@@ -966,8 +1064,8 @@ void Harness::validate_staging() const {
       throw std::invalid_argument(
           "fixture participation names absent endpoint");
     const float share = edge_float_data[offset(kShare, edges_, e)];
-    if (particle_data[offset(kMass, particles_, p)] == 0.0f || share <= 0.0f ||
-        share > 1.0f) {
+    if (particle_values_[offset(kMass, particles_, p)] == 0.0f ||
+        share <= 0.0f || share > 1.0f) {
       throw std::invalid_argument(
           "field::Harness::upload: invalid participation");
     }
@@ -981,8 +1079,8 @@ void Harness::validate_staging() const {
                               std::to_string(k) +
                               " names a particle out of range");
     }
-    if (a == b || particle_data[offset(kMass, particles_, a)] == 0.0f ||
-        particle_data[offset(kMass, particles_, b)] == 0.0f) {
+    if (a == b || particle_values_[offset(kMass, particles_, a)] == 0.0f ||
+        particle_values_[offset(kMass, particles_, b)] == 0.0f) {
       throw std::invalid_argument(
           "field::Harness::upload: invalid contact endpoints");
     }
@@ -1082,17 +1180,17 @@ void Harness::download() {
   const auto start = Clock::now();
   runtime_->synchronize();
   if (path_ == HostPath::BulkCopy) {
-    engine::readback(*particle_array_, particle_data.data(),
-                     particle_data.size() * sizeof(float));
-    engine::readback(*group_array_, group_data.data(),
-                     group_data.size() * sizeof(float));
+    engine::readback(*particle_array_, particle_values_.data(),
+                     particle_values_.bytes());
+    engine::readback(*group_array_, group_values_.data(),
+                     group_values_.bytes());
     if (particles_ > 0) {
-      engine::readback(*determined_array_, determined_.data(),
-                       determined_.size() * sizeof(float));
+      engine::readback(*determined_array_, determined_values_.data(),
+                       determined_values_.bytes());
     }
-    timings_.download_bytes += (particle_data.size() + group_data.size() +
-                                (particles_ > 0 ? determined_.size() : 0)) *
-                               sizeof(float);
+    timings_.download_bytes +=
+        particle_values_.bytes() + group_values_.bytes() +
+        (particles_ > 0 ? determined_values_.bytes() : 0);
   }
   timings_.report_ms += elapsed(start);
 }
@@ -1121,17 +1219,17 @@ void Harness::launch_clear(bool seed) {
   auto call = clear_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
   }
   if (!ctx.prepared) {
-    bind(ctx, 1, group_array_.get(), group_data,
+    bind(ctx, 1, group_array_.get(), group_values_,
          {kGroupFieldCount, std::max(groups_, 1)});
   }
   engine::argument_int(ctx, 2, particles_);
   engine::argument_int(ctx, 3, groups_);
   if (!ctx.prepared) {
-    bind(ctx, 4, universal_array_.get(), universal_data, {1});
+    bind(ctx, 4, universal_array_.get(), universal_values_, {1});
   }
   engine::argument_int(ctx, 5, seed);
   if (!ctx.prepared) {
@@ -1141,7 +1239,7 @@ void Harness::launch_clear(bool seed) {
   clear_.launch(ctx);
 }
 
-void Harness::launch_force(const Parameters &p) {
+void Harness::launch_force(const Parameters64 &p) {
   auto call = force_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
@@ -1153,11 +1251,11 @@ void Harness::launch_force(const Parameters &p) {
          {kEdgeFloatFieldCount, std::max(edges_, 1)});
   }
   if (!ctx.prepared) {
-    bind(ctx, 2, particle_array_.get(), particle_data,
+    bind(ctx, 2, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
   }
   if (!ctx.prepared) {
-    bind(ctx, 3, group_array_.get(), group_data,
+    bind(ctx, 3, group_array_.get(), group_values_,
          {kGroupFieldCount, std::max(groups_, 1)});
   }
   engine::argument_int(ctx, 4, particles_);
@@ -1176,10 +1274,12 @@ void Harness::launch_force(const Parameters &p) {
   if (!ctx.prepared) {
     ctx.set_arg_ndarray({11}, *activity_->particle_edges);
   }
+  if (profile_.wide() && !ctx.prepared)
+    ctx.set_arg_ndarray({12}, *prepared_->live_ratios_array);
   force_.launch(ctx);
 }
 
-void Harness::launch_contact(const Parameters &p) {
+void Harness::launch_contact(const Parameters64 &p) {
   auto call = contact_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
@@ -1187,7 +1287,7 @@ void Harness::launch_contact(const Parameters &p) {
          {kContactIntFieldCount, std::max(contacts_, 1)});
   }
   if (!ctx.prepared) {
-    bind(ctx, 1, particle_array_.get(), particle_data,
+    bind(ctx, 1, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
   }
   engine::argument_int(ctx, 2, contacts_);
@@ -1214,17 +1314,17 @@ void Harness::launch_contact(const Parameters &p) {
   contact_.launch(ctx);
 }
 
-void Harness::launch_integrate(const Parameters &p) {
+void Harness::launch_integrate(const Parameters64 &p) {
   auto call = integrate_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
   }
   engine::argument_int(ctx, 1, particles_);
   engine::argument_float(ctx, 2, p.dt);
   if (!ctx.prepared) {
-    bind(ctx, 3, universal_array_.get(), universal_data, {1});
+    bind(ctx, 3, universal_array_.get(), universal_values_, {1});
   }
   engine::argument_float(ctx, 4, p.reach_strength);
   if (!ctx.prepared) {
@@ -1256,19 +1356,21 @@ void Harness::launch_determine() {
   auto call = determine_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
   }
   if (!ctx.prepared) {
     bind(ctx, 1, determined_array_.get(),
-         particles_ ? determined_ : empty_determined_,
+         particles_ ? determined_values_ : empty_determined_values_,
          {std::max(particles_, 1)});
   }
   engine::argument_int(ctx, 2, particles_);
+  if (profile_.wide() && !ctx.prepared)
+    ctx.set_arg_ndarray({3}, *activity_->counters);
   determine_.launch(ctx);
 }
 
-void Harness::launch_centroid(const Parameters &, bool seed) {
+void Harness::launch_centroid(const Parameters64 &, bool seed) {
   {
     auto call = centroid_.invocation(bool(prepared_));
     auto &ctx = call.get();
@@ -1281,18 +1383,19 @@ void Harness::launch_centroid(const Parameters &, bool seed) {
            {kEdgeFloatFieldCount, std::max(edges_, 1)});
     }
     if (!ctx.prepared) {
-      bind(ctx, 2, particle_array_.get(), particle_data,
+      bind(ctx, 2, particle_array_.get(), particle_values_,
            {kParticleFieldCount, std::max(particles_, 1)});
     }
     if (!ctx.prepared) {
-      bind(ctx, 3, group_array_.get(), group_data,
+      bind(ctx, 3, group_array_.get(), group_values_,
            {kGroupFieldCount, std::max(groups_, 1)});
     }
     engine::argument_int(ctx, 4, particles_);
     engine::argument_int(ctx, 5, groups_);
     engine::argument_int(ctx, 6, edges_);
     if (!ctx.prepared) {
-      ctx.set_arg_ndarray({7}, *activity_->group_flags);
+      ctx.set_arg_ndarray({7}, profile_.wide() ? *activity_->group_delta
+                                               : *activity_->group_flags);
     }
     if (!ctx.prepared) {
       ctx.set_arg_ndarray({8}, *activity_->counters);
@@ -1304,13 +1407,15 @@ void Harness::launch_centroid(const Parameters &, bool seed) {
     if (!ctx.prepared) {
       ctx.set_arg_ndarray({11}, *activity_->group_edges);
     }
+    if (profile_.wide() && !ctx.prepared)
+      ctx.set_arg_ndarray({12}, *prepared_->live_ratios_array);
     centroid_.launch(ctx);
   }
   {
     auto call = finalize_.invocation(bool(prepared_));
     auto &ctx = call.get();
     if (!ctx.prepared) {
-      bind(ctx, 0, group_array_.get(), group_data,
+      bind(ctx, 0, group_array_.get(), group_values_,
            {kGroupFieldCount, std::max(groups_, 1)});
     }
     engine::argument_int(ctx, 1, groups_);
@@ -1366,27 +1471,33 @@ void Harness::validate_prepared_bindings() const {
   if (!prepared_)
     return;
   const std::array<const void *, 7> addresses{
-      particle_data.data(), group_data.data(),       edge_float_data.data(),
-      edge_int_data.data(), contact_int_data.data(), determined_.data(),
-      universal_data.data()};
+      particle_values_.data(), group_values_.data(),
+      edge_float_data.data(),  edge_int_data.data(),
+      contact_int_data.data(), determined_values_.data(),
+      universal_values_.data()};
   const std::array<std::size_t, 7> sizes{
-      particle_data.size(), group_data.size(),       edge_float_data.size(),
-      edge_int_data.size(), contact_int_data.size(), determined_.size(),
-      universal_data.size()};
+      particle_values_.size(), group_values_.size(),
+      edge_float_data.size(),  edge_int_data.size(),
+      contact_int_data.size(), determined_values_.size(),
+      universal_values_.size()};
+  if (profile_.wide() && (!particle_data.empty() || !group_data.empty() ||
+                          !universal_data.empty()))
+    throw std::logic_error("inactive f32 view modified in trial execution");
   if (addresses != prepared_host_addresses_ || sizes != prepared_host_sizes_)
     throw std::logic_error("prepared host buffers changed identity or shape");
 }
 
 void Harness::prepare_empty_execution() {
   auto &s = *prepared_;
-  prepared_host_addresses_ = {particle_data.data(),    group_data.data(),
-                              edge_float_data.data(),  edge_int_data.data(),
-                              contact_int_data.data(), determined_.data(),
-                              universal_data.data()};
-  prepared_host_sizes_ = {particle_data.size(),    group_data.size(),
+  prepared_host_addresses_ = {
+      particle_values_.data(), group_values_.data(),
+      edge_float_data.data(),  edge_int_data.data(),
+      contact_int_data.data(), determined_values_.data(),
+      universal_values_.data()};
+  prepared_host_sizes_ = {particle_values_.size(), group_values_.size(),
                           edge_float_data.size(),  edge_int_data.size(),
-                          contact_int_data.size(), determined_.size(),
-                          universal_data.size()};
+                          contact_int_data.size(), determined_values_.size(),
+                          universal_values_.size()};
   activity_->provision();
   activity_->index(edge_int_data, contact_int_data);
   if (path_ == HostPath::BulkCopy) {
@@ -1440,8 +1551,8 @@ void Harness::prepare_empty_execution() {
   ready_ = true;
   uploaded_ = true;
   invalidated_ = false;
-  tick({});  // Actual empty dispatch for every numerical family, with stable
-             // bindings.
+  tick_values({});  // Actual empty dispatch for every numerical family, with
+                    // stable bindings.
   inspect_prepared();
   s.completed_ticks = 0;  // Setup warming is not a published model tick.
   if (s.capacity.limits()[Budget::GeometryWork]) {
@@ -1468,7 +1579,7 @@ void Harness::prepare_empty_execution() {
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
       runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
       s.capacity.limits()[Budget::CascadeNodes] != 0,
-      s.capacity.limits()[Budget::CascadeCoverage] != 0);
+      s.capacity.limits()[Budget::CascadeCoverage] != 0, profile_.wide());
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");
@@ -1477,7 +1588,7 @@ void Harness::prepare_empty_execution() {
   s.manifest.push_back({"unused-binding-reserve", reserve - s.binding_bytes, 1,
                         1, reserve - s.binding_bytes});
   if (s.inspection_counts != std::array<std::int64_t, 4>{} ||
-      universal_data[0] != 0)
+      universal_values_[0] != 0)
     throw std::runtime_error("prepared execution did not finish empty");
 }
 
@@ -1504,16 +1615,22 @@ void Harness::inspect_prepared() {
     engine::readback(*activity_->group_flags,
                      s.inspection_state.data() + 2 * std::max(particles_, 1),
                      2 * std::size_t(std::max(groups_, 1)) * sizeof(int));
-    engine::readback(*activity_->particle_delta, s.inspection_motion.data(),
-                     3 * std::size_t(std::max(particles_, 1)) * sizeof(float));
-    engine::readback(*activity_->group_delta,
-                     s.inspection_motion.data() + 3 * std::max(particles_, 1),
-                     6 * std::size_t(std::max(groups_, 1)) * sizeof(float));
-    engine::readback(*activity_->focus, s.inspection_focus.data(),
-                     sizeof(s.inspection_focus));
+    engine::readback(
+        *activity_->particle_delta, s.inspection_motion_values.data(),
+        3 * std::size_t(std::max(particles_, 1)) * profile_.bytes());
+    engine::readback(
+        *activity_->group_delta,
+        s.inspection_motion_values.data_at(3 * std::max(particles_, 1)),
+        6 * std::size_t(std::max(groups_, 1)) * profile_.bytes());
+    engine::readback(*activity_->focus,
+                     profile_.wide()
+                         ? static_cast<void *>(s.inspection_focus64.data())
+                         : s.inspection_focus.data(),
+                     11 * profile_.bytes());
     download();
     if (path_ == HostPath::BulkCopy)
-      engine::readback(*universal_array_, universal_data.data(), sizeof(float));
+      engine::readback(*universal_array_, universal_values_.data(),
+                       profile_.bytes());
     s.inspected_generation = s.generation;
   } catch (...) {
     ready_ = false;
@@ -1521,7 +1638,7 @@ void Harness::inspect_prepared() {
   }
 }
 
-void Harness::initialize_prepared_fixture(const Parameters &p) {
+void Harness::initialize_prepared_fixture(const Parameters64 &p) {
   if (!prepared_ || !ready_ || prepared_->populated)
     throw std::logic_error(
         "fixture initialization requires an empty prepared execution");
@@ -1535,6 +1652,13 @@ void Harness::initialize_prepared_fixture(const Parameters &p) {
   try {
     validate_prepared_bindings();
     validate_staging();
+    if (profile_.wide()) {
+      std::uint64_t visits = 0;
+      if (!s.prepare_ratios(false, s.live.edges, visits))
+        throw std::invalid_argument("invalid trial source accounting");
+      engine::upload(*s.live_ratios_array, s.live_ratios.data(),
+                     s.live_ratios.size() * sizeof(std::uint64_t));
+    }
     exposed_ = s.live.particles;
     std::fill_n(s.validation.data(), groups_, 0);
     for (std::size_t i = 0; i < s.live.edges; ++i)
@@ -1543,10 +1667,10 @@ void Harness::initialize_prepared_fixture(const Parameters &p) {
         std::count(s.validation.begin(), s.validation.begin() + groups_, 1);
     activity_->index(edge_int_data, contact_int_data);
     if (path_ == HostPath::BulkCopy) {
-      engine::upload(*particle_array_, particle_data.data(),
-                     particle_data.size() * sizeof(float));
-      engine::upload(*group_array_, group_data.data(),
-                     group_data.size() * sizeof(float));
+      engine::upload(*particle_array_, particle_values_.data(),
+                     particle_values_.bytes());
+      engine::upload(*group_array_, group_values_.data(),
+                     group_values_.bytes());
       engine::upload(*edge_float_array_, edge_float_data.data(),
                      edge_float_data.size() * sizeof(float));
       engine::upload(*edge_int_array_, edge_int_data.data(),
@@ -1560,6 +1684,9 @@ void Harness::initialize_prepared_fixture(const Parameters &p) {
     launch_determine();
     activity_->clear();
     runtime_->synchronize();
+    if (profile_.wide() &&
+        activity_->report(exposed_, exposed_fields_).numerical_errors)
+      throw std::runtime_error("trial seed numerical invariant failed");
     previous_parameters_ = p;
     invalidated_ = true;
     s.populated = true;
@@ -1571,11 +1698,24 @@ void Harness::initialize_prepared_fixture(const Parameters &p) {
 }
 
 void Harness::tick(const Parameters &p) {
+  require_legacy();
+  tick_values(p);
+}
+void Harness::tick64(const Parameters64 &p) {
+  require_wide();
+  tick_values(p);
+}
+void Harness::tick_values(const Parameters64 &p) {
   if (!ready_) {
     throw std::logic_error(
         "field::Harness: successful publication required before tick");
   }
   validate_parameters(p);
+  if (profile_.wide())
+    for (double x : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength})
+      if (!NumericalProfile::supported_real(x))
+        throw std::invalid_argument(
+            "trial parameter outside supported finite/FTZ domain");
   if (prepared_ &&
       prepared_->completed_ticks == std::numeric_limits<std::uint64_t>::max())
     throw std::overflow_error("completed tick observation counter exhausted");
@@ -1600,6 +1740,8 @@ void Harness::tick(const Parameters &p) {
     activity_->touch(*this, p.gravity);
     runtime_->synchronize();
     demand_ = activity_->report(exposed_, exposed_fields_);
+    if (demand_.numerical_errors)
+      throw std::runtime_error("trial numerical/source invariant failed");
     demand_.frame_anchor = frame_anchor_;
     demand_.tick_ms = std::chrono::duration<double, std::milli>(
                           std::chrono::steady_clock::now() - start)

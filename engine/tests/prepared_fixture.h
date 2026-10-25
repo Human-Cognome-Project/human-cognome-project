@@ -58,9 +58,17 @@ struct PreparedFixtureAccess {
                      h.edge_float_data.size() * sizeof(float));
     h.runtime_->synchronize();
   }
-  static void stage_new(Harness &h,
-                        int command,
-                        const std::array<float, kParticleFieldCount> &row) {
+  static void inject_value64(Harness &h, int field, int row, double value) {
+    h.require_wide();
+    h.inspect_prepared();
+    h.particle64(field, row) = value;
+    if (h.path_ == HostPath::BulkCopy)
+      h.particle_values_.upload(*h.particle_array_);
+    h.runtime_->synchronize();
+  }
+  template <class T>
+  static void stage_new(Harness &h, int command,
+                        const std::array<T, kParticleFieldCount> &row) {
     auto &s = *h.prepared_;
     const auto b =
         std::max(s.capacity.limits()[Budget::Batch], std::uint64_t{1});
@@ -68,12 +76,16 @@ struct PreparedFixtureAccess {
         std::uint64_t(command) >= s.capacity.limits()[Budget::Batch])
       throw std::invalid_argument("fixture start command out of range");
     float speed2 = 0;
+    double speed64 = 0;
     for (int f = 0; f < kParticleFieldCount; ++f) {
-      s.new_rows[f * b + command] = row[f];
-      if (f >= kVelX && f <= kVelZ)
+      s.new_row_values[f * b + command] = row[f];
+      if (f >= kVelX && f <= kVelZ) {
         speed2 += row[f] * row[f];
+        speed64 += double(row[f]) * double(row[f]);
+      }
     }
-    s.new_rows[11 * b + command] = std::sqrt(speed2);
+    s.new_row_values[11 * b + command] =
+        h.profile_.wide() ? std::sqrt(speed64) : std::sqrt(speed2);
   }
   static void inject_failure(Harness &h, int point) {
     h.prepared_->failure_point = point;
@@ -222,7 +234,8 @@ struct PreparedFixtureAccess {
         if (!source.exact_masses.empty())
           s.source_masses[ref.record] = source.exact_masses[i];
         for (int f = 0; f < kParticleFieldCount; ++f)
-          h.particle(f, ref.record) = source.particles[i][f];
+          h.particle_values_[f * std::size_t(h.particle_capacity()) +
+                             ref.record] = source.particles[i][f];
       }
       for (std::size_t i = 0; i < source.kinds.size(); ++i)
         s.field_headers[input.field_rows[i].record] = input.field_rows[i];

@@ -92,6 +92,8 @@ struct ActiveReport {
   std::vector<float> particles, groups, determined;
   field::FrameAnchor frame_anchor;
   field::Demand demand;
+  field::NumericalProfile numerical_profile{};
+  std::vector<double> particles64, groups64, determined64;
 };
 // Owns all native bindings. Destruction drains work, destroys studies/kernels
 // while their Program is alive, then finalizes it. Logical assemblies/pins are

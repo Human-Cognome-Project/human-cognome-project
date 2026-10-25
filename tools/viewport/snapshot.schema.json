@@ -8,6 +8,20 @@
   "properties": {
     "schema": {"const": "hcp-study-snapshot"},
     "version": {"const": 1},
+    "numerics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["profile", "storage_bits", "body_fraction_bits", "field_fraction_bits"],
+      "properties": {
+        "profile": {"enum": ["legacy_f32", "trial_f64"]},
+        "storage_bits": {"enum": [32, 64]},
+        "body_fraction_bits": {"type": "integer", "minimum": 0, "maximum": 52},
+        "field_fraction_bits": {"type": "integer", "minimum": 0, "maximum": 52}
+      },
+      "oneOf": [
+        {"properties": {"profile": {"const": "legacy_f32"}, "storage_bits": {"const": 32}, "body_fraction_bits": {"const": 23}, "field_fraction_bits": {"const": 23}}},
+        {"properties": {"profile": {"const": "trial_f64"}, "storage_bits": {"const": 64}}}
+      ]
+    },
     "capture": {
       "type": "object", "additionalProperties": false,
       "required": ["session", "study", "generation", "tick", "phase", "label"],

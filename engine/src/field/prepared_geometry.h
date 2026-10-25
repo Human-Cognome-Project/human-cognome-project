@@ -19,6 +19,7 @@ enum class GeometryStatus {
 enum class GeometryFocus { Empty, MissingSelection, Valid, Invalid };
 enum GeometryPairFlags { ExplicitContact = 1, DerivedContact = 2 };
 struct GeometryResult {
+  NumericalProfile numerical_profile{};
   GeometryStatus status{GeometryStatus::Unready};
   BudgetFailure failure{};
   // Query tokens describe observations only; they never schedule calculation.
@@ -28,8 +29,8 @@ struct GeometryResult {
       source_order_tests{}, union_order_tests{}, required_work{},
       readback_bytes{}, synchronizations{};
   GeometryFocus focus{GeometryFocus::Empty};
-  std::array<float, 3> focal_point{};
-  float focal_mass{};
+  std::array<double, 3> focal_point{};
+  double focal_mass{};
   std::array<double, 3> frame_anchor{};
 };
 // Explicit inspection copies of candidate metadata only. Numerical payload

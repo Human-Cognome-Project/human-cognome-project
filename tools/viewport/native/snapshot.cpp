@@ -74,8 +74,18 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
   const auto &p = r.prepared;
   need(p.capacity >= 0 && !p.scales.empty(), "viewport: invalid prepared shape");
   const auto N = std::size_t(p.capacity), G = p.groups.size();
-  need(r.particles.size() == std::size_t(field::kParticleFieldCount) * std::max(N, std::size_t(1)) &&
-           r.groups.size() == std::size_t(field::kGroupFieldCount) * std::max(G, std::size_t(1)),
+  r.numerical_profile.validate();
+  const bool wide = r.numerical_profile.wide();
+  need(wide ? (r.particles.empty() && r.groups.empty() && r.determined.empty())
+            : (r.particles64.empty() && r.groups64.empty() &&
+               r.determined64.empty()),
+       "viewport: mixed numeric report containers");
+  need((wide ? r.particles64.size() : r.particles.size()) ==
+               std::size_t(field::kParticleFieldCount) *
+                   std::max(N, std::size_t(1)) &&
+           (wide ? r.groups64.size() : r.groups.size()) ==
+               std::size_t(field::kGroupFieldCount) *
+                   std::max(G, std::size_t(1)),
        "viewport: report scalar shape mismatch");
   Json scales = Json::array();
   std::vector<int> levels;
@@ -116,7 +126,10 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
              ids.insert(o.id).second && origins.count(o.id) && c.occurrences.count(o.id) &&
              o.study_node >= 0 && std::size_t(o.study_node) < levels.size(),
          "viewport: invalid exposed occurrence mapping");
-    const auto scalar = [&](int f) { return number(r.particles.at(std::size_t(f) * N + o.slot)); };
+    const auto scalar = [&](int f) {
+      const auto i = std::size_t(f) * N + o.slot;
+      return number(wide ? r.particles64.at(i) : r.particles.at(i));
+    };
     const auto mass = scalar(field::kMass), radius = scalar(field::kRadius);
     need(mass > 0 && radius >= 0 && v.exact_mass > 0,
          "viewport: invalid particle mass/extent");
@@ -137,7 +150,10 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
   for (const int g : p.focal_groups) {
     need(g >= 0 && std::size_t(g) < G && focus_slots.insert(g).second,
          "viewport: invalid focal field");
-    const auto value = [&](int f) { return number(r.groups.at(std::size_t(f) * G + g)); };
+    const auto value = [&](int f) {
+      const auto i = std::size_t(f) * G + g;
+      return number(wide ? r.groups64.at(i) : r.groups.at(i));
+    };
     const auto mass = value(field::kCenM);
     need(mass > 0, "viewport: invalid focal mass");
     const std::array<double, 3> centre{value(field::kCenX), value(field::kCenY), value(field::kCenZ)};
@@ -152,15 +168,34 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
   }
   if (p.focal_groups.empty())
     for (int axis = 0; axis < 3; ++axis) target[axis] = -number(r.frame_anchor[axis]);
-  return {{"schema", "hcp-study-snapshot"}, {"version", 1},
-    {"capture", {{"session", r.handle.session.str()}, {"study", r.handle.study.str()},
-      {"generation", r.handle.generation.str()}, {"tick", std::to_string(c.tick)},
-      {"phase", c.tick == 0 ? "published_seeded" : "post_tick"}, {"label", c.label}}},
-    {"frame", {{"coordinates", "reference_local"}, {"units", "operative_model_units"},
-      {"reference", point(r.frame_anchor[0], r.frame_anchor[1], r.frame_anchor[2])},
-      {"camera_target", point(target[0], target[1], target[2])},
-      {"target_kind", p.focal_groups.empty() ? "legacy_origin" : "captured_focal_centroid"},
-      {"focal_fields", focal}}}, {"bindings", scales}, {"particles", particles}, {"source", c.source}};
+  return {{"schema", "hcp-study-snapshot"},
+          {"version", 1},
+          {"numerics",
+           {{"profile", wide ? "trial_f64" : "legacy_f32"},
+            {"storage_bits", wide ? 64 : 32},
+            {"body_fraction_bits",
+             wide ? r.numerical_profile.body_fraction_bits : 23},
+            {"field_fraction_bits",
+             wide ? r.numerical_profile.field_fraction_bits : 23}}},
+          {"capture",
+           {{"session", r.handle.session.str()},
+            {"study", r.handle.study.str()},
+            {"generation", r.handle.generation.str()},
+            {"tick", std::to_string(c.tick)},
+            {"phase", c.tick == 0 ? "published_seeded" : "post_tick"},
+            {"label", c.label}}},
+          {"frame",
+           {{"coordinates", "reference_local"},
+            {"units", "operative_model_units"},
+            {"reference",
+             point(r.frame_anchor[0], r.frame_anchor[1], r.frame_anchor[2])},
+            {"camera_target", point(target[0], target[1], target[2])},
+            {"target_kind", p.focal_groups.empty() ? "legacy_origin"
+                                                   : "captured_focal_centroid"},
+            {"focal_fields", focal}}},
+          {"bindings", scales},
+          {"particles", particles},
+          {"source", c.source}};
 }
 Json capture(assembly::ActiveSession &session, const warm::Uuid &owner, const CaptureContext &c) {
   return snapshot(session.report(c.handle, owner), c);

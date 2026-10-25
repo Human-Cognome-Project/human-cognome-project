@@ -160,6 +160,8 @@ foreach(mode padded direct large large-direct maximum maximum-direct large-maxim
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
 endforeach()
 add_executable(weighted_cascade_test tests/weighted_cascade_test.cpp)
+add_executable(numerical_profile_test tests/numerical_profile_test.cpp)
+target_link_libraries(numerical_profile_test PRIVATE study_assembly)
 target_link_libraries(weighted_cascade_test PRIVATE study_assembly)
 foreach(mode padded direct large large-direct maximum maximum-direct large-maximum large-maximum-direct)
   set(weighted_cascade_args)
@@ -174,6 +176,9 @@ foreach(mode padded direct large large-direct maximum maximum-direct large-maxim
   endif()
   add_test(NAME weighted_cascade_${mode} COMMAND weighted_cascade_test ${weighted_cascade_args})
   set_tests_properties(weighted_cascade_${mode} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+  add_test(NAME numerical_profile_${mode} COMMAND numerical_profile_test ${weighted_cascade_args})
+  set_tests_properties(numerical_profile_${mode} PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
 endforeach()
 add_executable(prepared_capacity_test tests/prepared_capacity_test.cpp)
