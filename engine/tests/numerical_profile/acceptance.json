@@ -1,0 +1,7055 @@
+{
+  "status": "C1 single-level live trial numerical profile implementation for review; later live hierarchy and #156 operation exit remain open",
+  "date": "2026-10-25",
+  "source_pin": "61c3dd636deac7c422e51461d38144934991f229",
+  "baseline_merge": "d21a4b5d0dfa7d9b7074a5bf5707382576d163f6",
+  "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad",
+  "compiler": "Clang/LLVM 15.0.6",
+  "build": {
+    "type": "Release",
+    "cxx_release_flags": "-O3 -DNDEBUG",
+    "cuda": false,
+    "viewport": true,
+    "warm_integration": true,
+    "physics_math": "Strict",
+    "native_workers_per_profile": 2,
+    "ctest_concurrency": 2
+  },
+  "accounting_cases": [
+    {
+      "count": "1",
+      "denominator": "3"
+    },
+    {
+      "count": "9007199254740991",
+      "denominator": "9007199254740992"
+    },
+    {
+      "count": "9007199254740990",
+      "denominator": "9007199254740992"
+    },
+    {
+      "count": "18446744073709551614",
+      "denominator": "18446744073709551615",
+      "additional_count_rejected": "2"
+    }
+  ],
+  "backend": "x86_64 CPU-only matched native build; two workers per numerical mode, CTest -j2; actual CPU checked",
+  "checks": {
+    "full_cpu_suites": 82,
+    "elapsed_seconds": 524.92,
+    "new_profile_modes": 8,
+    "cycles_per_mode": 32,
+    "additional_profiles": "full b52, Q32 both signs, body52/field4, persistent sub-grid Q4/Q0; independent long-double force/integration and exact-count field references",
+    "viewport_model_tests": 14,
+    "viewport_build": "passed",
+    "normal_tick_report_readback_bytes": 224,
+    "cpp_new_observation": "zero in guarded first/ordinary tick, query, rebind, commit and inspect boundaries; no driver/malloc claim"
+  },
+  "limits": [
+    "One selected f64 numerical authority, no f32 shadow. Default legacy f32 retains its existing arithmetic; report structures have explicit type extensions.",
+    "Existing independent live source fields only. No live child-parent hierarchy, inherited response, overlap matcher or required full per-tick candidate solve.",
+    "Exact counts/D required for every participating trial row; checked per-field/occurrence coverage. Raw u64 converted natively to f64 before division; structural denominator is not physical mass.",
+    "Native source descriptor holds E counts, E denominators and G has-other-occurrence flags; four host/native committed/prospective copies. Flags are structural eligibility, not scheduling state.",
+    "Q_b is experimental toward-zero bit clearing at body/field publication, not production rounding or a per-LoD ladder. Physical velocity/history survives; positional tails are discarded.",
+    "Sub-grid attempts remain active provisionally. 32 attempts and zero publications are positional quiescence, not complete computational settling; one initial stationary evaluation yields 33 total body evaluations.",
+    "Finite normal-or-zero domain guards reject detected invalid results. Fork FTZ is unchanged; already-flushed underflow cannot be distinguished from exact zero. No full gradual-underflow qualification.",
+    "Linked C++ new/new[] and known native counters exclude arbitrary direct malloc, physical residency/faults and driver internals. Host vectors are ordinary unpinned memory.",
+    "Manifest payload excludes fixed object/vector metadata, caller inputs, compiler/runtime storage and pool alignment; fixed object sizes and inactive small focal objects are separately documented.",
+    "Typed report/capture value support does not convert the legacy ActiveSession/FixedStudy owner lifecycle. WebGL output is not authoritative engine precision.",
+    "No database writes or GPU acceptance. Production placement, moving-contact transaction, rebase and integrated #156 CPU exit remain outstanding. #172/#177/#156/#145 stay open."
+  ],
+  "profiles": [
+    {
+      "name": "numerical_profile_direct",
+      "path": "direct",
+      "mode": "holes/motion",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 1048576,
+        "particles": 70,
+        "fields": 9,
+        "participation": 280,
+        "contacts": 140,
+        "references": 1135,
+        "focus": 9,
+        "batch": 32,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 280,
+        "cascade_coverage": 210,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 202296
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4626757.295,
+        "geometry_us": 132.326,
+        "mean_tick_us": 299.7484687500001,
+        "mean_commit_us": 66.3974375,
+        "mean_query_inspect_us": 70.26828125,
+        "mean_physical_inspect_us": 35.22428125000001,
+        "S": 202296,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 24432,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 4552,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 41547606,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1074859828,
+        "aligned_host_cursor": 41619252,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.375307083129883
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 41547606,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1074859828,
+        "aligned_host_cursor": 41619252,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.375307083129883
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "source-masses",
+          "count": 70,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "source-counts",
+          "count": 280,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 4864
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1104
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 6144
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 2112
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 420,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 569,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 18208
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 840,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 560,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 8960
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 210,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 8400
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 210,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 6160,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 6160,
+          "native_bytes": 0
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 576,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 576,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 1120,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 2240,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 2240,
+          "native_bytes": 0
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 1120,
+          "native_bytes": 0
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 560,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 560,
+          "native_bytes": 0
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 1680,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1680
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 432,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 432
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 36,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 36
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 8,
+          "native_bytes": 0
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 11784,
+        "native_bytes": 8140
+      },
+      "watch_points": [
+        {
+          "bits": 4,
+          "cycles": 32,
+          "attempts": 32,
+          "published_changes": 0,
+          "active_work": 33,
+          "centroid_edges": 0,
+          "elapsed_us": 10968.089,
+          "positional_quiescence_only": 1
+        },
+        {
+          "bits": 0,
+          "cycles": 32,
+          "attempts": 32,
+          "published_changes": 0,
+          "active_work": 33,
+          "centroid_edges": 0,
+          "elapsed_us": 9703.333,
+          "positional_quiescence_only": 1
+        }
+      ],
+      "typed_candidate": [
+        {
+          "status": 0,
+          "x": 1.0000000000009095,
+          "mass": 0.3333333333333333,
+          "expected_x": 1.0000000000009095,
+          "expected_mass": 0.3333333333333333
+        }
+      ]
+    },
+    {
+      "name": "numerical_profile_padded",
+      "path": "bulk",
+      "mode": "holes/motion",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 1048576,
+        "particles": 70,
+        "fields": 9,
+        "participation": 280,
+        "contacts": 140,
+        "references": 1135,
+        "focus": 9,
+        "batch": 32,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 280,
+        "cascade_coverage": 210,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 202296
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4473978.895,
+        "geometry_us": 124.745,
+        "mean_tick_us": 282.81659375000004,
+        "mean_commit_us": 75.15415625,
+        "mean_query_inspect_us": 74.97293750000001,
+        "mean_physical_inspect_us": 36.91928125,
+        "S": 202296,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 28912,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 4552,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 41559390,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1074871612,
+        "aligned_host_cursor": 41631036,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.2438364028930664
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 41559390,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1074871612,
+        "aligned_host_cursor": 41631036,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.2438364028930664
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "source-masses",
+          "count": 70,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "source-counts",
+          "count": 280,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 4864
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1104
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 6144
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 2112
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 420,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 569,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 18208
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 840,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 560,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 8960
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 210,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 8400
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 210,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 6160,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 6160,
+          "native_bytes": 6160
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 576,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 576,
+          "native_bytes": 576
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 1120,
+          "native_bytes": 1120
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 2240,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 2240,
+          "native_bytes": 2240
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 1120,
+          "native_bytes": 1120
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 560,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 560,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 1680,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1680
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 432,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 432
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 36,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 36
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 8,
+          "native_bytes": 8
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 11784,
+        "native_bytes": 19924
+      },
+      "watch_points": [
+        {
+          "bits": 4,
+          "cycles": 32,
+          "attempts": 32,
+          "published_changes": 0,
+          "active_work": 33,
+          "centroid_edges": 0,
+          "elapsed_us": 9481.042,
+          "positional_quiescence_only": 1
+        },
+        {
+          "bits": 0,
+          "cycles": 32,
+          "attempts": 32,
+          "published_changes": 0,
+          "active_work": 33,
+          "centroid_edges": 0,
+          "elapsed_us": 8559.8,
+          "positional_quiescence_only": 1
+        }
+      ],
+      "typed_candidate": [
+        {
+          "status": 0,
+          "x": 1.0000000000009095,
+          "mass": 0.3333333333333333,
+          "expected_x": 1.0000000000009095,
+          "expected_mass": 0.3333333333333333
+        }
+      ]
+    },
+    {
+      "name": "numerical_profile_large",
+      "path": "bulk",
+      "mode": "holes/motion",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 16777216,
+        "particles": 4096,
+        "fields": 257,
+        "participation": 16384,
+        "contacts": 8192,
+        "references": 65799,
+        "focus": 257,
+        "batch": 256,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 16384,
+        "cascade_coverage": 12288,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 9601656
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4385182.755,
+        "geometry_us": 178.905,
+        "mean_tick_us": 192.29393750000003,
+        "mean_commit_us": 160.11618750000002,
+        "mean_query_inspect_us": 29.962125,
+        "mean_physical_inspect_us": 95.31662499999997,
+        "S": 9601656,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 1525800,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 264200,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 60601830,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1093914052,
+        "aligned_host_cursor": 60673476,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.184769868850708
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 60601830,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1093914052,
+        "aligned_host_cursor": 60673476,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.184769868850708
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "source-masses",
+          "count": 4096,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "source-counts",
+          "count": 16384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 38912
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 28880
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 49152
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 110640
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 24576,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 33025,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 1056800
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 49152,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 32768,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 524288
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 12288,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 491520
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 12288,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 360448,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 360448,
+          "native_bytes": 360448
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 16448,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 16448,
+          "native_bytes": 16448
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 65536,
+          "native_bytes": 65536
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 131072,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 131072,
+          "native_bytes": 131072
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 65536,
+          "native_bytes": 65536
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 32768,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 32768,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 98304,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 98304
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 12336,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 12336
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 1028,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1028
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 8,
+          "native_bytes": 8
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 671816,
+        "native_bytes": 1115524
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    },
+    {
+      "name": "numerical_profile_large-direct",
+      "path": "direct",
+      "mode": "holes/motion",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 16777216,
+        "particles": 4096,
+        "fields": 257,
+        "participation": 16384,
+        "contacts": 8192,
+        "references": 65799,
+        "focus": 257,
+        "batch": 256,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 16384,
+        "cascade_coverage": 12288,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 9601656
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4567690.464,
+        "geometry_us": 165.034,
+        "mean_tick_us": 223.12334375000003,
+        "mean_commit_us": 189.51165624999996,
+        "mean_query_inspect_us": 44.19590624999999,
+        "mean_physical_inspect_us": 90.36896875000002,
+        "S": 9601656,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 1263656,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 264200,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 59930014,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1093242236,
+        "aligned_host_cursor": 60001660,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.3198623657226562
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 59930014,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1093242236,
+        "aligned_host_cursor": 60001660,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.3198623657226562
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "source-masses",
+          "count": 4096,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "source-counts",
+          "count": 16384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 38912
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 28880
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 49152
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 110640
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 24576,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 33025,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 1056800
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 49152,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 32768,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 524288
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 12288,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 491520
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 12288,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 360448,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 360448,
+          "native_bytes": 0
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 16448,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 16448,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 65536,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 131072,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 131072,
+          "native_bytes": 0
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 65536,
+          "native_bytes": 0
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 32768,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 32768,
+          "native_bytes": 0
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 98304,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 98304
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 12336,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 12336
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 1028,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1028
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 8,
+          "native_bytes": 0
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 671816,
+        "native_bytes": 443708
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    },
+    {
+      "name": "numerical_profile_maximum",
+      "path": "bulk",
+      "mode": "maximum",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 1048576,
+        "particles": 70,
+        "fields": 9,
+        "participation": 280,
+        "contacts": 140,
+        "references": 1135,
+        "focus": 9,
+        "batch": 32,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 280,
+        "cascade_coverage": 210,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 202296
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4414411.379,
+        "geometry_us": 138.605,
+        "mean_tick_us": 279.95596874999995,
+        "mean_commit_us": 81.50824999999998,
+        "mean_query_inspect_us": 65.84065625,
+        "mean_physical_inspect_us": 34.382781249999994,
+        "S": 202296,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 28912,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 4552,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 41559390,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1074871612,
+        "aligned_host_cursor": 41631036,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.2357163429260254
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 41559390,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1074871612,
+        "aligned_host_cursor": 41631036,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.2357163429260254
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "source-masses",
+          "count": 70,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "source-counts",
+          "count": 280,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 4864
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1104
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 6144
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 2112
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 420,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 569,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 18208
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 840,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 560,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 8960
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 210,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 8400
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 210,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 6160,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 6160,
+          "native_bytes": 6160
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 576,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 576,
+          "native_bytes": 576
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 1120,
+          "native_bytes": 1120
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 2240,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 2240,
+          "native_bytes": 2240
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 1120,
+          "native_bytes": 1120
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 560,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 560,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 1680,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1680
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 432,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 432
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 36,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 36
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 8,
+          "native_bytes": 8
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 11784,
+        "native_bytes": 19924
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    },
+    {
+      "name": "numerical_profile_maximum-direct",
+      "path": "direct",
+      "mode": "maximum",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 1048576,
+        "particles": 70,
+        "fields": 9,
+        "participation": 280,
+        "contacts": 140,
+        "references": 1135,
+        "focus": 9,
+        "batch": 32,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 280,
+        "cascade_coverage": 210,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 202296
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4366264.696,
+        "geometry_us": 183.422,
+        "mean_tick_us": 371.536375,
+        "mean_commit_us": 106.337125,
+        "mean_query_inspect_us": 92.14903124999998,
+        "mean_physical_inspect_us": 49.08678125000002,
+        "S": 202296,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 24432,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 4552,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 41547606,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1074859828,
+        "aligned_host_cursor": 41619252,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.1966512203216553
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 83,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 41547606,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1074859828,
+        "aligned_host_cursor": 41619252,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.1966512203216553
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 70,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 3360
+        },
+        {
+          "name": "source-masses",
+          "count": 70,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "field-headers",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 432
+        },
+        {
+          "name": "participation-headers",
+          "count": 280,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 35840
+        },
+        {
+          "name": "source-counts",
+          "count": 280,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "contact-headers",
+          "count": 140,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 17920
+        },
+        {
+          "name": "focal-references",
+          "count": 9,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 216
+        },
+        {
+          "name": "batch-commands",
+          "count": 32,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 4864
+        },
+        {
+          "name": "batch-results",
+          "count": 32,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 1536
+        },
+        {
+          "name": "retired-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "resolved-references",
+          "count": 32,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 768
+        },
+        {
+          "name": "prospective-csr",
+          "count": 1278,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 5112
+        },
+        {
+          "name": "csr-counts",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "csr-cursors",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 280
+        },
+        {
+          "name": "validation",
+          "count": 569,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4552
+        },
+        {
+          "name": "derived-results",
+          "count": 138,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1104
+        },
+        {
+          "name": "candidate-edges",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 4480
+        },
+        {
+          "name": "candidate-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 18,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 72
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1120
+        },
+        {
+          "name": "destination-records",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 96,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 384
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 6144
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 264,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 2112
+        },
+        {
+          "name": "inspection-state",
+          "count": 158,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 79,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 632
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 420,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 9,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 72
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 323,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 10336
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 70,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 560,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 1120
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 140,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 560
+        },
+        {
+          "name": "geometry-orders",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 569,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 18208
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 840,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 280,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6720
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 280,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2240
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 560,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 8960
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 210,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 8400
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 210,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 1680
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 6160,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 6160,
+          "native_bytes": 0
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 576,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 576,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 1120,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 2240,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 2240,
+          "native_bytes": 0
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 1120,
+          "native_bytes": 0
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 560,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 560,
+          "native_bytes": 0
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 70,
+          "element_bytes": 8,
+          "bytes": 1680,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1680
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 9,
+          "element_bytes": 8,
+          "bytes": 432,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 432
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 72,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 72
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 70,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 280,
+          "element_bytes": 4,
+          "bytes": 1120,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1120
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 140,
+          "element_bytes": 4,
+          "bytes": 560,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 560
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 9,
+          "element_bytes": 4,
+          "bytes": 36,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 36
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 8,
+          "native_bytes": 0
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 11784,
+        "native_bytes": 8140
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    },
+    {
+      "name": "numerical_profile_large-maximum",
+      "path": "bulk",
+      "mode": "maximum",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 16777216,
+        "particles": 4096,
+        "fields": 257,
+        "participation": 16384,
+        "contacts": 8192,
+        "references": 65799,
+        "focus": 257,
+        "batch": 256,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 16384,
+        "cascade_coverage": 12288,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 9601656
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4573004.779,
+        "geometry_us": 48438.183,
+        "mean_tick_us": 472.64537500000006,
+        "mean_commit_us": 7463.88303125,
+        "mean_query_inspect_us": 330.32431249999996,
+        "mean_physical_inspect_us": 163.38906250000002,
+        "S": 9601656,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 1525800,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 264200,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 60601830,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1093914052,
+        "aligned_host_cursor": 60673476,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.3136515617370605
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 146,
+        "pool_requested_bytes": 60601830,
+        "pool_raw_allocation_calls": 71,
+        "pool_reserved_bytes": 1093914052,
+        "aligned_host_cursor": 60673476,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.3136515617370605
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "source-masses",
+          "count": 4096,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "source-counts",
+          "count": 16384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 38912
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 28880
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 49152
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 110640
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 24576,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 33025,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 1056800
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 49152,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 32768,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 524288
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 12288,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 491520
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 12288,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 360448,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 360448,
+          "native_bytes": 360448
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 16448,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 16448,
+          "native_bytes": 16448
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 65536,
+          "native_bytes": 65536
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 131072,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 131072,
+          "native_bytes": 131072
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 65536,
+          "native_bytes": 65536
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 32768,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 32768,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 98304,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 98304
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 12336,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 12336
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 1028,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1028
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 1,
+          "host_bytes": 8,
+          "native_bytes": 8
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 671816,
+        "native_bytes": 1115524
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    },
+    {
+      "name": "numerical_profile_large-maximum-direct",
+      "path": "direct",
+      "mode": "maximum",
+      "numerical_profile": {
+        "kind": "trial_f64",
+        "body_fraction_bits": 48,
+        "field_fraction_bits": 48
+      },
+      "limits": {
+        "potential": 16777216,
+        "particles": 4096,
+        "fields": 257,
+        "participation": 16384,
+        "contacts": 8192,
+        "references": 65799,
+        "focus": 257,
+        "batch": 256,
+        "cascade_nodes": 3,
+        "cascade_links": 2,
+        "cascade_references": 16384,
+        "cascade_coverage": 12288,
+        "cascade_levels": 2,
+        "cascade_work": 1099511627776,
+        "geometry_work": 1099511627776,
+        "scratch_bytes": 9601656
+      },
+      "widths": {
+        "Demand": 328,
+        "GeometryResult": 240,
+        "Harness": 1544,
+        "PreparedStorage": 2104,
+        "RealBuffer": 56
+      },
+      "measured": {
+        "setup_us": 4596939.665,
+        "geometry_us": 48632.301,
+        "mean_tick_us": 597.6584375000001,
+        "mean_commit_us": 7685.022656249999,
+        "mean_query_inspect_us": 239.22834375000002,
+        "mean_physical_inspect_us": 75.11284374999998,
+        "S": 9601656,
+        "bindings": 11520,
+        "mean_commit_upload_bytes": 1263656,
+        "mean_commit_readback_bytes": 8,
+        "source_ratio_bytes": 264200,
+        "cpp_new": 0
+      },
+      "before": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 59930014,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1093242236,
+        "aligned_host_cursor": 60001660,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.314995050430298
+      },
+      "after": {
+        "native_requested_bytes": 39345426,
+        "known_list_chunk_bytes": 39223296,
+        "known_allocator_elements": 4490,
+        "pool_allocation_calls": 139,
+        "pool_requested_bytes": 59930014,
+        "pool_raw_allocation_calls": 64,
+        "pool_reserved_bytes": 1093242236,
+        "aligned_host_cursor": 60001660,
+        "tree_count": 3,
+        "issued_snode_ids": 23,
+        "compilation_seconds": 3.314995050430298
+      },
+      "manifest": [
+        {
+          "name": "particle-headers",
+          "count": 4096,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 196608
+        },
+        {
+          "name": "source-masses",
+          "count": 4096,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "field-headers",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 2,
+          "bytes": 12336
+        },
+        {
+          "name": "participation-headers",
+          "count": 16384,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 2097152
+        },
+        {
+          "name": "source-counts",
+          "count": 16384,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "contact-headers",
+          "count": 8192,
+          "element_bytes": 64,
+          "copies": 2,
+          "bytes": 1048576
+        },
+        {
+          "name": "focal-references",
+          "count": 257,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6168
+        },
+        {
+          "name": "batch-commands",
+          "count": 256,
+          "element_bytes": 152,
+          "copies": 1,
+          "bytes": 38912
+        },
+        {
+          "name": "batch-results",
+          "count": 256,
+          "element_bytes": 48,
+          "copies": 1,
+          "bytes": 12288
+        },
+        {
+          "name": "retired-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "resolved-references",
+          "count": 256,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 6144
+        },
+        {
+          "name": "prospective-csr",
+          "count": 74242,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 296968
+        },
+        {
+          "name": "csr-counts",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "csr-cursors",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16384
+        },
+        {
+          "name": "validation",
+          "count": 33025,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 264200
+        },
+        {
+          "name": "derived-results",
+          "count": 3610,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 28880
+        },
+        {
+          "name": "candidate-edges",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 262144
+        },
+        {
+          "name": "candidate-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "candidate-group-offsets",
+          "count": 514,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 2056
+        },
+        {
+          "name": "candidate-group-order",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 65536
+        },
+        {
+          "name": "destination-records",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "native-claim-inputs",
+          "count": 768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 3072
+        },
+        {
+          "name": "new-fixture-rows",
+          "count": 3072,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 49152
+        },
+        {
+          "name": "candidate-status",
+          "count": 1,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 8
+        },
+        {
+          "name": "inspection-motion",
+          "count": 13830,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 110640
+        },
+        {
+          "name": "inspection-state",
+          "count": 8706,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-focus",
+          "count": 11,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 88
+        },
+        {
+          "name": "inspection-flags",
+          "count": 4353,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 34824
+        },
+        {
+          "name": "inspection-counts",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "activity-reset-zeros",
+          "count": 24576,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "selected-focus-host",
+          "count": 257,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 2056
+        },
+        {
+          "name": "map-batch-buffers",
+          "count": 2563,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 82016
+        },
+        {
+          "name": "map-single-command-buffers",
+          "count": 10,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 160
+        },
+        {
+          "name": "geometry-occupied-rows",
+          "count": 4096,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-temporary-pairs",
+          "count": 32768,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pairs",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-pair-flags",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-source-order",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-group-end",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-source-map",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 65536
+        },
+        {
+          "name": "geometry-permutation",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-offsets",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-cursors",
+          "count": 8192,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 32768
+        },
+        {
+          "name": "geometry-orders",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "geometry-counters",
+          "count": 16,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 256
+        },
+        {
+          "name": "geometry-focus",
+          "count": 4,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 64
+        },
+        {
+          "name": "live-source-ratios-and-cohort-flags",
+          "count": 33025,
+          "element_bytes": 8,
+          "copies": 4,
+          "bytes": 1056800
+        },
+        {
+          "name": "cascade-node-headers",
+          "count": 3,
+          "element_bytes": 88,
+          "copies": 1,
+          "bytes": 264
+        },
+        {
+          "name": "cascade-cohort-handles",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-node-controls",
+          "count": 24,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 192
+        },
+        {
+          "name": "cascade-reference-controls",
+          "count": 49152,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-children",
+          "count": 2,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 16
+        },
+        {
+          "name": "cascade-order",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-fraction-masks",
+          "count": 3,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 48
+        },
+        {
+          "name": "cascade-parent-rank",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-level-offset-cursor",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-values",
+          "count": 21,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 336
+        },
+        {
+          "name": "cascade-valid",
+          "count": 3,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 24
+        },
+        {
+          "name": "cascade-counters",
+          "count": 8,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 128
+        },
+        {
+          "name": "cascade-root-summary",
+          "count": 7,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 112
+        },
+        {
+          "name": "cascade-source-rows",
+          "count": 16384,
+          "element_bytes": 24,
+          "copies": 1,
+          "bytes": 393216
+        },
+        {
+          "name": "cascade-source-shares",
+          "count": 16384,
+          "element_bytes": 4,
+          "copies": 2,
+          "bytes": 131072
+        },
+        {
+          "name": "cascade-source-ratios",
+          "count": 32768,
+          "element_bytes": 8,
+          "copies": 2,
+          "bytes": 524288
+        },
+        {
+          "name": "cascade-coverage",
+          "count": 12288,
+          "element_bytes": 40,
+          "copies": 1,
+          "bytes": 491520
+        },
+        {
+          "name": "cascade-coverage-work",
+          "count": 12288,
+          "element_bytes": 8,
+          "copies": 1,
+          "bytes": 98304
+        },
+        {
+          "name": "cascade-coverage-offsets",
+          "count": 4,
+          "element_bytes": 4,
+          "copies": 1,
+          "bytes": 16
+        },
+        {
+          "name": "prepared-binding-payload",
+          "count": 11520,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 11520
+        },
+        {
+          "name": "unused-binding-reserve",
+          "count": 2112,
+          "element_bytes": 1,
+          "copies": 1,
+          "bytes": 2112
+        }
+      ],
+      "numerical_shapes": [
+        {
+          "name": "particles",
+          "rows": 11,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 360448,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 360448,
+          "native_bytes": 0
+        },
+        {
+          "name": "groups",
+          "rows": 8,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 16448,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 16448,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-floats",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 65536,
+          "native_bytes": 0
+        },
+        {
+          "name": "edge-integers",
+          "rows": 2,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 131072,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 131072,
+          "native_bytes": 0
+        },
+        {
+          "name": "contacts",
+          "rows": 2,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 65536,
+          "native_bytes": 0
+        },
+        {
+          "name": "determiners",
+          "rows": 1,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 32768,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 32768,
+          "native_bytes": 0
+        },
+        {
+          "name": "particle-flags",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-delta",
+          "rows": 3,
+          "stride": 4096,
+          "element_bytes": 8,
+          "bytes": 98304,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 98304
+        },
+        {
+          "name": "group-flags",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "group-delta",
+          "rows": 6,
+          "stride": 257,
+          "element_bytes": 8,
+          "bytes": 12336,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 12336
+        },
+        {
+          "name": "particle-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "group-offsets",
+          "rows": 2,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 2056,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 2056
+        },
+        {
+          "name": "contact-a-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-offsets",
+          "rows": 2,
+          "stride": 4096,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "particle-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "group-edge-order",
+          "rows": 1,
+          "stride": 16384,
+          "element_bytes": 4,
+          "bytes": 65536,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 65536
+        },
+        {
+          "name": "contact-a-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "contact-b-order",
+          "rows": 1,
+          "stride": 8192,
+          "element_bytes": 4,
+          "bytes": 32768,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 32768
+        },
+        {
+          "name": "focus",
+          "rows": 11,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 88,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 88
+        },
+        {
+          "name": "selected-focus",
+          "rows": 1,
+          "stride": 257,
+          "element_bytes": 4,
+          "bytes": 1028,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 1028
+        },
+        {
+          "name": "counters",
+          "rows": 1,
+          "stride": 20,
+          "element_bytes": 8,
+          "bytes": 160,
+          "host_copies": 0,
+          "native_copies": 1,
+          "host_bytes": 0,
+          "native_bytes": 160
+        },
+        {
+          "name": "universal-mass",
+          "rows": 1,
+          "stride": 1,
+          "element_bytes": 8,
+          "bytes": 8,
+          "host_copies": 1,
+          "native_copies": 0,
+          "host_bytes": 8,
+          "native_bytes": 0
+        }
+      ],
+      "numerical_payload": {
+        "host_bytes": 671816,
+        "native_bytes": 443708
+      },
+      "watch_points": [],
+      "typed_candidate": []
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "engine/CMakeLists.txt",
+      "sha256": "f9a9a28df149b27bdfe706ff2e9b4970a19fb2e1d45c997bbef0ea317cfa4fc0"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.cpp",
+      "sha256": "5947d032ec77ecd491cc28cf98cffd71ae464ebcb24479565821d7e0a55d8a56"
+    },
+    {
+      "path": "engine/src/assembly/active_workbench.h",
+      "sha256": "5d6962e50eded11077a080bfd4e146cb83a0a88c4bb5591bf2e85adb0300998e"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.cpp",
+      "sha256": "71a73593de3ca084945e6ad4999e5dc5e87c31119260b737ad516678f2f97765"
+    },
+    {
+      "path": "engine/src/assembly/letter_projection.h",
+      "sha256": "8629bd859b37f60c1dfc8b1aeb52d9fb33a7f3ecf99b0dace45c1e44dd3d03ec"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.cpp",
+      "sha256": "4f4fefb6d94c2858ad2cb352c4fe27d880cf428057f46b25c4162f8e4155ef7f"
+    },
+    {
+      "path": "engine/src/assembly/membership_fields.h",
+      "sha256": "cb701dda0aabff8a41572594d62e0af01f8dcf3d1c8b40dd5289141146b400d5"
+    },
+    {
+      "path": "engine/src/assembly/study.cpp",
+      "sha256": "fb5096f434b96c5637e66ca5afaf6fff985f53380b2f0b652fbee3432cefcac1"
+    },
+    {
+      "path": "engine/src/assembly/study.h",
+      "sha256": "594264b0610214dfda38c93065811963faf8eca1dc6d2d95571ba55f2ed999c9"
+    },
+    {
+      "path": "engine/src/assembly/study_input.h",
+      "sha256": "cfe0d42598f1355dd5c6f412bceefd23af6848dc8f12c4a89ea90e55641276ea"
+    },
+    {
+      "path": "engine/src/engine/device.cpp",
+      "sha256": "1fad58d180a1be0faf63338a14ce436192e1403461bf090183c2520db383bb23"
+    },
+    {
+      "path": "engine/src/engine/device.h",
+      "sha256": "483d2e6e947a05615295003c5f4a133884adc4d33ebc6bdcd06349fed1cd50dc"
+    },
+    {
+      "path": "engine/src/engine/packed_view.h",
+      "sha256": "681a5137d3158902ceec79bcb9463a6859842a9e6af11920cded824c4883705b"
+    },
+    {
+      "path": "engine/src/engine/precision.cpp",
+      "sha256": "f32609324a02ac5552fb47d449f19f2f875a9eabcfbf08b83281e75719fb3df8"
+    },
+    {
+      "path": "engine/src/engine/precision.h",
+      "sha256": "15addb821a3f34e39b327cf6b0c46ed56615216bc9f42d3dfdf3bca79eb8b2fa"
+    },
+    {
+      "path": "engine/src/engine/record_map.cpp",
+      "sha256": "ced792202404bb6e8dee6852d099b5ac536263a30a9429eeeaa1a50541434f7d"
+    },
+    {
+      "path": "engine/src/engine/record_map.h",
+      "sha256": "692242b381718daa8964c172a55d44cb45323a5b721e858e43b99f07a757d150"
+    },
+    {
+      "path": "engine/src/engine/runtime.cpp",
+      "sha256": "ab1f3cba4d3ddeb3915544c4e9f3d73b90e25e502c0e995739a310fa47291190"
+    },
+    {
+      "path": "engine/src/engine/runtime.h",
+      "sha256": "684f47ae0a1e24c384b87c6e09809383b398969b53985ff0faa3ac2cd8c6a12f"
+    },
+    {
+      "path": "engine/src/engine/transfer.cpp",
+      "sha256": "3c49d322f9d7dae76004132a9fa4fe8a0864218d464749a812891f8fb3776d87"
+    },
+    {
+      "path": "engine/src/engine/transfer.h",
+      "sha256": "f0e107fda11cd4a8f977d21d84743bf3ad4e44883c1b41ac3a0ceffcda8170fc"
+    },
+    {
+      "path": "engine/src/field/activity.cpp",
+      "sha256": "a7047d7553e6be991267ebc20bc2eac5f6d86288376bc21b7d777d19ac2c3cd1"
+    },
+    {
+      "path": "engine/src/field/activity.h",
+      "sha256": "ac084881d58b4e6a4fa01e51cc60e516931a8080c148d5f8cb5f6803929c8182"
+    },
+    {
+      "path": "engine/src/field/cascade.h",
+      "sha256": "280a7f0ba5fcfde4e6bf32d9c50c99917a82d558462038636866dce8e36d787a"
+    },
+    {
+      "path": "engine/src/field/centroid_cascade.cpp",
+      "sha256": "892b51218db9d70f1b90392446faaa3d33bab2cd0619a107aac130ac06992b25"
+    },
+    {
+      "path": "engine/src/field/centroid_cascade.h",
+      "sha256": "9d5130d4d7511023bdec464d6afae8cdb60ca5a3db32e35d7f3c5756601b8ecb"
+    },
+    {
+      "path": "engine/src/field/centroid_math.h",
+      "sha256": "d2993ffe261e473bf4fa2219d9dddee48097a1965dd91b351bb5de6d52ac71ed"
+    },
+    {
+      "path": "engine/src/field/contact_math.h",
+      "sha256": "308085a773e0606360e47ddb2575074fa14fb2c1849affc6024dd2f154ec2f72"
+    },
+    {
+      "path": "engine/src/field/field.cpp",
+      "sha256": "f26c53150656f9d4862c24de41fd4498756ca77066f6594f39b8950bcec2d461"
+    },
+    {
+      "path": "engine/src/field/field.h",
+      "sha256": "8e55e3ae0a7e910268c97142a536a5f3a6025b5ed08d147f165ecb0fcd27f4f2"
+    },
+    {
+      "path": "engine/src/field/native_set.h",
+      "sha256": "7c56243bf36ea3a41ed122b38a267fd08e66e86dfdbd166dd701e4ecf0956a95"
+    },
+    {
+      "path": "engine/src/field/numeric_ir.h",
+      "sha256": "e3a04c40ad800398228421a4ec9ddb225fb2f114cf71bf73345842630738da9f"
+    },
+    {
+      "path": "engine/src/field/numerical_profile.h",
+      "sha256": "3525babafd5a745149d905041398e6370166fba89a63f63e7d8fa0dd118475c5"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.cpp",
+      "sha256": "13f28481606cac1f88c7c16d7f11ccd872cce08b6abcf79e016ed0a1cc23dcf7"
+    },
+    {
+      "path": "engine/src/field/prepared_capacity.h",
+      "sha256": "a88b60ae14ba07428a81de2f1959c4837ab369f0d09a28d9e9cb5af2cac0fbe7"
+    },
+    {
+      "path": "engine/src/field/prepared_geometry.cpp",
+      "sha256": "516f71f859f7b0981a02488345b18f01a1eebdda08ac7fedd882e11d7f443ccd"
+    },
+    {
+      "path": "engine/src/field/prepared_geometry.h",
+      "sha256": "b4c0f8164f2d0fbc47966f8cd707755e52fb1b8574574663e8f005eb4da7042b"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.cpp",
+      "sha256": "be5504cd90f6601c2202bb137c08f81b669a16dee0f7bdc9a993ae21028d0331"
+    },
+    {
+      "path": "engine/src/field/prepared_storage.h",
+      "sha256": "869e6fe657af24a00ccaebfed6817c4ff23c09b58a8108d975c9bb04ec943a89"
+    },
+    {
+      "path": "engine/src/field/prepared_update.cpp",
+      "sha256": "362df6b9386fa8d21a6d3bad46d41c3e86d7da917e34f5635529e8fdaf70e123"
+    },
+    {
+      "path": "engine/src/field/prepared_update.h",
+      "sha256": "aa6833cb6e99b1c8a3f48f751dadff9198b773382e74f9d87a70de5daddc0034"
+    },
+    {
+      "path": "engine/src/field/real_buffer.h",
+      "sha256": "60770de6571453218e844278d765b566ae8128aae40fce831b70b8b992f9499b"
+    },
+    {
+      "path": "engine/taichi/taichi/ir/ir_builder.h",
+      "sha256": "a2c40a0efdf94211a863ec7754ecd189c078894279b883fa0af60787d9bc9ebb"
+    },
+    {
+      "path": "engine/taichi/taichi/program/extension.cpp",
+      "sha256": "cb7ab2fe9d439b4f139890a3db153b45e3e3b9f274bd50ae1bb8f82ddaa6eefd"
+    },
+    {
+      "path": "engine/taichi/taichi/program/launch_context_builder.cpp",
+      "sha256": "da7f3decfe1958c3205e1150c9fbe5a7f11b22d3f2fc46cab97083293d6ff251"
+    },
+    {
+      "path": "engine/taichi/taichi/program/program.cpp",
+      "sha256": "fe98afa94f19531dbef54082e24c5c0acac8d8042fb299a3da24c65acd580cfb"
+    },
+    {
+      "path": "engine/taichi/taichi/runtime/cuda/jit_cuda.cpp",
+      "sha256": "f81309541184ba7bfe9ca66f584d9b7ff6a08813cf3a31bc9c4ccb6d9ee86add"
+    },
+    {
+      "path": "engine/tests/active_transfer_experiment.cpp",
+      "sha256": "c3b95e5b45b5674365d1316648a8493a27eaf336d0f1d0c69409715d76db9a40"
+    },
+    {
+      "path": "engine/tests/active_workbench_checks.h",
+      "sha256": "27458e8bf97be57541438cacbaa7989872163c5add3e02a7886e94ee194c8810"
+    },
+    {
+      "path": "engine/tests/active_workbench_test.cpp",
+      "sha256": "143da2ee205d800742871924506b8711525b27f818045f0035c8ef8de4cb3964"
+    },
+    {
+      "path": "engine/tests/activity_assembly_test.cpp",
+      "sha256": "2999724706e60357b6a42219fce67fb3a0e12bec659b7fabd594f759f0be9a31"
+    },
+    {
+      "path": "engine/tests/activity_test.cpp",
+      "sha256": "615b882da0567d4a388afa57c1383e43d4af7e69df17ff324eeced82e4bd2fb2"
+    },
+    {
+      "path": "engine/tests/allocation_observation.h",
+      "sha256": "93bc59586fa003c92fc6a63c5b8a2b36376e5a5977cf3f3f12e23477f553ed21"
+    },
+    {
+      "path": "engine/tests/assembly_test.cpp",
+      "sha256": "e9be725a8d95154c3cee395899b0255d7668f73d09bae19681ed5adf0ff513a9"
+    },
+    {
+      "path": "engine/tests/cascade_test.cpp",
+      "sha256": "f78e297563e09049dd60a2e3b03279a9e2608efcec88e62fad3533f0a2793a88"
+    },
+    {
+      "path": "engine/tests/engine_smoke_test.cpp",
+      "sha256": "680cbeb5de3d31b4719a25b85f88d7d61445ea9290b3b1c0424f68e4ec7a5bf7"
+    },
+    {
+      "path": "engine/tests/field_test.cpp",
+      "sha256": "62905511f2a7bb4609c5f23b9bf15003fbc6043219b3a78b5ffddf8566ad14ad"
+    },
+    {
+      "path": "engine/tests/harness.h",
+      "sha256": "d41bc65bed09e8c1955f6c5e1f006586ff9b0b80e546b53ccb0ff096b3c1cabe"
+    },
+    {
+      "path": "engine/tests/index_cap_test.cpp",
+      "sha256": "5ee8444b59c53d7aa5c407b5d6382e788b722452efc89c1dd27d8270318efce1"
+    },
+    {
+      "path": "engine/tests/letter_projection_fixture.h",
+      "sha256": "d9e2b85d5bb70c43d4d84b0722c0407efba396a209c98915a31b14bec86c552e"
+    },
+    {
+      "path": "engine/tests/letter_projection_native_test.cpp",
+      "sha256": "88deb1cb19754f07c43c12339629c7de22c03b8c0bf263ef70a76d6bd39dd3f8"
+    },
+    {
+      "path": "engine/tests/letter_projection_test.cpp",
+      "sha256": "b3f6a34c7321d7617c2141563d83c476bb34b5c9ef13aa8d97fb40fdc45b7f0a"
+    },
+    {
+      "path": "engine/tests/membership_fields_native_test.cpp",
+      "sha256": "342abb0c48313cf7cb14918866e416c18170049c2f9b68317d17b3ba1761a77c"
+    },
+    {
+      "path": "engine/tests/membership_fields_test.cpp",
+      "sha256": "cb59baa55313afb47ba716a98c4fd9c5ba7f939d46ce7ed1bf10a8b08c99dd90"
+    },
+    {
+      "path": "engine/tests/membership_fixture.h",
+      "sha256": "9787ec0feb4f73b9f69f236c7aa7816da12705eaef0aac2719ed2fcbda1884bc"
+    },
+    {
+      "path": "engine/tests/native_activity_test.cpp",
+      "sha256": "2016fa7bb9f17af71a4aa53d89ca53c008232afda0bd3d730e5294904c94651d"
+    },
+    {
+      "path": "engine/tests/native_pool_test.cpp",
+      "sha256": "fde95f20cf78d94b83d089913615d6c8ed621c1eb9cb21cb7486c0408ea52551"
+    },
+    {
+      "path": "engine/tests/numerical_profile_test.cpp",
+      "sha256": "509dc73e6add0ee5987dec4e6a65256d05740f8b0125fd5b668710ffc054489f"
+    },
+    {
+      "path": "engine/tests/precision_test.cpp",
+      "sha256": "a7b2113309897b4c0359352bd9363f8da5172da5cd1d6e314aaa4974bde83e54"
+    },
+    {
+      "path": "engine/tests/preparation_test.cpp",
+      "sha256": "73f6e4cacf75857f3138ef702f4c66e294a386251b086d96a7a810384460f847"
+    },
+    {
+      "path": "engine/tests/prepared_capacity_test.cpp",
+      "sha256": "6548417a5ea305fe4500b5805727cac07449d0da0e0cb43824b5352cbcae6617"
+    },
+    {
+      "path": "engine/tests/prepared_execution_test.cpp",
+      "sha256": "6e4285866aaa2164ceaa4236426fc6ca0e7dbacfe71ef2119537fa9f74c56262"
+    },
+    {
+      "path": "engine/tests/prepared_fixture.h",
+      "sha256": "b7b4e9aa6ac5a5e848fd889a24e504702713a7cfbc0d9da4355da34fcbfc9410"
+    },
+    {
+      "path": "engine/tests/prepared_geometry_test.cpp",
+      "sha256": "2288df5a7d9476e76d1c2b7195e4c8b319a5f539c77e784d99066b269bae86ff"
+    },
+    {
+      "path": "engine/tests/prepared_launch_test.cpp",
+      "sha256": "cf2fd0afc60a4eeaa2f2c31aaa747e479c08a8542f4d58356922b675c180ef53"
+    },
+    {
+      "path": "engine/tests/prepared_metrics.h",
+      "sha256": "230bed3cb63771c6a5cd45f018d21bfaaab1d2c58694e4328393729ad84e3c32"
+    },
+    {
+      "path": "engine/tests/prepared_sources.h",
+      "sha256": "88c213b4b29fa278233090b8b7aa6896bfef67dce15b1f236c28d67014d85b21"
+    },
+    {
+      "path": "engine/tests/prepared_space_probe.cpp",
+      "sha256": "f4e3ea09d98ce4414d3efec069cf09a6c9f3a2dc353bf041ad57ea78ee3bea57"
+    },
+    {
+      "path": "engine/tests/prepared_update_test.cpp",
+      "sha256": "9bfae1d713d4b55c2dd2a78359a07bc48d718ab0245897874962e3b6cbcf989a"
+    },
+    {
+      "path": "engine/tests/record_map_test.cpp",
+      "sha256": "b464e79f1360c605c286e82083fbe3c8d999d976ce63e12d540c12de875429fb"
+    },
+    {
+      "path": "engine/tests/runtime_backend_test.cpp",
+      "sha256": "957b5f9676a705870338f7f4ffbb49a1624eb7b9a7a34df6583f5758b94cb2d1"
+    },
+    {
+      "path": "engine/tests/source_counts_test.cpp",
+      "sha256": "3877dda173fc343d4fa6bca4b2e9357e98e7f16b67da760090be7cf82c08a804"
+    },
+    {
+      "path": "engine/tests/structural_recipe_test.cpp",
+      "sha256": "da1d285e1fffe72a0402de396647720a182613245df259b72b060e811a7b3965"
+    },
+    {
+      "path": "engine/tests/warm_active_integration.cpp",
+      "sha256": "8db16746e2c1ea659f9edc8666aca6fc38e7f533ab394924109866273af766ae"
+    },
+    {
+      "path": "engine/tests/weighted_cascade_test.cpp",
+      "sha256": "a96eac5a299caca04981a37c575c1affb9ddcd20c7b57c1cf4b390fd026ce2b1"
+    },
+    {
+      "path": "tools/viewport/build.mjs",
+      "sha256": "7868019abed4c4b8a7f3a3b05b955e1583631c42d627067fbe52ee2dd66d154d"
+    },
+    {
+      "path": "tools/viewport/evidence/acceptance.json",
+      "sha256": "ac6259b23abb14cef8ff00f1fb4729fdbb86c4b74ce8058520fc429486426fe8"
+    },
+    {
+      "path": "tools/viewport/evidence/browser-evidence.json",
+      "sha256": "eea71c84bc3d8fac1e9752b345ff33dba3717fdbf8f286027a84caa4908e06fb"
+    },
+    {
+      "path": "tools/viewport/evidence/native-evidence.json",
+      "sha256": "a92accc4bad595dfdc5a9ad1308d4a9f3a01f61ea9ee92ffc56b7558e8a5c862"
+    },
+    {
+      "path": "tools/viewport/examples/letter-study-tick0.json",
+      "sha256": "47ad68167540ceb158d6691114990999676ac929ebe689d1066e3fde98d9d9a9"
+    },
+    {
+      "path": "tools/viewport/examples/letter-study.json",
+      "sha256": "52a048a28aff2f157e6b3a7dd5aebd62539d85630422ecb7315e52221a1db388"
+    },
+    {
+      "path": "tools/viewport/model.mjs",
+      "sha256": "6cba019a1279f2780f274ce0aa5ae0f210cf69b1b805693be408fce64c3905a7"
+    },
+    {
+      "path": "tools/viewport/native/capture_options.h",
+      "sha256": "48fbd91d830dceb8de8807b01b29ea5aecab26e3e3bc4244944e30ba396ba665"
+    },
+    {
+      "path": "tools/viewport/native/letter_capture.cpp",
+      "sha256": "ad9ad1563d8b9088e51a31b7a4f12f6ef6cca5bb9375a0354beb3761f1694083"
+    },
+    {
+      "path": "tools/viewport/native/options_test.cpp",
+      "sha256": "0f871c2311d8dcaf86a9b026e1064c59f915314e99d5b7812e9195fa405d549c"
+    },
+    {
+      "path": "tools/viewport/native/signal_guard.h",
+      "sha256": "39b9e043f1d258cec086aea99a2ca5bc7b452108fa62af3ab75bcabd78eae78c"
+    },
+    {
+      "path": "tools/viewport/native/signal_guard_test.cpp",
+      "sha256": "7597e0b6ef63ea89c99cb0e01685e54d5d43816272da5dfdeb3a2f41f562b545"
+    },
+    {
+      "path": "tools/viewport/native/snapshot.cpp",
+      "sha256": "e6c190335cc263ca92049fb981e7451d7ba8b37dd74c2207b705b13610596fce"
+    },
+    {
+      "path": "tools/viewport/native/snapshot.h",
+      "sha256": "76c7ffb1b2d489278c32df079b5db677301e5a5fd6fa56558878bd47f3d5dedb"
+    },
+    {
+      "path": "tools/viewport/native/snapshot_test.cpp",
+      "sha256": "696918f3ab9b80df509718981f81a2e056f280b78925a3b2158f4a68cc205a3b"
+    },
+    {
+      "path": "tools/viewport/package-lock.json",
+      "sha256": "b5b4604558a6f5bcd9ff755e7ad3a53a44bba6c77ed96853ada5417c447d213b"
+    },
+    {
+      "path": "tools/viewport/package.json",
+      "sha256": "81ef02381a7cd74323151ad37f8fb6a10923de491c2efeb91308d0bf1018cc1b"
+    },
+    {
+      "path": "tools/viewport/snapshot.schema.json",
+      "sha256": "bcb6d4c42db00dc5c254a2379147cb46b8a7b68592f5df4076d93112dd7a81c5"
+    },
+    {
+      "path": "tools/viewport/tests/browser.mjs",
+      "sha256": "d8679839636e4c553fc47c2872fac630b15efceb0888f4e7142dd9a5d59fa735"
+    },
+    {
+      "path": "tools/viewport/tests/model.test.mjs",
+      "sha256": "17421e4021dfd8806ae855ffeb6b9174ae1c415947a8b0f63b9114c9ccd5307f"
+    },
+    {
+      "path": "tools/viewport/vendor/viewer.bundle.js",
+      "sha256": "33308e6112028b1019111c80a72f62ce5b94cf4b47c4e5c05849df4b14728e39"
+    },
+    {
+      "path": "tools/viewport/viewer.mjs",
+      "sha256": "0272cc8c96845e0df1f7f917dc2b19e7ed0c1f84278e3c71af7da3131746d40b"
+    }
+  ],
+  "built_artifacts": [
+    {
+      "path": "engine/build/numerical_profile_test",
+      "bytes": 6332256,
+      "sha256": "77961477a6747a0c06130e0b7688122746658155ae6b8a219e83f30b84d8c68b"
+    },
+    {
+      "path": "engine/build/weighted_cascade_test",
+      "bytes": 6349936,
+      "sha256": "05f660a96977541b86b64872ab240fda04b63495e31b1b5f705ba49bdeaca4c0"
+    },
+    {
+      "path": "engine/build/cascade_test",
+      "bytes": 6323728,
+      "sha256": "d6fcb63316ca949ffbe7ec7aae9082904ca06873a0179aa436d7fe3d6159702a"
+    },
+    {
+      "path": "engine/build/source_counts_test",
+      "bytes": 6285288,
+      "sha256": "f889220cf0f6f4cd8322b423ed719ed853edb74393455931edbac31b18a6ea87"
+    },
+    {
+      "path": "engine/build/prepared_capacity_test",
+      "bytes": 37040,
+      "sha256": "866e74c49f3112be3be57661f5a13c6b2d11c47a091ff8c0f667762bb45c4f6f"
+    },
+    {
+      "path": "engine/build/precision_test",
+      "bytes": 5882360,
+      "sha256": "7b520e3abf6a0c2c06ee5eb727759586c183c6ae25f81fb8f6cb6e45d7bfde81"
+    },
+    {
+      "path": "engine/build/viewport/viewport_snapshot_test",
+      "bytes": 6862592,
+      "sha256": "de286478e0a6d32cd399f672bf08c26cfd6b670fc373baafac7425bad90ef30f"
+    },
+    {
+      "path": "engine/build/libengine_support.a",
+      "bytes": 981708,
+      "sha256": "b050b68bbf9f6c5591d577600e4176e6d22bcb1f9c7b0512b8e03041fe3b29c9"
+    },
+    {
+      "path": "engine/build/libfield_core.a",
+      "bytes": 2263390,
+      "sha256": "1aa007dc9c5e34b38a8d982a99d5bfd09366c767b74d60ed530cc850b5647652"
+    },
+    {
+      "path": "engine/build/libstudy_assembly.a",
+      "bytes": 131508,
+      "sha256": "d5088cc82413a8f473b76bdce210aef3c113da90e8700b741a9ecb7c6785f474"
+    },
+    {
+      "path": "engine/taichi/build-review/libtaichi_core_static.a",
+      "bytes": 52334664,
+      "sha256": "a1b534ab48b6579f782c143a5f12ce9bd0e2d18976a9dfd83bfb6037f851e73f"
+    },
+    {
+      "path": "engine/build/taichi-runtime/runtime_x64.bc",
+      "bytes": 131972,
+      "sha256": "7f5e6efd7dca6c28d83573043bf160d49b5ac2f9e07b636741ebde35374631b5"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "path": "engine/tests/numerical_profile/cpu-ctest.txt",
+      "bytes": 10123,
+      "sha256": "3463e4acd4c407838be6a19db964c5952fd695f7964ecc3373e040bdd70a2294"
+    },
+    {
+      "path": "engine/tests/numerical_profile/cpu-native-output.txt",
+      "bytes": 41888,
+      "sha256": "8f049e9b7ee9e8806e988e9ff2d21052ae94899c41a53403754dec6fc7a9fb95"
+    },
+    {
+      "path": "engine/tests/numerical_profile/viewport-tests.txt",
+      "bytes": 1595,
+      "sha256": "7e107577549d08689cd47cc9aec017568ea939c31a9e0df125493152cd45ec1b"
+    }
+  ]
+}

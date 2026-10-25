@@ -1,6 +1,9 @@
 # Live numerical profile and positional residue separation
 
-Status: **accepted in #186, 2026-10-24; C1 implementation pending**. Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
+Status: **accepted in #186, 2026-10-24; C1 implementation for review, 2026-10-25**.
+See [implementation](../engine/docs/LIVE-NUMERICAL-PROFILE.md) and
+[retained CPU evidence](../engine/tests/numerical_profile/README.md).
+Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 and [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177),
 with the operation matrix under #156/#170. Baseline: `main` at
 `1c880cc7e89cec8e4cdcfee7f98762b29f54c794`, the merge of approved #185.
@@ -12,7 +15,7 @@ Contributor evidence remains separately pinned to
 The [precision primitives](../engine/docs/NATIVE-PRECISION.md),
 [source counts](../engine/docs/SOURCE-COUNTS.md) and
 [weighted candidates](../engine/docs/WEIGHTED-CENTROID-CASCADE.md) are built.
-They do not yet change live arithmetic. The next accepted deliverable is
+Those earlier slices do not change live arithmetic. The accepted deliverable is
 **C1: one coherent live f64 trial profile with explicit positional publication**.
 Acceptance releases C1 only. Live hierarchical propagation and inherited
 response need the following bounded contract after C1's evidence; they are not

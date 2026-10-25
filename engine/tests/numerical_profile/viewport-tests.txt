@@ -1,0 +1,35 @@
+
+> hcp-study-viewport@1.0.0 test
+> node --test tests/model.test.mjs
+
+✔ exact identities/masses and escaped supplied labels survive JSON (2.895777ms)
+✔ optional typed numerical metadata preserves double detail and rejects contradictory widths (0.939741ms)
+✔ stable independent per-level ranges, equal/unknown handling, zero is known (1.084846ms)
+✔ filters count missing/zero extent and preserve captured data (0.273255ms)
+✔ large reference remains separate; focus uses current weighted fields (0.592747ms)
+✔ nested compression/naming inherit levels (0.258974ms)
+✔ malformed, unsupported and mixed identities are rejected (0.764912ms)
+✔ empty captures and point extents have finite framing bounds (0.357519ms)
+✔ retained real native examples satisfy the public schema and phase contract (0.883528ms)
+✔ live updates: same session+study updates, anything else replaces, identical capture is no change (0.370809ms)
+✔ live updates: selection re-resolves by occurrence ID and clears when absent or filtered out (0.326704ms)
+✔ live updates: reference shift keeps physical positions fixed without adding absolute origins (0.249349ms)
+✔ live updates: interval is clamped, files are compared by modified time and size (0.201108ms)
+✔ live updates: watch state precedence and no-change hint (0.189ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.512782
+
+> hcp-study-viewport@1.0.0 build
+> node build.mjs
+
+
+  vendor/viewer.bundle.js            647.8kb
+  vendor/viewer.bundle.js.LEGAL.txt    188b 
+
+⚡ Done in 139ms

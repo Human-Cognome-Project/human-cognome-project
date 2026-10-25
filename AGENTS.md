@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #185 weighted candidate acceptance; C1 trial numerical profile plan accepted in #186.
+Last checked: **2026-10-25**, after #185 weighted candidate acceptance; C1 trial numerical profile implementation for review under accepted #186.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -92,7 +92,10 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
 - The [live numerical profile plan](docs/live-numerical-profile-plan.md) is
   accepted in #186 under #172/#177: a coherent f64 trial profile, separate physical/history
   state and discarded positional detail, with the existing single-level native
-  phases. C1 only is released for implementation. Persistent sub-grid activity is
+  phases. The [C1 implementation](engine/docs/LIVE-NUMERICAL-PROFILE.md) is for
+  review with [source-pinned CPU evidence](engine/tests/numerical_profile/README.md).
+  Default legacy arithmetic remains unchanged; trial f64 covers live state,
+  repair, geometry, optional queries and typed readback. Persistent sub-grid activity is
   a provisional trial choice and an explicit cost/settling watch point.
   Live hierarchy consume/publication cuts and inherited response remain a
   following bounded contract, with #181's settling-across-ticks direction intact.
