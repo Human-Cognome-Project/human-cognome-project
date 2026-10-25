@@ -197,8 +197,9 @@ The next [weighted accounting plan](../docs/weighted-centroid-accounting-plan.md
 is accepted in #183. Its [Segment A implementation](docs/SOURCE-COUNTS.md) carries
 existing exact source counts through prepared commits and is accepted in #184.
 [Segment B](docs/WEIGHTED-CENTROID-CASCADE.md) now supplies fractional/compatible
-overlapping candidates for review in its own PR. Live arithmetic and phase
-changes retain their separate contract.
+overlapping candidates accepted in #185, with all eight hosted checks and 74
+native CPU suites passing. The [live numerical profile plan](../docs/live-numerical-profile-plan.md)
+is proposed next; live arithmetic and phase changes remain unbuilt.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
@@ -213,7 +214,7 @@ is accepted in #170 after #169. It covers the structural-to-live
 lifecycle and complete CPU operation matrix before full local GPU testing.
 Its first [structural recipe segment](../kernels/database/warm/STRUCTURAL-RECIPES.md)
 is accepted and merged in #171. The first portion of Segment 2 supplies
-[native geometry preflight](docs/PREPARED-GEOMETRY.md) for review. It reads current
+[native geometry preflight](docs/PREPARED-GEOMETRY.md), accepted in #175. It reads current
 occupancy/focus and prepares candidate contacts; placement, contact installation,
 transactional ticks and the enduring operational lifecycle remain unbuilt.
 

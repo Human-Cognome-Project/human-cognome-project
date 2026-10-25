@@ -46,8 +46,8 @@ matches their parent's cohort. Distinct live handles for repeated definitions
 remain independent contributions. These whole-body/disjoint restrictions belong
 to this first component, **not the general membership model**.
 
-The separate [Segment B weighted interface](WEIGHTED-CENTROID-CASCADE.md), under
-review following #184, adds exact source-row accounting for compatible fractional
+The separate [Segment B weighted interface](WEIGHTED-CENTROID-CASCADE.md), accepted
+in #185 following #184, adds exact source-row accounting for compatible fractional
 overlaps. The original API and its restrictions above remain intact.
 
 Nodes sharing a comparison identity must have the same field and conceptual

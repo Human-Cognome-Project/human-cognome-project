@@ -4,7 +4,7 @@ Status: **Segment A accepted in #184, 2026-10-24**, under the
 [#183 accepted accounting plan](../../docs/weighted-centroid-accounting-plan.md)
 and #177/#172. Baseline: `f8c4203dc67376479d5a7018d870f9906406fc69`.
 [Segment B's weighted candidate implementation](WEIGHTED-CENTROID-CASCADE.md)
-is now under review separately; the evidence below qualifies Segment A only.
+is accepted separately in #185; the evidence below qualifies Segment A only.
 
 ## Source contract
 
@@ -39,7 +39,7 @@ the rounded share or infer provenance from numerical mass.
 
 There is no global cap on counts across different fields. Several membership
 fields may each contain an entire occurrence. Per-comparison coverage and
-overlap validation remain Segment B work; this segment checks individual source
+overlap validation are qualified separately by Segment B; this segment checks individual source
 rows without silently normalizing a graph.
 
 ## Transaction, ownership and inspection

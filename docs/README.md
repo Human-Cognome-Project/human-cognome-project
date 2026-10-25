@@ -36,9 +36,15 @@ references, not another mandatory reading sequence.
 
 - [Source counts and weighted centroid comparisons](weighted-centroid-accounting-plan.md) —
   accepted #183 plan; [Segment A](../engine/docs/SOURCE-COUNTS.md) preserves exact
-  count provenance and is accepted in #184. Segment B will qualify fractional
-  contributions and compatible overlaps without duplicate mass or recovery of
-  discarded child detail. Live propagation remains separate.
+  count provenance and is accepted in #184. [Segment B](../engine/docs/WEIGHTED-CENTROID-CASCADE.md)
+  is accepted in #185: fractional contributions and compatible overlaps without
+  duplicate mass or recovery of discarded child detail. All eight hosted checks
+  and 74 CPU suites passed. Live propagation remains separate.
+
+- [Live numerical profile and positional residue separation](live-numerical-profile-plan.md) —
+  proposal under #172/#177 for C1: coherent live f64 trial surfaces and distinct
+  physical/history versus discarded positional state. Existing single-level
+  native phases first; hierarchy/response needs a subsequent bounded release.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
