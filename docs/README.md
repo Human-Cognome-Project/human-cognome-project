@@ -42,9 +42,15 @@ references, not another mandatory reading sequence.
   and 74 CPU suites passed. Live propagation remains separate.
 
 - [Live numerical profile and positional residue separation](live-numerical-profile-plan.md) —
-  accepted #186 plan under #172/#177 for C1 (implementation pending): coherent live f64 trial surfaces and distinct
-  physical/history versus discarded positional state. Existing single-level
-  native phases first; hierarchy/response needs a subsequent bounded release.
+  accepted #186 plan, implemented and accepted in #187: coherent live f64 trial
+  surfaces and distinct physical/history versus discarded positional state.
+  Nine hosted checks and 82 CPU suites passed. Persistent sub-grid work remains
+  a measured trial watch point; hierarchy/response remains separate.
+
+- [Live hierarchy handoff and response ownership](live-hierarchy-handoff-plan.md) —
+  proposal for review after C1. Proposes C2a's native same-type handoff probe
+  first, with comparison identity, response ownership and multilevel settling
+  obligations before a separately released live integration.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
