@@ -1,6 +1,6 @@
 # Live numerical profile and positional residue separation
 
-Status: **accepted in #186, 2026-10-24; C1 implementation for review, 2026-10-25**.
+Status: **accepted in #186, 2026-10-24; C1 implementation accepted in #187, 2026-10-25**.
 See [implementation](../engine/docs/LIVE-NUMERICAL-PROFILE.md) and
 [retained CPU evidence](../engine/tests/numerical_profile/README.md).
 Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)

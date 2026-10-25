@@ -1,6 +1,6 @@
 # Live trial numerical profile (C1)
 
-Status: **implementation for review**, following accepted [#186](../../docs/live-numerical-profile-plan.md)
+Status: **accepted in #187, 2026-10-25**, following accepted [#186](../../docs/live-numerical-profile-plan.md)
 under #172/#177. Runtime/test source is pinned in the
 [CPU evidence](../tests/numerical_profile/README.md). Default legacy f32 behavior
 remains selectable and is covered by the existing regression suites.

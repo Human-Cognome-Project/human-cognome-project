@@ -184,7 +184,7 @@ The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
 first #172 slice, accepted in #178: double packed transport, an experimental significand
 clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.md).
 The default field profile retains its original arithmetic. The bounded C1
-[live trial profile](docs/LIVE-NUMERICAL-PROFILE.md) is now implemented for review;
+[live trial profile](docs/LIVE-NUMERICAL-PROFILE.md) is accepted in #187;
 #172/#177 retain live hierarchy and inherited-response integration.
 
 The accepted [#180 plan](../docs/upward-centroid-integration-plan.md) now has a
@@ -201,7 +201,7 @@ existing exact source counts through prepared commits and is accepted in #184.
 overlapping candidates accepted in #185, with all eight hosted checks and 74
 native CPU suites passing. The [live numerical profile plan](../docs/live-numerical-profile-plan.md)
 is accepted in #186. Its [C1 implementation](docs/LIVE-NUMERICAL-PROFILE.md)
-and [CPU evidence](tests/numerical_profile/README.md) are for review: one selected
+and [CPU evidence](tests/numerical_profile/README.md) are accepted in #187: one selected
 f64 live state, count-based weights, explicit positional publication, preserved
 physical/history state and native activity. Persistent sub-grid work is a
 provisional measured watch point; live hierarchy and #156 operations remain open.

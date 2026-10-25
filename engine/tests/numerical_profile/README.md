@@ -1,6 +1,6 @@
 # Live trial numerical profile CPU evidence
 
-C1 implementation for review under accepted [#186](../../../docs/live-numerical-profile-plan.md).
+C1 implementation accepted in #187 under accepted [#186](../../../docs/live-numerical-profile-plan.md).
 [Behavior, resources and limits](../../docs/LIVE-NUMERICAL-PROFILE.md) describe
 the selected live f64 path. The default legacy f32 path remains unchanged.
 Live hierarchy and the #156 CPU operation exit remain separate acceptance work.
@@ -11,7 +11,12 @@ Matched native backend tree: `6784224121f68de1bf1aa0765b54e80d20e355ad`.
 Clang/LLVM 15.0.6, x86_64 CPU-only build, two native workers per new mode,
 CTest concurrency two. Each new mode checks actual CPU selection.
 The later evidence/documentation commit does not change tested source.
-All **82 CPU suites passed in 524.92 seconds**. The 14 viewport model/schema
+Maintainer verification on reviewed PR head `fd3c5208ec37046ef2d08346fd5db4d0ba89474f`:
+all nine hosted checks passed; inspected native CPU job `121160291530` reports
+**82/82 suites in 685.51 seconds**. This is hosted evidence, not a maintainer-local
+or GPU run. The acceptance/status-only commit changes no runtime/test source.
+
+Contributor run: all **82 CPU suites passed in 524.92 seconds**. The 14 viewport model/schema
 tests and bundle build passed separately on the same pinned source.
 
 | Artifact | Contents |
