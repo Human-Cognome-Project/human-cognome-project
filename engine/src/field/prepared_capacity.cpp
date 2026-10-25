@@ -29,8 +29,9 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits) : limits_(limits) {
   if (limits[Budget::CascadeWork] > std::uint64_t(INT64_MAX))
     throw std::invalid_argument(
         "cascade work exceeds signed native counter range");
-  for (auto kind : {Budget::CascadeNodes, Budget::CascadeLinks,
-                    Budget::CascadeReferences, Budget::CascadeLevels})
+  for (auto kind :
+       {Budget::CascadeNodes, Budget::CascadeLinks, Budget::CascadeReferences,
+        Budget::CascadeLevels, Budget::CascadeCoverage})
     if (limits[kind] > (std::uint64_t{1} << 30))
       throw std::invalid_argument("cascade dimension exceeds native axis");
   for (std::size_t i = 0; i < static_cast<std::size_t>(Budget::ScratchBytes);
@@ -91,11 +92,23 @@ std::size_t PreparedCapacity::numerical_bytes() const {
   return total;
 }
 const char *budget_name(Budget budget) {
-  static const char *names[]{
-      "potential",          "particles",      "fields",        "participation",
-      "contacts",           "references",     "focus",         "batch",
-      "scratch-bytes",      "geometry-work",  "cascade-nodes", "cascade-links",
-      "cascade-references", "cascade-levels", "cascade-work",  "none"};
+  static const char *names[]{"potential",
+                             "particles",
+                             "fields",
+                             "participation",
+                             "contacts",
+                             "references",
+                             "focus",
+                             "batch",
+                             "scratch-bytes",
+                             "geometry-work",
+                             "cascade-nodes",
+                             "cascade-links",
+                             "cascade-references",
+                             "cascade-levels",
+                             "cascade-work",
+                             "cascade-coverage",
+                             "none"};
   const auto i = static_cast<std::size_t>(budget);
   return names[i <= static_cast<std::size_t>(Budget::Count)
                    ? i

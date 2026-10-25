@@ -17,10 +17,13 @@ struct FixtureSource {
     int particle, group;
     float share;
     std::uint64_t ordinal;
+    std::uint64_t exact_count{};  // Zero is unknown in the owned-source format.
   };
   std::vector<Edge> edges;
   std::vector<std::array<int, 2>> contacts;
   std::vector<int> focus;
+  std::vector<std::uint64_t>
+      exact_masses;  // Empty retains unknown legacy metadata.
 };
 struct PreparedFixtureAccess {
   static void read_contacts(Harness &h) {
@@ -45,6 +48,14 @@ struct PreparedFixtureAccess {
     if (h.path_ == HostPath::BulkCopy)
       engine::upload(*h.particle_array_, h.particle_data.data(),
                      h.particle_data.size() * sizeof(float));
+    h.runtime_->synchronize();
+  }
+  static void inject_share_value(Harness &h, int row, float value) {
+    read_relationships(h);
+    h.edge_float(kShare, row) = value;
+    if (h.path_ == HostPath::BulkCopy)
+      engine::upload(*h.edge_float_array_, h.edge_float_data.data(),
+                     h.edge_float_data.size() * sizeof(float));
     h.runtime_->synchronize();
   }
   static void stage_new(Harness &h,
@@ -116,6 +127,9 @@ struct PreparedFixtureAccess {
       throw std::invalid_argument("fixture exceeds independent budget");
     if (s.populated || s.particles.size() || s.fields.size())
       throw std::logic_error("fixture loading is initial only");
+    if (!source.exact_masses.empty() &&
+        source.exact_masses.size() != source.particles.size())
+      throw std::invalid_argument("fixture source denominator count mismatch");
     for (const auto &particle : source.particles) {
       for (float value : particle)
         if (!std::isfinite(value))
@@ -138,6 +152,15 @@ struct PreparedFixtureAccess {
           std::size_t(contact[1]) >= source.particles.size() ||
           contact[0] == contact[1])
         throw std::invalid_argument("invalid fixture contact");
+    for (const auto &edge : source.edges)
+      if (edge.exact_count) {
+        if (source.exact_masses.empty() ||
+            !source.exact_masses[edge.particle] ||
+            edge.exact_count > source.exact_masses[edge.particle] ||
+            edge.share != float(double(edge.exact_count) /
+                                double(source.exact_masses[edge.particle])))
+          throw std::invalid_argument("inconsistent fixture source accounting");
+      }
     for (std::size_t i = 0; i < source.focus.size(); ++i) {
       const int group = source.focus[i];
       if (group < 0 || std::size_t(group) >= source.kinds.size() ||
@@ -196,6 +219,8 @@ struct PreparedFixtureAccess {
       for (std::size_t i = 0; i < source.particles.size(); ++i) {
         const auto ref = input.particle_rows[i];
         s.particle_headers[ref.record] = ref;
+        if (!source.exact_masses.empty())
+          s.source_masses[ref.record] = source.exact_masses[i];
         for (int f = 0; f < kParticleFieldCount; ++f)
           h.particle(f, ref.record) = source.particles[i][f];
       }
@@ -206,6 +231,7 @@ struct PreparedFixtureAccess {
         const auto p = input.particle_rows[edge.particle],
                    g = input.field_rows[edge.group];
         s.edges[i] = {p, g, edge.ordinal, edge.share};
+        s.source_counts[i] = edge.exact_count;
         h.edge_int(kEdgeParticle, int(i)) = p.record;
         h.edge_int(kEdgeGroup, int(i)) = g.record;
         h.edge_float(kShare, int(i)) = edge.share;

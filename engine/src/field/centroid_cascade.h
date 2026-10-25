@@ -12,10 +12,17 @@ class CentroidCascade {
   ~CentroidCascade();
   std::size_t binding_bytes() const;
   CascadeBinding bind(std::uint64_t, const CascadeSpec &, std::uint64_t);
+  CascadeBinding bind_weighted(std::uint64_t,
+                               const WeightedCascadeSpec &,
+                               std::uint64_t);
   CascadeResult query(std::uint64_t, std::uint64_t);
   const CascadeInspection &inspect(const CascadeResult &);
 
  private:
+  CascadeBinding bind_impl(std::uint64_t,
+                           const CascadeSpec &,
+                           const WeightedCascadeSpec *,
+                           std::uint64_t);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

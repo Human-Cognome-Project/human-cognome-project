@@ -82,8 +82,9 @@ int main() {
     require(PreparedCapacity(invalid).limits()[Budget::GeometryWork] ==
                 invalid[Budget::GeometryWork],
             "wide work limit narrowed to logical axis");
-    for (const auto b : {Budget::CascadeNodes, Budget::CascadeLinks,
-                         Budget::CascadeReferences, Budget::CascadeLevels}) {
+    for (const auto b :
+         {Budget::CascadeNodes, Budget::CascadeLinks, Budget::CascadeReferences,
+          Budget::CascadeLevels, Budget::CascadeCoverage}) {
       invalid = limits;
       invalid[b] = (std::uint64_t{1} << 30) + 1;
       rejects<std::invalid_argument>([&] { PreparedCapacity bad(invalid); });

@@ -117,7 +117,8 @@ std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l) {
 }
 std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                                                    bool geometry,
-                                                   bool cascade) {
+                                                   bool cascade,
+                                                   bool weighted) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
@@ -126,8 +127,11 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   // at most 24 ABI bytes, plus native scalar-cache and source-array metadata
   // slots for every argument.
   // Geometry adds collect/source-order/discover/finalize: 10+4+9+10 arguments.
-  // Cascade validation/reduction: 9+13 parameters, two contexts.
-  const std::size_t parameters = 151 + (geometry ? 33 : 0) + (cascade ? 22 : 0),
+  // Cascade: 9+13 parameters, plus one descriptor argument per kernel when
+  // weighted.
+  const std::size_t parameters = 151 + (geometry ? 33 : 0) +
+                                 (cascade ? 22 : 0) +
+                                 (cascade && weighted ? 2 : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
@@ -145,7 +149,8 @@ std::size_t PreparedStorage::required_scratch(const BudgetDemand &l,
       throw std::invalid_argument(
           "prepared typed workspace exceeds supported axis");
   add(result, binding_reserve_bytes(cuda, l[Budget::GeometryWork] != 0,
-                                    l[Budget::CascadeNodes] != 0));
+                                    l[Budget::CascadeNodes] != 0,
+                                    l[Budget::CascadeCoverage] != 0));
   return result;
 }
 PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
