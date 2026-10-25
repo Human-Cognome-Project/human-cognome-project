@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #184 exact source-count acceptance; Segment B implementation under review.
+Last checked: **2026-10-24**, after #185 weighted candidate acceptance; C1 trial numerical profile plan accepted in #186.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -85,10 +85,17 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   without changing legacy physics; all eight hosted checks and 66 native CPU suites passed on its
   [pinned source](engine/tests/source_counts/README.md). Segment B's source-compatible fractional/
   overlapping [candidate implementation](engine/docs/WEIGHTED-CENTROID-CASCADE.md)
-  is now under review in a separate PR. It retains the original whole-body API
-  and has [74 passing native CPU suites](engine/tests/weighted_cascade/README.md)
-  on its pinned source. It does not change live mechanics; live ripple/precision/response integration
-  still needs its bounded contract.
+  is accepted in #185. All eight hosted checks passed; the inspected native log
+  confirms 74/74 CPU suites on reviewed `dce69ad`. Its
+  [contributor evidence](engine/tests/weighted_cascade/README.md) remains separately
+  source-pinned. It retains the original whole-body API and changes no live mechanics.
+- The [live numerical profile plan](docs/live-numerical-profile-plan.md) is
+  accepted in #186 under #172/#177: a coherent f64 trial profile, separate physical/history
+  state and discarded positional detail, with the existing single-level native
+  phases. C1 only is released for implementation. Persistent sub-grid activity is
+  a provisional trial choice and an explicit cost/settling watch point.
+  Live hierarchy consume/publication cuts and inherited response remain a
+  following bounded contract, with #181's settling-across-ticks direction intact.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.

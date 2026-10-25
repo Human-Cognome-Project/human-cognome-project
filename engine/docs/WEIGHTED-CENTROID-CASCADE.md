@@ -1,12 +1,17 @@
 # Source-weighted centroid candidates
 
-Status: **Segment B implementation for review**, under the accepted
+Status: **Segment B accepted in #185, 2026-10-24**, under the accepted
 [#183 accounting plan](../../docs/weighted-centroid-accounting-plan.md), following
 [#184 source counts](SOURCE-COUNTS.md). This extends the bounded
 [upward candidate operation](CENTROID-CASCADE.md); it changes no live field,
 force, motion, wake, focus, topology or phase behavior. The full query is a
 reference operation, not a required per-tick solver. Later live propagation is
 governed by the [#181 settling clarification](../../docs/upward-centroid-integration-plan.md#resolution-cycle-clarification--2026-10-24).
+
+All eight hosted checks passed on reviewed `dce69adaacfc8c4a78d0c8d717438698ee3fed0f`;
+the inspected native log confirms 74/74 CPU suites in 551.91 seconds. The retained
+contributor run below is separate. The [live numerical profile plan](../../docs/live-numerical-profile-plan.md)
+is proposed next; no live conversion is released by this acceptance.
 
 ## Explicit source selection
 

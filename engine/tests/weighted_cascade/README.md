@@ -3,7 +3,10 @@
 Segment B of [accepted #183](../../../docs/weighted-centroid-accounting-plan.md),
 following accepted #184. [Implementation and limits](../../docs/WEIGHTED-CENTROID-CASCADE.md)
 describe the explicit source-row interface and exact compatible-coverage rule.
-This is candidate-only evidence for review. It changes no live physics and does
+Accepted in #185 after all eight hosted checks passed on reviewed `dce69ad`;
+the inspected hosted native log confirms 74/74 suites in 551.91 seconds.
+The retained artifacts below describe the separate contributor run, whose
+historical status fields are unchanged. This candidate-only work changes no live physics and does
 not make a complete candidate evaluation a required per-tick solver.
 
 Tested runtime/test source: `58ccae54da69bede55b49e6e3bc8e05eb58f3f8e`.
