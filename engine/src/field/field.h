@@ -1,8 +1,4 @@
 #pragma once
-#include "field/prepared_update.h"
-#include "field/prepared_geometry.h"
-#include "field/cascade.h"
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -11,6 +7,11 @@
 #include <vector>
 
 #include "engine/runtime.h"
+#include "field/cascade.h"
+#include "field/numeric_ir.h"
+#include "field/prepared_geometry.h"
+#include "field/prepared_update.h"
+#include "field/real_buffer.h"
 #include "taichi/program/ndarray.h"
 
 // A basic harness for the field model: one law, applied without exception.
@@ -35,6 +36,8 @@ struct PreparedFixtureAccess;
 enum class TickMode { Selective, AllLoaded };
 using FrameAnchor = std::array<double, 3>;
 struct Demand {
+  NumericalProfile numerical_profile{};
+  std::uint64_t motion_attempts{}, numerical_errors{};
   std::uint64_t particles_loaded{0}, particles_exposed{0}, fields_loaded{0},
       fields_exposed{0}, edges_loaded{0}, edges_exposed{0};
   std::uint64_t particles_evaluated{0}, particles_skipped{0},
@@ -49,7 +52,7 @@ struct Demand {
   std::uint64_t centroids_flagged{0}, centroids_recomputed{0};
   std::uint64_t native_particle_entries{0}, native_centroid_entries{0};
   std::uint64_t zero_response_touches{0}, invalidation_particle_visits{0};
-  std::array<float, 3> focal_origin{};
+  std::array<double, 3> focal_origin{};
   FrameAnchor frame_anchor{};
   double tick_ms{0};
 };
@@ -83,8 +86,8 @@ enum GroupField {
   kCenY,
   kCenZ,
   kCenM,
-  // Weighted offsets from the previous published centre, plus cached mass.
-  // Reducing offsets preserves collective sub-ULP changes in large frames.
+  // Weighted offsets from the reduction anchor, plus inclusive mass. Legacy
+  // uses the prior published centre after seed; trial uses the first member.
   kAccX,
   kAccY,
   kAccZ,
@@ -125,10 +128,31 @@ struct Parameters {
   // sits at sqrt of the construct's total mass; calibrate later.
   float reach_strength{1.0f};
 };
+struct Parameters64 {
+  double gravity{0.0771063443835106}, dt{1}, contact_stiffness{1},
+      reach_strength{1};
+  Parameters64() = default;
+  Parameters64(const Parameters &p)
+      : gravity(p.gravity),
+        dt(p.dt),
+        contact_stiffness(p.contact_stiffness),
+        reach_strength(p.reach_strength) {}
+  Parameters legacy() const {
+    Parameters p;
+    p.gravity = float(gravity);
+    p.dt = float(dt);
+    p.contact_stiffness = float(contact_stiffness);
+    p.reach_strength = float(reach_strength);
+    return p;
+  }
+};
 
 // One instance of the model's state on one runtime. Host vectors stage the
 // same packed layout as the device arrays.
 class Harness {
+  detail::RealBuffer particle_values_, group_values_, universal_values_,
+      determined_values_, empty_determined_values_;
+
  public:
   Harness(engine::Runtime &runtime,
           int particle_count,
@@ -158,6 +182,39 @@ class Harness {
   }
   bool prepared() const {
     return bool(prepared_);
+  }
+  const NumericalProfile &numerical_profile() const { return profile_; }
+  double &particle64(int f, int i) {
+    require_wide();
+    return particle_values_.doubles()[offset(f, particles_, i)];
+  }
+  double particle64(int f, int i) const {
+    require_wide();
+    return particle_values_.doubles()[offset(f, particles_, i)];
+  }
+  double &group64(int f, int i) {
+    require_wide();
+    return group_values_.doubles()[offset(f, groups_, i)];
+  }
+  double group64(int f, int i) const {
+    require_wide();
+    return group_values_.doubles()[offset(f, groups_, i)];
+  }
+  const std::vector<double> &particles64() const {
+    require_wide();
+    return particle_values_.doubles();
+  }
+  const std::vector<double> &groups64() const {
+    require_wide();
+    return group_values_.doubles();
+  }
+  const std::vector<double> &determined64() const {
+    require_wide();
+    return determined_values_.doubles();
+  }
+  double universal64() const {
+    require_wide();
+    return universal_values_[0];
   }
   int particle_capacity() const {
     return particles_;
@@ -214,15 +271,16 @@ class Harness {
   // Positions are local numerical values. Add this reference in double only
   // when interpreting an explicitly downloaded result in supplied coordinates.
   double supplied_position(int axis, int slot) const {
-    return frame_anchor_.at(axis) + particle(kPosX + axis, slot);
+    return frame_anchor_.at(axis) +
+           particle_values_[offset(kPosX + axis, particles_, slot)];
   }
   const PhaseTimes &timings() const {
     return timings_;
   }
 
   // Host staging, in the packed layout above.
-  std::vector<float> particle_data;
-  std::vector<float> group_data;
+  std::vector<float> &particle_data{particle_values_.legacy()};
+  std::vector<float> &group_data{group_values_.legacy()};
   std::vector<float> edge_float_data;
   std::vector<int> edge_int_data;
   std::vector<int> contact_int_data;
@@ -230,20 +288,24 @@ class Harness {
   // counted exactly once, used by radial velocity damping.
   // Rebuilt on-device at publication and reused until the next publication;
   // not staged from the host.
-  std::vector<float> universal_data;
+  std::vector<float> &universal_data{universal_values_.legacy()};
 
   // Offsets are computed in size_t: f * count overflows int once the item
   // count passes ~2^31 / field count.
   float &particle(int f, int i) {
+    require_legacy();
     return particle_data[offset(f, particles_, i)];
   }
   float particle(int f, int i) const {
+    require_legacy();
     return particle_data[offset(f, particles_, i)];
   }
   float &group(int f, int i) {
+    require_legacy();
     return group_data[offset(f, groups_, i)];
   }
   float group(int f, int i) const {
+    require_legacy();
     return group_data[offset(f, groups_, i)];
   }
   float &edge_float(int f, int i) {
@@ -276,11 +338,13 @@ class Harness {
   // Force, integrate, determiners, then the consolidation that builds the
   // centroids the next tick will read.
   void tick(const Parameters &p);
+  void tick64(const Parameters64 &p);
 
   // Products of the primary pass, one per particle, written by the determiner
   // stage. Speed for now: the stage exists to hold the shape.
   const std::vector<float> &determined() const {
-    return determined_;
+    require_legacy();
+    return determined_values_.legacy();
   }
 
  private:
@@ -294,7 +358,22 @@ class Harness {
           int contact_count,
           HostPath path,
           const PreparedCapacity *capacity);
-  void initialize_prepared_fixture(const Parameters &parameters);
+  void initialize_prepared_fixture(const Parameters64 &parameters);
+  void tick_values(const Parameters64 &p);
+  void require_wide() const {
+    if (!profile_.wide())
+      throw std::logic_error("f64 view requires trial profile");
+  }
+  void require_legacy() const {
+    if (profile_.wide())
+      throw std::logic_error("f32 view requires legacy profile");
+  }
+  taichi::lang::DataType real_type() const {
+    return detail::real_type(profile_.wide());
+  }
+  taichi::lang::Stmt *real(taichi::lang::IRBuilder &b, double x) const {
+    return detail::real_constant(b, profile_.wide(), x);
+  }
   void prepare_empty_execution();
   void prepare_update_execution();
   void prepare_geometry_execution();
@@ -315,15 +394,19 @@ class Harness {
             const taichi::lang::Ndarray *array,
             std::vector<T> &values,
             std::vector<int> shape);
+  void bind(taichi::lang::LaunchContextBuilder &ctx, int argument,
+            const taichi::lang::Ndarray *array, detail::RealBuffer &values,
+            std::vector<int> shape);
 
   void launch_clear(bool seed);
-  void launch_force(const Parameters &p);
-  void launch_contact(const Parameters &p);
-  void launch_integrate(const Parameters &p);
+  void launch_force(const Parameters64 &p);
+  void launch_contact(const Parameters64 &p);
+  void launch_integrate(const Parameters64 &p);
   void launch_determine();
-  void launch_centroid(const Parameters &p, bool seed);
+  void launch_centroid(const Parameters64 &p, bool seed);
 
   engine::Runtime *runtime_;
+  NumericalProfile profile_;
   int particles_;
   int groups_;
   int edges_;
@@ -332,7 +415,7 @@ class Harness {
   bool ready_{false};
   TickMode mode_{TickMode::Selective};
   bool invalidated_{true};
-  Parameters previous_parameters_;
+  Parameters64 previous_parameters_;
   std::uint64_t exposed_{0};
   std::uint64_t exposed_fields_{0};
   Demand demand_;
@@ -349,9 +432,6 @@ class Harness {
   std::unique_ptr<taichi::lang::Ndarray> contact_int_array_;
   std::unique_ptr<taichi::lang::Ndarray> determined_array_;
   std::unique_ptr<taichi::lang::Ndarray> universal_array_;
-
-  std::vector<float> determined_;
-  std::vector<float> empty_determined_{0.0f};
 
   // Numerical and cascade bindings complete before Activity and borrowed
   // source payload arrays, including during partial construction.

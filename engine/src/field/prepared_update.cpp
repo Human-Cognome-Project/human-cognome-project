@@ -45,19 +45,23 @@ Stmt *plus(IRBuilder &b, Stmt *i, int n) {
 }
 // Read a current survivor or a new fixture row. The guarded branch prevents
 // speculative out-of-bounds reads of either input on CPU and CUDA.
-Stmt *body(IRBuilder &b,
-           ArgLoadStmt *particles,
-           ArgLoadStmt *starts,
-           ArgLoadStmt *validation,
-           int f,
-           Stmt *row) {
-  auto *v = b.create_local_var(PrimitiveType::f32);
+Stmt *body(IRBuilder &b, ArgLoadStmt *particles, ArgLoadStmt *starts,
+           ArgLoadStmt *validation, int f, Stmt *row, DataType type,
+           NumericalProfile profile) {
+  auto *v = b.create_local_var(type);
   auto *state = read(b, validation, {row});
   auto *branch = b.create_if(b.create_cmp_gt(state, b.get_int32(1)));
   {
     auto guard = b.get_if_guard(branch, true);
     b.create_local_store(
-        v, read(b, starts, cell(b, f, b.create_sub(state, b.get_int32(2)))));
+        v,
+        profile.wide() && f <= kPosZ
+            ? detail::publish_position(
+                  b,
+                  read(b, starts,
+                       cell(b, f, b.create_sub(state, b.get_int32(2)))),
+                  profile.body_fraction_bits)
+            : read(b, starts, cell(b, f, b.create_sub(state, b.get_int32(2)))));
   }
   {
     auto guard = b.get_if_guard(branch, false);
@@ -65,10 +69,17 @@ Stmt *body(IRBuilder &b,
   }
   return b.create_local_load(v);
 }
-void finite(IRBuilder &b, ArgLoadStmt *status, Stmt *v, int error = 1) {
+void finite(IRBuilder &b, ArgLoadStmt *status, Stmt *v, bool wide,
+            int error = 1) {
   auto guard = b.get_if_guard(
-      b.create_if(b.create_logical_not(b.create_cmp_le(
-          b.create_abs(v), b.get_float32(std::numeric_limits<float>::max())))),
+      b.create_if(b.create_logical_not(
+          wide ? detail::supported_real(b, v)
+               : b.create_cmp_le(
+                     b.create_abs(v),
+                     detail::real_constant(
+                         b, wide,
+                         wide ? std::numeric_limits<double>::max()
+                              : std::numeric_limits<float>::max())))),
       true);
   b.create_atomic_or(b.create_external_ptr(status, {b.get_int32(0)}),
                      b.get_int32(error));
@@ -77,7 +88,7 @@ void finite(IRBuilder &b, ArgLoadStmt *status, Stmt *v, int error = 1) {
 
 void Harness::prepare_update_execution() {
   auto &s = *prepared_;
-  const auto f = PrimitiveType::f32, i = PrimitiveType::i32;
+  const auto f = real_type(), i = PrimitiveType::i32;
   const auto fv = engine::Param::array(f), fa = engine::Param::array(f, 2),
              iv = engine::Param::array(i), ia = engine::Param::array(i, 2),
              integer = engine::Param::scalar(i);
@@ -90,12 +101,14 @@ void Harness::prepare_update_execution() {
   {
     IRBuilder b;
     auto *particles = array(b, 0, f, 2), *groups = array(b, 1, f, 2),
-         *edges = array(b, 2, i, 2), *shares = array(b, 3, f),
+         *edges = array(b, 2, i, 2), *shares = array(b, 3, PrimitiveType::f32),
          *out = array(b, 4, f), *v = array(b, 5, i),
          *starts = array(b, 6, f, 2), *offsets = array(b, 7, i, 2),
          *order = array(b, 8, i), *status = array(b, 9, i),
          *selected = array(b, 10, i), *focus = array(b, 11, f),
          *delta = array(b, 13, f, 2);
+    auto *ratios =
+        profile_.wide() ? array(b, 14, PrimitiveType::u64, 1) : nullptr;
     auto *fcount = b.create_arg_load({12}, i, false, 0);
     put(b, status, 0, b.get_int32(0));
     {
@@ -110,14 +123,16 @@ void Harness::prepare_update_execution() {
       {
         auto changed = b.get_if_guard(repair, true);
         auto *mass = b.create_local_var(f);
-        b.create_local_store(mass, b.get_float32(0));
+        b.create_local_store(mass, real(b, 0));
         std::array<AllocaStmt *, 3> anchor, weighted;
         for (int axis = 0; axis < 3; ++axis) {
           anchor[axis] = b.create_local_var(f);
           weighted[axis] = b.create_local_var(f);
-          b.create_local_store(anchor[axis], b.get_float32(0));
-          b.create_local_store(weighted[axis], b.get_float32(0));
-          auto *existing = b.create_if(b.create_cmp_eq(state, b.get_int32(2)));
+          b.create_local_store(anchor[axis], real(b, 0));
+          b.create_local_store(weighted[axis], real(b, 0));
+          auto *existing = b.create_if(
+              profile_.wide() ? static_cast<Stmt *>(b.get_int32(0))
+                              : b.create_cmp_eq(state, b.get_int32(2)));
           {
             auto old = b.get_if_guard(existing, true);
             b.create_local_store(anchor[axis],
@@ -131,8 +146,9 @@ void Harness::prepare_update_execution() {
                 true);
             auto *first = read(b, order, {read(b, offsets, cell(b, 0, row))});
             auto *member = read(b, edges, cell(b, kEdgeParticle, first));
-            b.create_local_store(anchor[axis], body(b, particles, starts, v,
-                                                    kPosX + axis, member));
+            b.create_local_store(anchor[axis],
+                                 body(b, particles, starts, v, kPosX + axis,
+                                      member, f, profile_));
           }
         }
         {
@@ -142,8 +158,17 @@ void Harness::prepare_update_execution() {
           auto member_guard = b.get_loop_guard(members);
           auto *edge = read(b, order, {b.get_loop_index(members)});
           auto *member = read(b, edges, cell(b, kEdgeParticle, edge));
-          auto *m = b.create_mul(body(b, particles, starts, v, kMass, member),
-                                 read(b, shares, {edge}));
+          auto *m = b.create_mul(
+              body(b, particles, starts, v, kMass, member, f, profile_),
+              profile_.wide()
+                  ? detail::source_ratio(b, ratios, edge, std::max(edges_, 1))
+                  : read(b, shares, {edge}));
+          if (profile_.wide()) {
+            auto bad = b.get_if_guard(
+                b.create_if(b.create_cmp_le(m, real(b, 0))), true);
+            b.create_atomic_or(b.create_external_ptr(status, {b.get_int32(0)}),
+                               b.get_int32(1));
+          }
           b.create_local_store(mass,
                                b.create_add(b.create_local_load(mass), m));
           for (int axis = 0; axis < 3; ++axis)
@@ -153,24 +178,32 @@ void Harness::prepare_update_execution() {
                     b.create_local_load(weighted[axis]),
                     b.create_mul(
                         m, b.create_sub(body(b, particles, starts, v,
-                                             kPosX + axis, member),
+                                             kPosX + axis, member, f, profile_),
                                         b.create_local_load(anchor[axis])))));
         }
         auto *m = b.create_local_load(mass);
-        finite(b, status, m);
+        finite(b, status, m, profile_.wide());
         write(b, out, {plus(b, row, kCenM * gs)}, m);
         write(b, out, {plus(b, row, kAccM * gs)}, m);
         for (int axis = 0; axis < 3; ++axis) {
           auto *before = b.create_local_load(anchor[axis]);
           auto *offset = b.create_local_load(weighted[axis]);
-          const auto result = detail::centroid_coordinate(b, before, offset, m);
-          finite(b, status, result.value);
-          finite(b, status, result.residue);
+          const auto result =
+              detail::centroid_coordinate(b, before, offset, m, profile_);
+          finite(b, status, result.trial, profile_.wide());
+          finite(b, status, result.value, profile_.wide());
+          finite(b, status, result.residue, profile_.wide());
           write(b, out, {plus(b, row, (kCenX + axis) * gs)}, result.value);
           write(b, out, {plus(b, row, (kAccX + axis) * gs)}, offset);
           // A fresh reduction already includes old pending member motion.
           write(b, out, {plus(b, row, (8 + axis) * gs)}, result.residue);
-          write(b, out, {plus(b, row, (11 + axis) * gs)}, before);
+          write(b, out, {plus(b, row, (11 + axis) * gs)},
+                profile_.wide()
+                    ? static_cast<Stmt *>(b.create_select(
+                          b.create_cmp_eq(state, b.get_int32(2)),
+                          read(b, groups, cell(b, kCenX + axis, row)),
+                          result.value))
+                    : before);
         }
       }
       {
@@ -187,8 +220,7 @@ void Harness::prepare_update_execution() {
     // Activity::begin. Its handles and coordinate frame cannot change here.
     for (int j = 0; j < 11; ++j)
       put(b, out, 14 * gs + 1 + j, get(b, focus, j));
-    for (int j = 3; j < 8; ++j)
-      put(b, out, 14 * gs + 1 + j, b.get_float32(0));
+    for (int j = 3; j < 8; ++j) put(b, out, 14 * gs + 1 + j, real(b, 0));
     {
       auto *loop =
           b.create_range_for(b.get_int32(0), fcount, false, 1, 0, true);
@@ -197,7 +229,7 @@ void Harness::prepare_update_execution() {
       auto *mass = read(b, out, {plus(b, row, kCenM * gs)});
       {
         auto bad = b.get_if_guard(
-            b.create_if(b.create_cmp_le(mass, b.get_float32(0))), true);
+            b.create_if(b.create_cmp_le(mass, real(b, 0))), true);
         b.create_atomic_or(b.create_external_ptr(status, {b.get_int32(0)}),
                            b.get_int32(2));
       }
@@ -213,21 +245,21 @@ void Harness::prepare_update_execution() {
     }
     auto *mass = get(b, out, 14 * gs + 7);
     auto *denom =
-        b.create_add(mass, b.create_sub(b.get_float32(1), b.create_sgn(mass)));
-    finite(b, status, mass);
+        b.create_add(mass, b.create_sub(real(b, 1), b.create_sgn(mass)));
+    finite(b, status, mass, profile_.wide());
     for (int axis = 0; axis < 3; ++axis) {
       auto *next = b.create_select(
-          b.create_cmp_gt(mass, b.get_float32(0)),
+          b.create_cmp_gt(mass, real(b, 0)),
           b.create_add(get(b, focus, axis),
                        b.create_div(get(b, out, 14 * gs + 4 + axis), denom)),
           get(b, focus, 8 + axis));
-      finite(b, status, next);
+      finite(b, status, next, profile_.wide());
       put(b, out, 14 * gs + 1 + axis, next);
       auto change = b.get_if_guard(
           b.create_if(b.create_cmp_ne(next, get(b, focus, axis))), true);
-      put(b, out, 14 * gs + 8, b.get_float32(1));
+      put(b, out, 14 * gs + 8, real(b, 1));
     }
-    put(b, out, 14 * gs, b.get_float32(0));
+    put(b, out, 14 * gs, real(b, 0));
     {
       auto *loop =
           b.create_range_for(b.get_int32(0), b.get_int32(p), false, 1, 0, true);
@@ -238,15 +270,18 @@ void Harness::prepare_update_execution() {
           true);
       put(b, out, 14 * gs,
           b.create_add(get(b, out, 14 * gs),
-                       body(b, particles, starts, v, kMass, row)));
+                       body(b, particles, starts, v, kMass, row, f, profile_)));
     }
-    finite(b, status, get(b, out, 14 * gs));
+    finite(b, status, get(b, out, 14 * gs), profile_.wide());
     update_candidate_ = engine::CompiledKernel(
         *runtime_,
         "prepared_candidate_" +
             std::to_string(s.particles.bindings().presence->id),
         b.extract_ir(),
-        {fa, fa, ia, fv, fv, iv, fa, ia, iv, iv, iv, fv, integer, fa},
+        detail::ratio_parameters(
+            {fa, fa, ia, engine::Param::array(PrimitiveType::f32), fv, iv, fa,
+             ia, iv, iv, iv, fv, integer, fa},
+            profile_.wide()),
         engine::MathMode::Strict);
   }
   {
@@ -269,12 +304,11 @@ void Harness::prepare_update_execution() {
         auto retired = b.get_if_guard(
             b.create_if(b.create_cmp_eq(state, b.get_int32(-1))), true);
         for (int field = 0; field < kParticleFieldCount; ++field)
-          write(b, particles, cell(b, field, row), b.get_float32(0));
-        write(b, determined, {row}, b.get_float32(0));
+          write(b, particles, cell(b, field, row), real(b, 0));
+        write(b, determined, {row}, real(b, 0));
         for (int j = 0; j < 2; ++j)
           write(b, ps, cell(b, j, row), b.get_int32(0));
-        for (int j = 0; j < 3; ++j)
-          write(b, pd, cell(b, j, row), b.get_float32(0));
+        for (int j = 0; j < 3; ++j) write(b, pd, cell(b, j, row), real(b, 0));
         activity_->particle_activity.deactivate(b, row);
       }
       {
@@ -283,14 +317,18 @@ void Harness::prepare_update_execution() {
         auto *command = b.create_sub(state, b.get_int32(2));
         for (int field = 0; field < kParticleFieldCount; ++field)
           write(b, particles, cell(b, field, target),
-                read(b, starts, cell(b, field, command)));
+                profile_.wide() && field <= kPosZ
+                    ? detail::publish_position(
+                          b, read(b, starts, cell(b, field, command)),
+                          profile_.body_fraction_bits)
+                    : read(b, starts, cell(b, field, command)));
         // Test adapter supplies a validated initial determiner, not survivor
         // state.
         write(b, determined, {target}, read(b, starts, cell(b, 11, command)));
         for (int j = 0; j < 2; ++j)
           write(b, ps, cell(b, j, target), b.get_int32(0));
         for (int j = 0; j < 3; ++j)
-          write(b, pd, cell(b, j, target), b.get_float32(0));
+          write(b, pd, cell(b, j, target), real(b, 0));
         activity_->particle_activity.activate(b, target);
       }
     }
@@ -305,9 +343,8 @@ void Harness::prepare_update_execution() {
         auto retired = b.get_if_guard(
             b.create_if(b.create_cmp_eq(state, b.get_int32(-1))), true);
         for (int j = 0; j < 8; ++j)
-          write(b, groups, cell(b, j, row), b.get_float32(0));
-        for (int j = 0; j < 6; ++j)
-          write(b, gd, cell(b, j, row), b.get_float32(0));
+          write(b, groups, cell(b, j, row), real(b, 0));
+        for (int j = 0; j < 6; ++j) write(b, gd, cell(b, j, row), real(b, 0));
         for (int j = 0; j < 2; ++j)
           write(b, flags, cell(b, j, row), b.get_int32(0));
         activity_->centroids.deactivate(b, row);
@@ -329,7 +366,7 @@ void Harness::prepare_update_execution() {
     // Rebuild U in actual native record order, after retired rows are zeroed.
     // Keep old U in scratch to decide global radial invalidation.
     put(b, derived, 14 * gs, get(b, universal, 0));
-    put(b, universal, 0, b.get_float32(0));
+    put(b, universal, 0, real(b, 0));
     {
       auto *loop =
           b.create_range_for(b.get_int32(0), b.get_int32(p), false, 1, 0, true);
@@ -343,12 +380,12 @@ void Harness::prepare_update_execution() {
           b.create_add(get(b, universal, 0),
                        read(b, particles, cell(b, kMass, row))));
     }
-    finite(b, status, get(b, universal, 0));
+    finite(b, status, get(b, universal, 0), profile_.wide());
     auto *global = b.create_logical_and(
         radial,
         b.create_logical_or(
             b.create_cmp_ne(get(b, universal, 0), get(b, derived, 14 * gs)),
-            b.create_cmp_ne(get(b, derived, 14 * gs + 8), b.get_float32(0))));
+            b.create_cmp_ne(get(b, derived, 14 * gs + 8), real(b, 0))));
     {
       auto *loop =
           b.create_range_for(b.get_int32(0), b.get_int32(p), false, threads);
@@ -383,9 +420,9 @@ void Harness::launch_update_candidate() {
   auto call = update_candidate_.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
-    bind(ctx, 1, group_array_.get(), group_data,
+    bind(ctx, 1, group_array_.get(), group_values_,
          {kGroupFieldCount, std::max(groups_, 1)});
     ctx.set_arg_ndarray({2}, *s.candidate_edges_array);
     ctx.set_arg_ndarray({3}, *s.candidate_shares_array);
@@ -400,6 +437,8 @@ void Harness::launch_update_candidate() {
     ctx.set_arg_ndarray({13}, *activity_->group_delta);
   }
   engine::argument_int(ctx, 12, int(s.live.focus));
+  if (profile_.wide() && !ctx.prepared)
+    ctx.set_arg_ndarray({14}, *s.candidate_ratios_array);
   update_candidate_.launch(ctx);
 }
 void Harness::launch_update_commit() {
@@ -407,13 +446,13 @@ void Harness::launch_update_commit() {
   auto call = update_commit_.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    bind(ctx, 0, particle_array_.get(), particle_data,
+    bind(ctx, 0, particle_array_.get(), particle_values_,
          {kParticleFieldCount, std::max(particles_, 1)});
-    bind(ctx, 1, group_array_.get(), group_data,
+    bind(ctx, 1, group_array_.get(), group_values_,
          {kGroupFieldCount, std::max(groups_, 1)});
-    auto &d = particles_ ? determined_ : empty_determined_;
+    auto &d = particles_ ? determined_values_ : empty_determined_values_;
     bind(ctx, 2, determined_array_.get(), d, {std::max(particles_, 1)});
-    bind(ctx, 3, universal_array_.get(), universal_data, {1});
+    bind(ctx, 3, universal_array_.get(), universal_values_, {1});
     ctx.set_arg_ndarray({4}, *activity_->particle_flags);
     ctx.set_arg_ndarray({5}, *activity_->particle_delta);
     ctx.set_arg_ndarray({6}, *activity_->group_flags);
@@ -441,11 +480,11 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   answer.generation = s.generation;
   // New starts have a single call lifetime, including rejected batches.
   struct StartsGuard {
-    std::vector<float> &rows;
+    detail::RealBuffer &rows;
     ~StartsGuard() {
-      std::fill(rows.begin(), rows.end(), 0);
+      for (std::size_t i = 0; i < rows.size(); ++i) rows[i] = 0;
     }
-  } starts_guard{s.new_rows};
+  } starts_guard{s.new_row_values};
   const auto reject = [&](UpdateStatus status) {
     answer.status = status;
     return answer;
@@ -599,10 +638,13 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     }
     if (particle) {
       for (int field = 0; field < 12; ++field)
-        if (!std::isfinite(s.new_rows[field * std::size_t(bs) + c]))
+        if (!std::isfinite(s.new_row_values[field * std::size_t(bs) + c]) ||
+            (profile_.wide() &&
+             !NumericalProfile::supported_real(
+                 s.new_row_values[field * std::size_t(bs) + c])))
           return reject(UpdateStatus::InvalidNumerics);
-      if (!(s.new_rows[kMass * std::size_t(bs) + c] > 0) ||
-          s.new_rows[kRadius * std::size_t(bs) + c] < 0)
+      if (!(s.new_row_values[kMass * std::size_t(bs) + c] > 0) ||
+          s.new_row_values[kRadius * std::size_t(bs) + c] < 0)
         return reject(UpdateStatus::InvalidNumerics);
     }
     int row = 0;
@@ -714,6 +756,9 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   };
   if (!ledger(true) || !ledger(false))
     return reject(UpdateStatus::InvalidInput);
+  if (profile_.wide() &&
+      !s.prepare_ratios(true, candidate.edges, answer.structural_visits))
+    return reject(UpdateStatus::InvalidInput);
   bool changed =
       pclaims || gclaims || candidate.particles != s.live.particles ||
       candidate.fields != s.live.fields || candidate.edges != s.live.edges ||
@@ -752,7 +797,9 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
         break;
       if (a == s.live.edges || b == candidate.edges ||
           !same(s.edges[a].first, s.prospective_edges[b].first) ||
-          s.edges[a].share != s.prospective_edges[b].share) {
+          s.edges[a].share != s.prospective_edges[b].share ||
+          (profile_.wide() &&
+           s.source_counts[a] != s.prospective_source_counts[b])) {
         s.validation[p + row] = 2;
         break;
       }
@@ -824,10 +871,13 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
            s.candidate_edges.size() * sizeof(int));
     upload(*s.candidate_shares_array, s.candidate_shares.data(),
            s.candidate_shares.size() * sizeof(float));
-    upload(*s.new_rows_array, s.new_rows.data(),
-           s.new_rows.size() * sizeof(float));
+    upload(*s.new_rows_array, s.new_row_values.data(),
+           s.new_row_values.bytes());
     upload(*s.candidate_offsets_array, offsets, 2 * gs * sizeof(int));
     upload(*s.candidate_order_array, order, es * sizeof(int));
+    if (profile_.wide())
+      upload(*s.candidate_ratios_array, s.candidate_ratios.data(),
+             s.candidate_ratios.size() * sizeof(std::uint64_t));
     launch_update_candidate();
     runtime_->synchronize();
     ++answer.synchronizations;
@@ -914,6 +964,16 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     s.source_counts.swap(s.prospective_source_counts);
     s.contacts.swap(s.prospective_contacts);
     s.live = candidate;
+    if (profile_.wide()) {
+      std::copy_n(s.candidate_ratios.begin(), 2 * es, s.live_ratios.begin());
+      std::fill(s.live_ratios.begin() + 2 * es, s.live_ratios.end(), 0);
+      for (int row = 0; row < g; ++row)
+        if (s.validation[p + row] > 0)
+          s.live_ratios[2 * es + s.destinations[p + row]] =
+              s.candidate_ratios[2 * es + row];
+      upload(*s.live_ratios_array, s.live_ratios.data(),
+             s.live_ratios.size() * sizeof(std::uint64_t));
+    }
     std::fill(edge_int_data.begin(), edge_int_data.end(), 0);
     std::fill(edge_float_data.begin(), edge_float_data.end(), 0);
     std::fill(contact_int_data.begin(), contact_int_data.end(), 0);

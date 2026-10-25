@@ -183,15 +183,16 @@ qualification ladder.
 The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
 first #172 slice, accepted in #178: double packed transport, an experimental significand
 clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.md).
-The existing field kernels remain at their original profile; #172/#177 retain
-the later numerical and LoD-centroid conversion.
+The default field profile retains its original arithmetic. The bounded C1
+[live trial profile](docs/LIVE-NUMERICAL-PROFILE.md) is accepted in #187;
+#172/#177 retain live hierarchy and inherited-response integration.
 
 The accepted [#180 plan](../docs/upward-centroid-integration-plan.md) now has a
 [candidate-only upward operation](docs/CENTROID-CASCADE.md) accepted in #182.
 It reduces current native values through an explicit bounded hierarchy in f64,
 with optional experimental trimming at expressed comparisons. Whole/disjoint
-cohorts are first-component restrictions; live field/force/phase conversion
-remains unbuilt.
+cohorts are first-component restrictions; live hierarchical propagation remains
+separate from this optional query.
 
 The next [weighted accounting plan](../docs/weighted-centroid-accounting-plan.md)
 is accepted in #183. Its [Segment A implementation](docs/SOURCE-COUNTS.md) carries
@@ -199,7 +200,11 @@ existing exact source counts through prepared commits and is accepted in #184.
 [Segment B](docs/WEIGHTED-CENTROID-CASCADE.md) now supplies fractional/compatible
 overlapping candidates accepted in #185, with all eight hosted checks and 74
 native CPU suites passing. The [live numerical profile plan](../docs/live-numerical-profile-plan.md)
-is accepted in #186 for C1 implementation; live arithmetic and phase changes remain unbuilt.
+is accepted in #186. Its [C1 implementation](docs/LIVE-NUMERICAL-PROFILE.md)
+and [CPU evidence](tests/numerical_profile/README.md) are accepted in #187: one selected
+f64 live state, count-based weights, explicit positional publication, preserved
+physical/history state and native activity. Persistent sub-grid work is a
+provisional measured watch point; live hierarchy and #156 operations remain open.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded

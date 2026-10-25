@@ -42,6 +42,10 @@ std::unique_ptr<Ndarray> allocate(engine::Runtime &r,
 }
 }  // namespace
 
+bool Activity::wide() const {
+  return prepared_ && prepared_->capacity.profile().wide();
+}
+
 Activity::Activity(engine::Runtime &r,
                    int p,
                    int g,
@@ -62,15 +66,16 @@ Activity::Activity(engine::Runtime &r,
               prepared ? int(prepared->capacity.limits()[Budget::Focus]) : g,
               1),
           0) {
+  if (wide()) zero_workspace_.resize(2 * zero_workspace_.size());
   selected_groups_.reserve(selected_slots_.size());
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   particle_activity = NativeSet::attach(*root, p);
   centroids = NativeSet::attach(*root, g);
   r.program().add_snode_tree(std::move(root), false);
   particle_flags = allocate(r, PrimitiveType::i32, ParticleStateCount, p);
-  particle_delta = allocate(r, PrimitiveType::f32, 3, p);
+  particle_delta = allocate(r, real_type(wide()), 3, p);
   group_flags = allocate(r, PrimitiveType::i32, GroupStateCount, g);
-  group_delta = allocate(r, PrimitiveType::f32, 6, g);
+  group_delta = allocate(r, real_type(wide()), 6, g);
   particle_offsets = allocate(r, PrimitiveType::i32, 2, p);
   group_offsets = allocate(r, PrimitiveType::i32, 2, g);
   contact_a_offsets = allocate(r, PrimitiveType::i32, 2, p);
@@ -83,9 +88,10 @@ Activity::Activity(engine::Runtime &r,
   group_edges = links(e);
   contact_a_edges = links(k);
   contact_b_edges = links(k);
-  counters = std::make_unique<Ndarray>(&r.program(), PrimitiveType::i64,
-                                       std::vector<int>{CounterCount});
-  focus = std::make_unique<Ndarray>(&r.program(), PrimitiveType::f32,
+  counters = std::make_unique<Ndarray>(
+      &r.program(), PrimitiveType::i64,
+      std::vector<int>{wide() ? TrialCounterCount : CounterCount});
+  focus = std::make_unique<Ndarray>(&r.program(), real_type(wide()),
                                     std::vector<int>{11});
   selected_slots_array_ =
       std::make_unique<Ndarray>(&r.program(), PrimitiveType::i32,
@@ -95,7 +101,7 @@ Activity::Activity(engine::Runtime &r,
   // CHI IR is memory-cached only, never restored from the offline disk cache.
   const auto compile_start = std::chrono::steady_clock::now();
   const int threads = r.cpu_threads();
-  const auto f = PrimitiveType::f32, i32 = PrimitiveType::i32;
+  const auto f = real_type(wide()), i32 = PrimitiveType::i32;
   const auto fa = engine::Param::array(f, 2), ia = engine::Param::array(i32, 2);
   const auto fv = engine::Param::array(f), iv = engine::Param::array(i32);
   const auto cv = engine::Param::array(PrimitiveType::i64);
@@ -110,8 +116,10 @@ Activity::Activity(engine::Runtime &r,
          *invalid = scalar(b, 11), *fcount = scalar(b, 12),
          *radial = scalar(b, 13);
     {
-      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(CounterCount),
-                                      false, threads);
+      auto *loop = b.create_range_for(
+          b.get_int32(0),
+          b.get_int32(wide() ? TrialCounterCount : CounterCount), false,
+          threads);
       auto guard = b.get_loop_guard(loop);
       write(b, c, {b.get_loop_index(loop)}, b.get_int64(0));
     }
@@ -120,7 +128,7 @@ Activity::Activity(engine::Runtime &r,
           b.create_range_for(b.get_int32(0), b.get_int32(1), false, threads);
       auto guard = b.get_loop_guard(loop);
       for (int axis = 3; axis < 8; ++axis)
-        write(b, origin, {b.get_int32(axis)}, b.get_float32(0));
+        write(b, origin, {b.get_int32(axis)}, real(b, 0));
     }
     {
       auto *loop =
@@ -144,25 +152,27 @@ Activity::Activity(engine::Runtime &r,
           b.create_range_for(b.get_int32(0), b.get_int32(1), false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *mass = read(b, origin, {b.get_int32(6)});
-      auto *denom = b.create_add(
-          mass, b.create_sub(b.get_float32(1), b.create_sgn(mass)));
+      if (wide()) mark_nonfinite(b, c, mass, TrialErrors);
+      auto *denom =
+          b.create_add(mass, b.create_sub(real(b, 1), b.create_sgn(mass)));
       for (int axis = 0; axis < 3; ++axis) {
         auto *value = b.create_select(
-            b.create_cmp_gt(mass, b.get_float32(0)),
+            b.create_cmp_gt(mass, real(b, 0)),
             b.create_add(
                 read(b, origin, {b.get_int32(axis)}),
                 b.create_div(read(b, origin, {b.get_int32(axis + 3)}), denom)),
             read(b, origin, {b.get_int32(8 + axis)}));
+        if (wide()) mark_nonfinite(b, c, value, TrialErrors);
         auto changed =
             b.get_if_guard(b.create_if(b.create_cmp_ne(
                                value, read(b, origin, {b.get_int32(axis)}))),
                            true);
-        write(b, origin, {b.get_int32(7)}, b.get_float32(1));
+        write(b, origin, {b.get_int32(7)}, real(b, 1));
       }
       for (int axis = 0; axis < 3; ++axis)
         write(b, origin, {b.get_int32(axis)},
               b.create_select(
-                  b.create_cmp_gt(mass, b.get_float32(0)),
+                  b.create_cmp_gt(mass, real(b, 0)),
                   b.create_add(
                       read(b, origin, {b.get_int32(axis)}),
                       b.create_div(read(b, origin, {b.get_int32(axis + 3)}),
@@ -175,8 +185,8 @@ Activity::Activity(engine::Runtime &r,
       auto *trigger = b.create_logical_or(
           b.create_logical_or(all, invalid),
           b.create_logical_and(
-              radial, b.create_cmp_ne(read(b, origin, {b.get_int32(7)}),
-                                      b.get_float32(0))));
+              radial,
+              b.create_cmp_ne(read(b, origin, {b.get_int32(7)}), real(b, 0))));
       auto *loop = b.create_range_for(
           b.get_int32(0), b.create_select(trigger, n, b.get_int32(0)), false,
           threads);
@@ -192,7 +202,7 @@ Activity::Activity(engine::Runtime &r,
       count(b, c, InvalidatedSlots);
       auto live = b.get_if_guard(
           b.create_if(b.create_cmp_gt(read(b, particles, cell(b, kMass, p)),
-                                      b.get_float32(0))),
+                                      real(b, 0))),
           true);
       particle_activity.activate(b, p);
     }
@@ -208,10 +218,10 @@ Activity::Activity(engine::Runtime &r,
             b.create_if(
                 NativeSet{prepared_->fields.bindings().presence}.active(b, g)),
             true));
-      auto live = b.get_if_guard(
-          b.create_if(b.create_cmp_gt(read(b, groups, cell(b, kCenM, g)),
-                                      b.get_float32(0))),
-          true);
+      auto live =
+          b.get_if_guard(b.create_if(b.create_cmp_gt(
+                             read(b, groups, cell(b, kCenM, g)), real(b, 0))),
+                         true);
       centroids.activate(b, g);
     }
     // Motion history is maintained only within the native active traversal.
@@ -222,7 +232,7 @@ Activity::Activity(engine::Runtime &r,
       write(b, ps, cell(b, PriorMoving, p), read(b, ps, cell(b, Moving, p)));
       write(b, ps, cell(b, Moving, p), b.get_int32(0));
       for (int axis = 0; axis < 3; ++axis)
-        write(b, pd, cell(b, axis, p), b.get_float32(0));
+        write(b, pd, cell(b, axis, p), real(b, 0));
     }
     begin_ = engine::CompiledKernel(
         r, "activity_begin_" + std::to_string(particle_activity.cells->id),
@@ -266,8 +276,9 @@ Activity::Activity(engine::Runtime &r,
   }
   {
     IRBuilder b;
+    auto *ratios = wide() ? array(b, 10, PrimitiveType::u64, 1) : nullptr;
     auto *particles = array(b, 0, f), *groups = array(b, 1, f),
-         *edges = array(b, 2, i32), *shares = array(b, 3, f),
+         *edges = array(b, 2, i32), *shares = array(b, 3, PrimitiveType::f32),
          *gs = array(b, 4, i32), *gd = array(b, 5, f),
          *c = array(b, 6, PrimitiveType::i64, 1), *offsets = array(b, 7, i32),
          *order = array(b, 8, i32, 1);
@@ -287,11 +298,17 @@ Activity::Activity(engine::Runtime &r,
     auto *edge = read(b, order, {b.get_loop_index(members)});
     auto *p = read(b, edges, cell(b, kEdgeParticle, edge));
     count(b, c, AdjacencyVisits);
-    auto *mass = b.create_mul(read(b, particles, cell(b, kMass, p)),
-                              read(b, shares, cell(b, kShare, edge)));
+    auto *mass =
+        b.create_mul(read(b, particles, cell(b, kMass, p)),
+                     wide() ? source_ratio(b, ratios, edge, std::max(e_, 1))
+                            : read(b, shares, cell(b, kShare, edge)));
     auto *response = b.create_if(b.create_logical_and(
-        b.create_cmp_ne(gravity, b.get_float32(0)),
-        b.create_cmp_ne(read(b, groups, cell(b, kCenM, g)), mass)));
+        b.create_cmp_ne(gravity, real(b, 0)),
+        wide() ? b.create_cmp_ne(
+                     read(b, ratios,
+                          {b.create_add(g, b.get_int32(2 * std::max(e_, 1)))}),
+                     b.get_uint64(0))
+               : b.create_cmp_ne(read(b, groups, cell(b, kCenM, g)), mass)));
     {
       auto eligible = b.get_if_guard(response, true);
       count(b, c, GeometryChecks);
@@ -322,79 +339,91 @@ Activity::Activity(engine::Runtime &r,
     touch_ = engine::CompiledKernel(
         r, "activity_propagate_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(),
-        {fa, fa, ia, fa, ia, fa, cv, ia, iv, engine::Param::scalar(f)},
+        ratio_parameters(
+            {fa, fa, ia, engine::Param::array(PrimitiveType::f32, 2), ia, fa,
+             cv, ia, iv, engine::Param::scalar(f)},
+            wide()),
         engine::MathMode::Strict);
   }
   {
     IRBuilder b;
     auto *particles = array(b, 0, f), *groups = array(b, 1, f),
-         *edges = array(b, 2, i32), *shares = array(b, 3, f),
+         *edges = array(b, 2, i32), *shares = array(b, 3, PrimitiveType::f32),
          *ps = array(b, 4, i32), *pd = array(b, 5, f), *gs = array(b, 6, i32),
          *gd = array(b, 7, f), *c = array(b, 8, PrimitiveType::i64, 1);
     auto *all = scalar(b, 9);
     auto *offsets = array(b, 11, i32), *order = array(b, 12, i32, 1);
-    {
-      auto *loop = b.create_struct_for(centroids.cells, false, threads);
-      auto guard = b.get_loop_guard(loop);
-      auto *g = b.get_loop_index(loop);
-      auto *total = read(b, groups, cell(b, kCenM, g));
-      count(b, c, GroupGateEntries);
-      write(b, gs, cell(b, Flagged, g),
-            b.create_select(b.create_cmp_gt(total, b.get_float32(0)), all,
-                            b.get_int32(0)));
+    if (!wide()) {
       {
-        auto *members = b.create_range_for(read(b, offsets, cell(b, 0, g)),
-                                           read(b, offsets, cell(b, 1, g)),
-                                           false, 1, 0, true);
-        auto member_guard = b.get_loop_guard(members);
-        auto *edge = read(b, order, {b.get_loop_index(members)});
-        auto *p = read(b, edges, cell(b, kEdgeParticle, edge));
-        count(b, c, GateEdges);
-        auto active =
-            b.get_if_guard(b.create_if(b.create_logical_and(
-                               read(b, ps, cell(b, Moving, p)),
-                               b.create_cmp_gt(total, b.get_float32(0)))),
-                           true);
-        count(b, c, TouchEdges);
-        auto *mass = b.create_mul(read(b, particles, cell(b, kMass, p)),
-                                  read(b, shares, cell(b, kShare, edge)));
+        auto *loop = b.create_struct_for(centroids.cells, false, threads);
+        auto guard = b.get_loop_guard(loop);
+        auto *g = b.get_loop_index(loop);
+        auto *total = read(b, groups, cell(b, kCenM, g));
+        count(b, c, GroupGateEntries);
+        write(b, gs, cell(b, Flagged, g),
+              b.create_select(b.create_cmp_gt(total, real(b, 0)), all,
+                              b.get_int32(0)));
+        {
+          auto *members = b.create_range_for(read(b, offsets, cell(b, 0, g)),
+                                             read(b, offsets, cell(b, 1, g)),
+                                             false, 1, 0, true);
+          auto member_guard = b.get_loop_guard(members);
+          auto *edge = read(b, order, {b.get_loop_index(members)});
+          auto *p = read(b, edges, cell(b, kEdgeParticle, edge));
+          count(b, c, GateEdges);
+          auto active = b.get_if_guard(b.create_if(b.create_logical_and(
+                                           read(b, ps, cell(b, Moving, p)),
+                                           b.create_cmp_gt(total, real(b, 0)))),
+                                       true);
+          count(b, c, TouchEdges);
+          auto *mass = b.create_mul(read(b, particles, cell(b, kMass, p)),
+                                    read(b, shares, cell(b, kShare, edge)));
+          for (int axis = 0; axis < 3; ++axis) {
+            auto *weighted = b.create_mul(mass, read(b, pd, cell(b, axis, p)));
+            write(b, gd, cell(b, axis, g),
+                  b.create_add(read(b, gd, cell(b, axis, g)), weighted));
+            auto *centre = read(b, groups, cell(b, kCenX + axis, g));
+            auto *effect = b.create_add(centre, b.create_div(weighted, total));
+            auto changed = b.get_if_guard(
+                b.create_if(b.create_cmp_ne(effect, centre)), true);
+            write(b, gs, cell(b, Flagged, g), b.get_int32(1));
+          }
+        }
+        auto live = b.get_if_guard(
+            b.create_if(b.create_cmp_gt(total, real(b, 0))), true);
         for (int axis = 0; axis < 3; ++axis) {
-          auto *weighted = b.create_mul(mass, read(b, pd, cell(b, axis, p)));
-          write(b, gd, cell(b, axis, g),
-                b.create_add(read(b, gd, cell(b, axis, g)), weighted));
           auto *centre = read(b, groups, cell(b, kCenX + axis, g));
-          auto *effect = b.create_add(centre, b.create_div(weighted, total));
+          auto *effect = b.create_add(
+              centre, b.create_div(read(b, gd, cell(b, axis, g)), total));
           auto changed = b.get_if_guard(
               b.create_if(b.create_cmp_ne(effect, centre)), true);
           write(b, gs, cell(b, Flagged, g), b.get_int32(1));
         }
+        auto *qualifies = b.create_if(read(b, gs, cell(b, Flagged, g)));
+        {
+          auto active = b.get_if_guard(qualifies, true);
+          count(b, c, Flags);
+        }
+        {
+          auto inactive = b.get_if_guard(qualifies, false);
+          centroids.deactivate(b, g);
+        }
       }
-      auto live = b.get_if_guard(
-          b.create_if(b.create_cmp_gt(total, b.get_float32(0))), true);
-      for (int axis = 0; axis < 3; ++axis) {
-        auto *centre = read(b, groups, cell(b, kCenX + axis, g));
-        auto *effect = b.create_add(
-            centre, b.create_div(read(b, gd, cell(b, axis, g)), total));
-        auto changed =
-            b.get_if_guard(b.create_if(b.create_cmp_ne(effect, centre)), true);
-        write(b, gs, cell(b, Flagged, g), b.get_int32(1));
-      }
-      auto *qualifies = b.create_if(read(b, gs, cell(b, Flagged, g)));
-      {
-        auto active = b.get_if_guard(qualifies, true);
-        count(b, c, Flags);
-      }
-      {
-        auto inactive = b.get_if_guard(qualifies, false);
-        centroids.deactivate(b, g);
-      }
+    } else {
+      auto *loop = b.create_struct_for(centroids.cells, false, threads);
+      auto guard = b.get_loop_guard(loop);
+      auto *g = b.get_loop_index(loop);
+      count(b, c, GroupGateEntries);
+      write(b, gs, cell(b, Flagged, g), b.get_int32(1));
+      count(b, c, Flags);
     }
     mark_ = engine::CompiledKernel(
         r,
         "activity_mark_centroids_" +
             std::to_string(particle_activity.cells->id),
         b.extract_ir(),
-        {fa, fa, ia, fa, ia, fa, ia, fa, cv, integer, integer, ia, iv},
+        {fa, fa, ia, engine::Param::array(PrimitiveType::f32, 2), ia, fa, ia,
+         fa, cv, integer, integer, ia, iv},
         engine::MathMode::Strict);
   }
   {
@@ -449,14 +478,22 @@ void Activity::reset() {
     engine::upload(a, zero_workspace_.data(), n * sizeof(int));
   };
   zero(*particle_flags, ParticleStateCount * std::size_t(std::max(p_, 1)));
-  zero(*particle_delta, 3 * std::size_t(std::max(p_, 1)));
+  zero(*particle_delta, 3 * std::size_t(std::max(p_, 1)) * (wide() ? 2 : 1));
   zero(*group_flags, GroupStateCount * std::size_t(std::max(g_, 1)));
-  zero(*group_delta, 6 * std::size_t(std::max(g_, 1)));
-  const std::array<std::int64_t, CounterCount> count_zero{};
-  engine::upload(*counters, count_zero.data(), sizeof(count_zero));
+  zero(*group_delta, 6 * std::size_t(std::max(g_, 1)) * (wide() ? 2 : 1));
+  const std::array<std::int64_t, TrialCounterCount> count_zero{};
+  engine::upload(
+      *counters, count_zero.data(),
+      (wide() ? TrialCounterCount : CounterCount) * sizeof(std::int64_t));
   std::array<float, 11> origin{};
   std::copy(fixed_origin_.begin(), fixed_origin_.end(), origin.begin() + 8);
-  engine::upload(*focus, origin.data(), sizeof(origin));
+  if (wide()) {
+    std::array<double, 11> origin64{};
+    std::copy(fixed_origin64_.begin(), fixed_origin64_.end(),
+              origin64.begin() + 8);
+    engine::upload(*focus, origin64.data(), sizeof(origin64));
+  } else
+    engine::upload(*focus, origin.data(), sizeof(origin));
   engine::upload(*selected_slots_array_, selected_slots_.data(),
                  selected_slots_.size() * sizeof(int));
   auto call = reset_.invocation(bool(prepared_));
@@ -488,8 +525,10 @@ void Activity::set_focus(const std::vector<int> &groups) {
                  selected_slots_.size() * sizeof(int));
 }
 void Activity::set_frame_anchor(const FrameAnchor &anchor) {
-  for (int axis = 0; axis < 3; ++axis)
+  for (int axis = 0; axis < 3; ++axis) {
+    fixed_origin64_[axis] = -anchor[axis];
     fixed_origin_[axis] = static_cast<float>(-anchor[axis]);
+  }
 }
 void Activity::index(const std::vector<int> &edges,
                      const std::vector<int> &contacts) {
@@ -548,11 +587,11 @@ void Activity::begin(Harness &h, bool all, bool invalid, bool radial) {
   auto call = begin_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
            {kParticleFieldCount, std::max(p_, 1)});
   }
   if (!ctx.prepared) {
-    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+    h.bind(ctx, 1, h.group_array_.get(), h.group_values_,
            {kGroupFieldCount, std::max(g_, 1)});
   }
   if (!ctx.prepared) {
@@ -581,15 +620,15 @@ void Activity::begin(Harness &h, bool all, bool invalid, bool radial) {
   engine::argument_int(ctx, 13, radial);
   begin_.launch(ctx);
 }
-void Activity::touch(Harness &h, float gravity) {
+void Activity::touch(Harness &h, double gravity) {
   auto call = touch_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
            {kParticleFieldCount, std::max(p_, 1)});
   }
   if (!ctx.prepared) {
-    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+    h.bind(ctx, 1, h.group_array_.get(), h.group_values_,
            {kGroupFieldCount, std::max(g_, 1)});
   }
   if (!ctx.prepared) {
@@ -616,9 +655,11 @@ void Activity::touch(Harness &h, float gravity) {
     ctx.set_arg_ndarray({8}, *group_edges);
   }
   engine::argument_float(ctx, 9, gravity);
+  if (wide() && !ctx.prepared)
+    ctx.set_arg_ndarray({10}, *prepared_->live_ratios_array);
   touch_.launch(ctx);
 }
-void Activity::touch_contacts(Harness &h, float stiffness) {
+void Activity::touch_contacts(Harness &h, double stiffness) {
   if ((!prepared_ && k_ == 0) || stiffness == 0)
     return;
   auto call = contact_touch_.invocation(bool(prepared_));
@@ -651,11 +692,11 @@ void Activity::mark(Harness &h, bool all) {
   auto call = mark_.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
            {kParticleFieldCount, std::max(p_, 1)});
   }
   if (!ctx.prepared) {
-    h.bind(ctx, 1, h.group_array_.get(), h.group_data,
+    h.bind(ctx, 1, h.group_array_.get(), h.group_values_,
            {kGroupFieldCount, std::max(g_, 1)});
   }
   if (!ctx.prepared) {
@@ -730,11 +771,25 @@ std::size_t Activity::prepared_binding_bytes() const {
          reset_.prepared_bytes() + clear_.prepared_bytes();
 }
 Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
-  std::array<std::int64_t, CounterCount> c{};
+  std::array<std::int64_t, TrialCounterCount> c{};
   std::array<float, 8> origin{};
-  engine::readback(*counters, c.data(), c.size() * sizeof(std::int64_t));
-  engine::readback(*focus, origin.data(), origin.size() * sizeof(float));
+  engine::readback(
+      *counters, c.data(),
+      (wide() ? TrialCounterCount : CounterCount) * sizeof(std::int64_t));
+  std::array<double, 8> origin64{};
+  if (wide())
+    engine::readback(*focus, origin64.data(), sizeof(origin64));
+  else {
+    engine::readback(*focus, origin.data(), origin.size() * sizeof(float));
+    std::copy(origin.begin(), origin.end(), origin64.begin());
+  }
   Demand d;
+  if (prepared_) d.numerical_profile = prepared_->capacity.profile();
+  if (wide()) {
+    d.motion_attempts = c[TrialAttempts];
+    d.numerical_errors = c[TrialErrors];
+  }
+  std::copy_n(origin64.begin(), 3, d.focal_origin.begin());
   d.particles_loaded = prepared_ ? prepared_->live.particles : p_;
   d.particles_exposed = exposed;
   d.fields_loaded = prepared_ ? prepared_->live.fields : g_;
@@ -768,7 +823,7 @@ Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
   d.centroid_reduction_edges = c[ReducedEdges];
   d.centroids_flagged = c[Flags];
   d.centroids_recomputed = c[Recomputed];
-  std::copy_n(origin.begin(), 3, d.focal_origin.begin());
+
   return d;
 }
 }  // namespace field::detail

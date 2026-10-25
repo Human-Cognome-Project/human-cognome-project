@@ -221,6 +221,7 @@ void CentroidCascade::Impl::compile() {
   auto &s = *h.prepared_;
   const auto f = PrimitiveType::f32, d = PrimitiveType::f64,
              i = PrimitiveType::i32, w = PrimitiveType::i64;
+  const auto body_array = engine::Param::array(h.real_type(), 2);
   const auto fa = engine::Param::array(f, 2), ia = engine::Param::array(i, 2),
              iv = engine::Param::array(i), cv = engine::Param::array(w),
              integer = engine::Param::scalar(i);
@@ -228,7 +229,7 @@ void CentroidCascade::Impl::compile() {
   const auto name = std::to_string(s.particles.bindings().presence->id);
   {
     IRBuilder b;
-    auto *p = array(b, 0, f, 2), *edges = array(b, 1, i, 2),
+    auto *p = array(b, 0, h.real_type(), 2), *edges = array(b, 1, i, 2),
          *shares = array(b, 2, f, 2), *nodes = array(b, 3, i, 2),
          *references = array(b, 4, i, 2), *flags = array(b, 5, i),
          *stats = array(b, 6, w);
@@ -288,8 +289,8 @@ void CentroidCascade::Impl::compile() {
           b.create_if(h.activity_->particle_activity.active(b, body)), true);
       count(b, stats, AwakeReferences);
     }
-    std::vector<engine::Param> params{fa, ia, fa,      ia,     ia,
-                                      iv, cv, integer, integer};
+    std::vector<engine::Param> params{body_array, ia, fa,      ia,     ia,
+                                      iv,         cv, integer, integer};
     if (weighted_enabled)
       params.push_back(engine::Param::array(f));
     validate_kernel = engine::CompiledKernel(
@@ -298,7 +299,7 @@ void CentroidCascade::Impl::compile() {
   }
   {
     IRBuilder b;
-    auto *p = array(b, 0, f, 2), *nodes = array(b, 1, i, 2),
+    auto *p = array(b, 0, h.real_type(), 2), *nodes = array(b, 1, i, 2),
          *references = array(b, 2, i, 2), *children = array(b, 3, i),
          *order = array(b, 4, i), *masks = array(b, 5, PrimitiveType::u64),
          *values = array(b, 6, d, 2), *flags = array(b, 7, i),
@@ -413,7 +414,7 @@ void CentroidCascade::Impl::compile() {
           write(b, summary, {b.get_int32(f)}, read(b, values, cell(b, f, row)));
       }
     }
-    std::vector<engine::Param> params{fa,
+    std::vector<engine::Param> params{body_array,
                                       ia,
                                       ia,
                                       iv,
@@ -438,7 +439,7 @@ void CentroidCascade::Impl::launch_validate(int n, int r) {
   auto call = validate_kernel.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
            {kParticleFieldCount, std::max(h.particles_, 1)});
     h.bind(ctx, 1, h.edge_int_array_.get(), h.edge_int_data,
            {kEdgeIntFieldCount, std::max(h.edges_, 1)});
@@ -459,7 +460,7 @@ void CentroidCascade::Impl::launch_reduce(int first, int end, int root) {
   auto call = reduce_kernel.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
-    h.bind(ctx, 0, h.particle_array_.get(), h.particle_data,
+    h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
            {kParticleFieldCount, std::max(h.particles_, 1)});
     ctx.set_arg_ndarray({1}, *node_array);
     ctx.set_arg_ndarray({2}, *ref_array);

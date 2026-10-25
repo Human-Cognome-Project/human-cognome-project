@@ -241,7 +241,8 @@ ActiveReport ActiveSession::report(const ExecutionHandle &h,
           f.group_data,
           f.determined(),
           f.frame_anchor(),
-          f.demand()};
+          f.demand(),
+          f.numerical_profile(), {}, {}, {}};
 }
 void ActiveSession::accept(const ActiveReport &r,
                            const warm::Uuid &owner) const {

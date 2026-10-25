@@ -27,8 +27,8 @@ PreparedCapacity checked_storage(engine::Runtime &runtime,
   if (capacity.limits()[Budget::Batch] > (std::uint64_t{1} << 20))
     throw std::invalid_argument(
         "prepared native batch exceeds supported command axis");
-  const auto required =
-      PreparedStorage::required_scratch(capacity.limits(), runtime.on_cuda());
+  const auto required = PreparedStorage::required_scratch(
+      capacity.limits(), runtime.on_cuda(), capacity.profile());
   if (required > capacity.limits()[Budget::ScratchBytes])
     throw CapacityError({Budget::ScratchBytes, required,
                          capacity.limits()[Budget::ScratchBytes]});
@@ -37,8 +37,8 @@ PreparedCapacity checked_storage(engine::Runtime &runtime,
 }  // namespace
 
 std::vector<StorageExtent> PreparedStorage::workspace_layout(
-    const BudgetDemand &l) {
-  const PreparedCapacity validate(l);
+    const BudgetDemand &l, NumericalProfile profile) {
+  const PreparedCapacity validate(l, profile);
   const auto p = l[Budget::Particles], g = l[Budget::Fields],
              e = l[Budget::Participation], c = l[Budget::Contacts],
              f = l[Budget::Focus], b = l[Budget::Batch];
@@ -68,22 +68,23 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   extent("csr-counts", std::max(p, g), sizeof(int), 1);
   extent("csr-cursors", std::max(p, g), sizeof(int), 1);
   extent("validation", 2 * p + g + e + c, sizeof(int), 2);
-  extent("derived-results", 14 * physical(g) + 12, sizeof(float), 1);
+  extent("derived-results", 14 * physical(g) + 12, profile.bytes(), 1);
   extent("candidate-edges", 2 * physical(e), sizeof(int), 2);
   extent("candidate-shares", e, sizeof(float), 2);
   extent("candidate-group-offsets", 2 * physical(g), sizeof(int), 1);
   extent("candidate-group-order", e, sizeof(int), 1);
   extent("destination-records", p + g, sizeof(int), 2);
   extent("native-claim-inputs", 3 * physical(b), sizeof(int), 1);
-  extent("new-fixture-rows", 12 * physical(b), sizeof(float), 2);
+  extent("new-fixture-rows", 12 * physical(b), profile.bytes(), 2);
   extent("candidate-status", 1, sizeof(int), 2);
-  extent("inspection-motion", 3 * physical(p) + 6 * physical(g), sizeof(float),
-         1);
+  extent("inspection-motion", 3 * physical(p) + 6 * physical(g),
+         profile.bytes(), 1);
   extent("inspection-state", 2 * (physical(p) + physical(g)), sizeof(int), 1);
-  extent("inspection-focus", 11, sizeof(float), 1);
+  extent("inspection-focus", 11, profile.bytes(), 1);
   extent("inspection-flags", p + g, sizeof(int), 2);
   extent("inspection-counts", 4, sizeof(std::int64_t), 2);
-  extent("activity-reset-zeros", std::max(3 * physical(p), 6 * physical(g)),
+  extent("activity-reset-zeros",
+         (profile.wide() ? 2 : 1) * std::max(3 * physical(p), 6 * physical(g)),
          sizeof(int), 1);
   extent("selected-focus-host", f, sizeof(int),
          2);  // slots and sorted selection, no backend blob copy
@@ -104,21 +105,24 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
     extent("geometry-cursors", 2 * physical(p), sizeof(int), 1);
     extent("geometry-orders", 2 * physical(c), sizeof(int), 2);
     extent("geometry-counters", 16, sizeof(std::int64_t), 2);
-    extent("geometry-focus", 4, sizeof(float), 2);
+    extent("geometry-focus", 4, profile.bytes(), 2);
   }
+  if (profile.wide())
+    extent("live-source-ratios-and-cohort-flags", 2 * physical(e) + physical(g),
+           sizeof(std::uint64_t), 4);
   CentroidCascade::append_layout(l, result);
   return result;
 }
-std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l) {
+std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l,
+                                             NumericalProfile profile) {
   std::size_t result = 0;
-  for (const auto &entry : workspace_layout(l))
+  for (const auto &entry : workspace_layout(l, profile))
     add(result, entry.bytes);
   return result;
 }
-std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
-                                                   bool geometry,
-                                                   bool cascade,
-                                                   bool weighted) {
+std::size_t PreparedStorage::binding_reserve_bytes(bool cuda, bool geometry,
+                                                   bool cascade, bool weighted,
+                                                   bool wide) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
@@ -131,7 +135,7 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   // weighted.
   const std::size_t parameters = 151 + (geometry ? 33 : 0) +
                                  (cascade ? 22 : 0) +
-                                 (cascade && weighted ? 2 : 0),
+                                 (cascade && weighted ? 2 : 0) + (wide ? 5 : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
@@ -141,16 +145,17 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                      contexts * (1 + sizeof(std::uint64_t) + sizeof(void *))
                : 0);
 }
-std::size_t PreparedStorage::required_scratch(const BudgetDemand &l,
-                                              bool cuda) {
-  auto result = workspace_bytes(l);
-  for (const auto &entry : workspace_layout(l))
+std::size_t PreparedStorage::required_scratch(const BudgetDemand &l, bool cuda,
+                                              NumericalProfile profile) {
+  auto result = workspace_bytes(l, profile);
+  for (const auto &entry : workspace_layout(l, profile))
     if (entry.count > (std::size_t{1} << 30))
       throw std::invalid_argument(
           "prepared typed workspace exceeds supported axis");
-  add(result, binding_reserve_bytes(cuda, l[Budget::GeometryWork] != 0,
-                                    l[Budget::CascadeNodes] != 0,
-                                    l[Budget::CascadeCoverage] != 0));
+  add(result,
+      binding_reserve_bytes(cuda, l[Budget::GeometryWork] != 0,
+                            l[Budget::CascadeNodes] != 0,
+                            l[Budget::CascadeCoverage] != 0, profile.wide()));
   return result;
 }
 PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
@@ -164,15 +169,17 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
              int(c.limits()[Budget::Fields]),
              int(c.limits()[Budget::Batch])) {
   const auto &l = capacity.limits();
+  const auto profile = capacity.profile();
   const auto p = physical(l[Budget::Particles]),
              g = physical(l[Budget::Fields]),
              e = physical(l[Budget::Participation]),
              k = physical(l[Budget::Contacts]), f = physical(l[Budget::Focus]),
              b = physical(l[Budget::Batch]);
-  if (required_scratch(l, r.on_cuda()) > l[Budget::ScratchBytes])
-    throw CapacityError({Budget::ScratchBytes, required_scratch(l, r.on_cuda()),
+  if (required_scratch(l, r.on_cuda(), profile) > l[Budget::ScratchBytes])
+    throw CapacityError({Budget::ScratchBytes,
+                         required_scratch(l, r.on_cuda(), profile),
                          l[Budget::ScratchBytes]});
-  manifest = workspace_layout(l);
+  manifest = workspace_layout(l, profile);
   particle_headers.resize(p);
   prospective_particles.resize(p);
   source_masses.resize(p);
@@ -202,9 +209,11 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   command_indexes.resize(b);
   candidate_edges.resize(2 * e);
   candidate_shares.resize(e);
-  new_rows.resize(12 * b);
+  new_row_values.configure(profile.wide());
+  new_row_values.resize(12 * b);
   inspection_state.resize(2 * (p + g));
-  inspection_motion.resize(3 * p + 6 * g);
+  inspection_motion_values.configure(profile.wide());
+  inspection_motion_values.resize(3 * p + 6 * g);
   using namespace taichi::lang;
   const auto array = [&](DataType type, int rows, int n) {
     return std::make_unique<Ndarray>(
@@ -212,11 +221,14 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
         rows == 1 ? std::vector<int>{n} : std::vector<int>{rows, n});
   };
   validation_array = array(PrimitiveType::i32, 1, int(validation.size()));
-  derived_array = array(PrimitiveType::f32, 1, int(14 * g + 12));
+  derived_array =
+      array(profile.wide() ? PrimitiveType::f64 : PrimitiveType::f32, 1,
+            int(14 * g + 12));
   destinations_array = array(PrimitiveType::i32, 1, int(destinations.size()));
   candidate_edges_array = array(PrimitiveType::i32, 2, int(e));
   candidate_shares_array = array(PrimitiveType::f32, 1, int(e));
-  new_rows_array = array(PrimitiveType::f32, 12, int(b));
+  new_rows_array = array(
+      profile.wide() ? PrimitiveType::f64 : PrimitiveType::f32, 12, int(b));
   candidate_status_array = array(PrimitiveType::i32, 1, 1);
   candidate_offsets_array = array(PrimitiveType::i32, 2, int(g));
   candidate_order_array = array(PrimitiveType::i32, 1, int(e));
@@ -233,7 +245,8 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
     geometry_cursors = array(PrimitiveType::i32, 2, int(p));
     geometry_orders = array(PrimitiveType::i32, 2, int(k));
     geometry_counters = array(PrimitiveType::i64, 1, 16);
-    geometry_focus = array(PrimitiveType::f32, 1, 4);
+    geometry_focus =
+        array(profile.wide() ? PrimitiveType::f64 : PrimitiveType::f32, 1, 4);
     for (auto *a :
          {geometry_rows.get(), geometry_temporary.get(), geometry_pairs.get(),
           geometry_flags.get(), geometry_source_order.get(),
@@ -255,6 +268,14 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
         new_rows_array.get(), candidate_status_array.get(),
         candidate_offsets_array.get(), candidate_order_array.get()})
     r.program().fill_ndarray_fast_u32(a, 0);
+  if (profile.wide()) {
+    live_ratios.resize(2 * e + g);
+    candidate_ratios.resize(2 * e + g);
+    live_ratios_array = array(PrimitiveType::u64, 1, int(2 * e + g));
+    candidate_ratios_array = array(PrimitiveType::u64, 1, int(2 * e + g));
+    r.program().fill_ndarray_fast_u32(live_ratios_array.get(), 0);
+    r.program().fill_ndarray_fast_u32(candidate_ratios_array.get(), 0);
+  }
   inspection_flags_array =
       std::make_unique<Ndarray>(&r.program(), PrimitiveType::i32,
                                 std::vector<int>{int(inspection_flags.size())});
@@ -276,5 +297,55 @@ BudgetFailure PreparedStorage::check(const PreparedCounts &n,
   demand[Budget::References] = n.references();
   demand[Budget::Batch] = batch;
   return capacity.check(demand);
+}
+bool PreparedStorage::prepare_ratios(bool prospective, std::size_t count,
+                                     std::uint64_t &visits) {
+  const auto &rows = prospective ? prospective_edges : edges;
+  const auto &counts = prospective ? prospective_source_counts : source_counts;
+  const auto &masses = prospective ? prospective_source_masses : source_masses;
+  auto &ratios = prospective ? candidate_ratios : live_ratios;
+  if (!capacity.profile().wide()) return true;
+  const auto stride =
+      std::max<std::uint64_t>(capacity.limits()[Budget::Participation], 1);
+  std::fill(ratios.begin(), ratios.end(), 0);
+  // Reuse candidate edge scratch before CSR packing; sorting validates only
+  // integer coverage and never changes numerical source order.
+  for (std::size_t row = 0; row < count; ++row) candidate_edges[row] = int(row);
+  std::sort(candidate_edges.begin(), candidate_edges.begin() + count,
+            [&](int a, int b) {
+              ++visits;
+              const auto &x = rows[a], &y = rows[b];
+              if (x.second.record != y.second.record)
+                return x.second.record < y.second.record;
+              if (x.first.record != y.first.record)
+                return x.first.record < y.first.record;
+              return a < b;
+            });
+  int previous_body = -1, previous_field = -1;
+  std::uint64_t sum = 0;
+  for (std::size_t j = 0; j < count; ++j) {
+    ++visits;
+    const auto row = std::size_t(candidate_edges[j]);
+    const auto &edge = rows[row];
+    if (edge.first.record < 0 ||
+        std::size_t(edge.first.record) >= masses.size())
+      return false;
+    const auto d = masses[edge.first.record], c = counts[row];
+    if (!c || !d || c > d || edge.share != float(double(c) / double(d)))
+      return false;
+    if (edge.second.record == previous_field &&
+        edge.first.record != previous_body)
+      ratios[2 * stride + edge.second.record] = 1;
+    if (edge.first.record != previous_body ||
+        edge.second.record != previous_field)
+      sum = 0;
+    if (c > d - sum) return false;
+    sum += c;
+    previous_body = edge.first.record;
+    previous_field = edge.second.record;
+    ratios[row] = c;
+    ratios[stride + row] = d;
+  }
+  return true;
 }
 }  // namespace field::detail

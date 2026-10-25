@@ -22,7 +22,15 @@ DenseShape shape(const char *name,
           product(product(rows, stride), element_bytes)};
 }
 }  // namespace
-PreparedCapacity::PreparedCapacity(BudgetDemand limits) : limits_(limits) {
+PreparedCapacity::PreparedCapacity(BudgetDemand limits,
+                                   NumericalProfile profile)
+    : limits_(limits), profile_(profile) {
+  profile_.validate();
+  if (profile_.wide() &&
+      2 * std::max<std::uint64_t>(limits[Budget::Participation], 1) +
+              std::max<std::uint64_t>(limits[Budget::Fields], 1) >
+          std::uint64_t(INT32_MAX))
+    throw std::invalid_argument("trial source descriptor exceeds native axis");
   if (limits[Budget::GeometryWork] > std::uint64_t(INT64_MAX))
     throw std::invalid_argument(
         "geometry work exceeds signed native counter range");
@@ -59,28 +67,31 @@ BudgetFailure PreparedCapacity::check(const BudgetDemand &demand) const {
 std::array<DenseShape, 22> PreparedCapacity::numerical_shapes() const {
   const auto p = limits_[Budget::Particles], g = limits_[Budget::Fields],
              e = limits_[Budget::Participation], c = limits_[Budget::Contacts];
-  return {{shape("particles", kParticleFieldCount, p),
-           shape("groups", kGroupFieldCount, g),
-           shape("edge-floats", kEdgeFloatFieldCount, e),
-           shape("edge-integers", kEdgeIntFieldCount, e, sizeof(int)),
-           shape("contacts", kContactIntFieldCount, c, sizeof(int)),
-           shape("determiners", 1, p),
-           shape("particle-flags", detail::ParticleStateCount, p, sizeof(int)),
-           shape("particle-delta", 3, p),
-           shape("group-flags", detail::GroupStateCount, g, sizeof(int)),
-           shape("group-delta", 6, g),
-           shape("particle-offsets", 2, p, sizeof(int)),
-           shape("group-offsets", 2, g, sizeof(int)),
-           shape("contact-a-offsets", 2, p, sizeof(int)),
-           shape("contact-b-offsets", 2, p, sizeof(int)),
-           shape("particle-edge-order", 1, e, sizeof(int)),
-           shape("group-edge-order", 1, e, sizeof(int)),
-           shape("contact-a-order", 1, c, sizeof(int)),
-           shape("contact-b-order", 1, c, sizeof(int)),
-           shape("focus", 11, 1),
-           shape("selected-focus", 1, limits_[Budget::Focus], sizeof(int)),
-           shape("counters", 1, detail::CounterCount, sizeof(std::int64_t)),
-           shape("universal-mass", 1, 1)}};
+  return {
+      {shape("particles", kParticleFieldCount, p, profile_.bytes()),
+       shape("groups", kGroupFieldCount, g, profile_.bytes()),
+       shape("edge-floats", kEdgeFloatFieldCount, e),
+       shape("edge-integers", kEdgeIntFieldCount, e, sizeof(int)),
+       shape("contacts", kContactIntFieldCount, c, sizeof(int)),
+       shape("determiners", 1, p, profile_.bytes()),
+       shape("particle-flags", detail::ParticleStateCount, p, sizeof(int)),
+       shape("particle-delta", 3, p, profile_.bytes()),
+       shape("group-flags", detail::GroupStateCount, g, sizeof(int)),
+       shape("group-delta", 6, g, profile_.bytes()),
+       shape("particle-offsets", 2, p, sizeof(int)),
+       shape("group-offsets", 2, g, sizeof(int)),
+       shape("contact-a-offsets", 2, p, sizeof(int)),
+       shape("contact-b-offsets", 2, p, sizeof(int)),
+       shape("particle-edge-order", 1, e, sizeof(int)),
+       shape("group-edge-order", 1, e, sizeof(int)),
+       shape("contact-a-order", 1, c, sizeof(int)),
+       shape("contact-b-order", 1, c, sizeof(int)),
+       shape("focus", 11, 1, profile_.bytes()),
+       shape("selected-focus", 1, limits_[Budget::Focus], sizeof(int)),
+       shape("counters", 1,
+             profile_.wide() ? detail::TrialCounterCount : detail::CounterCount,
+             sizeof(std::int64_t)),
+       shape("universal-mass", 1, 1, profile_.bytes())}};
 }
 std::size_t PreparedCapacity::numerical_bytes() const {
   std::size_t total = 0;

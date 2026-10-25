@@ -1,11 +1,13 @@
 # Live numerical state and conversion audit
 
-Audit date: **2026-10-24**. Source baseline:
+Historical audit date: **2026-10-24**. Source baseline:
 `925d8c7ac8175ca6afe399c631fd35e710d4cfcc`, after #174/#175/#176.
 The source-pinned [precision evidence](../tests/precision) also hashes the audited
 files. The new [native primitives](NATIVE-PRECISION.md) change only packed double
 support and add experimental numerical helpers; the live surfaces below remain
-at their audited behavior. This is a conversion inventory, not implementation
+at their audited legacy behavior. The [C1 trial conversion](LIVE-NUMERICAL-PROFILE.md)
+is accepted in #187 with separate source-pinned evidence; the tables
+below remain the historical legacy inventory. This is a conversion inventory, not implementation
 of a precision-controlled field path or #177's cascade.
 
 The later [candidate-only upward operation](CENTROID-CASCADE.md), accepted in
@@ -22,7 +24,7 @@ uses their native f64 ratio with current widened physical mass. Its f64 candidat
 centres/masses and host integer coverage are separate from the live surfaces
 below; it does not convert their arithmetic, storage or publication.
 The [accepted #186 live numerical profile plan](../../docs/live-numerical-profile-plan.md)
-releases C1 of that conversion; implementation remains pending. Persistent
+releases C1 of that conversion; its implementation is accepted in #187. Persistent
 sub-grid activity is explicitly provisional and must be measured.
 
 ## State owners and publication sites

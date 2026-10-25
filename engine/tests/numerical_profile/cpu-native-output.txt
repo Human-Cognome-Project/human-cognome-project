@@ -1,0 +1,903 @@
+37/82 Testing: numerical_profile_direct
+37/82 Test: numerical_profile_direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_direct" start time: Oct 25 11:38 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.3753070831298828
+after_profile_cycles,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.3753070831298828
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,direct,holes/motion,setup_us=4626757.2949999999,geometry_us=132.32599999999999,mean_tick_us=299.74846875000009,mean_commit_us=66.397437499999995,mean_query_inspect_us=70.268281250000001,mean_physical_inspect_us=35.224281250000011,S=202296,bindings=11520,mean_commit_upload_bytes=24432,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+persistent_subgrid,bits=4,cycles=32,attempts=32,published_changes=0,active_work=33,centroid_edges=0,elapsed_us=10968.089,positional_quiescence_only=1 PASS
+f64 changing-force boundary crossing, fixed-state consumption and two-sided contact/sleeper recovery PASS
+persistent_subgrid,bits=0,cycles=32,attempts=32,published_changes=0,active_work=33,centroid_edges=0,elapsed_us=9703.3330000000005,positional_quiescence_only=1 PASS
+typed_candidate,status=0,x=1.0000000000009095,mass=0.33333333333333331,expected_x=1.0000000000009095,expected_mass=0.33333333333333331
+f64 same-share count repair, physical mass separation, typed start/query/geometry, unsupported metadata/typed views/FTZ parameters and atomic rejection PASS
+f64 single occurrence/repeated ordinals with distinct body/field precision: no self-response PASS
+f64 assembly-derived letter counts, repeated parents, independent copies and universal physical mass PASS
+f64 fractional force, typed scalars, brake/integration and both-sign Q_32: independent long-double step PASS
+f64 collective accepted motion crosses field Q cell through fresh full-member reduction, including sleeper PASS
+f64 exact overflow rejection, 32 retirement/reuse cycles, survivor preservation, retired handle and unready native-source fault PASS
+f64 native selective/all-loaded combined fields, fractional ordinals, focal radial control and contacts: 32 ticks PASS
+f64 independent scratch/profile rejection and post-mutation numerical failure policy PASS
+<end of output>
+Test time =  58.99 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_direct" end time: Oct 25 11:39 UTC
+"numerical_profile_direct" time elapsed: 00:00:58
+----------------------------------------------------------
+
+35/82 Testing: numerical_profile_padded
+35/82 Test: numerical_profile_padded
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_padded" start time: Oct 25 11:38 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.2438364028930664
+after_profile_cycles,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.2438364028930664
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,bulk,holes/motion,setup_us=4473978.8949999996,geometry_us=124.745,mean_tick_us=282.81659375000004,mean_commit_us=75.15415625,mean_query_inspect_us=74.972937500000015,mean_physical_inspect_us=36.919281249999997,S=202296,bindings=11520,mean_commit_upload_bytes=28912,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+persistent_subgrid,bits=4,cycles=32,attempts=32,published_changes=0,active_work=33,centroid_edges=0,elapsed_us=9481.0419999999995,positional_quiescence_only=1 PASS
+f64 changing-force boundary crossing, fixed-state consumption and two-sided contact/sleeper recovery PASS
+persistent_subgrid,bits=0,cycles=32,attempts=32,published_changes=0,active_work=33,centroid_edges=0,elapsed_us=8559.7999999999993,positional_quiescence_only=1 PASS
+typed_candidate,status=0,x=1.0000000000009095,mass=0.33333333333333331,expected_x=1.0000000000009095,expected_mass=0.33333333333333331
+f64 same-share count repair, physical mass separation, typed start/query/geometry, unsupported metadata/typed views/FTZ parameters and atomic rejection PASS
+f64 single occurrence/repeated ordinals with distinct body/field precision: no self-response PASS
+f64 assembly-derived letter counts, repeated parents, independent copies and universal physical mass PASS
+f64 fractional force, typed scalars, brake/integration and both-sign Q_32: independent long-double step PASS
+f64 collective accepted motion crosses field Q cell through fresh full-member reduction, including sleeper PASS
+f64 exact overflow rejection, 32 retirement/reuse cycles, survivor preservation, retired handle and unready native-source fault PASS
+f64 native selective/all-loaded combined fields, fractional ordinals, focal radial control and contacts: 32 ticks PASS
+f64 independent scratch/profile rejection and post-mutation numerical failure policy PASS
+<end of output>
+Test time =  59.06 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_padded" end time: Oct 25 11:39 UTC
+"numerical_profile_padded" time elapsed: 00:00:59
+----------------------------------------------------------
+
+39/82 Testing: numerical_profile_large
+39/82 Test: numerical_profile_large
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.184769868850708
+after_profile_cycles,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.184769868850708
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,bulk,holes/motion,setup_us=4385182.7549999999,geometry_us=178.905,mean_tick_us=192.29393750000003,mean_commit_us=160.11618750000002,mean_query_inspect_us=29.962125,mean_physical_inspect_us=95.316624999999974,S=9601656,bindings=11520,mean_commit_upload_bytes=1525800,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   4.55 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large" end time: Oct 25 11:46 UTC
+"numerical_profile_large" time elapsed: 00:00:04
+----------------------------------------------------------
+
+41/82 Testing: numerical_profile_large-direct
+41/82 Test: numerical_profile_large-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-direct" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.3198623657226562
+after_profile_cycles,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.3198623657226562
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,direct,holes/motion,setup_us=4567690.4639999997,geometry_us=165.03399999999999,mean_tick_us=223.12334375000003,mean_commit_us=189.51165624999996,mean_query_inspect_us=44.195906249999993,mean_physical_inspect_us=90.368968750000022,S=9601656,bindings=11520,mean_commit_upload_bytes=1263656,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   4.74 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-direct" end time: Oct 25 11:46 UTC
+"numerical_profile_large-direct" time elapsed: 00:00:04
+----------------------------------------------------------
+
+43/82 Testing: numerical_profile_maximum
+43/82 Test: numerical_profile_maximum
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_maximum" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.2357163429260254
+after_profile_cycles,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.2357163429260254
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,bulk,maximum,setup_us=4414411.3789999997,geometry_us=138.60499999999999,mean_tick_us=279.95596874999995,mean_commit_us=81.508249999999975,mean_query_inspect_us=65.840656249999995,mean_physical_inspect_us=34.382781249999994,S=202296,bindings=11520,mean_commit_upload_bytes=28912,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+<end of output>
+Test time =   4.57 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_maximum" end time: Oct 25 11:46 UTC
+"numerical_profile_maximum" time elapsed: 00:00:04
+----------------------------------------------------------
+
+45/82 Testing: numerical_profile_maximum-direct
+45/82 Test: numerical_profile_maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_maximum-direct" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.1966512203216553
+after_profile_cycles,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.1966512203216553
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,direct,maximum,setup_us=4366264.6960000005,geometry_us=183.422,mean_tick_us=371.53637500000002,mean_commit_us=106.337125,mean_query_inspect_us=92.149031249999979,mean_physical_inspect_us=49.086781250000023,S=202296,bindings=11520,mean_commit_upload_bytes=24432,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+<end of output>
+Test time =   4.52 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_maximum-direct" end time: Oct 25 11:46 UTC
+"numerical_profile_maximum-direct" time elapsed: 00:00:04
+----------------------------------------------------------
+
+47/82 Testing: numerical_profile_large-maximum
+47/82 Test: numerical_profile_large-maximum
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--large" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-maximum" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.3136515617370605
+after_profile_cycles,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.3136515617370605
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,bulk,maximum,setup_us=4573004.7790000001,geometry_us=48438.182999999997,mean_tick_us=472.64537500000006,mean_commit_us=7463.8830312500004,mean_query_inspect_us=330.32431249999996,mean_physical_inspect_us=163.38906250000002,S=9601656,bindings=11520,mean_commit_upload_bytes=1525800,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   7.76 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-maximum" end time: Oct 25 11:46 UTC
+"numerical_profile_large-maximum" time elapsed: 00:00:07
+----------------------------------------------------------
+
+49/82 Testing: numerical_profile_large-maximum-direct
+49/82 Test: numerical_profile_large-maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--large" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-maximum-direct" start time: Oct 25 11:46 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.3149950504302979
+after_profile_cycles,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.3149950504302979
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11520,1,1,11520
+manifest,unused-binding-reserve,2112,1,1,2112
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,direct,maximum,setup_us=4596939.665,geometry_us=48632.300999999999,mean_tick_us=597.6584375000001,mean_commit_us=7685.0226562499993,mean_query_inspect_us=239.22834375000002,mean_physical_inspect_us=75.112843749999982,S=9601656,bindings=11520,mean_commit_upload_bytes=1263656,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   7.72 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-maximum-direct" end time: Oct 25 11:46 UTC
+"numerical_profile_large-maximum-direct" time elapsed: 00:00:07
+----------------------------------------------------------

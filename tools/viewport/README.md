@@ -1,5 +1,14 @@
 # Offline study viewport
 
+Capture v1 now accepts optional `numerics` metadata. Absent metadata retains
+legacy f32 validation; explicitly tagged `trial_f64` report values preserve
+double precision through native JSON and browser validation, including sub-f32
+detail. The tag records storage width and configured body/field fraction bits.
+The current ActiveSession/FixedStudy producer still constructs legacy execution;
+typed report-value support does not implement an f64 owner lifecycle or qualify
+WebGL rendering as authoritative numerical precision. See the bounded
+[C1 implementation](../../engine/docs/LIVE-NUMERICAL-PROFILE.md).
+
 This optional human observation tool makes the native study's data shape
 accessible and supports visual pattern recognition and intuitive spatial or
 quantitative judgments. Inspect a pattern by navigating around it and selecting

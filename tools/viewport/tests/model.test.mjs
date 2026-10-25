@@ -18,6 +18,18 @@ test('exact identities/masses and escaped supplied labels survive JSON', () => {
   assert.equal(parsed.particles[0].exact_mass, '9223372036854775811');
   assert.equal(parsed.particles[0].label, fixture().particles[0].label);
 });
+test('optional typed numerical metadata preserves double detail and rejects contradictory widths', () => {
+  const f = fixture(), precise = 1 + 2 ** -40;
+  f.numerics = {profile: 'trial_f64', storage_bits: 64, body_fraction_bits: 48, field_fraction_bits: 32};
+  f.particles[0].position[0] = precise;
+  assert.equal(parseSnapshot(JSON.stringify(f)).particles[0].position[0], precise);
+  f.numerics.storage_bits = 32;
+  assert.throws(() => validateSnapshot(f));
+  f.numerics = {profile: 'legacy_f32', storage_bits: 32, body_fraction_bits: 23, field_fraction_bits: 23};
+  assert.throws(() => validateSnapshot(f));
+  f.particles[0].position[0] = Math.fround(precise);
+  assert.equal(validateSnapshot(f), f);
+});
 test('stable independent per-level ranges, equal/unknown handling, zero is known', () => {
   const f = fixture(), ranges = rangesFor(f);
   assert.deepEqual(ranges.get(0), {min: 2, max: 10, known: 3, unknown: 1, total: 4});
