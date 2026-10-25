@@ -3,7 +3,7 @@
 Status: **accepted in #183, 2026-10-24**. [Segment A implementation](../engine/docs/SOURCE-COUNTS.md)
 is accepted in #184; [Segment B's candidate implementation](../engine/docs/WEIGHTED-CENTROID-CASCADE.md)
 is accepted in #185. The [live numerical profile continuation](live-numerical-profile-plan.md)
-is proposed separately; live hierarchy/response integration is not released.
+is accepted separately in #186 for C1 only; live hierarchy/response integration is not released.
 Baseline: `main` at
 `768493a28d1fcb5608179145c86346ba7489d9ed`, following accepted #182 and #181.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)

@@ -1,6 +1,6 @@
 # Live numerical profile and positional residue separation
 
-Status: **proposal for review, 2026-10-24**. Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
+Status: **accepted in #186, 2026-10-24; C1 implementation pending**. Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 and [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177),
 with the operation matrix under #156/#170. Baseline: `main` at
 `1c880cc7e89cec8e4cdcfee7f98762b29f54c794`, the merge of approved #185.
@@ -12,9 +12,9 @@ Contributor evidence remains separately pinned to
 The [precision primitives](../engine/docs/NATIVE-PRECISION.md),
 [source counts](../engine/docs/SOURCE-COUNTS.md) and
 [weighted candidates](../engine/docs/WEIGHTED-CENTROID-CASCADE.md) are built.
-They do not yet change live arithmetic. The next deliverable proposed here is
+They do not yet change live arithmetic. The next accepted deliverable is
 **C1: one coherent live f64 trial profile with explicit positional publication**.
-Acceptance would release C1 only. Live hierarchical propagation and inherited
+Acceptance releases C1 only. Live hierarchical propagation and inherited
 response need the following bounded contract after C1's evidence; they are not
 silently included in this release.
 
@@ -38,7 +38,7 @@ records or analyst matching. Different fields may overlap as before; exact
 counts apply within each field, not as a global cap across unrelated fields.
 The full hierarchy query remains an optional independent reference.
 
-## Proposed numerical contract
+## Accepted C1 trial numerical contract
 
 Select the numerical profile at prepared-execution creation. Keep the existing
 f32 profile and its public behavior as the regression/control path. The new
@@ -96,7 +96,7 @@ not carry it in a remainder, compensation term or hidden unquantized position.
 Do not trim each field's incoming force independently, zero physical velocity,
 or use speed as a new sleep threshold.
 
-Proposed activity rule for review: retain the particle's native bit when the
+Provisional C1 activity rule: retain the particle's native bit when the
 untrimmed integration trial attempts displacement, the published position
 changes, or physical velocity changes. An unchanged Q_b coordinate alone cannot
 consume genuine ongoing physical work. Exact fixed-state checks use the declared
@@ -129,6 +129,29 @@ contact propagation, dirty-field reduction/publication, then centroid consumptio
 and particle activation for the following particle phase. These final activations
 target a type whose calculation has finished. C1 adds no centroid-to-centroid
 reactivation race, second awake mask, epoch, host queue or loaded-array scheduler.
+
+### Trial watch point: persistent sub-grid activity
+
+Patrick delegated this choice to maintainer judgment, with monitoring, on
+2026-10-24. Provisionally retain activity for ongoing untrimmed motion attempts
+as specified above. This avoids consuming genuine physical motion without a
+proven reactivation rule; it is not a permanent decision that every sub-grid
+attempt must run indefinitely. Preserve velocity/history and discard positional
+rounding detail exactly as required.
+
+A constant velocity can repeatedly attempt a displacement below the Q_b cell
+while its published position stays fixed. Record that as positional quiescence
+with continuing activity, not complete computational settling. Require a bounded
+constant-velocity fixture, changing-force/velocity cases that eventually cross a
+publication boundary, and subsequent contact/field perturbations. Report attempt,
+publication-change and active-work counts plus elapsed cost using observations
+of the existing native work, not an additional scheduler or activity state.
+
+C1 acceptance checks correct behavior and reports this cost; it does not require
+all trial fixtures to become inactive. If persistent sub-grid work is material,
+revisit the activity/publication policy under #172/#177 with measured evidence.
+Do not add an epsilon, zero physical velocity, preserve a hidden positional
+remainder, or force sleep merely to make a settling metric pass.
 
 ## Initialization, edits and the other numerical surfaces
 

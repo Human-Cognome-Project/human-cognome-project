@@ -42,7 +42,7 @@ references, not another mandatory reading sequence.
   and 74 CPU suites passed. Live propagation remains separate.
 
 - [Live numerical profile and positional residue separation](live-numerical-profile-plan.md) —
-  proposal under #172/#177 for C1: coherent live f64 trial surfaces and distinct
+  accepted #186 plan under #172/#177 for C1 (implementation pending): coherent live f64 trial surfaces and distinct
   physical/history versus discarded positional state. Existing single-level
   native phases first; hierarchy/response needs a subsequent bounded release.
 

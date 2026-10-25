@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-24**, after #185 weighted candidate acceptance; live numerical profile plan proposed.
+Last checked: **2026-10-24**, after #185 weighted candidate acceptance; C1 trial numerical profile plan accepted in #186.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -90,9 +90,10 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
   [contributor evidence](engine/tests/weighted_cascade/README.md) remains separately
   source-pinned. It retains the original whole-body API and changes no live mechanics.
 - The [live numerical profile plan](docs/live-numerical-profile-plan.md) is
-  proposed under #172/#177: a coherent f64 trial profile, separate physical/history
+  accepted in #186 under #172/#177: a coherent f64 trial profile, separate physical/history
   state and discarded positional detail, with the existing single-level native
-  phases. It requests release of C1 only; implementation is not yet released.
+  phases. C1 only is released for implementation. Persistent sub-grid activity is
+  a provisional trial choice and an explicit cost/settling watch point.
   Live hierarchy consume/publication cuts and inherited response remain a
   following bounded contract, with #181's settling-across-ticks direction intact.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and

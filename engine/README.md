@@ -199,7 +199,7 @@ existing exact source counts through prepared commits and is accepted in #184.
 [Segment B](docs/WEIGHTED-CENTROID-CASCADE.md) now supplies fractional/compatible
 overlapping candidates accepted in #185, with all eight hosted checks and 74
 native CPU suites passing. The [live numerical profile plan](../docs/live-numerical-profile-plan.md)
-is proposed next; live arithmetic and phase changes remain unbuilt.
+is accepted in #186 for C1 implementation; live arithmetic and phase changes remain unbuilt.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded

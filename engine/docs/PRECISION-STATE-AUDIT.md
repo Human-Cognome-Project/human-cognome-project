@@ -21,8 +21,9 @@ accepted separately in #185, prepares u64 count/denominator descriptors and
 uses their native f64 ratio with current widened physical mass. Its f64 candidate
 centres/masses and host integer coverage are separate from the live surfaces
 below; it does not convert their arithmetic, storage or publication.
-The [proposed live numerical profile plan](../../docs/live-numerical-profile-plan.md)
-addresses that next conversion; it is not implemented or released yet.
+The [accepted #186 live numerical profile plan](../../docs/live-numerical-profile-plan.md)
+releases C1 of that conversion; implementation remains pending. Persistent
+sub-grid activity is explicitly provisional and must be measured.
 
 ## State owners and publication sites
 
