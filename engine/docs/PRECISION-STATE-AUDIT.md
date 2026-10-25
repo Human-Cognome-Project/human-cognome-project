@@ -16,7 +16,11 @@ The accepted [#183 weighted accounting continuation](../../docs/weighted-centroi
 identified exact assembly counts lost at the prepared field boundary. Its
 [Segment A implementation](SOURCE-COUNTS.md), accepted in #184, retains them
 in committed/prospective source tables. It does not widen the audited numerical
-share or physical state; weighted candidate arithmetic remains Segment B.
+share or physical state. The [Segment B candidate extension](WEIGHTED-CENTROID-CASCADE.md),
+now under review separately, prepares u64 count/denominator descriptors and
+uses their native f64 ratio with current widened physical mass. Its f64 candidate
+centres/masses and host integer coverage are separate from the live surfaces
+below; it does not convert their arithmetic, storage or publication.
 
 ## State owners and publication sites
 

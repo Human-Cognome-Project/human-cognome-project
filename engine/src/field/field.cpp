@@ -1467,7 +1467,8 @@ void Harness::prepare_empty_execution() {
     s.binding_bytes += centroid_cascade_->binding_bytes();
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
       runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
-      s.capacity.limits()[Budget::CascadeNodes] != 0);
+      s.capacity.limits()[Budget::CascadeNodes] != 0,
+      s.capacity.limits()[Budget::CascadeCoverage] != 0);
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");

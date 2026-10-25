@@ -1,7 +1,8 @@
 # Source counts and weighted centroid comparisons
 
 Status: **accepted in #183, 2026-10-24**. [Segment A implementation](../engine/docs/SOURCE-COUNTS.md)
-is accepted in #184; Segment B remains pending. Baseline: `main` at
+is accepted in #184; [Segment B's candidate implementation](../engine/docs/WEIGHTED-CENTROID-CASCADE.md)
+is under review in its own PR. Baseline: `main` at
 `768493a28d1fcb5608179145c86346ba7489d9ed`, following accepted #182 and #181.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172);

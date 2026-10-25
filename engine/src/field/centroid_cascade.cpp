@@ -106,22 +106,37 @@ void CentroidCascade::append_layout(const BudgetDemand &l,
   add("cascade-valid", n, sizeof(int), 2);
   add("cascade-counters", 8, sizeof(std::int64_t), 2);
   add("cascade-root-summary", 7, sizeof(double), 2);
+  if (l[Budget::CascadeCoverage]) {
+    add("cascade-source-rows", r, sizeof(CascadeSourceRow), 1);
+    add("cascade-source-shares", r, sizeof(float), 2);
+    add("cascade-source-ratios", 2 * r, sizeof(std::uint64_t), 2);
+    add("cascade-coverage", physical(l[Budget::CascadeCoverage]),
+        sizeof(CascadeCoverage), 1);
+    add("cascade-coverage-work", physical(l[Budget::CascadeCoverage]),
+        sizeof(std::uint64_t), 1);
+    add("cascade-coverage-offsets", n + 1, sizeof(int), 1);
+  }
 }
 
 struct CentroidCascade::Impl {
   Harness &h;
   const BudgetDemand &limits;
   const int nstride, rstride;
+  const bool weighted_enabled;
   CascadeInspection inspection;
   std::vector<int> controls, refs, order, parents, ranks, offsets, cursors;
   std::vector<std::uint64_t> masks;
+  std::vector<std::uint64_t> ratios, coverage_work;
+  std::vector<float> source_shares;
   std::array<std::int64_t, 8> counts{};
   std::array<double, 7> summary{};
   std::unique_ptr<Ndarray> node_array, ref_array, child_array, order_array,
       mask_array, values_array, valid_array, stats_array, summary_array;
+  std::unique_ptr<Ndarray> ratio_array, source_share_array;
   bool bound{}, valid{};
   std::uint64_t generation{}, binding{}, query_id{}, node_count{}, ref_count{},
-      link_count{}, rounds{}, leaf_refs{}, work{};
+      link_count{}, rounds{}, leaf_refs{}, work{}, coverage_count{};
+  bool weighted{};
   CascadeResult last;
   // Prepared contexts finish before their borrowed source/candidate arrays.
   engine::CompiledKernel validate_kernel, reduce_kernel;
@@ -130,6 +145,7 @@ struct CentroidCascade::Impl {
         limits(owner.prepared_->capacity.limits()),
         nstride(int(physical(limits[Budget::CascadeNodes]))),
         rstride(int(physical(limits[Budget::CascadeReferences]))),
+        weighted_enabled(limits[Budget::CascadeCoverage] != 0),
         controls(Columns * nstride),
         refs(3 * rstride),
         order(nstride),
@@ -146,6 +162,14 @@ struct CentroidCascade::Impl {
     inspection.cohorts.resize(rstride);
     inspection.values.resize(7 * nstride);
     inspection.valid.resize(nstride);
+    if (weighted_enabled) {
+      inspection.source_rows.resize(rstride);
+      inspection.coverage.resize(physical(limits[Budget::CascadeCoverage]));
+      inspection.coverage_offsets.resize(nstride + 1);
+      ratios.resize(2 * rstride);
+      source_shares.resize(rstride);
+      coverage_work.resize(inspection.coverage.size());
+    }
     auto make = [&](DataType dt, std::vector<int> shape) {
       auto a = std::make_unique<Ndarray>(&h.runtime_->program(), dt, shape);
       h.runtime_->program().fill_ndarray_fast_u32(a.get(), 0);
@@ -160,6 +184,10 @@ struct CentroidCascade::Impl {
     valid_array = make(PrimitiveType::i32, {nstride});
     stats_array = make(PrimitiveType::i64, {8});
     summary_array = make(PrimitiveType::f64, {7});
+    if (weighted_enabled) {
+      ratio_array = make(PrimitiveType::u64, {2, rstride});
+      source_share_array = make(PrimitiveType::f32, {rstride});
+    }
     compile();
     launch_validate(0, 0);
     launch_reduce(0, 0, -1);
@@ -206,6 +234,7 @@ void CentroidCascade::Impl::compile() {
          *stats = array(b, 6, w);
     auto *nc = b.create_arg_load({7}, i, false, 0),
          *rc = b.create_arg_load({8}, i, false, 0);
+    auto *expected_shares = weighted_enabled ? array(b, 9, f) : nullptr;
     for (int c = 0; c < 8; ++c)
       write(b, stats, {b.get_int32(c)}, b.get_int64(0));
     {
@@ -240,7 +269,9 @@ void CentroidCascade::Impl::compile() {
                     b.create_cmp_ne(read(b, edges, cell(b, kEdgeGroup, edge)),
                                     field),
                     b.create_cmp_ne(read(b, shares, cell(b, kShare, edge)),
-                                    b.get_float32(1)))),
+                                    weighted_enabled
+                                        ? read(b, expected_shares, {row})
+                                        : b.get_float32(1)))),
             source_error);
       auto *mass = b.create_cast(read(b, p, cell(b, kMass, body)), d);
       error(b, stats,
@@ -257,9 +288,12 @@ void CentroidCascade::Impl::compile() {
           b.create_if(h.activity_->particle_activity.active(b, body)), true);
       count(b, stats, AwakeReferences);
     }
+    std::vector<engine::Param> params{fa, ia, fa,      ia,     ia,
+                                      iv, cv, integer, integer};
+    if (weighted_enabled)
+      params.push_back(engine::Param::array(f));
     validate_kernel = engine::CompiledKernel(
-        *h.runtime_, "cascade_validate_" + name, b.extract_ir(),
-        {fa, ia, fa, ia, ia, iv, cv, integer, integer},
+        *h.runtime_, "cascade_validate_" + name, b.extract_ir(), params,
         engine::MathMode::Strict);
   }
   {
@@ -272,6 +306,8 @@ void CentroidCascade::Impl::compile() {
     auto *first = b.create_arg_load({10}, i, false, 0),
          *end = b.create_arg_load({11}, i, false, 0),
          *root = b.create_arg_load({12}, i, false, 0);
+    auto *source_ratios =
+        weighted_enabled ? array(b, 13, PrimitiveType::u64, 2) : nullptr;
     auto *loop = b.create_range_for(first, end, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
@@ -301,8 +337,16 @@ void CentroidCascade::Impl::compile() {
         auto *ref =
             child ? read(b, children, {b.create_add(begin, index)})
                   : read(b, references, cell(b, 0, b.create_add(begin, index)));
-        auto *mass = child ? read(b, values, cell(b, 6, ref))
+        Stmt *mass = child ? read(b, values, cell(b, 6, ref))
                            : b.create_cast(read(b, p, cell(b, kMass, ref)), d);
+        if (!child && weighted_enabled) {
+          auto *source = b.create_add(begin, index);
+          auto *numerator =
+              b.create_cast(read(b, source_ratios, cell(b, 0, source)), d);
+          auto *denominator =
+              b.create_cast(read(b, source_ratios, cell(b, 1, source)), d);
+          mass = b.create_mul(mass, b.create_div(numerator, denominator));
+        }
         if (child)
           b.create_local_store(
               bad, b.create_logical_or(
@@ -369,11 +413,23 @@ void CentroidCascade::Impl::compile() {
           write(b, summary, {b.get_int32(f)}, read(b, values, cell(b, f, row)));
       }
     }
+    std::vector<engine::Param> params{fa,
+                                      ia,
+                                      ia,
+                                      iv,
+                                      iv,
+                                      engine::Param::array(PrimitiveType::u64),
+                                      engine::Param::array(d, 2),
+                                      iv,
+                                      cv,
+                                      engine::Param::array(d),
+                                      integer,
+                                      integer,
+                                      integer};
+    if (weighted_enabled)
+      params.push_back(engine::Param::array(PrimitiveType::u64, 2));
     reduce_kernel = engine::CompiledKernel(
-        *h.runtime_, "cascade_reduce_" + name, b.extract_ir(),
-        {fa, ia, ia, iv, iv, engine::Param::array(PrimitiveType::u64),
-         engine::Param::array(d, 2), iv, cv, engine::Param::array(d), integer,
-         integer, integer},
+        *h.runtime_, "cascade_reduce_" + name, b.extract_ir(), params,
         engine::MathMode::Strict);
   }
 }
@@ -392,6 +448,8 @@ void CentroidCascade::Impl::launch_validate(int n, int r) {
     ctx.set_arg_ndarray({4}, *ref_array);
     ctx.set_arg_ndarray({5}, *valid_array);
     ctx.set_arg_ndarray({6}, *stats_array);
+    if (weighted_enabled)
+      ctx.set_arg_ndarray({9}, *source_share_array);
   }
   engine::argument_int(ctx, 7, n);
   engine::argument_int(ctx, 8, r);
@@ -412,6 +470,8 @@ void CentroidCascade::Impl::launch_reduce(int first, int end, int root) {
     ctx.set_arg_ndarray({7}, *valid_array);
     ctx.set_arg_ndarray({8}, *stats_array);
     ctx.set_arg_ndarray({9}, *summary_array);
+    if (weighted_enabled)
+      ctx.set_arg_ndarray({13}, *ratio_array);
   }
   engine::argument_int(ctx, 10, first);
   engine::argument_int(ctx, 11, end);
@@ -431,10 +491,25 @@ std::size_t CentroidCascade::binding_bytes() const {
 CascadeBinding CentroidCascade::bind(std::uint64_t expected,
                                      const CascadeSpec &spec,
                                      std::uint64_t budget) {
+  return bind_impl(expected, spec, nullptr, budget);
+}
+CascadeBinding CentroidCascade::bind_weighted(std::uint64_t expected,
+                                              const WeightedCascadeSpec &spec,
+                                              std::uint64_t budget) {
+  const CascadeSpec view{spec.nodes,    spec.node_count,
+                         spec.children, spec.child_count,
+                         nullptr,       spec.contribution_count};
+  return bind_impl(expected, view, &spec, budget);
+}
+CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
+                                          const CascadeSpec &spec,
+                                          const WeightedCascadeSpec *weighted,
+                                          std::uint64_t budget) {
   auto &a = *impl_;
   auto &s = *a.h.prepared_;
   CascadeBinding answer;
   answer.generation = s.generation;
+  answer.weighted = weighted != nullptr;
   a.bound = false;
   a.valid = false;
   const auto finish = [&](CascadeStatus status) {
@@ -447,6 +522,8 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
   };
   if (expected != s.generation)
     return finish(CascadeStatus::Stale);
+  if (weighted && !a.weighted_enabled)
+    return finish(CascadeStatus::Unsupported);
   if (a.binding == UINT64_MAX)
     return finish(CascadeStatus::Unsupported);
   answer.binding = ++a.binding;
@@ -462,7 +539,9 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
       return exhaust(item.first, item.second, a.limits[item.first]);
   if ((spec.node_count && !spec.nodes) ||
       (spec.child_count && !spec.children) ||
-      (spec.cohort_count && !spec.cohorts))
+      (spec.cohort_count &&
+       !(weighted ? static_cast<const void *>(weighted->contributions)
+                  : spec.cohorts)))
     return finish(CascadeStatus::InvalidHierarchy);
   // The caller owns stable input for the duration of bind. Diagnostic borrows
   // expire at this boundary and cannot alias its mutable normalization tables.
@@ -474,7 +553,10 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
     if (s.live.particles || spec.child_count || spec.cohort_count)
       return finish(CascadeStatus::InvalidHierarchy);
     a.node_count = a.ref_count = a.link_count = a.rounds = a.leaf_refs =
-        a.work = 0;
+        a.work = a.coverage_count = 0;
+    a.weighted = weighted != nullptr;
+    if (a.weighted_enabled)
+      a.inspection.coverage_offsets[0] = 0;
     a.generation = s.generation;
     a.bound = true;
     return finish(CascadeStatus::Empty);
@@ -496,8 +578,18 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
     if (!charge())
       return work_failure();
     a.ranks[i] = 0;
+    if (a.weighted_enabled) {
+      if (!charge())
+        return work_failure();
+      a.inspection.coverage_offsets[i] = 0;
+    }
   }
-  std::uint64_t nr = 0, nh = 0, leaf = 0, rounds = 0;
+  if (a.weighted_enabled) {
+    if (!charge())
+      return work_failure();
+    a.inspection.coverage_offsets[spec.node_count] = 0;
+  }
+  std::uint64_t nr = 0, nh = 0, leaf = 0, rounds = 0, nc = 0;
   for (std::size_t row = 0; row < spec.node_count; ++row) {
     if (!charge())
       return work_failure();
@@ -524,18 +616,42 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
         return finish(CascadeStatus::InvalidHierarchy);
     }
     const auto rb = nr;
+    const auto coverage_begin = nc;
     int last_edge = -1;
     for (std::uint64_t k = 0; k < node.cohort_count; ++k) {
       if (!charge())
         return work_failure();
-      const auto ref = spec.cohorts[node.cohort_begin + k];
+      const auto index = node.cohort_begin + k;
+      const auto ref = weighted ? weighted->contributions[index].occurrence
+                                : spec.cohorts[index];
       if (!a.particle(ref))
         return finish(CascadeStatus::InvalidReference);
+      int match = -1;
+      std::uint64_t numerator = 1, denominator = 1;
+      if (weighted) {
+        const auto &source = weighted->contributions[index].source;
+        if (source.generation != s.generation)
+          return finish(CascadeStatus::Stale);
+        if (source.row >= s.live.edges)
+          return finish(CascadeStatus::InvalidReference);
+        match = int(source.row);
+        const auto &edge = s.edges[match];
+        if (!same(edge.first, ref) || !same(edge.second, node.field) ||
+            source.ordinal != edge.ordinal)
+          return finish(CascadeStatus::InvalidReference);
+        numerator = s.source_counts[match];
+        denominator = s.source_masses[ref.record];
+        if (!numerator || !denominator || numerator > denominator ||
+            edge.share != static_cast<float>(static_cast<double>(numerator) /
+                                             static_cast<double>(denominator)))
+          return finish(CascadeStatus::UnsupportedAccounting);
+      }
       bool duplicate = false;
       for (std::uint64_t j = rb; j < nr; ++j) {
         if (!charge())
           return work_failure();
-        if (same(a.inspection.cohorts[j], ref)) {
+        if (weighted ? a.reference(2, int(j)) == match
+                     : same(a.inspection.cohorts[j], ref)) {
           duplicate = true;
           break;
         }
@@ -547,22 +663,24 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
       if (nr == a.limits[Budget::CascadeReferences])
         return exhaust(Budget::CascadeReferences, nr + 1,
                        a.limits[Budget::CascadeReferences]);
-      int match = -1, matches = 0;
-      bool whole = true;
-      for (std::size_t e = 0; e < s.live.edges; ++e) {
-        if (!charge())
-          return work_failure();
-        if (same(s.edges[e].first, ref) &&
-            same(s.edges[e].second, node.field)) {
-          match = int(e);
-          ++matches;
-          whole = whole && s.edges[e].share == 1;
+      if (!weighted) {
+        int matches = 0;
+        bool whole = true;
+        for (std::size_t e = 0; e < s.live.edges; ++e) {
+          if (!charge())
+            return work_failure();
+          if (same(s.edges[e].first, ref) &&
+              same(s.edges[e].second, node.field)) {
+            match = int(e);
+            ++matches;
+            whole = whole && s.edges[e].share == 1;
+          }
         }
+        if (!matches)
+          return finish(CascadeStatus::InvalidReference);
+        if (matches != 1 || !whole)
+          return finish(CascadeStatus::UnsupportedParticipation);
       }
-      if (!matches)
-        return finish(CascadeStatus::InvalidReference);
-      if (matches != 1 || !whole)
-        return finish(CascadeStatus::UnsupportedParticipation);
       if (match <= last_edge)
         return finish(CascadeStatus::InvalidHierarchy);
       last_edge = match;
@@ -570,6 +688,35 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
       a.reference(0, nr) = ref.record;
       a.reference(1, nr) = node.field.record;
       a.reference(2, nr) = match;
+      if (a.weighted_enabled) {
+        a.inspection.source_rows[nr] = {s.generation, std::uint64_t(match),
+                                        s.edges[match].ordinal};
+        a.ratios[nr] = numerator;
+        a.ratios[a.rstride + nr] = denominator;
+        a.source_shares[nr] = s.edges[match].share;
+      }
+      if (weighted) {
+        std::uint64_t entry = coverage_begin;
+        for (; entry < nc; ++entry) {
+          if (!charge())
+            return work_failure();
+          if (same(a.inspection.coverage[entry].occurrence, ref))
+            break;
+        }
+        if (entry == nc) {
+          if (nc == a.limits[Budget::CascadeCoverage])
+            return exhaust(Budget::CascadeCoverage, nc + 1,
+                           a.limits[Budget::CascadeCoverage]);
+          if (!charge())
+            return work_failure();
+          a.inspection.coverage[nc++] = {ref, 0, denominator};
+          a.coverage_work[entry] = 0;
+        }
+        auto &coverage = a.inspection.coverage[entry];
+        if (numerator > denominator - coverage.count)
+          return finish(CascadeStatus::InvalidCoverage);
+        coverage.count += numerator;
+      }
       ++nr;
     }
     const auto cb = nh;
@@ -618,7 +765,34 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
     node.child_count = nh - cb;
     if (!node.child_count)
       leaf += node.cohort_count;
-    else {
+    else if (weighted) {
+      for (auto k = cb; k < nh; ++k) {
+        const auto child = a.inspection.children[k];
+        for (int j = a.inspection.coverage_offsets[child];
+             j < a.inspection.coverage_offsets[child + 1]; ++j) {
+          const auto &part = a.inspection.coverage[j];
+          auto entry = coverage_begin;
+          for (; entry < nc; ++entry) {
+            if (!charge())
+              return work_failure();
+            if (same(a.inspection.coverage[entry].occurrence, part.occurrence))
+              break;
+          }
+          if (entry == nc ||
+              part.denominator != a.inspection.coverage[entry].denominator ||
+              part.count >
+                  a.inspection.coverage[entry].count - a.coverage_work[entry])
+            return finish(CascadeStatus::InvalidCoverage);
+          a.coverage_work[entry] += part.count;
+        }
+      }
+      for (auto entry = coverage_begin; entry < nc; ++entry) {
+        if (!charge())
+          return work_failure();
+        if (a.coverage_work[entry] != a.inspection.coverage[entry].count)
+          return finish(CascadeStatus::InvalidCoverage);
+      }
+    } else {
       std::uint64_t total = 0;
       for (std::uint64_t k = cb; k < nh; ++k) {
         const auto &part = a.inspection.nodes[a.inspection.children[k]];
@@ -652,6 +826,8 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
       if (total != node.cohort_count)
         return finish(CascadeStatus::InvalidHierarchy);
     }
+    if (weighted)
+      a.inspection.coverage_offsets[row + 1] = int(nc);
     a.inspection.nodes[row] = node;
     a.control(RefBegin, row) = int(rb);
     a.control(RefCount, row) = int(node.cohort_count);
@@ -677,7 +853,7 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
   if (rounds > a.limits[Budget::CascadeLevels])
     return exhaust(Budget::CascadeLevels, rounds,
                    a.limits[Budget::CascadeLevels]);
-  const auto references = s.live.references() + spec.node_count + nr + nh;
+  const auto references = s.live.references() + spec.node_count + nr + nh + nc;
   if (references > a.limits[Budget::References])
     return exhaust(Budget::References, references,
                    a.limits[Budget::References]);
@@ -713,6 +889,7 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
   answer.references = nr;
   answer.links = nh;
   answer.levels = rounds;
+  answer.coverage_entries = nc;
   try {
     a.h.validate_prepared_bindings();
     const auto upload = [&](auto &array, const auto &data) {
@@ -725,6 +902,10 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
     upload(a.child_array, a.inspection.children);
     upload(a.order_array, a.order);
     upload(a.mask_array, a.masks);
+    if (a.weighted_enabled) {
+      upload(a.ratio_array, a.ratios);
+      upload(a.source_share_array, a.source_shares);
+    }
     a.launch_validate(int(spec.node_count), int(nr));
     a.h.runtime_->synchronize();
     ++answer.synchronizations;
@@ -742,6 +923,8 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
     a.link_count = nh;
     a.rounds = rounds;
     a.leaf_refs = leaf;
+    a.coverage_count = nc;
+    a.weighted = weighted != nullptr;
     a.work = 2 * spec.node_count + nr + leaf + nh;
     a.generation = s.generation;
     a.bound = true;
@@ -762,6 +945,8 @@ CascadeResult CentroidCascade::query(std::uint64_t expected,
   answer.generation = s.generation;
   answer.completed_ticks = s.completed_ticks;
   answer.binding = a.binding;
+  answer.weighted = a.weighted;
+  answer.coverage_entries = a.coverage_count;
   answer.frame_anchor = a.h.frame_anchor_;
   const auto finish = [&](CascadeStatus status) {
     answer.status = status;
@@ -883,6 +1068,19 @@ CascadeResult Harness::query_centroid_cascade(std::uint64_t generation,
     return r;
   }
   return centroid_cascade_->query(generation, work);
+}
+CascadeBinding Harness::bind_weighted_centroid_cascade(
+    std::uint64_t generation,
+    const WeightedCascadeSpec &spec,
+    std::uint64_t work) {
+  if (!prepared_ || !ready_)
+    return {};
+  if (!centroid_cascade_) {
+    CascadeBinding r;
+    r.status = CascadeStatus::Unsupported;
+    return r;
+  }
+  return centroid_cascade_->bind_weighted(generation, spec, work);
 }
 const CascadeInspection &Harness::inspect_centroid_cascade(
     const CascadeResult &q) {

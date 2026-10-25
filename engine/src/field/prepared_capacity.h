@@ -22,6 +22,8 @@ enum class Budget {
   CascadeReferences,
   CascadeLevels,  // Dependency rounds, not conceptual LoD or SNode depth.
   CascadeWork,
+  CascadeCoverage,  // Unique node/occurrence coverage entries; zero disables
+                    // weighted binds.
   Count
 };
 struct BudgetDemand {

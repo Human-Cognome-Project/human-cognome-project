@@ -196,6 +196,10 @@ class Harness {
   CascadeResult query_centroid_cascade(
       std::uint64_t expected_generation,
       std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  CascadeBinding bind_weighted_centroid_cascade(
+      std::uint64_t expected_generation,
+      const WeightedCascadeSpec &spec,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
   const CascadeInspection &inspect_centroid_cascade(const CascadeResult &);
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.

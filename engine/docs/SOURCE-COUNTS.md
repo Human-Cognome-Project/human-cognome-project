@@ -3,7 +3,8 @@
 Status: **Segment A accepted in #184, 2026-10-24**, under the
 [#183 accepted accounting plan](../../docs/weighted-centroid-accounting-plan.md)
 and #177/#172. Baseline: `f8c4203dc67376479d5a7018d870f9906406fc69`.
-Segment B's weighted candidate arithmetic remains pending.
+[Segment B's weighted candidate implementation](WEIGHTED-CENTROID-CASCADE.md)
+is now under review separately; the evidence below qualifies Segment A only.
 
 ## Source contract
 
@@ -156,8 +157,8 @@ ctest --test-dir engine/build --output-on-failure -j2
 ```
 
 Use the [matched native build](PREPARED-EXECUTION.md#reproduction). No new GPU
-execution or PostgreSQL acceptance is claimed. Existing candidate arithmetic
-still requires whole/disjoint contributions. Segment B must follow this segment's
+execution or PostgreSQL acceptance is claimed. The original candidate API
+still requires whole/disjoint contributions. Segment B follows this segment's
 review/regression evidence in its own PR. Live precision/publication/response,
 native ripple settling and #156/#170 operational acceptance remain separate;
 #172/#177/#156/#145 remain open.

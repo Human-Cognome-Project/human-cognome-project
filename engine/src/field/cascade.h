@@ -20,7 +20,9 @@ enum class CascadeStatus {
   UnsupportedParticipation,
   UnsupportedProfile,
   InvalidNumerics,
-  CapacityExhausted
+  CapacityExhausted,
+  UnsupportedAccounting,
+  InvalidCoverage
 };
 // Explicit local comparison identity; not an address or semantic matcher.
 // Higher levels mean coarser comparisons. Children precede parents, with the
@@ -43,12 +45,35 @@ struct CascadeSpec {
   const engine::RecordHandle *cohorts{};
   std::size_t cohort_count{};
 };
+// Source identity only: no query-supplied count or weight. Node cohort spans
+// index this contribution table in WeightedCascadeSpec.
+struct CascadeSourceRow {
+  std::uint64_t generation{}, row{}, ordinal{};
+};
+struct CascadeContribution {
+  engine::RecordHandle occurrence;
+  CascadeSourceRow source;
+};
+struct WeightedCascadeSpec {
+  const CascadeNode *nodes{};
+  std::size_t node_count{};
+  const int *children{};
+  std::size_t child_count{};
+  const CascadeContribution *contributions{};
+  std::size_t contribution_count{};
+};
+struct CascadeCoverage {
+  engine::RecordHandle occurrence;
+  std::uint64_t count{}, denominator{};
+};
 struct CascadeBinding {
   CascadeStatus status{CascadeStatus::Unready};
   BudgetFailure failure{};
   std::uint64_t generation{}, binding{}, nodes{}, links{}, references{},
       levels{}, aliases{}, preparation_visits{}, uploaded_bytes{},
       readback_bytes{}, synchronizations{};
+  bool weighted{};
+  std::uint64_t coverage_entries{};
 };
 struct CascadeResult {
   CascadeStatus status{CascadeStatus::Unready};
@@ -61,6 +86,8 @@ struct CascadeResult {
   int root{-1};
   std::array<double, 3> trial{}, centre{}, frame_anchor{};
   double mass{};
+  bool weighted{};
+  std::uint64_t coverage_entries{};
 };
 // Borrowed until the next synchronized operation or destruction. Use only the
 // logical prefixes in the successful result; copying the reference is not a
@@ -72,5 +99,11 @@ struct CascadeInspection {
   std::vector<engine::RecordHandle> cohorts;
   std::vector<double> values;
   std::vector<int> children, valid;
+  // Allocated only with CascadeCoverage capacity. Source rows parallel cohorts;
+  // coverage_offsets supplies per-node spans into exact coverage (host
+  // metadata).
+  std::vector<CascadeSourceRow> source_rows;
+  std::vector<CascadeCoverage> coverage;
+  std::vector<int> coverage_offsets;
 };
 }  // namespace field
