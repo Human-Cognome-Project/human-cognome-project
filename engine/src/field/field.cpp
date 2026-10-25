@@ -377,6 +377,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       auto *fx = b.create_mul(scale, dx);
       auto *fy = b.create_mul(scale, dy);
       auto *fz = b.create_mul(scale, dz);
+      if (profile_.wide())
+        for (auto *value :
+             std::array<Stmt *, 9>{m1, gm, d2, inv, inv3, scale, fx, fy, fz})
+          detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
       store(b, particles, at(b, kForceX, p),
             b.create_add(load(b, particles, at(b, kForceX, p)), fx));
       store(b, particles, at(b, kForceY, p),
@@ -446,6 +450,11 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
             load(b, particles, at(b, kRadius, bp)), profile_.wide());
         auto *live = geometry.live, *inv = geometry.inverse,
              *penetration = geometry.penetration;
+        if (profile_.wide())
+          for (auto *value :
+               std::array<Stmt *, 5>{geometry.squared, inv, geometry.distance,
+                                     geometry.radii, penetration})
+            detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
         auto *scale = b.create_neg(b.create_mul(
             b.create_mul(stiffness, penetration), b.create_mul(live, inv)));
         for (int axis = 0; axis < 3; ++axis) {
@@ -536,6 +545,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       auto *speed = b.create_sqrt(
           b.create_add(b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
                        b.create_mul(vz, vz)));
+      if (profile_.wide())
+        for (auto *value : std::array<Stmt *, 5>{fx, fy, fz, reach, speed})
+          detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
       auto *travel = b.create_mul(speed, dt);
 
       // live == 1.0 when reach > 0, exactly 0.0 when reach == 0 (reach is
@@ -589,6 +601,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       // reach_ratio == reach_strength / (M/d2) == threshold / field-strength.
       auto *reach_ratio =
           b.create_div(b.create_mul(reach_strength, pd2), safe_total);
+      if (profile_.wide())
+        for (auto *value : std::array<Stmt *, 2>{pd2, reach_ratio})
+          detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
       auto *excess =
           b.create_max(b.create_sub(reach_ratio, real(b, 1.0f)), real(b, 0.0f));
       // D == 1 inside the reach (bulk untouched), D -> 0 far outside
@@ -1687,6 +1702,16 @@ void Harness::initialize_prepared_fixture(const Parameters64 &p) {
     if (profile_.wide() &&
         activity_->report(exposed_, exposed_fields_).numerical_errors)
       throw std::runtime_error("trial seed numerical invariant failed");
+    if (profile_.wide()) {
+      double mass;
+      if (path_ == HostPath::BulkCopy)
+        engine::readback(*universal_array_, &mass, sizeof(mass));
+      else
+        mass = universal_values_[0];
+      if (!NumericalProfile::supported_real(mass))
+        throw std::runtime_error(
+            "trial seed universal mass outside finite domain");
+    }
     previous_parameters_ = p;
     invalidated_ = true;
     s.populated = true;

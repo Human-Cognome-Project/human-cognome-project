@@ -152,6 +152,7 @@ Activity::Activity(engine::Runtime &r,
           b.create_range_for(b.get_int32(0), b.get_int32(1), false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *mass = read(b, origin, {b.get_int32(6)});
+      if (wide()) mark_nonfinite(b, c, mass, TrialErrors);
       auto *denom =
           b.create_add(mass, b.create_sub(real(b, 1), b.create_sgn(mass)));
       for (int axis = 0; axis < 3; ++axis) {
@@ -161,6 +162,7 @@ Activity::Activity(engine::Runtime &r,
                 read(b, origin, {b.get_int32(axis)}),
                 b.create_div(read(b, origin, {b.get_int32(axis + 3)}), denom)),
             read(b, origin, {b.get_int32(8 + axis)}));
+        if (wide()) mark_nonfinite(b, c, value, TrialErrors);
         auto changed =
             b.get_if_guard(b.create_if(b.create_cmp_ne(
                                value, read(b, origin, {b.get_int32(axis)}))),
