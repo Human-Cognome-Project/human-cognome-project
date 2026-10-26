@@ -55,10 +55,10 @@ references, not another mandatory reading sequence.
   obligations before production hierarchy installation.
 
 - [Cumulative publication and native activity](cumulative-publication-integration-plan.md) —
-  proposed continuation of #189/#190: correct existing trial activity/speed-cache
+  accepted in #191 as continuation of #189/#190: correct existing trial activity/speed-cache
   publication, then qualify weighted multilevel arithmetic with native handoff
-  in a separate probe. Implementation, production hierarchy and inherited response
-  are not released by this proposal.
+  in a separate probe. C2b-1 is released; C2b-2 follows its acceptance.
+  Production hierarchy and inherited response remain unreleased.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
