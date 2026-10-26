@@ -13,8 +13,9 @@ discarded positional detail and distinct physical/history state. Default legacy
 f32 retains the carried-residue behavior described below. These historical
 predicates are not a description of C1 or a multilevel implementation.
 The [live hierarchy handoff plan](../../docs/live-hierarchy-handoff-plan.md)
-is accepted in #188 for the native investigation/probe only; a proven same-type
-consume/publication protocol and local/inherited response remain unimplemented. See the
+is accepted in #188 for the native investigation/probe only.
+[C2a diagnostic findings](NATIVE-HANDOFF.md) are for review; production hierarchy
+installation and local/inherited response remain unimplemented. See the
 [decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
 
 **Status (2026-10-19):** The native object-support corrections approved in

@@ -49,7 +49,8 @@ references, not another mandatory reading sequence.
 
 - [Live hierarchy handoff and response ownership](live-hierarchy-handoff-plan.md) —
   accepted #188 plan after C1. Releases C2a's native same-type handoff investigation
-  and probe only (implementation pending), with comparison identity, response ownership and multilevel settling
+  and probe only; [implementation/findings](../engine/docs/NATIVE-HANDOFF.md)
+  are for review, with comparison identity, response ownership and multilevel settling
   obligations before a separately released live integration.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted

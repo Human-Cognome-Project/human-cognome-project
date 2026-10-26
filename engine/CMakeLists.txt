@@ -243,6 +243,13 @@ target_link_libraries(native_activity_test PRIVATE field_core)
 add_test(NAME native_activity_test COMMAND native_activity_test)
 set_tests_properties(native_activity_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+add_executable(native_handoff_test tests/native_handoff_test.cpp)
+target_link_libraries(native_handoff_test PRIVATE field_core)
+foreach(workers 1 2)
+  add_test(NAME native_handoff_${workers} COMMAND native_handoff_test --threads ${workers})
+  set_tests_properties(native_handoff_${workers} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+endforeach()
 target_include_directories(activity_test PRIVATE tests)
 target_link_libraries(activity_test PRIVATE field_core)
 add_test(NAME activity_test COMMAND activity_test)

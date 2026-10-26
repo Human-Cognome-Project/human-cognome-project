@@ -208,7 +208,8 @@ provisional measured watch point; live hierarchy and #156 operations remain open
 
 The next [live hierarchy handoff plan](../docs/live-hierarchy-handoff-plan.md)
 is accepted in #188. Its release is limited to a native same-type investigation,
-collision and publication probe (implementation pending); comparison ownership, inherited response and coupled
+collision and publication probe. Its [diagnostic implementation](docs/NATIVE-HANDOFF.md)
+and [CPU evidence](tests/native_handoff/README.md) are for review; comparison ownership, inherited response and coupled
 settling/recovery need their concrete integration contract before installation.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
