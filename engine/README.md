@@ -210,10 +210,10 @@ The next [live hierarchy handoff plan](../docs/live-hierarchy-handoff-plan.md)
 is accepted in #188. Its release is limited to a native same-type investigation,
 collision and publication probe. Its [diagnostic implementation](docs/NATIVE-HANDOFF.md)
 and [CPU evidence](tests/native_handoff/README.md) are accepted in #189; all eight
-hosted checks passed, including 84 CPU suites. The proposed
+hosted checks passed, including 84 CPU suites. The accepted #191
 [cumulative publication/activity plan](../docs/cumulative-publication-integration-plan.md)
 follows #190 with an existing-profile activity/speed-cache correction and separate
-weighted numerical handoff probe. Implementation awaits review. Comparison
+weighted numerical handoff probe. C2b-1 is released; C2b-2 follows its acceptance. Comparison
 ownership, inherited response and coupled settling/recovery still need their
 concrete production integration contract before installation.
 
