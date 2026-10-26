@@ -1,6 +1,8 @@
 # Live hierarchy handoff and response ownership
 
-Status: **accepted in #188; C2a probe accepted in #189, 2026-10-26**. Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+Status: **accepted in #188; C2a probe accepted in #189, 2026-10-26**. See the [native investigation](../engine/docs/NATIVE-HANDOFF.md) and
+[source-pinned CPU evidence](../engine/tests/native_handoff/README.md).
+Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: merged C1, `848fa4bb51a103422ba3ec2afce02eb93d91c873` (#187).
 

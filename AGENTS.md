@@ -122,14 +122,15 @@ with C2a's publication/consume contract without a same-tick global solve.
   following bounded contract, with #181's settling-across-ticks direction intact.
 - The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
   follows #187 under #177/#172. It is **accepted in #188**, releasing C2a's native
-  same-type collision/publication investigation and probe only. The probe is accepted in #189; hosted CPU rerun
-  [40238861181](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40238861181)
-  passed at reviewed `1991937`. See [native handoff findings](engine/docs/NATIVE-HANDOFF.md).
-  Next is a bounded integration-plan PR combining these findings with the
-  cumulative-publication direction above. No hierarchy installation or
+  same-type collision/publication investigation and probe only. Its
+  [diagnostic implementation and findings](engine/docs/NATIVE-HANDOFF.md) are accepted in #189 with [CPU evidence](engine/tests/native_handoff/README.md): unsafe-order
+  controls and a CPU-qualified native protocol with one activity set and two
+  numerical publication slots. Production runtime and fork are unchanged. No hierarchy installation or
   inherited-response implementation is released. Comparison identity, a proven
   native handoff, explicit response ownership and coupled settling/recovery
   remain the following integration contract.
+  Next: a bounded integration-plan PR combining the handoff findings with
+  the cumulative-publication direction above.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
