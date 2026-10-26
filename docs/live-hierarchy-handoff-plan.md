@@ -1,6 +1,6 @@
 # Live hierarchy handoff and response ownership
 
-Status: **accepted in #188, 2026-10-25; C2a implementation pending**. Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+Status: **accepted in #188; C2a probe accepted in #189, 2026-10-26**. Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
 Baseline: merged C1, `848fa4bb51a103422ba3ec2afce02eb93d91c873` (#187).
 
@@ -16,6 +16,20 @@ releases **C2a: a bounded native handoff investigation and executable probe**.
 It also records the contracts that must be resolved before installing live
 hierarchy or inherited response. Acceptance releases C2a only, in its own
 implementation PR. The remainder below is a following review boundary.
+
+## C2a acceptance and next action — 2026-10-26
+
+#189 is merged at reviewed `1991937`, after hosted native CPU rerun
+[40238861181](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40238861181)
+and repository smoke workflows passed. The [probe findings](../engine/docs/NATIVE-HANDOFF.md)
+qualify the bounded publication/notification protocol, not live centroid arithmetic
+or coupled settling. Contributor test counts remain separately sourced.
+
+The next contribution is a bounded integration-plan PR combining the proven
+handoff and its slot/compiler lifetime requirements with the cumulative-publication
+clarification below. Resolve response ownership and activity/invalidation boundaries
+before releasing live implementation; do not reopen the test-only probe as a math
+implementation or silently treat this continuation as already released.
 
 ## Existing behavior and the specific gap
 
