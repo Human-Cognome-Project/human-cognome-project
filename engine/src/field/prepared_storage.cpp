@@ -133,9 +133,10 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda, bool geometry,
   // Geometry adds collect/source-order/discover/finalize: 10+4+9+10 arguments.
   // Cascade: 9+13 parameters, plus one descriptor argument per kernel when
   // weighted.
+  // Trial adds six arguments, including final-speed output in integration.
   const std::size_t parameters = 151 + (geometry ? 33 : 0) +
                                  (cascade ? 22 : 0) +
-                                 (cascade && weighted ? 2 : 0) + (wide ? 5 : 0),
+                                 (cascade && weighted ? 2 : 0) + (wide ? 6 : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
