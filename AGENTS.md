@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-26**. C2a probe #189 is accepted and merged at reviewed `1991937`; all eight hosted checks passed, with the inspected native log confirming 84/84 CPU suites in 688.56 seconds. #190 records the cumulative significand/activity direction. The next [bounded publication/activity plan](docs/cumulative-publication-integration-plan.md) is proposed under #177/#172; implementation is not yet released.
+Last checked: **2026-10-26**. C2a probe #189 is accepted and merged at reviewed `1991937`; all eight hosted checks passed, with the inspected native log confirming 84/84 CPU suites in 688.56 seconds. #190 records the cumulative significand/activity direction. The next [bounded publication/activity plan](docs/cumulative-publication-integration-plan.md) is accepted in #191 under #177/#172; C2b-1 is released, with C2b-2 following its acceptance.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -129,11 +129,11 @@ with C2a's publication/consume contract without a same-tick global solve.
   inherited-response implementation is released. Comparison identity, a proven
   native handoff, explicit response ownership and coupled settling/recovery
   remain the following integration contract.
-  The proposed [cumulative publication/activity plan](docs/cumulative-publication-integration-plan.md)
+  The accepted #191 [cumulative publication/activity plan](docs/cumulative-publication-integration-plan.md)
   combines these findings with #190: first correct existing single-level trial
   activity and final-speed publication, then qualify real weighted multilevel
   arithmetic in a separate native probe. Neither slice installs production
-  hierarchy or inherited response. Implementation awaits plan review.
+  hierarchy or inherited response. C2b-1 is released; C2b-2 follows only after its acceptance.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
