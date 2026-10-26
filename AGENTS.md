@@ -62,6 +62,25 @@ Coherent settling and perturbation recovery are the gate, not a complete cascade
 within every tick. Measure time/work to settle. #180's full upward candidate query
 is not a required per-tick scheduler; one-tick lag remains a trial assumption.
 
+## Latest cumulative-publication direction — 2026-10-26
+
+The [cumulative significand clarification](docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
+governs the following integration plan under #172/#177. Accumulate the tick's
+applicable contributions at calculation precision before the destination's
+significand filter, compare the net with its stored position, and base
+movement-triggered activity on that cumulative published change. Preserve
+pending-input invalidation, physical velocity, mass and required history.
+No discarded positional tail is carried between ticks or recovered from members.
+Overshoot braking and radial damping are unchanged.
+
+This supersedes the provisional any-untrimmed-attempt activity policy as intended
+direction. The C1 descriptions and evidence below remain records of built behavior,
+not evidence that this revision is implemented. C1 already combines centroid
+inputs before publication; audit the actual gating seam rather than assuming
+each member is independently trimmed by that reduction. Require cumulative
+threshold-crossing, cancellation and multilevel no-lost-input tests. Integrate
+with C2a's publication/consume contract without a same-tick global solve.
+
 ## Active and deferred work
 
 - #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
