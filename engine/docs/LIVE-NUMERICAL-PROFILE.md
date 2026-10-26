@@ -83,6 +83,13 @@ candidate queries read the selected resident body dtype directly.
 
 ## Activity and failure policy
 
+The following provisional activity rule describes built C1. The merged
+[#190 clarification](../../docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
+supersedes it as intended direction. The proposed
+[cumulative publication/activity plan](../../docs/cumulative-publication-integration-plan.md)
+audits the correction, including cached speed and preserved input invalidation;
+it is not implemented by these documentation changes.
+
 The single particle and centroid NativeSets and the existing type order remain:
 particle calculation/consumption, contact propagation, dirty-field publication,
 then centroid consumption and particle activation for the following phase.

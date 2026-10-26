@@ -50,8 +50,15 @@ references, not another mandatory reading sequence.
 - [Live hierarchy handoff and response ownership](live-hierarchy-handoff-plan.md) —
   accepted #188 plan after C1. Releases C2a's native same-type handoff investigation
   and probe only; [implementation/findings](../engine/docs/NATIVE-HANDOFF.md)
-  are for review, with comparison identity, response ownership and multilevel settling
-  obligations before a separately released live integration.
+  are accepted in #189, with all eight hosted checks and 84 CPU suites passing.
+  Comparison identity, response ownership and coupled multilevel settling remain
+  obligations before production hierarchy installation.
+
+- [Cumulative publication and native activity](cumulative-publication-integration-plan.md) —
+  proposed continuation of #189/#190: correct existing trial activity/speed-cache
+  publication, then qualify weighted multilevel arithmetic with native handoff
+  in a separate probe. Implementation, production hierarchy and inherited response
+  are not released by this proposal.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state

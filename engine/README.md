@@ -209,8 +209,13 @@ provisional measured watch point; live hierarchy and #156 operations remain open
 The next [live hierarchy handoff plan](../docs/live-hierarchy-handoff-plan.md)
 is accepted in #188. Its release is limited to a native same-type investigation,
 collision and publication probe. Its [diagnostic implementation](docs/NATIVE-HANDOFF.md)
-and [CPU evidence](tests/native_handoff/README.md) are for review; comparison ownership, inherited response and coupled
-settling/recovery need their concrete integration contract before installation.
+and [CPU evidence](tests/native_handoff/README.md) are accepted in #189; all eight
+hosted checks passed, including 84 CPU suites. The proposed
+[cumulative publication/activity plan](../docs/cumulative-publication-integration-plan.md)
+follows #190 with an existing-profile activity/speed-cache correction and separate
+weighted numerical handoff probe. Implementation awaits review. Comparison
+ownership, inherited response and coupled settling/recovery still need their
+concrete production integration contract before installation.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
