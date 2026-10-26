@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-25**, after #187/#188; C2a native handoff investigation implementation/findings for review under #177/#172.
+Last checked: **2026-10-26**. C2a probe #189 is accepted and merged at reviewed `1991937`; hosted native CPU and repository smoke workflows passed. #190 records the cumulative significand/activity direction. Next: a bounded live integration plan under #177/#172; implementation is not yet released.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -62,6 +62,25 @@ Coherent settling and perturbation recovery are the gate, not a complete cascade
 within every tick. Measure time/work to settle. #180's full upward candidate query
 is not a required per-tick scheduler; one-tick lag remains a trial assumption.
 
+## Latest cumulative-publication direction — 2026-10-26
+
+The [cumulative significand clarification](docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
+governs the following integration plan under #172/#177. Accumulate the tick's
+applicable contributions at calculation precision before the destination's
+significand filter, compare the net with its stored position, and base
+movement-triggered activity on that cumulative published change. Preserve
+pending-input invalidation, physical velocity, mass and required history.
+No discarded positional tail is carried between ticks or recovered from members.
+Overshoot braking and radial damping are unchanged.
+
+This supersedes the provisional any-untrimmed-attempt activity policy as intended
+direction. The C1 descriptions and evidence below remain records of built behavior,
+not evidence that this revision is implemented. C1 already combines centroid
+inputs before publication; audit the actual gating seam rather than assuming
+each member is independently trimmed by that reduction. Require cumulative
+threshold-crossing, cancellation and multilevel no-lost-input tests. Integrate
+with C2a's publication/consume contract without a same-tick global solve.
+
 ## Active and deferred work
 
 - #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
@@ -104,13 +123,14 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
 - The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
   follows #187 under #177/#172. It is **accepted in #188**, releasing C2a's native
   same-type collision/publication investigation and probe only. Its
-  [diagnostic implementation and findings](engine/docs/NATIVE-HANDOFF.md) are for
-  review with [CPU evidence](engine/tests/native_handoff/README.md): unsafe-order
+  [diagnostic implementation and findings](engine/docs/NATIVE-HANDOFF.md) are accepted in #189 with [CPU evidence](engine/tests/native_handoff/README.md): unsafe-order
   controls and a CPU-qualified native protocol with one activity set and two
   numerical publication slots. Production runtime and fork are unchanged. No hierarchy installation or
   inherited-response implementation is released. Comparison identity, a proven
   native handoff, explicit response ownership and coupled settling/recovery
   remain the following integration contract.
+  Next: a bounded integration-plan PR combining the handoff findings with
+  the cumulative-publication direction above.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.

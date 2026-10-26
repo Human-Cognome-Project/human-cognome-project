@@ -41,6 +41,25 @@ records or analyst matching. Different fields may overlap as before; exact
 counts apply within each field, not as a global cap across unrelated fields.
 The full hierarchy query remains an optional independent reference.
 
+## Latest cumulative-publication direction — 2026-10-26
+
+The [cumulative significand clarification](precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
+governs the following integration plan under #172/#177. Accumulate the tick's
+applicable contributions at calculation precision before the destination's
+significand filter, compare the net with its stored position, and base
+movement-triggered activity on that cumulative published change. Preserve
+pending-input invalidation, physical velocity, mass and required history.
+No discarded positional tail is carried between ticks or recovered from members.
+Overshoot braking and radial damping are unchanged.
+
+This supersedes the provisional any-untrimmed-attempt activity policy as intended
+direction. The C1 descriptions and evidence below remain records of built behavior,
+not evidence that this revision is implemented. C1 already combines centroid
+inputs before publication; audit the actual gating seam rather than assuming
+each member is independently trimmed by that reduction. Require cumulative
+threshold-crossing, cancellation and multilevel no-lost-input tests. Integrate
+with C2a's publication/consume contract without a same-tick global solve.
+
 ## Accepted C1 trial numerical contract
 
 Select the numerical profile at prepared-execution creation. Keep the existing

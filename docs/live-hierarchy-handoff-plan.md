@@ -1,7 +1,6 @@
 # Live hierarchy handoff and response ownership
 
-Status: **accepted in #188, 2026-10-25; C2a implementation/findings for review**.
-See the [native investigation](../engine/docs/NATIVE-HANDOFF.md) and
+Status: **accepted in #188; C2a probe accepted in #189, 2026-10-26**. See the [native investigation](../engine/docs/NATIVE-HANDOFF.md) and
 [source-pinned CPU evidence](../engine/tests/native_handoff/README.md).
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
@@ -19,6 +18,20 @@ releases **C2a: a bounded native handoff investigation and executable probe**.
 It also records the contracts that must be resolved before installing live
 hierarchy or inherited response. Acceptance releases C2a only, in its own
 implementation PR. The remainder below is a following review boundary.
+
+## C2a acceptance and next action — 2026-10-26
+
+#189 is merged at reviewed `1991937`, after hosted native CPU rerun
+[40238861181](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40238861181)
+and repository smoke workflows passed. The [probe findings](../engine/docs/NATIVE-HANDOFF.md)
+qualify the bounded publication/notification protocol, not live centroid arithmetic
+or coupled settling. Contributor test counts remain separately sourced.
+
+The next contribution is a bounded integration-plan PR combining the proven
+handoff and its slot/compiler lifetime requirements with the cumulative-publication
+clarification below. Resolve response ownership and activity/invalidation boundaries
+before releasing live implementation; do not reopen the test-only probe as a math
+implementation or silently treat this continuation as already released.
 
 ## Existing behavior and the specific gap
 
@@ -110,6 +123,25 @@ Require actual CPU selection and keep native GPU qualification under #145.
 CPU observations do not establish CUDA memory-ordering guarantees. Source-level
 ordering obligations remain explicit; GPU execution of the eventual protocol
 belongs in the deferred local matrix, with unsupported capability rejected.
+
+## Latest cumulative-publication direction — 2026-10-26
+
+The [cumulative significand clarification](precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
+governs the following integration plan under #172/#177. Accumulate the tick's
+applicable contributions at calculation precision before the destination's
+significand filter, compare the net with its stored position, and base
+movement-triggered activity on that cumulative published change. Preserve
+pending-input invalidation, physical velocity, mass and required history.
+No discarded positional tail is carried between ticks or recovered from members.
+Overshoot braking and radial damping are unchanged.
+
+This supersedes the provisional any-untrimmed-attempt activity policy as intended
+direction. The C1 descriptions and evidence below remain records of built behavior,
+not evidence that this revision is implemented. C1 already combines centroid
+inputs before publication; audit the actual gating seam rather than assuming
+each member is independently trimmed by that reduction. Require cumulative
+threshold-crossing, cancellation and multilevel no-lost-input tests. Integrate
+with C2a's publication/consume contract without a same-tick global solve.
 
 ## Following live installation contract
 
