@@ -1,10 +1,16 @@
 # C2a native same-type handoff investigation
 
-Status: **implementation/findings for review** under accepted [#188](../../docs/live-hierarchy-handoff-plan.md),
+Status: **accepted in #189, 2026-10-26**, under accepted [#188](../../docs/live-hierarchy-handoff-plan.md),
 following C1 #187. This adds a native C++ diagnostic executable and two CPU tests.
 Production engine, runtime/compiler fork, numerical laws and live bindings are
 unchanged. [Retained evidence](../tests/native_handoff/README.md) identifies the
 exact tested source, backend, compiler and measurement boundaries.
+
+All eight hosted checks passed on reviewed `1991937`; the inspected
+[native CPU rerun](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40238861181/job/121321121785)
+confirms 84/84 suites in 688.56 seconds. Contributor evidence remains separate.
+The proposed [cumulative publication/activity plan](../../docs/cumulative-publication-integration-plan.md)
+follows these findings and #190 without releasing production hierarchy.
 
 ## Findings
 
@@ -145,6 +151,7 @@ its reduction/history meanings and writers must be reconciled before reuse.
 Distinct comparison/native-field ownership, source-compatible counts, complete
 initialization, local/inherited whole-object response with one body integration,
 and coupled multilevel settling/recovery remain under #177/#172. The optional
-candidate query stays outside the mandatory poll path. C1's persistent sub-grid
-activity watch point is unchanged. #156 operations and #145 GPU qualification
+candidate query stays outside the mandatory poll path. #190 supersedes C1's
+persistent sub-grid activity policy as intended direction; C2a changes no live
+activity behavior. #156 operations and #145 GPU qualification
 remain separate; no database, cache-manager or analyst work is included.
