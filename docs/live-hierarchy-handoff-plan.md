@@ -33,8 +33,8 @@ clarification below. Resolve response ownership and activity/invalidation bounda
 before releasing live implementation; do not reopen the test-only probe as a math
 implementation or silently treat this continuation as already released.
 
-The proposed [cumulative publication/activity plan](cumulative-publication-integration-plan.md)
-now specifies that next bounded sequence: existing single-level trial gating and
+The accepted #191 [cumulative publication/activity plan](cumulative-publication-integration-plan.md)
+releases C2b-1 now, with C2b-2 following its acceptance: existing single-level trial gating and
 speed-cache correction, followed by a separate test-only weighted arithmetic probe
 using C2a's handoff. It keeps direct-response ownership explicit and releases no
 inherited equation or production hierarchy. The following installation contract
