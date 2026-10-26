@@ -5,6 +5,52 @@ Owning issues: [precision #172](https://github.com/Human-Cognome-Project/human-c
 [view scaling #115](https://github.com/Human-Cognome-Project/human-cognome-project/issues/115),
 [concept catalogue #173](https://github.com/Human-Cognome-Project/human-cognome-project/issues/173).
 
+## Cumulative significand clarification — 2026-10-26
+
+Patrick confirmed that this change concerns significand filtering only. The
+overshoot brake, radial damping and other physical force/integration laws are
+unchanged.
+
+For both particles and centroids, combine the applicable movement contributions
+at calculation precision within the tick before applying the destination's
+positional significand filter. For a centroid, accumulate the participating
+members' expressed, mass/coverage-weighted movement and compare the combined
+candidate with the stored centroid. Do not discard each contribution merely
+because it would individually fail that centroid's publication threshold.
+This preserves collectively significant effects as contributions aggregate
+through the exposed hierarchy. Do not recover a member's already discarded
+positional tail or count an accepted displacement twice.
+
+Apply the configured positional quantization once at each expressed destination's
+publication boundary. Evaluate movement-triggered activity against the cumulative
+result and its change from the stored position, not an OR of individually
+subthreshold attempts. Discard only the final unpublished positional remainder;
+there is no cross-tick positional-residue accumulator. Preserve physical velocity,
+untrimmed participating mass and required published-state history.
+
+This supersedes C1's provisional "untrimmed attempt keeps activity" choice as
+intended direction, not as a claim that the built C1 implementation has changed.
+The integration plan must distinguish movement-triggered activity from pending
+input/invalidation work and specify safe consumption/reactivation. A quiet
+coordinate must not consume an unevaluated consequential input. Preserve count,
+mass, contact and source-change invalidation even when position is unchanged.
+
+C1 already specifies a combined fresh centroid reduction before publication;
+do not describe that existing reduction as independently trimming every member.
+Audit the actual activity and contribution paths, then propose the smallest
+bounded revision. Define which inputs belong to the local tick evaluation and
+their publication lifetime using C2a's handoff findings. This requires neither a
+complete same-tick hierarchy solve nor another scheduler; coherent settling and
+perturbation recovery across native ticks remain the acceptance gate.
+
+Required evidence: individually subthreshold contributions whose sum crosses a
+destination threshold; opposing contributions that cancel; unequal/exact source
+weights; different body/centroid retained-bit settings; a final subthreshold
+result discarded without residue carry; and multilevel recovery with no lost
+pending input. Compare cumulative results with an independent reference and
+report published changes and active work. General rounding/LoD calibration and
+local versus inherited response ownership remain open.
+
 ## Calculation precision and stored movement
 
 Retain as much of the calculation precision as is viable without unwanted
