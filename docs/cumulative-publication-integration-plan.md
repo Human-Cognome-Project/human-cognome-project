@@ -1,6 +1,6 @@
 # Cumulative publication and native activity
 
-Status: **proposed, 2026-10-26; implementation not released**.
+Status: **accepted in #191, 2026-10-26; C2b-1 implementation released**.
 Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 and [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177).
 Baseline: `8aa360329ef637d7fcbdf204c94762db0a9b9698`, including accepted C2a
@@ -10,8 +10,8 @@ The next bounded change applies the [cumulative-publication direction](precision
 to the existing C1 trial profile, then qualifies real weighted centroid arithmetic
 with the [C2a native handoff](../engine/docs/NATIVE-HANDOFF.md). These are separate
 implementation PRs: **C2b-1, single-level live publication/activity**, followed by
-**C2b-2, a test-only multilevel numerical probe** after C2b-1 is accepted. Approval
-of this plan would release that sequence, not production hierarchy installation.
+**C2b-2, a test-only multilevel numerical probe** after C2b-1 is accepted. Acceptance
+releases C2b-1 now and C2b-2 only after C2b-1 acceptance, not production hierarchy installation.
 
 This deliberately leaves the provisional downward response equation for its
 own reviewed contract. The ownership below is concrete for this slice: C2b-1
