@@ -7,7 +7,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-25**, after #187 C1 acceptance; C2a native hierarchy handoff plan accepted in #188 under #177/#172; probe implementation pending.
+Last checked: **2026-10-26**. C2a probe #189 is accepted and merged at reviewed `1991937`; hosted native CPU and repository smoke workflows passed. #190 records the cumulative significand/activity direction. Next: a bounded live integration plan under #177/#172; implementation is not yet released.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -122,7 +122,11 @@ with C2a's publication/consume contract without a same-tick global solve.
   following bounded contract, with #181's settling-across-ticks direction intact.
 - The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
   follows #187 under #177/#172. It is **accepted in #188**, releasing C2a's native
-  same-type collision/publication investigation and probe only. Implementation is pending. No hierarchy installation or
+  same-type collision/publication investigation and probe only. The probe is accepted in #189; hosted CPU rerun
+  [40238861181](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40238861181)
+  passed at reviewed `1991937`. See [native handoff findings](engine/docs/NATIVE-HANDOFF.md).
+  Next is a bounded integration-plan PR combining these findings with the
+  cumulative-publication direction above. No hierarchy installation or
   inherited-response implementation is released. Comparison identity, a proven
   native handoff, explicit response ownership and coupled settling/recovery
   remain the following integration contract.
