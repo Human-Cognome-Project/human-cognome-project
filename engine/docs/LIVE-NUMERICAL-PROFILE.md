@@ -5,6 +5,10 @@ under #172/#177. Runtime/test source is pinned in the
 [CPU evidence](../tests/numerical_profile/README.md). Default legacy f32 behavior
 remains selectable and is covered by the existing regression suites.
 
+This describes pinned C1. The later [C2b-1 correction](CUMULATIVE-PUBLICATION.md)
+is implemented for review under accepted #191: revised trial activity and final
+speed publication. Its evidence is separate from C1's retained run.
+
 ## Boundary and use
 
 `PreparedCapacity(limits, NumericalProfile::trial(body_bits, field_bits))`
@@ -85,26 +89,27 @@ candidate queries read the selected resident body dtype directly.
 
 The following provisional activity rule describes built C1. The merged
 [#190 clarification](../../docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
-supersedes it as intended direction. The proposed
+supersedes it. The accepted #191
 [cumulative publication/activity plan](../../docs/cumulative-publication-integration-plan.md)
-audits the correction, including cached speed and preserved input invalidation;
-it is not implemented by these documentation changes.
+releases the [C2b-1 implementation](CUMULATIVE-PUBLICATION.md), now for review,
+including cached speed and preserved input invalidation. The historical C1 rule
+below is not the revised activity predicate.
 
 The single particle and centroid NativeSets and the existing type order remain:
 particle calculation/consumption, contact propagation, dirty-field publication,
 then centroid consumption and particle activation for the following phase.
 No queue, scheduling epoch, extra awake mask or full-loaded scheduler is added.
 
-Provisionally retain the native particle bit for an untrimmed displacement
-attempt, accepted movement or a velocity change. Only accepted movement dirties
-field inputs. Demand separately exposes motion attempts and published movement.
-The bounded constant-velocity watch fixture keeps one body awake for 32 ticks,
+C1 provisionally retained the native particle bit for an untrimmed displacement
+attempt, accepted movement or a velocity change. Only accepted movement dirtied
+field inputs. Demand separately exposed motion attempts and published movement.
+Its bounded constant-velocity watch fixture kept one body awake for 32 ticks,
 with zero published changes, preserved velocity and zero field reductions.
-Initial input invalidation also evaluates the stationary body once: 33 body
-evaluations in total. This is positional quiescence with continuing work, not
+Initial input invalidation also evaluated the stationary body once: 33 body
+evaluations in total. This was positional quiescence with continuing work, not
 complete computational settling. Changing force and later two-sided contact
-perturbations exercise publication crossing and sleeper recovery. Reconsider
-this provisional cost under #172/#177 using the retained measurements.
+perturbations exercised publication crossing and sleeper recovery. Those source-
+pinned observations remain historical rather than acceptance of the correction.
 
 Ordinary validation/work/capacity rejection preserves committed source,
 physical/control/history/activity state and readiness. Native errors after an

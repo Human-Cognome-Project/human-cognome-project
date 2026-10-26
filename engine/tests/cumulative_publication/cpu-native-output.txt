@@ -1,0 +1,1355 @@
+34/88 Testing: cumulative_publication_1_bulk
+34/88 Test: cumulative_publication_1_bulk
+Command: "/workspace/human-cognome-project/engine/build/cumulative_publication_test" "--threads" "1"
+Directory: /workspace/human-cognome-project/engine/build
+"cumulative_publication_1_bulk" start time: Oct 26 19:17 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,threads=1,path=bulk
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11808.674999999999
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11420.591
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11934.741
+case=velocity_contact_and_parameter_wakes,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,39345426,39223296,83,122,41540570,47,1074852812,41612236,3,23,3.2602469921112061
+after,39345426,39223296,83,122,41540570,47,1074852812,41612236,3,23,3.2602469921112061
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11060.014999999999
+radial_cache,expected_component=0.0028650479045630884,expected_speed=0.0049624085368220171
+case=post_radial_three_axis_cache,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,78690852,39223296,83,235,81996984,93,1074856908,81028044,4,46,6.4644098281860352
+after,78690852,39223296,83,235,81996984,93,1074856908,81028044,4,46,6.4644098281860352
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=19501.482
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=14017.571
+count_focus_reuse,focus_changed=0,same_f32_share=1,cycles=32,evaluated=64,upload_bytes=925184,readback_bytes=256,elapsed_us=33099.046000000002
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,118036278,39223296,83,348,122453398,139,1074861004,120443852,5,69,9.4984283447265625
+after,118036278,39223296,83,348,122453398,139,1074861004,120443852,5,69,9.4984283447265625
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=12141.876
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11177.546
+count_focus_reuse,focus_changed=1,same_f32_share=0,cycles=32,evaluated=96,upload_bytes=925184,readback_bytes=256,elapsed_us=26147.116999999998
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,157381704,39223296,83,461,162909812,185,1074865100,159859660,6,92,12.802395343780518
+after,157381704,39223296,83,461,162909812,185,1074865100,159859660,6,92,12.802395343780518
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,196727130,39223296,83,574,203366226,231,1074869196,199275468,7,115,16.290000677108765
+after,196727130,39223296,83,574,203366226,231,1074869196,199275468,7,115,16.290000677108765
+combined_step,sign=1,cancel=0,reverse_contact=1,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,236072556,39223296,83,687,243822640,277,1074873292,238691276,8,138,20.820544481277466
+after,236072556,39223296,83,687,243822640,277,1074873292,238691276,8,138,20.820544481277466
+combined_step,sign=1,cancel=1,reverse_contact=0,individual_force=0.125,combined_force=0,expected_x=1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,275417982,39223296,83,800,284279054,323,1074877388,278107084,9,161,24.788022518157959
+after,275417982,39223296,83,800,284279054,323,1074877388,278107084,9,161,24.788022518157959
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5919698602928605,expected_v=0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,314763408,39223296,83,913,324735468,369,1074881484,317522892,10,184,28.574966430664062
+after,314763408,39223296,83,913,324735468,369,1074881484,317522892,10,184,28.574966430664062
+centroid_witness,sign=1,kind=0,old=1.125,raw=1.21875,published=1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,354108834,39223296,83,1026,365191882,415,1074885580,356938700,11,207,32.458829402923584
+after,354108834,39223296,83,1026,365191882,415,1074885580,356938700,11,207,32.458829402923584
+centroid_witness,sign=1,kind=1,old=1.125,raw=1.125,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,393454260,39223296,83,1139,405648296,461,1074889676,396354508,12,230,36.126215934753418
+after,393454260,39223296,83,1139,405648296,461,1074889676,396354508,12,230,36.126215934753418
+centroid_witness,sign=1,kind=2,old=1.125,raw=1.21875,published=1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,432799686,39223296,83,1252,446104710,507,1074893772,435770316,13,253,39.560701608657837
+after,432799686,39223296,83,1252,446104710,507,1074893772,435770316,13,253,39.560701608657837
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=9159.0249999999996
+centroid_witness,sign=1,kind=3,old=1.125,raw=1.140625,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,472145112,39223296,83,1365,486561124,553,1074897868,475186124,14,276,43.031794786453247
+after,472145112,39223296,83,1365,486561124,553,1074897868,475186124,14,276,43.031794786453247
+centroid_witness,sign=1,kind=4,old=1.125,raw=1.1875,published=1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,511490538,39223296,83,1478,527017538,599,1074901964,514601932,15,299,46.416353940963745
+after,511490538,39223296,83,1478,527017538,599,1074901964,514601932,15,299,46.416353940963745
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,550835964,39223296,83,1591,567473952,645,1074906060,554017740,16,322,49.946084022521973
+after,550835964,39223296,83,1591,567473952,645,1074906060,554017740,16,322,49.946084022521973
+combined_step,sign=-1,cancel=0,reverse_contact=1,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,590181390,39223296,83,1704,607930366,691,1074910156,593433548,17,345,53.346667051315308
+after,590181390,39223296,83,1704,607930366,691,1074910156,593433548,17,345,53.346667051315308
+combined_step,sign=-1,cancel=1,reverse_contact=0,individual_force=-0.125,combined_force=0,expected_x=-1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,629526816,39223296,83,1817,648386780,737,1074914252,632849356,18,368,56.848764896392822
+after,629526816,39223296,83,1817,648386780,737,1074914252,632849356,18,368,56.848764896392822
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5919698602928605,expected_v=-0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,668872242,39223296,83,1930,688843194,783,1074918348,672265164,19,391,60.406243324279785
+after,668872242,39223296,83,1930,688843194,783,1074918348,672265164,19,391,60.406243324279785
+centroid_witness,sign=-1,kind=0,old=-1.125,raw=-1.21875,published=-1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,708217668,39223296,83,2043,729299608,829,1074922444,711680972,20,414,64.033848285675049
+after,708217668,39223296,83,2043,729299608,829,1074922444,711680972,20,414,64.033848285675049
+centroid_witness,sign=-1,kind=1,old=-1.125,raw=-1.125,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,747563094,39223296,83,2156,769756022,875,1074926540,751096780,21,437,67.323600292205811
+after,747563094,39223296,83,2156,769756022,875,1074926540,751096780,21,437,67.323600292205811
+centroid_witness,sign=-1,kind=2,old=-1.125,raw=-1.21875,published=-1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,786908520,39223296,83,2269,810212436,921,1074930636,790512588,22,460,70.971923828125
+after,786908520,39223296,83,2269,810212436,921,1074930636,790512588,22,460,70.971923828125
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1354.893
+centroid_witness,sign=-1,kind=3,old=-1.125,raw=-1.140625,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,826253946,39223296,83,2382,850668850,967,1074934732,829928396,23,483,74.287053346633911
+after,826253946,39223296,83,2382,850668850,967,1074934732,829928396,23,483,74.287053346633911
+centroid_witness,sign=-1,kind=4,old=-1.125,raw=-1.1875,published=-1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,865599372,39223296,83,2495,891125264,1013,1074938828,869344204,24,506,77.821447610855103
+after,865599372,39223296,83,2495,891125264,1013,1074938828,869344204,24,506,77.821447610855103
+<end of output>
+Test time = 106.11 sec
+----------------------------------------------------------
+Test Passed.
+"cumulative_publication_1_bulk" end time: Oct 26 19:19 UTC
+"cumulative_publication_1_bulk" time elapsed: 00:01:46
+----------------------------------------------------------
+
+39/88 Testing: numerical_profile_padded
+39/88 Test: numerical_profile_padded
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_padded" start time: Oct 26 19:19 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.9129490852355957
+after_profile_cycles,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.9129490852355957
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,bulk,holes/motion,setup_us=5411797.0020000003,geometry_us=63.494,mean_tick_us=187.18884374999996,mean_commit_us=48.425687499999988,mean_query_inspect_us=38.823406249999991,mean_physical_inspect_us=24.778031249999998,S=202360,bindings=11576,mean_commit_upload_bytes=28912,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+quiet_subgrid,bits=4,cycles=32,attempts=1,published_changes=0,active_work=2,centroid_edges=0,elapsed_us=3650.335,preserved_velocity=0.0078125,pending_particles=0,force_equilibrium_claim=0 PASS
+f64 changing-force boundary crossing, fixed-state consumption and two-sided contact/sleeper recovery PASS
+quiet_subgrid,bits=0,cycles=32,attempts=1,published_changes=0,active_work=2,centroid_edges=0,elapsed_us=14114.706,preserved_velocity=0.5,pending_particles=0,force_equilibrium_claim=0 PASS
+typed_candidate,status=0,x=1.0000000000009095,mass=0.33333333333333331,expected_x=1.0000000000009095,expected_mass=0.33333333333333331
+f64 same-share count repair, physical mass separation, typed start/query/geometry, unsupported metadata/typed views/FTZ parameters and atomic rejection PASS
+f64 single occurrence/repeated ordinals with distinct body/field precision: no self-response PASS
+f64 assembly-derived letter counts, repeated parents, independent copies and universal physical mass PASS
+f64 fractional force, typed scalars, brake/integration and both-sign Q_32: independent long-double step PASS
+f64 collective accepted motion crosses field Q cell through fresh full-member reduction, including sleeper PASS
+f64 exact overflow rejection, 32 retirement/reuse cycles, survivor preservation, retired handle and unready native-source fault PASS
+f64 native selective/all-loaded combined fields, fractional ordinals, focal radial control and contacts: 32 ticks PASS
+f64 independent scratch/profile rejection and post-mutation numerical failure policy PASS
+<end of output>
+Test time =  67.93 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_padded" end time: Oct 26 19:20 UTC
+"numerical_profile_padded" time elapsed: 00:01:07
+----------------------------------------------------------
+
+41/88 Testing: numerical_profile_direct
+41/88 Test: numerical_profile_direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_direct" start time: Oct 26 19:19 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.7055449485778809
+after_profile_cycles,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.7055449485778809
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,direct,holes/motion,setup_us=5060068.5870000003,geometry_us=64.894999999999996,mean_tick_us=104.43637500000001,mean_commit_us=43.934031249999983,mean_query_inspect_us=33.639562499999997,mean_physical_inspect_us=13.522000000000002,S=202360,bindings=11576,mean_commit_upload_bytes=24432,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+quiet_subgrid,bits=4,cycles=32,attempts=1,published_changes=0,active_work=2,centroid_edges=0,elapsed_us=8948.8780000000006,preserved_velocity=0.0078125,pending_particles=0,force_equilibrium_claim=0 PASS
+f64 changing-force boundary crossing, fixed-state consumption and two-sided contact/sleeper recovery PASS
+quiet_subgrid,bits=0,cycles=32,attempts=1,published_changes=0,active_work=2,centroid_edges=0,elapsed_us=9133.2000000000007,preserved_velocity=0.5,pending_particles=0,force_equilibrium_claim=0 PASS
+typed_candidate,status=0,x=1.0000000000009095,mass=0.33333333333333331,expected_x=1.0000000000009095,expected_mass=0.33333333333333331
+f64 same-share count repair, physical mass separation, typed start/query/geometry, unsupported metadata/typed views/FTZ parameters and atomic rejection PASS
+f64 single occurrence/repeated ordinals with distinct body/field precision: no self-response PASS
+f64 assembly-derived letter counts, repeated parents, independent copies and universal physical mass PASS
+f64 fractional force, typed scalars, brake/integration and both-sign Q_32: independent long-double step PASS
+f64 collective accepted motion crosses field Q cell through fresh full-member reduction, including sleeper PASS
+f64 exact overflow rejection, 32 retirement/reuse cycles, survivor preservation, retired handle and unready native-source fault PASS
+f64 native selective/all-loaded combined fields, fractional ordinals, focal radial control and contacts: 32 ticks PASS
+f64 independent scratch/profile rejection and post-mutation numerical failure policy PASS
+<end of output>
+Test time =  67.91 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_direct" end time: Oct 26 19:20 UTC
+"numerical_profile_direct" time elapsed: 00:01:07
+----------------------------------------------------------
+
+51/88 Testing: numerical_profile_large-maximum
+51/88 Test: numerical_profile_large-maximum
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--large" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-maximum" start time: Oct 26 19:27 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.8883697986602783
+after_profile_cycles,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.8883697986602783
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,bulk,maximum,setup_us=5503694.0410000002,geometry_us=49822.875,mean_tick_us=566.94987499999991,mean_commit_us=8711.6883125000004,mean_query_inspect_us=376.13221874999999,mean_physical_inspect_us=186.12921874999995,S=9601720,bindings=11576,mean_commit_upload_bytes=1525800,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   8.92 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-maximum" end time: Oct 26 19:27 UTC
+"numerical_profile_large-maximum" time elapsed: 00:00:08
+----------------------------------------------------------
+
+53/88 Testing: numerical_profile_large-maximum-direct
+53/88 Test: numerical_profile_large-maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--large" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-maximum-direct" start time: Oct 26 19:27 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.7234101295471191
+after_profile_cycles,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.7234101295471191
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,direct,maximum,setup_us=5210622.8899999997,geometry_us=77534.160000000003,mean_tick_us=916.8492812500001,mean_commit_us=8689.8380937499987,mean_query_inspect_us=485.7440937500001,mean_physical_inspect_us=291.17000000000002,S=9601720,bindings=11576,mean_commit_upload_bytes=1263656,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   8.93 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-maximum-direct" end time: Oct 26 19:27 UTC
+"numerical_profile_large-maximum-direct" time elapsed: 00:00:08
+----------------------------------------------------------
+
+45/88 Testing: numerical_profile_large-direct
+45/88 Test: numerical_profile_large-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large-direct" start time: Oct 26 19:28 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.6806027889251709
+after_profile_cycles,39345426,39223296,4490,139,59930014,64,1093242236,60001660,3,23,3.6806027889251709
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,direct,holes/motion,setup_us=5021772.7050000001,geometry_us=300.93299999999999,mean_tick_us=381.70853124999991,mean_commit_us=251.90818750000003,mean_query_inspect_us=73.174468750000003,mean_physical_inspect_us=86.084593749999996,S=9601720,bindings=11576,mean_commit_upload_bytes=1263656,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   5.23 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large-direct" end time: Oct 26 19:28 UTC
+"numerical_profile_large-direct" time elapsed: 00:00:05
+----------------------------------------------------------
+
+43/88 Testing: numerical_profile_large
+43/88 Test: numerical_profile_large
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--large"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_large" start time: Oct 26 19:28 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.6329469680786133
+after_profile_cycles,39345426,39223296,4490,146,60601830,71,1093914052,60673476,3,23,3.6329469680786133
+manifest,particle-headers,4096,24,2,196608
+manifest,source-masses,4096,8,2,65536
+manifest,field-headers,257,24,2,12336
+manifest,participation-headers,16384,64,2,2097152
+manifest,source-counts,16384,8,2,262144
+manifest,contact-headers,8192,64,2,1048576
+manifest,focal-references,257,24,1,6168
+manifest,batch-commands,256,152,1,38912
+manifest,batch-results,256,48,1,12288
+manifest,retired-references,256,24,1,6144
+manifest,resolved-references,256,24,1,6144
+manifest,prospective-csr,74242,4,1,296968
+manifest,csr-counts,4096,4,1,16384
+manifest,csr-cursors,4096,4,1,16384
+manifest,validation,33025,4,2,264200
+manifest,derived-results,3610,8,1,28880
+manifest,candidate-edges,32768,4,2,262144
+manifest,candidate-shares,16384,4,2,131072
+manifest,candidate-group-offsets,514,4,1,2056
+manifest,candidate-group-order,16384,4,1,65536
+manifest,destination-records,4353,4,2,34824
+manifest,native-claim-inputs,768,4,1,3072
+manifest,new-fixture-rows,3072,8,2,49152
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,13830,8,1,110640
+manifest,inspection-state,8706,4,1,34824
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,4353,4,2,34824
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,24576,4,1,98304
+manifest,selected-focus-host,257,4,2,2056
+manifest,map-batch-buffers,2563,8,4,82016
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,4096,4,2,32768
+manifest,geometry-temporary-pairs,32768,4,1,131072
+manifest,geometry-pairs,16384,4,2,131072
+manifest,geometry-pair-flags,8192,4,2,65536
+manifest,geometry-source-order,8192,4,1,32768
+manifest,geometry-source-group-end,8192,4,1,32768
+manifest,geometry-source-map,8192,4,2,65536
+manifest,geometry-permutation,8192,4,1,32768
+manifest,geometry-offsets,16384,4,2,131072
+manifest,geometry-cursors,8192,4,1,32768
+manifest,geometry-orders,16384,4,2,131072
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,33025,8,4,1056800
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,16384,24,1,393216
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,49152,4,2,393216
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,16384,24,1,393216
+manifest,cascade-source-shares,16384,4,2,131072
+manifest,cascade-source-ratios,32768,8,2,524288
+manifest,cascade-coverage,12288,40,1,491520
+manifest,cascade-coverage-work,12288,8,1,98304
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,4096,8,360448
+shape,groups,8,257,8,16448
+shape,edge-floats,1,16384,4,65536
+shape,edge-integers,2,16384,4,131072
+shape,contacts,2,8192,4,65536
+shape,determiners,1,4096,8,32768
+shape,particle-flags,2,4096,4,32768
+shape,particle-delta,3,4096,8,98304
+shape,group-flags,2,257,4,2056
+shape,group-delta,6,257,8,12336
+shape,particle-offsets,2,4096,4,32768
+shape,group-offsets,2,257,4,2056
+shape,contact-a-offsets,2,4096,4,32768
+shape,contact-b-offsets,2,4096,4,32768
+shape,particle-edge-order,1,16384,4,65536
+shape,group-edge-order,1,16384,4,65536
+shape,contact-a-order,1,8192,4,32768
+shape,contact-b-order,1,8192,4,32768
+shape,focus,11,1,8,88
+shape,selected-focus,1,257,4,1028
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,4096,bulk,holes/motion,setup_us=5043188.1469999999,geometry_us=120.68899999999999,mean_tick_us=136.79403124999996,mean_commit_us=163.60968750000004,mean_query_inspect_us=25.877843749999997,mean_physical_inspect_us=100.96293750000002,S=9601720,bindings=11576,mean_commit_upload_bytes=1525800,mean_commit_readback_bytes=8,source_ratio_bytes=264200,cpp_new=0 PASS
+<end of output>
+Test time =   5.21 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_large" end time: Oct 26 19:28 UTC
+"numerical_profile_large" time elapsed: 00:00:05
+----------------------------------------------------------
+
+47/88 Testing: numerical_profile_maximum
+47/88 Test: numerical_profile_maximum
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_maximum" start time: Oct 26 19:28 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=bulk,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.5665266513824463
+after_profile_cycles,39345426,39223296,83,146,41559390,71,1074871612,41631036,3,23,3.5665266513824463
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,bulk,maximum,setup_us=4876253.3880000003,geometry_us=116.282,mean_tick_us=237.64462499999999,mean_commit_us=76.789437500000005,mean_query_inspect_us=66.858718750000008,mean_physical_inspect_us=35.699500000000008,S=202360,bindings=11576,mean_commit_upload_bytes=28912,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+<end of output>
+Test time =   5.02 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_maximum" end time: Oct 26 19:28 UTC
+"numerical_profile_maximum" time elapsed: 00:00:05
+----------------------------------------------------------
+
+49/88 Testing: numerical_profile_maximum-direct
+49/88 Test: numerical_profile_maximum-direct
+Command: "/workspace/human-cognome-project/engine/build/numerical_profile_test" "--direct" "--maximum"
+Directory: /workspace/human-cognome-project/engine/build
+"numerical_profile_maximum-direct" start time: Oct 26 19:28 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,path=direct,profile=trial_f64
+typed_widths,Demand=328,GeometryResult=240,Harness=1544,PreparedStorage=2104,RealBuffer=56
+after_setup,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.4636728763580322
+after_profile_cycles,39345426,39223296,83,139,41547606,64,1074859828,41619252,3,23,3.4636728763580322
+manifest,particle-headers,70,24,2,3360
+manifest,source-masses,70,8,2,1120
+manifest,field-headers,9,24,2,432
+manifest,participation-headers,280,64,2,35840
+manifest,source-counts,280,8,2,4480
+manifest,contact-headers,140,64,2,17920
+manifest,focal-references,9,24,1,216
+manifest,batch-commands,32,152,1,4864
+manifest,batch-results,32,48,1,1536
+manifest,retired-references,32,24,1,768
+manifest,resolved-references,32,24,1,768
+manifest,prospective-csr,1278,4,1,5112
+manifest,csr-counts,70,4,1,280
+manifest,csr-cursors,70,4,1,280
+manifest,validation,569,4,2,4552
+manifest,derived-results,138,8,1,1104
+manifest,candidate-edges,560,4,2,4480
+manifest,candidate-shares,280,4,2,2240
+manifest,candidate-group-offsets,18,4,1,72
+manifest,candidate-group-order,280,4,1,1120
+manifest,destination-records,79,4,2,632
+manifest,native-claim-inputs,96,4,1,384
+manifest,new-fixture-rows,384,8,2,6144
+manifest,candidate-status,1,4,2,8
+manifest,inspection-motion,264,8,1,2112
+manifest,inspection-state,158,4,1,632
+manifest,inspection-focus,11,8,1,88
+manifest,inspection-flags,79,4,2,632
+manifest,inspection-counts,4,8,2,64
+manifest,activity-reset-zeros,420,4,1,1680
+manifest,selected-focus-host,9,4,2,72
+manifest,map-batch-buffers,323,8,4,10336
+manifest,map-single-command-buffers,10,8,2,160
+manifest,geometry-occupied-rows,70,4,2,560
+manifest,geometry-temporary-pairs,560,4,1,2240
+manifest,geometry-pairs,280,4,2,2240
+manifest,geometry-pair-flags,140,4,2,1120
+manifest,geometry-source-order,140,4,1,560
+manifest,geometry-source-group-end,140,4,1,560
+manifest,geometry-source-map,140,4,2,1120
+manifest,geometry-permutation,140,4,1,560
+manifest,geometry-offsets,280,4,2,2240
+manifest,geometry-cursors,140,4,1,560
+manifest,geometry-orders,280,4,2,2240
+manifest,geometry-counters,16,8,2,256
+manifest,geometry-focus,4,8,2,64
+manifest,live-source-ratios-and-cohort-flags,569,8,4,18208
+manifest,cascade-node-headers,3,88,1,264
+manifest,cascade-cohort-handles,280,24,1,6720
+manifest,cascade-node-controls,24,4,2,192
+manifest,cascade-reference-controls,840,4,2,6720
+manifest,cascade-children,2,4,2,16
+manifest,cascade-order,3,4,2,24
+manifest,cascade-fraction-masks,3,8,2,48
+manifest,cascade-parent-rank,3,4,2,24
+manifest,cascade-level-offset-cursor,3,4,2,24
+manifest,cascade-values,21,8,2,336
+manifest,cascade-valid,3,4,2,24
+manifest,cascade-counters,8,8,2,128
+manifest,cascade-root-summary,7,8,2,112
+manifest,cascade-source-rows,280,24,1,6720
+manifest,cascade-source-shares,280,4,2,2240
+manifest,cascade-source-ratios,560,8,2,8960
+manifest,cascade-coverage,210,40,1,8400
+manifest,cascade-coverage-work,210,8,1,1680
+manifest,cascade-coverage-offsets,4,4,1,16
+manifest,prepared-binding-payload,11576,1,1,11576
+manifest,unused-binding-reserve,2120,1,1,2120
+shape,particles,11,70,8,6160
+shape,groups,8,9,8,576
+shape,edge-floats,1,280,4,1120
+shape,edge-integers,2,280,4,2240
+shape,contacts,2,140,4,1120
+shape,determiners,1,70,8,560
+shape,particle-flags,2,70,4,560
+shape,particle-delta,3,70,8,1680
+shape,group-flags,2,9,4,72
+shape,group-delta,6,9,8,432
+shape,particle-offsets,2,70,4,560
+shape,group-offsets,2,9,4,72
+shape,contact-a-offsets,2,70,4,560
+shape,contact-b-offsets,2,70,4,560
+shape,particle-edge-order,1,280,4,1120
+shape,group-edge-order,1,280,4,1120
+shape,contact-a-order,1,140,4,560
+shape,contact-b-order,1,140,4,560
+shape,focus,11,1,8,88
+shape,selected-focus,1,9,4,36
+shape,counters,1,20,8,160
+shape,universal-mass,1,1,8,8
+numerical_profile,70,direct,maximum,setup_us=4887611.1059999997,geometry_us=124.465,mean_tick_us=313.58012499999995,mean_commit_us=104.9933125,mean_query_inspect_us=84.753281249999986,mean_physical_inspect_us=41.192468750000003,S=202360,bindings=11576,mean_commit_upload_bytes=24432,mean_commit_readback_bytes=8,source_ratio_bytes=4552,cpp_new=0 PASS
+<end of output>
+Test time =   5.06 sec
+----------------------------------------------------------
+Test Passed.
+"numerical_profile_maximum-direct" end time: Oct 26 19:28 UTC
+"numerical_profile_maximum-direct" time elapsed: 00:00:05
+----------------------------------------------------------
+
+35/88 Testing: cumulative_publication_1_direct
+35/88 Test: cumulative_publication_1_direct
+Command: "/workspace/human-cognome-project/engine/build/cumulative_publication_test" "--threads" "1" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"cumulative_publication_1_direct" start time: Oct 26 19:29 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,threads=1,path=direct
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=12132.415999999999
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=18072.207999999999
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=10715.608
+case=velocity_contact_and_parameter_wakes,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,39345426,39223296,83,115,41528786,40,1074841028,41600452,3,23,3.4673159122467041
+after,39345426,39223296,83,115,41528786,40,1074841028,41600452,3,23,3.4673159122467041
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1389.7049999999999
+radial_cache,expected_component=0.0028650479045630884,expected_speed=0.0049624085368220171
+case=post_radial_three_axis_cache,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,78690852,39223296,83,221,81973416,79,1074845124,81016260,4,46,6.6738698482513428
+after,78690852,39223296,83,221,81973416,79,1074845124,81016260,4,46,6.6738698482513428
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1380.9559999999999
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1576.877
+count_focus_reuse,focus_changed=0,same_f32_share=1,cycles=32,evaluated=64,upload_bytes=781824,readback_bytes=256,elapsed_us=3769.8249999999998
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,118036278,39223296,83,327,122418046,118,1074849220,120432068,5,69,9.9085037708282471
+after,118036278,39223296,83,327,122418046,118,1074849220,120432068,5,69,9.9085037708282471
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1505.9400000000001
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=1475.7260000000001
+count_focus_reuse,focus_changed=1,same_f32_share=0,cycles=32,evaluated=96,upload_bytes=781824,readback_bytes=256,elapsed_us=3441.6759999999999
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,157381704,39223296,83,433,162862676,157,1074853316,159847876,6,92,13.195241451263428
+after,157381704,39223296,83,433,162862676,157,1074853316,159847876,6,92,13.195241451263428
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,196727130,39223296,83,539,203307306,196,1074857412,199263684,7,115,16.389126062393188
+after,196727130,39223296,83,539,203307306,196,1074857412,199263684,7,115,16.389126062393188
+combined_step,sign=1,cancel=0,reverse_contact=1,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,236072556,39223296,83,645,243751936,235,1074861508,238679492,8,138,19.720844745635986
+after,236072556,39223296,83,645,243751936,235,1074861508,238679492,8,138,19.720844745635986
+combined_step,sign=1,cancel=1,reverse_contact=0,individual_force=0.125,combined_force=0,expected_x=1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,275417982,39223296,83,751,284196566,274,1074865604,278095300,9,161,22.882720470428467
+after,275417982,39223296,83,751,284196566,274,1074865604,278095300,9,161,22.882720470428467
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5919698602928605,expected_v=0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,314763408,39223296,83,857,324641196,313,1074869700,317511108,10,184,26.201305150985718
+after,314763408,39223296,83,857,324641196,313,1074869700,317511108,10,184,26.201305150985718
+centroid_witness,sign=1,kind=0,old=1.125,raw=1.21875,published=1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,354108834,39223296,83,963,365085826,352,1074873796,356926916,11,207,29.674086809158325
+after,354108834,39223296,83,963,365085826,352,1074873796,356926916,11,207,29.674086809158325
+centroid_witness,sign=1,kind=1,old=1.125,raw=1.125,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,393454260,39223296,83,1069,405530456,391,1074877892,396342724,12,230,33.3612220287323
+after,393454260,39223296,83,1069,405530456,391,1074877892,396342724,12,230,33.3612220287323
+centroid_witness,sign=1,kind=2,old=1.125,raw=1.21875,published=1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,432799686,39223296,83,1175,445975086,430,1074881988,435758532,13,253,37.200202465057373
+after,432799686,39223296,83,1175,445975086,430,1074881988,435758532,13,253,37.200202465057373
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11301.462
+centroid_witness,sign=1,kind=3,old=1.125,raw=1.140625,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,472145112,39223296,83,1281,486419716,469,1074886084,475174340,14,276,41.377755641937256
+after,472145112,39223296,83,1281,486419716,469,1074886084,475174340,14,276,41.377755641937256
+centroid_witness,sign=1,kind=4,old=1.125,raw=1.1875,published=1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,511490538,39223296,83,1387,526864346,508,1074890180,514590148,15,299,45.60536003112793
+after,511490538,39223296,83,1387,526864346,508,1074890180,514590148,15,299,45.60536003112793
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,550835964,39223296,83,1493,567308976,547,1074894276,554005956,16,322,49.918643712997437
+after,550835964,39223296,83,1493,567308976,547,1074894276,554005956,16,322,49.918643712997437
+combined_step,sign=-1,cancel=0,reverse_contact=1,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,590181390,39223296,83,1599,607753606,586,1074898372,593421764,17,345,53.871258497238159
+after,590181390,39223296,83,1599,607753606,586,1074898372,593421764,17,345,53.871258497238159
+combined_step,sign=-1,cancel=1,reverse_contact=0,individual_force=-0.125,combined_force=0,expected_x=-1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,629526816,39223296,83,1705,648198236,625,1074902468,632837572,18,368,57.875269174575806
+after,629526816,39223296,83,1705,648198236,625,1074902468,632837572,18,368,57.875269174575806
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5919698602928605,expected_v=-0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,668872242,39223296,83,1811,688642866,664,1074906564,672253380,19,391,61.195907115936279
+after,668872242,39223296,83,1811,688642866,664,1074906564,672253380,19,391,61.195907115936279
+centroid_witness,sign=-1,kind=0,old=-1.125,raw=-1.21875,published=-1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,708217668,39223296,83,1917,729087496,703,1074910660,711669188,20,414,64.347898244857788
+after,708217668,39223296,83,1917,729087496,703,1074910660,711669188,20,414,64.347898244857788
+centroid_witness,sign=-1,kind=1,old=-1.125,raw=-1.125,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,747563094,39223296,83,2023,769532126,742,1074914756,751084996,21,437,67.659051656723022
+after,747563094,39223296,83,2023,769532126,742,1074914756,751084996,21,437,67.659051656723022
+centroid_witness,sign=-1,kind=2,old=-1.125,raw=-1.21875,published=-1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,786908520,39223296,83,2129,809976756,781,1074918852,790500804,22,460,71.519955158233643
+after,786908520,39223296,83,2129,809976756,781,1074918852,790500804,22,460,71.519955158233643
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=2167.1280000000002
+centroid_witness,sign=-1,kind=3,old=-1.125,raw=-1.140625,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,826253946,39223296,83,2235,850421386,820,1074922948,829916612,23,483,75.639951705932617
+after,826253946,39223296,83,2235,850421386,820,1074922948,829916612,23,483,75.639951705932617
+centroid_witness,sign=-1,kind=4,old=-1.125,raw=-1.1875,published=-1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,865599372,39223296,83,2341,890866016,859,1074927044,869332420,24,506,79.240012884140015
+after,865599372,39223296,83,2341,890866016,859,1074927044,869332420,24,506,79.240012884140015
+<end of output>
+Test time = 107.53 sec
+----------------------------------------------------------
+Test Passed.
+"cumulative_publication_1_direct" end time: Oct 26 19:31 UTC
+"cumulative_publication_1_direct" time elapsed: 00:01:47
+----------------------------------------------------------
+
+36/88 Testing: cumulative_publication_2_bulk
+36/88 Test: cumulative_publication_2_bulk
+Command: "/workspace/human-cognome-project/engine/build/cumulative_publication_test" "--threads" "2"
+Directory: /workspace/human-cognome-project/engine/build
+"cumulative_publication_2_bulk" start time: Oct 26 19:29 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,threads=2,path=bulk
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=13962.614
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=10975.743
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=9787.9330000000009
+case=velocity_contact_and_parameter_wakes,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,39345426,39223296,83,122,41540590,47,1074852812,41612236,3,23,3.512031078338623
+after,39345426,39223296,83,122,41540590,47,1074852812,41612236,3,23,3.512031078338623
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=9357.8060000000005
+radial_cache,expected_component=0.0028650479045630884,expected_speed=0.0049624085368220171
+case=post_radial_three_axis_cache,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,78690852,39223296,83,235,81997004,93,1074856908,81028044,4,46,6.8331596851348877
+after,78690852,39223296,83,235,81997004,93,1074856908,81028044,4,46,6.8331596851348877
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=10615.278
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11363.335999999999
+count_focus_reuse,focus_changed=0,same_f32_share=1,cycles=32,evaluated=64,upload_bytes=925184,readback_bytes=256,elapsed_us=29642.478999999999
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,118036278,39223296,83,348,122453418,139,1074861004,120443852,5,69,10.228018999099731
+after,118036278,39223296,83,348,122453418,139,1074861004,120443852,5,69,10.228018999099731
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=14002.814
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=12969.194
+count_focus_reuse,focus_changed=1,same_f32_share=0,cycles=32,evaluated=96,upload_bytes=925184,readback_bytes=256,elapsed_us=31146.829000000002
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,157381704,39223296,83,461,162909832,185,1074865100,159859660,6,92,13.672212362289429
+after,157381704,39223296,83,461,162909832,185,1074865100,159859660,6,92,13.672212362289429
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,196727130,39223296,83,574,203366246,231,1074869196,199275468,7,115,16.975558519363403
+after,196727130,39223296,83,574,203366246,231,1074869196,199275468,7,115,16.975558519363403
+combined_step,sign=1,cancel=0,reverse_contact=1,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,236072556,39223296,83,687,243822660,277,1074873292,238691276,8,138,20.271398305892944
+after,236072556,39223296,83,687,243822660,277,1074873292,238691276,8,138,20.271398305892944
+combined_step,sign=1,cancel=1,reverse_contact=0,individual_force=0.125,combined_force=0,expected_x=1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,275417982,39223296,83,800,284279074,323,1074877388,278107084,9,161,23.488639116287231
+after,275417982,39223296,83,800,284279074,323,1074877388,278107084,9,161,23.488639116287231
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5919698602928605,expected_v=0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,314763408,39223296,83,913,324735488,369,1074881484,317522892,10,184,26.846310138702393
+after,314763408,39223296,83,913,324735488,369,1074881484,317522892,10,184,26.846310138702393
+centroid_witness,sign=1,kind=0,old=1.125,raw=1.21875,published=1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,354108834,39223296,83,1026,365191902,415,1074885580,356938700,11,207,30.302418947219849
+after,354108834,39223296,83,1026,365191902,415,1074885580,356938700,11,207,30.302418947219849
+centroid_witness,sign=1,kind=1,old=1.125,raw=1.125,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,393454260,39223296,83,1139,405648316,461,1074889676,396354508,12,230,33.944274425506592
+after,393454260,39223296,83,1139,405648316,461,1074889676,396354508,12,230,33.944274425506592
+centroid_witness,sign=1,kind=2,old=1.125,raw=1.21875,published=1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,432799686,39223296,83,1252,446104730,507,1074893772,435770316,13,253,37.720612525939941
+after,432799686,39223296,83,1252,446104730,507,1074893772,435770316,13,253,37.720612525939941
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=11205.159
+centroid_witness,sign=1,kind=3,old=1.125,raw=1.140625,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,472145112,39223296,83,1365,486561144,553,1074897868,475186124,14,276,41.726462364196777
+after,472145112,39223296,83,1365,486561144,553,1074897868,475186124,14,276,41.726462364196777
+centroid_witness,sign=1,kind=4,old=1.125,raw=1.1875,published=1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,511490538,39223296,83,1478,527017558,599,1074901964,514601932,15,299,45.904695510864258
+after,511490538,39223296,83,1478,527017558,599,1074901964,514601932,15,299,45.904695510864258
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,550835964,39223296,83,1591,567473972,645,1074906060,554017740,16,322,50.259320497512817
+after,550835964,39223296,83,1591,567473972,645,1074906060,554017740,16,322,50.259320497512817
+combined_step,sign=-1,cancel=0,reverse_contact=1,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,590181390,39223296,83,1704,607930386,691,1074910156,593433548,17,345,54.138774633407593
+after,590181390,39223296,83,1704,607930386,691,1074910156,593433548,17,345,54.138774633407593
+combined_step,sign=-1,cancel=1,reverse_contact=0,individual_force=-0.125,combined_force=0,expected_x=-1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,629526816,39223296,83,1817,648386800,737,1074914252,632849356,18,368,58.035921096801758
+after,629526816,39223296,83,1817,648386800,737,1074914252,632849356,18,368,58.035921096801758
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5919698602928605,expected_v=-0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,668872242,39223296,83,1930,688843214,783,1074918348,672265164,19,391,61.384237766265869
+after,668872242,39223296,83,1930,688843214,783,1074918348,672265164,19,391,61.384237766265869
+centroid_witness,sign=-1,kind=0,old=-1.125,raw=-1.21875,published=-1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,708217668,39223296,83,2043,729299628,829,1074922444,711680972,20,414,64.660557270050049
+after,708217668,39223296,83,2043,729299628,829,1074922444,711680972,20,414,64.660557270050049
+centroid_witness,sign=-1,kind=1,old=-1.125,raw=-1.125,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,747563094,39223296,83,2156,769756042,875,1074926540,751096780,21,437,67.901760101318359
+after,747563094,39223296,83,2156,769756042,875,1074926540,751096780,21,437,67.901760101318359
+centroid_witness,sign=-1,kind=2,old=-1.125,raw=-1.21875,published=-1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,786908520,39223296,83,2269,810212456,921,1074930636,790512588,22,460,71.981427669525146
+after,786908520,39223296,83,2269,810212456,921,1074930636,790512588,22,460,71.981427669525146
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=3419.8919999999998
+centroid_witness,sign=-1,kind=3,old=-1.125,raw=-1.140625,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,826253946,39223296,83,2382,850668870,967,1074934732,829928396,23,483,75.877925395965576
+after,826253946,39223296,83,2382,850668870,967,1074934732,829928396,23,483,75.877925395965576
+centroid_witness,sign=-1,kind=4,old=-1.125,raw=-1.1875,published=-1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,865599372,39223296,83,2495,891125284,1013,1074938828,869344204,24,506,79.543087482452393
+after,865599372,39223296,83,2495,891125284,1013,1074938828,869344204,24,506,79.543087482452393
+<end of output>
+Test time = 108.03 sec
+----------------------------------------------------------
+Test Passed.
+"cumulative_publication_2_bulk" end time: Oct 26 19:31 UTC
+"cumulative_publication_2_bulk" time elapsed: 00:01:48
+----------------------------------------------------------
+
+37/88 Testing: cumulative_publication_2_direct
+37/88 Test: cumulative_publication_2_direct
+Command: "/workspace/human-cognome-project/engine/build/cumulative_publication_test" "--threads" "2" "--direct"
+Directory: /workspace/human-cognome-project/engine/build
+"cumulative_publication_2_direct" start time: Oct 26 19:31 UTC
+Output:
+----------------------------------------------------------
+actual_backend=cpu,threads=2,path=direct
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4886.8400000000001
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4862.3639999999996
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4582.2690000000002
+case=velocity_contact_and_parameter_wakes,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,39345426,39223296,83,115,41528806,40,1074841028,41600452,3,23,3.1532435417175293
+after,39345426,39223296,83,115,41528806,40,1074841028,41600452,3,23,3.1532435417175293
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4038.4090000000001
+radial_cache,expected_component=0.0028650479045630884,expected_speed=0.0049624085368220171
+case=post_radial_three_axis_cache,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,78690852,39223296,83,221,81973436,79,1074845124,81016260,4,46,6.3693721294403076
+after,78690852,39223296,83,221,81973436,79,1074845124,81016260,4,46,6.3693721294403076
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=7047.2539999999999
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=5786.3680000000004
+count_focus_reuse,focus_changed=0,same_f32_share=1,cycles=32,evaluated=64,upload_bytes=781824,readback_bytes=256,elapsed_us=13108.769
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,118036278,39223296,83,327,122418066,118,1074849220,120432068,5,69,9.6715924739837646
+after,118036278,39223296,83,327,122418066,118,1074849220,120432068,5,69,9.6715924739837646
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4069.3159999999998
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4001.9059999999999
+count_focus_reuse,focus_changed=1,same_f32_share=0,cycles=32,evaluated=96,upload_bytes=781824,readback_bytes=256,elapsed_us=8723.1659999999993
+case=count_and_focus_reuse,body_bits=4,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,157381704,39223296,83,433,162862696,157,1074853316,159847876,6,92,13.183433532714844
+after,157381704,39223296,83,433,162862696,157,1074853316,159847876,6,92,13.183433532714844
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,196727130,39223296,83,539,203307326,196,1074857412,199263684,7,115,16.610670328140259
+after,196727130,39223296,83,539,203307326,196,1074857412,199263684,7,115,16.610670328140259
+combined_step,sign=1,cancel=0,reverse_contact=1,individual_force=0.125,combined_force=0.25,expected_x=1.5625,expected_v=0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,236072556,39223296,83,645,243751956,235,1074861508,238679492,8,138,20.246618747711182
+after,236072556,39223296,83,645,243751956,235,1074861508,238679492,8,138,20.246618747711182
+combined_step,sign=1,cancel=1,reverse_contact=0,individual_force=0.125,combined_force=0,expected_x=1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,275417982,39223296,83,751,284196586,274,1074865604,278095300,9,161,23.981332778930664
+after,275417982,39223296,83,751,284196586,274,1074865604,278095300,9,161,23.981332778930664
+combined_step,sign=1,cancel=0,reverse_contact=0,individual_force=0.125,combined_force=0.25,expected_x=1.5919698602928605,expected_v=0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,314763408,39223296,83,857,324641216,313,1074869700,317511108,10,184,27.988036155700684
+after,314763408,39223296,83,857,324641216,313,1074869700,317511108,10,184,27.988036155700684
+centroid_witness,sign=1,kind=0,old=1.125,raw=1.21875,published=1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,354108834,39223296,83,963,365085846,352,1074873796,356926916,11,207,31.899365186691284
+after,354108834,39223296,83,963,365085846,352,1074873796,356926916,11,207,31.899365186691284
+centroid_witness,sign=1,kind=1,old=1.125,raw=1.125,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,393454260,39223296,83,1069,405530476,391,1074877892,396342724,12,230,35.628268480300903
+after,393454260,39223296,83,1069,405530476,391,1074877892,396342724,12,230,35.628268480300903
+centroid_witness,sign=1,kind=2,old=1.125,raw=1.21875,published=1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,432799686,39223296,83,1175,445975106,430,1074881988,435758532,13,253,39.037015438079834
+after,432799686,39223296,83,1175,445975106,430,1074881988,435758532,13,253,39.037015438079834
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4637.8609999999999
+centroid_witness,sign=1,kind=3,old=1.125,raw=1.140625,published=1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,472145112,39223296,83,1281,486419736,469,1074886084,475174340,14,276,42.570085763931274
+after,472145112,39223296,83,1281,486419736,469,1074886084,475174340,14,276,42.570085763931274
+centroid_witness,sign=1,kind=4,old=1.125,raw=1.1875,published=1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,511490538,39223296,83,1387,526864366,508,1074890180,514590148,15,299,45.788091897964478
+after,511490538,39223296,83,1387,526864366,508,1074890180,514590148,15,299,45.788091897964478
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,550835964,39223296,83,1493,567308996,547,1074894276,554005956,16,322,48.965458869934082
+after,550835964,39223296,83,1493,567308996,547,1074894276,554005956,16,322,48.965458869934082
+combined_step,sign=-1,cancel=0,reverse_contact=1,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5625,expected_v=-0.091969860292860584
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,590181390,39223296,83,1599,607753626,586,1074898372,593421764,17,345,52.204931497573853
+after,590181390,39223296,83,1599,607753626,586,1074898372,593421764,17,345,52.204931497573853
+combined_step,sign=-1,cancel=1,reverse_contact=0,individual_force=-0.125,combined_force=0,expected_x=-1.5,expected_v=0
+case=combined_step,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,629526816,39223296,83,1705,648198256,625,1074902468,632837572,18,368,55.407959222793579
+after,629526816,39223296,83,1705,648198256,625,1074902468,632837572,18,368,55.407959222793579
+combined_step,sign=-1,cancel=0,reverse_contact=0,individual_force=-0.125,combined_force=-0.25,expected_x=-1.5919698602928605,expected_v=-0.091969860292860584
+case=combined_step,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,668872242,39223296,83,1811,688642886,664,1074906564,672253380,19,391,58.510154485702515
+after,668872242,39223296,83,1811,688642886,664,1074906564,672253380,19,391,58.510154485702515
+centroid_witness,sign=-1,kind=0,old=-1.125,raw=-1.21875,published=-1.1875,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,708217668,39223296,83,1917,729087516,703,1074910660,711669188,20,414,61.603664636611938
+after,708217668,39223296,83,1917,729087516,703,1074910660,711669188,20,414,61.603664636611938
+centroid_witness,sign=-1,kind=1,old=-1.125,raw=-1.125,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,747563094,39223296,83,2023,769532146,742,1074914756,751084996,21,437,64.823125123977661
+after,747563094,39223296,83,2023,769532146,742,1074914756,751084996,21,437,64.823125123977661
+centroid_witness,sign=-1,kind=2,old=-1.125,raw=-1.21875,published=-1.1875,mass=1
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,786908520,39223296,83,2129,809976776,781,1074918852,790500804,22,460,67.997679233551025
+after,786908520,39223296,83,2129,809976776,781,1074918852,790500804,22,460,67.997679233551025
+quiet_window,cycles=32,evaluations=0,attempts=0,publications=0,reductions=0,pending=0,elapsed_us=4255.2049999999999
+centroid_witness,sign=-1,kind=3,old=-1.125,raw=-1.140625,published=-1.125,mass=2
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,826253946,39223296,83,2235,850421406,820,1074922948,829916612,23,483,71.364166498184204
+after,826253946,39223296,83,2235,850421406,820,1074922948,829916612,23,483,71.364166498184204
+centroid_witness,sign=-1,kind=4,old=-1.125,raw=-1.1875,published=-1.1875,mass=3
+case=centroid_witness,body_bits=52,field_bits=4,S=141744,bindings=8488,cpp_new=0 PASS
+before,865599372,39223296,83,2341,890866036,859,1074927044,869332420,24,506,74.638052940368652
+after,865599372,39223296,83,2341,890866036,859,1074927044,869332420,24,506,74.638052940368652
+<end of output>
+Test time = 101.71 sec
+----------------------------------------------------------
+Test Passed.
+"cumulative_publication_2_direct" end time: Oct 26 19:32 UTC
+"cumulative_publication_2_direct" time elapsed: 00:01:41
+----------------------------------------------------------

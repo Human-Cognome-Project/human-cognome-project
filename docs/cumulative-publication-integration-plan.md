@@ -13,6 +13,11 @@ implementation PRs: **C2b-1, single-level live publication/activity**, followed 
 **C2b-2, a test-only multilevel numerical probe** after C2b-1 is accepted. Acceptance
 releases C2b-1 now and C2b-2 only after C2b-1 acceptance, not production hierarchy installation.
 
+The [C2b-1 implementation](../engine/docs/CUMULATIVE-PUBLICATION.md) and
+[source-pinned CPU evidence](../engine/tests/cumulative_publication/README.md)
+are now for review. The release sequence above remains unchanged; no C2b-2 code
+or production hierarchy is included.
+
 This deliberately leaves the provisional downward response equation for its
 own reviewed contract. The ownership below is concrete for this slice: C2b-1
 keeps existing direct field/contact responses and one body integration; C2b-2
