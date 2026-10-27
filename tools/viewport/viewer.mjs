@@ -49,7 +49,7 @@ const offset = () => shift.some(v => v !== 0);
 const place = point => shift.every(v => v === 0) ? point : point.map((v, i) => v + shift[i]);
 function frame(particles, target = null) {
   particles = particles.map(p => ({position: place(p.position), radius: p.radius}));
-  const bounds = boundsFor(particles), centre = target ?? bounds.centre;
+  const bounds = boundsFor(particles), centre = target ?? (particles.length === 1 ? particles[0].position : bounds.centre);
   let radius = 0.001;
   for (const p of particles) radius = Math.max(radius, Math.hypot(...p.position.map((v, i) => v - centre[i])) + (p.radius ?? 0));
   const distance = radius * 1.8 / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.min(1, camera.aspect);
