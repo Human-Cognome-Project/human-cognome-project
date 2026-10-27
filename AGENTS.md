@@ -1,5 +1,23 @@
 # Agent guidance
 
+## Maintainer acceptance — 2026-10-26
+
+C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
+[native CPU run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40426660208/job/121934003147)
+passed **88/88 suites in 1702.96 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Repository smoke and projection checks
+also passed. Contributor evidence remains separately source-pinned.
+The CI adjustment increases the job budget to 90 minutes and retains partial
+CTest output; it changes no engine arithmetic or test pass criteria.
+
+**C2b-2 is now released**, in its own test-only implementation PR under #191:
+weighted multilevel centroid arithmetic using the accepted native handoff.
+Production hierarchy installation, inherited response and the #156/#145 exits
+remain open. Regional/density-based calculation-width selection remains an
+optional future experiment, not part of this release. Keep numerical controls
+minimal and general; retained precision is calibrated, not a fixed f60 rule.
+
+
 Read this file in full before coding or reviewing. Start from current `main`
 unless a task names another integration branch. Component instructions still apply.
 For an introduction, see [orientation](docs/onboarding/README.md); for a local
@@ -7,7 +25,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-26**. The [bounded publication/activity plan](docs/cumulative-publication-integration-plan.md) is accepted in #191 under #177/#172. Its [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md) is for review: single-level trial activity follows the combined published change, with final speed cached before consumption and later input invalidation preserved. C2b-2 remains held until C2b-1 acceptance.
+Last checked: **2026-10-26**. The [bounded publication/activity plan](docs/cumulative-publication-integration-plan.md) is accepted in #191 under #177/#172. Its [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md) is accepted in #192: single-level trial activity follows the combined published change, with final speed cached before consumption and later input invalidation preserved. C2b-2 is released in its own test-only PR.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -74,7 +92,7 @@ No discarded positional tail is carried between ticks or recovered from members.
 Overshoot braking and radial damping are unchanged.
 
 This supersedes the provisional any-untrimmed-attempt activity policy. The
-[C2b-1 correction](engine/docs/CUMULATIVE-PUBLICATION.md) is implemented for review;
+[C2b-1 correction](engine/docs/CUMULATIVE-PUBLICATION.md) is accepted in #192;
 C1 descriptions and evidence below remain records of their pinned behavior.
 C1 already combines centroid
 inputs before publication; audit the actual gating seam rather than assuming
@@ -118,7 +136,7 @@ with C2a's publication/consume contract without a same-tick global solve.
   confirms 82/82 CPU suites in 685.51 seconds. Contributor evidence is separately pinned.
   Default legacy arithmetic remains unchanged; trial f64 covers live state,
   repair, geometry, optional queries and typed readback. Its provisional persistent
-  sub-grid activity is historical evidence; the C2b-1 correction below is for review.
+  sub-grid activity is historical evidence; the C2b-1 correction below is accepted in #192.
   Live hierarchy consume/publication cuts and inherited response remain a
   following bounded contract, with #181's settling-across-ticks direction intact.
 - The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
@@ -136,8 +154,8 @@ with C2a's publication/consume contract without a same-tick global solve.
   arithmetic in a separate native probe. Neither slice installs production
   hierarchy or inherited response. The [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md)
   and [source-pinned CPU evidence](engine/tests/cumulative_publication/README.md)
-  are for review: contributor regression passed 88/88 suites in 892.49 seconds
-  on `8db7289`. Hosted acceptance is separate. C2b-2 follows only after C2b-1 acceptance.
+  are accepted in #192: contributor regression passed 88/88 suites in 892.49 seconds
+  on `8db7289`. Hosted acceptance is recorded above. C2b-2 is released.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
