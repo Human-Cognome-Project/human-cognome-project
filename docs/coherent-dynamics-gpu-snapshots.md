@@ -78,8 +78,13 @@ Current concrete gaps at #195's runtime pin:
    review; prefer native facilities and no additional scheduler.
 2. The existing viewport capture client constructs legacy ActiveSession/FixedStudy
    execution. Its `--backend cuda` option does not install the C3 hierarchy.
-   Provide a bounded native C++ trial capture adapter that reserves and installs
-   the accepted hierarchy and exports that execution's synchronized state.
+   Decouple native C++ capture from construction/backend selection. The run owner
+   selects and configures the calculation stream; the exporter observes that same
+   active execution's synchronized completed state, whether CPU or CUDA, flat or
+   hierarchical. A bounded runner may reserve/install the accepted hierarchy, but
+   the exporter must not create a second CPU simulation, replay the calculation,
+   substitute legacy results or switch the backend for capture. GPU-to-host
+   readback is observation of the original execution, not CPU recomputation.
    Reuse snapshot validation/export and atomic latest.json publication.
 3. The existing viewer renders exposed bodies, not hierarchy field/edge overlays.
    First deliver faithful body snapshots; make any field overlay a separately
@@ -105,3 +110,33 @@ Patrick's machine supplies actual local GPU evidence. Cloud CPU results cannot
 substitute for it. Full GPU throughput/pinning claims are not needed to inspect
 a correctly qualified bounded run. No persistent database mutation, new data
 population or operational insertion is implied by this milestone.
+
+## Remote preparation, then local CUDA testing
+
+Patrick confirmed this division of work on 2026-10-27. The remote contributor
+should complete what its environment supports without waiting for GPU access:
+
+- Revise #195's CPU acceptance/evidence under the contract above.
+- Implement and test the shared snapshot interface against the active execution;
+  keep backend selection in the run owner and record the actual backend.
+- Verify CPU capture values, identity/tick consistency, f64 metadata, viewer
+  compatibility and capture-on/off state equivalence for the same run inputs.
+- Inspect CUDA build/ABI/ordering support and prepare reviewable backend changes
+  and tests where feasible. State which checks were compiled, executed or remain
+  unexecuted; lack of remote GPU access is not a reason to block independent work.
+- Deliver exact source/build pins, dependencies, build/run commands, test inputs,
+  expected invariant checks, snapshot output locations and known limitations for
+  the local handoff. Do not describe an unsupported CUDA path as ready to run.
+
+Then test on Patrick's local GPU: verify actual CUDA selection, qualify native
+publication/activity/f64 behavior, run the applicable invariant checks, and
+capture from that same GPU execution through the shared interface. Compare
+snapshot values with its synchronized native readback, not a separate CPU run's
+trajectory. CPU/GPU trajectories need not match exactly. GPU ordering failures
+or backend-specific defects may require local implementation/debugging before
+acceptance. Preserve explicit unsupported behavior until the required backend
+contract is supported; local investigation is not blanket qualification.
+
+Remote preparation and CPU capture validation may proceed before local CUDA
+qualification. A successful local GPU run and its evidence remain necessary to
+claim GPU readiness. C3-2's separate acceptance boundary is unchanged.

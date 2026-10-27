@@ -9,7 +9,12 @@ publication, pending-input and resource invariants; record ongoing motion honest
 Revise #195's executable criteria and evidence before acceptance. The immediate
 goal is a bounded current-hierarchy GPU run with faithful rendered snapshots;
 full #156 completion is not a prerequisite for that observation milestone.
-Actual CUDA support and the hierarchy-to-capture adapter remain missing.
+Actual CUDA support and capture integration remain missing. Capture must observe
+the active calculation stream's completed state through one backend-independent
+interface; it must not create or replay a separate CPU simulation. The remote
+agent should complete supported code/CPU/export validation and prepare a pinned
+handoff; actual CUDA execution, qualification and any hardware-specific debugging
+follow locally on Patrick's machine. Remote capture work need not wait for CUDA.
 C3-2 remains held pending C3-1 acceptance. Historical results remain unchanged.
 
 ## C3-1 contribution — for review, acceptance blocked
