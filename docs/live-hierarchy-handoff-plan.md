@@ -152,6 +152,11 @@ with C2a's publication/consume contract without a same-tick global solve.
 
 ## Following live installation contract
 
+Following accepted #193, the [production hierarchy/response plan](production-hierarchy-response-plan.md)
+proposes the concrete continuation below for review. It includes force ownership
+and numerical examples, all production reader/history lifetimes and coupled
+settling/recovery. Its implementation segments remain unreleased.
+
 These proposed bounds make the next release reviewable; **they are not released
 by C2a acceptance**. Bring back an integration plan with the proven handoff and
 resolved response ownership before changing live fields.

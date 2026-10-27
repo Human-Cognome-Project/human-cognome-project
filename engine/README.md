@@ -217,7 +217,7 @@ follows #190 with an existing-profile activity/speed-cache correction and separa
 weighted numerical handoff probe. The [C2b-1 implementation](docs/CUMULATIVE-PUBLICATION.md)
 and [CPU evidence](tests/cumulative_publication/README.md) are accepted in #192.
 The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
-[CPU evidence](tests/weighted_handoff/README.md) are for review. Comparison
+[CPU evidence](tests/weighted_handoff/README.md) are accepted in #193. Comparison
 ownership, inherited response and coupled settling/recovery still need their
 concrete production integration contract before installation.
 

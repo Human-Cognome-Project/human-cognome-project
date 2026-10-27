@@ -45,6 +45,11 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 Last checked: **2026-10-27**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
+The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
+is proposed for review. It specifies comparison and force ownership, production
+reader/history lifetimes, combined integration and coupled recovery. Its C3-1
+fixed-tree path and following C3-2 coherent refresh are **not released**.
+
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
 them and this summary is drift to investigate, not permission to silently pick
