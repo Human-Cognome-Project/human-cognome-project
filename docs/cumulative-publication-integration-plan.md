@@ -1,5 +1,23 @@
 # Cumulative publication and native activity
 
+## Maintainer acceptance — 2026-10-26
+
+C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
+[native CPU run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40426660208/job/121934003147)
+passed **88/88 suites in 1702.96 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Repository smoke and projection checks
+also passed. Contributor evidence remains separately source-pinned.
+The CI adjustment increases the job budget to 90 minutes and retains partial
+CTest output; it changes no engine arithmetic or test pass criteria.
+
+**C2b-2 is now released**, in its own test-only implementation PR under #191:
+weighted multilevel centroid arithmetic using the accepted native handoff.
+Production hierarchy installation, inherited response and the #156/#145 exits
+remain open. Regional/density-based calculation-width selection remains an
+optional future experiment, not part of this release. Keep numerical controls
+minimal and general; retained precision is calibrated, not a fixed f60 rule.
+
+
 Status: **accepted in #191, 2026-10-26; C2b-1 implementation released**.
 Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 and [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177).
@@ -15,7 +33,7 @@ releases C2b-1 now and C2b-2 only after C2b-1 acceptance, not production hierarc
 
 The [C2b-1 implementation](../engine/docs/CUMULATIVE-PUBLICATION.md) and
 [source-pinned CPU evidence](../engine/tests/cumulative_publication/README.md)
-are now for review. The release sequence above remains unchanged; no C2b-2 code
+are accepted in #192. C2b-2 is now released. The release sequence above remains unchanged; no C2b-2 code
 or production hierarchy is included.
 
 This deliberately leaves the provisional downward response equation for its
