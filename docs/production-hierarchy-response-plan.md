@@ -1,6 +1,7 @@
 # Production hierarchy, response ownership and coupled recovery
 
-Status: **proposed for review, 2026-10-27**. Baseline: `main` at
+Status: **accepted in #194, 2026-10-27**. C3-1 is released for implementation;
+C3-2 remains gated on C3-1 acceptance. Baseline: `main` at
 `33c4a4f50eacbcaaf0638e34cf22568dd9044473`, the merge of #193.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
@@ -11,13 +12,14 @@ The [weighted native probe](../engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accept
 in #193. Hosted native CPU job 122025151768 passed 92/92 suites in 1600.20 seconds;
 contributor evidence remains separately pinned at 930.44 seconds. This qualifies
 held-input propagation on the tested CPU kernels. The following production
-ownership, readers and moving-body coupling have not been implemented or accepted.
+ownership, readers and moving-body coupling are accepted as the bounded plan in
+#194; they have not been implemented.
 
 The proposed result is an explicitly installed, source-validated hierarchy in
 the existing prepared f64 trial execution. Local and coarser responses reach the
 same physical force accumulator; each body integrates once. Production here means
 the engine's ordinary tick path, not completion of operational admission or owners.
-Acceptance of this plan would release C3-1 below. C3-2 follows only after C3-1
+Acceptance of this plan releases C3-1 below. C3-2 follows only after C3-1
 acceptance, in a separate implementation PR. Merging this document changes no math.
 
 ## 1. Installed ownership and supported subset
@@ -67,7 +69,7 @@ their consumers before enabling flat forces; it cannot expose stale mirrors.
 
 ## 2. Proposed local and inherited force contract
 
-This section proposes the previously unreleased downward equation for review.
+This section records the downward equation accepted for the bounded C3 trial.
 It applies the existing inclusive-centroid attraction law to immediate expressed
 participants, then distributes the resulting **force**, not displacement or
 velocity. It does not change the brake, radial damping or contact law.
