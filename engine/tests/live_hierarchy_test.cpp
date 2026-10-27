@@ -1706,20 +1706,58 @@ LetterData letter_data(engine::Runtime &r) {
   return out;
 }
 struct MovingTrace {
+  struct Dynamics {
+    double x{}, max_abs_x{}, max_abs_v{}, max_abs_force{}, max_step{}, travel{};
+    int velocity_sign{}, position_sign{};
+    std::uint64_t velocity_reversals{}, position_reversals{};
+  };
   const int stride;
   std::vector<double> ring;
+  std::vector<Dynamics> dynamics;
   explicit MovingTrace(const Fixture &f)
       : stride(4 * (f.denominators.size() + f.nodes.size())),
-        ring(64 * stride) {
+        ring(64 * stride),
+        dynamics(f.denominators.size()) {
+  }
+  static int sign(double x) {
+    return (x > 0) - (x < 0);
+  }
+  void reset(const Fixture &f) {
+    for (std::size_t i = 0; i < dynamics.size(); ++i) {
+      auto &d = dynamics[i];
+      d = {};
+      const int slot = f.in.particle_rows[i].record;
+      d.x = f.h.particle64(kPosX, slot);
+      d.max_abs_x = std::abs(d.x);
+      d.velocity_sign = sign(f.h.particle64(kVelX, slot));
+    }
   }
   void sample(Fixture &f, int tick) {
     auto *row = ring.data() + (tick % 64) * stride;
     const auto &s = f.h.prepared_storage();
     for (std::size_t i = 0; i < f.denominators.size(); ++i) {
       int slot = f.in.particle_rows[i].record;
-      *row++ = f.h.particle64(kPosX, slot);
-      *row++ = f.h.particle64(kVelX, slot);
-      *row++ = f.h.particle64(kForceX, slot);
+      const double x = f.h.particle64(kPosX, slot),
+                   velocity = f.h.particle64(kVelX, slot),
+                   force = f.h.particle64(kForceX, slot);
+      auto &d = dynamics[i];
+      const double step = x - d.x;
+      const int vs = sign(velocity), ps = sign(step);
+      d.velocity_reversals += vs && d.velocity_sign && vs != d.velocity_sign;
+      d.position_reversals += ps && d.position_sign && ps != d.position_sign;
+      if (vs)
+        d.velocity_sign = vs;
+      if (ps)
+        d.position_sign = ps;
+      d.max_abs_x = std::max(d.max_abs_x, std::abs(x));
+      d.max_abs_v = std::max(d.max_abs_v, std::abs(velocity));
+      d.max_abs_force = std::max(d.max_abs_force, std::abs(force));
+      d.max_step = std::max(d.max_step, std::abs(step));
+      d.travel += std::abs(step);
+      d.x = x;
+      *row++ = x;
+      *row++ = velocity;
+      *row++ = force;
       *row++ = (s.inspection_flags[slot] & 2) != 0;
     }
     const auto &v = f.h.inspect_live_hierarchy();
@@ -1731,6 +1769,20 @@ struct MovingTrace {
       *row++ = (s.inspection_flags[f.h.particle_capacity() +
                                    f.nodes[n].field.record] &
                 2) != 0;
+    }
+  }
+  void print_dynamics(const char *name, int round) const {
+    for (std::size_t i = 0; i < dynamics.size(); ++i) {
+      const auto &d = dynamics[i];
+      std::cout << "moving_dynamics,name=" << name << ",round=" << round
+                << ",body=" << i
+                << ",velocity_reversals=" << d.velocity_reversals
+                << ",published_direction_reversals=" << d.position_reversals
+                << ",max_abs_x=" << d.max_abs_x
+                << ",max_abs_velocity_x=" << d.max_abs_v
+                << ",max_abs_force_x=" << d.max_abs_force
+                << ",max_published_step_x=" << d.max_step
+                << ",published_travel_x=" << d.travel << '\n';
     }
   }
   void print(const Fixture &f, const char *name, int round, int ticks) const {
@@ -1772,6 +1824,7 @@ void moving_case(Fixture &f, const char *name) {
             f.control->set(1, f.nodes[n].field.record);
       });
     }
+    trace.reset(f);
     int quiet = 0, ticks = 0;
     const auto started = std::chrono::steady_clock::now();
     double ordinary_ms = 0;
@@ -1810,6 +1863,7 @@ void moving_case(Fixture &f, const char *name) {
                      std::chrono::steady_clock::now() - started)
                      .count()
               << '\n';
+    trace.print_dynamics(name, round);
     if (quiet != 32) {
       trace.print(f, name, round, ticks);
       const auto physical = f.h.particles64();
