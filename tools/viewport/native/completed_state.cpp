@@ -137,11 +137,15 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding) {
         (v.slots.size() + v.previous.size()) * sizeof(double) +
         v.selectors.size() * sizeof(int) +
         (v.counters.size() + v.visits.size()) * sizeof(std::int64_t);
-    for (const auto &node : v.nodes)
-      if (node.field.context && node.field.record >= 0)
-        out.comparisons.push_back(node);
-    require(out.comparisons.size() == s.live.fields,
+    require(v.nodes.size() >= s.live.fields,
             "viewport: incomplete installed comparison metadata");
+    // Inspection reserves capacity; only the installed logical prefix is live.
+    out.comparisons.assign(v.nodes.begin(), v.nodes.begin() + s.live.fields);
+    for (const auto &node : out.comparisons)
+      require(node.field.record >= 0 &&
+                  node.field.record < h.field_capacity() &&
+                  same(node.field, s.field_headers[node.field.record]),
+              "viewport: stale installed comparison identity");
   }
   require(s.generation == binding.generation && s.completed_ticks == out.tick,
           "viewport: concurrent native mutation during observation");
