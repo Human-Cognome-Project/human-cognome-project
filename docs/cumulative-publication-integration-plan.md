@@ -1,5 +1,23 @@
 # Cumulative publication and native activity
 
+## C2b-2 acceptance — 2026-10-27
+
+Accepted in #193 at reviewed `a96a05e`. Hosted
+[native CPU job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40454685994/job/122025151768)
+passed **92/92 suites in 1600.20 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Smoke/projection workflows passed.
+Contributor evidence remains separately pinned (930.44 seconds).
+
+The next contribution is a bounded production hierarchy/response **plan**:
+resolve comparison ownership, every production reader's publication/history/repair
+lifetime, direct versus inherited response ownership and one combined physical
+integration, with coupled multilevel settling/recovery acceptance. C2b-2 establishes
+held-input numerical convergence and packet delivery, not coupled physical settling
+or CUDA ordering. No production hierarchy or inherited equation is released.
+Keep controls minimal and general; density-based precision remains optional later
+work. #172/#177/#156/#145 remain open.
+
+
 ## Maintainer acceptance — 2026-10-26
 
 C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
@@ -18,7 +36,7 @@ optional future experiment, not part of this release. Keep numerical controls
 minimal and general; retained precision is calibrated, not a fixed f60 rule.
 
 
-Status: **accepted in #191, 2026-10-26; C2b-1 implementation released**.
+Status: **accepted in #191; C2b-1 accepted in #192; C2b-2 accepted in #193**.
 Owners: [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 and [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177).
 Baseline: `8aa360329ef637d7fcbdf204c94762db0a9b9698`, including accepted C2a
@@ -33,8 +51,9 @@ releases C2b-1 now and C2b-2 only after C2b-1 acceptance, not production hierarc
 
 The [C2b-1 implementation](../engine/docs/CUMULATIVE-PUBLICATION.md) and
 [source-pinned CPU evidence](../engine/tests/cumulative_publication/README.md)
-are accepted in #192. C2b-2 is now released. The release sequence above remains unchanged; no C2b-2 code
-or production hierarchy is included.
+are accepted in #192. The [C2b-2 numerical probe](../engine/docs/WEIGHTED-NATIVE-HANDOFF.md)
+and [CPU evidence](../engine/tests/weighted_handoff/README.md) are accepted in #193.
+Production hierarchy and inherited response remain outside these releases.
 
 This deliberately leaves the provisional downward response equation for its
 own reviewed contract. The ownership below is concrete for this slice: C2b-1

@@ -1,5 +1,23 @@
 # Agent guidance
 
+## C2b-2 acceptance — 2026-10-27
+
+Accepted in #193 at reviewed `a96a05e`. Hosted
+[native CPU job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40454685994/job/122025151768)
+passed **92/92 suites in 1600.20 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Smoke/projection workflows passed.
+Contributor evidence remains separately pinned (930.44 seconds).
+
+The next contribution is a bounded production hierarchy/response **plan**:
+resolve comparison ownership, every production reader's publication/history/repair
+lifetime, direct versus inherited response ownership and one combined physical
+integration, with coupled multilevel settling/recovery acceptance. C2b-2 establishes
+held-input numerical convergence and packet delivery, not coupled physical settling
+or CUDA ordering. No production hierarchy or inherited equation is released.
+Keep controls minimal and general; density-based precision remains optional later
+work. #172/#177/#156/#145 remain open.
+
+
 ## Maintainer acceptance — 2026-10-26
 
 C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
@@ -25,7 +43,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-26**. The [bounded publication/activity plan](docs/cumulative-publication-integration-plan.md) is accepted in #191 under #177/#172. Its [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md) is accepted in #192: single-level trial activity follows the combined published change, with final speed cached before consumption and later input invalidation preserved. C2b-2 is released in its own test-only PR.
+Last checked: **2026-10-27**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -155,7 +173,14 @@ with C2a's publication/consume contract without a same-tick global solve.
   hierarchy or inherited response. The [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md)
   and [source-pinned CPU evidence](engine/tests/cumulative_publication/README.md)
   are accepted in #192: contributor regression passed 88/88 suites in 892.49 seconds
-  on `8db7289`. Hosted acceptance is recorded above. C2b-2 is released.
+  on `8db7289`. Hosted acceptance is recorded above. The
+  [C2b-2 implementation](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) and
+  [CPU evidence](engine/tests/weighted_handoff/README.md) are accepted in #193:
+  weighted published-child arithmetic, per-path compiler audit, packet samples,
+  native convergence/recovery and prepared reuse. Contributor evidence is 92/92
+  CPU suites in 930.44 seconds on `bb5ba2e`, with 29,184 held-input transitions
+  resolving in 1–5 polls. Production hierarchy, response
+  ownership and coupled physical settling remain the following contract.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.

@@ -22,7 +22,8 @@ Status: **accepted in #192**, under accepted
 [#191](../../docs/cumulative-publication-integration-plan.md), following #190.
 This corrects the existing single-level live f64 trial profile. Default legacy
 arithmetic and its activity rules remain unchanged. The subsequent C2b-2 weighted
-multilevel probe is now released in its own implementation PR.
+multilevel probe is now [implemented for review](WEIGHTED-NATIVE-HANDOFF.md)
+in its own test-only PR.
 
 ## Publication and physical state
 

@@ -204,7 +204,7 @@ is accepted in #186. Its [C1 implementation](docs/LIVE-NUMERICAL-PROFILE.md)
 and [CPU evidence](tests/numerical_profile/README.md) are accepted in #187: one selected
 f64 live state, count-based weights, explicit positional publication, preserved
 physical/history state and native activity. Its provisional sub-grid activity
-measurements remain historical; the C2b-1 correction below is for review.
+measurements remain historical; the C2b-1 correction below is accepted in #192.
 Live hierarchy and #156 operations remain open.
 
 The next [live hierarchy handoff plan](../docs/live-hierarchy-handoff-plan.md)
@@ -215,8 +215,9 @@ hosted checks passed, including 84 CPU suites. The accepted #191
 [cumulative publication/activity plan](../docs/cumulative-publication-integration-plan.md)
 follows #190 with an existing-profile activity/speed-cache correction and separate
 weighted numerical handoff probe. The [C2b-1 implementation](docs/CUMULATIVE-PUBLICATION.md)
-and [CPU evidence](tests/cumulative_publication/README.md) are for review;
-C2b-2 follows only after its acceptance. Comparison
+and [CPU evidence](tests/cumulative_publication/README.md) are accepted in #192.
+The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
+[CPU evidence](tests/weighted_handoff/README.md) are for review. Comparison
 ownership, inherited response and coupled settling/recovery still need their
 concrete production integration contract before installation.
 
