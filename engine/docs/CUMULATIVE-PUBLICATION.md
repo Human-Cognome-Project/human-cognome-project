@@ -1,10 +1,28 @@
 # C2b-1 cumulative publication and activity
 
-Status: **implementation for review**, under accepted
+## Maintainer acceptance — 2026-10-26
+
+C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
+[native CPU run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40426660208/job/121934003147)
+passed **88/88 suites in 1702.96 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Repository smoke and projection checks
+also passed. Contributor evidence remains separately source-pinned.
+The CI adjustment increases the job budget to 90 minutes and retains partial
+CTest output; it changes no engine arithmetic or test pass criteria.
+
+**C2b-2 is now released**, in its own test-only implementation PR under #191:
+weighted multilevel centroid arithmetic using the accepted native handoff.
+Production hierarchy installation, inherited response and the #156/#145 exits
+remain open. Regional/density-based calculation-width selection remains an
+optional future experiment, not part of this release. Keep numerical controls
+minimal and general; retained precision is calibrated, not a fixed f60 rule.
+
+
+Status: **accepted in #192**, under accepted
 [#191](../../docs/cumulative-publication-integration-plan.md), following #190.
 This corrects the existing single-level live f64 trial profile. Default legacy
 arithmetic and its activity rules remain unchanged. The subsequent C2b-2 weighted
-multilevel probe is held until acceptance of this implementation.
+multilevel probe is now released in its own implementation PR.
 
 ## Publication and physical state
 
