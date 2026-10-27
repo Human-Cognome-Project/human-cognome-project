@@ -453,21 +453,24 @@ void watch_point(engine::Runtime &r, HostPath path, int bits) {
     require(
         h.particle64(kPosX, a) == position &&
             h.particle64(kVelX, a) == velocity &&
-            h.prepared_storage().inspection_counts[1] == 1,
-        "constant sub-grid attempt lost velocity/activity or recovered a tail");
+            h.prepared_storage().inspection_counts[1] == 0 &&
+            h.determined64()[a] == std::fabs(velocity),
+        "quiet sub-grid publication lost velocity/speed, retained activity "
+        "or recovered a tail");
     require(h.prepared_storage().motion64()[a] == 0,
             "unpublished trial became accepted displacement");
   }
-  require(attempts == 32 && !changes && work == 33,
-          "persistent sub-grid watch point misreported");
+  require(attempts == 1 && !changes && work == 2 && !edges,
+          "quiet sub-grid work was not consumed after one evaluation");
   const auto elapsed = std::chrono::duration<double, std::micro>(
                            std::chrono::steady_clock::now() - start)
                            .count();
-  std::cout << "persistent_subgrid,bits=" << bits
+  std::cout << "quiet_subgrid,bits=" << bits
             << ",cycles=32,attempts=" << attempts
             << ",published_changes=" << changes << ",active_work=" << work
             << ",centroid_edges=" << edges << ",elapsed_us=" << elapsed
-            << ",positional_quiescence_only=1 PASS\n";
+            << ",preserved_velocity=" << velocity
+            << ",pending_particles=0,force_equilibrium_claim=0 PASS\n";
   if (!bits) return;
   auto force = inert();
   force.gravity = .1;

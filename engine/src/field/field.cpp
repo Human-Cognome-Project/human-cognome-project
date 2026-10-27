@@ -502,6 +502,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *edges = array_param(b, 9, PrimitiveType::i32, 2);
     auto *offsets = array_param(b, 10, PrimitiveType::i32, 2);
     auto *order = array_param(b, 11, PrimitiveType::i32, 1);
+    auto *final_speed =
+        profile_.wide() ? array_param(b, 12, real_type(), 1) : nullptr;
 
     auto *loop =
         b.create_struct_for(activity_->particle_activity.cells, false, threads);
@@ -627,6 +629,17 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       store(b, particles, at(b, kVelY, i), vy);
       store(b, particles, at(b, kVelZ, i), vz);
 
+      if (profile_.wide()) {
+        // A quiet publication may consume activity despite a velocity change.
+        // Publish the final physical speed before that consumption, rather
+        // than leaving a stale cache behind the later active-only determiner.
+        auto *value = b.create_sqrt(b.create_add(
+            b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
+            b.create_mul(vz, vz)));
+        detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
+        store(b, final_speed, {i}, value);
+      }
+
       Stmt *moved = b.get_int32(0), *continued = b.get_int32(0),
            *attempted = b.get_int32(0);
       for (int pair : {0, 1, 2}) {
@@ -646,19 +659,20 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         store(b, pd, at(b, pair, i), b.create_sub(next, old_position[pair]));
         moved = b.create_logical_or(moved,
                                     b.create_cmp_ne(next, old_position[pair]));
-        continued = b.create_logical_or(continued,
-                                        b.create_cmp_ne(v, old_velocity[pair]));
+        if (!profile_.wide())
+          continued = b.create_logical_or(
+              continued, b.create_cmp_ne(v, old_velocity[pair]));
         store(b, particles, at(b, pos_field, i), next);
       }
       {
-        // Motion history is numerical state inside active work. Retain this
-        // one activity bit while the full state changes; otherwise consume it
-        // before later contact/centroid phases can reactivate the particle.
+        // Trial movement activity follows the complete published change.
+        // Attempts and velocity remain physical/diagnostic state, not another
+        // reason to poll. No same-type notifier overlaps this phase; later
+        // contact/centroid notifications remain pending after consumption.
         auto fixed = b.get_if_guard(
-            b.create_if(b.create_logical_not(b.create_logical_or(
-                continued, profile_.wide()
-                               ? b.create_logical_or(moved, attempted)
-                               : moved))),
+            b.create_if(b.create_logical_not(
+                profile_.wide() ? moved
+                                : b.create_logical_or(continued, moved))),
             true);
         activity_->particle_activity.deactivate(b, i);
       }
@@ -693,23 +707,26 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         count_work(b, counters, detail::Rejected);
       }
     }
+    std::vector<engine::Param> params{
+        engine::Param::array(real_type(), 2),
+        engine::Param::scalar(PrimitiveType::i32),
+        engine::Param::scalar(real_type()),
+        engine::Param::array(real_type()),
+        engine::Param::scalar(real_type()),
+        engine::Param::array(PrimitiveType::i32, 2),
+        engine::Param::array(real_type(), 2),
+        engine::Param::array(real_type()),
+        engine::Param::array(PrimitiveType::i64),
+        engine::Param::array(PrimitiveType::i32, 2),
+        engine::Param::array(PrimitiveType::i32, 2),
+        engine::Param::array(PrimitiveType::i32)};
+    if (profile_.wide())
+      params.push_back(engine::Param::array(real_type()));
     integrate_ = engine::CompiledKernel(
         runtime,
         "field_integrate_" +
             std::to_string(activity_->particle_activity.cells->id),
-        b.extract_ir(),
-        {engine::Param::array(real_type(), 2),
-         engine::Param::scalar(PrimitiveType::i32),
-         engine::Param::scalar(real_type()), engine::Param::array(real_type()),
-         engine::Param::scalar(real_type()),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(real_type(), 2),
-         engine::Param::array(real_type()),
-         engine::Param::array(PrimitiveType::i64),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i32, 2),
-         engine::Param::array(PrimitiveType::i32)},
-        engine::MathMode::Strict);
+        b.extract_ir(), params, engine::MathMode::Strict);
   }
 
   // Determiners: the secondary set, running on the products of the primary
@@ -1364,6 +1381,10 @@ void Harness::launch_integrate(const Parameters64 &p) {
   if (!ctx.prepared) {
     ctx.set_arg_ndarray({11}, *activity_->particle_edges);
   }
+  if (profile_.wide() && !ctx.prepared)
+    bind(ctx, 12, determined_array_.get(),
+         particles_ ? determined_values_ : empty_determined_values_,
+         {std::max(particles_, 1)});
   integrate_.launch(ctx);
 }
 
@@ -1758,7 +1779,8 @@ void Harness::tick_values(const Parameters64 &p) {
     launch_force(p);
     launch_contact(p);
     launch_integrate(p);
-    launch_determine();
+    if (!profile_.wide())
+      launch_determine();
     activity_->touch_contacts(*this, p.contact_stiffness);
     activity_->mark(*this, mode_ == TickMode::AllLoaded);
     launch_centroid(p, false);
