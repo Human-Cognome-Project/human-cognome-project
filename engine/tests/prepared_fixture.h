@@ -66,6 +66,14 @@ struct PreparedFixtureAccess {
       h.particle_values_.upload(*h.particle_array_);
     h.runtime_->synchronize();
   }
+  // Batch test-only edits after inspect_prepared() has refreshed staging.
+  // This does not repair fields or provide a production source-update API.
+  static void upload_body_fixture64(Harness &h) {
+    h.require_wide();
+    if (h.path_ == HostPath::BulkCopy)
+      h.particle_values_.upload(*h.particle_array_);
+    h.runtime_->synchronize();
+  }
   template <class T>
   static void stage_new(Harness &h, int command,
                         const std::array<T, kParticleFieldCount> &row) {
