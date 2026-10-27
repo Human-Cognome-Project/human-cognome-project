@@ -1,5 +1,18 @@
 # Agent guidance
 
+## C3 plan acceptance — 2026-10-27
+
+The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
+is accepted in #194. **C3-1 is released for implementation** in its own PR:
+fixed installed f64 trial hierarchy, replacement inherited force ownership,
+complete production publication/history lifetimes, one combined body integration,
+and coupled settling/recovery. C3-2 coherent structural refresh remains gated on
+C3-1 acceptance. This is plan acceptance, not built hierarchy behavior.
+Hosted [native CPU](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40507158490/job/122199279044)
+passed 92/92 suites in 2071.96 seconds on reviewed `9a48645`; integration,
+CPU-only backend, projection and smoke checks passed. #172/#177/#156/#145 stay open.
+
+
 ## C2b-2 acceptance — 2026-10-27
 
 Accepted in #193 at reviewed `a96a05e`. Hosted
@@ -46,9 +59,9 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 Last checked: **2026-10-27**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
-is proposed for review. It specifies comparison and force ownership, production
+is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
-fixed-tree path and following C3-2 coherent refresh are **not released**.
+fixed-tree implementation is released; C3-2 coherent refresh awaits C3-1 acceptance.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
