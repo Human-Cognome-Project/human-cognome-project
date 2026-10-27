@@ -12,6 +12,9 @@
 #include "taichi/program/program.h"
 
 namespace engine {
+namespace testing {
+struct CompiledKernelAccess;
+}
 
 // Instance settings, supplied by the caller. Anything left unset keeps the
 // engine's own default: this workspace declares no policy of its own.
@@ -126,6 +129,7 @@ class CompiledKernel {
   void launch(taichi::lang::LaunchContextBuilder &ctx);
 
  private:
+  friend struct testing::CompiledKernelAccess;
   Runtime *runtime_{nullptr};
   std::unique_ptr<taichi::lang::Kernel> kernel_;
   const taichi::lang::CompiledKernelData *compiled_{nullptr};

@@ -496,16 +496,18 @@ CascadeBinding CentroidCascade::bind(std::uint64_t expected,
 }
 CascadeBinding CentroidCascade::bind_weighted(std::uint64_t expected,
                                               const WeightedCascadeSpec &spec,
-                                              std::uint64_t budget) {
+                                              std::uint64_t budget,
+                                              bool same_level_live) {
   const CascadeSpec view{spec.nodes,    spec.node_count,
                          spec.children, spec.child_count,
                          nullptr,       spec.contribution_count};
-  return bind_impl(expected, view, &spec, budget);
+  return bind_impl(expected, view, &spec, budget, same_level_live);
 }
 CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
                                           const CascadeSpec &spec,
                                           const WeightedCascadeSpec *weighted,
-                                          std::uint64_t budget) {
+                                          std::uint64_t budget,
+                                          bool same_level_live) {
   auto &a = *impl_;
   auto &s = *a.h.prepared_;
   CascadeBinding answer;
@@ -749,7 +751,9 @@ CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
                        a.limits[Budget::CascadeLinks]);
       const auto &part = a.inspection.nodes[child];
       if (part.publish) {
-        if (part.level >= node.level || part.comparison == node.comparison)
+        if ((same_level_live ? part.level > node.level
+                             : part.level >= node.level) ||
+            part.comparison == node.comparison)
           return finish(CascadeStatus::InvalidHierarchy);
       } else if (part.level != node.level ||
                  part.comparison != node.comparison ||

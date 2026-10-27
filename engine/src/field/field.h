@@ -8,6 +8,7 @@
 
 #include "engine/runtime.h"
 #include "field/cascade.h"
+#include "field/live_hierarchy.h"
 #include "field/numeric_ir.h"
 #include "field/prepared_geometry.h"
 #include "field/prepared_update.h"
@@ -28,6 +29,7 @@ namespace detail {
 class Activity;
 class PreparedStorage;
 class CentroidCascade;
+class LiveHierarchy;
 }  // namespace detail
 class PreparedCapacity;
 namespace testing {
@@ -258,6 +260,12 @@ class Harness {
       const WeightedCascadeSpec &spec,
       std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
   const CascadeInspection &inspect_centroid_cascade(const CascadeResult &);
+  LiveHierarchyResult install_live_hierarchy(
+      std::uint64_t expected_generation,
+      const WeightedCascadeSpec &,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  bool live_hierarchy_installed() const;
+  const LiveHierarchyInspection &inspect_live_hierarchy();
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.
   // An empty selection retains the legacy fixed coordinate origin.
@@ -350,7 +358,9 @@ class Harness {
  private:
   friend class detail::Activity;
   friend class detail::CentroidCascade;
+  friend class detail::LiveHierarchy;
   friend struct testing::PreparedFixtureAccess;
+  friend struct testing::LiveHierarchyAccess;
   Harness(engine::Runtime &runtime,
           int particle_count,
           int group_count,
@@ -437,6 +447,7 @@ class Harness {
   // source payload arrays, including during partial construction.
   std::unique_ptr<detail::Activity> activity_;
   std::unique_ptr<detail::CentroidCascade> centroid_cascade_;
+  std::unique_ptr<detail::LiveHierarchy> live_hierarchy_;
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;

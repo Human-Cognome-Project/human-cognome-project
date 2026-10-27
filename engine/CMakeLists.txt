@@ -31,7 +31,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
     src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
     src/field/prepared_update.cpp src/field/prepared_geometry.cpp
-    src/field/centroid_cascade.cpp)
+    src/field/centroid_cascade.cpp src/field/live_hierarchy.cpp)
 target_include_directories(field_core PUBLIC src)
 target_link_libraries(field_core PUBLIC engine_support)
 target_compile_options(field_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -166,6 +166,20 @@ add_executable(cumulative_publication_test tests/cumulative_publication_test.cpp
 target_link_libraries(cumulative_publication_test PRIVATE field_core)
 add_executable(weighted_handoff_test tests/weighted_handoff_test.cpp)
 target_link_libraries(weighted_handoff_test PRIVATE field_core)
+add_executable(live_hierarchy_test tests/live_hierarchy_test.cpp)
+target_link_libraries(live_hierarchy_test PRIVATE study_assembly membership_fields)
+foreach(threads 1 2)
+  foreach(path bulk direct)
+    set(live_hierarchy_args --threads ${threads})
+    if(path STREQUAL "direct")
+      list(APPEND live_hierarchy_args --direct)
+    endif()
+    add_test(NAME live_hierarchy_${threads}_${path}
+        COMMAND live_hierarchy_test ${live_hierarchy_args})
+    set_tests_properties(live_hierarchy_${threads}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+  endforeach()
+endforeach()
 foreach(threads 1 2)
   foreach(path bulk direct)
     set(weighted_handoff_args --threads ${threads})
