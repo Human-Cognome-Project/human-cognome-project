@@ -1,0 +1,206 @@
+ok   retained cold sources server-enforced read-only
+ok   private scope rejected before public source resolution/open/query
+ok   rejected private request makes zero source calls
+ok   undelegated temporary root rejected before lookup
+ok   private source delegation rejected
+ok   private recipe rejected before manager storage preparation
+ok   rejected private publication makes zero storage calls
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   shared tools available and required-local inputs availability are distinct
+ok   supplied local generation preserves study and changes generation identity
+ok   foreign analyst local snapshot rejected
+ok   foreign instance local value rejected
+ok   local object requires full couplets
+ok   typed span schema/byte count/generation exact
+ok   typed span row bounds checked
+ok   typed span shape mismatch rejected
+ok   unsealed span generation rejected
+ok   missing local inputs never execution-ready
+ok   two independent studies seeded and ready in one session
+ok   mixed local/shared live objects retain scope, origin and explicit units
+ok   only supplied local sibling/context fields added; repeated context deduplicated
+ok   initial f32 values survive bulk transfer exactly
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   bounded nonzero-dt execution preserves live mass and analyst snapshot provenance
+ok   joint report restricted to active owner
+ok   tick updates execution accumulators independently of immutable initial recipe
+ok   equal-count refresh reseeds and invalidates old generation
+ok   old generation report rejected after refresh
+ok   incomplete refresh fails closed without manager fallback
+ok   incomplete publication leaves study non-runnable
+ok   ticking failed publication rejected
+ok   valid equal-count refresh recovers failed study
+ok   invalid numerical publication fails closed
+PHASE integration assembly_ms=2.39173 allocation_ms=2.61686 compile_or_cache_ms=2238.43 upload_ms=0.006459 seed_ms=470.069 kernels_ms=479.978 report_ms=0.003204
+ok   host logical inputs and local version survive controlled Program teardown
+ok   restart builds a new study identity from retained inputs
+ok   old session handle rejected after restart
+ok   old session report rejected after restart
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   seeded inclusive centroid matches independent weighted sum
+ok   first force matches unchanged field law within 1e-6
+ok   finite state, inert slots and zero-dt state coherence
+ok   reconstructed initial scalar transfer bit patterns exact
+ok   private geometry, placements and context never rewrite shared source definitions/recipe
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,1,3,3,1,1,7,7,2,17,20,3,7,13,5,446.375
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.666304
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.670661
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,0,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.470466
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,1,3,3,1,1,7,7,2,17,20,3,7,13,5,415.706
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.345631
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.248307
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,bulk,1.34218e+08,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.298972
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,1,3,3,1,1,7,7,2,17,20,3,7,13,5,348.609
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.476294
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.43997
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,0,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.282848
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,1,3,3,1,1,7,7,2,17,20,3,7,13,5,359.604
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,2,3,1,1,0,7,7,0,7,20,1,7,13,0,1.34217
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.687011
+ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+FOCUS_DEMAND,direct,1.34218e+08,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.766807
+ok   private-derived focal demand requires active owner
+ok   invalid focus refresh fails closed on both host paths
+ok   invalid focal generation cannot execute old numerical state
+ok   old focal report rejected after failed refresh
+ok   valid focal refresh reseeds reference and activity buffers on both host paths
+ok   refreshed activity state preserves initial positional wake
+ok   old focused report rejected by restarted session
+ok   old focused handle rejected by restarted session
+ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+ok   restarted focused study retains independently expected unit motion
+ok   local assembly, execution, refresh, reporting and restart make zero manager/source calls
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   old publication ticket cannot silently acquire a different revision
+ok   unexpected head acquisition leaves no consumer lease
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   old ticket rejects without disturbing an already-owned current pin
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   changed source epoch blocks new acquisitions
+ok   fresh-client recipe identity and ownership exact
+ok   fresh-client complete recipe counts exact
+ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+ok   another consumer cannot read someone else's old pin
+SOURCE addressed_reads=24 private_reads=0
+180 warm-to-active integration checks
+PASS warm_active_integration
+Retained warm fixture: hcp_warm_d_20261027231717_17768
+Evidence: /workspace/human-cognome-project/engine/build/acceptance-hcp_warm_d_20261027231717_17768
+
+Restored-source fingerprints (unchanged before/after):
+2a65efd49639a321c01361d3402582230faa9d08d1aa961cc6bf80b6a4d75f04
+bc76d8aff36d2afbc3718808e3f42e65caf101c55a775a29d17e11f7feb89544

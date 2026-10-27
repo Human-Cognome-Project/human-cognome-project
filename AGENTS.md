@@ -9,7 +9,9 @@ publication, pending-input and resource invariants; record ongoing motion honest
 Revise #195's executable criteria and evidence before acceptance. The immediate
 goal is a bounded current-hierarchy GPU run with faithful rendered snapshots;
 full #156 completion is not a prerequisite for that observation milestone.
-Actual CUDA support and capture integration remain missing. Capture must observe
+Actual CUDA support remains unqualified. The shared active-execution capture
+adapter and CPU/export validation are built for review; see the
+[pinned handoff](docs/c3-cpu-capture-handoff.md). Capture must observe
 the active calculation stream's completed state through one backend-independent
 interface; it must not create or replay a separate CPU simulation. The remote
 agent should complete supported code/CPU/export validation and prepare a pinned
@@ -17,15 +19,19 @@ handoff; actual CUDA execution, qualification and any hardware-specific debuggin
 follow locally on Patrick's machine. Remote capture work need not wait for CUDA.
 C3-2 remains held pending C3-1 acceptance. Historical results remain unchanged.
 
-## C3-1 contribution — for review, acceptance blocked
+## C3-1 contribution — revised for review
 
 The opt-in [fixed installed trial hierarchy](engine/docs/LIVE-HIERARCHY.md)
 implements the accepted #194 C3-1 contract for CPU investigation. Its
 [source-pinned results](engine/tests/live_hierarchy/README.md) retain a coupled
-settling failure under permuted native field order. Frozen-body continuation
-converges. The moving-body gate is being revised under the current direction above.
-This contribution is not
-accepted; C3-2 coherent refresh remains held, as do the #156/#145 exits.
+settling failures under the historical v1 criteria. Their traces and source pins
+remain intact. The revised executable acceptance follows the current direction
+above and separates continuing motion from invariant failure.
+The revised [coherence/capture contribution](docs/c3-cpu-capture-handoff.md)
+completes continuous observations and exports the active execution through a
+shared native interface. New evidence retains its own source pin; historical
+v1 failures are unchanged. This contribution is not accepted; C3-2 coherent
+refresh remains held, as do the #156/#145 exits.
 
 ## C3 plan acceptance — 2026-10-27
 
@@ -91,9 +97,10 @@ reader/history lifetimes, combined integration and coupled recovery. Its C3-1
 fixed-tree implementation is released; C3-2 coherent refresh awaits C3-1 acceptance.
 
 The [C3-1 implementation for review](engine/docs/LIVE-HIERARCHY.md) now supplies
-that opt-in fixed-tree CPU path. Its coupled settling gate remains open; see
-the [retained investigation](engine/tests/live_hierarchy/README.md). Passing
-individual modes does not establish acceptance across native publication orders.
+that opt-in fixed-tree CPU path. Its executable acceptance now follows the
+coherent-dynamics direction above; see the separately pinned
+[revised observations and original investigation](engine/tests/live_hierarchy/README.md).
+The active-capture adapter is built for review; CUDA execution remains unqualified.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between

@@ -1,4 +1,50 @@
-# C3-1 CPU investigation
+# C3-1 coherent dynamics and active capture
+
+Current contract: [maintainer direction](../../../docs/coherent-dynamics-gpu-snapshots.md),
+recorded in `ea7b828` / `c644575`. Runtime/test/capture source:
+`85ba956917a413d6a4a7d378a1ce6041be557d35`. This is a separately versioned
+acceptance revision; the v1 artifacts and their failures below remain unchanged.
+
+All **96/96 CPU suites passed in 1314.32 seconds**. Four native modes completed
+all **660 moving windows** (initial + 32 perturbations for each of five fixtures
+per mode): **645 settled observations and 15 evolving observations**. All hard
+invariants passed. The 76 signed/cell-boundary/cancellation probes passed; held
+convergence/quiet and prepared reuse checks remained enabled.
+
+Fresh PostgreSQL-to-active integration passed **180 checks**, with zero private
+reads and unchanged restored cold-source fingerprints. Actual CPU backend checks
+passed. The 128-tick same-execution capture retained 17 snapshots, f64 values and
+per-node overrides; the viewer passed 87 browser checks and 15 model tests.
+CUDA-enabled fork/client builds and their CPU ABI capture passed. **Actual CUDA
+execution is unqualified; C3 CUDA requests remain explicitly rejected.**
+
+Moving observations end at 4,096 ticks or 32 consecutive quiet ticks, then the
+next declared perturbation continues from the same live state, including all
+pending bits and physical velocity. Every fixture completes the initial window
+and 32 perturbations. Settled/evolving is an observation status. A finite-domain,
+arithmetic, packet/history, source identity, lost-input or resource violation
+still fails. The terminal held-body intervention runs after all reuse checks;
+it never repairs an intermediate moving state. Held-input 16/8 convergence and
+justified quiet controls remain hard requirements. No physics/Q setting was tuned
+for stillness. Signed toward/away, cell/exponent/zero-boundary and cancellation
+probes retain the absolute publication error in a declared local Q8 ULP.
+
+| Artifact | Contents |
+|---|---|
+| [coherent-v2.json](coherent-v2.json) | New pins/hashes, four mode summaries, observation status, invariants, resource reuse, integration/backend/browser checks and CUDA build limits. |
+| [cpu-ctest-v2.txt](cpu-ctest-v2.txt) | Full revised CPU regression. |
+| [cpu-native-v2.txt](cpu-native-v2.txt) | All four revised native mode outputs. |
+| [integration-v2.txt](integration-v2.txt) | Fresh restored-source PostgreSQL-to-active integration and unchanged cold fingerprints. |
+| [backend-v2.txt](backend-v2.txt) | CPU backend verification. |
+| [capture-v2](capture-v2/) | First/final/latest snapshots from the same active C3 stream, native capture costs and browser evidence. |
+
+The [handoff](../../../docs/c3-cpu-capture-handoff.md) gives exact build/run commands
+and separates compiled, executed and unexecuted CUDA work. C3-1 still requires
+maintainer acceptance; C3-2 is held.
+
+---
+
+# Historical v1 CPU investigation
 
 Status: **draft for review; coupled settling acceptance is blocked**.
 Plan: [#194](../../../docs/production-hierarchy-response-plan.md).

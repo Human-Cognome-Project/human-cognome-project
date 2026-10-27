@@ -345,3 +345,50 @@ the generated bundle's license notices. C++ uses the vendored
 SHA256 `aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63`,
 with its MIT license. The fork's JSON code is unchanged. Browser dependencies
 are isolated to this optional tool and do not link into the physics engine.
+
+## Capture the current installed hierarchy
+
+For-review continuation under the [maintainer direction](../../docs/coherent-dynamics-gpu-snapshots.md).
+The bounded current C3 runner is separate from the retained legacy
+`viewport_letter_capture` study above. It runs the native English A / Dutch
+accented-i-byte fixture and exports that same execution, including sleepers.
+It requires `HCP_WITH_VIEWPORT=ON` in the native build:
+
+```sh
+. engine/build/engine-env.sh
+engine/build/live_hierarchy_test --backend cpu --threads 1 --case capture \
+  --capture-output /tmp/hcp-current-hierarchy --ticks 1024 --every 16
+```
+
+The run owner configures/reserves/installs the hierarchy and advances it. The
+shared [native interface](native/snapshot.h) only binds supplied identity/slot
+metadata and reads completed state. `observe(Harness&, binding)` and the
+owner-checked `observe(ActiveSession&, owner, handle)` produce the same value
+interface for `snapshot`. Neither starts another Program, replays physics,
+changes backend, solves candidates or modifies pending work. Calls require the
+owner's exclusive synchronized observation boundary. Refresh/recycled/foreign
+native mappings and stale capture ticks reject.
+
+The finite runner writes `hierarchy-tick0.json`, `hierarchy-final.json`, atomic
+`latest.json`, and `hierarchy-evidence.json` in the chosen output directory. The
+last file separates engine time, observation/readback time, export time, numerical
+host-copy bytes and requested readback API payloads. These are not measured PCIe
+traffic or complete driver/allocator accounting. It records captured/uncaptured
+same-execution state equivalence, source mapping and f64 round-trip checks. No
+persistent database or warm acquisition is required by this bounded fixture.
+
+Optional schema-v1 `execution` metadata retains actual backend, completed tick,
+native prepared generation, occurrence record identities and every installed
+comparison's identity and selected calculation/storage/fraction precision. It
+is not a field overlay or additional physical mass. The viewer shows backend,
+execution mode, default body/field Q and the comparison precisions. JSON/import/
+inspection retain f64; WebGL rendering still has its ordinary display precision.
+The original source/generation/frame/labels remain in the common schema.
+
+The legacy retained client now uses this same completed-state interface, but
+its `--backend cuda` still constructs a legacy flat study. It does not establish
+C3 CUDA support. The C3 runner explicitly rejects a CUDA request until actual
+CUDA publication/activity/f64 qualification is supported. See the
+[pinned handoff](../../docs/c3-cpu-capture-handoff.md) for executed CPU/capture work,
+CUDA compile preparation, remaining local work and exact commands. Full #156
+completion is not a prerequisite for this bounded observation milestone.

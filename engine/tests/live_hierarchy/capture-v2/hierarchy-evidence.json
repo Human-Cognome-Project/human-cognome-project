@@ -1,0 +1,16 @@
+{
+  "backend": "native_cpu",
+  "capture_state_equivalent": true,
+  "captures": 17,
+  "contract": "same_active_execution_v1",
+  "cuda_executed": false,
+  "engine_ms": 7.250696000000003,
+  "export_ms": 1.393678,
+  "f64_round_trip": true,
+  "field_overlays": false,
+  "numeric_copy_bytes": 190400,
+  "observation_ms": 0.30444899999999997,
+  "requested_readback_bytes": 446216,
+  "source_mapping_checked": true,
+  "ticks": 128
+}

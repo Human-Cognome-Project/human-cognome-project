@@ -1,11 +1,13 @@
 # Fixed installed trial hierarchy (C3-1)
 
-Status: **implementation for review; coupled CPU acceptance remains open** under
-the accepted [#194 plan](../../docs/production-hierarchy-response-plan.md).
-Changing only native field mapping reproduces a 4,096-tick settling-limit failure
-with one or two workers. Held-body continuation converges in zero or one polls;
-this does not establish coupled settling. See the [retained results](../tests/live_hierarchy/README.md)
-for the final pinned run, failures, traces and limits.
+Status: **implementation and coherent-dynamics acceptance for review** under
+[#194](../../docs/production-hierarchy-response-plan.md) and the superseding
+[maintainer direction](../../docs/coherent-dynamics-gpu-snapshots.md).
+Moving studies use finite observation windows; continuing motion is recorded
+separately from invariant failures. Held-input convergence, arithmetic, packet/
+history, pending inputs, numerical domains and resource assertions remain hard
+requirements. The original failing results are retained unchanged alongside the
+[new source-pinned observations](../tests/live_hierarchy/README.md).
 
 This is an opt-in path in `field_core`, not operational owner/admission completion.
 Uninstalled executions retain the existing flat forces and centroid phases.
@@ -184,6 +186,32 @@ existing limits; they do not measure arbitrary malloc, page faults or driver
 residency. C3-2 simultaneous committed/prospective refresh storage is not reserved
 or implemented by this fixed-tree slice.
 
-The unresolved settling result is a release gate, not permission to change the
-4096/32 criterion, physical laws, source accounting or precision policy after a
-run. #172/#177 and #156/#145 remain open.
+The current moving contract observes up to 4,096 ticks per round, ending early
+only after 32 quiet observations, and completes all 32 perturbation/reuse rounds.
+No frozen solve runs between those rounds. A labelled terminal frozen diagnostic
+then checks held-input convergence; its modified state is never resumed as the
+moving study. Quiet cases also check the resolved hierarchy reference. Evolving
+cases check the actual complete packets available to that live tick, not an
+instantaneous global solve. Q8/Q6 remains a coarse stress setting. Signed/cell-
+boundary probes report displacement and absolute publication error in local
+ULPs, without using an almost-zero attempted-step ratio as an error criterion.
+No physical law, damping, precision primitive or scheduling policy is changed.
+#172/#177 and #156/#145 remain open.
+
+## Observe the active execution
+
+The [shared capture adapter](../../tools/viewport/native/snapshot.h) takes a
+reference to the already running Harness and a validated immutable source/slot
+binding. It synchronizes and copies that execution's completed state, preserving
+sleepers, radii/masses, frame, native generation/tick, actual backend and per-node
+precision. The exporter constructs no Program, advances no simulation and performs
+no candidate numerical solve. The legacy owner-checked ActiveSession path uses
+the same completed-state value/serializer and its own completed-tick counter.
+Capture cost and requested readback payload are reported separately from ticks.
+
+A [bounded native runner and local handoff](../../docs/c3-cpu-capture-handoff.md)
+exercise the same C3 letter/byte execution and existing atomic snapshot writer /
+offline viewer. This is not #156 admission/owner completion. Actual CUDA C3
+installation remains explicitly unsupported until its native publication/activity/
+f64 contract is qualified locally; the backend-independent reader does not
+constitute that qualification.

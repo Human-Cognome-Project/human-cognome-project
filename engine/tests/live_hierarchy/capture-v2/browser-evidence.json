@@ -1,0 +1,27 @@
+{
+  "checks": 87,
+  "browser": "154.0.8037.57",
+  "transport": "in-memory exact page assets, offline browser context",
+  "direct_file_navigation": "unexecuted here: managed Chromium blocks file:// navigation",
+  "renderer": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "engine_backend": "native CPU capture; Taichi GPU unexecuted",
+  "particles": 3,
+  "snapshot_sha256": "3ea1e0108bb412fafcc912ff0f1da502af69810a0be2a590b89f666b11cf0e47",
+  "snapshot_bytes": 4334,
+  "live_updates": {
+    "show_directory_picker": "undefined",
+    "secure_context": false,
+    "protocol": "about:",
+    "page": "in-memory document (not a file:// page)",
+    "real_directory_handle": "unavailable: TypeError",
+    "source": "page-side source with the picker handle shape; the native folder picker is not automatable",
+    "captures": "retained native tick 0 and 8; UI fixtures for other ticks, identities and invalid files"
+  },
+  "metrics": {
+    "parse_ms": 10.200000047683716,
+    "build_ms": 8.399999976158142,
+    "render_submit_ms": 92
+  },
+  "network_requests": 0,
+  "browser_errors": []
+}
