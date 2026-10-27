@@ -22,6 +22,10 @@ page.on('pageerror', e => errors.push(e.message));
 page.on('request', r => { if (/^https?:/.test(r.url())) externalRequests.push(r.url()); });
 let checks = 0;
 const check = (ok, label) => { assert.ok(ok, label); checks++; };
+// OrbitControls normalizes camera targets during its display transform. Bound
+// that round trip only; imported native particle coordinates remain exact below.
+const cameraPoint = (actual, expected) => actual.every((v, i) =>
+  Math.abs(v - expected[i]) <= 32 * Number.EPSILON * Math.max(1, ...expected.map(Math.abs)));
 const state = () => page.evaluate(() => window.HCPViewport.inspect());
 async function load(value, name = 'fixture.json') {
   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(typeof value === 'string' ? value : JSON.stringify(value))});
@@ -78,7 +82,7 @@ try {
   current = await state();
   check(!!current.selected && await page.locator('#inspection').isVisible(), 'click list inspection');
   await page.locator('#frame-selection').click();
-  check((await state()).camera.target.every((v, i) => v === native.particles.find(p => p.id === current.selected).position[i]), 'frame selection');
+  check(cameraPoint((await state()).camera.target, native.particles.find(p => p.id === current.selected).position), 'frame selection');
   await page.locator('#level').selectOption('');
   await page.locator('#frame-all').click();
   const canvas = await page.locator('canvas').boundingBox();
@@ -94,7 +98,7 @@ try {
   await page.mouse.wheel(0, -120);
   check(JSON.stringify((await state()).camera.position) !== JSON.stringify(beforeZoom.position), 'zoom changes camera distance');
   await page.locator('#focus').click();
-  check((await state()).camera.target.every((v, i) => v === native.frame.camera_target[i]), 'study focus uses captured target');
+  check(cameraPoint((await state()).camera.target, native.frame.camera_target), 'study focus uses captured target');
   check(digest(JSON.stringify((await state()).snapshot)) === before, 'camera and filters preserve captured model');
   await page.locator('#frame-all').click();
   current = await state();
