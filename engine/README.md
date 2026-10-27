@@ -218,8 +218,10 @@ weighted numerical handoff probe. The [C2b-1 implementation](docs/CUMULATIVE-PUB
 and [CPU evidence](tests/cumulative_publication/README.md) are accepted in #192.
 The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
 [CPU evidence](tests/weighted_handoff/README.md) are accepted in #193. Comparison
-ownership, inherited response and coupled settling/recovery still need their
-concrete production integration contract before installation.
+ownership, inherited response and coupled settling/recovery now have the accepted
+[#194 production integration plan](../docs/production-hierarchy-response-plan.md).
+C3-1 fixed-tree implementation is released; C3-2 refresh awaits C3-1 acceptance.
+Neither production slice is built yet.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
