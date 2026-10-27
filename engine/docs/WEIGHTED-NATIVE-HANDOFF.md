@@ -1,6 +1,24 @@
 # C2b-2 weighted native handoff
 
-Status: **implementation for review**, released by accepted #192 under the
+## C2b-2 acceptance — 2026-10-27
+
+Accepted in #193 at reviewed `a96a05e`. Hosted
+[native CPU job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40454685994/job/122025151768)
+passed **92/92 suites in 1600.20 seconds**, followed by successful PostgreSQL
+integration and CPU-only backend checks. Smoke/projection workflows passed.
+Contributor evidence remains separately pinned (930.44 seconds).
+
+The next contribution is a bounded production hierarchy/response **plan**:
+resolve comparison ownership, every production reader's publication/history/repair
+lifetime, direct versus inherited response ownership and one combined physical
+integration, with coupled multilevel settling/recovery acceptance. C2b-2 establishes
+held-input numerical convergence and packet delivery, not coupled physical settling
+or CUDA ordering. No production hierarchy or inherited equation is released.
+Keep controls minimal and general; density-based precision remains optional later
+work. #172/#177/#156/#145 remain open.
+
+
+Status: **accepted in #193**, released by accepted #192 under the
 [#191 plan](../../docs/cumulative-publication-integration-plan.md). This is a
 native C++ numerical probe, CMake registration and fixture-only upload support.
 Production engine, runtime/compiler fork and physics laws are unchanged.
