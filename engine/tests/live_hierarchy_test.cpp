@@ -1851,18 +1851,21 @@ void moving_case(Fixture &f, const char *name) {
   require(baseline.same_backing(after),
           "moving recovery reuse changed prepared backing/compiler counters");
 }
-void moving(engine::Runtime &r, HostPath path) {
+void moving(engine::Runtime &r, HostPath path, bool permute = false) {
   {
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
-              {1, 1, 1}, {1, 1, 2}, {1, 1.5, 3}, 8, 6, false, true, true);
-    moving_case(f, "two_level");
+              {1, 1, 1}, {1, 1, 2}, {1, 1.5, 3}, 8, 6, false, true, true,
+              permute);
+    moving_case(f, permute ? "two_level_permuted" : "two_level");
   }
   {
     Fixture f(
         r, path, {{}, {}, {}, {0, 1}, {2, 3}},
         {{1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}},
-        {1, 2, 1, 1}, {1, 2, 1, 4}, {1, 1.5, 3, 5}, 8, 6, false, true, true);
-    moving_case(f, "three_level_overlap");
+        {1, 2, 1, 1}, {1, 2, 1, 4}, {1, 1.5, 3, 5}, 8, 6, false, true, true,
+        permute);
+    moving_case(
+        f, permute ? "three_level_overlap_permuted" : "three_level_overlap");
   }
 }
 }  // namespace
@@ -1921,6 +1924,10 @@ int main(int argc, char **argv) {
     }
     if (wants("moving"))
       run("moving", [&] { moving(r, path); });
+    // Native row order is not a hierarchy freshness guarantee. Exercise the
+    // same declared physics and settling gate with a different field mapping.
+    if (wants("moving_permuted"))
+      run("moving_permuted", [&] { moving(r, path, true); });
     if (!quick && wants("letters")) {
       run("letters", [&] {
         const auto data = letter_data(r);
