@@ -22,6 +22,20 @@ the engine's ordinary tick path, not completion of operational admission or owne
 Acceptance of this plan releases C3-1 below. C3-2 follows only after C3-1
 acceptance, in a separate implementation PR. Merging this document changes no math.
 
+## Acceptance clarification — 2026-10-27
+
+Patrick's [coherent dynamics and GPU snapshot direction](coherent-dynamics-gpu-snapshots.md)
+supersedes the universal moving-fixture settling requirement in section 6.
+Exact resolution is an asymptotic ideal; continued motion alone is not a failure.
+Mathematical correctness, publication/input lifetimes, held-input convergence,
+state preservation and resource bounds remain hard requirements. Moving fixtures
+must retain declared observation windows, independent checks and all recovery/reuse
+rounds while reporting settled versus evolving separately. Historical failed runs
+remain failed under their original criteria; revised acceptance needs new evidence.
+The immediate bounded GPU observation milestone does not require completion of
+all #156 operations. Actual CUDA qualification and a current-hierarchy capture
+adapter are required; neither exists in the reviewed #195 runtime.
+
 ## 1. Installed ownership and supported subset
 
 Use one supplied calculation tree in one prepared execution/source generation.

@@ -1,12 +1,25 @@
 # Agent guidance
 
+## Current direction — coherent dynamics and GPU snapshots, 2026-10-27
+
+Patrick clarified that exact resolution is an asymptotic ideal, not mandatory
+stillness for every field. The [current acceptance and GPU snapshot continuation](docs/coherent-dynamics-gpu-snapshots.md)
+supersedes universal moving-fixture settling gates below. Preserve mathematical,
+publication, pending-input and resource invariants; record ongoing motion honestly.
+Revise #195's executable criteria and evidence before acceptance. The immediate
+goal is a bounded current-hierarchy GPU run with faithful rendered snapshots;
+full #156 completion is not a prerequisite for that observation milestone.
+Actual CUDA support and the hierarchy-to-capture adapter remain missing.
+C3-2 remains held pending C3-1 acceptance. Historical results remain unchanged.
+
 ## C3-1 contribution — for review, acceptance blocked
 
 The opt-in [fixed installed trial hierarchy](engine/docs/LIVE-HIERARCHY.md)
 implements the accepted #194 C3-1 contract for CPU investigation. Its
 [source-pinned results](engine/tests/live_hierarchy/README.md) retain a coupled
 settling failure under permuted native field order. Frozen-body continuation
-converges, but does not clear the moving-body gate. This contribution is not
+converges. The moving-body gate is being revised under the current direction above.
+This contribution is not
 accepted; C3-2 coherent refresh remains held, as do the #156/#145 exits.
 
 ## C3 plan acceptance — 2026-10-27
