@@ -1,5 +1,14 @@
 # Agent guidance
 
+## C3-1 contribution — for review, acceptance blocked
+
+The opt-in [fixed installed trial hierarchy](engine/docs/LIVE-HIERARCHY.md)
+implements the accepted #194 C3-1 contract for CPU investigation. Its
+[source-pinned results](engine/tests/live_hierarchy/README.md) retain a coupled
+settling failure under permuted native field order. Frozen-body continuation
+converges, but does not clear the moving-body gate. This contribution is not
+accepted; C3-2 coherent refresh remains held, as do the #156/#145 exits.
+
 ## C3 plan acceptance — 2026-10-27
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
@@ -62,6 +71,11 @@ The [production hierarchy/response plan](docs/production-hierarchy-response-plan
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
 fixed-tree implementation is released; C3-2 coherent refresh awaits C3-1 acceptance.
+
+The [C3-1 implementation for review](engine/docs/LIVE-HIERARCHY.md) now supplies
+that opt-in fixed-tree CPU path. Its coupled settling gate remains open; see
+the [retained investigation](engine/tests/live_hierarchy/README.md). Passing
+individual modes does not establish acceptance across native publication orders.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
