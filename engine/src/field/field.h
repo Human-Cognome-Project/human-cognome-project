@@ -182,6 +182,9 @@ class Harness {
   bool ready() const {
     return ready_;
   }
+  taichi::Arch actual_arch() const {
+    return runtime_->arch();
+  }
   bool prepared() const {
     return bool(prepared_);
   }

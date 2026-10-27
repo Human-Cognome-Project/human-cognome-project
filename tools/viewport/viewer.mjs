@@ -131,6 +131,9 @@ function replaceSnapshot(next, keep = false) {
   $('capture-title').textContent = snapshot.capture.label || 'Untitled study'; $('capture-meta').replaceChildren();
   for (const [label, value] of Object.entries({'Schema': 'HCP snapshot v1', Study: snapshot.capture.study,
     Generation: snapshot.capture.generation, Tick: `${snapshot.capture.tick} · ${snapshot.capture.phase}`,
+    ...snapshot.execution && {Backend: snapshot.execution.backend, Execution: snapshot.execution.mode},
+    ...snapshot.numerics && {Numerics: `${snapshot.numerics.profile} · body Q${snapshot.numerics.body_fraction_bits} · default field Q${snapshot.numerics.field_fraction_bits}`},
+    ...snapshot.execution?.comparisons.length && {'Comparison precision': `${snapshot.execution.comparisons.length} comparisons · retained fraction bits ${[...new Set(snapshot.execution.comparisons.map(c => c.fraction_bits))].sort((a, b) => a - b).join(', ')}`},
     'Double frame reference': snapshot.frame.reference.join(', '), 'Captured camera target': snapshot.frame.camera_target.join(', '),
     ...offset() && {'Display offset': `${shift.join(', ')} (objects shifted; camera unchanged)`},
     Coordinates: 'Reference-local · operative model units'})) row($('capture-meta'), label, value);

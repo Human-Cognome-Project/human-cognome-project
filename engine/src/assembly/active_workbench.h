@@ -109,6 +109,7 @@ class ActiveSession {
                           const ActiveAssembly &assembly,
                           const field::Parameters &parameters);
   bool ready(const ExecutionHandle &handle) const;
+  std::uint64_t completed_ticks(const ExecutionHandle &handle) const;
   void tick(const ExecutionHandle &handle, const field::Parameters &parameters);
   ActiveReport report(const ExecutionHandle &handle, const warm::Uuid &owner);
   void accept(const ActiveReport &report, const warm::Uuid &owner) const;

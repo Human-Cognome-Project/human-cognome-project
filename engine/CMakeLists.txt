@@ -367,6 +367,8 @@ endif()
 option(HCP_WITH_VIEWPORT "Build the optional offline study snapshot exporter" OFF)
 if(HCP_WITH_VIEWPORT)
   add_subdirectory(../tools/viewport/native viewport)
+  target_link_libraries(live_hierarchy_test PRIVATE viewport_snapshot)
+  target_compile_definitions(live_hierarchy_test PRIVATE HCP_HAS_VIEWPORT=1)
 endif()
 
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.

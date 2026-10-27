@@ -13,7 +13,7 @@ const resultsPath = resolve(process.argv[3] || `${root}/tests/results`);
 const inMemory = process.env.HCP_VIEWPORT_IN_MEMORY === '1';
 await mkdir(resultsPath, {recursive: true});
 const nativeText = await readFile(snapshotPath, 'utf8'), native = JSON.parse(nativeText);
-assert.equal(native.source.kind, 'retained_cold_to_warm_to_active');
+assert.ok(['retained_cold_to_warm_to_active', 'bounded_native_current_hierarchy'].includes(native.source.kind));
 const browser = await chromium.launch({executablePath: process.env.HCP_CHROMIUM || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : chromium.executablePath()), headless: true,
   args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
 const context = await browser.newContext({offline: true, viewport: {width: 1440, height: 1000}, deviceScaleFactor: 1});
@@ -52,6 +52,12 @@ try {
   await waitStudy(native.capture.study, native.capture.generation, native.capture.tick);
   let current = await state();
   check(current.drawn.length === native.particles.length, 'all real native particles drawn');
+  if (native.execution) {
+    check(JSON.stringify(current.snapshot.execution) === JSON.stringify(native.execution), 'actual execution metadata survives viewer import');
+    check((await page.locator('#capture-meta').textContent()).includes(native.execution.backend), 'actual backend displayed');
+    if (native.execution.mode === 'installed_hierarchy')
+      check((await page.locator('#capture-meta').textContent()).includes('Comparison precision'), 'per-comparison precision disclosed');
+  }
   const ranges = rangesFor(native);
   for (const p of native.particles) {
     const actual = current.drawn.find(v => v.id === p.id);
@@ -104,6 +110,7 @@ try {
 
   // Edge cases are mutations of a capture solely for UI validation, not native evidence.
   const synthetic = structuredClone(native);
+  delete synthetic.execution; // Fabricated UI values carry no native execution attestation.
   synthetic.capture = {...synthetic.capture, generation: '12345678-1234-1234-1234-123456789abc', label: 'UI validation fixture'};
   synthetic.particles[0].radius = null; synthetic.particles[1].radius = 0;
   synthetic.particles[2].mass = null; synthetic.particles[2].exact_mass = '9223372036854775811';

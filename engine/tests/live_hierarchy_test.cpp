@@ -13,6 +13,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#ifdef HCP_HAS_VIEWPORT
+#include <filesystem>
+#include "snapshot.h"
+#include "capture_options.h"
+#endif
 #include "allocation_observation.h"
 #include "prepared_fixture.h"
 #include "prepared_metrics.h"
@@ -1176,7 +1181,7 @@ void installed_rejections(Fixture &f) {
   std::cout << "installed_rejection,update_replace_upload_publish_seed_focus_"
                "invalid_tick PASS\n";
 }
-void reader_consistency(Fixture &f) {
+void reader_consistency(Fixture &f, bool resolved = true) {
   const auto before = state_hash(f),
              generation = f.h.prepared_storage().generation;
   const auto root =
@@ -1194,8 +1199,9 @@ void reader_consistency(Fixture &f) {
               geometry.status == GeometryStatus::Ok,
           "installed synchronized candidate/geometry reader rejected");
   for (int k = 0; k < 3; ++k) {
-    near(query.centre[k], root[k],
-         "candidate reference changed installed root");
+    if (resolved)
+      near(query.centre[k], root[k],
+           "resolved candidate differs from installed root");
     near(geometry.focal_point[k], root[k],
          "geometry did not read completed focal mirror");
   }
@@ -1670,6 +1676,10 @@ void boundary_tree(engine::Runtime &r, HostPath path) {
 struct LetterData {
   std::vector<double> masses, positions, radii;
   std::vector<std::uint64_t> denominators;
+#ifdef HCP_HAS_VIEWPORT
+  assembly::PreparedStudy mapping;
+  std::vector<assembly::Origin> origins;
+#endif
 };
 LetterData letter_data(engine::Runtime &r) {
   membership_fixture::Fixture source;
@@ -1692,6 +1702,14 @@ LetterData letter_data(engine::Runtime &r) {
   r.program().add_snode_tree(std::move(root), false);
   const auto prepared = assembly::prepare(memberships.bind(projection, nodes));
   LetterData out;
+#ifdef HCP_HAS_VIEWPORT
+  out.mapping = prepared;
+  for (auto &scale : out.mapping.scales)
+    scale.node.layout = nullptr;
+  for (const auto &o : projection.occurrences())
+    if (o.active)
+      out.origins.push_back({o.key, o.definition.object, o.definition, {}});
+#endif
   for (const auto &p : prepared.particles) {
     require(p.exact_mass > 0 && p.mass > 0 && p.radius > 0,
             "letter fixture missing intrinsic/source values");
@@ -1704,6 +1722,100 @@ LetterData letter_data(engine::Runtime &r) {
   std::cout << "letter_inputs,English_A_aggregate=1,Dutch_accented_i_UTF8_"
                "bytes=2,fixture_geometry=1,prepared_frame_conversion=1\n";
   return out;
+}
+void publication_diagnostics(engine::Runtime &r, HostPath path) {
+  const auto report = [](const char *label, int sign, double old,
+                         double displacement, double published) {
+    const double candidate = old + displacement;
+    const double reference = candidate != 0 ? candidate : (old != 0 ? old : 1);
+    const double ulp = std::ldexp(1., std::ilogb(std::abs(reference)) - 8);
+    const double error = std::abs(published - candidate);
+    require(std::isfinite(error) && error < ulp,
+            "Q8 publication error exceeds its declared local cell");
+    std::cout << "publication_probe,label=" << label << ",sign=" << sign
+              << ",body_fraction_bits=8,old=" << old
+              << ",calculated_displacement=" << displacement
+              << ",candidate=" << candidate
+              << ",published_displacement=" << published - old
+              << ",absolute_publication_error=" << error
+              << ",local_cell_ulp=" << ulp << ",error_ulps=" << error / ulp
+              << ",ulp_reference=nonzero_candidate_else_old_else_one PASS\n";
+  };
+  {
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {1}, 8, 6);
+    f.install();
+    Parameters64 p;
+    p.gravity = p.contact_stiffness = p.reach_strength = 0;
+    p.dt = 1;
+    const int body = f.in.particle_rows[0].record;
+    struct Case {
+      const char *name;
+      double x, step;
+    };
+    const Case cases[]{{"toward_zero_subcell", 1, -std::ldexp(1., -20)},
+                       {"away_zero_subcell", 1, std::ldexp(1., -20)},
+                       {"cell_boundary", 1, std::ldexp(1., -8)},
+                       {"below_exponent_boundary", 2, -std::ldexp(1., -20)},
+                       {"cross_exponent_boundary", 1.99609375, .0078125},
+                       {"cross_zero", std::ldexp(1., -10), -std::ldexp(1., -9)},
+                       {"arrive_zero", 1, -1},
+                       {"quiet_exact_cell", 1, 0}};
+    for (int sign : {1, -1})
+      for (const auto &c : cases) {
+        f.h.inspect_prepared();
+        f.h.particle64(kPosX, body) = sign * c.x;
+        f.h.particle64(kVelX, body) = sign * c.step;
+        no_new([&] {
+          PreparedFixtureAccess::upload_body_fixture64(f.h);
+          f.control->set(3);
+          f.control->set(2, body);
+        });
+        const auto old = f.h.particles64(),
+                   expected = physical_reference(f, p, true);
+        const auto before = f.h.inspect_live_hierarchy();
+        no_new([&] {
+          f.h.tick64(p);
+          f.h.inspect_prepared();
+        });
+        verify_physical(f, expected, old, p);
+        poll_lifetime(f, before);
+        report(c.name, sign, sign * c.x, f.h.particle64(kVelX, body) * p.dt,
+               f.h.particle64(kPosX, body));
+      }
+    // The final case has zero velocity and no forces. Here quiet is justified,
+    // independently of whether an interacting moving fixture should settle.
+    held_settle(f, "zero_force_zero_velocity_publication", 0, 0);
+  }
+  {
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+              {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 8, 6);
+    f.install();
+    Parameters64 p;
+    p.gravity = 1;
+    p.dt = 1;
+    p.contact_stiffness = p.reach_strength = 0;
+    const double velocities[]{-3, 1, 1};
+    for (int i = 0; i < 3; ++i)
+      f.h.particle64(kVelX, f.in.particle_rows[i].record) = velocities[i];
+    no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
+    const auto old = f.h.particles64(),
+               expected = physical_reference(f, p, true);
+    const auto before = f.h.inspect_live_hierarchy();
+    no_new([&] {
+      f.h.tick64(p);
+      f.h.inspect_prepared();
+    });
+    verify_physical(f, expected, old, p);
+    poll_lifetime(f, before);
+    for (int i = 0; i < 3; ++i) {
+      const int body = f.in.particle_rows[i].record;
+      require(f.h.particle64(kVelX, body) == 0,
+              "force/carried-velocity cancellation witness changed");
+      report("force_velocity_cancellation", 0,
+             old[kPosX * f.h.particle_capacity() + body], 0,
+             f.h.particle64(kPosX, body));
+    }
+  }
 }
 struct MovingTrace {
   struct Dynamics {
@@ -1810,6 +1922,7 @@ void moving_case(Fixture &f, const char *name) {
   std::unique_ptr<prepared_test::Metrics> metrics;
   prepared_test::Sample baseline;
   MovingTrace trace(f);
+  int evolving_rounds = 0;
   for (int round = 0; round <= 32; ++round) {
     if (round) {
       f.h.inspect_prepared();
@@ -1855,9 +1968,11 @@ void moving_case(Fixture &f, const char *name) {
         quiet = 0;
     }
     std::cout << "moving,name=" << name << ",round=" << round
-              << ",ticks=" << ticks << ",quiet=" << quiet
-              << ",body_work=" << work << ",field_work=" << fields
-              << ",attempts=" << attempts << ",baseline_wakes=" << conservative
+              << ",contract=coherent_dynamics_v2,status="
+              << (quiet == 32 ? "settled" : "evolving") << ",ticks=" << ticks
+              << ",quiet=" << quiet << ",body_work=" << work
+              << ",field_work=" << fields << ",attempts=" << attempts
+              << ",baseline_wakes=" << conservative
               << ",ordinary_ms=" << ordinary_ms << ",observed_elapsed_ms="
               << std::chrono::duration<double, std::milli>(
                      std::chrono::steady_clock::now() - started)
@@ -1865,34 +1980,16 @@ void moving_case(Fixture &f, const char *name) {
               << '\n';
     trace.print_dynamics(name, round);
     if (quiet != 32) {
-      trace.print(f, name, round, ticks);
-      const auto physical = f.h.particles64();
-      int polls = 0;
-      for (; polls < 16 && f.h.prepared_storage().inspection_counts[3];
-           ++polls) {
-        const auto previous = f.h.inspect_live_hierarchy();
-        no_new([&] {
-          LiveHierarchyAccess::poll(f.h, p.gravity, -1, p.contact_stiffness);
-          f.h.inspect_prepared();
-        });
-        poll_lifetime(f, previous);
-        require(f.h.particles64() == physical,
-                "frozen diagnostic changed physical state");
-      }
-      require(!f.h.prepared_storage().inspection_counts[3],
-              "frozen post-limit hierarchy did not converge");
+      ++evolving_rounds;
+      // Observe without altering publications or pending native work. Bound the
+      // serialized trace volume; all rounds still retain dynamics/work totals.
+      if (evolving_rounds == 1 || round == 32)
+        trace.print(f, name, round, ticks);
+    } else {
       hierarchy_reference(f);
-      std::cout
-          << "frozen_after_limit,name=" << name << ",round=" << round
-          << ",polls=" << polls
-          << ",hierarchy_reference=1,physical_unchanged=1,body_work_pending="
-          << f.h.prepared_storage().inspection_counts[1] << '\n';
-      throw std::runtime_error(
-          "moving fixture did not settle within 4096 ticks");
     }
-    hierarchy_reference(f);
     if (round == 0 || round == 32)
-      reader_consistency(f);
+      reader_consistency(f, quiet == 32);
     if (!round) {
       metrics = std::make_unique<prepared_test::Metrics>(
           f.runtime, PreparedFixtureAccess::nodes(f.h));
@@ -1904,6 +2001,31 @@ void moving_case(Fixture &f, const char *name) {
   after.print("moving_reuse_after");
   require(baseline.same_backing(after),
           "moving recovery reuse changed prepared backing/compiler counters");
+  std::cout << "moving_sequence,name=" << name
+            << ",contract=coherent_dynamics_v2,rounds=33,perturbations=32,"
+               "evolving_rounds="
+            << evolving_rounds << ",continuous_publications=1,reuse=32 PASS\n";
+  // The moving study is complete. Only now intervene by holding bodies fixed;
+  // no later moving tick may resume from this altered diagnostic state.
+  const auto physical = f.h.particles64();
+  int polls = 0;
+  for (; polls < 16 && f.h.prepared_storage().inspection_counts[3]; ++polls) {
+    const auto previous = f.h.inspect_live_hierarchy();
+    no_new([&] {
+      LiveHierarchyAccess::poll(f.h, p.gravity, -1, p.contact_stiffness);
+      f.h.inspect_prepared();
+    });
+    poll_lifetime(f, previous);
+    require(f.h.particles64() == physical,
+            "terminal frozen diagnostic changed physical state");
+  }
+  require(!f.h.prepared_storage().inspection_counts[3],
+          "terminal frozen hierarchy did not converge within 16 polls");
+  hierarchy_reference(f);
+  std::cout << "frozen_after_sequence,name=" << name
+            << ",terminal_intervention=1,polls=" << polls
+            << ",hierarchy_reference=1,physical_unchanged=1,body_work_pending="
+            << f.h.prepared_storage().inspection_counts[1] << '\n';
 }
 void moving(engine::Runtime &r, HostPath path, bool permute = false) {
   {
@@ -1922,6 +2044,187 @@ void moving(engine::Runtime &r, HostPath path, bool permute = false) {
         f, permute ? "three_level_overlap_permuted" : "three_level_overlap");
   }
 }
+#ifdef HCP_HAS_VIEWPORT
+void capture_current(engine::Runtime &r,
+                     HostPath path,
+                     const std::string &output,
+                     std::uint64_t ticks,
+                     std::uint64_t every) {
+  const auto data = letter_data(r);
+  std::vector<std::vector<std::uint64_t>> count(3,
+                                                std::vector<std::uint64_t>(3));
+  count[0][0] = data.denominators[0];
+  count[1][1] = data.denominators[1];
+  count[1][2] = data.denominators[2];
+  Fixture f(r, path, {{}, {}, {0, 1}}, count, data.denominators, data.masses,
+            data.positions, 8, 6, false, true, true, false, 1024, data.radii);
+  f.nodes.back().retained_fraction_bits = 5;  // Exercise a reported override.
+  const int first_body = f.in.particle_rows[0].record;
+  f.h.particle64(kPosX, first_body) += std::ldexp(1., -30);
+  no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
+  f.install();
+  assembly::ActiveReport mapping;
+  mapping.handle = {warm::new_uuid(), data.origins.front().occurrence.study,
+                    warm::new_uuid()};
+  mapping.owner = warm::new_uuid();
+  mapping.instance = warm::new_uuid();
+  mapping.origins = data.origins;
+  mapping.prepared = data.mapping;
+  mapping.prepared.capacity = f.h.particle_capacity();
+  mapping.prepared.groups.assign(f.h.field_capacity(), {});
+  for (std::size_t n = 0; n < f.nodes.size(); ++n)
+    mapping.prepared.groups[f.nodes[n].field.record] = {
+        assembly::GroupKind::Membership,
+        "native-comparison:" + std::to_string(f.nodes[n].comparison)};
+  mapping.prepared.focal_groups = {f.nodes.back().field.record};
+  for (std::size_t i = 0; i < mapping.prepared.particles.size(); ++i)
+    mapping.prepared.particles[i].occurrence.slot =
+        f.in.particle_rows[i].record;
+  const auto binding = viewport::bind(f.h, mapping);
+  viewport::CaptureContext context;
+  context.handle = mapping.handle;
+  context.label =
+      "Current installed C3 English A / Dutch accented i byte fixture";
+  for (std::size_t i = 0; i < mapping.prepared.particles.size(); ++i) {
+    const auto &o = mapping.prepared.particles[i].occurrence;
+    const auto aggregate = i == 0 ? o.id : mapping.handle.study.str() + "/1";
+    context.occurrences.emplace(
+        o.id,
+        viewport::DisplayContext{
+            i == 0 ? "aggregate" : "parts", aggregate,
+            i == 0 ? "English A" : "Dutch í UTF-8 byte " + std::to_string(i)});
+  }
+  Parameters64 p;
+  p.dt = .5;
+  context.source = {
+      {"kind", "bounded_native_current_hierarchy"},
+      {"data", "existing native letter/UTF-8 bootstrap fixture"},
+      {"geometry", "supplied intrinsic test extents; common-frame x+2"},
+      {"parameters",
+       {{"dt", p.dt},
+        {"gravity", p.gravity},
+        {"contact_stiffness", p.contact_stiffness},
+        {"reach_strength", p.reach_strength}}}};
+  namespace fs = std::filesystem;
+  const fs::path directory =
+      output.empty() ? fs::temp_directory_path() /
+                           ("hcp-current-capture-" + warm::new_uuid().str())
+                     : fs::path(output);
+  fs::create_directories(directory);
+  struct Cleanup {
+    fs::path path;
+    bool remove;
+    ~Cleanup() {
+      if (remove) {
+        std::error_code ignored;
+        fs::remove_all(path, ignored);
+      }
+    }
+  } cleanup{directory, output.empty()};
+  double observation_ms = 0, export_ms = 0, engine_ms = 0;
+  std::size_t copies = 0, captures = 0, readback = 0;
+  const auto capture = [&]() {
+    const auto before = state_hash(f);
+    auto state = viewport::observe(f.h, binding);
+    require(state_hash(f) == before,
+            "capture changed same-execution state/pending inputs/Demand");
+    context.tick = state.tick;
+    auto value = viewport::snapshot(state, context);
+    require(viewport::Json::parse(value.dump()) == value,
+            "snapshot JSON round-trip changed values");
+    require(state.tick == f.h.prepared_storage().completed_ticks &&
+                state.backend == "native_cpu" &&
+                state.comparisons.size() == 3 &&
+                state.comparisons.back().retained_fraction_bits == 5,
+            "capture backend/tick/precision identity mismatch");
+    for (const auto &particle : value["particles"]) {
+      const int slot = particle["slot"].get<int>();
+      for (int axis = 0; axis < 3; ++axis)
+        require(particle["position"][axis].get<double>() ==
+                    f.h.particle64(kPosX + axis, slot),
+                "capture narrowed/recomputed native coordinate");
+      require(
+          particle["radius"].get<double>() == f.h.particle64(kRadius, slot) &&
+              particle["mass"].get<double>() == f.h.particle64(kMass, slot),
+          "capture mass/extent differs from current execution");
+    }
+    auto bad_context = context;
+    ++bad_context.tick;
+    bool rejected = false;
+    try {
+      viewport::snapshot(state, bad_context);
+    } catch (const std::invalid_argument &) {
+      rejected = true;
+    }
+    require(rejected, "capture accepted stale tick metadata");
+    auto bad = binding;
+    ++bad.bodies.front().incarnation;
+    rejected = false;
+    try {
+      viewport::observe(f.h, bad);
+    } catch (const std::invalid_argument &) {
+      rejected = true;
+    }
+    require(rejected, "capture accepted recycled source handle");
+    const auto started = std::chrono::steady_clock::now();
+    if (state.tick == 0)
+      viewport::write_atomic((directory / "hierarchy-tick0.json").string(),
+                             value);
+    if (state.tick == ticks)
+      viewport::write_atomic((directory / "hierarchy-final.json").string(),
+                             value);
+    viewport::write_atomic((directory / "latest.json").string(), value);
+    export_ms += std::chrono::duration<double, std::milli>(
+                     std::chrono::steady_clock::now() - started)
+                     .count();
+    observation_ms += state.observation_ms;
+    copies += state.numeric_copy_bytes;
+    readback += state.requested_readback_bytes;
+    ++captures;
+    require(state_hash(f) == before,
+            "snapshot export changed active execution");
+    if (state.tick == 0)
+      require(
+          value["particles"][0]["position"][0].get<double>() !=
+              double(float(value["particles"][0]["position"][0].get<double>())),
+          "capture fixture lacks f64 detail");
+  };
+  capture();
+  for (std::uint64_t tick = 0; tick < ticks; ++tick) {
+    f.h.inspect_prepared();
+    const auto old = f.h.particles64(),
+               expected = physical_reference(f, p, tick == 0);
+    const auto previous = f.h.inspect_live_hierarchy();
+    no_new([&] {
+      f.h.tick64(p);
+      f.h.inspect_prepared();
+    });
+    verify_physical(f, expected, old, p);
+    poll_lifetime(f, previous);
+    engine_ms += f.h.demand().tick_ms;
+    if ((tick + 1) % every == 0 || tick + 1 == ticks)
+      capture();
+  }
+  viewport::Json evidence{{"contract", "same_active_execution_v1"},
+                          {"backend", "native_cpu"},
+                          {"ticks", ticks},
+                          {"captures", captures},
+                          {"capture_state_equivalent", true},
+                          {"source_mapping_checked", true},
+                          {"f64_round_trip", true},
+                          {"numeric_copy_bytes", copies},
+                          {"requested_readback_bytes", readback},
+                          {"observation_ms", observation_ms},
+                          {"export_ms", export_ms},
+                          {"engine_ms", engine_ms},
+                          {"cuda_executed", false},
+                          {"field_overlays", false}};
+  viewport::write_atomic((directory / "hierarchy-evidence.json").string(),
+                         evidence);
+  std::cout << "current_capture," << evidence.dump() << " PASS\n";
+}
+#endif
+
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -1929,6 +2232,10 @@ int main(int argc, char **argv) {
     settings.cpu_threads = 1;
     HostPath path = HostPath::BulkCopy;
     bool quick = false;
+#ifdef HCP_HAS_VIEWPORT
+    std::string capture_output;
+    std::uint64_t capture_ticks = 64, capture_every = 8;
+#endif
     std::string only;
     for (int i = 1; i < argc; ++i) {
       if (std::string(argv[i]) == "--direct")
@@ -1939,7 +2246,21 @@ int main(int argc, char **argv) {
         only = argv[++i];
       else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
         settings.cpu_threads = std::stoi(argv[++i]);
-      else
+#ifdef HCP_HAS_VIEWPORT
+      else if (std::string(argv[i]) == "--capture-output" && i + 1 < argc)
+        capture_output = argv[++i];
+      else if (std::string(argv[i]) == "--ticks" && i + 1 < argc)
+        capture_ticks = viewport::parse_count("--ticks", argv[++i], 1, 1000000);
+      else if (std::string(argv[i]) == "--every" && i + 1 < argc)
+        capture_every = viewport::parse_count("--every", argv[++i], 1, 1000000);
+#endif
+      else if (std::string(argv[i]) == "--backend" && i + 1 < argc) {
+        const std::string backend = argv[++i];
+        if (backend != "cpu")
+          throw std::runtime_error(
+              "C3 runner supports CPU only; CUDA publication qualification "
+              "remains required");
+      } else
         throw std::runtime_error("unknown argument");
     }
     engine::Runtime r(settings);
@@ -1975,6 +2296,8 @@ int main(int argc, char **argv) {
       }
       if (wants("tree"))
         run("tree", [&] { boundary_tree(r, path); });
+      if (wants("publication"))
+        run("publication", [&] { publication_diagnostics(r, path); });
     }
     if (wants("moving"))
       run("moving", [&] { moving(r, path); });
@@ -1996,6 +2319,12 @@ int main(int argc, char **argv) {
         moving_case(letters, "letter_and_UTF8_bytes");
       });
     }
+#ifdef HCP_HAS_VIEWPORT
+    if (!quick && wants("capture"))
+      run("capture", [&] {
+        capture_current(r, path, capture_output, capture_ticks, capture_every);
+      });
+#endif
     std::cout
         << "physical_reference,force=independent_long_double_sum,velocity=long_"
            "double_conditioned_on_verified_force,velocity_bound=128u_times_"

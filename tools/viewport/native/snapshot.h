@@ -1,7 +1,9 @@
 #pragma once
 
 #include <map>
+#include <optional>
 #include <string>
+#include <vector>
 
 #include "assembly/active_workbench.h"
 #include "json.hpp"
@@ -19,6 +21,33 @@ struct CaptureContext {
   std::map<std::string, DisplayContext> occurrences;
   Json source = Json::object();
 };
+// A value copied from one completed, exclusively owned execution boundary.
+// No backend selection, engine construction, replay or numerical solve occurs.
+struct CompletedState {
+  assembly::ActiveReport report;
+  std::string backend;
+  std::uint64_t tick{};
+  std::optional<std::uint64_t> prepared_generation;
+  std::vector<engine::RecordHandle> body_records;
+  std::vector<field::CascadeNode> comparisons;
+  double observation_ms{};
+  std::size_t numeric_copy_bytes{};
+  // Requested readback API payloads, not measured PCIe/driver traffic.
+  std::size_t requested_readback_bytes{};
+};
+struct HarnessBinding {
+  assembly::ActiveReport mapping;
+  std::uint64_t generation{};
+  bool installed{};
+  std::vector<engine::RecordHandle> bodies, fields;
+};
+// The run owner supplies identity/source/scale metadata matching present native
+// slots. Binding rejects partial coverage; later reads reject recycled/stale maps.
+HarnessBinding bind(field::Harness &execution, assembly::ActiveReport mapping);
+CompletedState observe(field::Harness &execution, const HarnessBinding &binding);
+CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
+                       const assembly::ExecutionHandle &handle);
+Json snapshot(const CompletedState &state, const CaptureContext &capture);
 CaptureContext context(const assembly::ActiveAssembly &assembly,
                        const assembly::ExecutionHandle &handle,
                        std::uint64_t completed_ticks, std::string label);

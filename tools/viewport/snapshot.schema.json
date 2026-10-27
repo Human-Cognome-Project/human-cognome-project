@@ -90,9 +90,118 @@
         }
       }
     },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend",
+        "mode",
+        "completed_tick",
+        "prepared_generation",
+        "body_records",
+        "comparisons"
+      ],
+      "properties": {
+        "backend": {
+          "enum": [
+            "native_cpu",
+            "native_cuda"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "flat",
+            "installed_hierarchy"
+          ]
+        },
+        "completed_tick": {
+          "$ref": "#/$defs/decimal"
+        },
+        "prepared_generation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "body_records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nativeRecord"
+          }
+        },
+        "comparisons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "comparison",
+              "field",
+              "level",
+              "calculation_bits",
+              "storage_bits",
+              "fraction_bits"
+            ],
+            "properties": {
+              "comparison": {
+                "$ref": "#/$defs/decimal"
+              },
+              "field": {
+                "$ref": "#/$defs/nativeRecord"
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "calculation_bits": {
+                "const": 64
+              },
+              "storage_bits": {
+                "const": 64
+              },
+              "fraction_bits": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 52
+              }
+            }
+          }
+        }
+      }
+    },
     "source": {"type": "object"}
   },
   "$defs": {
+    "nativeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "incarnation",
+        "address",
+        "record"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/decimal"
+        },
+        "incarnation": {
+          "$ref": "#/$defs/decimal"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "record": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "uuid": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
     "decimal": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"},
     "point": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}

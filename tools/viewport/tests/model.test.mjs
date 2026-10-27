@@ -136,3 +136,25 @@ test('live updates: watch state precedence and no-change hint', () => {
   assert.equal(watchState({...base, error: 'x', idleMs: 99999}), 'ERROR');
   assert.equal(watchState({...base, error: 'x', paused: true}), 'PAUSED');
 });
+
+test('completed native hierarchy metadata preserves backend, mappings and per-node precision', () => {
+  const f = fixture();
+  f.numerics = {profile: 'trial_f64', storage_bits: 64, body_fraction_bits: 48, field_fraction_bits: 32};
+  const record = n => ({context: '41', incarnation: String(n + 1), address: n, record: n});
+  f.execution = {backend: 'native_cpu', mode: 'installed_hierarchy', completed_tick: f.capture.tick,
+    prepared_generation: '7', body_records: f.particles.map(p => record(p.slot)),
+    comparisons: [{comparison: '9007199254740993', field: record(0), level: 0,
+      calculation_bits: 64, storage_bits: 64, fraction_bits: 45}]};
+  const parsed = parseSnapshot(JSON.stringify(f));
+  assert.equal(parsed.execution.comparisons[0].fraction_bits, 45);
+  assert.equal(parsed.execution.comparisons[0].comparison, '9007199254740993');
+  const bad = edit => {const v = structuredClone(f); edit(v); assert.throws(() => validateSnapshot(v));};
+  bad(v => v.execution.completed_tick = '12');
+  bad(v => v.execution.backend = 'cpu_fallback');
+  bad(v => v.execution.body_records.pop());
+  bad(v => v.execution.comparisons[0].fraction_bits = 53);
+  bad(v => v.execution.comparisons.push(v.execution.comparisons[0]));
+  bad(v => v.execution.mode = 'flat');
+  bad(v => v.execution.prepared_generation = null);
+  bad(v => v.numerics.profile = 'legacy_f32');
+});
