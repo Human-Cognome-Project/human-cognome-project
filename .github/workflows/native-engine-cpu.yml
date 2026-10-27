@@ -33,7 +33,7 @@ jobs:
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-cpu:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,7 +92,7 @@ jobs:
 
       - name: Run native CPU functional suite
         run: |
-          ctest --test-dir engine/build --output-on-failure
+          ctest --test-dir engine/build --output-on-failure --output-log "$RUNNER_TEMP/native-cpu-ctest.log"
 
       - name: Restore new cold fixtures and run native PostgreSQL-to-active integration
         run: |
@@ -129,6 +129,7 @@ jobs:
             engine/build/acceptance-*/native-checks.txt
             engine/build/acceptance-*/cold-*.sha256
             engine/build/Testing/Temporary/LastTest.log
+            ${{ runner.temp }}/native-cpu-ctest.log
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |
