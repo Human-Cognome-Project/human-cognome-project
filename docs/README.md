@@ -61,13 +61,14 @@ references, not another mandatory reading sequence.
   and [CPU evidence](../engine/tests/cumulative_publication/README.md) are accepted in #192.
   The [C2b-2 weighted native probe](../engine/docs/WEIGHTED-NATIVE-HANDOFF.md)
   and [CPU evidence](../engine/tests/weighted_handoff/README.md) are accepted in #193.
-  Production hierarchy and inherited response remain unreleased.
+  Production hierarchy and inherited response remain unbuilt; #194 releases the
+  bounded C3-1 implementation described below.
 
 - [Production hierarchy, response ownership and coupled recovery](production-hierarchy-response-plan.md) —
-  proposed after #193: distinct field/comparison ownership, every production
+  accepted in #194 after #193: distinct field/comparison ownership, every production
   reader/history lifetime, local versus inherited force examples and one combined
-  integration. C3-1 proposes a fixed installed tree; C3-2 proposes coherent source
-  refresh after C3-1 acceptance. Neither implementation is released yet.
+  integration. C3-1 releases a fixed installed tree implementation; C3-2 coherent
+  source refresh remains gated on C3-1 acceptance. Neither is built yet.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
