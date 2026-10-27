@@ -153,9 +153,10 @@ with C2a's publication/consume contract without a same-tick global solve.
 ## Following live installation contract
 
 Following accepted #193, the [production hierarchy/response plan](production-hierarchy-response-plan.md)
-proposes the concrete continuation below for review. It includes force ownership
+is accepted in #194 as the concrete continuation. It includes force ownership
 and numerical examples, all production reader/history lifetimes and coupled
-settling/recovery. Its implementation segments remain unreleased.
+settling/recovery. C3-1 is released; C3-2 awaits C3-1 acceptance.
+The historical bounds below were prerequisites for that accepted plan.
 
 These proposed bounds make the next release reviewable; **they are not released
 by C2a acceptance**. Bring back an integration plan with the proven handoff and
