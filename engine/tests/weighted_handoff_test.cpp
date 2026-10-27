@@ -909,10 +909,10 @@ struct Source {
 struct Bound {
   Probe &p;
   Source &s;
-  bool ready{};
+  bool ready{}, trace{};
   std::uint64_t generation{}, snapshot_tick{}, polls{}, work{},
-      readback_bytes{};
-  double kernel_us{}, inspection_us{};
+      readback_bytes{}, snapshots{}, initializations{}, query_bytes{};
+  double kernel_us{}, inspection_us{}, first_poll_us{}, initialization_us{};
   std::vector<double> before_values = std::vector<double>(8 * N);
   std::vector<int> before_selectors = std::vector<int>(N);
   std::vector<Packet> reference = std::vector<Packet>(N);
@@ -1002,6 +1002,7 @@ struct Bound {
   }
   void snapshot() {
     guard();
+    ++snapshots;
     no_new([&] { s.h.inspect_prepared(); });
     for (int i = 0; i < P; ++i) {
       for (int a = 0; a < 3; ++a)
@@ -1014,10 +1015,13 @@ struct Bound {
   }
   void initialize() {
     guard();
+    const auto start = std::chrono::steady_clock::now();
+    ++initializations;
     CascadeResult q;
     no_new([&] { q = s.h.query_centroid_cascade(generation); });
     require(q.status == CascadeStatus::Ok, "candidate initialization rejected");
     const auto &ins = s.h.inspect_centroid_cascade(q);
+    query_bytes += q.readback_bytes + 7 * N * 8 + N * 4;
     std::fill(p.values.begin(), p.values.end(), 0);
     for (std::size_t i = 0; i < s.g.rows.size(); ++i)
       for (int a = 0; a < 4; ++a)
@@ -1029,6 +1033,9 @@ struct Bound {
       p.command->launch(-1, 0);
       p.readback();
     });
+    initialization_us += std::chrono::duration<double, std::micro>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
   }
   void seed(bool all, int repeat) {
     guard();
@@ -1073,6 +1080,7 @@ struct Bound {
     std::copy(p.selectors.begin(), p.selectors.end(), before_selectors.begin());
     const auto time = []() { return std::chrono::steady_clock::now(); };
     auto start = time();
+    const auto poll_start = start;
     no_new([&] {
       p.command->launch(-1, 2);
       p.poll->launch(target, 0, repeat);
@@ -1084,6 +1092,10 @@ struct Bound {
     no_new([&] { p.readback(); });
     inspection_us +=
         std::chrono::duration<double, std::micro>(time() - start).count();
+    if (!polls)
+      first_poll_us =
+          std::chrono::duration<double, std::micro>(time() - poll_start)
+              .count();
     ++polls;
     readback_bytes += (8 * N + 4 * H) * 8 + (3 * N + H) * 4 + DCount * N * 8;
     for (int row = 0; row < N; ++row)
@@ -1118,6 +1130,19 @@ struct Bound {
                             seen == selected_packet(p.values, p.selectors, cr);
           require(old || next,
                   "child input was torn or not a pre/post-poll publication");
+          if (trace) {
+            const auto pre =
+                           selected_packet(before_values, before_selectors, cr),
+                       post = selected_packet(p.values, p.selectors, cr);
+            std::cout << "acquired_input,name=" << s.g.name << ",poll=" << polls
+                      << ",parent=" << row << ",child=" << cr
+                      << ",selector=" << sel << ",old_match=" << old
+                      << ",new_match=" << next;
+            for (int a = 0; a < 4; ++a)
+              std::cout << ",seen" << a << '=' << seen[a] << ",before" << a
+                        << '=' << pre[a] << ",after" << a << '=' << post[a];
+            std::cout << '\n';
+          }
           inputs[n++] = seen;
         }
         ref = fold(inputs.data(), n, s.g.bits[i]);
@@ -1161,6 +1186,7 @@ struct Bound {
     no_new([&] { q = s.h.query_centroid_cascade(generation); });
     require(q.status == CascadeStatus::Ok, "frozen reference query failed");
     const auto &ins = s.h.inspect_centroid_cascade(q);
+    query_bytes += q.readback_bytes + 7 * N * 8 + N * 4;
     for (std::size_t i = 0; i < s.g.rows.size(); ++i) {
       Packet ref{};
       for (int a = 0; a < 4; ++a)
@@ -1299,7 +1325,13 @@ void controls(Probe &p, Source &s) {
 }
 void matrix(Probe &p, Source &s) {
   Bound b(p, s);
+  const auto bind_start = std::chrono::steady_clock::now();
   require(b.bind(s.spec()), "valid source hierarchy rejected");
+  std::cout << "first_bind,name=" << s.g.name << ",elapsed_us="
+            << std::chrono::duration<double, std::micro>(
+                   std::chrono::steady_clock::now() - bind_start)
+                   .count()
+            << '\n';
   prepared_test::Metrics metrics(p.r, PreparedFixtureAccess::nodes(s.h));
   metrics.nodes.insert(
       metrics.nodes.end(),
@@ -1309,8 +1341,10 @@ void matrix(Probe &p, Source &s) {
     for (int repeat : {1, 64})
       for (int cancel = 0; cancel < (s.g.name == "two_leaf" ? 2 : 1);
            ++cancel) {
-        b.polls = b.work = b.readback_bytes = 0;
-        b.kernel_us = b.inspection_us = 0;
+        b.polls = b.work = b.readback_bytes = b.snapshots = b.initializations =
+            b.query_bytes = 0;
+        b.kernel_us = b.inspection_us = b.first_poll_us = b.initialization_us =
+            0;
         int maximum = 0;
         std::uint64_t pubs = 0, notify = 0;
         const auto start = std::chrono::steady_clock::now();
@@ -1323,7 +1357,10 @@ void matrix(Probe &p, Source &s) {
             s.state(stage, cancel, sign);
             b.snapshot();
             b.seed(all, repeat);
+            b.trace =
+                round == 0 && stage == 1 && !all && repeat == 1 && !cancel;
             maximum = std::max(maximum, b.settle(repeat));
+            b.trace = false;
             if (round == 0) {
               b.candidate_check();
               const auto actual =
@@ -1368,6 +1405,11 @@ void matrix(Probe &p, Source &s) {
                   << ",publications=" << pubs << ",notifications=" << notify
                   << ",kernel_us=" << b.kernel_us
                   << ",inspection_us=" << b.inspection_us
+                  << ",first_poll_us=" << b.first_poll_us
+                  << ",initialization_us=" << b.initialization_us
+                  << ",snapshots=" << b.snapshots
+                  << ",initializations=" << b.initializations
+                  << ",source_query_readback_bytes=" << b.query_bytes
                   << ",readback_bytes=" << b.readback_bytes << ",elapsed_us="
                   << std::chrono::duration<double, std::micro>(
                          std::chrono::steady_clock::now() - start)
@@ -1399,11 +1441,17 @@ int main(int argc, char **argv) {
     require(threads == 1 || threads == 2, "one/two native workers required");
     s.cpu_threads = threads;
     engine::Runtime r(s);
+    const auto probe_start = std::chrono::steady_clock::now();
     Probe p(r);
     require(!r.on_cuda(), "actual CPU backend required");
     std::cout << std::setprecision(17)
               << "actual_backend=cpu,threads=" << threads
               << ",path=" << (direct ? "direct" : "bulk") << '\n';
+    std::cout << "probe_setup,elapsed_us="
+              << std::chrono::duration<double, std::micro>(
+                     std::chrono::steady_clock::now() - probe_start)
+                     .count()
+              << '\n';
     bool found = false;
     const auto fixtures = graphs();
     const auto graph_bytes = [](const Graph &g) {
@@ -1427,7 +1475,12 @@ int main(int argc, char **argv) {
       if (!filter.empty() && g.name != filter)
         continue;
       found = true;
+      const auto source_start = std::chrono::steady_clock::now();
       Source source(r, direct ? HostPath::CpuDirect : HostPath::BulkCopy, g);
+      const double setup_us =
+          std::chrono::duration<double, std::micro>(
+              std::chrono::steady_clock::now() - source_start)
+              .count();
       if (g.name == "pair_3_4") {
         for (const auto &e : source.h.prepared_storage().manifest)
           std::cout << "source_manifest,name=" << e.name << ",count=" << e.count
@@ -1452,7 +1505,7 @@ int main(int argc, char **argv) {
            source.in.field_rows.capacity() + source.in.retire.capacity()) *
               sizeof(engine::RecordHandle);
       std::cout
-          << "fixture_payload,name=" << g.name
+          << "fixture_payload,name=" << g.name << ",setup_us=" << setup_us
           << ",source_tables_bytes=" << fixture_bytes
           << ",source_graph_copy_payload_and_inner_headers="
           << graph_bytes(source.g) << ",source_scratch_bytes="
