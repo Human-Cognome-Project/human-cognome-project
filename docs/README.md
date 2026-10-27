@@ -45,7 +45,7 @@ references, not another mandatory reading sequence.
   accepted #186 plan, implemented and accepted in #187: coherent live f64 trial
   surfaces and distinct physical/history versus discarded positional state.
   Nine hosted checks and 82 CPU suites passed on its reviewed source. The
-  provisional activity evidence is historical; C2b-1's correction is for review.
+  provisional activity evidence is historical; C2b-1's correction is accepted in #192.
 
 - [Live hierarchy handoff and response ownership](live-hierarchy-handoff-plan.md) —
   accepted #188 plan after C1. Releases C2a's native same-type handoff investigation
@@ -58,8 +58,9 @@ references, not another mandatory reading sequence.
   accepted in #191 as continuation of #189/#190: correct existing trial activity/speed-cache
   publication, then qualify weighted multilevel arithmetic with native handoff
   in a separate probe. [C2b-1 implementation](../engine/docs/CUMULATIVE-PUBLICATION.md)
-  and [CPU evidence](../engine/tests/cumulative_publication/README.md) are for review;
-  C2b-2 follows only after C2b-1 acceptance.
+  and [CPU evidence](../engine/tests/cumulative_publication/README.md) are accepted in #192.
+  The [C2b-2 weighted native probe](../engine/docs/WEIGHTED-NATIVE-HANDOFF.md)
+  and [CPU evidence](../engine/tests/weighted_handoff/README.md) are for review.
   Production hierarchy and inherited response remain unreleased.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted

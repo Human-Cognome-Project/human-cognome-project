@@ -15,9 +15,10 @@ predicates are not a description of C1 or a multilevel implementation.
 The [live hierarchy handoff plan](../../docs/live-hierarchy-handoff-plan.md)
 is accepted in #188 for the native investigation/probe only.
 [C2a diagnostic findings](NATIVE-HANDOFF.md) are accepted in #189.
-[C2b-1](CUMULATIVE-PUBLICATION.md), under accepted #191, is implemented for review:
+[C2b-1](CUMULATIVE-PUBLICATION.md), under accepted #191, is accepted in #192:
 existing trial movement activity follows cumulative position publication and
-integration writes final speed before consumption. Production hierarchy
+integration writes final speed before consumption. The
+[C2b-2 numerical probe](WEIGHTED-NATIVE-HANDOFF.md) is for review. Production hierarchy
 installation and local/inherited response remain unimplemented. See the
 [decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
 

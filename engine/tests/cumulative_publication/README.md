@@ -1,10 +1,12 @@
 # C2b-1 cumulative publication CPU evidence
 
-Implementation/evidence **for review** under accepted
+Implementation/evidence **accepted in #192** under accepted
 [#191](../../../docs/cumulative-publication-integration-plan.md).
 [Behavior, reader boundaries and limits](../../docs/CUMULATIVE-PUBLICATION.md)
-describe the existing single-level trial correction. C2b-2 remains held until
-this implementation is accepted; no production hierarchy is installed.
+describe the existing single-level trial correction and separate hosted
+acceptance. C2b-2 is now implemented for review in its own test-only PR;
+no production hierarchy is installed. Contributor artifacts below retain their
+original source pin and contribution-time status.
 
 Runtime/test source: `8db7289398b2523519adb3c77ccf7cee852efa3c`.
 Accepted plan merge: `e82e6fa72e66d3647c25e13c940ce825a50a0788`.
