@@ -138,9 +138,24 @@ that genuine later notifications survive without that unsafe intervention.
 The actual Program-retained LLVM modules are audited for each installed fixture.
 Every selector memory access is attributed to an argument/index role; ordinary,
 unknown or demoted accesses reject. Response child/parent columns are traced
-through the argument-buffer shape stride. Each acquired packet's four loads must
-derive from its one SC selector. Compiler clones/epilogues are checked, and cloned
-module controls demonstrate rejection of a demoted, plain or missing reader.
+through the argument-buffer shape stride. XYZ/mass component coverage must derive
+from one dominating SC acquire at the same node/slot. CFG dominance and
+post-dominance tie each emitted force, child-reduction, owner and wake iteration
+to its required readers through the existing native work-counter operations;
+reader reuse across iterations rejects. Every production node descriptor also
+requires its matching reader. Inactive packet writes must precede the owning
+publication exchange and cover all four components. These checks do not depend
+on a fixed number of compiler clones, epilogues or duplicated packet loads.
+LLVM-verified module controls remove individual child/parent paths, break
+node/slot provenance, demote ordering, insert ordinary/unknown accesses and
+damage publication ownership/completeness. Positive controls retain complete
+callback clones and redundant safe loads. The test runner's
+`--compiler-no-unroll` uses LLVM's test knobs to exercise scalar loops with the
+same production kernels and numerical criteria; it is not a runtime policy.
+`--case ir` retains optimized modules/ABI metadata; `--audit-ir DIR` parses and
+checks those modules without executing foreign IR. End-to-end numerical tests
+remain necessary: the structural audit does not prove arbitrary compiler
+equivalence or detect deletion of an entire loop together with all its anchors.
 This is qualified CPU IR, not executable disassembly or CUDA ordering evidence.
 
 ## Other readers and resources

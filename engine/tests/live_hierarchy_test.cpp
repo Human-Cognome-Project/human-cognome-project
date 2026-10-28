@@ -31,8 +31,14 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IRReader/IRReader.h"
+#include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "taichi/ir/type_factory.h"
+#include "live_hierarchy_audit.h"
 
 namespace engine::testing {
 struct CompiledKernelAccess {
@@ -102,10 +108,9 @@ void audit(const engine::CompiledKernel &compiled,
            int mode,
            const llvm::Module *replacement = nullptr,
            bool verbose = true) {
-  using namespace taichi::lang;
   const auto &kernel = engine::testing::CompiledKernelAccess::kernel(compiled);
   const auto &retained =
-      *dynamic_cast<const LLVM::CompiledKernelData &>(
+      *dynamic_cast<const taichi::lang::LLVM::CompiledKernelData &>(
            engine::testing::CompiledKernelAccess::compiled(compiled))
            .get_internal_data()
            .compiled_data.module;
@@ -121,296 +126,274 @@ void audit(const engine::CompiledKernel &compiled,
     require(!ec, "IR diagnostic write");
     module.print(file, nullptr);
   }
-  const auto data_arg = [&](const llvm::Value *ptr) {
-    const auto *base =
-        llvm::dyn_cast<llvm::LoadInst>(llvm::getUnderlyingObject(ptr));
-    if (!base || !base->getType()->isPointerTy())
-      return -1;
-    std::int64_t offset = 0;
-    const auto *buffer =
-        llvm::dyn_cast<llvm::LoadInst>(llvm::GetPointerBaseWithConstantOffset(
-            base->getPointerOperand(), offset, module.getDataLayout()));
-    if (!buffer)
-      return -1;
-    std::int64_t context_offset = 0;
-    const auto *context =
-        llvm::dyn_cast<llvm::Argument>(llvm::GetPointerBaseWithConstantOffset(
-            buffer->getPointerOperand(), context_offset,
-            module.getDataLayout()));
-    if (!context || context->getArgNo() != 0 || context_offset != 0 ||
-        context->getParent() != base->getFunction())
-      return -1;
-    for (int id = 0; id < 30; ++id)
-      if (id < 24 || id >= 28)
-        if (offset == kernel.args_type->get_element_offset(
-                          {id, TypeFactory::DATA_PTR_POS_IN_NDARRAY}))
-          return id;
-    throw std::runtime_error(
-        "unattributed ndarray access in production kernel");
-  };
-  const auto roots = [&](const llvm::Value *value) {
-    std::set<const llvm::Value *> seen;
-    std::set<int> result;
-    const auto visit = [&](const auto &self, const llvm::Value *v) -> void {
-      if (!seen.insert(v).second)
-        return;
-      if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(v)) {
-        int id = data_arg(load->getPointerOperand());
-        if (id == 3 || id == 10 || id == 18)
-          result.insert(id);
-      }
-      if (const auto *u = llvm::dyn_cast<llvm::User>(v))
-        for (const auto &op : u->operands())
-          self(self, op.get());
-    };
-    visit(visit, value);
-    return result;
-  };
-  const auto response_column = [&](const llvm::Value *value) {
-    std::map<const llvm::Value *, long long> memo;
-    std::set<const llvm::Value *> visiting;
-    const auto coeff = [&](const auto &self,
-                           const llvm::Value *v) -> long long {
-      if (memo.count(v))
-        return memo[v];
-      if (!visiting.insert(v).second)
-        return 0;
-      long long result = 0;
-      if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(v)) {
-        std::int64_t offset = 0;
-        const auto *buffer = llvm::dyn_cast<llvm::LoadInst>(
-            llvm::GetPointerBaseWithConstantOffset(
-                load->getPointerOperand(), offset, module.getDataLayout()));
-        if (buffer &&
-            offset == kernel.args_type->get_element_offset(
-                          {10, TypeFactory::SHAPE_POS_IN_NDARRAY, 1})) {
-          std::int64_t context_offset = 0;
-          if (llvm::isa<llvm::Argument>(llvm::GetPointerBaseWithConstantOffset(
-                  buffer->getPointerOperand(), context_offset,
-                  module.getDataLayout())) &&
-              context_offset == 0)
-            result = 1;
-        }
-      } else if (const auto *cast = llvm::dyn_cast<llvm::CastInst>(v))
-        result = self(self, cast->getOperand(0));
-      else if (const auto *gep = llvm::dyn_cast<llvm::GEPOperator>(v)) {
-        result = self(self, gep->getPointerOperand());
-        const auto bytes = module.getDataLayout()
-                               .getTypeAllocSize(gep->getSourceElementType())
-                               .getFixedValue();
-        for (const auto &index : gep->indices())
-          result += bytes * self(self, index.get());
-      } else if (const auto *op = llvm::dyn_cast<llvm::BinaryOperator>(v)) {
-        if (op->getOpcode() == llvm::Instruction::Add)
-          result =
-              self(self, op->getOperand(0)) + self(self, op->getOperand(1));
-        if (op->getOpcode() == llvm::Instruction::Sub)
-          result =
-              self(self, op->getOperand(0)) - self(self, op->getOperand(1));
-        if (op->getOpcode() == llvm::Instruction::Mul) {
-          if (const auto *c =
-                  llvm::dyn_cast<llvm::ConstantInt>(op->getOperand(0)))
-            result = c->getSExtValue() * self(self, op->getOperand(1));
-          else if (const auto *c =
-                       llvm::dyn_cast<llvm::ConstantInt>(op->getOperand(1)))
-            result = c->getSExtValue() * self(self, op->getOperand(0));
-        }
-        if (op->getOpcode() == llvm::Instruction::Shl)
-          if (const auto *c =
-                  llvm::dyn_cast<llvm::ConstantInt>(op->getOperand(1)))
-            result = self(self, op->getOperand(0)) * (1LL << c->getZExtValue());
-      }
-      visiting.erase(v);
-      return memo[v] = result;
-    };
-    std::set<int> columns;
-    std::set<const llvm::Value *> seen;
-    const auto visit = [&](const auto &self, const llvm::Value *v) -> void {
-      if (!seen.insert(v).second)
-        return;
-      if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(v))
-        if (data_arg(load->getPointerOperand()) == 10) {
-          const auto bytes = coeff(coeff, load->getPointerOperand());
-          require(bytes % 4 == 0, "non-integral response array column");
-          columns.insert(int(bytes / 4));
-          return;
-        }
-      if (const auto *u = llvm::dyn_cast<llvm::User>(v))
-        for (const auto &op : u->operands())
-          self(self, op.get());
-    };
-    visit(visit, value);
-    require(columns.size() == 1, "response selector column is ambiguous");
-    return *columns.begin();
-  };
-  int own = 0, child = 0, response = 0, pubs = 0, recipient_child = 0,
-      recipient_parent = 0;
-  const llvm::Value *own_ptr = nullptr, *pub_ptr = nullptr;
-  std::map<const llvm::AtomicRMWInst *, int> packet_loads;
-  for (const auto &fn : module)
-    for (const auto &bb : fn)
-      for (const auto &inst : bb) {
-        if (const auto *l = llvm::dyn_cast<llvm::LoadInst>(&inst))
-          require(data_arg(l->getPointerOperand()) != 1,
-                  "plain production selector load");
-        if (const auto *s = llvm::dyn_cast<llvm::StoreInst>(&inst))
-          require(data_arg(s->getPointerOperand()) != 1,
-                  "plain production selector store");
-        if (const auto *a = llvm::dyn_cast<llvm::AtomicRMWInst>(&inst))
-          if (data_arg(a->getPointerOperand()) == 1) {
-            require(a->getOrdering() ==
-                        llvm::AtomicOrdering::SequentiallyConsistent,
-                    "production selector lost SC");
-            const auto *v =
-                llvm::dyn_cast<llvm::ConstantInt>(a->getValOperand());
-            require(v && v->getType()->isIntegerTy(32),
-                    "invalid production selector operand");
-            const auto ids = roots(a->getPointerOperand());
-            std::string role;
-            if (a->getOperation() == llvm::AtomicRMWInst::Xor &&
-                v->equalsInt(1)) {
-              ++pubs;
-              role = "publish";
-              pub_ptr = a->getPointerOperand();
-              require(ids == std::set<int>{18}, "publication owner path");
-            } else {
-              require(
-                  a->getOperation() == llvm::AtomicRMWInst::Or && v->isZero(),
-                  "unattributed production selector operation");
-              if (ids.count(10)) {
-                ++response;
-                const int col = response_column(a->getPointerOperand());
-                require(col == 1 || col == 2,
-                        "wrong response child/parent index column");
-                if (col == 1) {
-                  ++recipient_child;
-                  role = "response_child";
-                } else {
-                  ++recipient_parent;
-                  role = "response_parent";
-                }
-              } else if (ids.count(3)) {
-                ++child;
-                role = "child";
-              } else if (ids == std::set<int>{18}) {
-                ++own;
-                role = "own";
-                own_ptr = a->getPointerOperand();
-              } else
-                throw std::runtime_error(
-                    "unknown production acquire index path");
-              packet_loads[a] = 0;
-            }
-            std::string text;
-            llvm::raw_string_ostream os(text);
-            a->print(os);
-            if (verbose)
-              std::cout << "production_selector_ir,kernel=" << mode
-                        << ",role=" << role << "," << os.str() << '\n';
-          }
-      }
-  if (mode != 2)
-    for (const auto &fn : module)
-      for (const auto &bb : fn)
-        for (const auto &inst : bb)
-          if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(&inst))
-            if (data_arg(load->getPointerOperand()) == 0) {
-              std::set<const llvm::Value *> seen;
-              std::set<const llvm::AtomicRMWInst *> selectors;
-              const auto visit = [&](const auto &self,
-                                     const llvm::Value *v) -> void {
-                if (!seen.insert(v).second)
-                  return;
-                if (const auto *a = llvm::dyn_cast<llvm::AtomicRMWInst>(v))
-                  if (data_arg(a->getPointerOperand()) == 1) {
-                    selectors.insert(a);
-                    return;
-                  }
-                if (const auto *u = llvm::dyn_cast<llvm::User>(v))
-                  for (const auto &op : u->operands())
-                    self(self, op.get());
-              };
-              visit(visit, load->getPointerOperand());
-              require(selectors.size() == 1,
-                      "publication word has no unique acquired selector");
-              auto *a = *selectors.begin();
-              require(packet_loads.count(a),
-                      "word uses a non-acquire selector");
-              ++packet_loads[a];
-            }
-  for (const auto &entry : packet_loads) {
-    require(entry.second == 4,
-            "acquired production packet does not have four attributed loads");
-    if (verbose)
-      std::cout << "production_packet_audit,kernel=" << mode
-                << ",words=" << entry.second << " PASS\n";
-  }
-  if (mode == 0)
-    require(recipient_child == 3 && recipient_parent == 3 && !own && !child &&
-                !pubs,
-            "missing force production reader clone/epilogue");
-  if (mode == 1)
-    require(own == 1 && child == 5 && recipient_child == 1 &&
-                recipient_parent == 1 && pubs == 1 && own_ptr == pub_ptr,
-            "missing production poll reader/writer clone/epilogue");
-  if (mode == 2)
-    require(!own && !child && !response && !pubs,
-            "control unexpectedly uses selectors");
-  if (const char *dir = verbose ? std::getenv("HCP_C3_IR_DIR") : nullptr) {
-    std::error_code ec;
-    llvm::raw_fd_ostream file(
-        std::string(dir) + "/c3-" + std::to_string(mode) + ".ll", ec,
-        llvm::sys::fs::OF_Text);
-    require(!ec, "IR diagnostic write");
-    module.print(file, nullptr);
-  }
-  if (verbose)
-    std::cout << "production_selector_audit,kernel=" << mode << ",own=" << own
-              << ",child=" << child << ",response=" << response
-              << ",publish=" << pubs << ",plain=0 PASS\n";
+  hierarchy_audit::Analyzer(kernel, module, mode).run(verbose);
 }
-void audit_negative(const engine::CompiledKernel &compiled) {
-  using namespace taichi::lang;
-  const auto &original =
-      *dynamic_cast<const LLVM::CompiledKernelData &>(
+void audit_negative(const engine::CompiledKernel &compiled,
+                    int mode = 0,
+                    const llvm::Module *external = nullptr) {
+  const auto &kernel = engine::testing::CompiledKernelAccess::kernel(compiled);
+  const auto &retained =
+      *dynamic_cast<const taichi::lang::LLVM::CompiledKernelData &>(
            engine::testing::CompiledKernelAccess::compiled(compiled))
            .get_internal_data()
            .compiled_data.module;
-  for (int control = 0; control < 3; ++control) {
+  const auto &original = external ? *external : retained;
+  const auto check_module = [](const llvm::Module &m) {
+    std::string message;
+    llvm::raw_string_ostream out(message);
+    require(!llvm::verifyModule(m, &out),
+            ("invalid audit-control module: " + out.str()).c_str());
+  };
+  const auto expect_rejected = [&](const char *label, auto mutate) {
     auto module = llvm::CloneModule(original);
-    llvm::AtomicRMWInst *reader = nullptr;
-    for (auto &fn : *module)
-      for (auto &bb : fn)
-        for (auto &inst : bb)
-          if (auto *a = llvm::dyn_cast<llvm::AtomicRMWInst>(&inst))
-            if (a->getOperation() == llvm::AtomicRMWInst::Or &&
-                a->getType()->isIntegerTy(32))
-              if (auto *c =
-                      llvm::dyn_cast<llvm::ConstantInt>(a->getValOperand()))
-                if (c->isZero())
-                  reader = a;
-    require(reader, "negative selector audit has no reader");
-    if (control == 0)
-      reader->setOrdering(llvm::AtomicOrdering::Monotonic);
-    else {
-      llvm::Value *value =
-          control == 1 ? static_cast<llvm::Value *>(new llvm::LoadInst(
-                             reader->getType(), reader->getPointerOperand(),
-                             "unsafe_plain", reader))
-                       : static_cast<llvm::Value *>(
-                             llvm::ConstantInt::get(reader->getType(), 0));
-      reader->replaceAllUsesWith(value);
-      reader->eraseFromParent();
-    }
+    auto report = hierarchy_audit::Analyzer(kernel, *module, mode).run();
+    mutate(*module, report);
+    check_module(*module);
     bool rejected = false;
+    std::string reason;
     try {
-      audit(compiled, 0, module.get(), false);
-    } catch (const std::runtime_error &) {
+      audit(compiled, mode, module.get(), false);
+    } catch (const std::runtime_error &e) {
       rejected = true;
+      reason = e.what();
     }
-    require(rejected, "production audit accepted demoted/plain/missing reader");
-    std::cout << "compiler_negative,control=" << control << " rejected PASS\n";
+    require(rejected,
+            "semantic audit accepted an unsafe/missing production path");
+    std::cout << "compiler_negative,kernel=" << mode << ",control=" << label
+              << ",reason=" << reason << " rejected PASS\n";
+  };
+  using Role = hierarchy_audit::Role;
+  const auto select = [](const auto &report,
+                         Role role) -> const hierarchy_audit::Packet & {
+    for (const auto &p : report.packets)
+      if (p.role == role)
+        return p;
+    throw std::runtime_error(
+        "negative control has no requested semantic reader");
+  };
+  const auto baseline = hierarchy_audit::Analyzer(kernel, original, mode).run();
+  std::set<Role> roles;
+  for (const auto &p : baseline.packets)
+    roles.insert(p.role);
+  for (const auto role : roles) {
+    const std::string prefix = hierarchy_audit::name(role);
+    expect_rejected((prefix + "_demoted").c_str(), [&](auto &, const auto &r) {
+      const_cast<llvm::AtomicRMWInst *>(select(r, role).acquire)
+          ->setOrdering(llvm::AtomicOrdering::Monotonic);
+    });
+    expect_rejected((prefix + "_unknown_operation").c_str(),
+                    [&](auto &, const auto &r) {
+                      const_cast<llvm::AtomicRMWInst *>(select(r, role).acquire)
+                          ->setOperation(llvm::AtomicRMWInst::And);
+                    });
+    expect_rejected(
+        (prefix + "_plain_load").c_str(), [&](auto &, const auto &r) {
+          auto *a = const_cast<llvm::AtomicRMWInst *>(select(r, role).acquire);
+          auto *plain = new llvm::LoadInst(a->getType(), a->getPointerOperand(),
+                                           "unsafe_plain", a);
+          a->replaceAllUsesWith(plain);
+          a->eraseFromParent();
+        });
+    expect_rejected(
+        (prefix + "_missing_acquire").c_str(), [&](auto &, const auto &r) {
+          auto *a = const_cast<llvm::AtomicRMWInst *>(select(r, role).acquire);
+          a->replaceAllUsesWith(llvm::ConstantInt::get(a->getType(), 0));
+          a->eraseFromParent();
+        });
+    expect_rejected(
+        (prefix + "_missing_complete_path").c_str(),
+        [&](auto &, const auto &r) {
+          const auto &p = select(r, role);
+          std::set<llvm::LoadInst *> words;
+          for (const auto &part : p.words)
+            for (auto *l : part.second)
+              words.insert(const_cast<llvm::LoadInst *>(l));
+          for (auto *l : words) {
+            l->replaceAllUsesWith(llvm::Constant::getNullValue(l->getType()));
+            l->eraseFromParent();
+          }
+          auto *a = const_cast<llvm::AtomicRMWInst *>(p.acquire);
+          a->replaceAllUsesWith(llvm::ConstantInt::get(a->getType(), 0));
+          a->eraseFromParent();
+        });
+    expect_rejected(
+        (prefix + "_duplicate_word").c_str(), [&](auto &module, const auto &r) {
+          const auto &p = select(r, role);
+          hierarchy_audit::Analyzer analyzer(kernel, module, mode);
+          for (const auto *part : p.words.at(3)) {
+            auto *word = const_cast<llvm::LoadInst *>(part);
+            std::set<llvm::Value *> seen;
+            llvm::Value *stride = nullptr;
+            const auto find = [&](const auto &self, llvm::Value *v) -> void {
+              if (!seen.insert(v).second || stride)
+                return;
+              if (v->getType()->isIntegerTy() && analyzer.shape_value(v, 0)) {
+                stride = v;
+                return;
+              }
+              if (auto *u = llvm::dyn_cast<llvm::User>(v))
+                for (auto &op : u->operands())
+                  self(self, op.get());
+            };
+            find(find, word->getPointerOperand());
+            require(stride, "duplicate-word control has no packet shape");
+            llvm::IRBuilder<> builder(word);
+            auto *offset = builder.CreateMul(
+                builder.CreateIntCast(stride, builder.getInt64Ty(), true),
+                builder.getInt64(-3));
+            word->setOperand(
+                0, builder.CreateGEP(word->getType(), word->getPointerOperand(),
+                                     offset));
+          }
+        });
+    expect_rejected(
+        (prefix + "_plain_store").c_str(), [&](auto &, const auto &r) {
+          auto *a = const_cast<llvm::AtomicRMWInst *>(select(r, role).acquire);
+          new llvm::StoreInst(llvm::ConstantInt::get(a->getType(), 0),
+                              a->getPointerOperand(), a);
+        });
+    expect_rejected((prefix + "_mixed_acquire").c_str(), [&](auto &,
+                                                             const auto &r) {
+      const auto &p = select(r, role);
+      auto *word = const_cast<llvm::LoadInst *>(p.words.at(1).front());
+      llvm::IRBuilder<> builder(word);
+      auto *other = builder.CreateAtomicRMW(
+          llvm::AtomicRMWInst::Or,
+          const_cast<llvm::Value *>(p.acquire->getPointerOperand()),
+          llvm::ConstantInt::get(p.acquire->getType(), 0), llvm::MaybeAlign(4),
+          llvm::AtomicOrdering::SequentiallyConsistent);
+      std::map<const llvm::Value *, bool> dependent;
+      const auto depends = [&](const auto &self, const llvm::Value *v) -> bool {
+        if (v == p.acquire)
+          return true;
+        if (dependent.count(v))
+          return dependent[v];
+        dependent[v] = false;
+        if (const auto *u = llvm::dyn_cast<llvm::User>(v))
+          for (const auto &op : u->operands())
+            if (self(self, op.get()))
+              return dependent[v] = true;
+        return false;
+      };
+      std::map<llvm::Value *, llvm::Value *> copied;
+      const auto rebase = [&](const auto &self,
+                              llvm::Value *v) -> llvm::Value * {
+        if (v == p.acquire)
+          return other;
+        if (!depends(depends, v))
+          return v;
+        if (copied.count(v))
+          return copied[v];
+        auto *old = llvm::cast<llvm::Instruction>(v);
+        auto *copy = old->clone();
+        for (unsigned i = 0; i < old->getNumOperands(); ++i)
+          copy->setOperand(i, self(self, old->getOperand(i)));
+        copy->insertBefore(word);
+        return copied[v] = copy;
+      };
+      word->setOperand(0, rebase(rebase, word->getPointerOperand()));
+    });
+    expect_rejected(
+        (prefix + "_wrong_node_word").c_str(), [&](auto &, const auto &r) {
+          auto *word =
+              const_cast<llvm::LoadInst *>(select(r, role).words.at(1).front());
+          llvm::IRBuilder<> builder(word);
+          word->setOperand(
+              0, builder.CreateGEP(word->getType(), word->getPointerOperand(),
+                                   builder.getInt64(1)));
+        });
   }
+  expect_rejected("response_wrong_column", [&](auto &module, const auto &r) {
+    auto *child =
+        const_cast<llvm::LoadInst *>(select(r, Role::ResponseChild).descriptor);
+    hierarchy_audit::Analyzer analyzer(kernel, module, mode);
+    std::set<llvm::Value *> seen;
+    llvm::Value *stride = nullptr;
+    const auto find = [&](const auto &self, llvm::Value *v) -> void {
+      if (!seen.insert(v).second || stride)
+        return;
+      if (v->getType()->isIntegerTy() && analyzer.shape_value(v, 10)) {
+        stride = v;
+        return;
+      }
+      if (auto *u = llvm::dyn_cast<llvm::User>(v))
+        for (auto &op : u->operands())
+          self(self, op.get());
+    };
+    find(find, child->getPointerOperand());
+    require(stride, "wrong-column control has no influence shape");
+    llvm::IRBuilder<> builder(child);
+    child->setOperand(
+        0, builder.CreateGEP(
+               child->getType(), child->getPointerOperand(),
+               builder.CreateIntCast(stride, builder.getInt64Ty(), true)));
+  });
+  if (mode == 1) {
+    expect_rejected("publication_demoted", [&](auto &, const auto &r) {
+      const_cast<llvm::AtomicRMWInst *>(r.publications.front().exchange)
+          ->setOrdering(llvm::AtomicOrdering::Monotonic);
+    });
+    expect_rejected("publication_missing_exchange", [&](auto &, const auto &r) {
+      auto *a =
+          const_cast<llvm::AtomicRMWInst *>(r.publications.front().exchange);
+      a->replaceAllUsesWith(llvm::Constant::getNullValue(a->getType()));
+      a->eraseFromParent();
+    });
+    expect_rejected("publication_wrong_owner", [&](auto &, const auto &r) {
+      auto *pub =
+          const_cast<llvm::AtomicRMWInst *>(r.publications.front().exchange);
+      llvm::IRBuilder<> builder(pub);
+      pub->setOperand(
+          0, builder.CreateGEP(builder.getInt32Ty(), pub->getPointerOperand(),
+                               builder.getInt64(1)));
+    });
+    expect_rejected(
+        "publication_incomplete_writes", [&](auto &module, const auto &r) {
+          hierarchy_audit::Analyzer analyzer(kernel, module, mode);
+          for (auto &fn : module)
+            for (auto &bb : fn)
+              for (auto it = bb.begin(); it != bb.end(); ++it)
+                if (auto *store = llvm::dyn_cast<llvm::StoreInst>(&*it))
+                  if (analyzer.data_arg(store->getPointerOperand()) == 0) {
+                    store->eraseFromParent();
+                    return;
+                  }
+          throw std::runtime_error("missing publication-store control target");
+        });
+  }
+  auto repeated_load = llvm::CloneModule(original);
+  auto repeated_report =
+      hierarchy_audit::Analyzer(kernel, *repeated_load, mode).run();
+  auto *word = const_cast<llvm::LoadInst *>(
+      repeated_report.packets.front().words.at(0).front());
+  word->clone()->insertBefore(word);
+  check_module(*repeated_load);
+  hierarchy_audit::Analyzer(kernel, *repeated_load, mode).run();
+  std::cout << "compiler_positive,kernel=" << mode
+            << ",control=legal_repeated_word,llvm_verified=1 PASS\n";
+  // Legal function specialization: clone a complete emitted callback and route
+  // one existing use to it. Dynamic work is unchanged; module site totals grow.
+  auto cloned = llvm::CloneModule(original);
+  auto original_report = hierarchy_audit::Analyzer(kernel, *cloned, mode).run();
+  auto *fn = const_cast<llvm::Function *>(
+      original_report.packets.front().acquire->getFunction());
+  require(!fn->use_empty(), "positive clone control has no live callback use");
+  llvm::ValueToValueMapTy map;
+  auto *copy = llvm::CloneFunction(fn, map);
+  copy->setName(fn->getName() + ".audit_legal_clone");
+  if (!copy->getParent())
+    cloned->getFunctionList().push_back(copy);
+  fn->replaceAllUsesWith(copy);
+  check_module(*cloned);
+  auto copy_report = hierarchy_audit::Analyzer(kernel, *cloned, mode).run();
+  require(copy_report.packets.size() > original_report.packets.size(),
+          "positive clone did not alter site totals");
+  std::cout << "compiler_positive,kernel=" << mode
+            << ",control=legal_callback_clone,original_sites="
+            << original_report.packets.size()
+            << ",cloned_sites=" << copy_report.packets.size()
+            << ",callback_body_identical=1,call_uses_redirected=1,llvm_"
+               "verified=1 PASS\n";
 }
 template <class F>
 void no_new(F f) {
@@ -645,7 +628,7 @@ struct Fixture {
       audit(*k, mode++);
   }
 };
-void collect_compiler_ir(engine::Runtime &r, HostPath path) {
+void collect_compiler_ir(engine::Runtime &r, HostPath path, bool no_unroll) {
   const char *dir = std::getenv("HCP_C3_IR_DIR");
   require(dir && *dir, "IR collector requires HCP_C3_IR_DIR");
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
@@ -663,7 +646,8 @@ void collect_compiler_ir(engine::Runtime &r, HostPath path) {
            << "\nsource_path="
            << (path == HostPath::BulkCopy ? "bulk" : "direct")
            << "\njit_opt_level=" << cfg.opt_level
-           << "\njit_simd_width=" << cfg.simd_width
+           << "\njit_simd_width=" << cfg.simd_width << "\nllvm_unroll="
+           << (no_unroll ? "disabled-test-control" : "default")
            << "\nkernel_math=strict (C3 construction)\n";
   int mode = 0;
   for (const auto *compiled : LiveHierarchyAccess::kernels(f.h)) {
@@ -690,10 +674,117 @@ void collect_compiler_ir(engine::Runtime &r, HostPath path) {
                         {arg,
                          taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY})
                  << '\n';
+    for (int arg : {0, 10})
+      metadata << "argument=" << arg << ",shape1_offset="
+               << kernel.args_type->get_element_offset(
+                      {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1})
+               << '\n';
     ++mode;
   }
   std::cout << "compiler_ir_collection,modules=3,diagnostic_only=1,no_semantic_"
                "acceptance_claim=1\n";
+}
+
+// Parse and audit a retained compiler result; never execute or JIT foreign IR.
+// The argument ABI is the pinned production signature, checked against the
+// emitter's manifest before any data-flow attribution uses local Kernel types.
+void audit_compiler_ir(engine::Runtime &r,
+                       HostPath path,
+                       const std::string &dir,
+                       bool no_unroll) {
+  Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+            {1, 1, 1}, {1, 1, 2}, {0, 2, 5});
+  f.install();
+  std::ifstream metadata(dir + "/configuration.txt");
+  require(bool(metadata), "external IR manifest unavailable");
+  std::vector<std::string> lines;
+  for (std::string line; std::getline(metadata, line);)
+    lines.push_back(line);
+  const auto has = [&](const std::string &line) {
+    return std::find(lines.begin(), lines.end(), line) != lines.end();
+  };
+  const bool has_unroll_metadata =
+      has("llvm_unroll=default") || has("llvm_unroll=disabled-test-control");
+  require(has_unroll_metadata
+              ? has(std::string("llvm_unroll=") +
+                    (no_unroll ? "disabled-test-control" : "default"))
+              : !no_unroll,
+          "external IR unroll configuration mismatch");
+  require(has("actual_backend=x64") && has("jit_opt_level=1") &&
+              has("jit_simd_width=8") &&
+              has("kernel_math=strict (C3 construction)") &&
+              has("workers=" + std::to_string(r.cpu_threads())) &&
+              has(std::string("source_path=") +
+                  (path == HostPath::BulkCopy ? "bulk" : "direct")),
+          "external IR compiler configuration mismatch");
+  int mode = 0;
+  for (const auto *compiled : LiveHierarchyAccess::kernels(f.h)) {
+    const auto &kernel =
+        engine::testing::CompiledKernelAccess::kernel(*compiled);
+    const auto &local =
+        *dynamic_cast<const taichi::lang::LLVM::CompiledKernelData &>(
+             engine::testing::CompiledKernelAccess::compiled(*compiled))
+             .get_internal_data()
+             .compiled_data.module;
+    llvm::SMDiagnostic error;
+    auto module = llvm::parseIRFile(dir + "/c3-" + std::to_string(mode) + ".ll",
+                                    error, local.getContext());
+    require(bool(module), "external IR parse failed");
+    require(!llvm::verifyModule(*module, &llvm::errs()),
+            "external IR is invalid");
+    require(module->getDataLayoutStr() == local.getDataLayoutStr() &&
+                module->getTargetTriple() == local.getTargetTriple(),
+            "external IR target/ABI mismatch");
+    std::set<int> manifest_args, manifest_shapes;
+    bool in_mode = false;
+    for (const auto &line : lines) {
+      if (line.rfind("mode=", 0) == 0) {
+        in_mode = line.rfind("mode=" + std::to_string(mode) + ",", 0) == 0;
+        if (in_mode)
+          require(line.find(",triple=" + module->getTargetTriple() +
+                            ",layout=" + module->getDataLayoutStr()) !=
+                      std::string::npos,
+                  "external IR manifest target mismatch");
+        continue;
+      }
+      if (!in_mode || line.rfind("argument=", 0) != 0)
+        continue;
+      const auto split = line.find(',');
+      const int arg = std::stoi(line.substr(9, split - 9));
+      const bool shape = line.find(",shape1_offset=") == split;
+      require(!shape || arg == 0 || arg == 10,
+              "external IR shape argument mismatch");
+      require(arg >= 0 && arg < 30 && (arg < 24 || arg >= 28),
+              "external IR manifest argument mismatch");
+      const auto expected =
+          shape
+              ? kernel.args_type->get_element_offset(
+                    {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1})
+              : kernel.args_type->get_element_offset(
+                    {arg, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
+      require(line == "argument=" + std::to_string(arg) +
+                          (shape ? ",shape1_offset=" : ",data_offset=") +
+                          std::to_string(expected),
+              "external IR manifest offset mismatch");
+      require((shape ? manifest_shapes : manifest_args).insert(arg).second,
+              "external IR repeated ABI manifest argument");
+    }
+    require(manifest_args.size() == 26 &&
+                (manifest_shapes.empty() || manifest_shapes.size() == 2),
+            "external IR incomplete ABI manifest");
+    // The first diagnostic collector predated explicit shape offset lines.
+    // Those artifacts share the same pinned signature, target and all 26 data
+    // offsets; report this limitation instead of inventing missing metadata.
+    std::cout << "external_compiler_ir,mode=" << mode << ",directory=" << dir
+              << ",data_offsets=" << manifest_args.size()
+              << ",explicit_shape_offsets=" << manifest_shapes.size()
+              << ",execution=none\n";
+    audit(*compiled, mode, module.get());
+    if (mode < 2)
+      audit_negative(*compiled, mode, module.get());
+    ++mode;
+  }
+  std::cout << "external_compiler_audit,modules=3 PASS\n";
 }
 
 using Packet = std::array<double, 4>;
@@ -1458,7 +1549,8 @@ void basic(engine::Runtime &r, HostPath path) {
   Parameters64 p;
   p.gravity = 1;
   p.contact_stiffness = p.reach_strength = 0;
-  audit_negative(*LiveHierarchyAccess::kernels(f.h)[0]);
+  audit_negative(*LiveHierarchyAccess::kernels(f.h)[0], 0);
+  audit_negative(*LiveHierarchyAccess::kernels(f.h)[1], 1);
   no_new([&] {
     LiveHierarchyAccess::force(f.h, p);
     f.h.inspect_prepared();
@@ -2282,19 +2374,23 @@ int main(int argc, char **argv) {
     engine::InstanceSettings settings;
     settings.cpu_threads = 1;
     HostPath path = HostPath::BulkCopy;
-    bool quick = false;
+    bool quick = false, no_unroll = false;
 #ifdef HCP_HAS_VIEWPORT
     std::string capture_output;
     std::uint64_t capture_ticks = 64, capture_every = 8;
 #endif
-    std::string only;
+    std::string only, audit_ir_dir;
     for (int i = 1; i < argc; ++i) {
       if (std::string(argv[i]) == "--direct")
         path = HostPath::CpuDirect;
       else if (std::string(argv[i]) == "--quick")
         quick = true;
+      else if (std::string(argv[i]) == "--compiler-no-unroll")
+        no_unroll = true;
       else if (std::string(argv[i]) == "--case" && i + 1 < argc)
         only = argv[++i];
+      else if (std::string(argv[i]) == "--audit-ir" && i + 1 < argc)
+        audit_ir_dir = argv[++i];
       else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
         settings.cpu_threads = std::stoi(argv[++i]);
 #ifdef HCP_HAS_VIEWPORT
@@ -2314,17 +2410,30 @@ int main(int argc, char **argv) {
       } else
         throw std::runtime_error("unknown argument");
     }
+    if (no_unroll) {
+      // LLVM's supported test knobs alter compiler duplication only. Physics,
+      // precision, native work selection and every audit remain unchanged.
+      const char *options[] = {"c3-compiler-control", "-unroll-count=1",
+                               "-unroll-max-count=1",
+                               "-unroll-full-max-count=1"};
+      llvm::cl::ParseCommandLineOptions(4, options);
+    }
     engine::Runtime r(settings);
     std::cout << std::setprecision(17)
               << "actual_backend=cpu,threads=" << *settings.cpu_threads
               << ",path=" << (path == HostPath::BulkCopy ? "bulk" : "direct")
-              << '\n';
+              << ",llvm_unroll="
+              << (no_unroll ? "disabled-test-control" : "default") << '\n';
     require(r.arch() == taichi::Arch::x64, "actual CPU required");
     const auto wants = [&](const char *name) {
       return only.empty() || only == name;
     };
     if (only == "ir") {
-      collect_compiler_ir(r, path);
+      collect_compiler_ir(r, path, no_unroll);
+      return 0;
+    }
+    if (!audit_ir_dir.empty()) {
+      audit_compiler_ir(r, path, audit_ir_dir, no_unroll);
       return 0;
     }
     int failures = 0;
