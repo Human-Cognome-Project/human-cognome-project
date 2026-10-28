@@ -5,3 +5,6 @@ data/postgres/snapshots/**/*.sql.gz filter=lfs diff=lfs merge=lfs -text
 # Preserve upstream licenses and bundled shader-string whitespace verbatim.
 tools/viewport/vendor/** -whitespace linguist-vendored
 tools/viewport/vendor/viewer.bundle.js linguist-generated
+
+# Preserve captured CTest/GitHub log bytes, including trailing whitespace.
+engine/tests/live_hierarchy/compiler-v3/*.txt -whitespace linguist-generated

@@ -1,0 +1,190 @@
+{
+  "source": {
+    "audit": "3eee41eb8faa6a6ccb8a9ca688b8c8060e52d30c",
+    "metadata": "d7621117cc03b62eac498c50093761434b95c5ec",
+    "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad"
+  },
+  "scope": {
+    "runtime_changed": false,
+    "physics_changed": false,
+    "quantization_changed": false,
+    "activity_changed": false,
+    "capture_changed": false,
+    "cuda_qualified": false,
+    "c3_1_accepted": false,
+    "c3_2": "held"
+  },
+  "local": {
+    "llvm": "15.0.6",
+    "default": {
+      "modes": 4,
+      "windows": 660,
+      "settled": 650,
+      "evolving": 10,
+      "completed_sequences": 20,
+      "publication_probes": 76,
+      "negative_controls": 240,
+      "positive_controls": 16,
+      "successful_modes": 4
+    },
+    "no_unroll": {
+      "modes": 4,
+      "windows": 660,
+      "settled": 649,
+      "evolving": 11,
+      "completed_sequences": 20,
+      "publication_probes": 76,
+      "negative_controls": 240,
+      "positive_controls": 16,
+      "successful_modes": 4
+    },
+    "regression": {
+      "source": "3eee41eb8faa6a6ccb8a9ca688b8c8060e52d30c",
+      "suites": 96,
+      "passed": 96,
+      "failed": 0,
+      "seconds": 1570.98,
+      "parallel_jobs": 2
+    },
+    "module_capture": {
+      "source": "d7621117cc03b62eac498c50093761434b95c5ec",
+      "configurations": 8,
+      "modules": 24,
+      "all_audits_pass": true,
+      "mcpu": "znver3",
+      "metadata_only_modules_identical": 24
+    },
+    "cross_hosted_collector": {
+      "captured_source": "f0484617df8fbe0c795d6d6e8bf391ec344a19ec",
+      "run": 40697430088,
+      "artifact": 12820839140,
+      "compiler": "15.0.7",
+      "configurations": 4,
+      "modules": 12,
+      "all_audits_and_controls_pass": true,
+      "default_modules_equal_except_llvm_ident": 12,
+      "executed_foreign_ir": false
+    },
+    "integration": {
+      "checks": 180,
+      "passed": true,
+      "private_reads": 0,
+      "cold_fingerprints_unchanged": true,
+      "warm_fixture": "hcp_warm_d_20261028141132_15095",
+      "core_source": "hcp_c3_core_20261027231537_16221",
+      "linguistics_source": "hcp_c3_ling_20261027231537_16221"
+    },
+    "backend": {
+      "actual": "x64",
+      "cuda": false,
+      "passed": true
+    },
+    "cross_final_hosted": {
+      "configurations": 8,
+      "modules": 24,
+      "all_audits_and_controls_pass": true,
+      "modules_equal_except_llvm_ident": 24,
+      "executed_foreign_ir": false
+    }
+  },
+  "hosted": {
+    "source": "d7621117cc03b62eac498c50093761434b95c5ec",
+    "run": 40706207825,
+    "job": 122878906581,
+    "status": "passed",
+    "checkout": "cda8be13689e5e1f7b1de3acdbf68d8e7587d68d",
+    "llvm": "15.0.7",
+    "mcpu": "znver3",
+    "module_artifact": 12825935787,
+    "module_audits": {
+      "configurations": 8,
+      "modules": 24,
+      "all_pass": true,
+      "negative_controls": 480,
+      "positive_controls": 32
+    },
+    "regression": {
+      "suites": 96,
+      "passed": 96,
+      "failed": 0,
+      "seconds": 2062.37,
+      "parallel_jobs": 1
+    },
+    "default": {
+      "modes": 4,
+      "windows": 660,
+      "settled": 633,
+      "evolving": 27,
+      "completed_sequences": 20,
+      "publication_probes": 76,
+      "negative_controls": 240,
+      "positive_controls": 16,
+      "successful_modes": 4
+    },
+    "no_unroll": {
+      "modes": 4,
+      "windows": 660,
+      "settled": 642,
+      "evolving": 18,
+      "completed_sequences": 20,
+      "publication_probes": 76,
+      "negative_controls": 240,
+      "positive_controls": 16,
+      "successful_modes": 4
+    },
+    "integration": {
+      "checks": 180,
+      "passed": true,
+      "private_reads": 0,
+      "cold_fingerprints_unchanged": true,
+      "warm_fixture": "hcp_warm_d_20261028152759_92",
+      "core_source": "hcp_core",
+      "linguistics_source": "hcp_linguistics"
+    },
+    "evidence_artifact": 12828322059,
+    "backend": {
+      "actual": "x64",
+      "cuda": false,
+      "passed": true
+    },
+    "other_workflows": [
+      {
+        "run": 40706208049,
+        "name": "Repository smoke tests",
+        "status": "passed"
+      },
+      {
+        "run": 40706207867,
+        "name": "Optional offline viewport",
+        "status": "passed"
+      }
+    ],
+    "projection_values": "passed"
+  },
+  "historical": {
+    "count_failure": {
+      "source": "7e03e93c72755cc72757be7dd138bf8b0d080861",
+      "merge": "e4269129f2bf93b648063c445d2d8a7dca1d466b",
+      "run": 40604795329,
+      "job": 122541493905,
+      "passed": 92,
+      "total": 96,
+      "seconds": 1225.44,
+      "failed": "fixed reader clone/epilogue count",
+      "integration_backend": "skipped",
+      "full_modules_retained": false
+    },
+    "superseded_runs": [
+      {
+        "source": "f0484617df8fbe0c795d6d6e8bf391ec344a19ec",
+        "run": 40697430088,
+        "status": "cancelled after diagnostic artifact collection"
+      },
+      {
+        "source": "3eee41eb8faa6a6ccb8a9ca688b8c8060e52d30c",
+        "run": 40703217310,
+        "status": "cancelled; replaced by metadata-complete run"
+      }
+    ]
+  }
+}

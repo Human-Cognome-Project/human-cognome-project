@@ -1,0 +1,63 @@
+{
+  "run": 40706207825,
+  "artifact": 12825935787,
+  "checkout": "cda8be13689e5e1f7b1de3acdbf68d8e7587d68d",
+  "rows": [
+    {
+      "configuration": "1-bulk-default",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "1-direct-default",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "2-bulk-default",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "2-direct-default",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "passed": true,
+      "negative_controls": 60,
+      "positive_controls": 4,
+      "external_abi_records": 3
+    }
+  ]
+}

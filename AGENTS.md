@@ -2,7 +2,17 @@
 
 ## Immediate action — compiler audit portability, 2026-10-28
 
-#195 hosted native CI at `7e03e93` passed 92/96 suites; all four hierarchy
+Contributor correction at `3eee41e`, with target/optimizer metadata at `d762111`,
+replaces fixed clone totals with semantic CFG/data-flow coverage and expanded
+LLVM-verified controls. [Portability evidence](engine/tests/live_hierarchy/compiler-v3/README.md)
+retains local 96/96 regression in 1570.98 seconds and fresh hosted 96/96 in
+2062.37 seconds, all four default and scalar hierarchy modes in each environment,
+and actual 15.0.6/15.0.7 optimized modules. Hosted run 40706207825 also passed
+180 PostgreSQL integration checks, unchanged cold fingerprints and actual CPU
+backend verification. The test-only correction awaits maintainer review and
+C3-1 acceptance. C3-2 stays held and CUDA is unqualified.
+
+Original blocker: #195 hosted native CI at `7e03e93` passed 92/96 suites; all four hierarchy
 modes failed an exact compiler reader-site count assertion. This is separate
 from the historical settling failure. Follow the [correction contract](docs/c3-cpu-capture-handoff.md#current-remote-correction-before-local-gpu-testing--2026-10-28):
 prove semantic reader coverage across emitted compiler shapes, preserve strict
@@ -100,7 +110,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-27**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-10-28**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production

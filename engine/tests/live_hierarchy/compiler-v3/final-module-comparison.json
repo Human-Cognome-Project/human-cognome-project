@@ -1,0 +1,180 @@
+{
+  "pr_head": "d7621117cc03b62eac498c50093761434b95c5ec",
+  "hosted_checkout": "cda8be13689e5e1f7b1de3acdbf68d8e7587d68d",
+  "hosted_run": 40706207825,
+  "artifact": 12825935787,
+  "local_llvm": "15.0.6",
+  "hosted_llvm": "15.0.7",
+  "local_mcpu": "znver3",
+  "hosted_mcpu": "znver3",
+  "rows": [
+    {
+      "configuration": "1-bulk-default",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "008de74cd916d783421ed4096f30e13fb768c70ab03f818efd5608e33628eee5",
+      "hosted_sha256": "67f574a0df89472045e0cfdbef8fc15141cca83a39684c919801afb70ffb7c08"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "14aba61b9ee521aa84931d0cb8f8a2be14e13247941eb797656003e470273ad2",
+      "hosted_sha256": "7bee3845a8219d3f29e8d0b491cfe12f2d04da5a7f86744e537a5bb20c2f653e"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "d7a9dec95bd1ea634ea48c06f218030060dbe20b9cb199af5d2de61cb7a4b869",
+      "hosted_sha256": "f5a4f385664d667c39dfbf3e3e6a28f8630d66b37fa4ed603c1349af102f4201"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "f27d7834264dc021f39ab1363aa585622e3d183915dc84e54b367a332ba827bc",
+      "hosted_sha256": "c6f9bc04ff7870290a1c23d3899d9fe129294143946d947d7a016d81149490cc"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "008de74cd916d783421ed4096f30e13fb768c70ab03f818efd5608e33628eee5",
+      "hosted_sha256": "67f574a0df89472045e0cfdbef8fc15141cca83a39684c919801afb70ffb7c08"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "14aba61b9ee521aa84931d0cb8f8a2be14e13247941eb797656003e470273ad2",
+      "hosted_sha256": "7bee3845a8219d3f29e8d0b491cfe12f2d04da5a7f86744e537a5bb20c2f653e"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "d7a9dec95bd1ea634ea48c06f218030060dbe20b9cb199af5d2de61cb7a4b869",
+      "hosted_sha256": "f5a4f385664d667c39dfbf3e3e6a28f8630d66b37fa4ed603c1349af102f4201"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "f27d7834264dc021f39ab1363aa585622e3d183915dc84e54b367a332ba827bc",
+      "hosted_sha256": "c6f9bc04ff7870290a1c23d3899d9fe129294143946d947d7a016d81149490cc"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "737a6052702375f02d682977181ee5bab79d827c660fdd948d75b54af6ef9d6c",
+      "hosted_sha256": "72760924b7352b7c00448686661af74615808ae3f3b472049be31e096eacfd62"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "265e71e9dfa54e1cfc372ff0d0298cd9082771cd089a0e68050131327a957e2a",
+      "hosted_sha256": "69ad03dba90d6c428b0b52d50c4ca5dc8953d419d615de8e4cac71ecb7b93b4c"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "c30f9794a3f7571cf8d5fe0017e95eb721748463aad05336d9e7961592d5a403",
+      "hosted_sha256": "796519151316af1e364f6c8a5618e998d686b1e94986106835ee81ca91dfb663"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "90097d69a302d0522cc46b300de835726fd6b3c431fa3ab02a4dba68ea81bd4e",
+      "hosted_sha256": "e6988262d8f5a904e726f99144625cb7495f4e70b0a9e04415f283f09d558efa"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "737a6052702375f02d682977181ee5bab79d827c660fdd948d75b54af6ef9d6c",
+      "hosted_sha256": "72760924b7352b7c00448686661af74615808ae3f3b472049be31e096eacfd62"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "265e71e9dfa54e1cfc372ff0d0298cd9082771cd089a0e68050131327a957e2a",
+      "hosted_sha256": "69ad03dba90d6c428b0b52d50c4ca5dc8953d419d615de8e4cac71ecb7b93b4c"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 0,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "c30f9794a3f7571cf8d5fe0017e95eb721748463aad05336d9e7961592d5a403",
+      "hosted_sha256": "796519151316af1e364f6c8a5618e998d686b1e94986106835ee81ca91dfb663"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 1,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "90097d69a302d0522cc46b300de835726fd6b3c431fa3ab02a4dba68ea81bd4e",
+      "hosted_sha256": "e6988262d8f5a904e726f99144625cb7495f4e70b0a9e04415f283f09d558efa"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 2,
+      "equal_excluding_llvm_ident": true,
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e"
+    }
+  ]
+}

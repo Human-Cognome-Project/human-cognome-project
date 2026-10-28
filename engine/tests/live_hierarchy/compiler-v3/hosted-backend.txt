@@ -1,0 +1,4 @@
+2026-10-28T15:28:40.5861669Z host: 4 cpu threads, 15.6 GiB memory
+2026-10-28T15:28:40.5862179Z cuda: no visible CUDA device (or no CUDA driver) on this host
+2026-10-28T15:28:40.5862878Z instance: arch x64, snode capacity 1024, tree capacity 512, device memory budget 1.00 GiB, 4 launch threads
+2026-10-28T15:28:40.5863543Z snode identifiers issued in this process: 0

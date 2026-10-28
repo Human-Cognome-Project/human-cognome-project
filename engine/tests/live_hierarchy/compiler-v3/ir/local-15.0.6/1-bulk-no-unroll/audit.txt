@@ -1,0 +1,115 @@
+actual_backend=cpu,threads=1,path=bulk,llvm_unroll=disabled-test-control
+fixture_setup,nodes=3,bodies=3,elapsed_ms=7254.9946410000002
+installed,nodes=3,responses=6,work=537,reference_work=17,upload_bytes=76928,readback_bytes=248,synchronizations=4,elapsed_ms=0.21984600000000001
+production_module,name=live_hierarchy_force_21,mode=0
+production_selector_ir,kernel=0,role=response_child,  %81 = atomicrmw or ptr %80, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_parent,  %118 = atomicrmw or ptr %117, i32 0 seq_cst, align 4
+production_packet_audit,kernel=0,words=4,loads=4 PASS
+production_packet_audit,kernel=0,words=4,loads=4 PASS
+production_selector_audit,kernel=0,own=0,child=0,response=2,publish=0,plain=0 PASS
+production_semantic_audit,kernel=0,force_iterations=1,child_iterations=0,wake_iterations=0,owner_entries=0,publication_paths=0 PASS
+production_module,name=live_hierarchy_poll_21,mode=1
+production_selector_ir,kernel=1,role=own,  %124 = atomicrmw or ptr %123, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %219 = atomicrmw or ptr %218, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=publish,  %560 = atomicrmw xor ptr %123, i32 1 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_child,  %852 = atomicrmw or ptr %851, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_parent,  %883 = atomicrmw or ptr %882, i32 0 seq_cst, align 4
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_selector_audit,kernel=1,own=1,child=1,response=2,publish=1,plain=0 PASS
+production_semantic_audit,kernel=1,force_iterations=0,child_iterations=1,wake_iterations=1,owner_entries=1,publication_paths=1 PASS
+production_module,name=live_hierarchy_control_21,mode=2
+production_selector_audit,kernel=2,own=0,child=0,response=0,publish=0,plain=0 PASS
+production_semantic_audit,kernel=2,force_iterations=0,child_iterations=0,wake_iterations=0,owner_entries=0,publication_paths=0 PASS
+external_compiler_ir,mode=0,directory=/tmp/hcp-c3-compiler-v3/local-metadata-15.0.6/1-bulk-no-unroll,data_offsets=26,explicit_shape_offsets=2,execution=none
+production_module,name=live_hierarchy_force_21,mode=0
+production_selector_ir,kernel=0,role=response_child,  %81 = atomicrmw or ptr %80, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_parent,  %118 = atomicrmw or ptr %117, i32 0 seq_cst, align 4
+production_packet_audit,kernel=0,words=4,loads=4 PASS
+production_packet_audit,kernel=0,words=4,loads=4 PASS
+production_selector_audit,kernel=0,own=0,child=0,response=2,publish=0,plain=0 PASS
+production_semantic_audit,kernel=0,force_iterations=1,child_iterations=0,wake_iterations=0,owner_entries=0,publication_paths=0 PASS
+compiler_negative,kernel=0,control=response_child_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=0,control=response_child_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=0,control=response_child_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=0,control=response_child_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=0,control=response_child_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=0,control=response_child_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=0,control=response_child_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=0,control=response_child_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=0,control=response_child_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=0,control=response_parent_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=0,control=response_parent_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=0,control=response_parent_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=0,control=response_parent_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=0,control=response_parent_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=0,control=response_parent_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=0,control=response_parent_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=0,control=response_parent_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=0,control=response_parent_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=0,control=response_wrong_column,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_positive,kernel=0,control=legal_repeated_word,llvm_verified=1 PASS
+compiler_positive,kernel=0,control=legal_callback_clone,original_sites=2,cloned_sites=4,callback_body_identical=1,call_uses_redirected=1,llvm_verified=1 PASS
+external_compiler_ir,mode=1,directory=/tmp/hcp-c3-compiler-v3/local-metadata-15.0.6/1-bulk-no-unroll,data_offsets=26,explicit_shape_offsets=2,execution=none
+production_module,name=live_hierarchy_poll_21,mode=1
+production_selector_ir,kernel=1,role=own,  %124 = atomicrmw or ptr %123, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %219 = atomicrmw or ptr %218, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=publish,  %560 = atomicrmw xor ptr %123, i32 1 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_child,  %852 = atomicrmw or ptr %851, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_parent,  %883 = atomicrmw or ptr %882, i32 0 seq_cst, align 4
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_packet_audit,kernel=1,words=4,loads=4 PASS
+production_selector_audit,kernel=1,own=1,child=1,response=2,publish=1,plain=0 PASS
+production_semantic_audit,kernel=1,force_iterations=0,child_iterations=1,wake_iterations=1,owner_entries=1,publication_paths=1 PASS
+compiler_negative,kernel=1,control=own_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=1,control=own_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=1,control=own_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=1,control=own_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=1,control=own_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=1,control=own_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=own_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=1,control=own_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=own_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=1,control=child_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=1,control=child_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=1,control=child_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=1,control=child_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=1,control=child_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=1,control=child_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=child_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=1,control=child_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=child_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=1,control=response_child_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=1,control=response_child_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=1,control=response_child_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=1,control=response_child_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=1,control=response_child_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=1,control=response_child_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=response_child_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=1,control=response_child_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=response_child_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=1,control=response_parent_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=1,control=response_parent_unknown_operation,reason=unattributed production selector operation rejected PASS
+compiler_negative,kernel=1,control=response_parent_plain_load,reason=plain production selector load rejected PASS
+compiler_negative,kernel=1,control=response_parent_missing_acquire,reason=publication word has no unique acquired selector rejected PASS
+compiler_negative,kernel=1,control=response_parent_missing_complete_path,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=1,control=response_parent_duplicate_word,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=response_parent_plain_store,reason=plain production selector store rejected PASS
+compiler_negative,kernel=1,control=response_parent_mixed_acquire,reason=acquired packet lacks complete XYZ/mass coverage rejected PASS
+compiler_negative,kernel=1,control=response_parent_wrong_node_word,reason=packet word has wrong node, slot, or XYZ/mass row rejected PASS
+compiler_negative,kernel=1,control=response_wrong_column,reason=semantic iteration lacks a required acquired packet rejected PASS
+compiler_negative,kernel=1,control=publication_demoted,reason=production selector lost SC rejected PASS
+compiler_negative,kernel=1,control=publication_missing_exchange,reason=publication diagnostic has no unique owning exchange rejected PASS
+compiler_negative,kernel=1,control=publication_wrong_owner,reason=selector index is not the declared descriptor value rejected PASS
+compiler_negative,kernel=1,control=publication_incomplete_writes,reason=publication exchange lacks complete inactive XYZ/mass writes rejected PASS
+compiler_positive,kernel=1,control=legal_repeated_word,llvm_verified=1 PASS
+compiler_positive,kernel=1,control=legal_callback_clone,original_sites=4,cloned_sites=8,callback_body_identical=1,call_uses_redirected=1,llvm_verified=1 PASS
+external_compiler_ir,mode=2,directory=/tmp/hcp-c3-compiler-v3/local-metadata-15.0.6/1-bulk-no-unroll,data_offsets=26,explicit_shape_offsets=2,execution=none
+production_module,name=live_hierarchy_control_21,mode=2
+production_selector_audit,kernel=2,own=0,child=0,response=0,publish=0,plain=0 PASS
+production_semantic_audit,kernel=2,force_iterations=0,child_iterations=0,wake_iterations=0,owner_entries=0,publication_paths=0 PASS
+external_compiler_audit,modules=3 PASS

@@ -2,14 +2,19 @@
 
 Status: contribution for review under the
 [coherent-dynamics/capture direction](coherent-dynamics-gpu-snapshots.md).
-Native runtime/test/capture pin: `85ba956917a413d6a4a7d378a1ce6041be557d35`.
-Viewer/camera-test pin: `b3b9ea9470a1ffde1f4174859dccc8cde68cd739`.
-Only viewer code/tests/generated assets differ between those pins. Backend tree:
+Current complete source pin: `d7621117cc03b62eac498c50093761434b95c5ec`,
+including the compiler-audit correction and target metadata. It includes the
+viewer/camera fix. Original v2 runtime/test/capture pin:
+`85ba956917a413d6a4a7d378a1ce6041be557d35`; original viewer/camera-test pin:
+`b3b9ea9470a1ffde1f4174859dccc8cde68cd739`. Those historical evidence pins
+remain unchanged. The new correction changes test auditing/collection only;
+runtime, physical laws, quantization, work selection and capture are unchanged.
+Backend tree:
 `6784224121f68de1bf1aa0765b54e80d20e355ad`. The evidence/documentation commit
 changes no tested source. C3-1 acceptance and C3-2 structural refresh remain
 separate; this work does not complete #156 or full #145 qualification.
 
-Executed evidence: **96/96 CPU suites**, all four hierarchy modes and all 32
+Prior v2 executed evidence: **96/96 CPU suites**, all four hierarchy modes and all 32
 perturbation/reuse rounds; **180 PostgreSQL integration checks** with unchanged
 cold fingerprints; actual CPU backend verification; **17 captures over 128 ticks**
 from one current C3 execution; **15 model and 87 browser checks**. CUDA-enabled
@@ -18,6 +23,31 @@ Actual CUDA execution/publication/activity/f64 qualification did not run; C3 CUD
 installation remains unsupported. See the [retained results](../engine/tests/live_hierarchy/README.md).
 
 ## Current remote correction before local GPU testing — 2026-10-28
+
+Correction completed for review at `3eee41e` / `d762111`; see the
+[separately pinned results](../engine/tests/live_hierarchy/compiler-v3/README.md).
+Local Clang/LLVM 15.0.6 passed **96/96 in 1570.98 seconds**. Fresh hosted
+Clang/LLVM 15.0.7 [run 40706207825/job 122878906581](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40706207825/job/122878906581)
+passed **96/96 in 2062.37 seconds**, all four complete no-unroll modes,
+**180 PostgreSQL-to-active checks** with zero private reads and unchanged cold
+fingerprints, and actual CPU backend verification. Projection, smoke and
+viewport workflows passed. Both environments completed all four default modes
+as part of full regression. Each compiler shape completed 660 moving windows
+per environment, with all hard invariants and 32 perturbation/reuse rounds.
+
+The audit now checks semantic iteration/descriptor coverage, SC ordering,
+single-selector XYZ/mass provenance and owning publication writes instead of
+fixed clone totals. Each environment also passed eight retained-module audit
+configurations, including 480 negative rejections and 32 valid-duplication
+positives. Actual default/scalar force and poll IR, ABI/optimizer/target inputs,
+hashes and cross-configuration reports are retained. Both detected CPUs are
+`znver3`; all 24 corresponding modules match except for `llvm.ident`.
+The earlier failure's exact CPU/full IR were not retained, so no unique patch
+version or hardware cause is claimed. Runtime laws, quantization, selection
+and active-stream capture are unchanged. C3-1 still requires maintainer
+acceptance; C3-2 stays held and actual CUDA qualification remains local.
+
+Original blocking result and correction contract, retained unchanged:
 
 Hosted run [40604795329, native job 122541493905](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40604795329/job/122541493905)
 on `7e03e93c72755cc72757be7dd138bf8b0d080861` passed **92/96 CPU suites in
@@ -72,16 +102,18 @@ this guidance. C3-2 remains held pending C3-1 acceptance.
 
 ## Exact CPU build and bounded capture
 
-Use the viewer pin above for the complete source, including the camera fix.
-Native code is identical to the native test pin. The recorded toolchain is
-Clang/LLVM 15.0.6, C++17, Release, strict numerical kernels. A normal Linux LLVM 15
-installation may instead provide 15.0.7 (the previous hosted run did); retain
-that actual version with any new results. Dependencies are CMake, Ninja, Clang/
+Use the current complete source pin above, including the camera and compiler
+audit fixes. The runtime/capture implementation remains the v2 implementation;
+the compiler audit now checks semantic paths instead of exact clone totals.
+Both Clang/LLVM 15.0.6 and 15.0.7 captures are retained in the
+[portability evidence](../engine/tests/live_hierarchy/compiler-v3/README.md),
+with C++17 Release and strict C3 numerical kernels. Record the actual compiler
+version and detected CPU with any new results. Dependencies are CMake, Ninja, Clang/
 LLVM 15 development libraries, libX11 and libpq development files (PostgreSQL
 headers >=16). Node 24.19.0 and the pinned npm lockfile were used for the viewer.
 The capture itself makes no database connection.
 
-From a clean checkout at the viewer pin, initialize the pinned submodules with
+From a clean checkout at the current complete source pin, initialize the pinned submodules with
 `git submodule update --init --recursive`. Then:
 
 ```sh

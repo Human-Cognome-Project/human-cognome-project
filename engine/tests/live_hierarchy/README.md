@@ -1,5 +1,15 @@
 # C3-1 coherent dynamics and active capture
 
+Latest compiler-audit revision: `3eee41e`, with target/optimizer metadata at
+`d762111`. The [separate portability evidence](compiler-v3/README.md) retains
+the original hosted 92/96 count failure, actual local/hosted optimized modules,
+semantic path/packet/ownership checks, expanded controls and the default/scalar
+matrices. Local regression passed 96/96 in 1570.98 seconds; fresh hosted
+regression passed 96/96 in 2062.37 seconds, followed by all four scalar modes,
+180 PostgreSQL integration checks and CPU backend verification. This test-only
+correction changes no engine physics, quantization, activity or capture behavior.
+The v2 observations below retain their original source pins and results.
+
 Current contract: [maintainer direction](../../../docs/coherent-dynamics-gpu-snapshots.md),
 recorded in `ea7b828` / `c644575`. Runtime/test/capture source:
 `85ba956917a413d6a4a7d378a1ce6041be557d35`. This is a separately versioned
