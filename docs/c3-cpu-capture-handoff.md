@@ -1,6 +1,6 @@
 # Current hierarchy: CPU observations and local CUDA handoff
 
-Status: contribution for review under the
+Status: C3-1 accepted and merged in #195 at `6edb9d4`; reviewed head `b4a37f2`, under the
 [coherent-dynamics/capture direction](coherent-dynamics-gpu-snapshots.md).
 Current complete source pin: `d7621117cc03b62eac498c50093761434b95c5ec`,
 including the compiler-audit correction and target metadata. It includes the
@@ -21,6 +21,76 @@ from one current C3 execution; **15 model and 87 browser checks**. CUDA-enabled
 fork and HCP clients compiled, and a CPU-only capture on that build passed.
 Actual CUDA execution/publication/activity/f64 qualification did not run; C3 CUDA
 installation remains unsupported. See the [retained results](../engine/tests/live_hierarchy/README.md).
+
+## Local intent and mini-release gate — 2026-10-28
+
+Patrick authorized finishing #195 before the local phase so its hierarchy and
+capture structure are available. It is merged at `6edb9d4e1af8734c344e31210534979f9a705272`.
+The coding agent continues its implementation and review role locally.
+
+The intended deliverable is a bounded, testable physics arrangement of
+computational data, mounted in Docker with full notation/documentation. Patrick
+clarified that the release snapshot means the complete Docker setup, already
+prepared and ready to load and run, not a saved simulation state. Prior model
+states are optional inputs; a fresh default letter study must run without them.
+Successful retained-letter tests are sufficient scope for an
+experimental mini-release; no broader linguistic population, analyst system or
+complete operational admission is implied.
+
+### Packaging and documentation to implement locally
+
+- Package the native substrate, physics engine, harness and capture/viewer path
+  with explicit component roles, build/run instructions and source/submodule pins.
+  Deliver a prebuilt, loadable Docker image/archive or image set, plus its launch
+  configuration and any required fixture assets. Do not rely on an undocumented
+  developer container or assume mounted data is contained in an image. Include
+  an inventory, hashes and explicit data-volume initialization where required.
+  Verify the package by loading it in a clean local setup and running the default
+  study without rebuilding source or supplying a previous model state.
+  Retain reproducible image build definitions alongside the ready-to-run package.
+- Preserve the qualified CPU configuration and separate build outputs from CUDA.
+  Begin with shared build definitions where practical; decide locally whether
+  separate CPU/CUDA image targets are warranted by dependencies and reproducibility.
+  One or two application containers is an implementation choice, not a new
+  architecture requirement. Document any independently required data service.
+- Record actual host/device/driver/compiler/backend, image identity, fixture
+  identity and hashes, numerical precision/Q, physical parameters, initial-state
+  provenance, tick count and observation cadence. Explain notation and units or
+  scale conventions, identity/membership, comparison ownership and snapshot fields.
+- Keep user data intact. Use retained owned fixtures and explicit output mounts;
+  reproducibility must not reset existing stores. The bounded C3 capture fixture
+  itself needs no live database connection.
+- Export machine-readable state and a rendered view from the same completed
+  execution. Retain first/final snapshots and sufficient intermediate observations
+  to interpret motion. Clearly distinguish a visual/state observation from a
+  complete restart checkpoint; restart capability is not established by export.
+- GPU-specific adaptation and execution follow the qualification contract below.
+  Keep explicit unsupported behavior until supported. No silent CPU fallback,
+  separate CPU replay, or claim that compilation establishes CUDA correctness.
+
+### Bounded release evidence
+
+1. Load and run the documented letter study from the pinned, prebuilt Docker
+   release package in a clean setup. Verify the default fresh-model path;
+   prior model states remain optional and must not silently change the default.
+   State precisely which retained letters/structures are exercised; the current
+   three-body capture fixture alone does not establish broad alphabet coverage.
+2. Pass the applicable native regression and hard arithmetic, publication,
+   pending-input, history, identity, finite/domain and resource checks. Retain
+   actual results and failures, with CPU and GPU evidence labelled separately.
+3. Verify exported values against synchronized native state and inspect rendered
+   snapshots. Preserve native numerical values even where display transforms
+   round. Exercise local viewer/file access.
+4. Record coherent motion over declared windows. Universal stillness or exact
+   crystallization is not required; sparse/inexact structures may keep evolving.
+   Held-input numerical convergence and hard invariants remain required.
+5. Publish a reproducible experimental package only after those checks pass and
+   release scope is reviewed. Label the supported backend truthfully; GPU claims
+   require actual qualified GPU runs. A CPU result does not satisfy GPU qualification.
+
+Docker files, local GPU support and the mini-release itself are not implemented
+or published by this intent update. C3-2 and full #156/#145 completion remain
+separate from the bounded observation milestone.
 
 ## Current remote correction before local GPU testing — 2026-10-28
 
@@ -44,8 +114,7 @@ hashes and cross-configuration reports are retained. Both detected CPUs are
 `znver3`; all 24 corresponding modules match except for `llvm.ident`.
 The earlier failure's exact CPU/full IR were not retained, so no unique patch
 version or hardware cause is claimed. Runtime laws, quantization, selection
-and active-stream capture are unchanged. C3-1 still requires maintainer
-acceptance; C3-2 stays held and actual CUDA qualification remains local.
+and active-stream capture are unchanged. C3-1 is accepted in #195. C3-2 remains separate follow-up; actual CUDA qualification remains local.
 
 Original blocking result and correction contract, retained unchanged:
 
@@ -242,4 +311,4 @@ The next local qualification/adaptation must:
 
 Independent CPU/export/viewer preparation is complete only to its recorded scope.
 Actual CUDA publication/activity/f64 execution and rendered GPU-stream snapshots
-remain local work. C3-2 still waits for C3-1 acceptance.
+remain local work. C3-1 acceptance clears its prerequisite for C3-2, but does not implement structural refresh.

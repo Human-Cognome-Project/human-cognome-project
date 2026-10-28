@@ -1,58 +1,41 @@
 # Agent guidance
 
-## Immediate action — compiler audit portability, 2026-10-28
+## Immediate action — local Docker physics study, 2026-10-28
 
-Contributor correction at `3eee41e`, with target/optimizer metadata at `d762111`,
-replaces fixed clone totals with semantic CFG/data-flow coverage and expanded
-LLVM-verified controls. [Portability evidence](engine/tests/live_hierarchy/compiler-v3/README.md)
-retains local 96/96 regression in 1570.98 seconds and fresh hosted 96/96 in
-2062.37 seconds, all four default and scalar hierarchy modes in each environment,
-and actual 15.0.6/15.0.7 optimized modules. Hosted run 40706207825 also passed
-180 PostgreSQL integration checks, unchanged cold fingerprints and actual CPU
-backend verification. The test-only correction awaits maintainer review and
-C3-1 acceptance. C3-2 stays held and CUDA is unqualified.
+C3-1 is accepted and merged in #195 at `6edb9d4`, reviewed head `b4a37f2`.
+The fixed installed CPU hierarchy and active-execution capture are built.
+The compiler audit correction changes test auditing/collection, not physics.
+Independently inspected hosted run 40706207825/job 122878906581 passed 96/96
+CPU suites in 2062.37 seconds, four additional no-unroll modes, 180 integration
+checks and CPU backend verification. Contributor evidence remains separately
+pinned in the [portability record](engine/tests/live_hierarchy/compiler-v3/README.md).
+Earlier failures remain historical evidence, not current blockers.
 
-Original blocker: #195 hosted native CI at `7e03e93` passed 92/96 suites; all four hierarchy
-modes failed an exact compiler reader-site count assertion. This is separate
-from the historical settling failure. Follow the [correction contract](docs/c3-cpu-capture-handoff.md#current-remote-correction-before-local-gpu-testing--2026-10-28):
-prove semantic reader coverage across emitted compiler shapes, preserve strict
-ordering/packet/negative controls, and rerun the CPU matrix plus skipped hosted
-integration/backend checks. Do not simply relax counts or change the physics.
-Complete remote-capable preparation first; Patrick will then pursue local GPU
-testing. CUDA remains unqualified, #195 unaccepted and C3-2 held.
+Patrick's next milestone is a Docker-mounted, documented physics arrangement of
+computational data, exercised with retained letter tests and delivered as a
+Docker snapshot already set up and ready to load and run. Prior model states
+are optional inputs, not prerequisites.
+Follow the [local intent and mini-release gate](docs/c3-cpu-capture-handoff.md#local-intent-and-mini-release-gate--2026-10-28).
+The coding agent continues implementation/review locally; this is not a handoff
+of unfinished CPU audit work. Preserve an independently reproducible CPU build;
+decide whether CPU/CUDA need separate images during packaging. Docker packaging
+and actual current-hierarchy CUDA support are planned, not already built.
 
-## Current direction — coherent dynamics and GPU snapshots, 2026-10-27
+Passing reproducible letter tests from that ready-to-run Docker package can
+support a bounded experimental mini-release. Rendered active-stream captures
+remain observation tooling, distinct from the Docker release snapshot. Exact crystallization is not a
+universal success criterion. Preserve arithmetic, publication, history,
+pending-input, identity and resource invariants. State snapshots are observations,
+not a claim of complete restart/checkpoint support. Full #156 completion is not
+a prerequisite for this bounded study; #172/#177/#156/#145 remain open.
 
-Patrick clarified that exact resolution is an asymptotic ideal, not mandatory
-stillness for every field. The [current acceptance and GPU snapshot continuation](docs/coherent-dynamics-gpu-snapshots.md)
-supersedes universal moving-fixture settling gates below. Preserve mathematical,
-publication, pending-input and resource invariants; record ongoing motion honestly.
-Revise #195's executable criteria and evidence before acceptance. The immediate
-goal is a bounded current-hierarchy GPU run with faithful rendered snapshots;
-full #156 completion is not a prerequisite for that observation milestone.
-Actual CUDA support remains unqualified. The shared active-execution capture
-adapter and CPU/export validation are built for review; see the
-[pinned handoff](docs/c3-cpu-capture-handoff.md). Capture must observe
-the active calculation stream's completed state through one backend-independent
-interface; it must not create or replay a separate CPU simulation. The remote
-agent should complete supported code/CPU/export validation and prepare a pinned
-handoff; actual CUDA execution, qualification and any hardware-specific debugging
-follow locally on Patrick's machine. Remote capture work need not wait for CUDA.
-C3-2 remains held pending C3-1 acceptance. Historical results remain unchanged.
-
-## C3-1 contribution — revised for review
-
-The opt-in [fixed installed trial hierarchy](engine/docs/LIVE-HIERARCHY.md)
-implements the accepted #194 C3-1 contract for CPU investigation. Its
-[source-pinned results](engine/tests/live_hierarchy/README.md) retain a coupled
-settling failures under the historical v1 criteria. Their traces and source pins
-remain intact. The revised executable acceptance follows the current direction
-above and separates continuing motion from invariant failure.
-The revised [coherence/capture contribution](docs/c3-cpu-capture-handoff.md)
-completes continuous observations and exports the active execution through a
-shared native interface. New evidence retains its own source pin; historical
-v1 failures are unchanged. This contribution is not accepted; C3-2 coherent
-refresh remains held, as do the #156/#145 exits.
+C3-1 acceptance clears that prerequisite for C3-2, but coherent structural
+refresh remains separate, unimplemented follow-up and is not the current local
+milestone. Actual CUDA execution/publication/activity/f64 qualification remains
+local. Never claim CPU execution or CUDA-enabled compilation as GPU evidence.
+Snapshots must observe the same active execution, never a separate CPU replay.
+Keep numerical controls minimal and general; do not tune physics to force
+every letter fixture to stop.
 
 ## C3 plan acceptance — 2026-10-27
 
@@ -115,13 +98,13 @@ Last checked: **2026-10-28**. C2b-1 is accepted in #192 under the [#191 plan](do
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
-fixed-tree implementation is released; C3-2 coherent refresh awaits C3-1 acceptance.
+fixed-tree implementation is accepted in #195; C3-2 coherent refresh remains separate follow-up.
 
-The [C3-1 implementation for review](engine/docs/LIVE-HIERARCHY.md) now supplies
+The [accepted C3-1 implementation](engine/docs/LIVE-HIERARCHY.md) now supplies
 that opt-in fixed-tree CPU path. Its executable acceptance now follows the
 coherent-dynamics direction above; see the separately pinned
 [revised observations and original investigation](engine/tests/live_hierarchy/README.md).
-The active-capture adapter is built for review; CUDA execution remains unqualified.
+The active-capture adapter is accepted; CUDA execution remains unqualified.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between
@@ -139,7 +122,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
 | Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
-| Local qualification | Patrick deferred full GPU testing until the remaining core operation matrix passes CPU acceptance; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
+| Local qualification | The current priority is the bounded Docker/letter/snapshot study above. Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
 | Deferred | #75 historical read-only monitor; reconcile its all-edge baseline with current reporting before revival. It is not a viewport/GPU prerequisite. General analyst, dynamic view selection/recomposition and process-failure hosting remain unbuilt. |
 
