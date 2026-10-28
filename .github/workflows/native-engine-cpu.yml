@@ -96,6 +96,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/c3-compiler-ir"
           /usr/lib/llvm-15/bin/clang++ --version > "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
           /usr/lib/llvm-15/bin/llvm-config --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
+          /usr/lib/llvm-15/bin/llc --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
+          git rev-parse HEAD HEAD:engine/taichi > "$RUNNER_TEMP/c3-compiler-ir/source.txt"
+          sha256sum engine/build/live_hierarchy_test \
+            engine/build/taichi-runtime/runtime_x64.bc > "$RUNNER_TEMP/c3-compiler-ir/binaries.sha256"
           cmake -LA -N engine/build > "$RUNNER_TEMP/c3-compiler-ir/cmake.txt"
           for workers in 1 2; do
             for source_path in bulk direct; do

@@ -36,6 +36,7 @@
 #include "llvm/IRReader/IRReader.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Host.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "taichi/ir/type_factory.h"
 #include "live_hierarchy_audit.h"
@@ -648,6 +649,10 @@ void collect_compiler_ir(engine::Runtime &r, HostPath path, bool no_unroll) {
            << "\njit_opt_level=" << cfg.opt_level
            << "\njit_simd_width=" << cfg.simd_width << "\nllvm_unroll="
            << (no_unroll ? "disabled-test-control" : "default")
+           << "\nllvm_optimizer=O3,loop_vectorize=1,slp_vectorize=1"
+           << "\nllvm_optimizer_mcpu=" << llvm::sys::getHostCPUName().str()
+           << "\nllvm_optimizer_features=empty,relocation=PIC,code_model=Small,"
+              "codegen=Aggressive"
            << "\nkernel_math=strict (C3 construction)\n";
   int mode = 0;
   for (const auto *compiled : LiveHierarchyAccess::kernels(f.h)) {
