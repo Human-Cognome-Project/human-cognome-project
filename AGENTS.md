@@ -1,5 +1,16 @@
 # Agent guidance
 
+## Immediate action — compiler audit portability, 2026-10-28
+
+#195 hosted native CI at `7e03e93` passed 92/96 suites; all four hierarchy
+modes failed an exact compiler reader-site count assertion. This is separate
+from the historical settling failure. Follow the [correction contract](docs/c3-cpu-capture-handoff.md#current-remote-correction-before-local-gpu-testing--2026-10-28):
+prove semantic reader coverage across emitted compiler shapes, preserve strict
+ordering/packet/negative controls, and rerun the CPU matrix plus skipped hosted
+integration/backend checks. Do not simply relax counts or change the physics.
+Complete remote-capable preparation first; Patrick will then pursue local GPU
+testing. CUDA remains unqualified, #195 unaccepted and C3-2 held.
+
 ## Current direction — coherent dynamics and GPU snapshots, 2026-10-27
 
 Patrick clarified that exact resolution is an asymptotic ideal, not mandatory

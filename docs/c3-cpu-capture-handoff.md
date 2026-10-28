@@ -17,6 +17,59 @@ fork and HCP clients compiled, and a CPU-only capture on that build passed.
 Actual CUDA execution/publication/activity/f64 qualification did not run; C3 CUDA
 installation remains unsupported. See the [retained results](../engine/tests/live_hierarchy/README.md).
 
+## Current remote correction before local GPU testing — 2026-10-28
+
+Hosted run [40604795329, native job 122541493905](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40604795329/job/122541493905)
+on `7e03e93c72755cc72757be7dd138bf8b0d080861` passed **92/96 CPU suites in
+1225.44 seconds**. All four live-hierarchy modes failed the compiler audit with
+`missing force production reader clone/epilogue`. PostgreSQL integration and
+the subsequent CPU-backend verification were skipped. Smoke, projection and
+offline viewport passed. The 96/96 result below is contributor evidence, not
+this hosted result.
+
+The inspected hosted force module contains one child and one parent selector
+reader; both use SC RMW and each passed the four-word packet check. The audit
+requires exactly three of each. Hosted Clang/LLVM is 15.0.7; contributor evidence
+uses 15.0.6. Compiler-generated duplication is a plausible explanation, not yet
+proof of complete equivalent execution or a uniquely identified version cause.
+This is not a recurrence of the moving-fixture settling failure.
+
+The remote contributor should address this in the existing #195 branch:
+
+1. Retain and compare actual optimized force and poll modules from both build
+   configurations, including target/optimization flags. Identify each required
+   semantic access path, its loop/control flow and every emitted clone/epilogue.
+   Establish whether fewer sites still cover all required child/parent work.
+2. Replace compiler-shape-specific exact totals with structural/data-flow checks
+   for semantic coverage. Do not merely change three to one, use a whitelist of
+   counts, accept any nonzero total or bypass the audit. Attribute every emitted
+   selector access to the correct argument and index role; verify SC acquire/
+   publication operations and complete XYZ/mass loads from one acquired selector.
+   Retain ownership and publication-path checks and reject unknown/plain/demoted
+   accesses. Review the poll's fixed clone counts too, rather than waiting for
+   the next assertion to expose the same assumption.
+3. Preserve and extend negative controls for missing child or parent paths,
+   ordinary selector accesses, demoted ordering and broken packet provenance.
+   Controls should show that legitimate compiler duplication changes are accepted
+   while actual missing or unsafe readers are rejected. If inspection finds a
+   runtime omission, fix it explicitly rather than loosening the audit.
+4. Run targeted audits and all four native modes in both available configurations,
+   then full regression and fresh hosted CI, including the previously skipped
+   integration/backend checks. Record exact source/compiler/backend pins and
+   keep contributor and hosted evidence separate. Mark any unavailable local
+   configuration unexecuted and use hosted evidence for that configuration.
+5. Update the handoff/evidence with the correction and final results. Preserve the
+   existing failing logs as historical evidence. Keep physical laws, quantization,
+   coherent-dynamics criteria and active-stream capture behavior unchanged unless
+   a separately explained defect requires a reviewed correction.
+
+Patrick wants remote-capable work completed before starting the local GPU testing
+phase. Finish the audit correction and supported CPU/capture/build validation
+first; do not move this CPU portability issue onto the GPU session. Actual CUDA
+execution, ordering/activity/f64 qualification and hardware-specific adaptation
+remain local work. No claim of GPU readiness or C3-1 acceptance follows from
+this guidance. C3-2 remains held pending C3-1 acceptance.
+
 ## Exact CPU build and bounded capture
 
 Use the viewer pin above for the complete source, including the camera fix.
