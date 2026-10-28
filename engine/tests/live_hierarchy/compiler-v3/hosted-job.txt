@@ -1,0 +1,1563 @@
+﻿2026-10-28T14:28:09.7430763Z Current runner version: '2.338.0'
+2026-10-28T14:28:09.7453737Z ##[group]Runner Image Provisioner
+2026-10-28T14:28:09.7454564Z Hosted Compute Agent
+2026-10-28T14:28:09.7455168Z Version: 20261021.618
+2026-10-28T14:28:09.7455691Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-28T14:28:09.7456261Z Build Date: 2026-10-21T00:45:21Z
+2026-10-28T14:28:09.7456914Z Worker ID: {5d7dde87-0310-4c2f-8447-029748392419}
+2026-10-28T14:28:09.7457494Z Region: westus3
+2026-10-28T14:28:09.7457969Z Cloud: Azure
+2026-10-28T14:28:09.7458594Z ##[endgroup]
+2026-10-28T14:28:09.7459691Z ##[group]Operating System
+2026-10-28T14:28:09.7460336Z Ubuntu
+2026-10-28T14:28:09.7460785Z 24.04.5
+2026-10-28T14:28:09.7461298Z LTS
+2026-10-28T14:28:09.7461750Z ##[endgroup]
+2026-10-28T14:28:09.7462222Z ##[group]Runner Image
+2026-10-28T14:28:09.7462786Z Image: ubuntu-24.04
+2026-10-28T14:28:09.7463267Z Version: 20261025.353.1
+2026-10-28T14:28:09.7464383Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-28T14:28:09.7465660Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-10-28T14:28:09.7466505Z ##[endgroup]
+2026-10-28T14:28:09.7467482Z ##[group]GITHUB_TOKEN Permissions
+2026-10-28T14:28:09.7469496Z Contents: read
+2026-10-28T14:28:09.7470014Z Metadata: read
+2026-10-28T14:28:09.7470486Z Packages: read
+2026-10-28T14:28:09.7471054Z ##[endgroup]
+2026-10-28T14:28:09.7473146Z Secret source: Actions
+2026-10-28T14:28:09.7474008Z Cache mode: write
+2026-10-28T14:28:09.7474594Z Prepare workflow directory
+2026-10-28T14:28:09.7787629Z Prepare all required actions
+2026-10-28T14:28:09.7829072Z Getting action download info
+2026-10-28T14:28:10.0797046Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-28T14:28:10.2215838Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-28T14:28:10.4854366Z Complete job name: native-cpu
+2026-10-28T14:28:10.5645078Z ##[group]Run actions/checkout@v4
+2026-10-28T14:28:10.5645740Z with:
+2026-10-28T14:28:10.5646084Z   submodules: false
+2026-10-28T14:28:10.5646538Z   repository: Human-Cognome-Project/human-cognome-project
+2026-10-28T14:28:10.5649895Z   token: ***
+2026-10-28T14:28:10.5650246Z   ssh-strict: true
+2026-10-28T14:28:10.5650604Z   ssh-user: git
+2026-10-28T14:28:10.5650954Z   persist-credentials: true
+2026-10-28T14:28:10.5651334Z   clean: true
+2026-10-28T14:28:10.5651686Z   sparse-checkout-cone-mode: true
+2026-10-28T14:28:10.5652089Z   fetch-depth: 1
+2026-10-28T14:28:10.5652424Z   fetch-tags: false
+2026-10-28T14:28:10.5652769Z   show-progress: true
+2026-10-28T14:28:10.5653118Z   lfs: false
+2026-10-28T14:28:10.5653449Z   set-safe-directory: true
+2026-10-28T14:28:10.5653844Z   allow-unsafe-pr-checkout: false
+2026-10-28T14:28:10.5654408Z ##[endgroup]
+2026-10-28T14:28:10.8977361Z Syncing repository: Human-Cognome-Project/human-cognome-project
+2026-10-28T14:28:10.8980088Z ##[group]Getting Git version info
+2026-10-28T14:28:10.8981189Z Working directory is '/home/runner/work/human-cognome-project/human-cognome-project'
+2026-10-28T14:28:10.8982649Z [command]/usr/bin/git version
+2026-10-28T14:28:11.1012966Z git version 2.56.0
+2026-10-28T14:28:11.1030376Z ##[endgroup]
+2026-10-28T14:28:11.1043027Z Temporarily overriding HOME='/home/runner/work/_temp/910bc8c7-385f-464f-bc58-055d22684800' before making global git config changes
+2026-10-28T14:28:11.1044709Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T14:28:11.1047707Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/human-cognome-project/human-cognome-project
+2026-10-28T14:28:11.1099503Z Deleting the contents of '/home/runner/work/human-cognome-project/human-cognome-project'
+2026-10-28T14:28:11.1103133Z ##[group]Initializing the repository
+2026-10-28T14:28:11.1106541Z [command]/usr/bin/git init /home/runner/work/human-cognome-project/human-cognome-project
+2026-10-28T14:28:11.1402089Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-28T14:28:11.1403404Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-28T14:28:11.1404184Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-28T14:28:11.1404771Z hint: call:
+2026-10-28T14:28:11.1405107Z hint:
+2026-10-28T14:28:11.1405536Z hint: 	git config --global init.defaultBranch <name>
+2026-10-28T14:28:11.1406029Z hint:
+2026-10-28T14:28:11.1406486Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-28T14:28:11.1407219Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-28T14:28:11.1407790Z hint:
+2026-10-28T14:28:11.1408122Z hint: 	git branch -m <name>
+2026-10-28T14:28:11.1408671Z hint:
+2026-10-28T14:28:11.1409167Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-28T14:28:11.1415423Z Initialized empty Git repository in /home/runner/work/human-cognome-project/human-cognome-project/.git/
+2026-10-28T14:28:11.1426315Z [command]/usr/bin/git remote add origin https://github.com/Human-Cognome-Project/human-cognome-project
+2026-10-28T14:28:11.1479283Z ##[endgroup]
+2026-10-28T14:28:11.1479912Z ##[group]Disabling automatic garbage collection
+2026-10-28T14:28:11.1483061Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-28T14:28:11.1523243Z ##[endgroup]
+2026-10-28T14:28:11.1523843Z ##[group]Setting up auth
+2026-10-28T14:28:11.1530120Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T14:28:11.1571207Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T14:28:11.1879342Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T14:28:11.1918081Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T14:28:11.2192851Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T14:28:11.2195754Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T14:28:11.2393176Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-28T14:28:11.2437174Z ##[endgroup]
+2026-10-28T14:28:11.2438088Z ##[group]Fetching the repository
+2026-10-28T14:28:11.2447328Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +cda8be13689e5e1f7b1de3acdbf68d8e7587d68d:refs/remotes/pull/195/merge
+2026-10-28T14:28:14.0393788Z From https://github.com/Human-Cognome-Project/human-cognome-project
+2026-10-28T14:28:14.0395112Z  * [new ref]         cda8be13689e5e1f7b1de3acdbf68d8e7587d68d -> pull/195/merge
+2026-10-28T14:28:14.0400544Z ##[endgroup]
+2026-10-28T14:28:14.0401470Z ##[group]Determining the checkout info
+2026-10-28T14:28:14.0402467Z ##[endgroup]
+2026-10-28T14:28:14.0403301Z [command]/usr/bin/git sparse-checkout disable
+2026-10-28T14:28:14.0762421Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-28T14:28:14.1163684Z ##[group]Checking out the ref
+2026-10-28T14:28:14.1166215Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/195/merge
+2026-10-28T14:28:14.9095427Z Note: switching to 'refs/remotes/pull/195/merge'.
+2026-10-28T14:28:14.9095848Z 
+2026-10-28T14:28:14.9096124Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-28T14:28:14.9096639Z changes and commit them, and you can discard any commits you make in this
+2026-10-28T14:28:14.9097122Z state without impacting any branches by switching back to a branch.
+2026-10-28T14:28:14.9097400Z 
+2026-10-28T14:28:14.9097677Z If you want to create a new branch to retain commits you create, you may
+2026-10-28T14:28:14.9098725Z do so (now or later) by using -c with the switch command. Example:
+2026-10-28T14:28:14.9098991Z 
+2026-10-28T14:28:14.9099129Z   git switch -c <new-branch-name>
+2026-10-28T14:28:14.9099312Z 
+2026-10-28T14:28:14.9099483Z Or undo this operation with:
+2026-10-28T14:28:14.9099813Z 
+2026-10-28T14:28:14.9099952Z   git switch -
+2026-10-28T14:28:14.9100219Z 
+2026-10-28T14:28:14.9100513Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-28T14:28:14.9100908Z 
+2026-10-28T14:28:14.9101386Z HEAD is now at cda8be1 Merge d7621117cc03b62eac498c50093761434b95c5ec into 004aaea0f2a2ae1381027425721e39ca3cb18af5
+2026-10-28T14:28:14.9464592Z ##[endgroup]
+2026-10-28T14:28:14.9510403Z [command]/usr/bin/git log -1 --format=%H
+2026-10-28T14:28:14.9539640Z cda8be13689e5e1f7b1de3acdbf68d8e7587d68d
+2026-10-28T14:28:15.0450583Z ##[group]Run if ! git submodule update --init --recursive; then
+2026-10-28T14:28:15.0451191Z [36;1mif ! git submodule update --init --recursive; then[0m
+2026-10-28T14:28:15.0451664Z [36;1m  # The pinned Eigen commit also exists in this mirror. Git still[0m
+2026-10-28T14:28:15.0452144Z [36;1m  # checks out the exact gitlink SHA recorded by the repository.[0m
+2026-10-28T14:28:15.0453009Z [36;1m  git -c 'url.https://github.com/eigen-mirror/eigen.git.insteadOf=https://gitlab.com/libeigen/eigen.git' \[0m
+2026-10-28T14:28:15.0453686Z [36;1m    submodule update --init --recursive[0m
+2026-10-28T14:28:15.0454038Z [36;1mfi[0m
+2026-10-28T14:28:15.0474984Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:28:15.0475292Z ##[endgroup]
+2026-10-28T14:28:15.0723428Z Submodule 'taichi/external/DirectX-Headers' (https://github.com/microsoft/DirectX-Headers.git) registered for path 'engine/taichi/external/DirectX-Headers'
+2026-10-28T14:28:15.0766410Z Submodule 'taichi/external/FP16' (https://github.com/Maratyszcza/FP16) registered for path 'engine/taichi/external/FP16'
+2026-10-28T14:28:15.0771957Z Submodule 'taichi/external/PicoSHA2' (https://github.com/okdshin/PicoSHA2.git) registered for path 'engine/taichi/external/PicoSHA2'
+2026-10-28T14:28:15.0777664Z Submodule 'taichi/external/SPIRV-Cross' (https://github.com/KhronosGroup/SPIRV-Cross) registered for path 'engine/taichi/external/SPIRV-Cross'
+2026-10-28T14:28:15.0783370Z Submodule 'taichi/external/SPIRV-Headers' (https://github.com/KhronosGroup/SPIRV-Headers) registered for path 'engine/taichi/external/SPIRV-Headers'
+2026-10-28T14:28:15.0789263Z Submodule 'taichi/external/SPIRV-Reflect' (https://github.com/KhronosGroup/SPIRV-Reflect) registered for path 'engine/taichi/external/SPIRV-Reflect'
+2026-10-28T14:28:15.0794863Z Submodule 'taichi/external/SPIRV-Tools' (https://github.com/KhronosGroup/SPIRV-Tools) registered for path 'engine/taichi/external/SPIRV-Tools'
+2026-10-28T14:28:15.0800860Z Submodule 'taichi/external/Vulkan-Headers' (https://github.com/KhronosGroup/Vulkan-Headers) registered for path 'engine/taichi/external/Vulkan-Headers'
+2026-10-28T14:28:15.0806756Z Submodule 'taichi/external/VulkanMemoryAllocator' (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) registered for path 'engine/taichi/external/VulkanMemoryAllocator'
+2026-10-28T14:28:15.0812661Z Submodule 'taichi/external/assets' (https://github.com/taichi-dev/taichi_assets) registered for path 'engine/taichi/external/assets'
+2026-10-28T14:28:15.0818821Z Submodule 'taichi/external/backward_cpp' (https://github.com/bombela/backward-cpp.git) registered for path 'engine/taichi/external/backward_cpp'
+2026-10-28T14:28:15.0851204Z Submodule 'taichi/external/eigen' (https://gitlab.com/libeigen/eigen.git) registered for path 'engine/taichi/external/eigen'
+2026-10-28T14:28:15.0857507Z Submodule 'taichi/external/glad' (https://github.com/taichi-dev/taichi_glad_ready) registered for path 'engine/taichi/external/glad'
+2026-10-28T14:28:15.0864147Z Submodule 'taichi/external/glfw' (https://github.com/taichi-dev/glfw) registered for path 'engine/taichi/external/glfw'
+2026-10-28T14:28:15.0871046Z Submodule 'taichi/external/glm' (https://github.com/g-truc/glm.git) registered for path 'engine/taichi/external/glm'
+2026-10-28T14:28:15.0877411Z Submodule 'taichi/external/googletest' (https://github.com/google/googletest) registered for path 'engine/taichi/external/googletest'
+2026-10-28T14:28:15.0883941Z Submodule 'taichi/external/imgui' (https://github.com/ocornut/imgui.git) registered for path 'engine/taichi/external/imgui'
+2026-10-28T14:28:15.0890412Z Submodule 'taichi/external/spdlog' (https://github.com/gabime/spdlog) registered for path 'engine/taichi/external/spdlog'
+2026-10-28T14:28:15.0897081Z Submodule 'taichi/external/volk' (https://github.com/zeux/volk.git) registered for path 'engine/taichi/external/volk'
+2026-10-28T14:28:15.0922865Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/DirectX-Headers'...
+2026-10-28T14:28:17.1009469Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/FP16'...
+2026-10-28T14:28:17.8024661Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/PicoSHA2'...
+2026-10-28T14:28:18.3823970Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/SPIRV-Cross'...
+2026-10-28T14:28:21.4043880Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/SPIRV-Headers'...
+2026-10-28T14:28:24.2939723Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/SPIRV-Reflect'...
+2026-10-28T14:28:25.3696110Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/SPIRV-Tools'...
+2026-10-28T14:28:28.4107090Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/Vulkan-Headers'...
+2026-10-28T14:28:38.1165968Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/VulkanMemoryAllocator'...
+2026-10-28T14:28:54.8245586Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/assets'...
+2026-10-28T14:28:55.4586157Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/backward_cpp'...
+2026-10-28T14:28:56.2606469Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/eigen'...
+2026-10-28T14:29:57.8382311Z fatal: remote error: GitLab is currently unable to handle this request due to load (ID a51aa1446c4d5846-LAX).
+2026-10-28T14:29:57.8417901Z fatal: clone of 'https://gitlab.com/libeigen/eigen.git' into submodule path '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/eigen' failed
+2026-10-28T14:29:57.8441011Z Failed to clone 'engine/taichi/external/eigen'. Retry scheduled
+2026-10-28T14:29:57.8468920Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/glad'...
+2026-10-28T14:29:59.0571134Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/glfw'...
+2026-10-28T14:29:59.9173367Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/glm'...
+2026-10-28T14:30:05.0552344Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/googletest'...
+2026-10-28T14:30:05.9738836Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/imgui'...
+2026-10-28T14:30:21.0417085Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/spdlog'...
+2026-10-28T14:30:21.9734231Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/volk'...
+2026-10-28T14:30:22.8883292Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/eigen'...
+2026-10-28T14:31:23.3774126Z fatal: remote error: GitLab is currently unable to handle this request due to load (ID a51aa35b0cfa2eeb-LAX).
+2026-10-28T14:31:23.3807623Z fatal: clone of 'https://gitlab.com/libeigen/eigen.git' into submodule path '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/eigen' failed
+2026-10-28T14:31:23.3837340Z Failed to clone 'engine/taichi/external/eigen' a second time, aborting
+2026-10-28T14:31:23.4056018Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/eigen'...
+2026-10-28T14:31:30.3500966Z Submodule path 'engine/taichi/external/DirectX-Headers': checked out 'fb9a40f1b8165c848cf49fdb396722af7181ff97'
+2026-10-28T14:31:30.3636227Z Submodule path 'engine/taichi/external/FP16': checked out '0a92994d729ff76a58f692d3028ca1b64b145d91'
+2026-10-28T14:31:30.3723858Z Submodule path 'engine/taichi/external/PicoSHA2': checked out '1677374f23352716fc52183255a40c1b8e1d53eb'
+2026-10-28T14:31:30.5323502Z Submodule path 'engine/taichi/external/SPIRV-Cross': checked out 'c77b09b57c27837dc2d41aa371ed3d236ce9ce47'
+2026-10-28T14:31:30.5895676Z Submodule path 'engine/taichi/external/SPIRV-Headers': checked out '34d04647d384e0aed037e7a2662a655fc39841bb'
+2026-10-28T14:31:30.6145975Z Submodule path 'engine/taichi/external/SPIRV-Reflect': checked out '7c9c841fa9f40c09d334d5db6629ba318e46efaf'
+2026-10-28T14:31:30.6166986Z Submodule 'third_party/googletest' (https://github.com/google/googletest) registered for path 'engine/taichi/external/SPIRV-Reflect/third_party/googletest'
+2026-10-28T14:31:30.6191179Z Cloning into '/home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/external/SPIRV-Reflect/third_party/googletest'...
+2026-10-28T14:31:32.8119734Z Submodule path 'engine/taichi/external/SPIRV-Reflect/third_party/googletest': checked out 'e2239ee6043f73722e7aa812a459f54a28552929'
+2026-10-28T14:31:32.9819447Z Submodule path 'engine/taichi/external/SPIRV-Tools': checked out '46ca66e6991f16c89e17ebc9b86995143be2c706'
+2026-10-28T14:31:33.0879024Z Submodule path 'engine/taichi/external/Vulkan-Headers': checked out '409c16be502e39fe70dd6fe2d9ad4842ef2c9a53'
+2026-10-28T14:31:33.1367692Z Submodule path 'engine/taichi/external/VulkanMemoryAllocator': checked out '539c0a8d8e3733c9f25ea9a184c85c77504f1653'
+2026-10-28T14:31:33.1503377Z Submodule path 'engine/taichi/external/backward_cpp': checked out '51f0700452cf71c57d43c2d028277b24cde32502'
+2026-10-28T14:31:33.4044294Z Submodule path 'engine/taichi/external/eigen': checked out '0fd6b4f71dd85b2009ee4d1aeb296e2c11fc9d68'
+2026-10-28T14:31:35.9646491Z From https://github.com/taichi-dev/glfw
+2026-10-28T14:31:35.9647292Z  * branch              cf9263d56662ee7fcc18add84d91243167cc0328 -> FETCH_HEAD
+2026-10-28T14:31:35.9942487Z Submodule path 'engine/taichi/external/glfw': checked out 'cf9263d56662ee7fcc18add84d91243167cc0328'
+2026-10-28T14:31:36.1090359Z Submodule path 'engine/taichi/external/glm': checked out '06ed280db4e274fa5e1f36d5ea4f7dfd654ff9b0'
+2026-10-28T14:31:38.5413724Z From https://github.com/google/googletest
+2026-10-28T14:31:38.5414134Z  * branch              e8b478a7356f21efbada1aae15b49b332cc54e3f -> FETCH_HEAD
+2026-10-28T14:31:38.5914905Z Submodule path 'engine/taichi/external/googletest': checked out 'e8b478a7356f21efbada1aae15b49b332cc54e3f'
+2026-10-28T14:31:38.6852009Z Submodule path 'engine/taichi/external/imgui': checked out 'c7529c8ea8ef36e344d00cb38e1493b465ce6090'
+2026-10-28T14:31:41.4128800Z From https://github.com/gabime/spdlog
+2026-10-28T14:31:41.4129364Z  * branch              c3aed4b68373955e1cc94307683d44dca1515d2b -> FETCH_HEAD
+2026-10-28T14:31:41.4313873Z Submodule path 'engine/taichi/external/spdlog': checked out 'c3aed4b68373955e1cc94307683d44dca1515d2b'
+2026-10-28T14:31:41.4441246Z Submodule path 'engine/taichi/external/volk': checked out 'b87f88292b09bc899b24028984186581a1d24c4e'
+2026-10-28T14:31:41.4514682Z ##[group]Run sudo apt-get update
+2026-10-28T14:31:41.4514951Z [36;1msudo apt-get update[0m
+2026-10-28T14:31:41.4515272Z [36;1msudo apt-get install -y clang-15 llvm-15-dev ninja-build libx11-dev libpq-dev[0m
+2026-10-28T14:31:41.4533608Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:31:41.4533981Z ##[endgroup]
+2026-10-28T14:31:41.5202869Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-28T14:31:41.5493150Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-28T14:31:41.5501033Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-28T14:31:41.5544986Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-28T14:31:41.5569325Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-28T14:31:41.5637170Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-28T14:31:41.6901170Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1406 kB]
+2026-10-28T14:31:41.7018908Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-28T14:31:41.7034798Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1707 kB]
+2026-10-28T14:31:41.7100826Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [343 kB]
+2026-10-28T14:31:41.7117507Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1809 kB]
+2026-10-28T14:31:41.7188730Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-28T14:31:41.7206112Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [14.3 kB]
+2026-10-28T14:31:41.7961429Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-28T14:31:41.8015615Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-28T14:31:41.8032104Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1223 kB]
+2026-10-28T14:31:41.8445176Z Get:18 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [602 kB]
+2026-10-28T14:31:41.8505196Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-28T14:31:41.8566008Z Get:19 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [666 kB]
+2026-10-28T14:31:45.5782049Z Fetched 10.5 MB in 1s (11.3 MB/s)
+2026-10-28T14:31:46.4955177Z Reading package lists...
+2026-10-28T14:31:46.5297642Z Reading package lists...
+2026-10-28T14:31:46.7865834Z Building dependency tree...
+2026-10-28T14:31:46.7872386Z Reading state information...
+2026-10-28T14:31:47.0078514Z libpq-dev is already the newest version (18.6-1.pgdg24.04+2).
+2026-10-28T14:31:47.0078918Z The following additional packages will be installed:
+2026-10-28T14:31:47.0079327Z   libclang-common-15-dev libclang-cpp15t64 libclang-rt-15-dev libclang1-15t64
+2026-10-28T14:31:47.0083087Z   libllvm15t64 libpthread-stubs0-dev libxau-dev libxcb1-dev libxdmcp-dev
+2026-10-28T14:31:47.0086023Z   llvm-15 llvm-15-linker-tools llvm-15-runtime llvm-15-tools x11proto-dev
+2026-10-28T14:31:47.0086330Z   xorg-sgml-doctools xtrans-dev
+2026-10-28T14:31:47.0093695Z Suggested packages:
+2026-10-28T14:31:47.0093960Z   clang-15-doc wasi-libc libx11-doc libxcb-doc llvm-15-doc
+2026-10-28T14:31:47.2146173Z The following NEW packages will be installed:
+2026-10-28T14:31:47.2148237Z   clang-15 libclang-common-15-dev libclang-cpp15t64 libclang-rt-15-dev
+2026-10-28T14:31:47.2153891Z   libclang1-15t64 libllvm15t64 libpthread-stubs0-dev libx11-dev libxau-dev
+2026-10-28T14:31:47.2154904Z   libxcb1-dev libxdmcp-dev llvm-15 llvm-15-dev llvm-15-linker-tools
+2026-10-28T14:31:47.2159059Z   llvm-15-runtime llvm-15-tools ninja-build x11proto-dev xorg-sgml-doctools
+2026-10-28T14:31:47.2159507Z   xtrans-dev
+2026-10-28T14:31:47.2374632Z 0 upgraded, 20 newly installed, 0 to remove and 5 not upgraded.
+2026-10-28T14:31:47.2375123Z Need to get 107 MB of archives.
+2026-10-28T14:31:47.2375513Z After this operation, 637 MB of additional disk space will be used.
+2026-10-28T14:31:47.2375979Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-28T14:31:47.3453857Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libllvm15t64 amd64 1:15.0.7-14build3 [25.5 MB]
+2026-10-28T14:31:48.2395864Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libclang-cpp15t64 amd64 1:15.0.7-14build3 [12.6 MB]
+2026-10-28T14:31:48.5125955Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libclang-common-15-dev amd64 1:15.0.7-14build3 [623 kB]
+2026-10-28T14:31:48.5657036Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 llvm-15-linker-tools amd64 1:15.0.7-14build3 [1373 kB]
+2026-10-28T14:31:48.6181418Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libclang1-15t64 amd64 1:15.0.7-14build3 [6958 kB]
+2026-10-28T14:31:48.7616841Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 clang-15 amd64 1:15.0.7-14build3 [81.0 kB]
+2026-10-28T14:31:48.8080583Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libclang-rt-15-dev amd64 1:15.0.7-14build3 [3541 kB]
+2026-10-28T14:31:48.9027262Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libpthread-stubs0-dev amd64 0.4-1build3 [4746 B]
+2026-10-28T14:31:48.9476831Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xorg-sgml-doctools all 1:1.11-1.1 [10.9 kB]
+2026-10-28T14:31:48.9929251Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 x11proto-dev all 2023.2-1 [602 kB]
+2026-10-28T14:31:49.0411022Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libxau-dev amd64 1:1.0.9-1build6 [9570 B]
+2026-10-28T14:31:49.0864319Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libxdmcp-dev amd64 1:1.1.3-0ubuntu6 [26.5 kB]
+2026-10-28T14:31:49.1315837Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xtrans-dev all 1.4.0-1 [68.9 kB]
+2026-10-28T14:31:49.1770478Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libxcb1-dev amd64 1.15-1ubuntu2 [85.8 kB]
+2026-10-28T14:31:49.2222255Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libx11-dev amd64 2:1.8.7-1ubuntu0.1 [732 kB]
+2026-10-28T14:31:49.2717516Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 llvm-15-runtime amd64 1:15.0.7-14build3 [506 kB]
+2026-10-28T14:31:49.3196805Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 llvm-15 amd64 1:15.0.7-14build3 [13.4 MB]
+2026-10-28T14:31:49.5602599Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 llvm-15-tools amd64 1:15.0.7-14build3 [433 kB]
+2026-10-28T14:31:49.6081566Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 llvm-15-dev amd64 1:15.0.7-14build3 [40.7 MB]
+2026-10-28T14:31:50.4099637Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+2026-10-28T14:31:50.6986842Z Fetched 107 MB in 3s (33.7 MB/s)
+2026-10-28T14:31:50.7208054Z Selecting previously unselected package libllvm15t64:amd64.
+2026-10-28T14:31:50.7400459Z (Reading database ... 
+2026-10-28T14:31:50.7400804Z (Reading database ... 5%
+2026-10-28T14:31:50.7401019Z (Reading database ... 10%
+2026-10-28T14:31:50.7401253Z (Reading database ... 15%
+2026-10-28T14:31:50.7401961Z (Reading database ... 20%
+2026-10-28T14:31:50.7402228Z (Reading database ... 25%
+2026-10-28T14:31:50.7402504Z (Reading database ... 30%
+2026-10-28T14:31:50.7402781Z (Reading database ... 35%
+2026-10-28T14:31:50.7403012Z (Reading database ... 40%
+2026-10-28T14:31:50.7403184Z (Reading database ... 45%
+2026-10-28T14:31:50.7403353Z (Reading database ... 50%
+2026-10-28T14:31:50.7433468Z (Reading database ... 55%
+2026-10-28T14:31:50.8595004Z (Reading database ... 60%
+2026-10-28T14:31:51.0957621Z (Reading database ... 65%
+2026-10-28T14:31:51.2567488Z (Reading database ... 70%
+2026-10-28T14:31:51.4657419Z (Reading database ... 75%
+2026-10-28T14:31:51.6650410Z (Reading database ... 80%
+2026-10-28T14:31:51.8035417Z (Reading database ... 85%
+2026-10-28T14:31:52.0737944Z (Reading database ... 90%
+2026-10-28T14:31:52.2739292Z (Reading database ... 95%
+2026-10-28T14:31:52.2739697Z (Reading database ... 100%
+2026-10-28T14:31:52.2740343Z (Reading database ... 215504 files and directories currently installed.)
+2026-10-28T14:31:52.2785832Z Preparing to unpack .../00-libllvm15t64_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:52.3515283Z Unpacking libllvm15t64:amd64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:53.3136776Z Selecting previously unselected package libclang-cpp15t64.
+2026-10-28T14:31:53.3265681Z Preparing to unpack .../01-libclang-cpp15t64_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:53.3401715Z Unpacking libclang-cpp15t64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:53.8891787Z Selecting previously unselected package libclang-common-15-dev.
+2026-10-28T14:31:53.9020186Z Preparing to unpack .../02-libclang-common-15-dev_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:53.9026353Z Unpacking libclang-common-15-dev (1:15.0.7-14build3) ...
+2026-10-28T14:31:54.2539881Z Selecting previously unselected package llvm-15-linker-tools.
+2026-10-28T14:31:54.2669959Z Preparing to unpack .../03-llvm-15-linker-tools_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:54.2706553Z Unpacking llvm-15-linker-tools (1:15.0.7-14build3) ...
+2026-10-28T14:31:54.4737912Z Selecting previously unselected package libclang1-15t64.
+2026-10-28T14:31:54.4866898Z Preparing to unpack .../04-libclang1-15t64_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:54.4873718Z Unpacking libclang1-15t64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:54.7414507Z Selecting previously unselected package clang-15.
+2026-10-28T14:31:54.7542250Z Preparing to unpack .../05-clang-15_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:54.7548633Z Unpacking clang-15 (1:15.0.7-14build3) ...
+2026-10-28T14:31:54.9312981Z Selecting previously unselected package libclang-rt-15-dev:amd64.
+2026-10-28T14:31:54.9438244Z Preparing to unpack .../06-libclang-rt-15-dev_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:54.9444527Z Unpacking libclang-rt-15-dev:amd64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:55.2157536Z Selecting previously unselected package libpthread-stubs0-dev:amd64.
+2026-10-28T14:31:55.2285203Z Preparing to unpack .../07-libpthread-stubs0-dev_0.4-1build3_amd64.deb ...
+2026-10-28T14:31:55.2291490Z Unpacking libpthread-stubs0-dev:amd64 (0.4-1build3) ...
+2026-10-28T14:31:55.2506372Z Selecting previously unselected package xorg-sgml-doctools.
+2026-10-28T14:31:55.2631799Z Preparing to unpack .../08-xorg-sgml-doctools_1%3a1.11-1.1_all.deb ...
+2026-10-28T14:31:55.2639139Z Unpacking xorg-sgml-doctools (1:1.11-1.1) ...
+2026-10-28T14:31:55.2924588Z Selecting previously unselected package x11proto-dev.
+2026-10-28T14:31:55.3050181Z Preparing to unpack .../09-x11proto-dev_2023.2-1_all.deb ...
+2026-10-28T14:31:55.3056350Z Unpacking x11proto-dev (2023.2-1) ...
+2026-10-28T14:31:55.3484909Z Selecting previously unselected package libxau-dev:amd64.
+2026-10-28T14:31:55.3616925Z Preparing to unpack .../10-libxau-dev_1%3a1.0.9-1build6_amd64.deb ...
+2026-10-28T14:31:55.3650759Z Unpacking libxau-dev:amd64 (1:1.0.9-1build6) ...
+2026-10-28T14:31:55.4602051Z Selecting previously unselected package libxdmcp-dev:amd64.
+2026-10-28T14:31:55.4730713Z Preparing to unpack .../11-libxdmcp-dev_1%3a1.1.3-0ubuntu6_amd64.deb ...
+2026-10-28T14:31:55.4736967Z Unpacking libxdmcp-dev:amd64 (1:1.1.3-0ubuntu6) ...
+2026-10-28T14:31:55.4934442Z Selecting previously unselected package xtrans-dev.
+2026-10-28T14:31:55.5059886Z Preparing to unpack .../12-xtrans-dev_1.4.0-1_all.deb ...
+2026-10-28T14:31:55.5066556Z Unpacking xtrans-dev (1.4.0-1) ...
+2026-10-28T14:31:55.5303583Z Selecting previously unselected package libxcb1-dev:amd64.
+2026-10-28T14:31:55.5429249Z Preparing to unpack .../13-libxcb1-dev_1.15-1ubuntu2_amd64.deb ...
+2026-10-28T14:31:55.5435066Z Unpacking libxcb1-dev:amd64 (1.15-1ubuntu2) ...
+2026-10-28T14:31:55.5669581Z Selecting previously unselected package libx11-dev:amd64.
+2026-10-28T14:31:55.5795686Z Preparing to unpack .../14-libx11-dev_2%3a1.8.7-1ubuntu0.1_amd64.deb ...
+2026-10-28T14:31:55.5803525Z Unpacking libx11-dev:amd64 (2:1.8.7-1ubuntu0.1) ...
+2026-10-28T14:31:55.6257054Z Selecting previously unselected package llvm-15-runtime.
+2026-10-28T14:31:55.6381778Z Preparing to unpack .../15-llvm-15-runtime_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:55.6387528Z Unpacking llvm-15-runtime (1:15.0.7-14build3) ...
+2026-10-28T14:31:55.6731533Z Selecting previously unselected package llvm-15.
+2026-10-28T14:31:55.6859929Z Preparing to unpack .../16-llvm-15_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:55.6866595Z Unpacking llvm-15 (1:15.0.7-14build3) ...
+2026-10-28T14:31:56.0544719Z Selecting previously unselected package llvm-15-tools.
+2026-10-28T14:31:56.0673339Z Preparing to unpack .../17-llvm-15-tools_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:56.0681357Z Unpacking llvm-15-tools (1:15.0.7-14build3) ...
+2026-10-28T14:31:56.2330717Z Selecting previously unselected package llvm-15-dev.
+2026-10-28T14:31:56.2459266Z Preparing to unpack .../18-llvm-15-dev_1%3a15.0.7-14build3_amd64.deb ...
+2026-10-28T14:31:56.2539366Z Unpacking llvm-15-dev (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.0672631Z Selecting previously unselected package ninja-build.
+2026-10-28T14:31:58.0813598Z Preparing to unpack .../19-ninja-build_1.11.1-2_amd64.deb ...
+2026-10-28T14:31:58.0820974Z Unpacking ninja-build (1.11.1-2) ...
+2026-10-28T14:31:58.2639498Z Setting up libllvm15t64:amd64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2681575Z Setting up llvm-15-linker-tools (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2697780Z Setting up libpthread-stubs0-dev:amd64 (0.4-1build3) ...
+2026-10-28T14:31:58.2713778Z Setting up ninja-build (1.11.1-2) ...
+2026-10-28T14:31:58.2730279Z Setting up llvm-15-tools (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2746448Z Setting up xtrans-dev (1.4.0-1) ...
+2026-10-28T14:31:58.2765463Z Setting up libclang1-15t64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2781521Z Setting up llvm-15-runtime (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2810190Z Setting up xorg-sgml-doctools (1:1.11-1.1) ...
+2026-10-28T14:31:58.2911424Z Setting up libclang-rt-15-dev:amd64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2926829Z Setting up libclang-cpp15t64 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2942988Z Setting up llvm-15 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2961972Z Setting up libclang-common-15-dev (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2978091Z Setting up clang-15 (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.2995856Z Setting up llvm-15-dev (1:15.0.7-14build3) ...
+2026-10-28T14:31:58.3030655Z Processing triggers for systemd (255.4-1ubuntu8.18) ...
+2026-10-28T14:31:58.3291530Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-28T14:31:58.3310959Z Not building database; man-db/auto-update is not 'true'.
+2026-10-28T14:31:58.3326334Z Processing triggers for sgml-base (1.31) ...
+2026-10-28T14:31:58.3922050Z Setting up x11proto-dev (2023.2-1) ...
+2026-10-28T14:31:58.3945022Z Setting up libxau-dev:amd64 (1:1.0.9-1build6) ...
+2026-10-28T14:31:58.3969253Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-28T14:31:58.6828089Z Setting up libxdmcp-dev:amd64 (1:1.1.3-0ubuntu6) ...
+2026-10-28T14:31:58.6847132Z Setting up libxcb1-dev:amd64 (1.15-1ubuntu2) ...
+2026-10-28T14:31:58.6867013Z Setting up libx11-dev:amd64 (2:1.8.7-1ubuntu0.1) ...
+2026-10-28T14:31:59.8669283Z 
+2026-10-28T14:31:59.8669800Z Running kernel seems to be up-to-date.
+2026-10-28T14:31:59.8670109Z 
+2026-10-28T14:31:59.8670224Z No services need to be restarted.
+2026-10-28T14:31:59.8670426Z 
+2026-10-28T14:31:59.8670542Z No containers need to be restarted.
+2026-10-28T14:31:59.8670755Z 
+2026-10-28T14:31:59.8670902Z No user sessions are running outdated binaries.
+2026-10-28T14:31:59.8671135Z 
+2026-10-28T14:31:59.8671415Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-28T14:32:00.9848647Z ##[group]Run cmake -S engine/taichi -B engine/taichi/build-review -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_C_COMPILER=/usr/lib/llvm-15/bin/clang             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm             -DCLANG_EXECUTABLE=/usr/lib/llvm-15/bin/clang             -DTI_WITH_PYTHON=OFF             -DTI_WITH_C_API=ON             -DTI_WITH_CUDA=OFF             -DTI_WITH_AMDGPU=OFF             -DTI_WITH_OPENGL=OFF             -DTI_WITH_VULKAN=OFF             -DTI_WITH_METAL=OFF             -DTI_WITH_DX11=OFF             -DTI_WITH_DX12=OFF             -DTI_WITH_GGUI=OFF             -DTI_WITH_BACKTRACE=OFF             -DTI_BUILD_TESTS=OFF             -DTI_BUILD_EXAMPLES=OFF             -DTI_BUILD_RHI_EXAMPLES=OFF
+2026-10-28T14:32:00.9852143Z [36;1mcmake -S engine/taichi -B engine/taichi/build-review -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_C_COMPILER=/usr/lib/llvm-15/bin/clang             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm             -DCLANG_EXECUTABLE=/usr/lib/llvm-15/bin/clang             -DTI_WITH_PYTHON=OFF             -DTI_WITH_C_API=ON             -DTI_WITH_CUDA=OFF             -DTI_WITH_AMDGPU=OFF             -DTI_WITH_OPENGL=OFF             -DTI_WITH_VULKAN=OFF             -DTI_WITH_METAL=OFF             -DTI_WITH_DX11=OFF             -DTI_WITH_DX12=OFF             -DTI_WITH_GGUI=OFF             -DTI_WITH_BACKTRACE=OFF             -DTI_BUILD_TESTS=OFF             -DTI_BUILD_EXAMPLES=OFF             -DTI_BUILD_RHI_EXAMPLES=OFF[0m
+2026-10-28T14:32:00.9871585Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:32:00.9871801Z ##[endgroup]
+2026-10-28T14:32:02.7803444Z -- The C compiler identification is Clang 15.0.7
+2026-10-28T14:32:03.0879004Z -- The CXX compiler identification is Clang 15.0.7
+2026-10-28T14:32:03.2217305Z -- Detecting C compiler ABI info
+2026-10-28T14:32:03.4655397Z -- Detecting C compiler ABI info - done
+2026-10-28T14:32:03.4759652Z -- Check for working C compiler: /usr/lib/llvm-15/bin/clang - skipped
+2026-10-28T14:32:03.4804720Z -- Detecting C compile features
+2026-10-28T14:32:03.4809841Z -- Detecting C compile features - done
+2026-10-28T14:32:03.5143042Z -- Detecting CXX compiler ABI info
+2026-10-28T14:32:03.6303718Z -- Detecting CXX compiler ABI info - done
+2026-10-28T14:32:03.6414173Z -- Check for working CXX compiler: /usr/lib/llvm-15/bin/clang++ - skipped
+2026-10-28T14:32:03.6417070Z -- Detecting CXX compile features
+2026-10-28T14:32:03.6426688Z -- Detecting CXX compile features - done
+2026-10-28T14:32:03.6537638Z CMake Warning at CMakeLists.txt:12 (message):
+2026-10-28T14:32:03.6538028Z   It seems that you are running cmake manually, which may cause issues.
+2026-10-28T14:32:03.6538588Z   Please use setup.py to build taichi from source, see
+2026-10-28T14:32:03.6538937Z   https://docs.taichi-lang.org/docs/dev_install for more details.
+2026-10-28T14:32:03.6539181Z 
+2026-10-28T14:32:03.6539230Z 
+2026-10-28T14:32:03.6574820Z Taichi Version 1.8.0
+2026-10-28T14:32:03.6575124Z        Commit cda8be13689e5e1f7b1de3acdbf68d8e7587d68d
+2026-10-28T14:32:03.6580784Z Using C++ compiler: /usr/lib/llvm-15/bin/clang++
+2026-10-28T14:32:03.6731311Z Clang compiler detected. Using std=c++17.
+2026-10-28T14:32:03.6737270Z -- Performing Test CXX_HAS_Wno_unqualified_std_cast_call
+2026-10-28T14:32:03.7812342Z -- Performing Test CXX_HAS_Wno_unqualified_std_cast_call - Success
+2026-10-28T14:32:03.7818740Z -- Performing Test CXX_HAS_Wno_unused_but_set_variable
+2026-10-28T14:32:03.8863243Z -- Performing Test CXX_HAS_Wno_unused_but_set_variable - Success
+2026-10-28T14:32:03.8863769Z Building for processor x86_64
+2026-10-28T14:32:03.8864118Z Setting -march=nehalem for x86_64 processors
+2026-10-28T14:32:03.8864493Z Using float32 (single) precision as real
+2026-10-28T14:32:03.8869986Z CMake Warning at cmake/TaichiCore.cmake:68 (message):
+2026-10-28T14:32:03.8870843Z   external/glad submodule not detected.  Settings TI_WITH_OPENGL to OFF.
+2026-10-28T14:32:03.8871162Z Call Stack (most recent call first):
+2026-10-28T14:32:03.8871384Z   CMakeLists.txt:130 (include)
+2026-10-28T14:32:03.8871515Z 
+2026-10-28T14:32:03.8871519Z 
+2026-10-28T14:32:03.9145276Z -- Performing Test HAVE_FFI_CALL
+2026-10-28T14:32:03.9919951Z -- Performing Test HAVE_FFI_CALL - Success
+2026-10-28T14:32:04.0003662Z -- Found FFI: /usr/lib/x86_64-linux-gnu/libffi.so
+2026-10-28T14:32:04.0037064Z -- Performing Test Terminfo_LINKABLE
+2026-10-28T14:32:04.0826961Z -- Performing Test Terminfo_LINKABLE - Success
+2026-10-28T14:32:04.0835415Z -- Found Terminfo: /usr/lib/x86_64-linux-gnu/libtinfo.so
+2026-10-28T14:32:04.1191309Z -- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")
+2026-10-28T14:32:04.1213226Z -- Found zstd: /usr/lib/x86_64-linux-gnu/libzstd.so
+2026-10-28T14:32:04.1893878Z -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.14")
+2026-10-28T14:32:04.2015552Z LLVM include dirs /usr/lib/llvm-15/include
+2026-10-28T14:32:04.2015915Z LLVM library dirs /usr/lib/llvm-15/lib
+2026-10-28T14:32:04.2016142Z -- Found LLVM 15.0.7
+2026-10-28T14:32:04.2016502Z -- Using LLVMConfig.cmake in: /usr/lib/llvm-15/lib/cmake/llvm
+2026-10-28T14:32:04.2090399Z CMake Deprecation Warning at external/SPIRV-Tools/CMakeLists.txt:15 (cmake_minimum_required):
+2026-10-28T14:32:04.2091150Z   Compatibility with CMake < 3.10 will be removed from a future version of
+2026-10-28T14:32:04.2091609Z   CMake.
+2026-10-28T14:32:04.2091704Z 
+2026-10-28T14:32:04.2091871Z   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+2026-10-28T14:32:04.2092255Z   to tell CMake that the project requires at least <min> but has been updated
+2026-10-28T14:32:04.2092579Z   to work with policies introduced by <max> or earlier.
+2026-10-28T14:32:04.2092748Z 
+2026-10-28T14:32:04.2092751Z 
+2026-10-28T14:32:04.2441956Z -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.12.3", minimum required is "3")
+2026-10-28T14:32:04.2768794Z C++ Flags:  -ffunction-sections -fdata-sections -DTI_ISE_NONE -std=c++17 -fsized-deallocation -Wno-deprecated-declarations -Wno-shorten-64-to-32 -Wall  -Werror  -Wno-ignored-attributes  -Wno-nullability-completeness  -Wno-unused-private-field  -Wno-unneeded-internal-declaration  -Wno-unqualified-std-cast-call  -Wno-unused-but-set-variable  -DTI_ARCH_x64 -march=nehalem -DTI_PASS_EXCEPTION_TO_PYTHON -DTI_INCLUDED -DTI_WITH_LLVM
+2026-10-28T14:32:04.2770751Z Build type: Release
+2026-10-28T14:32:04.2771086Z CLANG_EXECUTABLE defined: /usr/lib/llvm-15/bin/clang
+2026-10-28T14:32:04.2962676Z /usr/lib/llvm-15/bin/clang --version: 15.0.7
+2026-10-28T14:32:04.2977669Z -- Compiling LLVM byte code file for arch x64
+2026-10-28T14:32:04.3050095Z Installing to /usr/local/c_api
+2026-10-28T14:32:04.3084884Z -- Configuring done (2.1s)
+2026-10-28T14:32:04.4042725Z -- Generating done (0.1s)
+2026-10-28T14:32:04.4047973Z -- Build files have been written to: /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/build-review
+2026-10-28T14:32:04.4369718Z ##[group]Run cmake --build engine/taichi/build-review             --target taichi_c_api -j 2
+2026-10-28T14:32:04.4370270Z [36;1mcmake --build engine/taichi/build-review             --target taichi_c_api -j 2[0m
+2026-10-28T14:32:04.4370676Z [36;1mtest -f engine/taichi/build-review/libtaichi_core_static.a[0m
+2026-10-28T14:32:04.4371065Z [36;1mtest -f engine/taichi/taichi/runtime/llvm/runtime_module/runtime_x64.bc[0m
+2026-10-28T14:32:04.4388793Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:32:04.4389000Z ##[endgroup]
+2026-10-28T14:32:05.1428906Z [1/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/cleanup.cpp.o
+2026-10-28T14:32:05.6865933Z [2/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/json.cpp.o
+2026-10-28T14:32:08.1778821Z [3/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/core.cpp.o
+2026-10-28T14:32:08.3175282Z [4/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/symbol_version.cpp.o
+2026-10-28T14:32:09.3999494Z [5/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/virtual_dir.cpp.o
+2026-10-28T14:32:10.4486621Z [6/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/zip.cpp.o
+2026-10-28T14:32:11.6946249Z [7/208] Building C object taichi/common/CMakeFiles/taichi_common.dir/miniz.c.o
+2026-10-28T14:32:11.8268245Z [8/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/logging.cpp.o
+2026-10-28T14:32:14.3783679Z [9/208] Building CXX object taichi/common/CMakeFiles/taichi_common.dir/dynamic_loader.cpp.o
+2026-10-28T14:32:14.8766110Z [10/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/bit.cpp.o
+2026-10-28T14:32:20.0491967Z [11/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/file_sequence_writer.cpp.o
+2026-10-28T14:32:21.7686611Z [12/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/image_buffer.cpp.o
+2026-10-28T14:32:22.5737945Z [13/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/image_io.cpp.o
+2026-10-28T14:32:25.9553003Z [14/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/offline_cache.cpp.o
+2026-10-28T14:32:26.9344040Z [15/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/short_name.cpp.o
+2026-10-28T14:32:28.2485109Z [16/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/lang_util.cpp.o
+2026-10-28T14:32:30.0330242Z [17/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/str.cpp.o
+2026-10-28T14:32:32.7654187Z [18/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/zip.cpp.o
+2026-10-28T14:32:32.7936910Z [19/208] Linking CXX static library taichi/common/libtaichi_common.a
+2026-10-28T14:32:36.3239738Z [20/208] Building CXX object taichi/rhi/cpu/CMakeFiles/cpu_rhi.dir/cpu_device.cpp.o
+2026-10-28T14:32:39.4748918Z [21/208] Building CXX object taichi/util/CMakeFiles/taichi_util.dir/testing.cpp.o
+2026-10-28T14:32:39.7192532Z [22/208] Building CXX object taichi/rhi/llvm/CMakeFiles/llvm_rhi.dir/allocator.cpp.o
+2026-10-28T14:32:42.4531037Z [23/208] Building CXX object taichi/rhi/llvm/CMakeFiles/llvm_rhi.dir/device_memory_pool.cpp.o
+2026-10-28T14:32:42.5215581Z [24/208] Building CXX object taichi/rhi/interop/CMakeFiles/interop_rhi.dir/vulkan_cpu_interop.cpp.o
+2026-10-28T14:32:45.2647203Z [25/208] Building CXX object taichi/rhi/interop/CMakeFiles/interop_rhi.dir/vulkan_cuda_interop.cpp.o
+2026-10-28T14:32:45.5607650Z [26/208] Building CXX object taichi/rhi/common/CMakeFiles/common_rhi.dir/host_memory_pool.cpp.o
+2026-10-28T14:32:46.6492213Z [27/208] Building CXX object taichi/rhi/common/CMakeFiles/common_rhi.dir/window_system.cpp.o
+2026-10-28T14:32:46.6812776Z [28/208] Linking CXX static library taichi/util/libtaichi_util.a
+2026-10-28T14:32:47.7942646Z [29/208] Building CXX object taichi/rhi/CMakeFiles/ti_device_api.dir/arch.cpp.o
+2026-10-28T14:32:48.2170172Z [30/208] Building CXX object taichi/rhi/common/CMakeFiles/common_rhi.dir/unified_allocator.cpp.o
+2026-10-28T14:32:50.7836503Z [31/208] Building CXX object taichi/rhi/CMakeFiles/ti_device_api.dir/device.cpp.o
+2026-10-28T14:32:50.8125422Z [32/208] Linking CXX static library taichi/rhi/cpu/libcpu_rhi.a
+2026-10-28T14:32:50.8415156Z [33/208] Linking CXX static library taichi/rhi/llvm/libllvm_rhi.a
+2026-10-28T14:32:50.8705516Z [34/208] Linking CXX static library taichi/rhi/interop/libinterop_rhi.a
+2026-10-28T14:32:50.8994342Z [35/208] Linking CXX static library taichi/rhi/common/libcommon_rhi.a
+2026-10-28T14:32:51.1076416Z [36/208] Building CXX object taichi/rhi/CMakeFiles/ti_device_api.dir/device_capability.cpp.o
+2026-10-28T14:32:51.1374641Z [37/208] Linking CXX static library taichi/rhi/libti_device_api.a
+2026-10-28T14:32:57.1514153Z [38/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/llvm_runtime_executor.cpp.o
+2026-10-28T14:33:02.5557127Z [39/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/llvm_offline_cache.cpp.o
+2026-10-28T14:33:08.6219650Z [40/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/llvm_aot_module_loader.cpp.o
+2026-10-28T14:33:11.3082367Z [41/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/llvm_context.cpp.o
+2026-10-28T14:33:16.2719689Z [42/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/snode_tree_buffer_manager.cpp.o
+2026-10-28T14:33:17.7399242Z [43/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/llvm_aot_module_builder.cpp.o
+2026-10-28T14:33:23.6687026Z [44/208] Building CXX object taichi/runtime/llvm/CMakeFiles/llvm_runtime.dir/kernel_launcher.cpp.o
+2026-10-28T14:33:27.4841440Z [45/208] Building CXX object taichi/runtime/cpu/CMakeFiles/cpu_runtime.dir/jit_cpu.cpp.o
+2026-10-28T14:33:29.0754812Z [46/208] Building CXX object taichi/runtime/cpu/CMakeFiles/cpu_runtime.dir/kernel_launcher.cpp.o
+2026-10-28T14:33:37.7518636Z [47/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/codegen_llvm_quant.cpp.o
+2026-10-28T14:33:42.7053357Z [48/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/llvm_codegen_utils.cpp.o
+2026-10-28T14:33:42.8800864Z [49/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/codegen_llvm.cpp.o
+2026-10-28T14:33:49.1094317Z [50/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/compiled_kernel_data.cpp.o
+2026-10-28T14:33:51.0071089Z [51/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/struct_llvm.cpp.o
+2026-10-28T14:33:51.0376866Z [52/208] Linking CXX static library taichi/runtime/llvm/libllvm_runtime.a
+2026-10-28T14:33:55.9994366Z [53/208] Building CXX object taichi/codegen/llvm/CMakeFiles/llvm_codegen.dir/kernel_compiler.cpp.o
+2026-10-28T14:33:56.0276472Z [54/208] Linking CXX static library taichi/runtime/cpu/libcpu_runtime.a
+2026-10-28T14:33:56.0579186Z [55/208] Linking CXX static library taichi/codegen/llvm/libllvm_codegen.a
+2026-10-28T14:34:00.4539096Z [56/208] Building CXX object taichi/codegen/cpu/CMakeFiles/cpu_codegen.dir/codegen_cpu.cpp.o
+2026-10-28T14:34:04.7361759Z [57/208] Building CXX object taichi/runtime/program_impls/llvm/CMakeFiles/llvm_program_impl.dir/llvm_program.cpp.o
+2026-10-28T14:34:04.9593199Z [58/208] cd /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module && /usr/lib/llvm-15/bin/clang -c runtime.cpp -o runtime_x64.bc -fno-exceptions -emit-llvm -std=c++17 -D ARCH_x64 -I /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi
+2026-10-28T14:34:04.9878035Z [59/208] Linking CXX static library taichi/codegen/cpu/libcpu_codegen.a
+2026-10-28T14:34:05.0175012Z [60/208] Linking CXX static library taichi/runtime/program_impls/llvm/libllvm_program_impl.a
+2026-10-28T14:34:05.6148978Z [61/208] Building CXX object taichi/compilation_manager/CMakeFiles/compilation_manager.dir/kernel_compilation_manager.cpp.o
+2026-10-28T14:34:10.2819129Z [62/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/alias_analysis.cpp.o
+2026-10-28T14:34:11.2191273Z [63/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/arithmetic_interpretor.cpp.o
+2026-10-28T14:34:15.9994278Z [64/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/bls_analyzer.cpp.o
+2026-10-28T14:34:16.8640636Z [65/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/build_cfg.cpp.o
+2026-10-28T14:34:21.4308179Z [66/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/check_fields_registered.cpp.o
+2026-10-28T14:34:23.7977430Z [67/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/clone.cpp.o
+2026-10-28T14:34:26.8953213Z [68/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/constexpr_propagation.cpp.o
+2026-10-28T14:34:29.4236700Z [69/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/count_statements.cpp.o
+2026-10-28T14:34:32.2978583Z [70/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/data_source_analysis.cpp.o
+2026-10-28T14:34:35.1942005Z [71/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/detect_fors_with_break.cpp.o
+2026-10-28T14:34:37.8286956Z [72/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_deactivations.cpp.o
+2026-10-28T14:34:40.8189359Z [73/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_dynamically_indexed_pointers.cpp.o
+2026-10-28T14:34:43.6096213Z [74/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_func_store_dests.cpp.o
+2026-10-28T14:34:46.3817799Z [75/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_immutable_local_vars.cpp.o
+2026-10-28T14:34:49.0945224Z [76/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_mesh_thread_local.cpp.o
+2026-10-28T14:34:52.0190858Z [77/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_meshfor_relation_types.cpp.o
+2026-10-28T14:34:52.5151827Z [78/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_snode_read_writes.cpp.o
+2026-10-28T14:34:57.4939804Z [79/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_statement_usages.cpp.o
+2026-10-28T14:34:57.8719525Z [80/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_statements.cpp.o
+2026-10-28T14:35:03.3634946Z [81/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_used_atomics.cpp.o
+2026-10-28T14:35:03.6709227Z [82/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gather_uniquely_accessed_pointers.cpp.o
+2026-10-28T14:35:09.0478770Z [83/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/has_store_or_atomic.cpp.o
+2026-10-28T14:35:10.8960864Z [84/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/gen_offline_cache_key.cpp.o
+2026-10-28T14:35:14.4808992Z [85/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/last_store_or_atomic.cpp.o
+2026-10-28T14:35:16.4524773Z [86/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/mesh_bls_analyzer.cpp.o
+2026-10-28T14:35:20.8335113Z [87/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/offline_cache_util.cpp.o
+2026-10-28T14:35:22.0760417Z [88/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/same_statements.cpp.o
+2026-10-28T14:35:26.3424364Z [89/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/value_diff.cpp.o
+2026-10-28T14:35:27.7999675Z [90/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/analysis/verify.cpp.o
+2026-10-28T14:35:32.2153574Z [91/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/aot/module_builder.cpp.o
+2026-10-28T14:35:32.7952056Z [92/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/aot/graph_data.cpp.o
+2026-10-28T14:35:38.5987887Z [93/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/aot/module_loader.cpp.o
+2026-10-28T14:35:41.3632034Z [94/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/codegen/codegen.cpp.o
+2026-10-28T14:35:41.3693189Z [95/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/codegen/compiled_kernel_data.cpp.o
+2026-10-28T14:35:46.8467030Z [96/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/basic_stmt_visitor.cpp.o
+2026-10-28T14:35:49.0996021Z [97/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/control_flow_graph.cpp.o
+2026-10-28T14:35:53.0690088Z [98/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/expression_ops.cpp.o
+2026-10-28T14:35:53.6774477Z [99/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/expr.cpp.o
+2026-10-28T14:36:00.1000188Z [100/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/ir.cpp.o
+2026-10-28T14:36:04.4531035Z [101/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/frontend_ir.cpp.o
+2026-10-28T14:36:06.6914918Z [102/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/ir_builder.cpp.o
+2026-10-28T14:36:07.8029996Z [103/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/mesh.cpp.o
+2026-10-28T14:36:09.3695859Z [104/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/offloaded_task_type.cpp.o
+2026-10-28T14:36:09.5371566Z [105/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/pass.cpp.o
+2026-10-28T14:36:14.3702671Z [106/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/scratch_pad.cpp.o
+2026-10-28T14:36:16.3952349Z [107/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/snode.cpp.o
+2026-10-28T14:36:16.8632483Z [108/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/snode_types.cpp.o
+2026-10-28T14:36:19.6535041Z [109/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/stmt_op_types.cpp.o
+2026-10-28T14:36:23.2085622Z [110/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/type.cpp.o
+2026-10-28T14:36:23.9243441Z [111/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/statements.cpp.o
+2026-10-28T14:36:27.2052723Z [112/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/type_factory.cpp.o
+2026-10-28T14:36:30.1884524Z [113/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/type_utils.cpp.o
+2026-10-28T14:36:30.7523436Z [114/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/ir/type_system.cpp.o
+2026-10-28T14:36:30.7776031Z [115/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/platform/amdgpu/detect_amdgpu.cpp.o
+2026-10-28T14:36:30.8019722Z [116/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/platform/cuda/detect_cuda.cpp.o
+2026-10-28T14:36:31.7470111Z [117/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/platform/mac/objc_api.cpp.o
+2026-10-28T14:36:33.5203419Z [118/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/jit/jit_session.cpp.o
+2026-10-28T14:36:38.9025461Z [119/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/argpack.cpp.o
+2026-10-28T14:36:40.3919588Z [120/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/callable.cpp.o
+2026-10-28T14:36:42.1386401Z [121/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/compile_config.cpp.o
+2026-10-28T14:36:42.5118782Z [122/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/extension.cpp.o
+2026-10-28T14:36:44.9607634Z [123/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/conjugate_gradient.cpp.o
+2026-10-28T14:36:47.0441484Z [124/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/field_info.cpp.o
+2026-10-28T14:36:47.3195892Z [125/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/function_key.cpp.o
+2026-10-28T14:36:51.5817135Z [126/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/function.cpp.o
+2026-10-28T14:36:54.2155848Z [127/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/graph_builder.cpp.o
+2026-10-28T14:36:59.6494891Z [128/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/kernel_profiler.cpp.o
+2026-10-28T14:37:00.3632421Z [129/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/kernel.cpp.o
+2026-10-28T14:37:04.7096505Z [130/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/launch_context_builder.cpp.o
+2026-10-28T14:37:07.7008236Z [131/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/parallel_executor.cpp.o
+2026-10-28T14:37:07.7529187Z [132/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/ndarray.cpp.o
+2026-10-28T14:37:13.5085951Z [133/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/program_impl.cpp.o
+2026-10-28T14:37:13.7565985Z [134/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/py_print_buffer.cpp.o
+2026-10-28T14:37:17.7679142Z [135/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/snode_expr_utils.cpp.o
+2026-10-28T14:37:17.9161195Z [136/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/program.cpp.o
+2026-10-28T14:37:24.1791300Z [137/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/snode_rw_accessors_bank.cpp.o
+2026-10-28T14:37:27.7166456Z [138/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/sparse_matrix.cpp.o
+2026-10-28T14:37:34.1079217Z [139/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/texture.cpp.o
+2026-10-28T14:37:37.3910848Z [140/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/struct/snode_tree.cpp.o
+2026-10-28T14:37:38.8251045Z [141/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/struct/struct.cpp.o
+2026-10-28T14:37:42.2207999Z [142/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/demangling.cpp.o
+2026-10-28T14:37:42.7963302Z [143/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/program/sparse_solver.cpp.o
+2026-10-28T14:37:45.0090396Z [144/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/hacked_signal_handler.cpp.o
+2026-10-28T14:37:45.0318584Z [145/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/loader.cpp.o
+2026-10-28T14:37:46.3704773Z [146/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/interface_registry.cpp.o
+2026-10-28T14:37:48.2773553Z [147/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/profiler.cpp.o
+2026-10-28T14:37:49.9225505Z [148/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/run_tests.cpp.o
+2026-10-28T14:37:51.2109535Z [149/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/threading.cpp.o
+2026-10-28T14:37:52.3517958Z [150/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/timer.cpp.o
+2026-10-28T14:37:52.9435777Z [151/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/timeline.cpp.o
+2026-10-28T14:37:55.1716155Z [152/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/system/traceback.cpp.o
+2026-10-28T14:38:00.4027466Z [153/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/alg_simp.cpp.o
+2026-10-28T14:38:03.5026321Z [154/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/auto_diff.cpp.o
+2026-10-28T14:38:06.2371146Z [155/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/binary_op_simplify.cpp.o
+2026-10-28T14:38:11.0822758Z [156/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/bit_loop_vectorize.cpp.o
+2026-10-28T14:38:12.5300975Z [157/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/cache_loop_invariant_global_vars.cpp.o
+2026-10-28T14:38:14.6675029Z [158/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/cfg_optimization.cpp.o
+2026-10-28T14:38:18.7458059Z [159/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/check_out_of_bound.cpp.o
+2026-10-28T14:38:20.1820786Z [160/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/compile_taichi_functions.cpp.o
+2026-10-28T14:38:24.4682701Z [161/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/compile_to_offloads.cpp.o
+2026-10-28T14:38:27.4387921Z [162/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/constant_fold.cpp.o
+2026-10-28T14:38:30.5495549Z [163/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/demote_atomics.cpp.o
+2026-10-28T14:38:33.2265867Z [164/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/demote_dense_struct_fors.cpp.o
+2026-10-28T14:38:36.4735997Z [165/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/demote_mesh_statements.cpp.o
+2026-10-28T14:38:38.6103631Z [166/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/demote_no_access_mesh_fors.cpp.o
+2026-10-28T14:38:44.0017434Z [167/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/demote_operations.cpp.o
+2026-10-28T14:38:44.3722756Z [168/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/detect_read_only.cpp.o
+2026-10-28T14:38:47.5470835Z [169/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/determine_ad_stack_size.cpp.o
+2026-10-28T14:38:50.0129943Z [170/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/die.cpp.o
+2026-10-28T14:38:53.0975430Z [171/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/eliminate_immutable_local_vars.cpp.o
+2026-10-28T14:38:55.5416428Z [172/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/extract_constant.cpp.o
+2026-10-28T14:38:58.6035396Z [173/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/flag_access.cpp.o
+2026-10-28T14:39:02.4793255Z [174/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/frontend_type_check.cpp.o
+2026-10-28T14:39:04.5571885Z [175/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/handle_external_ptr_boundary.cpp.o
+2026-10-28T14:39:09.7805937Z [176/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/inlining.cpp.o
+2026-10-28T14:39:10.0459480Z [177/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/insert_scratch_pad.cpp.o
+2026-10-28T14:39:15.6032367Z [178/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/loop_invariant_code_motion.cpp.o
+2026-10-28T14:39:18.8563102Z [179/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/ir_printer.cpp.o
+2026-10-28T14:39:22.7559219Z [180/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/lower_access.cpp.o
+2026-10-28T14:39:27.2707857Z [181/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/lower_ast.cpp.o
+2026-10-28T14:39:29.0994687Z [182/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/lower_matrix_ptr.cpp.o
+2026-10-28T14:39:34.0980782Z [183/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/make_block_local.cpp.o
+2026-10-28T14:39:34.7825405Z [184/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/make_cpu_multithreaded_range_for.cpp.o
+2026-10-28T14:39:40.2749845Z [185/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/make_mesh_thread_local.cpp.o
+2026-10-28T14:39:40.9826262Z [186/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/make_mesh_block_local.cpp.o
+2026-10-28T14:39:46.2242032Z [187/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/make_thread_local.cpp.o
+2026-10-28T14:39:48.8890189Z [188/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/offload.cpp.o
+2026-10-28T14:39:52.1138073Z [189/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/optimize_bit_struct_stores.cpp.o
+2026-10-28T14:39:54.1649221Z [190/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/re_id.cpp.o
+2026-10-28T14:39:57.4109643Z [191/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/remove_assume_in_range.cpp.o
+2026-10-28T14:39:59.5766369Z [192/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/remove_loop_unique.cpp.o
+2026-10-28T14:40:00.8426144Z [193/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/replace_statements.cpp.o
+2026-10-28T14:40:04.9196319Z [194/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/reverse_segments.cpp.o
+2026-10-28T14:40:06.0821266Z [195/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/scalar_pointer_lowerer.cpp.o
+2026-10-28T14:40:13.3732502Z [196/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/simplify.cpp.o
+2026-10-28T14:40:13.7715707Z [197/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/scalarize.cpp.o
+2026-10-28T14:40:18.5415527Z [198/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/statement_usage_replace.cpp.o
+2026-10-28T14:40:18.9528763Z [199/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/transform_statements.cpp.o
+2026-10-28T14:40:24.2883267Z [200/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/unreachable_code_elimination.cpp.o
+2026-10-28T14:40:24.5111741Z [201/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/type_check.cpp.o
+2026-10-28T14:40:29.3315989Z [202/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/utils.cpp.o
+2026-10-28T14:40:29.3586832Z [203/208] Linking CXX static library taichi/compilation_manager/libcompilation_manager.a
+2026-10-28T14:40:30.0183668Z [204/208] Building CXX object CMakeFiles/taichi_core.dir/taichi/transforms/whole_kernel_cse.cpp.o
+2026-10-28T14:40:34.1328493Z [205/208] Building CXX object CMakeFiles/taichi_c_api.dir/c_api/src/taichi_core_impl.cpp.o
+2026-10-28T14:40:34.1951527Z [206/208] Linking CXX static library libtaichi_core_static.a
+2026-10-28T14:40:34.9426754Z [207/208] Building CXX object CMakeFiles/taichi_c_api.dir/c_api/src/taichi_llvm_impl.cpp.o
+2026-10-28T14:40:37.6906832Z [208/208] Linking CXX shared library libtaichi_c_api.so
+2026-10-28T14:40:37.6956022Z ##[group]Run cmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF -DHCP_WITH_WARM_INTEGRATION=ON -DHCP_WITH_VIEWPORT=ON
+2026-10-28T14:40:37.6957465Z [36;1mcmake -S engine -B engine/build -G Ninja             -DCMAKE_BUILD_TYPE=Release             -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++             -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config             -DENGINE_TAICHI_CUDA=OFF -DHCP_WITH_WARM_INTEGRATION=ON -DHCP_WITH_VIEWPORT=ON[0m
+2026-10-28T14:40:37.6975783Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:40:37.6975992Z ##[endgroup]
+2026-10-28T14:40:37.8321806Z -- The CXX compiler identification is Clang 15.0.7
+2026-10-28T14:40:37.8387482Z -- Detecting CXX compiler ABI info
+2026-10-28T14:40:37.9363329Z -- Detecting CXX compiler ABI info - done
+2026-10-28T14:40:37.9469344Z -- Check for working CXX compiler: /usr/lib/llvm-15/bin/clang++ - skipped
+2026-10-28T14:40:37.9471935Z -- Detecting CXX compile features
+2026-10-28T14:40:37.9478789Z -- Detecting CXX compile features - done
+2026-10-28T14:40:37.9748527Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-10-28T14:40:38.0792458Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-10-28T14:40:38.0800314Z -- Found Threads: TRUE
+2026-10-28T14:40:38.0950799Z -- Engine checkout : /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi (6784224121f68de1bf1aa0765b54e80d20e355ad)
+2026-10-28T14:40:38.0951925Z -- Engine build    : /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/build-review
+2026-10-28T14:40:38.0952591Z -- Engine LLVM     : 15.0.7 (/usr/lib/llvm-15/lib)
+2026-10-28T14:40:38.0952972Z -- Engine CUDA     : FALSE
+2026-10-28T14:40:38.0953721Z -- Engine runtime source : /home/runner/work/human-cognome-project/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module
+2026-10-28T14:40:38.0954870Z -- Engine runtime stage  : /home/runner/work/human-cognome-project/human-cognome-project/engine/build/taichi-runtime
+2026-10-28T14:40:38.1370437Z -- Found PostgreSQL: /usr/lib/x86_64-linux-gnu/libpq.so (found suitable version "18.6", minimum required is "16")
+2026-10-28T14:40:38.1404394Z -- Configuring done (0.4s)
+2026-10-28T14:40:38.1783763Z -- Generating done (0.0s)
+2026-10-28T14:40:38.1786955Z -- Build files have been written to: /home/runner/work/human-cognome-project/human-cognome-project/engine/build
+2026-10-28T14:40:38.1863793Z ##[group]Run cmake --build engine/build -j 2
+2026-10-28T14:40:38.1864084Z [36;1mcmake --build engine/build -j 2[0m
+2026-10-28T14:40:38.1880837Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:40:38.1881041Z ##[endgroup]
+2026-10-28T14:40:38.5783253Z [1/109] Building CXX object CMakeFiles/warm_values.dir/home/runner/work/human-cognome-project/human-cognome-project/kernels/database/codec/codec.cpp.o
+2026-10-28T14:40:40.2952700Z [2/109] Building CXX object CMakeFiles/warm_values.dir/home/runner/work/human-cognome-project/human-cognome-project/kernels/database/warm/values.cpp.o
+2026-10-28T14:40:44.6491658Z [3/109] Building CXX object CMakeFiles/engine_support.dir/src/engine/precision.cpp.o
+2026-10-28T14:40:45.5523940Z [4/109] Building CXX object CMakeFiles/engine_support.dir/src/engine/runtime.cpp.o
+2026-10-28T14:40:49.0086383Z [5/109] Building CXX object CMakeFiles/engine_support.dir/src/engine/transfer.cpp.o
+2026-10-28T14:40:49.2452680Z [6/109] Building CXX object CMakeFiles/engine_support.dir/src/engine/device.cpp.o
+2026-10-28T14:40:49.2724805Z [7/109] Linking CXX static library libwarm_values.a
+2026-10-28T14:40:51.6987605Z [8/109] Building CXX object CMakeFiles/engine_support.dir/src/engine/record_map.cpp.o
+2026-10-28T14:40:51.7269742Z [9/109] Linking CXX static library libengine_support.a
+2026-10-28T14:40:52.3222616Z [10/109] Building CXX object CMakeFiles/letter_projection.dir/src/assembly/letter_projection.cpp.o
+2026-10-28T14:40:59.8210258Z [11/109] Building CXX object CMakeFiles/field_core.dir/src/field/activity.cpp.o
+2026-10-28T14:40:59.8579278Z [12/109] Building CXX object CMakeFiles/field_core.dir/src/field/field.cpp.o
+2026-10-28T14:41:04.3030819Z [13/109] Building CXX object CMakeFiles/field_core.dir/src/field/prepared_capacity.cpp.o
+2026-10-28T14:41:04.7022522Z [14/109] Building CXX object CMakeFiles/field_core.dir/src/field/prepared_storage.cpp.o
+2026-10-28T14:41:11.4005699Z [15/109] Building CXX object CMakeFiles/field_core.dir/src/field/prepared_update.cpp.o
+2026-10-28T14:41:11.5209361Z [16/109] Building CXX object CMakeFiles/field_core.dir/src/field/prepared_geometry.cpp.o
+2026-10-28T14:41:18.6542957Z [17/109] Building CXX object CMakeFiles/field_core.dir/src/field/centroid_cascade.cpp.o
+2026-10-28T14:41:18.6668705Z [18/109] Building CXX object CMakeFiles/field_core.dir/src/field/live_hierarchy.cpp.o
+2026-10-28T14:41:18.6800096Z [19/109] Linking CXX static library libletter_projection.a
+2026-10-28T14:41:18.7073398Z [20/109] Linking CXX static library libfield_core.a
+2026-10-28T14:41:19.4982915Z [21/109] Building CXX object CMakeFiles/membership_fields.dir/src/assembly/membership_fields.cpp.o
+2026-10-28T14:41:19.5247484Z [22/109] Linking CXX static library libmembership_fields.a
+2026-10-28T14:41:24.3247679Z [23/109] Building CXX object CMakeFiles/study_assembly.dir/src/assembly/study.cpp.o
+2026-10-28T14:41:24.3526129Z [24/109] Linking CXX static library libstudy_assembly.a
+2026-10-28T14:41:28.0789936Z [25/109] Building CXX object CMakeFiles/active_workbench.dir/src/assembly/active_workbench.cpp.o
+2026-10-28T14:41:28.1072426Z [26/109] Linking CXX static library libactive_workbench.a
+2026-10-28T14:41:28.8492249Z [27/109] Building CXX object CMakeFiles/warm_toolbox.dir/home/runner/work/human-cognome-project/human-cognome-project/kernels/database/warm/cold_reader.cpp.o
+2026-10-28T14:41:28.9596326Z [28/109] Building CXX object CMakeFiles/warm_toolbox.dir/home/runner/work/human-cognome-project/human-cognome-project/kernels/database/warm/toolbox.cpp.o
+2026-10-28T14:41:29.4165913Z [29/109] Building CXX object CMakeFiles/warm_toolbox.dir/home/runner/work/human-cognome-project/human-cognome-project/kernels/database/warm/shared_manager.cpp.o
+2026-10-28T14:41:36.4806314Z [30/109] Building CXX object viewport/CMakeFiles/viewport_snapshot.dir/snapshot.cpp.o
+2026-10-28T14:41:36.6179729Z [31/109] Building CXX object viewport/CMakeFiles/viewport_snapshot.dir/completed_state.cpp.o
+2026-10-28T14:41:41.5406772Z [32/109] Building CXX object CMakeFiles/active_transfer_experiment.dir/tests/active_transfer_experiment.cpp.o
+2026-10-28T14:41:41.5681365Z [33/109] Linking CXX static library libwarm_toolbox.a
+2026-10-28T14:41:43.8006289Z [34/109] Building CXX object CMakeFiles/active_workbench_test.dir/tests/active_workbench_test.cpp.o
+2026-10-28T14:41:49.2093014Z [35/109] Building CXX object CMakeFiles/warm_active_integration.dir/tests/warm_active_integration.cpp.o
+2026-10-28T14:41:50.2455346Z [36/109] Building CXX object CMakeFiles/engine_devices.dir/apps/engine_devices.cpp.o
+2026-10-28T14:41:57.9119542Z [37/109] Building CXX object CMakeFiles/prepared_launch_test.dir/tests/prepared_launch_test.cpp.o
+2026-10-28T14:41:58.4812915Z [38/109] Building CXX object CMakeFiles/precision_test.dir/tests/precision_test.cpp.o
+2026-10-28T14:42:07.8193237Z [39/109] Building CXX object CMakeFiles/prepared_execution_test.dir/tests/prepared_execution_test.cpp.o
+2026-10-28T14:42:09.4036518Z [40/109] Building CXX object CMakeFiles/prepared_update_test.dir/tests/prepared_update_test.cpp.o
+2026-10-28T14:42:16.2559252Z [41/109] Building CXX object CMakeFiles/prepared_geometry_test.dir/tests/prepared_geometry_test.cpp.o
+2026-10-28T14:42:18.4839977Z [42/109] Building CXX object CMakeFiles/cascade_test.dir/tests/cascade_test.cpp.o
+2026-10-28T14:42:25.9832551Z [43/109] Building CXX object CMakeFiles/weighted_cascade_test.dir/tests/weighted_cascade_test.cpp.o
+2026-10-28T14:42:27.8645131Z [44/109] Building CXX object CMakeFiles/numerical_profile_test.dir/tests/numerical_profile_test.cpp.o
+2026-10-28T14:42:34.2288877Z [45/109] Building CXX object CMakeFiles/cumulative_publication_test.dir/tests/cumulative_publication_test.cpp.o
+2026-10-28T14:42:38.6129460Z [46/109] Building CXX object CMakeFiles/weighted_handoff_test.dir/tests/weighted_handoff_test.cpp.o
+2026-10-28T14:42:38.9088472Z [47/109] Building CXX object CMakeFiles/prepared_capacity_test.dir/tests/prepared_capacity_test.cpp.o
+2026-10-28T14:42:47.2962896Z [48/109] Building CXX object CMakeFiles/source_counts_test.dir/tests/source_counts_test.cpp.o
+2026-10-28T14:42:55.2234062Z [49/109] Building CXX object CMakeFiles/record_map_test.dir/tests/record_map_test.cpp.o
+2026-10-28T14:42:55.5774383Z [50/109] Building CXX object CMakeFiles/live_hierarchy_test.dir/tests/live_hierarchy_test.cpp.o
+2026-10-28T14:42:56.2797663Z [51/109] Building CXX object CMakeFiles/native_pool_test.dir/tests/native_pool_test.cpp.o
+2026-10-28T14:43:03.1666429Z [52/109] Building CXX object CMakeFiles/engine_smoke_test.dir/tests/engine_smoke_test.cpp.o
+2026-10-28T14:43:03.6731971Z [53/109] Building CXX object CMakeFiles/prepared_space_probe.dir/tests/prepared_space_probe.cpp.o
+2026-10-28T14:43:08.6246608Z [54/109] Building CXX object CMakeFiles/field_test.dir/tests/field_test.cpp.o
+2026-10-28T14:43:09.0113921Z [55/109] Building CXX object CMakeFiles/activity_test.dir/tests/activity_test.cpp.o
+2026-10-28T14:43:15.5015283Z [56/109] Building CXX object CMakeFiles/native_activity_test.dir/tests/native_activity_test.cpp.o
+2026-10-28T14:43:18.5701603Z [57/109] Building CXX object CMakeFiles/native_handoff_test.dir/tests/native_handoff_test.cpp.o
+2026-10-28T14:43:23.0473068Z [58/109] Building CXX object CMakeFiles/activity_assembly_test.dir/tests/activity_assembly_test.cpp.o
+2026-10-28T14:43:25.2286062Z [59/109] Building CXX object CMakeFiles/preparation_test.dir/tests/preparation_test.cpp.o
+2026-10-28T14:43:28.3985809Z [60/109] Building CXX object CMakeFiles/letter_projection_test.dir/tests/letter_projection_test.cpp.o
+2026-10-28T14:43:30.1079391Z [61/109] Building CXX object CMakeFiles/assembly_test.dir/tests/assembly_test.cpp.o
+2026-10-28T14:43:30.7015234Z [62/109] Building CXX object CMakeFiles/structural_recipe_test.dir/tests/structural_recipe_test.cpp.o
+2026-10-28T14:43:33.4111694Z [63/109] Building CXX object CMakeFiles/membership_fields_test.dir/tests/membership_fields_test.cpp.o
+2026-10-28T14:43:37.9994280Z [64/109] Building CXX object CMakeFiles/letter_projection_native_test.dir/tests/letter_projection_native_test.cpp.o
+2026-10-28T14:43:41.7430387Z [65/109] Building CXX object CMakeFiles/membership_fields_native_test.dir/tests/membership_fields_native_test.cpp.o
+2026-10-28T14:43:41.7716562Z [66/109] Linking CXX static library viewport/libviewport_snapshot.a
+2026-10-28T14:43:42.6376534Z [67/109] Building CXX object viewport/CMakeFiles/viewport_options_test.dir/options_test.cpp.o
+2026-10-28T14:43:43.0449099Z [68/109] Building CXX object viewport/CMakeFiles/viewport_signal_guard_test.dir/signal_guard_test.cpp.o
+2026-10-28T14:43:44.7672600Z [69/109] Building CXX object CMakeFiles/index_cap_test.dir/tests/index_cap_test.cpp.o
+2026-10-28T14:43:53.0388732Z [70/109] Building CXX object viewport/CMakeFiles/viewport_letter_capture.dir/letter_capture.cpp.o
+2026-10-28T14:43:53.3887191Z [71/109] Building CXX object viewport/CMakeFiles/viewport_snapshot_test.dir/snapshot_test.cpp.o
+2026-10-28T14:43:53.8664400Z [72/109] Linking CXX executable active_workbench_test
+2026-10-28T14:43:54.2121427Z [73/109] Linking CXX executable active_transfer_experiment
+2026-10-28T14:43:54.7680322Z [74/109] Linking CXX executable warm_active_integration
+2026-10-28T14:43:55.0119521Z [75/109] Linking CXX executable engine_devices
+2026-10-28T14:43:55.5783481Z [76/109] Linking CXX executable precision_test
+2026-10-28T14:43:55.8137048Z [77/109] Linking CXX executable prepared_launch_test
+2026-10-28T14:43:56.4051329Z [78/109] Linking CXX executable prepared_execution_test
+2026-10-28T14:43:56.6355891Z [79/109] Linking CXX executable prepared_update_test
+2026-10-28T14:43:57.2340184Z [80/109] Linking CXX executable prepared_geometry_test
+2026-10-28T14:43:57.4576591Z [81/109] Linking CXX executable cascade_test
+2026-10-28T14:43:58.0479810Z [82/109] Linking CXX executable weighted_cascade_test
+2026-10-28T14:43:58.2754461Z [83/109] Linking CXX executable numerical_profile_test
+2026-10-28T14:43:58.8555821Z [84/109] Linking CXX executable cumulative_publication_test
+2026-10-28T14:43:59.0849328Z [85/109] Linking CXX executable weighted_handoff_test
+2026-10-28T14:43:59.4881779Z [86/109] Linking CXX executable prepared_capacity_test
+2026-10-28T14:43:59.6875733Z [87/109] Linking CXX executable live_hierarchy_test
+2026-10-28T14:44:00.3073931Z [88/109] Linking CXX executable source_counts_test
+2026-10-28T14:44:00.4628119Z [89/109] Linking CXX executable record_map_test
+2026-10-28T14:44:00.7020366Z [90/109] Linking CXX executable native_pool_test
+2026-10-28T14:44:01.2891173Z [91/109] Linking CXX executable prepared_space_probe
+2026-10-28T14:44:01.5813173Z [92/109] Linking CXX executable engine_smoke_test
+2026-10-28T14:44:02.1187626Z [93/109] Linking CXX executable field_test
+2026-10-28T14:44:02.4056877Z [94/109] Linking CXX executable activity_test
+2026-10-28T14:44:02.9174115Z [95/109] Linking CXX executable native_activity_test
+2026-10-28T14:44:03.2182022Z [96/109] Linking CXX executable native_handoff_test
+2026-10-28T14:44:03.7376469Z [97/109] Linking CXX executable activity_assembly_test
+2026-10-28T14:44:04.0620810Z [98/109] Linking CXX executable preparation_test
+2026-10-28T14:44:04.1312667Z [99/109] Linking CXX executable letter_projection_test
+2026-10-28T14:44:04.1990523Z [100/109] Linking CXX executable structural_recipe_test
+2026-10-28T14:44:04.5484128Z [101/109] Linking CXX executable assembly_test
+2026-10-28T14:44:04.6151570Z [102/109] Linking CXX executable membership_fields_test
+2026-10-28T14:44:05.0311121Z [103/109] Linking CXX executable letter_projection_native_test
+2026-10-28T14:44:05.4524222Z [104/109] Linking CXX executable membership_fields_native_test
+2026-10-28T14:44:05.5147999Z [105/109] Linking CXX executable viewport/viewport_options_test
+2026-10-28T14:44:05.5742110Z [106/109] Linking CXX executable viewport/viewport_signal_guard_test
+2026-10-28T14:44:05.8340547Z [107/109] Linking CXX executable index_cap_test
+2026-10-28T14:44:06.4137177Z [108/109] Linking CXX executable viewport/viewport_snapshot_test
+2026-10-28T14:44:06.7383104Z [109/109] Linking CXX executable viewport/viewport_letter_capture
+2026-10-28T14:44:06.7428020Z ##[group]Run for archive in \
+2026-10-28T14:44:06.7428282Z [36;1mfor archive in \[0m
+2026-10-28T14:44:06.7428746Z [36;1m  taichi/codegen/cuda/libcuda_codegen.a \[0m
+2026-10-28T14:44:06.7429013Z [36;1m  taichi/runtime/cuda/libcuda_runtime.a \[0m
+2026-10-28T14:44:06.7429266Z [36;1m  taichi/rhi/cuda/libcuda_rhi.a; do[0m
+2026-10-28T14:44:06.7429563Z [36;1m  mkdir -p "engine/taichi/build-review/$(dirname "$archive")"[0m
+2026-10-28T14:44:06.7429889Z [36;1m  touch "engine/taichi/build-review/$archive"[0m
+2026-10-28T14:44:06.7430129Z [36;1mdone[0m
+2026-10-28T14:44:06.7430340Z [36;1mmkdir -p "$RUNNER_TEMP/taichi-runtime-probe"[0m
+2026-10-28T14:44:06.7430690Z [36;1mcp engine/taichi/taichi/runtime/llvm/runtime_module/runtime_x64.bc \[0m
+2026-10-28T14:44:06.7431037Z [36;1m  "$RUNNER_TEMP/taichi-runtime-probe/runtime_x64.bc"[0m
+2026-10-28T14:44:06.7431353Z [36;1mtouch "$RUNNER_TEMP/taichi-runtime-probe/runtime_cuda.bc"[0m
+2026-10-28T14:44:06.7431713Z [36;1mcmake -S engine -B engine/build-stale-probe -G Ninja \[0m
+2026-10-28T14:44:06.7432029Z [36;1m  -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \[0m
+2026-10-28T14:44:06.7432372Z [36;1m  -DENGINE_TAICHI_RUNTIME_SOURCE="$RUNNER_TEMP/taichi-runtime-probe" \[0m
+2026-10-28T14:44:06.7432739Z [36;1m  -DENGINE_TAICHI_CUDA=AUTO > "$RUNNER_TEMP/backend-probe.log"[0m
+2026-10-28T14:44:06.7433093Z [36;1mgrep -q 'Engine CUDA     : FALSE' "$RUNNER_TEMP/backend-probe.log"[0m
+2026-10-28T14:44:06.7450379Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:44:06.7450582Z ##[endgroup]
+2026-10-28T14:44:07.1940509Z ##[group]Run . ./engine/build/engine-env.sh
+2026-10-28T14:44:07.1940829Z [36;1m. ./engine/build/engine-env.sh[0m
+2026-10-28T14:44:07.1941249Z [36;1mmkdir -p "$RUNNER_TEMP/c3-compiler-ir"[0m
+2026-10-28T14:44:07.1941627Z [36;1m/usr/lib/llvm-15/bin/clang++ --version > "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"[0m
+2026-10-28T14:44:07.1942098Z [36;1m/usr/lib/llvm-15/bin/llvm-config --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"[0m
+2026-10-28T14:44:07.1942543Z [36;1m/usr/lib/llvm-15/bin/llc --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"[0m
+2026-10-28T14:44:07.1957336Z [36;1mgit rev-parse HEAD HEAD:engine/taichi > "$RUNNER_TEMP/c3-compiler-ir/source.txt"[0m
+2026-10-28T14:44:07.1957741Z [36;1msha256sum engine/build/live_hierarchy_test \[0m
+2026-10-28T14:44:07.1958145Z [36;1m  engine/build/taichi-runtime/runtime_x64.bc > "$RUNNER_TEMP/c3-compiler-ir/binaries.sha256"[0m
+2026-10-28T14:44:07.1958863Z [36;1mcmake -LA -N engine/build > "$RUNNER_TEMP/c3-compiler-ir/cmake.txt"[0m
+2026-10-28T14:44:07.1959161Z [36;1mfor workers in 1 2; do[0m
+2026-10-28T14:44:07.1959388Z [36;1m  for source_path in bulk direct; do[0m
+2026-10-28T14:44:07.1959649Z [36;1m    for compiler_shape in default no-unroll; do[0m
+2026-10-28T14:44:07.1960019Z [36;1m      hcp_ir_dir="$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-${compiler_shape}"[0m
+2026-10-28T14:44:07.1960372Z [36;1m      mkdir -p "$hcp_ir_dir"[0m
+2026-10-28T14:44:07.1960586Z [36;1m      hcp_ir_args=()[0m
+2026-10-28T14:44:07.1960847Z [36;1m      if [ "$source_path" = direct ]; then hcp_ir_args+=(--direct); fi[0m
+2026-10-28T14:44:07.1961227Z [36;1m      if [ "$compiler_shape" = no-unroll ]; then hcp_ir_args+=(--compiler-no-unroll); fi[0m
+2026-10-28T14:44:07.1961607Z [36;1m      HCP_C3_IR_DIR="$hcp_ir_dir" engine/build/live_hierarchy_test \[0m
+2026-10-28T14:44:07.1961986Z [36;1m        --threads "$workers" --case ir "${hcp_ir_args[@]}" > "$hcp_ir_dir/collection.txt"[0m
+2026-10-28T14:44:07.1962355Z [36;1m      engine/build/live_hierarchy_test --threads "$workers" \[0m
+2026-10-28T14:44:07.1962710Z [36;1m        --audit-ir "$hcp_ir_dir" "${hcp_ir_args[@]}" > "$hcp_ir_dir/audit.txt"[0m
+2026-10-28T14:44:07.1962993Z [36;1m    done[0m
+2026-10-28T14:44:07.1963149Z [36;1m  done[0m
+2026-10-28T14:44:07.1963305Z [36;1mdone[0m
+2026-10-28T14:44:07.1980442Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:44:07.1980651Z ##[endgroup]
+2026-10-28T14:45:26.4959446Z ##[group]Run actions/upload-artifact@v4
+2026-10-28T14:45:26.4959691Z with:
+2026-10-28T14:45:26.4959867Z   name: native-c3-compiler-ir
+2026-10-28T14:45:26.4960124Z   path: /home/runner/work/_temp/c3-compiler-ir
+2026-10-28T14:45:26.4960373Z   if-no-files-found: warn
+2026-10-28T14:45:26.4960561Z   compression-level: 6
+2026-10-28T14:45:26.4960738Z   overwrite: false
+2026-10-28T14:45:26.4960918Z   include-hidden-files: false
+2026-10-28T14:45:26.4961121Z ##[endgroup]
+2026-10-28T14:45:26.6373811Z (node:4513) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-28T14:45:26.6374379Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-28T14:45:26.6502210Z With the provided path, there will be 52 files uploaded
+2026-10-28T14:45:26.6505464Z Artifact name is valid!
+2026-10-28T14:45:26.6506017Z Root directory input is valid!
+2026-10-28T14:45:26.9983449Z Beginning upload of artifact content to blob storage
+2026-10-28T14:45:27.1197889Z (node:4513) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-28T14:45:27.5577864Z Uploaded bytes 459782
+2026-10-28T14:45:27.6152843Z Finished uploading artifact content to blob storage!
+2026-10-28T14:45:27.6153616Z SHA256 digest of uploaded artifact zip is ab77405c122d592e6cecbb8be844ea56d13a89a15801927abf0af1e5467da637
+2026-10-28T14:45:27.6154267Z Finalizing artifact upload
+2026-10-28T14:45:28.0786708Z Artifact native-c3-compiler-ir.zip successfully finalized. Artifact ID 12825935787
+2026-10-28T14:45:28.0787846Z Artifact native-c3-compiler-ir has been successfully uploaded! Final size is 459782 bytes. Artifact ID is 12825935787
+2026-10-28T14:45:28.0793466Z Artifact download URL: https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40706207825/artifacts/12825935787
+2026-10-28T14:45:28.0966719Z ##[group]Run ctest --test-dir engine/build --output-on-failure --output-log "$RUNNER_TEMP/native-cpu-ctest.log"
+2026-10-28T14:45:28.0967733Z [36;1mctest --test-dir engine/build --output-on-failure --output-log "$RUNNER_TEMP/native-cpu-ctest.log"[0m
+2026-10-28T14:45:28.0992576Z shell: /usr/bin/bash -e {0}
+2026-10-28T14:45:28.0992918Z ##[endgroup]
+2026-10-28T14:45:29.0448668Z Internal ctest changing into directory: /home/runner/work/human-cognome-project/human-cognome-project/engine/build
+2026-10-28T14:45:29.1775645Z Test project /home/runner/work/human-cognome-project/human-cognome-project/engine/build
+2026-10-28T14:45:29.2604154Z       Start  1: active_workbench_test
+2026-10-28T14:45:49.3111446Z  1/96 Test  #1: active_workbench_test ....................   Passed   20.05 sec
+2026-10-28T14:45:49.3451150Z       Start  2: active_transfer_experiment
+2026-10-28T14:46:03.2078166Z  2/96 Test  #2: active_transfer_experiment ...............   Passed   13.86 sec
+2026-10-28T14:46:03.2081652Z       Start  3: precision_bulk
+2026-10-28T14:46:04.5099340Z  3/96 Test  #3: precision_bulk ...........................   Passed    1.30 sec
+2026-10-28T14:46:04.5101044Z       Start  4: precision_direct
+2026-10-28T14:46:05.8120010Z  4/96 Test  #4: precision_direct .........................   Passed    1.30 sec
+2026-10-28T14:46:05.8121401Z       Start  5: prepared_launch_test
+2026-10-28T14:46:06.6604696Z  5/96 Test  #5: prepared_launch_test .....................   Passed    0.85 sec
+2026-10-28T14:46:06.6606363Z       Start  6: prepared_execution_padded
+2026-10-28T14:46:22.7075983Z  6/96 Test  #6: prepared_execution_padded ................   Passed   16.05 sec
+2026-10-28T14:46:22.7077893Z       Start  7: prepared_execution_direct
+2026-10-28T14:46:38.8033597Z  7/96 Test  #7: prepared_execution_direct ................   Passed   16.10 sec
+2026-10-28T14:46:38.8035431Z       Start  8: prepared_execution_large
+2026-10-28T14:46:44.5407987Z  8/96 Test  #8: prepared_execution_large .................   Passed    5.74 sec
+2026-10-28T14:46:44.5409767Z       Start  9: prepared_execution_large-direct
+2026-10-28T14:46:50.1670805Z  9/96 Test  #9: prepared_execution_large-direct ..........   Passed    5.63 sec
+2026-10-28T14:46:50.1672562Z       Start 10: prepared_execution_letters
+2026-10-28T14:47:06.2561588Z 10/96 Test #10: prepared_execution_letters ...............   Passed   16.09 sec
+2026-10-28T14:47:06.2563205Z       Start 11: prepared_execution_letters-direct
+2026-10-28T14:47:22.2538204Z 11/96 Test #11: prepared_execution_letters-direct ........   Passed   16.00 sec
+2026-10-28T14:47:22.2540370Z       Start 12: prepared_update_padded
+2026-10-28T14:48:03.1773764Z 12/96 Test #12: prepared_update_padded ...................   Passed   40.92 sec
+2026-10-28T14:48:03.1775416Z       Start 13: prepared_update_direct
+2026-10-28T14:48:43.8642654Z 13/96 Test #13: prepared_update_direct ...................   Passed   40.69 sec
+2026-10-28T14:48:43.8644471Z       Start 14: prepared_update_large
+2026-10-28T14:48:53.0709947Z 14/96 Test #14: prepared_update_large ....................   Passed    9.21 sec
+2026-10-28T14:48:53.0711492Z       Start 15: prepared_update_large-direct
+2026-10-28T14:49:02.1807672Z 15/96 Test #15: prepared_update_large-direct .............   Passed    9.11 sec
+2026-10-28T14:49:02.1809158Z       Start 16: prepared_update_letters
+2026-10-28T14:49:21.5105850Z 16/96 Test #16: prepared_update_letters ..................   Passed   19.33 sec
+2026-10-28T14:49:21.5107565Z       Start 17: prepared_update_letters-direct
+2026-10-28T14:49:40.9286859Z 17/96 Test #17: prepared_update_letters-direct ...........   Passed   19.42 sec
+2026-10-28T14:49:40.9289041Z       Start 18: prepared_geometry_padded
+2026-10-28T14:50:08.0127170Z 18/96 Test #18: prepared_geometry_padded .................   Passed   27.08 sec
+2026-10-28T14:50:08.0129107Z       Start 19: prepared_geometry_direct
+2026-10-28T14:50:34.9693457Z 19/96 Test #19: prepared_geometry_direct .................   Passed   26.96 sec
+2026-10-28T14:50:34.9695409Z       Start 20: prepared_geometry_large
+2026-10-28T14:50:39.0114757Z 20/96 Test #20: prepared_geometry_large ..................   Passed    4.04 sec
+2026-10-28T14:50:39.0116630Z       Start 21: prepared_geometry_large-direct
+2026-10-28T14:50:43.0287519Z 21/96 Test #21: prepared_geometry_large-direct ...........   Passed    4.02 sec
+2026-10-28T14:50:43.0289443Z       Start 22: prepared_geometry_maximum
+2026-10-28T14:50:46.9943933Z 22/96 Test #22: prepared_geometry_maximum ................   Passed    3.97 sec
+2026-10-28T14:50:46.9945766Z       Start 23: prepared_geometry_maximum-direct
+2026-10-28T14:50:50.9931011Z 23/96 Test #23: prepared_geometry_maximum-direct .........   Passed    4.00 sec
+2026-10-28T14:50:50.9933017Z       Start 24: prepared_geometry_large-maximum
+2026-10-28T14:50:55.0277121Z 24/96 Test #24: prepared_geometry_large-maximum ..........   Passed    4.03 sec
+2026-10-28T14:50:55.0278936Z       Start 25: prepared_geometry_large-maximum-direct
+2026-10-28T14:50:59.1027596Z 25/96 Test #25: prepared_geometry_large-maximum-direct ...   Passed    4.07 sec
+2026-10-28T14:50:59.1029228Z       Start 26: cascade_padded
+2026-10-28T14:51:32.2309413Z 26/96 Test #26: cascade_padded ...........................   Passed   33.13 sec
+2026-10-28T14:51:32.2311174Z       Start 27: cascade_direct
+2026-10-28T14:52:05.4736036Z 27/96 Test #27: cascade_direct ...........................   Passed   33.24 sec
+2026-10-28T14:52:05.4736554Z       Start 28: cascade_large
+2026-10-28T14:52:09.3481612Z 28/96 Test #28: cascade_large ............................   Passed    3.87 sec
+2026-10-28T14:52:09.3483141Z       Start 29: cascade_large-direct
+2026-10-28T14:52:13.1566143Z 29/96 Test #29: cascade_large-direct .....................   Passed    3.81 sec
+2026-10-28T14:52:13.1567632Z       Start 30: cascade_maximum
+2026-10-28T14:52:16.9121562Z 30/96 Test #30: cascade_maximum ..........................   Passed    3.76 sec
+2026-10-28T14:52:16.9123177Z       Start 31: cascade_maximum-direct
+2026-10-28T14:52:20.7492098Z 31/96 Test #31: cascade_maximum-direct ...................   Passed    3.84 sec
+2026-10-28T14:52:20.7493633Z       Start 32: cascade_large-maximum
+2026-10-28T14:52:24.7205544Z 32/96 Test #32: cascade_large-maximum ....................   Passed    3.97 sec
+2026-10-28T14:52:24.7207197Z       Start 33: cascade_large-maximum-direct
+2026-10-28T14:52:28.7161750Z 33/96 Test #33: cascade_large-maximum-direct .............   Passed    4.00 sec
+2026-10-28T14:52:28.7163702Z       Start 34: live_hierarchy_1_bulk
+2026-10-28T14:54:13.7030914Z 34/96 Test #34: live_hierarchy_1_bulk ....................   Passed  104.99 sec
+2026-10-28T14:54:13.7032259Z       Start 35: live_hierarchy_1_direct
+2026-10-28T14:55:58.2705212Z 35/96 Test #35: live_hierarchy_1_direct ..................   Passed  104.57 sec
+2026-10-28T14:55:58.2706505Z       Start 36: live_hierarchy_2_bulk
+2026-10-28T14:57:43.9182564Z 36/96 Test #36: live_hierarchy_2_bulk ....................   Passed  105.65 sec
+2026-10-28T14:57:43.9184150Z       Start 37: live_hierarchy_2_direct
+2026-10-28T15:00:01.0834818Z 37/96 Test #37: live_hierarchy_2_direct ..................   Passed  137.16 sec
+2026-10-28T15:00:01.0836257Z       Start 38: weighted_handoff_1_bulk
+2026-10-28T15:01:17.0983109Z 38/96 Test #38: weighted_handoff_1_bulk ..................   Passed   76.01 sec
+2026-10-28T15:01:17.0983845Z       Start 39: weighted_handoff_1_direct
+2026-10-28T15:02:33.7975310Z 39/96 Test #39: weighted_handoff_1_direct ................   Passed   76.70 sec
+2026-10-28T15:02:33.7976045Z       Start 40: weighted_handoff_2_bulk
+2026-10-28T15:03:50.0658157Z 40/96 Test #40: weighted_handoff_2_bulk ..................   Passed   76.27 sec
+2026-10-28T15:03:50.0658915Z       Start 41: weighted_handoff_2_direct
+2026-10-28T15:05:06.7701680Z 41/96 Test #41: weighted_handoff_2_direct ................   Passed   76.70 sec
+2026-10-28T15:05:06.7702516Z       Start 42: cumulative_publication_1_bulk
+2026-10-28T15:06:27.4290612Z 42/96 Test #42: cumulative_publication_1_bulk ............   Passed   80.66 sec
+2026-10-28T15:06:27.4291722Z       Start 43: cumulative_publication_1_direct
+2026-10-28T15:07:49.8402635Z 43/96 Test #43: cumulative_publication_1_direct ..........   Passed   82.41 sec
+2026-10-28T15:07:49.8403535Z       Start 44: cumulative_publication_2_bulk
+2026-10-28T15:09:11.7948477Z 44/96 Test #44: cumulative_publication_2_bulk ............   Passed   81.95 sec
+2026-10-28T15:09:11.7949386Z       Start 45: cumulative_publication_2_direct
+2026-10-28T15:10:32.4073662Z 45/96 Test #45: cumulative_publication_2_direct ..........   Passed   80.61 sec
+2026-10-28T15:10:32.4074592Z       Start 46: weighted_cascade_padded
+2026-10-28T15:11:17.2294394Z 46/96 Test #46: weighted_cascade_padded ..................   Passed   44.82 sec
+2026-10-28T15:11:17.2295822Z       Start 47: numerical_profile_padded
+2026-10-28T15:12:11.9440915Z 47/96 Test #47: numerical_profile_padded .................   Passed   54.71 sec
+2026-10-28T15:12:11.9441977Z       Start 48: weighted_cascade_direct
+2026-10-28T15:12:58.1811882Z 48/96 Test #48: weighted_cascade_direct ..................   Passed   46.24 sec
+2026-10-28T15:12:58.1812810Z       Start 49: numerical_profile_direct
+2026-10-28T15:13:53.5275147Z 49/96 Test #49: numerical_profile_direct .................   Passed   55.35 sec
+2026-10-28T15:13:53.5276231Z       Start 50: weighted_cascade_large
+2026-10-28T15:13:57.4914284Z 50/96 Test #50: weighted_cascade_large ...................   Passed    3.96 sec
+2026-10-28T15:13:57.4915128Z       Start 51: numerical_profile_large
+2026-10-28T15:14:01.9785040Z 51/96 Test #51: numerical_profile_large ..................   Passed    4.49 sec
+2026-10-28T15:14:01.9785845Z       Start 52: weighted_cascade_large-direct
+2026-10-28T15:14:05.9008158Z 52/96 Test #52: weighted_cascade_large-direct ............   Passed    3.92 sec
+2026-10-28T15:14:05.9009357Z       Start 53: numerical_profile_large-direct
+2026-10-28T15:14:10.3594317Z 53/96 Test #53: numerical_profile_large-direct ...........   Passed    4.46 sec
+2026-10-28T15:14:10.3595236Z       Start 54: weighted_cascade_maximum
+2026-10-28T15:14:14.2241847Z 54/96 Test #54: weighted_cascade_maximum .................   Passed    3.86 sec
+2026-10-28T15:14:14.2242796Z       Start 55: numerical_profile_maximum
+2026-10-28T15:14:18.6198929Z 55/96 Test #55: numerical_profile_maximum ................   Passed    4.40 sec
+2026-10-28T15:14:18.6199968Z       Start 56: weighted_cascade_maximum-direct
+2026-10-28T15:14:22.5474713Z 56/96 Test #56: weighted_cascade_maximum-direct ..........   Passed    3.93 sec
+2026-10-28T15:14:22.5475684Z       Start 57: numerical_profile_maximum-direct
+2026-10-28T15:14:26.9846295Z 57/96 Test #57: numerical_profile_maximum-direct .........   Passed    4.44 sec
+2026-10-28T15:14:26.9847122Z       Start 58: weighted_cascade_large-maximum
+2026-10-28T15:14:33.5832905Z 58/96 Test #58: weighted_cascade_large-maximum ...........   Passed    6.60 sec
+2026-10-28T15:14:33.5833925Z       Start 59: numerical_profile_large-maximum
+2026-10-28T15:14:40.8261234Z 59/96 Test #59: numerical_profile_large-maximum ..........   Passed    7.24 sec
+2026-10-28T15:14:40.8262400Z       Start 60: weighted_cascade_large-maximum-direct
+2026-10-28T15:14:47.4034512Z 60/96 Test #60: weighted_cascade_large-maximum-direct ....   Passed    6.58 sec
+2026-10-28T15:14:47.4035496Z       Start 61: numerical_profile_large-maximum-direct
+2026-10-28T15:14:54.7094970Z 61/96 Test #61: numerical_profile_large-maximum-direct ...   Passed    7.31 sec
+2026-10-28T15:14:54.7095941Z       Start 62: prepared_capacity_test
+2026-10-28T15:14:54.7220384Z 62/96 Test #62: prepared_capacity_test ...................   Passed    0.01 sec
+2026-10-28T15:14:54.7220894Z       Start 63: source_counts_padded
+2026-10-28T15:15:02.3997415Z 63/96 Test #63: source_counts_padded .....................   Passed    7.68 sec
+2026-10-28T15:15:02.3998586Z       Start 64: source_counts_direct
+2026-10-28T15:15:10.1942511Z 64/96 Test #64: source_counts_direct .....................   Passed    7.79 sec
+2026-10-28T15:15:10.1943491Z       Start 65: source_counts_large
+2026-10-28T15:15:20.0113959Z 65/96 Test #65: source_counts_large ......................   Passed    9.82 sec
+2026-10-28T15:15:20.0114595Z       Start 66: source_counts_large-direct
+2026-10-28T15:15:29.8347004Z 66/96 Test #66: source_counts_large-direct ...............   Passed    9.82 sec
+2026-10-28T15:15:29.8347841Z       Start 67: record_map_padded
+2026-10-28T15:15:31.7712770Z 67/96 Test #67: record_map_padded ........................   Passed    1.94 sec
+2026-10-28T15:15:31.7713501Z       Start 68: record_map_direct
+2026-10-28T15:15:33.7115701Z 68/96 Test #68: record_map_direct ........................   Passed    1.94 sec
+2026-10-28T15:15:33.7116464Z       Start 69: record_map_working_set
+2026-10-28T15:15:35.8955636Z 69/96 Test #69: record_map_working_set ...................   Passed    2.18 sec
+2026-10-28T15:15:35.8956445Z       Start 70: native_pool_test
+2026-10-28T15:15:35.9088884Z 70/96 Test #70: native_pool_test .........................   Passed    0.01 sec
+2026-10-28T15:15:35.9091253Z       Start 71: prepared_space_dense-budgeted
+2026-10-28T15:15:36.1489814Z 71/96 Test #71: prepared_space_dense-budgeted ............   Passed    0.24 sec
+2026-10-28T15:15:36.1490791Z       Start 72: prepared_space_flat-bitmasked
+2026-10-28T15:15:36.3923586Z 72/96 Test #72: prepared_space_flat-bitmasked ............   Passed    0.24 sec
+2026-10-28T15:15:36.3924586Z       Start 73: prepared_space_pointer-cold
+2026-10-28T15:15:36.8681845Z 73/96 Test #73: prepared_space_pointer-cold ..............   Passed    0.48 sec
+2026-10-28T15:15:36.8682813Z       Start 74: prepared_space_pointer-retained
+2026-10-28T15:15:37.3499648Z 74/96 Test #74: prepared_space_pointer-retained ..........   Passed    0.48 sec
+2026-10-28T15:15:37.3500553Z       Start 75: prepared_space_pointer-recycled
+2026-10-28T15:15:37.8610555Z 75/96 Test #75: prepared_space_pointer-recycled ..........   Passed    0.51 sec
+2026-10-28T15:15:37.8611469Z       Start 76: engine_smoke_test
+2026-10-28T15:15:38.6262716Z 76/96 Test #76: engine_smoke_test ........................   Passed    0.76 sec
+2026-10-28T15:15:38.6263774Z       Start 77: field_test
+2026-10-28T15:16:04.9863716Z 77/96 Test #77: field_test ...............................   Passed   26.36 sec
+2026-10-28T15:16:04.9864562Z       Start 78: native_activity_test
+2026-10-28T15:16:06.0285715Z 78/96 Test #78: native_activity_test .....................   Passed    1.04 sec
+2026-10-28T15:16:06.0286864Z       Start 79: native_handoff_1
+2026-10-28T15:16:06.8531495Z 79/96 Test #79: native_handoff_1 .........................   Passed    0.82 sec
+2026-10-28T15:16:06.8532374Z       Start 80: native_handoff_2
+2026-10-28T15:16:07.6933594Z 80/96 Test #80: native_handoff_2 .........................   Passed    0.84 sec
+2026-10-28T15:16:07.6934521Z       Start 81: activity_test
+2026-10-28T15:17:11.2691004Z 81/96 Test #81: activity_test ............................   Passed   63.58 sec
+2026-10-28T15:17:11.2692061Z       Start 82: activity_parallel_test
+2026-10-28T15:18:15.5578248Z 82/96 Test #82: activity_parallel_test ...................   Passed   64.29 sec
+2026-10-28T15:18:15.5579434Z       Start 83: activity_direct_test
+2026-10-28T15:19:19.1406119Z 83/96 Test #83: activity_direct_test .....................   Passed   63.58 sec
+2026-10-28T15:19:19.1406957Z       Start 84: activity_assembly_test
+2026-10-28T15:19:24.3892961Z 84/96 Test #84: activity_assembly_test ...................   Passed    5.25 sec
+2026-10-28T15:19:24.3893733Z       Start 85: activity_assembly_direct_test
+2026-10-28T15:19:29.6719452Z 85/96 Test #85: activity_assembly_direct_test ............   Passed    5.28 sec
+2026-10-28T15:19:29.6720152Z       Start 86: preparation_test
+2026-10-28T15:19:29.6853320Z 86/96 Test #86: preparation_test .........................   Passed    0.01 sec
+2026-10-28T15:19:29.6853849Z       Start 87: assembly_test
+2026-10-28T15:19:38.7269322Z 87/96 Test #87: assembly_test ............................   Passed    9.04 sec
+2026-10-28T15:19:38.7270214Z       Start 88: letter_projection_test
+2026-10-28T15:19:38.7375854Z 88/96 Test #88: letter_projection_test ...................   Passed    0.01 sec
+2026-10-28T15:19:38.7376856Z       Start 89: structural_recipe_test
+2026-10-28T15:19:38.7423107Z 89/96 Test #89: structural_recipe_test ...................   Passed    0.00 sec
+2026-10-28T15:19:38.7425303Z       Start 90: letter_projection_native_test
+2026-10-28T15:19:38.7592720Z 90/96 Test #90: letter_projection_native_test ............   Passed    0.02 sec
+2026-10-28T15:19:38.7593575Z       Start 91: membership_fields_test
+2026-10-28T15:19:38.7665467Z 91/96 Test #91: membership_fields_test ...................   Passed    0.01 sec
+2026-10-28T15:19:38.7666241Z       Start 92: membership_fields_native_test
+2026-10-28T15:19:49.3124503Z 92/96 Test #92: membership_fields_native_test ............   Passed   10.55 sec
+2026-10-28T15:19:49.3125382Z       Start 93: index_cap_test
+2026-10-28T15:19:49.4638976Z 93/96 Test #93: index_cap_test ...........................   Passed    0.15 sec
+2026-10-28T15:19:49.4639811Z       Start 94: viewport_options_test
+2026-10-28T15:19:49.4661303Z 94/96 Test #94: viewport_options_test ....................   Passed    0.00 sec
+2026-10-28T15:19:49.4662059Z       Start 95: viewport_signal_guard_test
+2026-10-28T15:19:49.4691379Z 95/96 Test #95: viewport_signal_guard_test ...............   Passed    0.00 sec
+2026-10-28T15:19:49.4692226Z       Start 96: viewport_snapshot_test
+2026-10-28T15:19:51.5431257Z 96/96 Test #96: viewport_snapshot_test ...................   Passed    2.07 sec
+2026-10-28T15:19:51.5436136Z 
+2026-10-28T15:19:51.5436280Z 100% tests passed, 0 tests failed out of 96
+2026-10-28T15:19:51.5436535Z 
+2026-10-28T15:19:51.5436654Z Total Test time (real) = 2062.37 sec
+2026-10-28T15:19:51.6370084Z ##[group]Run . ./engine/build/engine-env.sh
+2026-10-28T15:19:51.6370401Z [36;1m. ./engine/build/engine-env.sh[0m
+2026-10-28T15:19:51.6370647Z [36;1mfor workers in 1 2; do[0m
+2026-10-28T15:19:51.6370878Z [36;1m  for source_path in bulk direct; do[0m
+2026-10-28T15:19:51.6371117Z [36;1m    hcp_ir_args=()[0m
+2026-10-28T15:19:51.6371413Z [36;1m    if [ "$source_path" = direct ]; then hcp_ir_args+=(--direct); fi[0m
+2026-10-28T15:19:51.6371777Z [36;1m    engine/build/live_hierarchy_test --threads "$workers" \[0m
+2026-10-28T15:19:51.6372102Z [36;1m      --compiler-no-unroll "${hcp_ir_args[@]}" \[0m
+2026-10-28T15:19:51.6372478Z [36;1m      > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/native.txt"[0m
+2026-10-28T15:19:51.6372814Z [36;1m  done[0m
+2026-10-28T15:19:51.6372983Z [36;1mdone[0m
+2026-10-28T15:19:51.6390309Z shell: /usr/bin/bash -e {0}
+2026-10-28T15:19:51.6390524Z ##[endgroup]
+2026-10-28T15:26:19.5786421Z ##[group]Run set -euo pipefail
+2026-10-28T15:26:19.5786717Z [36;1mset -euo pipefail[0m
+2026-10-28T15:26:19.5787124Z [36;1mgit lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''[0m
+2026-10-28T15:26:19.5787687Z [36;1mhcp_active_snapshots=data/postgres/snapshots/2026-10-13-letter-seed-validation[0m
+2026-10-28T15:26:19.5788080Z [36;1m(cd "$hcp_active_snapshots" && printf '%s  %s\n' \[0m
+2026-10-28T15:26:19.5788767Z [36;1m  f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121 hcp_core.sql.gz \[0m
+2026-10-28T15:26:19.5789277Z [36;1m  9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296 hcp_linguistics.sql.gz \[0m
+2026-10-28T15:26:19.5789662Z [36;1m  | sha256sum --check -)[0m
+2026-10-28T15:26:19.5790050Z [36;1mhcp_active_image=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d[0m
+2026-10-28T15:26:19.5790593Z [36;1mhcp_active_container="hcp-active-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"[0m
+2026-10-28T15:26:19.5791025Z [36;1mdocker run -d --name "$hcp_active_container" --network none --user postgres \[0m
+2026-10-28T15:26:19.5791417Z [36;1m  --volume "$hcp_active_container:/var/lib/postgresql/data" \[0m
+2026-10-28T15:26:19.5791910Z [36;1m  --entrypoint bash "$hcp_active_image" -c \[0m
+2026-10-28T15:26:19.5792485Z [36;1m  'set -e; initdb -D "$PGDATA" --encoding=UTF8 --locale=C.UTF-8 --auth-local=peer --auth-host=scram-sha-256 > /tmp/init.log; exec postgres -D "$PGDATA" -c listen_addresses=""'[0m
+2026-10-28T15:26:19.5793035Z [36;1mfor hcp_active_attempt in {1..60}; do[0m
+2026-10-28T15:26:19.5793426Z [36;1m  if docker exec --user postgres "$hcp_active_container" pg_isready >/dev/null 2>&1; then break; fi[0m
+2026-10-28T15:26:19.5793804Z [36;1m  sleep 1[0m
+2026-10-28T15:26:19.5793980Z [36;1mdone[0m
+2026-10-28T15:26:19.5794190Z [36;1mfor hcp_active_source in core linguistics; do[0m
+2026-10-28T15:26:19.5794555Z [36;1m  docker exec --user postgres "$hcp_active_container" createdb "hcp_$hcp_active_source"[0m
+2026-10-28T15:26:19.5794972Z [36;1m  gzip -dc "$hcp_active_snapshots/hcp_$hcp_active_source.sql.gz" \[0m
+2026-10-28T15:26:19.5795453Z [36;1m    | docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 --dbname "hcp_$hcp_active_source"[0m
+2026-10-28T15:26:19.5795866Z [36;1mdone[0m
+2026-10-28T15:26:19.5796116Z [36;1mbash engine/scripts/run_warm_active_acceptance.sh engine/build \[0m
+2026-10-28T15:26:19.5796455Z [36;1m  "$hcp_active_container" hcp_core hcp_linguistics[0m
+2026-10-28T15:26:19.5813993Z shell: /usr/bin/bash -e {0}
+2026-10-28T15:26:19.5814204Z ##[endgroup]
+2026-10-28T15:26:29.0231332Z hcp_core.sql.gz: OK
+2026-10-28T15:26:29.0232871Z hcp_linguistics.sql.gz: OK
+2026-10-28T15:26:29.1147050Z Unable to find image 'postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d' locally
+2026-10-28T15:26:29.6954376Z docker.io/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d: Pulling from library/postgres
+2026-10-28T15:26:29.9200743Z ecc510c1e359: Pulling fs layer
+2026-10-28T15:26:29.9201209Z 79faf13a8736: Pulling fs layer
+2026-10-28T15:26:29.9201534Z 6456bfbf35e7: Pulling fs layer
+2026-10-28T15:26:29.9201878Z b353db459ed1: Pulling fs layer
+2026-10-28T15:26:29.9202194Z 99f49de4fe2b: Pulling fs layer
+2026-10-28T15:26:29.9202506Z 83d1a2a3917c: Pulling fs layer
+2026-10-28T15:26:29.9202806Z 715ea0948cb1: Pulling fs layer
+2026-10-28T15:26:29.9203115Z 486e8305f56f: Pulling fs layer
+2026-10-28T15:26:29.9203477Z e7d675f11ded: Pulling fs layer
+2026-10-28T15:26:29.9203790Z c49864c27f35: Pulling fs layer
+2026-10-28T15:26:29.9204100Z 770ef8b308ea: Pulling fs layer
+2026-10-28T15:26:29.9204409Z 50c25daa0302: Pulling fs layer
+2026-10-28T15:26:29.9204617Z 8309db3ae5b6: Pulling fs layer
+2026-10-28T15:26:29.9204805Z 9731e27f2541: Pulling fs layer
+2026-10-28T15:26:29.9205018Z b353db459ed1: Waiting
+2026-10-28T15:26:29.9205289Z 99f49de4fe2b: Waiting
+2026-10-28T15:26:29.9205710Z 83d1a2a3917c: Waiting
+2026-10-28T15:26:29.9205934Z 715ea0948cb1: Waiting
+2026-10-28T15:26:29.9206144Z 486e8305f56f: Waiting
+2026-10-28T15:26:29.9206313Z e7d675f11ded: Waiting
+2026-10-28T15:26:29.9206558Z c49864c27f35: Waiting
+2026-10-28T15:26:29.9206834Z 770ef8b308ea: Waiting
+2026-10-28T15:26:29.9207092Z 50c25daa0302: Waiting
+2026-10-28T15:26:29.9207353Z 8309db3ae5b6: Waiting
+2026-10-28T15:26:29.9207557Z 9731e27f2541: Waiting
+2026-10-28T15:26:30.1163137Z 6456bfbf35e7: Verifying Checksum
+2026-10-28T15:26:30.1164503Z 6456bfbf35e7: Download complete
+2026-10-28T15:26:30.1173233Z 79faf13a8736: Verifying Checksum
+2026-10-28T15:26:30.1173904Z 79faf13a8736: Download complete
+2026-10-28T15:26:30.2330975Z ecc510c1e359: Verifying Checksum
+2026-10-28T15:26:30.2331543Z ecc510c1e359: Download complete
+2026-10-28T15:26:30.2921599Z b353db459ed1: Verifying Checksum
+2026-10-28T15:26:30.2922139Z b353db459ed1: Download complete
+2026-10-28T15:26:30.3195840Z 99f49de4fe2b: Verifying Checksum
+2026-10-28T15:26:30.3196349Z 99f49de4fe2b: Download complete
+2026-10-28T15:26:30.4133439Z 83d1a2a3917c: Verifying Checksum
+2026-10-28T15:26:30.4134475Z 83d1a2a3917c: Download complete
+2026-10-28T15:26:30.4626906Z 715ea0948cb1: Verifying Checksum
+2026-10-28T15:26:30.4627585Z 715ea0948cb1: Download complete
+2026-10-28T15:26:30.4977936Z 486e8305f56f: Verifying Checksum
+2026-10-28T15:26:30.4978645Z 486e8305f56f: Download complete
+2026-10-28T15:26:30.6443642Z c49864c27f35: Verifying Checksum
+2026-10-28T15:26:30.6444073Z c49864c27f35: Download complete
+2026-10-28T15:26:30.6829063Z 770ef8b308ea: Verifying Checksum
+2026-10-28T15:26:30.6829587Z 770ef8b308ea: Download complete
+2026-10-28T15:26:30.8241836Z 50c25daa0302: Verifying Checksum
+2026-10-28T15:26:30.8242718Z 50c25daa0302: Download complete
+2026-10-28T15:26:30.8543592Z 8309db3ae5b6: Verifying Checksum
+2026-10-28T15:26:30.8544860Z 8309db3ae5b6: Download complete
+2026-10-28T15:26:30.8737399Z e7d675f11ded: Verifying Checksum
+2026-10-28T15:26:30.8737797Z e7d675f11ded: Download complete
+2026-10-28T15:26:30.9871379Z 9731e27f2541: Verifying Checksum
+2026-10-28T15:26:30.9872109Z 9731e27f2541: Download complete
+2026-10-28T15:26:31.0191363Z ecc510c1e359: Pull complete
+2026-10-28T15:26:32.5796611Z 79faf13a8736: Pull complete
+2026-10-28T15:26:32.7913709Z 6456bfbf35e7: Pull complete
+2026-10-28T15:26:32.8416515Z b353db459ed1: Pull complete
+2026-10-28T15:26:33.2060287Z 99f49de4fe2b: Pull complete
+2026-10-28T15:26:33.2667188Z 83d1a2a3917c: Pull complete
+2026-10-28T15:26:33.2720414Z 715ea0948cb1: Pull complete
+2026-10-28T15:26:33.2779826Z 486e8305f56f: Pull complete
+2026-10-28T15:26:36.9882441Z e7d675f11ded: Pull complete
+2026-10-28T15:26:36.9969186Z c49864c27f35: Pull complete
+2026-10-28T15:26:37.0062626Z 770ef8b308ea: Pull complete
+2026-10-28T15:26:37.0172095Z 50c25daa0302: Pull complete
+2026-10-28T15:26:37.0242710Z 8309db3ae5b6: Pull complete
+2026-10-28T15:26:37.0300177Z 9731e27f2541: Pull complete
+2026-10-28T15:26:37.0331125Z Digest: sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+2026-10-28T15:26:37.0336284Z Status: Downloaded newer image for postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+2026-10-28T15:26:37.0443175Z f41480780e6dd63c8c187e985effb9bec0284dc50f3e065d849f6f3a844aad12
+2026-10-28T15:26:38.6316813Z  set_config 
+2026-10-28T15:26:38.6317130Z ------------
+2026-10-28T15:26:38.6317386Z  
+2026-10-28T15:26:38.6317614Z (1 row)
+2026-10-28T15:26:38.6317740Z 
+2026-10-28T15:27:59.7068782Z  set_config 
+2026-10-28T15:27:59.7069015Z ------------
+2026-10-28T15:27:59.7069200Z  
+2026-10-28T15:27:59.7069355Z (1 row)
+2026-10-28T15:27:59.7069445Z 
+2026-10-28T15:27:59.8302676Z engine/scripts/run_warm_active_acceptance.sh: line 18: rg: command not found
+2026-10-28T15:28:09.7413358Z ok   retained cold sources server-enforced read-only
+2026-10-28T15:28:09.7433347Z ok   private scope rejected before public source resolution/open/query
+2026-10-28T15:28:09.7433856Z ok   rejected private request makes zero source calls
+2026-10-28T15:28:09.7434675Z ok   undelegated temporary root rejected before lookup
+2026-10-28T15:28:09.7435056Z ok   private source delegation rejected
+2026-10-28T15:28:09.7544839Z ok   private recipe rejected before manager storage preparation
+2026-10-28T15:28:09.7545365Z ok   rejected private publication makes zero storage calls
+2026-10-28T15:28:09.8103966Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:09.8104503Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:09.8104924Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:09.8105437Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:09.8359407Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:09.8359871Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:09.8360400Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:09.8361094Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:09.8362545Z ok   shared tools available and required-local inputs availability are distinct
+2026-10-28T15:28:09.8364023Z ok   supplied local generation preserves study and changes generation identity
+2026-10-28T15:28:09.8365732Z ok   foreign analyst local snapshot rejected
+2026-10-28T15:28:09.8367270Z ok   foreign instance local value rejected
+2026-10-28T15:28:09.8369496Z ok   local object requires full couplets
+2026-10-28T15:28:09.8369878Z ok   typed span schema/byte count/generation exact
+2026-10-28T15:28:09.8370269Z ok   typed span row bounds checked
+2026-10-28T15:28:09.8370604Z ok   typed span shape mismatch rejected
+2026-10-28T15:28:09.8370954Z ok   unsealed span generation rejected
+2026-10-28T15:28:09.9248055Z ok   missing local inputs never execution-ready
+2026-10-28T15:28:12.8615103Z ok   two independent studies seeded and ready in one session
+2026-10-28T15:28:12.8615536Z ok   mixed local/shared live objects retain scope, origin and explicit units
+2026-10-28T15:28:12.8615985Z ok   only supplied local sibling/context fields added; repeated context deduplicated
+2026-10-28T15:28:12.8616358Z ok   initial f32 values survive bulk transfer exactly
+2026-10-28T15:28:13.3294586Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3295142Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3295659Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3296053Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3296353Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3296656Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3296995Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3297305Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3297607Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3297927Z ok   first force matches unchanged field law within 1e-6
+2026-10-28T15:28:13.3298229Z ok   finite state, inert slots and zero-dt state coherence
+2026-10-28T15:28:13.3298825Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3299246Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3299645Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3300125Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3300537Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3300944Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3301435Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3301813Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3302261Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3303018Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3303495Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:13.3303994Z ok   first force matches unchanged field law within 1e-6
+2026-10-28T15:28:13.3304462Z ok   finite state, inert slots and zero-dt state coherence
+2026-10-28T15:28:13.3370301Z ok   bounded nonzero-dt execution preserves live mass and analyst snapshot provenance
+2026-10-28T15:28:13.3370984Z ok   joint report restricted to active owner
+2026-10-28T15:28:13.3371538Z ok   tick updates execution accumulators independently of immutable initial recipe
+2026-10-28T15:28:13.3376065Z ok   equal-count refresh reseeds and invalidates old generation
+2026-10-28T15:28:13.3376463Z ok   old generation report rejected after refresh
+2026-10-28T15:28:13.3377770Z ok   incomplete refresh fails closed without manager fallback
+2026-10-28T15:28:13.3378182Z ok   incomplete publication leaves study non-runnable
+2026-10-28T15:28:13.3378720Z ok   ticking failed publication rejected
+2026-10-28T15:28:13.3383155Z ok   valid equal-count refresh recovers failed study
+2026-10-28T15:28:13.3385205Z ok   invalid numerical publication fails closed
+2026-10-28T15:28:13.3391401Z PHASE integration assembly_ms=1.62589 allocation_ms=1.59388 compile_or_cache_ms=1234.61 upload_ms=0.009514 seed_ms=219.977 kernels_ms=242.117 report_ms=0.002274
+2026-10-28T15:28:13.3557668Z ok   host logical inputs and local version survive controlled Program teardown
+2026-10-28T15:28:13.3560348Z ok   restart builds a new study identity from retained inputs
+2026-10-28T15:28:13.4360566Z ok   old session handle rejected after restart
+2026-10-28T15:28:13.4360988Z ok   old session report rejected after restart
+2026-10-28T15:28:15.1581048Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1581590Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1582037Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1582506Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1582926Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1583344Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1583791Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1584221Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1584644Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1585067Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1585509Z ok   seeded inclusive centroid matches independent weighted sum
+2026-10-28T15:28:15.1585945Z ok   first force matches unchanged field law within 1e-6
+2026-10-28T15:28:15.1586379Z ok   finite state, inert slots and zero-dt state coherence
+2026-10-28T15:28:15.1586827Z ok   reconstructed initial scalar transfer bit patterns exact
+2026-10-28T15:28:15.1686285Z ok   private geometry, placements and context never rewrite shared source definitions/recipe
+2026-10-28T15:28:16.7415039Z ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+2026-10-28T15:28:16.9498451Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:16.9499284Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:16.9502691Z FOCUS_DEMAND,bulk,0,1,3,3,1,1,7,7,2,17,20,3,7,13,5,208.274
+2026-10-28T15:28:16.9503368Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:16.9504128Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:16.9508597Z FOCUS_DEMAND,bulk,0,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.629084
+2026-10-28T15:28:16.9509404Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:16.9511247Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:16.9515138Z FOCUS_DEMAND,bulk,0,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.554373
+2026-10-28T15:28:16.9515700Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:16.9516208Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:16.9516610Z FOCUS_DEMAND,bulk,0,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.670636
+2026-10-28T15:28:16.9516926Z ok   private-derived focal demand requires active owner
+2026-10-28T15:28:16.9519019Z ok   invalid focus refresh fails closed on both host paths
+2026-10-28T15:28:16.9519538Z ok   invalid focal generation cannot execute old numerical state
+2026-10-28T15:28:16.9520011Z ok   old focal report rejected after failed refresh
+2026-10-28T15:28:16.9525225Z ok   valid focal refresh reseeds reference and activity buffers on both host paths
+2026-10-28T15:28:16.9529597Z ok   refreshed activity state preserves initial positional wake
+2026-10-28T15:28:17.0423568Z ok   old focused report rejected by restarted session
+2026-10-28T15:28:17.0424036Z ok   old focused handle rejected by restarted session
+2026-10-28T15:28:18.5371375Z ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+2026-10-28T15:28:18.7422222Z ok   restarted focused study retains independently expected unit motion
+2026-10-28T15:28:20.3350976Z ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+2026-10-28T15:28:20.5444429Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:20.5445147Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:20.5448006Z FOCUS_DEMAND,bulk,1.34218e+08,1,3,3,1,1,7,7,2,17,20,3,7,13,5,209.3
+2026-10-28T15:28:20.5448820Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:20.5449471Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:20.5453179Z FOCUS_DEMAND,bulk,1.34218e+08,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.549571
+2026-10-28T15:28:20.5453853Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:20.5454502Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:20.5458009Z FOCUS_DEMAND,bulk,1.34218e+08,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.50109
+2026-10-28T15:28:20.5458865Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:20.5459634Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:20.5460266Z FOCUS_DEMAND,bulk,1.34218e+08,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.463934
+2026-10-28T15:28:20.5460771Z ok   private-derived focal demand requires active owner
+2026-10-28T15:28:20.5461463Z ok   invalid focus refresh fails closed on both host paths
+2026-10-28T15:28:20.5462027Z ok   invalid focal generation cannot execute old numerical state
+2026-10-28T15:28:20.5462494Z ok   old focal report rejected after failed refresh
+2026-10-28T15:28:20.5466707Z ok   valid focal refresh reseeds reference and activity buffers on both host paths
+2026-10-28T15:28:20.5471666Z ok   refreshed activity state preserves initial positional wake
+2026-10-28T15:28:20.6350106Z ok   old focused report rejected by restarted session
+2026-10-28T15:28:20.6350624Z ok   old focused handle rejected by restarted session
+2026-10-28T15:28:22.1371431Z ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+2026-10-28T15:28:22.3451288Z ok   restarted focused study retains independently expected unit motion
+2026-10-28T15:28:23.9224026Z ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+2026-10-28T15:28:24.1279585Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:24.1280368Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:24.1282714Z FOCUS_DEMAND,direct,0,1,3,3,1,1,7,7,2,17,20,3,7,13,5,205.43
+2026-10-28T15:28:24.1283399Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:24.1284150Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:24.1288561Z FOCUS_DEMAND,direct,0,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.60271
+2026-10-28T15:28:24.1289258Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:24.1290054Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:24.1293203Z FOCUS_DEMAND,direct,0,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.513111
+2026-10-28T15:28:24.1293973Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:24.1294728Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:24.1295290Z FOCUS_DEMAND,direct,0,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.516237
+2026-10-28T15:28:24.1296064Z ok   private-derived focal demand requires active owner
+2026-10-28T15:28:24.1296828Z ok   invalid focus refresh fails closed on both host paths
+2026-10-28T15:28:24.1297341Z ok   invalid focal generation cannot execute old numerical state
+2026-10-28T15:28:24.1297800Z ok   old focal report rejected after failed refresh
+2026-10-28T15:28:24.1303032Z ok   valid focal refresh reseeds reference and activity buffers on both host paths
+2026-10-28T15:28:24.1307830Z ok   refreshed activity state preserves initial positional wake
+2026-10-28T15:28:24.2193071Z ok   old focused report rejected by restarted session
+2026-10-28T15:28:24.2193521Z ok   old focused handle rejected by restarted session
+2026-10-28T15:28:25.7238006Z ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+2026-10-28T15:28:25.9364816Z ok   restarted focused study retains independently expected unit motion
+2026-10-28T15:28:27.5246467Z ok   focused workbench retains supplied local frame and exact typed selection on both host paths
+2026-10-28T15:28:27.7286585Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:27.7287136Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:27.7291873Z FOCUS_DEMAND,direct,1.34218e+08,1,3,3,1,1,7,7,2,17,20,3,7,13,5,203.947
+2026-10-28T15:28:27.7292562Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:27.7293296Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:27.7296775Z FOCUS_DEMAND,direct,1.34218e+08,2,3,1,1,0,7,7,0,7,20,1,7,13,0,0.752777
+2026-10-28T15:28:27.7297640Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:27.7298418Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:27.7302116Z FOCUS_DEMAND,direct,1.34218e+08,3,3,1,1,0,7,7,0,7,20,1,7,13,0,0.452101
+2026-10-28T15:28:27.7302833Z ok   independent focused workbench motion and centroid expectation survives 2pow27 translation
+2026-10-28T15:28:27.7303453Z ok   both host paths preserve continued motion, centroid touches and owner-scoped demand
+2026-10-28T15:28:27.7303871Z FOCUS_DEMAND,direct,1.34218e+08,4,3,1,1,0,7,7,0,7,20,1,7,13,0,0.530167
+2026-10-28T15:28:27.7304272Z ok   private-derived focal demand requires active owner
+2026-10-28T15:28:27.7305049Z ok   invalid focus refresh fails closed on both host paths
+2026-10-28T15:28:27.7305433Z ok   invalid focal generation cannot execute old numerical state
+2026-10-28T15:28:27.7305816Z ok   old focal report rejected after failed refresh
+2026-10-28T15:28:27.7311539Z ok   valid focal refresh reseeds reference and activity buffers on both host paths
+2026-10-28T15:28:27.7316022Z ok   refreshed activity state preserves initial positional wake
+2026-10-28T15:28:27.8209487Z ok   old focused report rejected by restarted session
+2026-10-28T15:28:27.8210052Z ok   old focused handle rejected by restarted session
+2026-10-28T15:28:29.2975190Z ok   restart reconstructs supplied focus, frame reference and native buffers on both paths
+2026-10-28T15:28:29.5029212Z ok   restarted focused study retains independently expected unit motion
+2026-10-28T15:28:29.5139278Z ok   local assembly, execution, refresh, reporting and restart make zero manager/source calls
+2026-10-28T15:28:29.5224865Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:29.5225818Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:29.5226335Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:29.5227004Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:29.5529562Z ok   old publication ticket cannot silently acquire a different revision
+2026-10-28T15:28:29.5531195Z ok   unexpected head acquisition leaves no consumer lease
+2026-10-28T15:28:29.5728809Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:29.5729671Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:29.5730407Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:29.5731210Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:29.5731862Z ok   old ticket rejects without disturbing an already-owned current pin
+2026-10-28T15:28:29.5812746Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:29.5813386Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:29.5813899Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:29.5814589Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:29.5827394Z ok   changed source epoch blocks new acquisitions
+2026-10-28T15:28:29.5896954Z ok   fresh-client recipe identity and ownership exact
+2026-10-28T15:28:29.5897543Z ok   fresh-client complete recipe counts exact
+2026-10-28T15:28:29.5898114Z ok   all tool revisions, repeated ordered parents, memberships and NULLs exact
+2026-10-28T15:28:29.5898891Z ok   full occurrence paths, geometry, explicit units, exposure and initial values exact
+2026-10-28T15:28:29.5900116Z ok   another consumer cannot read someone else's old pin
+2026-10-28T15:28:29.5936081Z SOURCE addressed_reads=24 private_reads=0
+2026-10-28T15:28:29.5936589Z 180 warm-to-active integration checks
+2026-10-28T15:28:29.5937449Z PASS warm_active_integration
+2026-10-28T15:28:29.5999037Z Retained warm fixture: hcp_warm_d_20261028152759_92
+2026-10-28T15:28:29.5999590Z Evidence: /home/runner/work/human-cognome-project/human-cognome-project/engine/build/acceptance-hcp_warm_d_20261028152759_92
+2026-10-28T15:28:38.8545509Z ##[group]Run actions/upload-artifact@v4
+2026-10-28T15:28:38.8545818Z with:
+2026-10-28T15:28:38.8546733Z   name: native-active-workbench-evidence
+2026-10-28T15:28:38.8547885Z   path: engine/build/acceptance-*/native-checks.txt
+engine/build/acceptance-*/cold-*.sha256
+engine/build/Testing/Temporary/LastTest.log
+/home/runner/work/_temp/native-cpu-ctest.log
+/home/runner/work/_temp/c3-compiler-ir/*/native.txt
+
+2026-10-28T15:28:38.8550728Z   if-no-files-found: warn
+2026-10-28T15:28:38.8551014Z   compression-level: 6
+2026-10-28T15:28:38.8551592Z   overwrite: false
+2026-10-28T15:28:38.8551927Z   include-hidden-files: false
+2026-10-28T15:28:38.8552126Z ##[endgroup]
+2026-10-28T15:28:39.0000731Z (node:6421) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-28T15:28:39.0001406Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-28T15:28:39.0140828Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-28T15:28:39.0142558Z The least common ancestor is /home/runner/work. This will be the root directory of the artifact
+2026-10-28T15:28:39.0143179Z With the provided path, there will be 9 files uploaded
+2026-10-28T15:28:39.0147499Z Artifact name is valid!
+2026-10-28T15:28:39.0147915Z Root directory input is valid!
+2026-10-28T15:28:39.3623476Z Beginning upload of artifact content to blob storage
+2026-10-28T15:28:39.4270743Z (node:6421) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-28T15:28:39.8472781Z Uploaded bytes 438917
+2026-10-28T15:28:39.9545228Z Finished uploading artifact content to blob storage!
+2026-10-28T15:28:39.9546031Z SHA256 digest of uploaded artifact zip is e8895b9fd5842045abb3bdb65db66c619dc567b08c5c1cce157325776da4470f
+2026-10-28T15:28:39.9547018Z Finalizing artifact upload
+2026-10-28T15:28:40.4685650Z Artifact native-active-workbench-evidence.zip successfully finalized. Artifact ID 12828322059
+2026-10-28T15:28:40.4686416Z Artifact native-active-workbench-evidence has been successfully uploaded! Final size is 438917 bytes. Artifact ID is 12828322059
+2026-10-28T15:28:40.4691925Z Artifact download URL: https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40706207825/artifacts/12828322059
+2026-10-28T15:28:40.4823779Z ##[group]Run . ./engine/build/engine-env.sh
+2026-10-28T15:28:40.4824068Z [36;1m. ./engine/build/engine-env.sh[0m
+2026-10-28T15:28:40.4824332Z [36;1m./engine/build/engine_devices --cpu-only[0m
+2026-10-28T15:28:40.4842038Z shell: /usr/bin/bash -e {0}
+2026-10-28T15:28:40.4842270Z ##[endgroup]
+2026-10-28T15:28:40.5861669Z host: 4 cpu threads, 15.6 GiB memory
+2026-10-28T15:28:40.5862179Z cuda: no visible CUDA device (or no CUDA driver) on this host
+2026-10-28T15:28:40.5862878Z instance: arch x64, snode capacity 1024, tree capacity 512, device memory budget 1.00 GiB, 4 launch threads
+2026-10-28T15:28:40.5863543Z snode identifiers issued in this process: 0
+2026-10-28T15:28:40.6008052Z Post job cleanup.
+2026-10-28T15:28:40.6764249Z [command]/usr/bin/git version
+2026-10-28T15:28:40.6804057Z git version 2.56.0
+2026-10-28T15:28:40.6839711Z Temporarily overriding HOME='/home/runner/work/_temp/e8649186-547d-4aa1-936f-a86c3351ea4a' before making global git config changes
+2026-10-28T15:28:40.6840660Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T15:28:40.6845005Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/human-cognome-project/human-cognome-project
+2026-10-28T15:28:40.6884966Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T15:28:40.6919252Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T15:28:40.7142479Z Entering 'engine/taichi/external/DirectX-Headers'
+2026-10-28T15:28:40.7181827Z Entering 'engine/taichi/external/FP16'
+2026-10-28T15:28:40.7222132Z Entering 'engine/taichi/external/PicoSHA2'
+2026-10-28T15:28:40.7270364Z Entering 'engine/taichi/external/SPIRV-Cross'
+2026-10-28T15:28:40.7319043Z Entering 'engine/taichi/external/SPIRV-Headers'
+2026-10-28T15:28:40.7391691Z Entering 'engine/taichi/external/SPIRV-Reflect'
+2026-10-28T15:28:40.7411353Z Entering 'engine/taichi/external/SPIRV-Reflect/third_party/googletest'
+2026-10-28T15:28:40.7454959Z Entering 'engine/taichi/external/SPIRV-Tools'
+2026-10-28T15:28:40.7498558Z Entering 'engine/taichi/external/Vulkan-Headers'
+2026-10-28T15:28:40.7538765Z Entering 'engine/taichi/external/VulkanMemoryAllocator'
+2026-10-28T15:28:40.7578166Z Entering 'engine/taichi/external/assets'
+2026-10-28T15:28:40.7616463Z Entering 'engine/taichi/external/backward_cpp'
+2026-10-28T15:28:40.7655227Z Entering 'engine/taichi/external/eigen'
+2026-10-28T15:28:40.7696399Z Entering 'engine/taichi/external/glad'
+2026-10-28T15:28:40.7736339Z Entering 'engine/taichi/external/glfw'
+2026-10-28T15:28:40.7775884Z Entering 'engine/taichi/external/glm'
+2026-10-28T15:28:40.7816196Z Entering 'engine/taichi/external/googletest'
+2026-10-28T15:28:40.7854755Z Entering 'engine/taichi/external/imgui'
+2026-10-28T15:28:40.7893703Z Entering 'engine/taichi/external/spdlog'
+2026-10-28T15:28:40.7932806Z Entering 'engine/taichi/external/volk'
+2026-10-28T15:28:40.7992313Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T15:28:40.8028619Z http.https://github.com/.extraheader
+2026-10-28T15:28:40.8039023Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-28T15:28:40.8088226Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T15:28:40.8301138Z Entering 'engine/taichi/external/DirectX-Headers'
+2026-10-28T15:28:40.8342057Z Entering 'engine/taichi/external/FP16'
+2026-10-28T15:28:40.8383152Z Entering 'engine/taichi/external/PicoSHA2'
+2026-10-28T15:28:40.8424112Z Entering 'engine/taichi/external/SPIRV-Cross'
+2026-10-28T15:28:40.8471733Z Entering 'engine/taichi/external/SPIRV-Headers'
+2026-10-28T15:28:40.8511524Z Entering 'engine/taichi/external/SPIRV-Reflect'
+2026-10-28T15:28:40.8549069Z Entering 'engine/taichi/external/SPIRV-Reflect/third_party/googletest'
+2026-10-28T15:28:40.8590204Z Entering 'engine/taichi/external/SPIRV-Tools'
+2026-10-28T15:28:40.8630466Z Entering 'engine/taichi/external/Vulkan-Headers'
+2026-10-28T15:28:40.8668809Z Entering 'engine/taichi/external/VulkanMemoryAllocator'
+2026-10-28T15:28:40.8707174Z Entering 'engine/taichi/external/assets'
+2026-10-28T15:28:40.8745405Z Entering 'engine/taichi/external/backward_cpp'
+2026-10-28T15:28:40.8783658Z Entering 'engine/taichi/external/eigen'
+2026-10-28T15:28:40.8823724Z Entering 'engine/taichi/external/glad'
+2026-10-28T15:28:40.8861567Z Entering 'engine/taichi/external/glfw'
+2026-10-28T15:28:40.8900304Z Entering 'engine/taichi/external/glm'
+2026-10-28T15:28:40.8940208Z Entering 'engine/taichi/external/googletest'
+2026-10-28T15:28:40.8979405Z Entering 'engine/taichi/external/imgui'
+2026-10-28T15:28:40.9018062Z Entering 'engine/taichi/external/spdlog'
+2026-10-28T15:28:40.9057274Z Entering 'engine/taichi/external/volk'
+2026-10-28T15:28:40.9112444Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:40.9152035Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T15:28:40.9364668Z Entering 'engine/taichi/external/DirectX-Headers'
+2026-10-28T15:28:40.9382196Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/DirectX-Headers/config	remote.origin.url
+2026-10-28T15:28:40.9399003Z Entering 'engine/taichi/external/FP16'
+2026-10-28T15:28:40.9415624Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/FP16/config	remote.origin.url
+2026-10-28T15:28:40.9433076Z Entering 'engine/taichi/external/PicoSHA2'
+2026-10-28T15:28:40.9450280Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/PicoSHA2/config	remote.origin.url
+2026-10-28T15:28:40.9467269Z Entering 'engine/taichi/external/SPIRV-Cross'
+2026-10-28T15:28:40.9484605Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Cross/config	remote.origin.url
+2026-10-28T15:28:40.9506153Z Entering 'engine/taichi/external/SPIRV-Headers'
+2026-10-28T15:28:40.9523101Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Headers/config	remote.origin.url
+2026-10-28T15:28:40.9540137Z Entering 'engine/taichi/external/SPIRV-Reflect'
+2026-10-28T15:28:40.9556767Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Reflect/config	remote.origin.url
+2026-10-28T15:28:40.9572414Z Entering 'engine/taichi/external/SPIRV-Reflect/third_party/googletest'
+2026-10-28T15:28:40.9589053Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Reflect/modules/third_party/googletest/config	remote.origin.url
+2026-10-28T15:28:40.9607810Z Entering 'engine/taichi/external/SPIRV-Tools'
+2026-10-28T15:28:40.9624620Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Tools/config	remote.origin.url
+2026-10-28T15:28:40.9645648Z Entering 'engine/taichi/external/Vulkan-Headers'
+2026-10-28T15:28:40.9662662Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/Vulkan-Headers/config	remote.origin.url
+2026-10-28T15:28:40.9680195Z Entering 'engine/taichi/external/VulkanMemoryAllocator'
+2026-10-28T15:28:40.9699218Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/VulkanMemoryAllocator/config	remote.origin.url
+2026-10-28T15:28:40.9716966Z Entering 'engine/taichi/external/assets'
+2026-10-28T15:28:40.9734927Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/assets/config	remote.origin.url
+2026-10-28T15:28:40.9752322Z Entering 'engine/taichi/external/backward_cpp'
+2026-10-28T15:28:40.9770275Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/backward_cpp/config	remote.origin.url
+2026-10-28T15:28:40.9787353Z Entering 'engine/taichi/external/eigen'
+2026-10-28T15:28:40.9805452Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/eigen/config	remote.origin.url
+2026-10-28T15:28:40.9824602Z Entering 'engine/taichi/external/glad'
+2026-10-28T15:28:40.9842307Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glad/config	remote.origin.url
+2026-10-28T15:28:40.9858966Z Entering 'engine/taichi/external/glfw'
+2026-10-28T15:28:40.9877047Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glfw/config	remote.origin.url
+2026-10-28T15:28:40.9893593Z Entering 'engine/taichi/external/glm'
+2026-10-28T15:28:40.9911169Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glm/config	remote.origin.url
+2026-10-28T15:28:40.9929521Z Entering 'engine/taichi/external/googletest'
+2026-10-28T15:28:40.9946389Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/googletest/config	remote.origin.url
+2026-10-28T15:28:40.9963768Z Entering 'engine/taichi/external/imgui'
+2026-10-28T15:28:40.9980810Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/imgui/config	remote.origin.url
+2026-10-28T15:28:40.9997876Z Entering 'engine/taichi/external/spdlog'
+2026-10-28T15:28:41.0014911Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/spdlog/config	remote.origin.url
+2026-10-28T15:28:41.0032100Z Entering 'engine/taichi/external/volk'
+2026-10-28T15:28:41.0049269Z file:/home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/volk/config	remote.origin.url
+2026-10-28T15:28:41.0080657Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/DirectX-Headers/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0116528Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/FP16/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0153316Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/PicoSHA2/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0188796Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Cross/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0224218Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Headers/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0280189Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Reflect/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0310464Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Reflect/modules/third_party/googletest/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0345998Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/SPIRV-Tools/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0380641Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/Vulkan-Headers/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0415131Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/VulkanMemoryAllocator/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0449288Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/assets/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0482457Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/backward_cpp/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0518061Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/eigen/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0555297Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glad/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0591355Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glfw/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0626217Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/glm/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0660804Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/googletest/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0694271Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/imgui/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0727686Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/spdlog/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0761053Z [command]/usr/bin/git config --file /home/runner/work/human-cognome-project/human-cognome-project/.git/modules/taichi/external/volk/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T15:28:41.0929045Z Cleaning up orphan processes
+2026-10-28T15:28:41.1285623Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

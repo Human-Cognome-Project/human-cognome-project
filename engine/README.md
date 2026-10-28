@@ -221,7 +221,12 @@ The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
 ownership, inherited response and coupled settling/recovery now have the accepted
 [#194 production integration plan](../docs/production-hierarchy-response-plan.md).
 C3-1 fixed-tree implementation is released; C3-2 refresh awaits C3-1 acceptance.
-Neither production slice is built yet.
+The [C3-1 fixed-tree implementation](docs/LIVE-HIERARCHY.md) and
+[CPU investigation](tests/live_hierarchy/README.md) are for review under the
+[coherent-dynamics direction](../docs/coherent-dynamics-gpu-snapshots.md).
+Moving state is observed separately from invariant failure. The bounded
+[active-capture handoff](../docs/c3-cpu-capture-handoff.md) reuses the current
+execution; actual CUDA C3 qualification remains local. C3-2 is unbuilt and held.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded

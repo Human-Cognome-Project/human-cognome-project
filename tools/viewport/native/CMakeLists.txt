@@ -1,4 +1,4 @@
-add_library(viewport_snapshot STATIC snapshot.cpp)
+add_library(viewport_snapshot STATIC snapshot.cpp completed_state.cpp)
 target_link_libraries(viewport_snapshot PUBLIC active_workbench)
 target_include_directories(viewport_snapshot PUBLIC . ../vendor)
 target_compile_options(viewport_snapshot PRIVATE -Wall -Wextra -Wpedantic)

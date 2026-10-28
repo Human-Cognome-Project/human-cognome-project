@@ -140,6 +140,7 @@ struct ActiveSession::Execution {
   ActiveAssembly assembly;
   std::vector<StudyNode> nodes;
   std::unique_ptr<FixedStudy> study;
+  std::uint64_t completed_ticks{0};
 };
 ActiveSession::ActiveSession(const engine::InstanceSettings &settings)
     : runtime_(std::make_unique<engine::Runtime>(settings)) {}
@@ -197,6 +198,7 @@ ExecutionHandle ActiveSession::refresh(const ExecutionHandle &old,
           a.instance() == e.assembly.instance() &&
           a.generation() != old.generation);
   e.assembly = a;
+  e.completed_ticks = 0;
   try {
     e.study->publish(a.bind(e.nodes), p);
   } catch (...) {
@@ -218,7 +220,12 @@ bool ActiveSession::ready(const ExecutionHandle &h) const {
   }
 }
 void ActiveSession::tick(const ExecutionHandle &h, const field::Parameters &p) {
-  get(h).study->tick(p);
+  auto &e = get(h);
+  e.study->tick(p);
+  ++e.completed_ticks;
+}
+std::uint64_t ActiveSession::completed_ticks(const ExecutionHandle &h) const {
+  return get(h).completed_ticks;
 }
 ActiveReport ActiveSession::report(const ExecutionHandle &h,
                                    const warm::Uuid &owner) {

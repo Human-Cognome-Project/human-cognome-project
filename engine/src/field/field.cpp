@@ -504,6 +504,12 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *order = array_param(b, 11, PrimitiveType::i32, 1);
     auto *final_speed =
         profile_.wide() ? array_param(b, 12, real_type(), 1) : nullptr;
+    const bool live_capacity =
+        prepared_ && prepared_->capacity.limits()[Budget::LiveResponses];
+    auto *leaf_fields =
+        live_capacity ? array_param(b, 13, PrimitiveType::i32, 1) : nullptr;
+    auto *live_installed =
+        live_capacity ? scalar_param(b, 14, PrimitiveType::i32) : nullptr;
 
     auto *loop =
         b.create_struct_for(activity_->particle_activity.cells, false, threads);
@@ -692,8 +698,15 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                                              false, 1, 0, true);
           auto member_guard = b.get_loop_guard(members);
           auto *edge = load(b, order, {b.get_loop_index(members)});
-          activity_->centroids.activate(
-              b, load(b, edges, at(b, kEdgeGroup, edge)));
+          auto *field = load(b, edges, at(b, kEdgeGroup, edge));
+          std::optional<IRBuilder::IfGuard> selected;
+          if (live_capacity)
+            selected.emplace(
+                b.get_if_guard(b.create_if(b.create_logical_or(
+                                   b.create_logical_not(live_installed),
+                                   load(b, leaf_fields, {field}))),
+                               true));
+          activity_->centroids.activate(b, field);
           count_work(b, counters, detail::AdjacencyVisits);
         }
         auto newly = b.get_if_guard(
@@ -722,6 +735,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         engine::Param::array(PrimitiveType::i32)};
     if (profile_.wide())
       params.push_back(engine::Param::array(real_type()));
+    if (live_capacity) {
+      params.push_back(engine::Param::array(PrimitiveType::i32));
+      params.push_back(engine::Param::scalar(PrimitiveType::i32));
+    }
     integrate_ = engine::CompiledKernel(
         runtime,
         "field_integrate_" +
@@ -1385,6 +1402,11 @@ void Harness::launch_integrate(const Parameters64 &p) {
     bind(ctx, 12, determined_array_.get(),
          particles_ ? determined_values_ : empty_determined_values_,
          {std::max(particles_, 1)});
+  if (live_hierarchy_) {
+    if (!ctx.prepared)
+      ctx.set_arg_ndarray({13}, live_hierarchy_->leaf_fields());
+    engine::argument_int(ctx, 14, live_hierarchy_->installed());
+  }
   integrate_.launch(ctx);
 }
 
@@ -1584,6 +1606,8 @@ void Harness::prepare_empty_execution() {
        engine::Param::array(PrimitiveType::i64)});
   prepare_update_execution();
   prepare_geometry_execution();
+  if (s.capacity.limits()[Budget::LiveResponses])
+    live_hierarchy_ = std::make_unique<detail::LiveHierarchy>(*this);
   ready_ = true;
   uploaded_ = true;
   invalidated_ = false;
@@ -1612,10 +1636,13 @@ void Harness::prepare_empty_execution() {
       s.binding_bytes += kernel->prepared_bytes();
   if (centroid_cascade_)
     s.binding_bytes += centroid_cascade_->binding_bytes();
+  if (live_hierarchy_)
+    s.binding_bytes += live_hierarchy_->binding_bytes();
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
       runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
       s.capacity.limits()[Budget::CascadeNodes] != 0,
-      s.capacity.limits()[Budget::CascadeCoverage] != 0, profile_.wide());
+      s.capacity.limits()[Budget::CascadeCoverage] != 0, profile_.wide(),
+      s.capacity.limits()[Budget::LiveResponses] != 0);
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");
@@ -1765,6 +1792,8 @@ void Harness::tick_values(const Parameters64 &p) {
   if (prepared_ &&
       prepared_->completed_ticks == std::numeric_limits<std::uint64_t>::max())
     throw std::overflow_error("completed tick observation counter exhausted");
+  if (live_hierarchy_)
+    live_hierarchy_->validate();
   try {
     validate_prepared_bindings();
     const auto start = std::chrono::steady_clock::now();
@@ -1776,17 +1805,27 @@ void Harness::tick_values(const Parameters64 &p) {
     activity_->begin(*this, mode_ == TickMode::AllLoaded,
                      invalidated_ || parameters_changed, p.reach_strength != 0);
     launch_clear(false);
-    launch_force(p);
+    if (live_hierarchy_installed())
+      live_hierarchy_->force(p.gravity);
+    else
+      launch_force(p);
     launch_contact(p);
     launch_integrate(p);
     if (!profile_.wide())
       launch_determine();
     activity_->touch_contacts(*this, p.contact_stiffness);
-    activity_->mark(*this, mode_ == TickMode::AllLoaded);
-    launch_centroid(p, false);
-    activity_->touch(*this, p.gravity);
+    if (live_hierarchy_installed())
+      live_hierarchy_->poll(p.gravity, p.contact_stiffness);
+    else {
+      activity_->mark(*this, mode_ == TickMode::AllLoaded);
+      launch_centroid(p, false);
+      activity_->touch(*this, p.gravity);
+    }
     runtime_->synchronize();
     demand_ = activity_->report(exposed_, exposed_fields_);
+    if (live_hierarchy_installed())
+      demand_.force_skipped =
+          live_hierarchy_->response_count() - demand_.force_requests;
     if (demand_.numerical_errors)
       throw std::runtime_error("trial numerical/source invariant failed");
     demand_.frame_anchor = frame_anchor_;
@@ -1798,6 +1837,30 @@ void Harness::tick_values(const Parameters64 &p) {
     timings_.kernel_ms += elapsed(start);
     if (prepared_)
       ++prepared_->completed_ticks;
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
+}
+
+bool Harness::live_hierarchy_installed() const {
+  return live_hierarchy_ && live_hierarchy_->installed();
+}
+LiveHierarchyResult Harness::install_live_hierarchy(
+    std::uint64_t generation,
+    const WeightedCascadeSpec &spec,
+    std::uint64_t work) {
+  if (!live_hierarchy_)
+    return {};
+  validate_prepared_bindings();
+  return live_hierarchy_->install(generation, spec, work);
+}
+const LiveHierarchyInspection &Harness::inspect_live_hierarchy() {
+  if (!ready_ || !live_hierarchy_installed())
+    throw std::logic_error("no ready live hierarchy");
+  live_hierarchy_->validate();
+  try {
+    return live_hierarchy_->inspect();
   } catch (...) {
     ready_ = false;
     throw;

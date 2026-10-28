@@ -49,7 +49,7 @@ const offset = () => shift.some(v => v !== 0);
 const place = point => shift.every(v => v === 0) ? point : point.map((v, i) => v + shift[i]);
 function frame(particles, target = null) {
   particles = particles.map(p => ({position: place(p.position), radius: p.radius}));
-  const bounds = boundsFor(particles), centre = target ?? bounds.centre;
+  const bounds = boundsFor(particles), centre = target ?? (particles.length === 1 ? particles[0].position : bounds.centre);
   let radius = 0.001;
   for (const p of particles) radius = Math.max(radius, Math.hypot(...p.position.map((v, i) => v - centre[i])) + (p.radius ?? 0));
   const distance = radius * 1.8 / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.min(1, camera.aspect);
@@ -131,6 +131,9 @@ function replaceSnapshot(next, keep = false) {
   $('capture-title').textContent = snapshot.capture.label || 'Untitled study'; $('capture-meta').replaceChildren();
   for (const [label, value] of Object.entries({'Schema': 'HCP snapshot v1', Study: snapshot.capture.study,
     Generation: snapshot.capture.generation, Tick: `${snapshot.capture.tick} · ${snapshot.capture.phase}`,
+    ...snapshot.execution && {Backend: snapshot.execution.backend, Execution: snapshot.execution.mode},
+    ...snapshot.numerics && {Numerics: `${snapshot.numerics.profile} · body Q${snapshot.numerics.body_fraction_bits} · default field Q${snapshot.numerics.field_fraction_bits}`},
+    ...snapshot.execution?.comparisons.length && {'Comparison precision': `${snapshot.execution.comparisons.length} comparisons · retained fraction bits ${[...new Set(snapshot.execution.comparisons.map(c => c.fraction_bits))].sort((a, b) => a - b).join(', ')}`},
     'Double frame reference': snapshot.frame.reference.join(', '), 'Captured camera target': snapshot.frame.camera_target.join(', '),
     ...offset() && {'Display offset': `${shift.join(', ')} (objects shifted; camera unchanged)`},
     Coordinates: 'Reference-local · operative model units'})) row($('capture-meta'), label, value);

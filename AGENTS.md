@@ -1,5 +1,59 @@
 # Agent guidance
 
+## Immediate action — compiler audit portability, 2026-10-28
+
+Contributor correction at `3eee41e`, with target/optimizer metadata at `d762111`,
+replaces fixed clone totals with semantic CFG/data-flow coverage and expanded
+LLVM-verified controls. [Portability evidence](engine/tests/live_hierarchy/compiler-v3/README.md)
+retains local 96/96 regression in 1570.98 seconds and fresh hosted 96/96 in
+2062.37 seconds, all four default and scalar hierarchy modes in each environment,
+and actual 15.0.6/15.0.7 optimized modules. Hosted run 40706207825 also passed
+180 PostgreSQL integration checks, unchanged cold fingerprints and actual CPU
+backend verification. The test-only correction awaits maintainer review and
+C3-1 acceptance. C3-2 stays held and CUDA is unqualified.
+
+Original blocker: #195 hosted native CI at `7e03e93` passed 92/96 suites; all four hierarchy
+modes failed an exact compiler reader-site count assertion. This is separate
+from the historical settling failure. Follow the [correction contract](docs/c3-cpu-capture-handoff.md#current-remote-correction-before-local-gpu-testing--2026-10-28):
+prove semantic reader coverage across emitted compiler shapes, preserve strict
+ordering/packet/negative controls, and rerun the CPU matrix plus skipped hosted
+integration/backend checks. Do not simply relax counts or change the physics.
+Complete remote-capable preparation first; Patrick will then pursue local GPU
+testing. CUDA remains unqualified, #195 unaccepted and C3-2 held.
+
+## Current direction — coherent dynamics and GPU snapshots, 2026-10-27
+
+Patrick clarified that exact resolution is an asymptotic ideal, not mandatory
+stillness for every field. The [current acceptance and GPU snapshot continuation](docs/coherent-dynamics-gpu-snapshots.md)
+supersedes universal moving-fixture settling gates below. Preserve mathematical,
+publication, pending-input and resource invariants; record ongoing motion honestly.
+Revise #195's executable criteria and evidence before acceptance. The immediate
+goal is a bounded current-hierarchy GPU run with faithful rendered snapshots;
+full #156 completion is not a prerequisite for that observation milestone.
+Actual CUDA support remains unqualified. The shared active-execution capture
+adapter and CPU/export validation are built for review; see the
+[pinned handoff](docs/c3-cpu-capture-handoff.md). Capture must observe
+the active calculation stream's completed state through one backend-independent
+interface; it must not create or replay a separate CPU simulation. The remote
+agent should complete supported code/CPU/export validation and prepare a pinned
+handoff; actual CUDA execution, qualification and any hardware-specific debugging
+follow locally on Patrick's machine. Remote capture work need not wait for CUDA.
+C3-2 remains held pending C3-1 acceptance. Historical results remain unchanged.
+
+## C3-1 contribution — revised for review
+
+The opt-in [fixed installed trial hierarchy](engine/docs/LIVE-HIERARCHY.md)
+implements the accepted #194 C3-1 contract for CPU investigation. Its
+[source-pinned results](engine/tests/live_hierarchy/README.md) retain a coupled
+settling failures under the historical v1 criteria. Their traces and source pins
+remain intact. The revised executable acceptance follows the current direction
+above and separates continuing motion from invariant failure.
+The revised [coherence/capture contribution](docs/c3-cpu-capture-handoff.md)
+completes continuous observations and exports the active execution through a
+shared native interface. New evidence retains its own source pin; historical
+v1 failures are unchanged. This contribution is not accepted; C3-2 coherent
+refresh remains held, as do the #156/#145 exits.
+
 ## C3 plan acceptance — 2026-10-27
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
@@ -56,12 +110,18 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-27**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-10-28**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
 fixed-tree implementation is released; C3-2 coherent refresh awaits C3-1 acceptance.
+
+The [C3-1 implementation for review](engine/docs/LIVE-HIERARCHY.md) now supplies
+that opt-in fixed-tree CPU path. Its executable acceptance now follows the
+coherent-dynamics direction above; see the separately pinned
+[revised observations and original investigation](engine/tests/live_hierarchy/README.md).
+The active-capture adapter is built for review; CUDA execution remains unqualified.
 
 This is the maintained status entry point. Code and executable evidence determine
 what is built; accepted decisions govern intended behavior. A conflict between

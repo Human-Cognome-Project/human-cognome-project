@@ -1,0 +1,30 @@
+[
+  {
+    "original": "cpu-native.txt",
+    "bytes": 1330553,
+    "sha256": "a82c6cf1f1b33f84075b4d7119e584034b8239f3e484f2dd248f24181d19f31c",
+    "retained": "cpu-native.txt.gz",
+    "compressed_bytes": 172362
+  },
+  {
+    "original": "cpu-no-unroll.txt",
+    "bytes": 1225165,
+    "sha256": "0327058269639c1cbe5c354a5a6fdc7f68a336c359a1f1122ef45d01fddc8b42",
+    "retained": "cpu-no-unroll.txt.gz",
+    "compressed_bytes": 155809
+  },
+  {
+    "original": "hosted-native.txt",
+    "bytes": 1405169,
+    "sha256": "c5056203f14cf3e5dea0a6bcd408977cc5535c75d2fad90350ca0973527c1876",
+    "retained": "hosted-native.txt.gz",
+    "compressed_bytes": 182958
+  },
+  {
+    "original": "hosted-no-unroll.txt",
+    "bytes": 1196212,
+    "sha256": "af8fe0cc530f3d344bdf46c7f063387662a0ea6137e37de40b50cd0331646dec",
+    "retained": "hosted-no-unroll.txt.gz",
+    "compressed_bytes": 155200
+  }
+]

@@ -496,6 +496,8 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   const auto &limits = s.capacity.limits();
   if (expected != s.generation)
     return reject(UpdateStatus::Stale);
+  if (count && live_hierarchy_installed())
+    return reject(UpdateStatus::Unsupported);
   if (count > limits[Budget::Batch])
     return exhausted(Budget::Batch, count);
   if (!count)

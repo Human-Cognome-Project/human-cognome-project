@@ -39,7 +39,7 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits,
         "cascade work exceeds signed native counter range");
   for (auto kind :
        {Budget::CascadeNodes, Budget::CascadeLinks, Budget::CascadeReferences,
-        Budget::CascadeLevels, Budget::CascadeCoverage})
+        Budget::CascadeLevels, Budget::CascadeCoverage, Budget::LiveResponses})
     if (limits[kind] > (std::uint64_t{1} << 30))
       throw std::invalid_argument("cascade dimension exceeds native axis");
   for (std::size_t i = 0; i < static_cast<std::size_t>(Budget::ScratchBytes);
@@ -52,6 +52,11 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits,
       limits[Budget::Particles] > limits[Budget::Potential] ||
       limits[Budget::Focus] > limits[Budget::Fields])
     throw std::invalid_argument("inconsistent prepared logical limits");
+  if (limits[Budget::LiveResponses] &&
+      (!profile.wide() || !limits[Budget::CascadeNodes] ||
+       !limits[Budget::CascadeCoverage]))
+    throw std::invalid_argument(
+        "live hierarchy requires weighted f64 capacity");
   const auto base = numerical_bytes();
   if (limits[Budget::ScratchBytes] >
       std::numeric_limits<std::size_t>::max() - base)
@@ -119,6 +124,7 @@ const char *budget_name(Budget budget) {
                              "cascade-levels",
                              "cascade-work",
                              "cascade-coverage",
+                             "live-responses",
                              "none"};
   const auto i = static_cast<std::size_t>(budget);
   return names[i <= static_cast<std::size_t>(Budget::Count)

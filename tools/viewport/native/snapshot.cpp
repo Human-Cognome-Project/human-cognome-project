@@ -198,7 +198,7 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
           {"source", c.source}};
 }
 Json capture(assembly::ActiveSession &session, const warm::Uuid &owner, const CaptureContext &c) {
-  return snapshot(session.report(c.handle, owner), c);
+  return snapshot(observe(session, owner, c.handle), c);
 }
 void write(const std::string &path, const Json &value) {
   const auto text = value.dump(2);  // Finite numbers, UTF-8 validation and proper escaping.

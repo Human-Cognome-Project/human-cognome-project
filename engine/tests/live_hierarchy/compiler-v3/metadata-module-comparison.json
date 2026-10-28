@@ -1,0 +1,150 @@
+{
+  "prior_source": "3eee41eb8faa6a6ccb8a9ca688b8c8060e52d30c",
+  "metadata_source": "d7621117cc03b62eac498c50093761434b95c5ec",
+  "rows": [
+    {
+      "configuration": "1-bulk-default",
+      "mode": 0,
+      "identical": true,
+      "sha256": "008de74cd916d783421ed4096f30e13fb768c70ab03f818efd5608e33628eee5"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "mode": 1,
+      "identical": true,
+      "sha256": "14aba61b9ee521aa84931d0cb8f8a2be14e13247941eb797656003e470273ad2"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "mode": 2,
+      "identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 0,
+      "identical": true,
+      "sha256": "d7a9dec95bd1ea634ea48c06f218030060dbe20b9cb199af5d2de61cb7a4b869"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 1,
+      "identical": true,
+      "sha256": "f27d7834264dc021f39ab1363aa585622e3d183915dc84e54b367a332ba827bc"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "mode": 2,
+      "identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 0,
+      "identical": true,
+      "sha256": "008de74cd916d783421ed4096f30e13fb768c70ab03f818efd5608e33628eee5"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 1,
+      "identical": true,
+      "sha256": "14aba61b9ee521aa84931d0cb8f8a2be14e13247941eb797656003e470273ad2"
+    },
+    {
+      "configuration": "1-direct-default",
+      "mode": 2,
+      "identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 0,
+      "identical": true,
+      "sha256": "d7a9dec95bd1ea634ea48c06f218030060dbe20b9cb199af5d2de61cb7a4b869"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 1,
+      "identical": true,
+      "sha256": "f27d7834264dc021f39ab1363aa585622e3d183915dc84e54b367a332ba827bc"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "mode": 2,
+      "identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 0,
+      "identical": true,
+      "sha256": "737a6052702375f02d682977181ee5bab79d827c660fdd948d75b54af6ef9d6c"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 1,
+      "identical": true,
+      "sha256": "265e71e9dfa54e1cfc372ff0d0298cd9082771cd089a0e68050131327a957e2a"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "mode": 2,
+      "identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 0,
+      "identical": true,
+      "sha256": "c30f9794a3f7571cf8d5fe0017e95eb721748463aad05336d9e7961592d5a403"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 1,
+      "identical": true,
+      "sha256": "90097d69a302d0522cc46b300de835726fd6b3c431fa3ab02a4dba68ea81bd4e"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "mode": 2,
+      "identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 0,
+      "identical": true,
+      "sha256": "737a6052702375f02d682977181ee5bab79d827c660fdd948d75b54af6ef9d6c"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 1,
+      "identical": true,
+      "sha256": "265e71e9dfa54e1cfc372ff0d0298cd9082771cd089a0e68050131327a957e2a"
+    },
+    {
+      "configuration": "2-direct-default",
+      "mode": 2,
+      "identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 0,
+      "identical": true,
+      "sha256": "c30f9794a3f7571cf8d5fe0017e95eb721748463aad05336d9e7961592d5a403"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 1,
+      "identical": true,
+      "sha256": "90097d69a302d0522cc46b300de835726fd6b3c431fa3ab02a4dba68ea81bd4e"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "mode": 2,
+      "identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    }
+  ]
+}

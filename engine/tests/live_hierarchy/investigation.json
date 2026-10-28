@@ -1,0 +1,3065 @@
+{
+  "status": "Draft for review; coupled settling acceptance BLOCKED",
+  "date": "2026-10-27",
+  "accepted_plan": 194,
+  "accepted_baseline": "004aaea0f2a2ae1381027425721e39ca3cb18af5",
+  "runtime_pin": "bb934d642975a18c1c354e237eed0530780a01cf",
+  "final_test_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+  "backend_tree": "6784224121f68de1bf1aa0765b54e80d20e355ad",
+  "compiler": "Clang/LLVM 15.0.6",
+  "build": {
+    "type": "Release",
+    "flags": "-O3 -DNDEBUG",
+    "cuda": false,
+    "viewport": true,
+    "warm_integration": true,
+    "native_math": "strict; fast_math=false",
+    "ctest_concurrency": 2
+  },
+  "original_regression": {
+    "source_pin": "bb934d642975a18c1c354e237eed0530780a01cf",
+    "cpu_suites": 96,
+    "passed": 96,
+    "failed": 0,
+    "elapsed_seconds": 1296.85,
+    "previous_cpu_suites": 92,
+    "new_modes": 4,
+    "includes_permuted_moving_fixture": false
+  },
+  "final_modes": {
+    "source_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+    "mode_count": 4,
+    "failed_modes": 4,
+    "full_regression_rerun": false,
+    "changes_since_original": "Only test field-order coverage and motion diagnostics; runtime and the other 92 CPU suites unchanged.",
+    "build_method": "Separate test object/executable linked against the unchanged original runtime libraries. Original CTest binaries were not replaced.",
+    "compile_and_link": {
+      "cwd": "/workspace/human-cognome-project/engine/build",
+      "compile": [
+        "/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang++",
+        "-DTI_ARCH_x64",
+        "-DTI_INCLUDED",
+        "-DTI_ISE_NONE",
+        "-DTI_WITH_LLVM",
+        "-D_GNU_SOURCE",
+        "-D__STDC_CONSTANT_MACROS",
+        "-D__STDC_FORMAT_MACROS",
+        "-D__STDC_LIMIT_MACROS",
+        "-I/workspace/human-cognome-project/engine/src",
+        "-I/workspace/human-cognome-project/engine/src/assembly/..",
+        "-I/workspace/human-cognome-project/kernels/database/warm/..",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/include",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/spdlog/include",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/eigen",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/FP16/include",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/PicoSHA2",
+        "-isystem",
+        "/workspace/human-cognome-project/engine/taichi/external/SPIRV-Tools/include",
+        "-isystem",
+        "/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/include",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c++17",
+        "-o",
+        "/tmp/hcp-c3-final.o",
+        "-c",
+        "/workspace/human-cognome-project/engine/tests/live_hierarchy_test.cpp"
+      ],
+      "link": [
+        "/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang++",
+        "-O3",
+        "-DNDEBUG",
+        "/tmp/hcp-c3-final.o",
+        "-o",
+        "/tmp/hcp-c3-final",
+        "libstudy_assembly.a",
+        "libmembership_fields.a",
+        "libfield_core.a",
+        "libengine_support.a",
+        "-Wl,--start-group",
+        "/workspace/human-cognome-project/engine/taichi/build-review/libtaichi_core_static.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/common/libtaichi_common.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/util/libtaichi_util.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/compilation_manager/libcompilation_manager.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/codegen/cpu/libcpu_codegen.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/codegen/llvm/libllvm_codegen.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/runtime/cpu/libcpu_runtime.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/runtime/llvm/libllvm_runtime.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/runtime/program_impls/llvm/libllvm_program_impl.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/rhi/libti_device_api.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/rhi/common/libcommon_rhi.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/rhi/cpu/libcpu_rhi.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/rhi/llvm/libllvm_rhi.a",
+        "/workspace/human-cognome-project/engine/taichi/build-review/taichi/rhi/interop/libinterop_rhi.a",
+        "-Wl,--end-group",
+        "-L/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/lib",
+        "-lLLVM-15",
+        "-ldl",
+        "libletter_projection.a",
+        "libwarm_values.a"
+      ]
+    },
+    "modes": [
+      {
+        "name": "live_hierarchy_1_bulk",
+        "source_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+        "actual_backend": "cpu/x64",
+        "threads": 1,
+        "path": "bulk",
+        "exit_status": 1,
+        "case_failures": 1,
+        "source_numerical_shapes": [
+          {
+            "record": "numerical_shape",
+            "name": "particles",
+            "rows": 11,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 6160,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "groups",
+            "rows": 8,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 4480,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-floats",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-integers",
+            "rows": 2,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 4096,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contacts",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "determiners",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-delta",
+            "rows": 3,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 1680,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-delta",
+            "rows": 6,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 3360,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "focus",
+            "rows": 11,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 88,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "selected-focus",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "counters",
+            "rows": 1,
+            "stride": 20,
+            "element_bytes": 8,
+            "per_copy_bytes": 160,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "universal-mass",
+            "rows": 1,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 8,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          }
+        ],
+        "passed_cases": [
+          "basic",
+          "forces",
+          "singleton",
+          "cumulative_crossing",
+          "cumulative_cancellation",
+          "tree",
+          "moving",
+          "letters"
+        ],
+        "failed_cases": [
+          {
+            "record": "case_failure",
+            "name": "moving_permuted",
+            "reason": "moving fixture did not settle within 4096 ticks"
+          }
+        ],
+        "held_input": {
+          "transitions": 226,
+          "max_polls": 5,
+          "quiet_polls": 8
+        },
+        "moving": [
+          {
+            "name": "two_level",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 38,
+            "max_ticks": 499,
+            "ordinary_ms": 129.27535000000003,
+            "observed_elapsed_ms": 206.95317500000007,
+            "particle_evaluations": 6273,
+            "centroid_visits": 6130,
+            "motion_attempts": 5313,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 34,
+            "max_ticks": 1345,
+            "ordinary_ms": 2200.343616000002,
+            "observed_elapsed_ms": 2961.0707650000004,
+            "particle_evaluations": 31201,
+            "centroid_visits": 39091,
+            "motion_attempts": 27342,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "two_level_permuted",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 37,
+            "max_ticks": 4003,
+            "ordinary_ms": 3993.4315100000035,
+            "observed_elapsed_ms": 5418.549714999999,
+            "particle_evaluations": 66599,
+            "centroid_visits": 65860,
+            "motion_attempts": 60425,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap_permuted",
+            "rounds_observed": 24,
+            "all_33_completed": false,
+            "min_ticks": 33,
+            "max_ticks": 4096,
+            "ordinary_ms": 2112.9520819999952,
+            "observed_elapsed_ms": 2827.8826280000003,
+            "particle_evaluations": 28042,
+            "centroid_visits": 34926,
+            "motion_attempts": 24247,
+            "baseline_wakes": 0,
+            "failing_rounds": [
+              {
+                "record": "moving",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "ticks": 4096,
+                "quiet": 0,
+                "body_work": 15040,
+                "field_work": 18621,
+                "attempts": 13128,
+                "baseline_wakes": 0,
+                "ordinary_ms": 1270.4430759999943,
+                "observed_elapsed_ms": 1679.864817
+              }
+            ],
+            "failure_dynamics": [
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 0,
+                "velocity_reversals": 291,
+                "published_direction_reversals": 233,
+                "max_abs_x": 309,
+                "max_abs_velocity_x": 630.8092109388676,
+                "max_abs_force_x": 1263.3037049066234,
+                "max_published_step_x": 314.671875,
+                "published_travel_x": 1928.66796875
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 1,
+                "velocity_reversals": 370,
+                "published_direction_reversals": 278,
+                "max_abs_x": 154,
+                "max_abs_velocity_x": 317.1892617578931,
+                "max_abs_force_x": 1263.3103399023346,
+                "max_published_step_x": 158.25,
+                "published_travel_x": 1305.380126953125
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 2,
+                "velocity_reversals": 262,
+                "published_direction_reversals": 206,
+                "max_abs_x": 320,
+                "max_abs_velocity_x": 630.7560991264397,
+                "max_abs_force_x": 1263.3169403491047,
+                "max_published_step_x": 314.40625,
+                "published_travel_x": 2021.708984375
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 3,
+                "velocity_reversals": 442,
+                "published_direction_reversals": 439,
+                "max_abs_x": 45.5,
+                "max_abs_velocity_x": 77.14969414189433,
+                "max_abs_force_x": 631.6551731897189,
+                "max_published_step_x": 38.5625,
+                "published_travel_x": 921.90234375
+              }
+            ],
+            "frozen_diagnostics": [
+              {
+                "record": "frozen_after_limit",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "polls": 1,
+                "hierarchy_reference": 1,
+                "physical_unchanged": 1,
+                "body_work_pending": 4
+              }
+            ],
+            "final_trace_samples": 64
+          },
+          {
+            "name": "letter_and_UTF8_bytes",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 33,
+            "max_ticks": 1123,
+            "ordinary_ms": 134.3167149999999,
+            "observed_elapsed_ms": 195.25625700000003,
+            "particle_evaluations": 3140,
+            "centroid_visits": 2266,
+            "motion_attempts": 2287,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          }
+        ],
+        "selector_audit_shapes": [
+          {
+            "record": "production_selector_audit",
+            "kernel": 0,
+            "own": 0,
+            "child": 0,
+            "response": 6,
+            "publish": 0,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 1,
+            "own": 1,
+            "child": 5,
+            "response": 2,
+            "publish": 1,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 2,
+            "own": 0,
+            "child": 0,
+            "response": 0,
+            "publish": 0,
+            "plain": 0
+          }
+        ],
+        "packet_audit_checks": 182,
+        "compiled_selector_instructions": 195,
+        "compiled_selector_instruction_sha256": "a30b98f72fbaeaae05c02714a4b28ff0df212d227a17703136a32964e5765e22",
+        "compiler_negative_controls": [
+          {
+            "record": "compiler_negative",
+            "control": "0 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "1 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "2 rejected"
+          }
+        ],
+        "rejection_controls": [
+          {
+            "record": "installation_reject",
+            "name": "stale_generation",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "aliased_output",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "recycled_field",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "stale_source",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "wrong_ordinal",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "anonymous_grouping",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "cycle",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "incomplete_root",
+            "status": 12
+          },
+          {
+            "record": "installation_reject",
+            "name": "work_limit",
+            "status": 10
+          },
+          {
+            "record": "installation_reject",
+            "name": "partial_owner_ledger",
+            "status": 2
+          }
+        ],
+        "ordered_handoff": [
+          {
+            "record": "ordered_handoff",
+            "order": 0,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          },
+          {
+            "record": "ordered_handoff",
+            "order": 1,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          }
+        ],
+        "counter_samples": [
+          "first_use_before,39345426,39223296,146,162,41677226,87,1074989468,41748892,3,23,5.5868954658508301",
+          "first_use_after,39345426,39223296,146,162,41677226,87,1074989468,41748892,3,23,5.5868954658508301",
+          "cumulative_before,275417982,39223296,146,1080,285203038,603,1075014044,278243740,9,161,39.116382598876953",
+          "cumulative_after,275417982,39223296,146,1080,285203038,603,1075014044,278243740,9,161,39.116382598876953",
+          "cumulative_before,314763408,39223296,146,1233,325796108,689,1075018140,317659548,10,184,44.68508768081665",
+          "cumulative_after,314763408,39223296,146,1233,325796108,689,1075018140,317659548,10,184,44.68508768081665",
+          "moving_reuse_before,393454260,39223296,146,1539,406982248,861,1075026332,396491164,12,230,54.883458137512207",
+          "moving_reuse_after,393454260,39223296,146,1539,406982248,861,1075026332,396491164,12,230,54.883458137512207",
+          "moving_reuse_before,432799686,39223296,146,1692,447575318,947,1075030428,435906972,13,253,59.869935512542725",
+          "moving_reuse_after,432799686,39223296,146,1692,447575318,947,1075030428,435906972,13,253,59.869935512542725",
+          "moving_reuse_before,472145112,39223296,146,1845,488168388,1033,1075034524,475322780,14,276,65.056572914123535",
+          "moving_reuse_after,472145112,39223296,146,1845,488168388,1033,1075034524,475322780,14,276,65.056572914123535",
+          "moving_reuse_before,511490538,39223296,146,1998,528761458,1119,1075038620,514738588,15,299,70.525014400482178",
+          "moving_reuse_before,550835964,39223296,146,2152,569358624,1206,1075046812,554158492,17,325,76.620903253555298",
+          "moving_reuse_after,550835964,39223296,146,2152,569358624,1206,1075046812,554158492,17,325,76.620903253555298"
+        ],
+        "publication_reference": [
+          {
+            "record": "publication_reference",
+            "conditioned_on_verified_final_velocity": 1,
+            "long_double_cell_boundary_cases": 9
+          }
+        ],
+        "output_sha256": "119aeac072971b7f6b9704ad0db535b726048bb91383ade6a708b9fc8dc208ae"
+      },
+      {
+        "name": "live_hierarchy_1_direct",
+        "source_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+        "actual_backend": "cpu/x64",
+        "threads": 1,
+        "path": "direct",
+        "exit_status": 1,
+        "case_failures": 1,
+        "source_numerical_shapes": [
+          {
+            "record": "numerical_shape",
+            "name": "particles",
+            "rows": 11,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 6160,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "groups",
+            "rows": 8,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 4480,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-floats",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-integers",
+            "rows": 2,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 4096,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contacts",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "determiners",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-delta",
+            "rows": 3,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 1680,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-delta",
+            "rows": 6,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 3360,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "focus",
+            "rows": 11,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 88,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "selected-focus",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "counters",
+            "rows": 1,
+            "stride": 20,
+            "element_bytes": 8,
+            "per_copy_bytes": 160,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "universal-mass",
+            "rows": 1,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 8,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          }
+        ],
+        "passed_cases": [
+          "basic",
+          "forces",
+          "singleton",
+          "cumulative_crossing",
+          "cumulative_cancellation",
+          "tree",
+          "moving",
+          "letters"
+        ],
+        "failed_cases": [
+          {
+            "record": "case_failure",
+            "name": "moving_permuted",
+            "reason": "moving fixture did not settle within 4096 ticks"
+          }
+        ],
+        "held_input": {
+          "transitions": 226,
+          "max_polls": 5,
+          "quiet_polls": 8
+        },
+        "moving": [
+          {
+            "name": "two_level",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 38,
+            "max_ticks": 499,
+            "ordinary_ms": 655.3816410000001,
+            "observed_elapsed_ms": 878.331277,
+            "particle_evaluations": 6273,
+            "centroid_visits": 6130,
+            "motion_attempts": 5313,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 34,
+            "max_ticks": 1345,
+            "ordinary_ms": 1972.0997949999994,
+            "observed_elapsed_ms": 2657.1929700000005,
+            "particle_evaluations": 31201,
+            "centroid_visits": 39091,
+            "motion_attempts": 27342,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "two_level_permuted",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 37,
+            "max_ticks": 4003,
+            "ordinary_ms": 6829.414487000004,
+            "observed_elapsed_ms": 9087.997083,
+            "particle_evaluations": 66599,
+            "centroid_visits": 65860,
+            "motion_attempts": 60425,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap_permuted",
+            "rounds_observed": 24,
+            "all_33_completed": false,
+            "min_ticks": 33,
+            "max_ticks": 4096,
+            "ordinary_ms": 2305.4685849999964,
+            "observed_elapsed_ms": 3062.7404159999996,
+            "particle_evaluations": 28042,
+            "centroid_visits": 34926,
+            "motion_attempts": 24247,
+            "baseline_wakes": 0,
+            "failing_rounds": [
+              {
+                "record": "moving",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "ticks": 4096,
+                "quiet": 0,
+                "body_work": 15040,
+                "field_work": 18621,
+                "attempts": 13128,
+                "baseline_wakes": 0,
+                "ordinary_ms": 1092.0799599999984,
+                "observed_elapsed_ms": 1456.016124
+              }
+            ],
+            "failure_dynamics": [
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 0,
+                "velocity_reversals": 291,
+                "published_direction_reversals": 233,
+                "max_abs_x": 309,
+                "max_abs_velocity_x": 630.8092109388676,
+                "max_abs_force_x": 1263.3037049066234,
+                "max_published_step_x": 314.671875,
+                "published_travel_x": 1928.66796875
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 1,
+                "velocity_reversals": 370,
+                "published_direction_reversals": 278,
+                "max_abs_x": 154,
+                "max_abs_velocity_x": 317.1892617578931,
+                "max_abs_force_x": 1263.3103399023346,
+                "max_published_step_x": 158.25,
+                "published_travel_x": 1305.380126953125
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 2,
+                "velocity_reversals": 262,
+                "published_direction_reversals": 206,
+                "max_abs_x": 320,
+                "max_abs_velocity_x": 630.7560991264397,
+                "max_abs_force_x": 1263.3169403491047,
+                "max_published_step_x": 314.40625,
+                "published_travel_x": 2021.708984375
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "body": 3,
+                "velocity_reversals": 442,
+                "published_direction_reversals": 439,
+                "max_abs_x": 45.5,
+                "max_abs_velocity_x": 77.14969414189433,
+                "max_abs_force_x": 631.6551731897189,
+                "max_published_step_x": 38.5625,
+                "published_travel_x": 921.90234375
+              }
+            ],
+            "frozen_diagnostics": [
+              {
+                "record": "frozen_after_limit",
+                "name": "three_level_overlap_permuted",
+                "round": 23,
+                "polls": 1,
+                "hierarchy_reference": 1,
+                "physical_unchanged": 1,
+                "body_work_pending": 4
+              }
+            ],
+            "final_trace_samples": 64
+          },
+          {
+            "name": "letter_and_UTF8_bytes",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 33,
+            "max_ticks": 1123,
+            "ordinary_ms": 320.9429310000001,
+            "observed_elapsed_ms": 432.53515300000015,
+            "particle_evaluations": 3140,
+            "centroid_visits": 2266,
+            "motion_attempts": 2287,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          }
+        ],
+        "selector_audit_shapes": [
+          {
+            "record": "production_selector_audit",
+            "kernel": 0,
+            "own": 0,
+            "child": 0,
+            "response": 6,
+            "publish": 0,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 1,
+            "own": 1,
+            "child": 5,
+            "response": 2,
+            "publish": 1,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 2,
+            "own": 0,
+            "child": 0,
+            "response": 0,
+            "publish": 0,
+            "plain": 0
+          }
+        ],
+        "packet_audit_checks": 182,
+        "compiled_selector_instructions": 195,
+        "compiled_selector_instruction_sha256": "a30b98f72fbaeaae05c02714a4b28ff0df212d227a17703136a32964e5765e22",
+        "compiler_negative_controls": [
+          {
+            "record": "compiler_negative",
+            "control": "0 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "1 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "2 rejected"
+          }
+        ],
+        "rejection_controls": [
+          {
+            "record": "installation_reject",
+            "name": "stale_generation",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "aliased_output",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "recycled_field",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "stale_source",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "wrong_ordinal",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "anonymous_grouping",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "cycle",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "incomplete_root",
+            "status": 12
+          },
+          {
+            "record": "installation_reject",
+            "name": "work_limit",
+            "status": 10
+          },
+          {
+            "record": "installation_reject",
+            "name": "partial_owner_ledger",
+            "status": 2
+          }
+        ],
+        "ordered_handoff": [
+          {
+            "record": "ordered_handoff",
+            "order": 0,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          },
+          {
+            "record": "ordered_handoff",
+            "order": 1,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          }
+        ],
+        "counter_samples": [
+          "first_use_before,39345426,39223296,146,155,41659314,80,1074971556,41730980,3,23,5.567793607711792",
+          "first_use_after,39345426,39223296,146,155,41659314,80,1074971556,41730980,3,23,5.567793607711792",
+          "cumulative_before,275417982,39223296,146,1031,285077654,554,1074996132,278225828,9,161,38.857662916183472",
+          "cumulative_after,275417982,39223296,146,1031,285077654,554,1074996132,278225828,9,161,38.857662916183472",
+          "cumulative_before,314763408,39223296,146,1177,325652812,633,1075000228,317641636,10,184,44.057312965393066",
+          "cumulative_after,314763408,39223296,146,1177,325652812,633,1075000228,317641636,10,184,44.057312965393066",
+          "moving_reuse_before,393454260,39223296,146,1469,406803128,791,1075008420,396473252,12,230,54.875656604766846",
+          "moving_reuse_after,393454260,39223296,146,1469,406803128,791,1075008420,396473252,12,230,54.875656604766846",
+          "moving_reuse_before,432799686,39223296,146,1615,447378286,870,1075012516,435889060,13,253,59.953049898147583",
+          "moving_reuse_after,432799686,39223296,146,1615,447378286,870,1075012516,435889060,13,253,59.953049898147583",
+          "moving_reuse_before,472145112,39223296,146,1761,487953444,949,1075016612,475304868,14,276,65.116249799728394",
+          "moving_reuse_after,472145112,39223296,146,1761,487953444,949,1075016612,475304868,14,276,65.116249799728394",
+          "moving_reuse_before,511490538,39223296,146,1907,528528602,1028,1075020708,514720676,15,299,70.408071994781494",
+          "moving_reuse_before,550835964,39223296,146,2054,569107856,1108,1075028900,554140580,17,325,75.60655403137207",
+          "moving_reuse_after,550835964,39223296,146,2054,569107856,1108,1075028900,554140580,17,325,75.60655403137207"
+        ],
+        "publication_reference": [
+          {
+            "record": "publication_reference",
+            "conditioned_on_verified_final_velocity": 1,
+            "long_double_cell_boundary_cases": 9
+          }
+        ],
+        "output_sha256": "ee688ade3f22f4bdfd27b6c3375463b3e5a7f006f4e5195fa6295cf4e3f5071f"
+      },
+      {
+        "name": "live_hierarchy_2_bulk",
+        "source_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+        "actual_backend": "cpu/x64",
+        "threads": 2,
+        "path": "bulk",
+        "exit_status": 1,
+        "case_failures": 1,
+        "source_numerical_shapes": [
+          {
+            "record": "numerical_shape",
+            "name": "particles",
+            "rows": 11,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 6160,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "groups",
+            "rows": 8,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 4480,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-floats",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-integers",
+            "rows": 2,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 4096,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contacts",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "determiners",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-delta",
+            "rows": 3,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 1680,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-delta",
+            "rows": 6,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 3360,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "focus",
+            "rows": 11,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 88,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "selected-focus",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "counters",
+            "rows": 1,
+            "stride": 20,
+            "element_bytes": 8,
+            "per_copy_bytes": 160,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "universal-mass",
+            "rows": 1,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 8,
+            "host_copies": 1,
+            "native_owned_copies": 1
+          }
+        ],
+        "passed_cases": [
+          "basic",
+          "forces",
+          "singleton",
+          "cumulative_crossing",
+          "cumulative_cancellation",
+          "tree",
+          "moving",
+          "letters"
+        ],
+        "failed_cases": [
+          {
+            "record": "case_failure",
+            "name": "moving_permuted",
+            "reason": "moving fixture did not settle within 4096 ticks"
+          }
+        ],
+        "held_input": {
+          "transitions": 226,
+          "max_polls": 5,
+          "quiet_polls": 8
+        },
+        "moving": [
+          {
+            "name": "two_level",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 37,
+            "max_ticks": 499,
+            "ordinary_ms": 242.12640600000006,
+            "observed_elapsed_ms": 351.02557900000005,
+            "particle_evaluations": 6240,
+            "centroid_visits": 6101,
+            "motion_attempts": 5277,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 40,
+            "max_ticks": 1029,
+            "ordinary_ms": 1239.9994679999998,
+            "observed_elapsed_ms": 1691.6200259999998,
+            "particle_evaluations": 19702,
+            "centroid_visits": 24671,
+            "motion_attempts": 18135,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "two_level_permuted",
+            "rounds_observed": 7,
+            "all_33_completed": false,
+            "min_ticks": 53,
+            "max_ticks": 4096,
+            "ordinary_ms": 1133.613602999999,
+            "observed_elapsed_ms": 1569.842545,
+            "particle_evaluations": 24278,
+            "centroid_visits": 23774,
+            "motion_attempts": 21443,
+            "baseline_wakes": 0,
+            "failing_rounds": [
+              {
+                "record": "moving",
+                "name": "two_level_permuted",
+                "round": 6,
+                "ticks": 4096,
+                "quiet": 0,
+                "body_work": 11906,
+                "field_work": 11706,
+                "attempts": 11346,
+                "baseline_wakes": 0,
+                "ordinary_ms": 609.6071169999997,
+                "observed_elapsed_ms": 837.218349
+              }
+            ],
+            "failure_dynamics": [
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 6,
+                "body": 0,
+                "velocity_reversals": 113,
+                "published_direction_reversals": 101,
+                "max_abs_x": 32.75,
+                "max_abs_velocity_x": 78.69892849397736,
+                "max_abs_force_x": 280.50386103564875,
+                "max_published_step_x": 39.34375,
+                "published_travel_x": 485.21875
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 6,
+                "body": 1,
+                "velocity_reversals": 100,
+                "published_direction_reversals": 76,
+                "max_abs_x": 151.5,
+                "max_abs_velocity_x": 315.6877179770162,
+                "max_abs_force_x": 631.9285392497923,
+                "max_published_step_x": 157.703125,
+                "published_travel_x": 873.599609375
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 6,
+                "body": 2,
+                "velocity_reversals": 99,
+                "published_direction_reversals": 99,
+                "max_abs_x": 25.375,
+                "max_abs_velocity_x": 40.461694060338154,
+                "max_abs_force_x": 157.91379329742972,
+                "max_published_step_x": 20.203125,
+                "published_travel_x": 385.271484375
+              }
+            ],
+            "frozen_diagnostics": [
+              {
+                "record": "frozen_after_limit",
+                "name": "two_level_permuted",
+                "round": 6,
+                "polls": 0,
+                "hierarchy_reference": 1,
+                "physical_unchanged": 1,
+                "body_work_pending": 3
+              }
+            ],
+            "final_trace_samples": 64
+          },
+          {
+            "name": "letter_and_UTF8_bytes",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 33,
+            "max_ticks": 1123,
+            "ordinary_ms": 212.53353000000013,
+            "observed_elapsed_ms": 289.2238009999999,
+            "particle_evaluations": 3140,
+            "centroid_visits": 2266,
+            "motion_attempts": 2287,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          }
+        ],
+        "selector_audit_shapes": [
+          {
+            "record": "production_selector_audit",
+            "kernel": 0,
+            "own": 0,
+            "child": 0,
+            "response": 6,
+            "publish": 0,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 1,
+            "own": 1,
+            "child": 5,
+            "response": 2,
+            "publish": 1,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 2,
+            "own": 0,
+            "child": 0,
+            "response": 0,
+            "publish": 0,
+            "plain": 0
+          }
+        ],
+        "packet_audit_checks": 168,
+        "compiled_selector_instructions": 180,
+        "compiled_selector_instruction_sha256": "dbc9057f3aa6501fa828e2fd5fdfec2ddce26a7655e5e60d991bbd3bc3689058",
+        "compiler_negative_controls": [
+          {
+            "record": "compiler_negative",
+            "control": "0 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "1 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "2 rejected"
+          }
+        ],
+        "rejection_controls": [
+          {
+            "record": "installation_reject",
+            "name": "stale_generation",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "aliased_output",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "recycled_field",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "stale_source",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "wrong_ordinal",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "anonymous_grouping",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "cycle",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "incomplete_root",
+            "status": 12
+          },
+          {
+            "record": "installation_reject",
+            "name": "work_limit",
+            "status": 10
+          },
+          {
+            "record": "installation_reject",
+            "name": "partial_owner_ledger",
+            "status": 2
+          }
+        ],
+        "ordered_handoff": [
+          {
+            "record": "ordered_handoff",
+            "order": 0,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          },
+          {
+            "record": "ordered_handoff",
+            "order": 1,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          }
+        ],
+        "counter_samples": [
+          "first_use_before,39345426,39223296,146,162,41677246,87,1074989468,41748892,3,23,5.2833101749420166",
+          "first_use_after,39345426,39223296,146,162,41677246,87,1074989468,41748892,3,23,5.2833101749420166",
+          "cumulative_before,275417982,39223296,146,1080,285203058,603,1075014044,278243740,9,161,38.89368200302124",
+          "cumulative_after,275417982,39223296,146,1080,285203058,603,1075014044,278243740,9,161,38.89368200302124",
+          "cumulative_before,314763408,39223296,146,1233,325796128,689,1075018140,317659548,10,184,44.667128086090088",
+          "cumulative_after,314763408,39223296,146,1233,325796128,689,1075018140,317659548,10,184,44.667128086090088",
+          "moving_reuse_before,393454260,39223296,146,1539,406982268,861,1075026332,396491164,12,230,54.699479341506958",
+          "moving_reuse_after,393454260,39223296,146,1539,406982268,861,1075026332,396491164,12,230,54.699479341506958",
+          "moving_reuse_before,432799686,39223296,146,1692,447575338,947,1075030428,435906972,13,253,60.100655794143677",
+          "moving_reuse_after,432799686,39223296,146,1692,447575338,947,1075030428,435906972,13,253,60.100655794143677",
+          "moving_reuse_before,472145112,39223296,146,1845,488168408,1033,1075034524,475322780,14,276,65.304186105728149",
+          "moving_reuse_before,511490538,39223296,146,1999,528765574,1120,1075042716,514742684,16,302,70.590253353118896",
+          "moving_reuse_after,511490538,39223296,146,1999,528765574,1120,1075042716,514742684,16,302,70.590253353118896"
+        ],
+        "publication_reference": [
+          {
+            "record": "publication_reference",
+            "conditioned_on_verified_final_velocity": 1,
+            "long_double_cell_boundary_cases": 0
+          }
+        ],
+        "output_sha256": "1fee96bf93468be3debb38c8e66fa3b6710c93c90ac0d960aff1ca453391db41"
+      },
+      {
+        "name": "live_hierarchy_2_direct",
+        "source_pin": "eeb8ce9a3fb035aca4154d039877339b1ac6dc32",
+        "actual_backend": "cpu/x64",
+        "threads": 2,
+        "path": "direct",
+        "exit_status": 1,
+        "case_failures": 1,
+        "source_numerical_shapes": [
+          {
+            "record": "numerical_shape",
+            "name": "particles",
+            "rows": 11,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 6160,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "groups",
+            "rows": 8,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 4480,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-floats",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "edge-integers",
+            "rows": 2,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 4096,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contacts",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "determiners",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 560,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-delta",
+            "rows": 3,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 1680,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-flags",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-delta",
+            "rows": 6,
+            "stride": 70,
+            "element_bytes": 8,
+            "per_copy_bytes": 3360,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-offsets",
+            "rows": 2,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 560,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "particle-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "group-edge-order",
+            "rows": 1,
+            "stride": 512,
+            "element_bytes": 4,
+            "per_copy_bytes": 2048,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-a-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "contact-b-order",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "focus",
+            "rows": 11,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 88,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "selected-focus",
+            "rows": 1,
+            "stride": 70,
+            "element_bytes": 4,
+            "per_copy_bytes": 280,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "counters",
+            "rows": 1,
+            "stride": 20,
+            "element_bytes": 8,
+            "per_copy_bytes": 160,
+            "host_copies": 0,
+            "native_owned_copies": 1
+          },
+          {
+            "record": "numerical_shape",
+            "name": "universal-mass",
+            "rows": 1,
+            "stride": 1,
+            "element_bytes": 8,
+            "per_copy_bytes": 8,
+            "host_copies": 1,
+            "native_owned_copies": 0
+          }
+        ],
+        "passed_cases": [
+          "basic",
+          "forces",
+          "singleton",
+          "cumulative_crossing",
+          "cumulative_cancellation",
+          "tree",
+          "moving",
+          "letters"
+        ],
+        "failed_cases": [
+          {
+            "record": "case_failure",
+            "name": "moving_permuted",
+            "reason": "moving fixture did not settle within 4096 ticks"
+          }
+        ],
+        "held_input": {
+          "transitions": 226,
+          "max_polls": 5,
+          "quiet_polls": 8
+        },
+        "moving": [
+          {
+            "name": "two_level",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 38,
+            "max_ticks": 499,
+            "ordinary_ms": 345.26409299999995,
+            "observed_elapsed_ms": 504.445853,
+            "particle_evaluations": 7644,
+            "centroid_visits": 7439,
+            "motion_attempts": 6561,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "three_level_overlap",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 40,
+            "max_ticks": 817,
+            "ordinary_ms": 709.5500009999998,
+            "observed_elapsed_ms": 984.501543,
+            "particle_evaluations": 22636,
+            "centroid_visits": 28198,
+            "motion_attempts": 20600,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          },
+          {
+            "name": "two_level_permuted",
+            "rounds_observed": 3,
+            "all_33_completed": false,
+            "min_ticks": 218,
+            "max_ticks": 4096,
+            "ordinary_ms": 947.3216079999993,
+            "observed_elapsed_ms": 1302.814586,
+            "particle_evaluations": 15543,
+            "centroid_visits": 15388,
+            "motion_attempts": 12814,
+            "baseline_wakes": 0,
+            "failing_rounds": [
+              {
+                "record": "moving",
+                "name": "two_level_permuted",
+                "round": 2,
+                "ticks": 4096,
+                "quiet": 0,
+                "body_work": 11437,
+                "field_work": 11330,
+                "attempts": 9186,
+                "baseline_wakes": 0,
+                "ordinary_ms": 505.33719399999933,
+                "observed_elapsed_ms": 710.632797
+              }
+            ],
+            "failure_dynamics": [
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 2,
+                "body": 0,
+                "velocity_reversals": 97,
+                "published_direction_reversals": 47,
+                "max_abs_x": 314,
+                "max_abs_velocity_x": 629.2291808537253,
+                "max_abs_force_x": 1336.150362566421,
+                "max_published_step_x": 313.97991943359375,
+                "published_travel_x": 1004.2635498046875
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 2,
+                "body": 1,
+                "velocity_reversals": 71,
+                "published_direction_reversals": 40,
+                "max_abs_x": 317,
+                "max_abs_velocity_x": 629.1565973121953,
+                "max_abs_force_x": 1263.238093221133,
+                "max_published_step_x": 314.0703125,
+                "published_travel_x": 1437.015625
+              },
+              {
+                "record": "moving_dynamics",
+                "name": "two_level_permuted",
+                "round": 2,
+                "body": 2,
+                "velocity_reversals": 45,
+                "published_direction_reversals": 43,
+                "max_abs_x": 81.5,
+                "max_abs_velocity_x": 159.1116540166145,
+                "max_abs_force_x": 631.6551731897189,
+                "max_published_step_x": 79.4296875,
+                "published_travel_x": 513.550048828125
+              }
+            ],
+            "frozen_diagnostics": [
+              {
+                "record": "frozen_after_limit",
+                "name": "two_level_permuted",
+                "round": 2,
+                "polls": 1,
+                "hierarchy_reference": 1,
+                "physical_unchanged": 1,
+                "body_work_pending": 1
+              }
+            ],
+            "final_trace_samples": 64
+          },
+          {
+            "name": "letter_and_UTF8_bytes",
+            "rounds_observed": 33,
+            "all_33_completed": true,
+            "min_ticks": 33,
+            "max_ticks": 1123,
+            "ordinary_ms": 259.24609100000004,
+            "observed_elapsed_ms": 352.58154999999994,
+            "particle_evaluations": 3140,
+            "centroid_visits": 2266,
+            "motion_attempts": 2287,
+            "baseline_wakes": 0,
+            "failing_rounds": [],
+            "failure_dynamics": [],
+            "frozen_diagnostics": [],
+            "final_trace_samples": 0
+          }
+        ],
+        "selector_audit_shapes": [
+          {
+            "record": "production_selector_audit",
+            "kernel": 0,
+            "own": 0,
+            "child": 0,
+            "response": 6,
+            "publish": 0,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 1,
+            "own": 1,
+            "child": 5,
+            "response": 2,
+            "publish": 1,
+            "plain": 0
+          },
+          {
+            "record": "production_selector_audit",
+            "kernel": 2,
+            "own": 0,
+            "child": 0,
+            "response": 0,
+            "publish": 0,
+            "plain": 0
+          }
+        ],
+        "packet_audit_checks": 168,
+        "compiled_selector_instructions": 180,
+        "compiled_selector_instruction_sha256": "dbc9057f3aa6501fa828e2fd5fdfec2ddce26a7655e5e60d991bbd3bc3689058",
+        "compiler_negative_controls": [
+          {
+            "record": "compiler_negative",
+            "control": "0 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "1 rejected"
+          },
+          {
+            "record": "compiler_negative",
+            "control": "2 rejected"
+          }
+        ],
+        "rejection_controls": [
+          {
+            "record": "installation_reject",
+            "name": "stale_generation",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "aliased_output",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "recycled_field",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "stale_source",
+            "status": 4
+          },
+          {
+            "record": "installation_reject",
+            "name": "wrong_ordinal",
+            "status": 5
+          },
+          {
+            "record": "installation_reject",
+            "name": "anonymous_grouping",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "cycle",
+            "status": 6
+          },
+          {
+            "record": "installation_reject",
+            "name": "incomplete_root",
+            "status": 12
+          },
+          {
+            "record": "installation_reject",
+            "name": "work_limit",
+            "status": 10
+          },
+          {
+            "record": "installation_reject",
+            "name": "partial_owner_ledger",
+            "status": 2
+          }
+        ],
+        "ordered_handoff": [
+          {
+            "record": "ordered_handoff",
+            "order": 0,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          },
+          {
+            "record": "ordered_handoff",
+            "order": 1,
+            "duplicate_notifications": 64,
+            "parent_pending": 1,
+            "recipient_pending": 1
+          }
+        ],
+        "counter_samples": [
+          "first_use_before,39345426,39223296,146,155,41659334,80,1074971556,41730980,3,23,5.5368125438690186",
+          "first_use_after,39345426,39223296,146,155,41659334,80,1074971556,41730980,3,23,5.5368125438690186",
+          "cumulative_before,275417982,39223296,146,1031,285077674,554,1074996132,278225828,9,161,39.844645500183105",
+          "cumulative_after,275417982,39223296,146,1031,285077674,554,1074996132,278225828,9,161,39.844645500183105",
+          "cumulative_before,314763408,39223296,146,1177,325652832,633,1075000228,317641636,10,184,45.097438812255859",
+          "cumulative_after,314763408,39223296,146,1177,325652832,633,1075000228,317641636,10,184,45.097438812255859",
+          "moving_reuse_before,393454260,39223296,146,1469,406803148,791,1075008420,396473252,12,230,54.960157871246338",
+          "moving_reuse_after,393454260,39223296,146,1469,406803148,791,1075008420,396473252,12,230,54.960157871246338",
+          "moving_reuse_before,432799686,39223296,146,1615,447378306,870,1075012516,435889060,13,253,60.212151765823364",
+          "moving_reuse_after,432799686,39223296,146,1615,447378306,870,1075012516,435889060,13,253,60.212151765823364",
+          "moving_reuse_before,472145112,39223296,146,1761,487953464,949,1075016612,475304868,14,276,65.777348041534424",
+          "moving_reuse_before,511490538,39223296,146,1908,528532718,1029,1075024804,514724772,16,302,70.871965169906616",
+          "moving_reuse_after,511490538,39223296,146,1908,528532718,1029,1075024804,514724772,16,302,70.871965169906616"
+        ],
+        "publication_reference": [
+          {
+            "record": "publication_reference",
+            "conditioned_on_verified_final_velocity": 1,
+            "long_double_cell_boundary_cases": 1
+          }
+        ],
+        "output_sha256": "c3d41762d61d476f18d3dd2b34a54de17a1330605bc8a53acdc7232ed6017d70"
+      }
+    ]
+  },
+  "resources": {
+    "live_host_bytes": 79072,
+    "live_native_bytes": 60344,
+    "live_total_bytes": 139416,
+    "complete_scratch_manifest": [
+      {
+        "record": "storage",
+        "name": "particle-headers",
+        "count": 70,
+        "element_bytes": 24,
+        "copies": 2,
+        "bytes": 3360
+      },
+      {
+        "record": "storage",
+        "name": "source-masses",
+        "count": 70,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "field-headers",
+        "count": 70,
+        "element_bytes": 24,
+        "copies": 2,
+        "bytes": 3360
+      },
+      {
+        "record": "storage",
+        "name": "participation-headers",
+        "count": 512,
+        "element_bytes": 64,
+        "copies": 2,
+        "bytes": 65536
+      },
+      {
+        "record": "storage",
+        "name": "source-counts",
+        "count": 512,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 8192
+      },
+      {
+        "record": "storage",
+        "name": "contact-headers",
+        "count": 70,
+        "element_bytes": 64,
+        "copies": 2,
+        "bytes": 8960
+      },
+      {
+        "record": "storage",
+        "name": "focal-references",
+        "count": 70,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 1680
+      },
+      {
+        "record": "storage",
+        "name": "batch-commands",
+        "count": 70,
+        "element_bytes": 152,
+        "copies": 1,
+        "bytes": 10640
+      },
+      {
+        "record": "storage",
+        "name": "batch-results",
+        "count": 70,
+        "element_bytes": 48,
+        "copies": 1,
+        "bytes": 3360
+      },
+      {
+        "record": "storage",
+        "name": "retired-references",
+        "count": 70,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 1680
+      },
+      {
+        "record": "storage",
+        "name": "resolved-references",
+        "count": 70,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 1680
+      },
+      {
+        "record": "storage",
+        "name": "prospective-csr",
+        "count": 1724,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 6896
+      },
+      {
+        "record": "storage",
+        "name": "csr-counts",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "csr-cursors",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "validation",
+        "count": 792,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 6336
+      },
+      {
+        "record": "storage",
+        "name": "derived-results",
+        "count": 992,
+        "element_bytes": 8,
+        "copies": 1,
+        "bytes": 7936
+      },
+      {
+        "record": "storage",
+        "name": "candidate-edges",
+        "count": 1024,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 8192
+      },
+      {
+        "record": "storage",
+        "name": "candidate-shares",
+        "count": 512,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 4096
+      },
+      {
+        "record": "storage",
+        "name": "candidate-group-offsets",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "candidate-group-order",
+        "count": 512,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 2048
+      },
+      {
+        "record": "storage",
+        "name": "destination-records",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "native-claim-inputs",
+        "count": 210,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 840
+      },
+      {
+        "record": "storage",
+        "name": "new-fixture-rows",
+        "count": 840,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 13440
+      },
+      {
+        "record": "storage",
+        "name": "candidate-status",
+        "count": 1,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 8
+      },
+      {
+        "record": "storage",
+        "name": "inspection-motion",
+        "count": 630,
+        "element_bytes": 8,
+        "copies": 1,
+        "bytes": 5040
+      },
+      {
+        "record": "storage",
+        "name": "inspection-state",
+        "count": 280,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "inspection-focus",
+        "count": 11,
+        "element_bytes": 8,
+        "copies": 1,
+        "bytes": 88
+      },
+      {
+        "record": "storage",
+        "name": "inspection-flags",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "inspection-counts",
+        "count": 4,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 64
+      },
+      {
+        "record": "storage",
+        "name": "activity-reset-zeros",
+        "count": 840,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 3360
+      },
+      {
+        "record": "storage",
+        "name": "selected-focus-host",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "map-batch-buffers",
+        "count": 703,
+        "element_bytes": 8,
+        "copies": 4,
+        "bytes": 22496
+      },
+      {
+        "record": "storage",
+        "name": "map-single-command-buffers",
+        "count": 10,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 160
+      },
+      {
+        "record": "storage",
+        "name": "geometry-occupied-rows",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "geometry-temporary-pairs",
+        "count": 280,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "geometry-pairs",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "geometry-pair-flags",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "geometry-source-order",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "geometry-source-group-end",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "geometry-source-map",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "geometry-permutation",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "geometry-offsets",
+        "count": 280,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 2240
+      },
+      {
+        "record": "storage",
+        "name": "geometry-cursors",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "geometry-orders",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "geometry-counters",
+        "count": 16,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 256
+      },
+      {
+        "record": "storage",
+        "name": "geometry-focus",
+        "count": 4,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 64
+      },
+      {
+        "record": "storage",
+        "name": "live-source-ratios-and-cohort-flags",
+        "count": 1094,
+        "element_bytes": 8,
+        "copies": 4,
+        "bytes": 35008
+      },
+      {
+        "record": "storage",
+        "name": "cascade-node-headers",
+        "count": 70,
+        "element_bytes": 88,
+        "copies": 1,
+        "bytes": 6160
+      },
+      {
+        "record": "storage",
+        "name": "cascade-cohort-handles",
+        "count": 512,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 12288
+      },
+      {
+        "record": "storage",
+        "name": "cascade-node-controls",
+        "count": 560,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 4480
+      },
+      {
+        "record": "storage",
+        "name": "cascade-reference-controls",
+        "count": 1536,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 12288
+      },
+      {
+        "record": "storage",
+        "name": "cascade-children",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "cascade-order",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "cascade-fraction-masks",
+        "count": 70,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "cascade-parent-rank",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "cascade-level-offset-cursor",
+        "count": 71,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 568
+      },
+      {
+        "record": "storage",
+        "name": "cascade-values",
+        "count": 490,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 7840
+      },
+      {
+        "record": "storage",
+        "name": "cascade-valid",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "cascade-counters",
+        "count": 8,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 128
+      },
+      {
+        "record": "storage",
+        "name": "cascade-root-summary",
+        "count": 7,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 112
+      },
+      {
+        "record": "storage",
+        "name": "cascade-source-rows",
+        "count": 512,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 12288
+      },
+      {
+        "record": "storage",
+        "name": "cascade-source-shares",
+        "count": 512,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 4096
+      },
+      {
+        "record": "storage",
+        "name": "cascade-source-ratios",
+        "count": 1024,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 16384
+      },
+      {
+        "record": "storage",
+        "name": "cascade-coverage",
+        "count": 512,
+        "element_bytes": 40,
+        "copies": 1,
+        "bytes": 20480
+      },
+      {
+        "record": "storage",
+        "name": "cascade-coverage-work",
+        "count": 512,
+        "element_bytes": 8,
+        "copies": 1,
+        "bytes": 4096
+      },
+      {
+        "record": "storage",
+        "name": "cascade-coverage-offsets",
+        "count": 71,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 284
+      },
+      {
+        "record": "storage",
+        "name": "live-publication-slots",
+        "count": 560,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 8960
+      },
+      {
+        "record": "storage",
+        "name": "live-publication-selectors",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "live-previous-publication",
+        "count": 280,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 4480
+      },
+      {
+        "record": "storage",
+        "name": "live-node-controls",
+        "count": 700,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 5600
+      },
+      {
+        "record": "storage",
+        "name": "live-children",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "live-source-records",
+        "count": 1024,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 8192
+      },
+      {
+        "record": "storage",
+        "name": "live-source-ratios",
+        "count": 1024,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 16384
+      },
+      {
+        "record": "storage",
+        "name": "live-fraction-masks",
+        "count": 70,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "live-coverage-bodies",
+        "count": 512,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 4096
+      },
+      {
+        "record": "storage",
+        "name": "live-response-controls",
+        "count": 4096,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 32768
+      },
+      {
+        "record": "storage",
+        "name": "live-response-ratios",
+        "count": 2048,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 32768
+      },
+      {
+        "record": "storage",
+        "name": "live-response-offsets",
+        "count": 140,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 1120
+      },
+      {
+        "record": "storage",
+        "name": "live-leaf-fields",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "live-field-owners",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 2,
+        "bytes": 560
+      },
+      {
+        "record": "storage",
+        "name": "live-field-inspection",
+        "count": 70,
+        "element_bytes": 4,
+        "copies": 1,
+        "bytes": 280
+      },
+      {
+        "record": "storage",
+        "name": "live-counters",
+        "count": 10,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 160
+      },
+      {
+        "record": "storage",
+        "name": "live-node-observations",
+        "count": 140,
+        "element_bytes": 8,
+        "copies": 2,
+        "bytes": 2240
+      },
+      {
+        "record": "storage",
+        "name": "live-node-identities",
+        "count": 70,
+        "element_bytes": 88,
+        "copies": 1,
+        "bytes": 6160
+      },
+      {
+        "record": "storage",
+        "name": "live-source-identities",
+        "count": 512,
+        "element_bytes": 24,
+        "copies": 1,
+        "bytes": 12288
+      },
+      {
+        "record": "storage",
+        "name": "prepared-binding-payload",
+        "count": 16624,
+        "element_bytes": 1,
+        "copies": 1,
+        "bytes": 16624
+      },
+      {
+        "record": "storage",
+        "name": "unused-binding-reserve",
+        "count": 2960,
+        "element_bytes": 1,
+        "copies": 1,
+        "bytes": 2960
+      }
+    ],
+    "summary": [
+      {
+        "record": "storage_summary",
+        "scratch": 504028,
+        "binding_bytes": 16624,
+        "native_publication_bytes": 4760,
+        "native_history_bytes": 2240,
+        "retained_force_extra_bytes": 0
+      }
+    ],
+    "fixed_objects": [
+      {
+        "record": "object_sizes",
+        "harness": 1552,
+        "prepared_storage": 2112,
+        "live_impl": 984,
+        "live_wrapper": 8,
+        "live_inspection": 224,
+        "node": 88,
+        "source_row": 24,
+        "ndarray_wrapper": 176,
+        "owned_live_ndarrays": 16,
+        "compiled_kernel_wrapper": 32
+      }
+    ],
+    "native_metric_columns": [
+      "requested_bytes",
+      "list_chunk_bytes",
+      "allocator_elements",
+      "pool_allocation_calls",
+      "pool_requested_bytes",
+      "pool_raw_allocation_calls",
+      "pool_reserved_bytes",
+      "aligned_host_cursor",
+      "tree_count",
+      "issued_snode_ids",
+      "compilation_seconds"
+    ]
+  },
+  "gates": {
+    "held_poll_limit": 16,
+    "held_quiet_polls": 8,
+    "moving_tick_limit": 4096,
+    "moving_quiet_ticks": 32,
+    "perturbation_rounds": 32,
+    "c3_1_accepted": false,
+    "c3_2_released": false,
+    "gpu_qualified": false
+  },
+  "limits": [
+    "A failed declared settling gate is retained as a failure. No coefficients, Q bits, activity epsilon or limits were changed to rename it a pass.",
+    "Zero/one stationary-body centroid polls at failure do not establish coupled settling or uniquely identify the numerical cause. These finite runs do not prove permanent instability.",
+    "Both field layouts have identical tree/counts/physics/parameters and different native field records. Different trajectories are allowed; no same-tick global solve is required.",
+    "The two moving fixtures share a category: a failing two-level case skips its three-level case. Other categories, including letters, continue; any failure keeps nonzero exit.",
+    "Independent long-double force reference; velocity reference conditioned on verified native force; Q position reference conditioned on verified final native velocity. Comparison error bounds never select live activity.",
+    "Actual retained Program LLVM, all selector/packet paths and negative controls; no executable-disassembly or CUDA-ordering claim.",
+    "Manifest charges host/native copies and identities. Known native metrics and linked C++ allocation guards exclude arbitrary malloc, drivers, page faults and complete process memory. Host vectors are unpinned.",
+    "Per-node work diagnostics never schedule. One existing native activity set per type, one visit/publication per poll, two complete publication slots and no per-depth ordinary solve.",
+    "Fixed opt-in actual x64/f64 trial. No structural refresh, operational owner/admission/contact transaction completion, database writes, cache-manager or analyst work.",
+    "Hosted CI not awaited; no browser interface change or GPU execution. #172/#177/#156/#145 remain open."
+  ],
+  "source_sha256": {
+    "engine/CMakeLists.txt": "0f7aa52e66a239806472a924a3942d0180b3442fdd8c6fd5977ebd7e33ed387c",
+    "engine/src/engine/runtime.h": "d47f364ecda7fa0a83de6ad4e313e65d09b7c958f7028115b1c77119f1adbc60",
+    "engine/src/field/centroid_cascade.cpp": "399ef1bf59e679ee12a62c4a2b7d1df14da25cfcc90d09878019ad6b48ffdf6e",
+    "engine/src/field/centroid_cascade.h": "04997910c0e7b43f9cd9a6c518705d98a0449d33bdbcd5b0f8af81534502ca14",
+    "engine/src/field/field.cpp": "28e1896cac9e39b34fe32758f718961ece6a4102003022ed1dffd2e3df3cd15d",
+    "engine/src/field/field.h": "8ad8ab5c5caf54b9684d0ebb83906fa4beec15e3a8aff97d0f3f3e1599edd8a0",
+    "engine/src/field/live_hierarchy.cpp": "503751449a2580402704b47a498a1a98e1d06c7a9fa2f3a7b4446319836113fb",
+    "engine/src/field/live_hierarchy.h": "3a183a2076ce74aa3f1b8275686d13612fdad2b0d263d34773af017f04b47fdc",
+    "engine/src/field/prepared_capacity.cpp": "5bad6ea10e5e2fd9a677f6af01065060c10ee82108e328dd6d3b68734219aee6",
+    "engine/src/field/prepared_capacity.h": "4eb1c3a1715b84d178ef04c849a3b006dffb840987aa3e5437fb0b60c9f42eb0",
+    "engine/src/field/prepared_storage.cpp": "fb1d30a4d5c3237ec5c530ff8aa78967eb3259f359f2d0ae6cba5299396fb7e1",
+    "engine/src/field/prepared_storage.h": "f1c8b17acb76c879f3b9b0190f1f9e1dcfb8e6fd2ee8ce7e39e041bcfe800df1",
+    "engine/src/field/prepared_update.cpp": "b1e70804eabe92704f52a3265fd806e5fa62c580930d3df424209c09f3aa92a6",
+    "engine/tests/live_hierarchy_test.cpp": "9acbb9d2dc863174657ee6ac6459c547b01de053a7b3f0045e2fcc5e24817b7b"
+  },
+  "executable_sha256": {
+    "original_ctest": "56d668fb25a53c4fa93bba5857cb089ae918508ebec110e44dd2094a4f78b0f6",
+    "final_native": "09e2f1be1b63222568a1eb1843b0258e6d42362d37f15975ee53ff8969c196ee"
+  },
+  "artifact_sha256": {
+    "cpu-ctest.txt": "1cc21b036d9cf133c78f960984e746685a4041e59de603192f9df2ff6467293a",
+    "cpu-native-output.txt": "f937b9708010288064250ec1182f8dedc3fdd8e499f7e08274c486709b8502c3"
+  },
+  "linked_library_sha256": {
+    "libfield_core.a": "54fca225143de04f6c2e89cb5f4e3d16269f3fbf6d629801bc4615f21622b424",
+    "libengine_support.a": "b050b68bbf9f6c5591d577600e4176e6d22bcb1f9c7b0512b8e03041fe3b29c9",
+    "libstudy_assembly.a": "19146a29a18641a17c2da1236e6b6c5ca0570b8ad510966aa2d4647323a304a8",
+    "libmembership_fields.a": "ff16914401b0afc2d95269bb177f2ea3bfeccf7825d31b126b101a36f34396df"
+  }
+}

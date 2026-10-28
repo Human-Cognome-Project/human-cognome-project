@@ -1,0 +1,195 @@
+{
+  "bindings": [
+    {
+      "id": 0,
+      "level": 0,
+      "parent": -1,
+      "role": "root",
+      "units": 1.0
+    },
+    {
+      "id": 1,
+      "level": 1,
+      "parent": 0,
+      "role": "primary_step",
+      "units": 64.0
+    }
+  ],
+  "capture": {
+    "generation": "aafc2e8d-833f-4e63-8926-54b226a50389",
+    "label": "Current installed C3 English A / Dutch accented i byte fixture",
+    "phase": "published_seeded",
+    "session": "2bbff236-50a0-4169-8dfe-ec58864cb4f4",
+    "study": "0817b691-7460-46de-8b27-6b78b08af6e1",
+    "tick": "0"
+  },
+  "execution": {
+    "backend": "native_cpu",
+    "body_records": [
+      {
+        "address": 17,
+        "context": "1",
+        "incarnation": "1",
+        "record": 0
+      },
+      {
+        "address": 104746,
+        "context": "1",
+        "incarnation": "2",
+        "record": 1
+      },
+      {
+        "address": 934862,
+        "context": "1",
+        "incarnation": "70",
+        "record": 69
+      }
+    ],
+    "comparisons": [
+      {
+        "calculation_bits": 64,
+        "comparison": "1",
+        "field": {
+          "address": 0,
+          "context": "2",
+          "incarnation": "1",
+          "record": 0
+        },
+        "fraction_bits": 6,
+        "level": 0,
+        "storage_bits": 64
+      },
+      {
+        "calculation_bits": 64,
+        "comparison": "2",
+        "field": {
+          "address": 1,
+          "context": "2",
+          "incarnation": "2",
+          "record": 1
+        },
+        "fraction_bits": 6,
+        "level": 0,
+        "storage_bits": 64
+      },
+      {
+        "calculation_bits": 64,
+        "comparison": "3",
+        "field": {
+          "address": 2,
+          "context": "2",
+          "incarnation": "3",
+          "record": 2
+        },
+        "fraction_bits": 5,
+        "level": 2,
+        "storage_bits": 64
+      }
+    ],
+    "completed_tick": "0",
+    "mode": "installed_hierarchy",
+    "prepared_generation": "1"
+  },
+  "frame": {
+    "camera_target": [
+      25.0,
+      0.0,
+      0.0
+    ],
+    "coordinates": "reference_local",
+    "focal_fields": [
+      {
+        "kind": "membership",
+        "mass": 6.0,
+        "position": [
+          25.0,
+          0.0,
+          0.0
+        ],
+        "value": "native-comparison:3"
+      }
+    ],
+    "reference": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_kind": "captured_focal_centroid",
+    "units": "operative_model_units"
+  },
+  "numerics": {
+    "body_fraction_bits": 8,
+    "field_fraction_bits": 6,
+    "profile": "trial_f64",
+    "storage_bits": 64
+  },
+  "particles": [
+    {
+      "aggregate": "0817b691-7460-46de-8b27-6b78b08af6e1/0",
+      "binding": 1,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.00.00.03",
+      "exact_mass": "2",
+      "exposure": "aggregate",
+      "id": "0817b691-7460-46de-8b27-6b78b08af6e1/0",
+      "label": "English A",
+      "level": 1,
+      "mass": 2.0,
+      "position": [
+        66.00000000093132,
+        0.0,
+        0.0
+      ],
+      "radius": 32.0,
+      "slot": 0
+    },
+    {
+      "aggregate": "0817b691-7460-46de-8b27-6b78b08af6e1/1",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.3Q",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "0817b691-7460-46de-8b27-6b78b08af6e1/1/0/0",
+      "label": "Dutch í UTF-8 byte 1",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        5.0,
+        0.0,
+        0.0
+      ],
+      "radius": 0.5,
+      "slot": 1
+    },
+    {
+      "aggregate": "0817b691-7460-46de-8b27-6b78b08af6e1/1",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/00.00.00.00.34",
+      "exact_mass": "2",
+      "exposure": "parts",
+      "id": "0817b691-7460-46de-8b27-6b78b08af6e1/1/0/1",
+      "label": "Dutch í UTF-8 byte 2",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        5.0,
+        0.0,
+        0.0
+      ],
+      "radius": 0.5,
+      "slot": 69
+    }
+  ],
+  "schema": "hcp-study-snapshot",
+  "source": {
+    "data": "existing native letter/UTF-8 bootstrap fixture",
+    "geometry": "supplied intrinsic test extents; common-frame x+2",
+    "kind": "bounded_native_current_hierarchy",
+    "parameters": {
+      "contact_stiffness": 1.0,
+      "dt": 0.5,
+      "gravity": 0.0771063443835106,
+      "reach_strength": 1.0
+    }
+  },
+  "version": 1
+}

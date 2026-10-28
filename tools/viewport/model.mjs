@@ -13,6 +13,34 @@ export function validateSnapshot(value) {
   requireValue(validate(value), `Unsupported or malformed snapshot: ${validate.errors?.slice(0, 3).map(e => `${e.instancePath || '/'} ${e.message}`).join('; ')}`);
   const {capture, bindings, particles, frame} = value;
   decimal(capture.tick);
+  if (value.execution) {
+    const e = value.execution;
+    requireValue(e.completed_tick === capture.tick, 'Native completed tick disagrees with capture.');
+    decimal(e.completed_tick);
+    if (e.prepared_generation !== null) decimal(e.prepared_generation);
+    const records = new Set(), comparisons = new Set(), fields = new Set();
+    const nativeRecord = r => {
+      decimal(r.context); decimal(r.incarnation);
+      requireValue(BigInt(r.context) > 0n && BigInt(r.incarnation) > 0n, 'Missing native record identity.');
+      return `${r.context}:${r.incarnation}:${r.address}:${r.record}`;
+    };
+    for (const r of e.body_records) {
+      nativeRecord(r);
+      requireValue(!records.has(r.record), 'Duplicate native body record.');
+      records.add(r.record);
+    }
+    if (e.prepared_generation !== null)
+      requireValue(records.size === particles.length && particles.every(p => records.has(p.slot)), 'Incomplete native occurrence mapping.');
+    for (const c of e.comparisons) {
+      decimal(c.comparison);
+      const key = nativeRecord(c.field);
+      requireValue(!comparisons.has(c.comparison) && !fields.has(key), 'Duplicate native comparison identity.');
+      comparisons.add(c.comparison); fields.add(key);
+    }
+    requireValue((e.mode === 'installed_hierarchy') === (e.comparisons.length > 0), 'Hierarchy mode disagrees with comparison metadata.');
+    if (e.mode === 'installed_hierarchy')
+      requireValue(value.numerics?.profile === 'trial_f64' && e.prepared_generation !== null, 'Missing hierarchy precision/generation.');
+  }
   requireValue((capture.tick === '0') === (capture.phase === 'published_seeded'), 'Tick and capture phase disagree.');
   bindings.forEach((b, i) => {
     requireValue(b.id === i, 'Binding IDs must be contiguous and ordered.');

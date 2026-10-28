@@ -1,0 +1,74 @@
+CUDA-enabled fork/client build and CPU-only ABI checks; actual CUDA unexecuted.
+[1/3] cd /workspace/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module && /workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang -c runtime.cpp -o runtime_cuda.bc -fno-exceptions -emit-llvm -std=c++17 -D ARCH_cuda -I /workspace/human-cognome-project/engine/taichi
+[2/3] cd /workspace/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module && /workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin/clang -c runtime.cpp -o runtime_x64.bc -fno-exceptions -emit-llvm -std=c++17 -D ARCH_x64 -I /workspace/human-cognome-project/engine/taichi
+[3/3] Linking CXX shared library libtaichi_c_api.so
+
+-- Engine checkout : /workspace/human-cognome-project/engine/taichi (6784224121f68de1bf1aa0765b54e80d20e355ad)
+-- Engine build    : /workspace/human-cognome-project/engine/taichi/build-c3-cuda
+-- Engine LLVM     : 15.0.6 (/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/lib)
+-- Engine CUDA     : TRUE
+-- Engine runtime source : /workspace/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module
+-- Engine runtime stage  : /workspace/human-cognome-project/engine/build-c3-cuda/taichi-runtime
+-- Found PostgreSQL: /usr/lib/x86_64-linux-gnu/libpq.so.5.17 (found suitable version "17.11", minimum required is "16")
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/human-cognome-project/engine/build-c3-cuda
+
+[1/2] Linking CXX executable live_hierarchy_test
+[2/2] Linking CXX executable viewport/viewport_letter_capture
+
+[W 10/27/26 23:30:30.932 3059694] [cuda_driver.cpp:load_lib@36] libcuda.so lib not found.
+host: 5 cpu threads, 33.3 GiB memory
+cuda: no visible CUDA device (or no CUDA driver) on this host
+instance: arch x64, snode capacity 1024, tree capacity 512, device memory budget 1.00 GiB, 5 launch threads
+snode identifiers issued in this process: 0
+
+actual_backend=cpu,threads=1,path=bulk
+letter_inputs,English_A_aggregate=1,Dutch_accented_i_UTF8_bytes=2,fixture_geometry=1,prepared_frame_conversion=1
+fixture_setup,nodes=3,bodies=3,elapsed_ms=5835.9027079999996
+installed,nodes=3,responses=6,work=537,reference_work=17,upload_bytes=76928,readback_bytes=248,synchronizations=4,elapsed_ms=0.048370999999999997
+production_module,name=live_hierarchy_force_24,mode=0
+production_selector_ir,kernel=0,role=response_child,  %83 = atomicrmw or ptr %82, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_parent,  %121 = atomicrmw or ptr %120, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_child,  %330 = atomicrmw or ptr %329, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_parent,  %367 = atomicrmw or ptr %366, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_child,  %463 = atomicrmw or ptr %462, i32 0 seq_cst, align 4
+production_selector_ir,kernel=0,role=response_parent,  %499 = atomicrmw or ptr %498, i32 0 seq_cst, align 4
+production_packet_audit,kernel=0,words=4 PASS
+production_packet_audit,kernel=0,words=4 PASS
+production_packet_audit,kernel=0,words=4 PASS
+production_packet_audit,kernel=0,words=4 PASS
+production_packet_audit,kernel=0,words=4 PASS
+production_packet_audit,kernel=0,words=4 PASS
+production_selector_audit,kernel=0,own=0,child=0,response=6,publish=0,plain=0 PASS
+production_module,name=live_hierarchy_poll_24,mode=1
+production_selector_ir,kernel=1,role=own,  %124 = atomicrmw or ptr %123, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %301 = atomicrmw or ptr %300, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %410 = atomicrmw or ptr %409, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %502 = atomicrmw or ptr %501, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %593 = atomicrmw or ptr %592, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=child,  %684 = atomicrmw or ptr %683, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=publish,  %1290 = atomicrmw xor ptr %123, i32 1 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_child,  %1582 = atomicrmw or ptr %1581, i32 0 seq_cst, align 4
+production_selector_ir,kernel=1,role=response_parent,  %1613 = atomicrmw or ptr %1612, i32 0 seq_cst, align 4
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_packet_audit,kernel=1,words=4 PASS
+production_selector_audit,kernel=1,own=1,child=5,response=2,publish=1,plain=0 PASS
+production_module,name=live_hierarchy_control_24,mode=2
+production_selector_audit,kernel=2,own=0,child=0,response=0,publish=0,plain=0 PASS
+current_capture,{"backend":"native_cpu","capture_state_equivalent":true,"captures":3,"contract":"same_active_execution_v1","cuda_executed":false,"engine_ms":0.6657229999999998,"export_ms":0.231053,"f64_round_trip":true,"field_overlays":false,"numeric_copy_bytes":33600,"observation_ms":0.03375,"requested_readback_bytes":78744,"source_mapping_checked":true,"ticks":16} PASS
+case_result,name=capture PASS
+physical_reference,force=independent_long_double_sum,velocity=long_double_conditioned_on_verified_force,velocity_bound=128u_times_intermediate_magnitudes,no_activity_epsilon=1
+publication_reference,conditioned_on_verified_final_velocity=1,long_double_cell_boundary_cases=0
+live_hierarchy_matrix,case_failures=0 PASS
+
+CUDA request rejection (expected nonzero):
+live hierarchy: C3 runner supports CPU only; CUDA publication qualification remains required
+
+exit_status=1

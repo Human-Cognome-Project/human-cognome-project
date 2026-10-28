@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
         {"parameters", {{"dt", parameters.dt}, {"gravity", parameters.gravity},
           {"contact_stiffness", parameters.contact_stiffness}, {"reach_strength", parameters.reach_strength}}}};
       const auto report_start = Clock::now();
-      const auto report = session.report(handle, owner);
+      const auto report = viewport::observe(session, owner, handle);
       const auto report_ms = ms(report_start);
       const auto start = Clock::now();
       // One coherent value (one study, generation and tick) is written to every file of this capture.

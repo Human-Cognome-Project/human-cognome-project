@@ -14,7 +14,8 @@ class CentroidCascade {
   CascadeBinding bind(std::uint64_t, const CascadeSpec &, std::uint64_t);
   CascadeBinding bind_weighted(std::uint64_t,
                                const WeightedCascadeSpec &,
-                               std::uint64_t);
+                               std::uint64_t,
+                               bool same_level_live = false);
   CascadeResult query(std::uint64_t, std::uint64_t);
   const CascadeInspection &inspect(const CascadeResult &);
 
@@ -22,7 +23,8 @@ class CentroidCascade {
   CascadeBinding bind_impl(std::uint64_t,
                            const CascadeSpec &,
                            const WeightedCascadeSpec *,
-                           std::uint64_t);
+                           std::uint64_t,
+                           bool same_level_live = false);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

@@ -26,6 +26,8 @@ enum class Budget {
   CascadeWork,
   CascadeCoverage,  // Unique node/occurrence coverage entries; zero disables
                     // weighted binds.
+  LiveResponses,    // Explicit installed-hierarchy recipient references; zero
+                    // leaves the existing execution and reservation unchanged.
   Count
 };
 struct BudgetDemand {

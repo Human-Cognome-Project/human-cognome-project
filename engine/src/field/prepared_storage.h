@@ -37,10 +37,12 @@ class PreparedStorage {
       const BudgetDemand &limits, NumericalProfile profile = {});
   static std::size_t workspace_bytes(const BudgetDemand &limits,
                                      NumericalProfile profile = {});
-  static std::size_t binding_reserve_bytes(bool cuda, bool geometry = false,
+  static std::size_t binding_reserve_bytes(bool cuda,
+                                           bool geometry = false,
                                            bool cascade = false,
                                            bool weighted = false,
-                                           bool wide = false);
+                                           bool wide = false,
+                                           bool live = false);
   static std::size_t required_scratch(const BudgetDemand &limits, bool cuda,
                                       NumericalProfile profile = {});
 

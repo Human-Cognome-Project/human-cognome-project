@@ -90,9 +90,54 @@ jobs:
             -DENGINE_TAICHI_CUDA=AUTO > "$RUNNER_TEMP/backend-probe.log"
           grep -q 'Engine CUDA     : FALSE' "$RUNNER_TEMP/backend-probe.log"
 
+      - name: Retain actual C3 compiler modules and configuration
+        run: |
+          . ./engine/build/engine-env.sh
+          mkdir -p "$RUNNER_TEMP/c3-compiler-ir"
+          /usr/lib/llvm-15/bin/clang++ --version > "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
+          /usr/lib/llvm-15/bin/llvm-config --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
+          /usr/lib/llvm-15/bin/llc --version >> "$RUNNER_TEMP/c3-compiler-ir/toolchain.txt"
+          git rev-parse HEAD HEAD:engine/taichi > "$RUNNER_TEMP/c3-compiler-ir/source.txt"
+          sha256sum engine/build/live_hierarchy_test \
+            engine/build/taichi-runtime/runtime_x64.bc > "$RUNNER_TEMP/c3-compiler-ir/binaries.sha256"
+          cmake -LA -N engine/build > "$RUNNER_TEMP/c3-compiler-ir/cmake.txt"
+          for workers in 1 2; do
+            for source_path in bulk direct; do
+              for compiler_shape in default no-unroll; do
+                hcp_ir_dir="$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-${compiler_shape}"
+                mkdir -p "$hcp_ir_dir"
+                hcp_ir_args=()
+                if [ "$source_path" = direct ]; then hcp_ir_args+=(--direct); fi
+                if [ "$compiler_shape" = no-unroll ]; then hcp_ir_args+=(--compiler-no-unroll); fi
+                HCP_C3_IR_DIR="$hcp_ir_dir" engine/build/live_hierarchy_test \
+                  --threads "$workers" --case ir "${hcp_ir_args[@]}" > "$hcp_ir_dir/collection.txt"
+                engine/build/live_hierarchy_test --threads "$workers" \
+                  --audit-ir "$hcp_ir_dir" "${hcp_ir_args[@]}" > "$hcp_ir_dir/audit.txt"
+              done
+            done
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-c3-compiler-ir
+          path: ${{ runner.temp }}/c3-compiler-ir
+
       - name: Run native CPU functional suite
         run: |
           ctest --test-dir engine/build --output-on-failure --output-log "$RUNNER_TEMP/native-cpu-ctest.log"
+
+      - name: Exercise all four hierarchy modes without LLVM loop duplication
+        run: |
+          . ./engine/build/engine-env.sh
+          for workers in 1 2; do
+            for source_path in bulk direct; do
+              hcp_ir_args=()
+              if [ "$source_path" = direct ]; then hcp_ir_args+=(--direct); fi
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/native.txt"
+            done
+          done
 
       - name: Restore new cold fixtures and run native PostgreSQL-to-active integration
         run: |
@@ -130,6 +175,7 @@ jobs:
             engine/build/acceptance-*/cold-*.sha256
             engine/build/Testing/Temporary/LastTest.log
             ${{ runner.temp }}/native-cpu-ctest.log
+            ${{ runner.temp }}/c3-compiler-ir/*/native.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |
