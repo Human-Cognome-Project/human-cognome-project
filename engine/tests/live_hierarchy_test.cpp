@@ -645,6 +645,57 @@ struct Fixture {
       audit(*k, mode++);
   }
 };
+void collect_compiler_ir(engine::Runtime &r, HostPath path) {
+  const char *dir = std::getenv("HCP_C3_IR_DIR");
+  require(dir && *dir, "IR collector requires HCP_C3_IR_DIR");
+  Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+            {1, 1, 1}, {1, 1, 2}, {0, 2, 5});
+  const auto result =
+      f.h.install_live_hierarchy(f.h.prepared_storage().generation, f.spec());
+  require(result.status == CascadeStatus::Ok,
+          "IR collector installation failed");
+  std::ofstream metadata(std::string(dir) + "/configuration.txt");
+  require(bool(metadata), "IR collector metadata write");
+  const auto &cfg = r.program().compile_config();
+  metadata << "diagnostic_only=1; semantic acceptance is not performed by this "
+              "collector\n"
+           << "actual_backend=x64\nworkers=" << r.cpu_threads()
+           << "\nsource_path="
+           << (path == HostPath::BulkCopy ? "bulk" : "direct")
+           << "\njit_opt_level=" << cfg.opt_level
+           << "\njit_simd_width=" << cfg.simd_width
+           << "\nkernel_math=strict (C3 construction)\n";
+  int mode = 0;
+  for (const auto *compiled : LiveHierarchyAccess::kernels(f.h)) {
+    const auto &kernel =
+        engine::testing::CompiledKernelAccess::kernel(*compiled);
+    const auto &module =
+        *dynamic_cast<const taichi::lang::LLVM::CompiledKernelData &>(
+             engine::testing::CompiledKernelAccess::compiled(*compiled))
+             .get_internal_data()
+             .compiled_data.module;
+    std::error_code ec;
+    llvm::raw_fd_ostream file(
+        std::string(dir) + "/c3-" + std::to_string(mode) + ".ll", ec,
+        llvm::sys::fs::OF_Text);
+    require(!ec, "IR collector module write");
+    module.print(file, nullptr);
+    metadata << "mode=" << mode << ",kernel=" << kernel.get_name()
+             << ",triple=" << module.getTargetTriple()
+             << ",layout=" << module.getDataLayoutStr() << '\n';
+    for (int arg = 0; arg < 30; ++arg)
+      if (arg < 24 || arg >= 28)
+        metadata << "argument=" << arg << ",data_offset="
+                 << kernel.args_type->get_element_offset(
+                        {arg,
+                         taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY})
+                 << '\n';
+    ++mode;
+  }
+  std::cout << "compiler_ir_collection,modules=3,diagnostic_only=1,no_semantic_"
+               "acceptance_claim=1\n";
+}
+
 using Packet = std::array<double, 4>;
 using Vector = std::array<long double, 3>;
 double quantize(double value, int bits) {
@@ -2272,6 +2323,10 @@ int main(int argc, char **argv) {
     const auto wants = [&](const char *name) {
       return only.empty() || only == name;
     };
+    if (only == "ir") {
+      collect_compiler_ir(r, path);
+      return 0;
+    }
     int failures = 0;
     const auto run = [&](const char *name, auto action) {
       try {
