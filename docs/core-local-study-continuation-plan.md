@@ -11,10 +11,11 @@ are implemented. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 `1af1cacef98d34928d8b0bbbbb5753c6790c61fa` found no new blocking source defect
 in its scoped corrections. Its tested code pin is
 `758ad053629a6ca9beea5422de659aa38ba15e48`; final documentation is separate.
-At this review, hosted native CPU run 40958048270 is still running; eight other
-checks passed. Maintainer merge acceptance awaits the hosted native result,
-including no-unroll, integration and actual CPU-backend steps. Do not rerun
-working CI merely to obtain a second result.
+All nine hosted checks subsequently passed. The maintainer independently
+inspected native job 123743238316: 97/97 CPU-only tests in 1482.34 seconds,
+all four extra no-unroll modes, 180 integration checks and actual CPU-backend
+verification. #196 is accepted and merged at `68e4104`. Do not rerun this
+baseline merely to obtain a second result.
 
 The [contributor evidence](https://github.com/Human-Cognome-Project/human-cognome-project/blob/1af1cacef98d34928d8b0bbbbb5753c6790c61fa/engine/tests/cuda_local/README.md)
 records 100/100 CPU tests on a CUDA-enabled substrate, 4/4 CUDA suites,
@@ -27,7 +28,7 @@ normal builds retain the C3 CUDA guard.
 
 The authorized wide-profile motion rule retains accepted displacement/dt for
 positive dt and incoming velocity for zero dt. It intentionally discards
-unpublished momentum. Preserve that rule in new references after #196 lands;
+unpublished momentum. Preserve that rule in new references from accepted #196;
 do not silently restore the earlier untrimmed-velocity policy. Force aggregation,
 one integration, body publication precision and native activity remain coherent.
 Exact stillness/crystallization is not required of every moving fixture.
@@ -40,7 +41,7 @@ conversion path must remain separately described.
 
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
-| A | C3-2 combined source/hierarchy refresh | Next core implementation PR, using accepted #195 plus reviewed #196 corrections once merged; CPU evidence first. |
+| A | C3-2 combined source/hierarchy refresh | Next core implementation PR, using accepted #195 plus reviewed #196 corrections now merged; CPU evidence first. |
 | B | Native admission and candidate contact/tick transaction | Build on A and #175 geometry preflight; source work and CPU acceptance can run remotely. |
 | C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
@@ -53,10 +54,10 @@ No routine permission step is added to the accepted implementation scope.
 
 ## A. Coherent source/hierarchy refresh
 
-The [C3-2 implementation detail](live-hierarchy-refresh-plan.md) is proposed for
-review. It maps this accepted slice onto prospective source references, stable
-comparison identity, native repair/commit phases and executable acceptance.
-Refresh remains unimplemented; that proposal changes no acceptance or runtime.
+The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in
+#197 at merge `0eea42a`. It maps this slice onto prospective source references,
+stable comparison identity, native repair/commit phases and executable acceptance.
+Begin implementation from current main in its own PR; refresh remains unbuilt.
 
 Owning contract: [production plan, section 4](production-hierarchy-response-plan.md#4-initialization-structural-changes-and-failure).
 Start at `engine/src/field/prepared_update.cpp`, `live_hierarchy.cpp` and

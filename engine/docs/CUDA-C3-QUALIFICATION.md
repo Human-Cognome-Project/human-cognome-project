@@ -1,9 +1,14 @@
 # Local CUDA corrections and remaining work
 
-Status: **corrections proposed for review**, from main
+Status: **scoped corrections accepted in #196**, merge `68e4104`, reviewed
+head `1af1cac`. Original development base:
 `a05ae246762204de2055eeb556996d142c2a55fc`. Local tests use GTX 1070 GPU0
 (Pascal 6.1), driver 535.309.01 and Clang/LLVM 15.0.7. GPU1 is excluded.
 [Retained evidence](../tests/cuda_local/README.md) identifies the tested source.
+Hosted CPU-only validation independently verified by the maintainer passed
+97/97 tests in 1482.34 seconds, all four extra no-unroll modes, 180 integration
+checks and backend verification; all nine hosted checks passed. The local
+results below remain a separate configuration and evidence record.
 This is not the local-study build or Docker release PR.
 
 ## What failed and what changed
@@ -74,8 +79,8 @@ on-device packet, notification, numerical and reuse checks.
   pair already matched the October 13 exports; no cold-data update was needed.
 
 Earlier ordering/PTX diagnostics and the original tiny-velocity failure are
-retained as historical evidence, not relabelled as final-source tests. Changes
-remain proposed until review. Ordinary vectors are not pinned; these results
+retained as historical evidence, not relabelled as final-source tests. The scoped corrections are accepted; full operational/hardware qualification
+remains outstanding. Ordinary vectors are not pinned; these results
 are not complete allocation/transfer qualification under #145.
 
 ## Core issues still to address

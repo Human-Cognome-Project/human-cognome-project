@@ -6,8 +6,8 @@ Patrick authorized [retained motion from accepted displacement](engine/docs/ACCE
 during GTX 1070 qualification. For positive dt, retain accepted displacement/dt;
 a quiet publication retains zero velocity. Zero dt preserves incoming velocity.
 This supersedes earlier untrimmed-velocity intent for the wide trial profile;
-legacy arithmetic is unchanged. The local corrections and bounded validation are proposed for review, not merged
-acceptance or blanket GPU qualification. [Remaining core issues](engine/docs/CUDA-C3-QUALIFICATION.md#core-issues-still-to-address) include coherent live
+legacy arithmetic is unchanged. The scoped corrections are accepted in #196
+at merge `68e4104`; bounded local evidence is not blanket GPU qualification. [Remaining core issues](engine/docs/CUDA-C3-QUALIFICATION.md#core-issues-still-to-address) include coherent live
 insertion, native admission and an observable active stream. The build/Docker
 PR remains separate until those issues are addressed.
 
@@ -35,7 +35,8 @@ Follow the [local intent and mini-release gate](docs/c3-cpu-capture-handoff.md#l
 The coding agent continues implementation/review locally; this is not a handoff
 of unfinished CPU audit work. Preserve an independently reproducible CPU build;
 decide whether CPU/CUDA need separate images during packaging. Docker packaging
-and actual current-hierarchy CUDA support are planned, not already built.
+remains planned; #196 adds an explicitly guarded GTX 1070 C3 path with
+bounded contributor execution evidence, not general CUDA qualification.
 
 Passing reproducible letter tests from that ready-to-run Docker package can
 support a bounded experimental mini-release. Rendered active-stream captures
@@ -46,8 +47,7 @@ not a claim of complete restart/checkpoint support. Full #156 completion is not
 a prerequisite for this bounded study; #172/#177/#156/#145 remain open.
 
 C3-1 acceptance clears that prerequisite for C3-2, but coherent structural
-refresh remains separate, unimplemented follow-up and is not the current local
-milestone. Actual CUDA execution/publication/activity/f64 qualification remains
+refresh is now the next core implementation slice under the accepted #197 plan. Actual CUDA execution/publication/activity/f64 qualification remains
 local. Never claim CPU execution or CUDA-enabled compilation as GPU evidence.
 Snapshots must observe the same active execution, never a separate CPU replay.
 Keep numerical controls minimal and general; do not tune physics to force
@@ -56,20 +56,23 @@ every letter fixture to stop.
 ## Core continuation — 2026-10-29
 
 Follow the [core/local-study implementation sequence](docs/core-local-study-continuation-plan.md).
-#196's local CUDA and authorized accepted-displacement motion corrections have
-been source-reviewed without a new blocking defect at `1af1cac`; merge acceptance
-awaits the existing hosted native CPU run. Its GTX 1070 results are contributor
-local evidence, not hosted qualification. Mixed f32-to-f64 subnormal promotion
+#196's local CUDA and authorized accepted-displacement motion corrections are
+accepted and merged at `68e4104`, reviewed head `1af1cac`. All nine hosted checks
+passed: 97/97 CPU-only suites in 1482.34 seconds, all four extra no-unroll modes,
+180 integration checks and actual CPU-backend verification. Its GTX 1070 results
+remain contributor local evidence, separate from hosted CPU validation. Mixed f32-to-f64 subnormal promotion
 still fails and remains a distinct backend task.
 
 Next core work: C3-2 coherent source/hierarchy refresh, native admission with
 contact-safe candidate ticks, enduring owner/occurrence integration, then
 observable same-execution commands/capture. Preserve native Taichi storage and
 activity; no guard removal, global reseed or CPU replay substitutes for refresh.
-The [C3-2 implementation detail](docs/live-hierarchy-refresh-plan.md) is proposed
-for review; it does not implement refresh or change the accepted contracts.
+The [C3-2 implementation plan](docs/live-hierarchy-refresh-plan.md) is accepted
+and merged in #197 at `0eea42a`. Begin its implementation from current main in
+one focused PR. Refresh is not yet built; the accepted plan supplies the next
+implementation and evidence contract.
 The new wide motion rule retains accepted displacement/dt when dt is positive,
-and incoming velocity when dt is zero; use the recorded rule after #196 lands.
+and incoming velocity when dt is zero; use the accepted #196 rule.
 It supersedes older untrimmed-motion intent, not survivor preservation at edits.
 
 Local development/visual studies use the native build and NAS PostgreSQL.

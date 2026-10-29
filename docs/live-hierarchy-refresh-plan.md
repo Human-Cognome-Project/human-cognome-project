@@ -1,6 +1,6 @@
 # Coherent source and live-hierarchy refresh (C3-2)
 
-Status: **implementation plan proposed for review, 2026-10-29**. This develops
+Status: **accepted in #197, 2026-10-29**, reviewed head `01b8928`, merge `0eea42a`. This develops
 slice A of the [core continuation](core-local-study-continuation-plan.md#a-coherent-sourcehierarchy-refresh)
 and the accepted [#194 structural-refresh contract](production-hierarchy-response-plan.md#4-initialization-structural-changes-and-failure).
 It changes no executable behavior. Owners remain #172/#177, with subsequent
@@ -15,7 +15,7 @@ together with native placement, contact-safe ticks and an enduring owner.
 
 Planning baseline: main `9e3076d5e815f3fb3732c8441dc149509baaf573`.
 C3-1 is accepted in #195 at merge `6edb9d4`. The next implementation must use
-current main after #196's scoped corrections receive merge acceptance.
+current main including #196's accepted corrections (merge `68e4104`).
 
 The [#196 source review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/196#pullrequestreview-5705358350)
 at `1af1cacef98d34928d8b0bbbbb5753c6790c61fa` found no new blocking source
@@ -33,9 +33,9 @@ plan. Local results and independently inspected hosted results are separate:
 | Mixed-precision boundary | f32-to-f64 promotion of `0x1p-149` becomes zero. This remains a failed, independent backend case. |
 | Hosted CPU-only validation | Run [40958048270](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/40958048270/job/123743238316) completed successfully on `1af1cac`: **97/97** in 1482.34 seconds, all four extra no-unroll modes, 180 integration checks and actual x64 backend verification. All nine hosted checks passed. This configuration has a different test inventory from the local CUDA-enabled build. |
 
-The maintainer's source review preceded hosted completion; merge acceptance
-remains a maintainer action. Check that disposition before beginning
-implementation; another run is not requested by this planning PR. Final-source
+The maintainer independently verified hosted completion and accepted/merged
+#196 at `68e4104`. This plan is accepted in #197 and releases C3-2
+implementation from current main; another baseline run is not requested. Final-source
 GPU compiler artifacts must accompany later hardware acceptance; #196's retained
 historical PTX excerpts cannot establish that result.
 
@@ -255,7 +255,7 @@ Use focused commits within one C3-2 implementation PR:
 3. Add the acceptance cases and controls, run CPU/integration validation and
    retain source-pinned evidence; update Built/Active/Held guidance from results.
 
-This plan is ready for maintainer review. Its implementation exit is an accepted
+This plan is accepted for implementation. Its implementation exit is an accepted
 combined refresh with the matrix above passing. It does not claim operational
 Add, nearest-free placement, candidate contact-safe ticks, an enduring source
 owner, focus/rebase, controlled restart, a paced runner or a Docker release.
