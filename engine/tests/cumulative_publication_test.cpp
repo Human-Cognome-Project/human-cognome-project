@@ -9,6 +9,7 @@
 #include <string>
 
 #include "allocation_observation.h"
+#include "engine/device.h"
 #include "prepared_fixture.h"
 #include "prepared_metrics.h"
 
@@ -38,11 +39,11 @@ Parameters64 inert() {
   p.gravity = p.contact_stiffness = p.reach_strength = 0;
   return p;
 }
-BudgetDemand limits(NumericalProfile profile) {
+BudgetDemand limits(NumericalProfile profile, bool cuda) {
   BudgetDemand l;
   l.values = {1048576, 70, 9, 280, 140, 1135, 9, 32, 0};
   l[Budget::ScratchBytes] =
-      detail::PreparedStorage::required_scratch(l, false, profile);
+      detail::PreparedStorage::required_scratch(l, cuda, profile);
   return l;
 }
 FixtureSource bodies(std::initializer_list<float> positions, float radius = 0) {
@@ -83,7 +84,7 @@ struct Fixture {
                    HostPath path,
                    NumericalProfile profile,
                    const FixtureSource &src)
-      : h(r, PreparedCapacity(limits(profile), profile), path),
+      : h(r, PreparedCapacity(limits(profile, r.on_cuda()), profile), path),
         metrics(r, PreparedFixtureAccess::nodes(h)) {
     Parameters p;
     p.gravity = p.contact_stiffness = p.reach_strength = 0;
@@ -154,6 +155,62 @@ void quiet(Fixture &f, const Parameters64 &p) {
             << '\n';
 }
 
+// Exact binary witnesses isolate publication precision from force arithmetic.
+void accepted_motion(engine::Runtime &r, HostPath path, int sign, int bits) {
+  auto src = bodies({sign * 1.5f});
+  Fixture f(r, path, NumericalProfile::trial(bits, 52), src);
+  auto &h = f.h;
+  const int row = f.in.particle_rows[0].record;
+  for (double dt : {0., .5, 1.}) {
+    const double old_x = sign * 1.5, incoming = sign * .03125;
+    PreparedFixtureAccess::inject_value64(h, kPosX, row, old_x);
+    PreparedFixtureAccess::inject_value64(h, kVelX, row, incoming);
+    h.set_tick_mode(TickMode::Selective);
+    auto p = inert();
+    p.dt = dt;
+    f.tick(p);
+    const double expected_x = q(old_x + incoming * dt, bits);
+    const double expected_v = dt > 0 ? (expected_x - old_x) / dt : incoming;
+    require(h.particle64(kPosX, row) == expected_x &&
+                h.particle64(kVelX, row) == expected_v &&
+                h.determined64()[row] == std::fabs(expected_v),
+            "accepted displacement, retained velocity or final speed differs");
+    require(f.awake(0) == (expected_x != old_x),
+            "motion precision changed publication-based activity");
+    std::cout << "accepted_motion,sign=" << sign << ",bits=" << bits
+              << ",dt=" << dt << ",x=" << expected_x
+              << ",retained_velocity=" << expected_v << '\n';
+  }
+  f.finish("accepted_motion_precision_and_zero_duration");
+}
+
+void subnormal_brake(engine::Runtime &r, HostPath path, int sign) {
+  auto src = bodies({sign * 1.5f, -sign * 1.5f}, 2);
+  src.contacts = {{0, 1}};
+  Fixture f(r, path, NumericalProfile::trial(4, 52), src);
+  auto &h = f.h;
+  const int row = f.in.particle_rows[0].record;
+  const double incoming = sign * .525;
+  PreparedFixtureAccess::inject_value64(h, kVelX, row, incoming);
+  h.set_tick_mode(TickMode::Selective);
+  auto p = inert();
+  p.contact_stiffness = .125;
+  p.dt = 1;
+  const long double pre_brake = std::fabs(static_cast<long double>(incoming)) + .125L;
+  const long double ratio = pre_brake / .125L;
+  const long double integrated = pre_brake * std::exp(-ratio * ratio * ratio * ratio);
+  require(integrated > 0 && integrated < std::numeric_limits<double>::min(),
+          "normal inputs did not produce the independent subnormal witness");
+  f.tick(p);
+  require(h.ready() && h.particle64(kPosX, row) == sign * 1.5 &&
+              h.particle64(kVelX, row) == 0 && h.determined64()[row] == 0,
+          "transient subnormal braking failed accepted-motion publication");
+  std::cout << "subnormal_brake,sign=" << sign
+            << ",independent_long_double_intermediate=" << integrated
+            << ",retained_velocity=0\n";
+  f.finish("subnormal_intermediate_normal_inputs");
+}
+
 void combined_step(engine::Runtime &r,
                    HostPath path,
                    int sign,
@@ -191,8 +248,8 @@ void combined_step(engine::Runtime &r,
   f.tick(p);
   close(h.particle64(kForceX, target), total,
         "fields and contact were not combined once");
-  close(h.particle64(kVelX, target), velocity,
-        "one-step brake/integration reference differs");
+  close(h.particle64(kVelX, target), expected - sign * 1.5,
+        "retained cumulative displacement reference differs");
   close(h.particle64(kPosX, target), expected,
         "cumulative body publication differs");
   require(h.demand().particles_evaluated == 3 &&
@@ -247,12 +304,10 @@ void velocity_and_contact_wake(engine::Runtime &r, HostPath path) {
               h.demand().contact_evaluations == 2 &&
               !h.demand().particles_moved && !f.awake(0) && !f.awake(1),
           "velocity-only contact work retained movement activity");
-  const long double expected =
-      static_cast<long double>(p.contact_stiffness) * std::exp(-1.L);
-  close(h.particle64(kVelX, f.in.particle_rows[0].record), expected,
-        "post-brake physical velocity was discarded with positional detail");
-  close(h.particle64(kVelX, f.in.particle_rows[1].record), -expected,
-        "reverse contact index side lost its physical velocity");
+  close(h.particle64(kVelX, f.in.particle_rows[0].record), 0,
+        "quiet publication retained unapplied motion");
+  close(h.particle64(kVelX, f.in.particle_rows[1].record), 0,
+        "reverse contact index side retained unapplied motion");
   quiet(f, p);
   h.set_tick_mode(TickMode::Selective);  // Explicit control-input invalidation.
   f.tick(p);
@@ -263,7 +318,7 @@ void velocity_and_contact_wake(engine::Runtime &r, HostPath path) {
   f.tick(p);
   require(
       h.demand().particles_evaluated == 3 && h.demand().particles_moved == 2,
-      "parameter change failed to wake preserved velocity and cross body Q");
+      "parameter change failed to wake zero retained motion and cross body Q");
   f.finish("velocity_contact_and_parameter_wakes");
   // Public invalidate() withdraws publication readiness; it is not a wake API.
   h.invalidate();
@@ -293,11 +348,11 @@ void radial_cache(engine::Runtime &r, HostPath path) {
   for (int a = 0; a < 3; ++a) {
     require(h.particle64(kPosX + a, row) == 1.5,
             "radial witness moved unexpectedly");
-    close(h.particle64(kVelX + a, row), v,
-          "radial damping changed or lost velocity");
+    close(h.particle64(kVelX + a, row), 0,
+          "quiet radial publication retained unapplied motion");
   }
-  close(h.determined64()[row], std::sqrt(3.L) * v,
-        "cached speed precedes radial damping");
+  close(h.determined64()[row], 0,
+        "cached speed differs from retained motion");
   require(!f.awake(0), "radial velocity-only change retained activity");
   quiet(f, p);
   std::cout << "radial_cache,expected_component=" << double(v)
@@ -465,12 +520,19 @@ void count_and_focus_wakes(engine::Runtime &r,
 
 int main(int argc, char **argv) {
   try {
-    bool direct = false;
+    bool direct = false, cuda = false, motion_only = false;
     int threads = 1;
     for (int i = 1; i < argc; ++i) {
       const std::string arg = argv[i];
       if (arg == "--direct")
         direct = true;
+      else if (arg == "--motion-only")
+        motion_only = true;
+      else if (arg == "--backend" && i + 1 < argc) {
+        const std::string backend = argv[++i];
+        require(backend == "cpu" || backend == "cuda", "unknown backend");
+        cuda = backend == "cuda";
+      }
       else if (arg == "--threads" && i + 1 < argc)
         threads = std::stoi(argv[++i]);
       else
@@ -481,12 +543,24 @@ int main(int argc, char **argv) {
     engine::InstanceSettings settings;
     settings.read_environment = false;
     settings.cpu_threads = threads;
+    require(!(cuda && direct), "CpuDirect cannot execute on CUDA");
+    if (cuda)
+      require(engine::cuda_available(), "CUDA requested but no visible device");
+    settings.cuda = cuda;
+    if (cuda) settings.device_memory_gb = 1.0;
     engine::Runtime r(settings);
-    require(!r.on_cuda(), "expected actual CPU backend");
+    require(r.arch() == (cuda ? taichi::Arch::cuda : taichi::Arch::x64),
+            "requested backend differs from actual backend");
     std::cout << std::setprecision(17)
-              << "actual_backend=cpu,threads=" << threads
+              << "actual_backend=" << (cuda ? "cuda" : "cpu") << ",threads=" << threads
               << ",path=" << (direct ? "direct" : "bulk") << '\n';
     const auto path = direct ? HostPath::CpuDirect : HostPath::BulkCopy;
+    for (int sign : {1, -1}) {
+      for (int bits : {4, 8, 52})
+        accepted_motion(r, path, sign, bits);
+      subnormal_brake(r, path, sign);
+    }
+    if (motion_only) return 0;
     velocity_and_contact_wake(r, path);
     radial_cache(r, path);
     count_and_focus_wakes(r, path, false);
@@ -500,6 +574,9 @@ int main(int argc, char **argv) {
         centroid_witness(r, path, sign, kind);
     }
     return 0;
+  } catch (const std::string &e) {
+    std::cerr << e << '\n';
+    return 1;
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
     return 1;

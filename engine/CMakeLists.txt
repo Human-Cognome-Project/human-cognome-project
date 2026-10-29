@@ -374,3 +374,31 @@ endif()
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/engine-env.sh.in"
                "${CMAKE_CURRENT_BINARY_DIR}/engine-env.sh" @ONLY)
+
+# Per-kernel strict math must survive a shared backend JIT in default fast mode.
+add_executable(strict_math_test tests/strict_math_test.cpp)
+target_link_libraries(strict_math_test PRIVATE engine_support)
+add_test(NAME strict_math_cpu COMMAND strict_math_test)
+set_tests_properties(strict_math_cpu PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+
+option(HCP_WITH_CUDA_QUALIFICATION "Enable local GPU qualification tests" OFF)
+if(HCP_WITH_CUDA_QUALIFICATION)
+  if(NOT ENGINE_TAICHI_WITH_CUDA)
+    message(FATAL_ERROR "CUDA qualification requires a CUDA-enabled substrate")
+  endif()
+  # Explicit local test admission; normal builds preserve the C3 CUDA guard.
+  target_compile_definitions(field_core PRIVATE HCP_WITH_CUDA_QUALIFICATION=1)
+  add_test(NAME native_handoff_cuda COMMAND native_handoff_test --backend cuda)
+  add_test(NAME weighted_handoff_cuda COMMAND weighted_handoff_test --backend cuda)
+  add_test(NAME strict_math_cuda COMMAND strict_math_test --cuda)
+  add_test(NAME accepted_motion_cuda
+      COMMAND cumulative_publication_test --backend cuda --motion-only)
+  set_tests_properties(native_handoff_cuda weighted_handoff_cuda strict_math_cuda
+      accepted_motion_cuda
+      PROPERTIES ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}"
+      LABELS "cuda-qualification" RUN_SERIAL TRUE TIMEOUT 900)
+endif()
+
+# Reads actual emitted PTX; has no CUDA runtime or device dependency.
+add_executable(cuda_ptx_audit_test tests/cuda_ptx_audit_test.cpp)

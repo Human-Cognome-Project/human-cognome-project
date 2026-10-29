@@ -395,7 +395,7 @@ try {
   check(errors.length === 0, 'no browser exceptions'); check(externalRequests.length === 0, 'no network requests');
   const evidence = {checks, browser: browser.version(), transport: inMemory ? 'in-memory exact page assets, offline browser context' : 'file://, offline browser context',
     direct_file_navigation: inMemory ? 'unexecuted here: managed Chromium blocks file:// navigation' : 'passed',
-    renderer: current.renderer, engine_backend: 'native CPU capture; Taichi GPU unexecuted',
+    renderer: current.renderer, engine_backend: native.execution?.backend ?? 'not recorded by this capture',
     particles: native.particles.length, snapshot_sha256: digest(nativeText), snapshot_bytes: Buffer.byteLength(nativeText),
     live_updates: {...picker, page: inMemory ? 'in-memory document (not a file:// page)' : 'direct file:// page', real_directory_handle: opfs === 'ok' ? 'origin-private directory handle watched and file replacement applied' : opfs,
       source: 'page-side source with the picker handle shape; the native folder picker is not automatable', captures: 'retained native tick 0 and 8; UI fixtures for other ticks, identities and invalid files'},
