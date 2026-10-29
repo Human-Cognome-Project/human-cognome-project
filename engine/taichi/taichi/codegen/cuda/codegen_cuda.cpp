@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <functional>
+#include "llvm/IR/IntrinsicsNVPTX.h"
 
 #include "taichi/common/core.h"
 #include "taichi/util/io.h"
@@ -463,6 +464,20 @@ class TaskCodeGenCUDA : public TaskCodeGenLLVM {
       return;
     }
 
+    // LLVM 15 NVPTX discards RMW ordering, and cannot lower LLVM fence
+    // instructions on Pascal. Bitwise atomics can publish/acquire packets
+    // even when their return is unused. Use the native per-thread RMW,
+    // bypassing warp reduction, with compiler-visible device-wide barriers.
+    // NVVM membar.gl orders packet accesses on both sides on sm_61.
+    const bool bitwise = atomic_stmt->op_type == AtomicOpType::bit_or ||
+                         atomic_stmt->op_type == AtomicOpType::bit_xor ||
+                         atomic_stmt->op_type == AtomicOpType::bit_and;
+    if (is_integral(val_type) && bitwise) {
+      builder->CreateIntrinsic(llvm::Intrinsic::nvvm_membar_gl, {}, {});
+      llvm_val[atomic_stmt] = integral_type_atomic(atomic_stmt);
+      builder->CreateIntrinsic(llvm::Intrinsic::nvvm_membar_gl, {}, {});
+      return;
+    }
     TaskCodeGenLLVM::visit(atomic_stmt);
   }
 
