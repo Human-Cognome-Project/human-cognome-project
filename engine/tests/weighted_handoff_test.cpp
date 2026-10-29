@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "allocation_observation.h"
+#include "cuda_selector_audit.h"
+#include "engine/device.h"
 #include "engine/transfer.h"
 #include "field/numeric_ir.h"
 #include "prepared_fixture.h"
@@ -506,6 +508,7 @@ void NativeKernel::audit() const {
       *dynamic_cast<const LLVM::CompiledKernelData &>(*compiled)
            .get_internal_data()
            .compiled_data.module;
+  if (r.on_cuda()) cuda_selector_audit::qualify(module);
   const auto data_arg = [&](const llvm::Value *ptr) -> int {
     const auto *base =
         llvm::dyn_cast<llvm::LoadInst>(llvm::getUnderlyingObject(ptr));
@@ -764,7 +767,7 @@ std::vector<Graph> graphs() {
                       std::move(counts)));
   return out;
 }
-BudgetDemand source_limits() {
+BudgetDemand source_limits(bool cuda) {
   BudgetDemand l;
   l.values = {1048576, P, N, R, 0, 16384, 0, 32, 0};
   l[Budget::CascadeNodes] = N;
@@ -774,7 +777,7 @@ BudgetDemand source_limits() {
   l[Budget::CascadeLevels] = 16;
   l[Budget::CascadeWork] = 1ull << 40;
   l[Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
-      l, false, NumericalProfile::trial());
+      l, cuda, NumericalProfile::trial());
   return l;
 }
 struct Source {
@@ -787,7 +790,7 @@ struct Source {
   Source(engine::Runtime &r, HostPath path, const Graph &input)
       : g(input),
         h(r,
-          PreparedCapacity(source_limits(), NumericalProfile::trial()),
+          PreparedCapacity(source_limits(r.on_cuda()), NumericalProfile::trial()),
           path) {
     FixtureSource src;
     src.kinds.assign(g.rows.size(), 1);
@@ -1424,7 +1427,7 @@ int main(int argc, char **argv) {
   try {
     engine::InstanceSettings s;
     s.read_environment = false;
-    bool direct = false;
+    bool direct = false, cuda = false, dump_code = false;
     std::string filter;
     int threads = 1;
     for (int i = 1; i < argc; ++i) {
@@ -1435,17 +1438,31 @@ int main(int argc, char **argv) {
         filter = argv[++i];
       else if (arg == "--threads" && i + 1 < argc)
         threads = std::stoi(argv[++i]);
+      else if (arg == "--backend" && i + 1 < argc) {
+        const std::string backend = argv[++i];
+        require(backend == "cpu" || backend == "cuda", "unknown backend");
+        cuda = backend == "cuda";
+      } else if (arg == "--dump-code")
+        dump_code = true;
       else
         throw std::invalid_argument("unknown weighted handoff option");
     }
     require(threads == 1 || threads == 2, "one/two native workers required");
+    require(!(cuda && direct), "CpuDirect cannot execute on CUDA");
+    if (cuda)
+      require(engine::cuda_available(), "CUDA requested but no usable device is visible");
+    default_compile_config.print_kernel_asm = dump_code;
+    default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     s.cpu_threads = threads;
+    s.cuda = cuda;
+    if (cuda) s.device_memory_gb = 1.0;
     engine::Runtime r(s);
+    require(r.arch() == (cuda ? taichi::Arch::cuda : taichi::Arch::x64),
+            "requested backend differs from actual Program backend");
     const auto probe_start = std::chrono::steady_clock::now();
     Probe p(r);
-    require(!r.on_cuda(), "actual CPU backend required");
     std::cout << std::setprecision(17)
-              << "actual_backend=cpu,threads=" << threads
+              << "actual_backend=" << (cuda ? "cuda" : "cpu") << ",threads=" << threads
               << ",path=" << (direct ? "direct" : "bulk") << '\n';
     std::cout << "probe_setup,elapsed_us="
               << std::chrono::duration<double, std::micro>(

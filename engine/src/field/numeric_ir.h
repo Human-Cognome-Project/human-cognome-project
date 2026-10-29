@@ -59,4 +59,17 @@ inline void mark_nonfinite(taichi::lang::IRBuilder &b,
   b.create_atomic_add(b.create_external_ptr(c, {b.get_int32(index)}),
                       b.get_int64(1));
 }
+// Transient integrated motion may underflow before position publication. NaN
+// and infinity remain errors; retained state is checked normal-or-zero below.
+inline void mark_nonfinite_motion(taichi::lang::IRBuilder &b,
+                                  taichi::lang::ArgLoadStmt *c,
+                                  taichi::lang::Stmt *x, int index) {
+  auto *exponent = b.create_and(
+      b.create_bit_cast(x, taichi::lang::PrimitiveType::u64),
+      b.get_uint64(0x7ff0000000000000ULL));
+  auto guard = b.get_if_guard(b.create_if(b.create_cmp_eq(
+      exponent, b.get_uint64(0x7ff0000000000000ULL))), true);
+  b.create_atomic_add(b.create_external_ptr(c, {b.get_int32(index)}),
+                      b.get_int64(1));
+}
 }  // namespace field::detail

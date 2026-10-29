@@ -1,0 +1,27 @@
+{
+  "checks": 89,
+  "browser": "145.0.7632.6",
+  "transport": "file://, offline browser context",
+  "direct_file_navigation": "passed",
+  "renderer": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "engine_backend": "native_cuda",
+  "particles": 3,
+  "snapshot_sha256": "e489f4303de63a4af5bf4bed0a88e5555c916e001ac6a548a8c6473de874e90f",
+  "snapshot_bytes": 4338,
+  "live_updates": {
+    "show_directory_picker": "function",
+    "secure_context": true,
+    "protocol": "file:",
+    "page": "direct file:// page",
+    "real_directory_handle": "unavailable: SecurityError",
+    "source": "page-side source with the picker handle shape; the native folder picker is not automatable",
+    "captures": "retained native tick 0 and 8; UI fixtures for other ticks, identities and invalid files"
+  },
+  "metrics": {
+    "parse_ms": 9.100000381469727,
+    "build_ms": 8,
+    "render_submit_ms": 331.69999980926514
+  },
+  "network_requests": 0,
+  "browser_errors": []
+}

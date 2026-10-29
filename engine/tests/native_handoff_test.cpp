@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "allocation_observation.h"
+#include "cuda_selector_audit.h"
 #include "engine/transfer.h"
+#include "engine/device.h"
 #include "field/native_set.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instructions.h"
@@ -187,6 +189,8 @@ class ProbeKernel {
   void audit() const {
     const auto &data = dynamic_cast<const LLVM::CompiledKernelData &>(*compiled)
                            .get_internal_data();
+    if (runtime.on_cuda())
+      cuda_selector_audit::qualify(*data.compiled_data.module);
     int acquire = 0, publish = 0;
     bool all_sc = true;
     for (const auto &fn : *data.compiled_data.module) {
@@ -733,18 +737,44 @@ void matrix(Probe &p, const std::vector<Graph> &topology) {
 int main(int argc, char **argv) {
   try {
     int threads = 1;
-    if (argc == 3 && std::string(argv[1]) == "--threads")
-      threads = std::stoi(argv[2]);
-    else if (argc != 1)
-      throw std::invalid_argument("expected --threads 1|2");
+    bool cuda = false, dump_code = false;
+    for (int i = 1; i < argc; ++i) {
+      const std::string arg = argv[i];
+      if (arg == "--threads" && i + 1 < argc)
+        threads = std::stoi(argv[++i]);
+      else if (arg == "--backend" && i + 1 < argc) {
+        const std::string backend = argv[++i];
+        require(backend == "cpu" || backend == "cuda", "unknown backend");
+        cuda = backend == "cuda";
+      } else if (arg == "--dump-code")
+        dump_code = true;
+      else
+        throw std::invalid_argument(
+            "expected --threads 1|2 --backend cpu|cuda [--dump-code]");
+    }
     require(threads == 1 || threads == 2, "unsupported worker count");
+    if (cuda)
+      require(engine::cuda_available(),
+              "CUDA requested but no usable device is visible");
+    default_compile_config.print_kernel_asm = dump_code;
+    default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::InstanceSettings settings;
     settings.read_environment = false;
     settings.cpu_threads = threads;
+    settings.cuda = cuda;
+    if (cuda) settings.device_memory_gb = 0.5;
     engine::Runtime runtime(settings);
-    require(!runtime.on_cuda(), "C2a probe requires actual CPU backend");
+    require(runtime.arch() == (cuda ? taichi::Arch::cuda : taichi::Arch::x64),
+            "requested backend differs from actual Program backend");
+    if (cuda) {
+      const auto device = engine::bound_cuda_device();
+      std::cout << "device=" << device.name << ",compute_capability="
+                << device.compute_capability_major << '.'
+                << device.compute_capability_minor << '\n';
+    }
     std::cout << std::setprecision(17)
-              << "actual_backend=cpu,threads=" << threads << ",capacity=" << N
+              << "actual_backend=" << (cuda ? "cuda" : "cpu")
+              << ",threads=" << threads << ",capacity=" << N
               << ",native_activity_sets=1\n";
     const auto setup = std::chrono::steady_clock::now();
     Probe probe(runtime);
@@ -788,10 +818,13 @@ int main(int argc, char **argv) {
               << ",cases=" << topology.size() * 4
               << ",rounds_per_case=32,second_publication_per_round=1,setup_us="
               << setup_us << ",binding_bytes=" << binding
-              << ",production_changes=0 PASS\n";
+              << ",production_hierarchy_installed=0 PASS\n";
     return 0;
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
+    return 1;
+  } catch (const std::string &e) {
+    std::cerr << e << '\n';
     return 1;
   }
 }

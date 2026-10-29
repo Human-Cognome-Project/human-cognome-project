@@ -1,5 +1,9 @@
 # Live trial numerical profile (C1)
 
+**Local motion revision, 2026-10-29:** [accepted-displacement motion](ACCEPTED-MOTION.md)
+supersedes the untrimmed-velocity rule described below. The historical accepted
+runs retain their original source pins; validation of the revision is separate.
+
 Status: **accepted in #187, 2026-10-25**, following accepted [#186](../../docs/live-numerical-profile-plan.md)
 under #172/#177. Runtime/test source is pinned in the
 [CPU evidence](../tests/numerical_profile/README.md). Default legacy f32 behavior

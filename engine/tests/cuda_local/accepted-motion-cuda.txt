@@ -1,0 +1,45 @@
+actual_backend=cuda,threads=1,path=bulk
+accepted_motion,sign=1,bits=4,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=4,dt=0.5,x=1.5,retained_velocity=0
+accepted_motion,sign=1,bits=4,dt=1,x=1.5,retained_velocity=0
+case=accepted_motion_precision_and_zero_duration,body_bits=4,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,39345426,39223296,83,47,1094494553,47,1094494545,0,3,23,2.7017691135406494
+after,39345426,39223296,83,47,1094494553,47,1094494545,0,3,23,2.7017691135406494
+accepted_motion,sign=1,bits=8,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=8,dt=0.5,x=1.515625,retained_velocity=0.03125
+accepted_motion,sign=1,bits=8,dt=1,x=1.53125,retained_velocity=0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=8,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,78690852,39223296,83,91,1094496938,91,1094494545,0,4,46,5.2456164360046387
+after,78690852,39223296,83,91,1094496938,91,1094494545,0,4,46,5.2456164360046387
+accepted_motion,sign=1,bits=52,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=52,dt=0.5,x=1.515625,retained_velocity=0.03125
+accepted_motion,sign=1,bits=52,dt=1,x=1.53125,retained_velocity=0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=52,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,118036278,39223296,83,135,1094499323,135,1094494545,0,5,69,7.995070219039917
+after,118036278,39223296,83,135,1094499323,135,1094494545,0,5,69,7.995070219039917
+subnormal_brake,sign=1,independent_long_double_intermediate=1.8770035633182046e-318,retained_velocity=0
+case=subnormal_intermediate_normal_inputs,body_bits=4,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,157381704,39223296,83,179,1094501708,179,1094494545,0,6,92,10.482448101043701
+after,157381704,39223296,83,179,1094501708,179,1094494545,0,6,92,10.482448101043701
+accepted_motion,sign=-1,bits=4,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=4,dt=0.5,x=-1.5,retained_velocity=0
+accepted_motion,sign=-1,bits=4,dt=1,x=-1.5,retained_velocity=0
+case=accepted_motion_precision_and_zero_duration,body_bits=4,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,196727130,39223296,83,223,1094504093,223,1094494545,0,7,115,12.988693237304688
+after,196727130,39223296,83,223,1094504093,223,1094494545,0,7,115,12.988693237304688
+accepted_motion,sign=-1,bits=8,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=8,dt=0.5,x=-1.515625,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=8,dt=1,x=-1.53125,retained_velocity=-0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=8,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,236072556,39223296,83,267,1094506478,267,1094494545,0,8,138,15.576743841171265
+after,236072556,39223296,83,267,1094506478,267,1094494545,0,8,138,15.576743841171265
+accepted_motion,sign=-1,bits=52,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=52,dt=0.5,x=-1.515625,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=52,dt=1,x=-1.53125,retained_velocity=-0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=52,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,275417982,39223296,83,311,1094508863,311,1094494545,0,9,161,18.075113773345947
+after,275417982,39223296,83,311,1094508863,311,1094494545,0,9,161,18.075113773345947
+subnormal_brake,sign=-1,independent_long_double_intermediate=1.8770035633182046e-318,retained_velocity=0
+case=subnormal_intermediate_normal_inputs,body_bits=4,field_bits=52,S=145886,bindings=11049,cpp_new=0 PASS
+before,314763408,39223296,83,355,1094511248,355,1094494545,0,10,184,20.950844764709473
+after,314763408,39223296,83,355,1094511248,355,1094494545,0,10,184,20.950844764709473

@@ -1,0 +1,3 @@
+ptx_file=taichi_kernel_nvptx_0021.ptx,selector_sites=2 PASS
+ptx_file=taichi_kernel_nvptx_0022.ptx,selector_sites=5 PASS
+cuda_ptx_audit,files=2,selector_sites=7,missing_barrier_rejections=4 PASS

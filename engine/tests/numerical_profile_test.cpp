@@ -452,10 +452,10 @@ void watch_point(engine::Runtime &r, HostPath path, int bits) {
     edges += h.demand().centroid_reduction_edges;
     require(
         h.particle64(kPosX, a) == position &&
-            h.particle64(kVelX, a) == velocity &&
+            h.particle64(kVelX, a) == 0 &&
             h.prepared_storage().inspection_counts[1] == 0 &&
-            h.determined64()[a] == std::fabs(velocity),
-        "quiet sub-grid publication lost velocity/speed, retained activity "
+            h.determined64()[a] == 0,
+        "quiet sub-grid publication retained motion/speed, activity "
         "or recovered a tail");
     require(h.prepared_storage().motion64()[a] == 0,
             "unpublished trial became accepted displacement");
@@ -469,7 +469,7 @@ void watch_point(engine::Runtime &r, HostPath path, int bits) {
             << ",cycles=32,attempts=" << attempts
             << ",published_changes=" << changes << ",active_work=" << work
             << ",centroid_edges=" << edges << ",elapsed_us=" << elapsed
-            << ",preserved_velocity=" << velocity
+            << ",incoming_velocity=" << velocity << ",retained_velocity=0"
             << ",pending_particles=0,force_equilibrium_claim=0 PASS\n";
   if (!bits) return;
   auto force = inert();
@@ -498,12 +498,25 @@ void watch_point(engine::Runtime &r, HostPath path, int bits) {
       "contact perturbation failed");
   auto p = inert();
   p.contact_stiffness = .25;
+  const std::array<double, 2> old_x{h.particle64(kPosX, a),
+                                    h.particle64(kPosX, b)};
+  const long double magnitude = p.contact_stiffness *
+      (2.L - std::fabs(static_cast<long double>(old_x[1]) - old_x[0]));
+  require(magnitude > 0, "contact recovery witness no longer overlaps");
   h.tick64(p);
   refresh(h);
-  require(
-      h.demand().contact_evaluations == 2 && h.particle64(kVelX, a) < 0 &&
-          h.particle64(kVelX, b) > 0,
-      "contact perturbation lost one index side or failed to recover sleepers");
+  require(h.demand().contact_evaluations == 2 &&
+              h.demand().particles_evaluated == 2 &&
+              h.particle64(kForceX, a) < 0 && h.particle64(kForceX, b) > 0,
+          "contact perturbation lost one index side or failed to recover sleepers");
+  for (int i = 0; i < 2; ++i) {
+    const int row = i ? b : a;
+    const long double integrated = (i ? magnitude : -magnitude) * std::exp(-1.L);
+    const double expected = quantize(double(old_x[i] + integrated), bits);
+    require(h.particle64(kPosX, row) == expected &&
+                h.particle64(kVelX, row) == expected - old_x[i],
+            "contact wake did not retain its complete accepted displacement");
+  }
   std::cout << "f64 changing-force boundary crossing, fixed-state consumption "
                "and two-sided contact/sleeper recovery PASS\n";
 }
@@ -887,8 +900,9 @@ void independent_step(engine::Runtime &r, HostPath path) {
     const long double v = force / m * params.dt,
                       ratio = std::fabs(v) * params.dt / std::fabs(force),
                       brake = std::exp(-std::pow(ratio, 4));
-    vel[i] = double(v * brake);
+    // Position comes from the independent combined-force calculation.
     next[i] = quantize(double(x + v * brake * params.dt), 32);
+    vel[i] = (next[i] - double(x)) / params.dt;
   }
   no_new([&] {
     h.tick64(params);

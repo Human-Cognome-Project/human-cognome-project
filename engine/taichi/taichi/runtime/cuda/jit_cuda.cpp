@@ -1,3 +1,4 @@
+#include "llvm/IR/Constants.h"
 #include "taichi/runtime/cuda/jit_cuda.h"
 #include "taichi/runtime/llvm/llvm_context.h"
 
@@ -104,8 +105,12 @@ std::string JITSessionCUDA::compile_module_to_ptx(
       TargetRegistry::lookupTarget(triple.str(), err_str);
   TI_ERROR_UNLESS(target, err_str);
 
+  bool fast_math = this->config_.fast_math;
+  if (auto *mode = module->getModuleFlag("taichi.cuda.fast_math"))
+    fast_math = !llvm::mdconst::extract<llvm::ConstantInt>(mode)->isZero();
   TargetOptions options;
-  if (this->config_.fast_math) {
+
+  if (fast_math) {
     options.AllowFPOpFusion = FPOpFusion::Fast;
     // See NVPTXISelLowering.cpp
     // Setting UnsafeFPMath true will result in approximations such as
@@ -173,8 +178,8 @@ std::string JITSessionCUDA::compile_module_to_ptx(
        */
       fn.addFnAttr("denormal-fp-math-f32", "preserve-sign");
 
-      // Use unsafe fp math for sqrt.approx instead of sqrt.rn
-      fn.addFnAttr("unsafe-fp-math", "true");
+      // FTZ does not authorize unsafe arithmetic in a strict kernel.
+      fn.addFnAttr("unsafe-fp-math", fast_math ? "true" : "false");
     }
   }
 

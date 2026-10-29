@@ -1,0 +1,45 @@
+actual_backend=cpu,threads=1,path=bulk
+accepted_motion,sign=1,bits=4,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=4,dt=0.5,x=1.5,retained_velocity=0
+accepted_motion,sign=1,bits=4,dt=1,x=1.5,retained_velocity=0
+case=accepted_motion_precision_and_zero_duration,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,39345426,39223296,83,122,41540570,47,1074852812,41612236,3,23,6.4758894443511963
+after,39345426,39223296,83,122,41540570,47,1074852812,41612236,3,23,6.4758894443511963
+accepted_motion,sign=1,bits=8,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=8,dt=0.5,x=1.515625,retained_velocity=0.03125
+accepted_motion,sign=1,bits=8,dt=1,x=1.53125,retained_velocity=0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=8,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,78690852,39223296,83,235,81996984,93,1074856908,81028044,4,46,12.901349782943726
+after,78690852,39223296,83,235,81996984,93,1074856908,81028044,4,46,12.901349782943726
+accepted_motion,sign=1,bits=52,dt=0,x=1.5,retained_velocity=0.03125
+accepted_motion,sign=1,bits=52,dt=0.5,x=1.515625,retained_velocity=0.03125
+accepted_motion,sign=1,bits=52,dt=1,x=1.53125,retained_velocity=0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,118036278,39223296,83,348,122453398,139,1074861004,120443852,5,69,19.477044582366943
+after,118036278,39223296,83,348,122453398,139,1074861004,120443852,5,69,19.477044582366943
+subnormal_brake,sign=1,independent_long_double_intermediate=1.8770035633182046e-318,retained_velocity=0
+case=subnormal_intermediate_normal_inputs,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,157381704,39223296,83,461,162909812,185,1074865100,159859660,6,92,26.076537609100342
+after,157381704,39223296,83,461,162909812,185,1074865100,159859660,6,92,26.076537609100342
+accepted_motion,sign=-1,bits=4,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=4,dt=0.5,x=-1.5,retained_velocity=0
+accepted_motion,sign=-1,bits=4,dt=1,x=-1.5,retained_velocity=0
+case=accepted_motion_precision_and_zero_duration,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,196727130,39223296,83,574,203366226,231,1074869196,199275468,7,115,32.55816125869751
+after,196727130,39223296,83,574,203366226,231,1074869196,199275468,7,115,32.55816125869751
+accepted_motion,sign=-1,bits=8,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=8,dt=0.5,x=-1.515625,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=8,dt=1,x=-1.53125,retained_velocity=-0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=8,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,236072556,39223296,83,687,243822640,277,1074873292,238691276,8,138,39.958308935165405
+after,236072556,39223296,83,687,243822640,277,1074873292,238691276,8,138,39.958308935165405
+accepted_motion,sign=-1,bits=52,dt=0,x=-1.5,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=52,dt=0.5,x=-1.515625,retained_velocity=-0.03125
+accepted_motion,sign=-1,bits=52,dt=1,x=-1.53125,retained_velocity=-0.03125
+case=accepted_motion_precision_and_zero_duration,body_bits=52,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,275417982,39223296,83,800,284279054,323,1074877388,278107084,9,161,46.809775829315186
+after,275417982,39223296,83,800,284279054,323,1074877388,278107084,9,161,46.809775829315186
+subnormal_brake,sign=-1,independent_long_double_intermediate=1.8770035633182046e-318,retained_velocity=0
+case=subnormal_intermediate_normal_inputs,body_bits=4,field_bits=52,S=141744,bindings=8488,cpp_new=0 PASS
+before,314763408,39223296,83,913,324735468,369,1074881484,317522892,10,184,53.61446475982666
+after,314763408,39223296,83,913,324735468,369,1074881484,317522892,10,184,53.61446475982666

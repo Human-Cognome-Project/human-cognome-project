@@ -40,6 +40,8 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "taichi/ir/type_factory.h"
 #include "live_hierarchy_audit.h"
+#include "cuda_selector_audit.h"
+#include "engine/device.h"
 
 namespace engine::testing {
 struct CompiledKernelAccess {
@@ -54,6 +56,17 @@ struct CompiledKernelAccess {
 }  // namespace engine::testing
 namespace field::testing {
 struct LiveHierarchyAccess {
+  // Forensic test-only readback after failure, not a completed-state report.
+  // Never restore readiness or resume this execution.
+  static std::vector<double> failed_particles(Harness &h) {
+    if (h.ready_ || !h.profile_.wide())
+      throw std::logic_error("forensic readback requires an unready wide session");
+    auto values = h.particle_values_.doubles();
+    if (h.path_ == HostPath::BulkCopy)
+      engine::readback(*h.particle_array_, values.data(), values.size() * 8);
+    return values;
+  }
+
   static auto kernels(Harness &h) {
     return h.live_hierarchy_->kernels();
   }
@@ -128,6 +141,10 @@ void audit(const engine::CompiledKernel &compiled,
     module.print(file, nullptr);
   }
   hierarchy_audit::Analyzer(kernel, module, mode).run(verbose);
+  if (mode != 2 && module.getTargetTriple().find("nvptx") != std::string::npos) {
+    if (verbose) cuda_selector_audit::qualify(module);
+    else cuda_selector_audit::check(module);
+  }
 }
 void audit_negative(const engine::CompiledKernel &compiled,
                     int mode = 0,
@@ -410,7 +427,7 @@ void no_new(F f) {
   require(!allocation_observation::calls,
           "live hierarchy boundary allocated C++ metadata");
 }
-BudgetDemand limits(int responses = 1024) {
+BudgetDemand limits(int responses = 1024, bool cuda = false) {
   BudgetDemand l;
   l[Budget::Potential] = 1048576;
   l[Budget::Particles] = 70;
@@ -429,7 +446,7 @@ BudgetDemand limits(int responses = 1024) {
   l[Budget::LiveResponses] = responses;
   l[Budget::GeometryWork] = 1000000;
   l[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
-      l, false, NumericalProfile::trial());
+      l, cuda, NumericalProfile::trial());
   return l;
 }
 struct Controls {
@@ -514,7 +531,7 @@ struct Fixture {
           const std::vector<double> &radii = {})
       : runtime(r),
         h(r,
-          PreparedCapacity(limits(response_capacity),
+          PreparedCapacity(limits(response_capacity, r.on_cuda()),
                            NumericalProfile::trial(body_bits, field_bits)),
           path) {
     FixtureSource src;
@@ -1069,10 +1086,13 @@ std::vector<double> physical_reference(Fixture &f,
         velocity[k] -= std::max(0.L, vr) * (1 - damping) * radial[k];
     }
     for (int k = 0; k < 3; ++k) {
-      expected[(kVelX + k) * P + body] = double(velocity[k]);
+      // Retained motion is reconstructed from the independently computed publication.
       expected[(kPosX + k) * P + body] =
           quantize(double(position[k] + velocity[k] * p.dt),
                    f.h.numerical_profile().body_fraction_bits);
+      expected[(kVelX + k) * P + body] = p.dt > 0
+          ? (expected[(kPosX + k) * P + body] - double(position[k])) / p.dt
+          : f.h.particle64(kVelX + k, body);
     }
   }
   return expected;
@@ -1158,10 +1178,28 @@ void verify_physical(Fixture &f,
         const auto step = velocity_reference(force, position, velocity, origin,
                                              old[kMass * P + body.record],
                                              f.h.universal64(), p);
-        for (int k = 0; k < 3; ++k)
-          require(std::abs(f.h.particle64(kVelX + k, body.record) -
-                           step.value[k]) <= step.bound,
-                  "one combined physical integration/reference");
+        for (int k = 0; k < 3; ++k) {
+          // Independent long-double dynamics bound the position before Q.
+          // Q is discontinuous at a cell edge, so admit only publications
+          // within the propagated arithmetic interval, never a motion epsilon.
+          const long double trial = position[k] + step.value[k] * p.dt;
+          const long double bound = step.bound * p.dt +
+              8 * std::numeric_limits<double>::epsilon() *
+                  (std::abs(position[k]) + std::abs(step.value[k] * p.dt) + 1);
+          const auto low = quantize(std::nextafter(double(trial - bound),
+              -std::numeric_limits<double>::infinity()),
+              f.h.numerical_profile().body_fraction_bits);
+          const auto high = quantize(std::nextafter(double(trial + bound),
+              std::numeric_limits<double>::infinity()),
+              f.h.numerical_profile().body_fraction_bits);
+          const auto published = f.h.particle64(kPosX + k, body.record);
+          require(published >= low && published <= high,
+                  "one combined integration/publication reference interval");
+          const double accepted = published - double(position[k]);
+          const double retained = p.dt > 0 ? accepted / p.dt : double(velocity[k]);
+          require(f.h.particle64(kVelX + k, body.record) == retained,
+                  "retained motion differs from accepted displacement/time");
+        }
       } else
         for (int k = kVelX; k < kParticleFieldCount; ++k)
           require(f.h.particle64(k, body.record) == old[k * P + body.record],
@@ -1172,16 +1210,9 @@ void verify_physical(Fixture &f,
                   old[kRadius * P + body.record],
           "tick changed physical mass/extent");
       for (int k = 0; k < 3; ++k) {
-        volatile double displacement =
-            f.h.particle64(kVelX + k, body.record) * p.dt;
-        const auto required =
-            quantize(old[(kPosX + k) * P + body.record] + displacement,
-                     f.h.numerical_profile().body_fraction_bits);
-        require(f.h.particle64(kPosX + k, body.record) == required,
-                "position is not one Q of old position plus final physical "
-                "velocity times dt");
         if (f.h.numerical_profile().body_fraction_bits < 52 &&
-            required != expected[(kPosX + k) * P + body.record])
+            f.h.particle64(kPosX + k, body.record) !=
+                expected[(kPosX + k) * P + body.record])
           ++publication_boundaries;
       }
       for (int k = 0; k < 3; ++k) {
@@ -1525,7 +1556,7 @@ void basic(engine::Runtime &r, HostPath path) {
               << ",bytes=" << e.bytes << '\n';
     scratch += e.bytes;
   }
-  require(scratch == limits()[Budget::ScratchBytes],
+  require(scratch == limits(1024, r.on_cuda())[Budget::ScratchBytes],
           "installed manifest does not sum to scratch reservation");
   const auto shapes = f.h.prepared_storage().capacity.numerical_shapes();
   for (std::size_t i = 0; i < shapes.size(); ++i) {
@@ -2095,10 +2126,26 @@ void moving_case(Fixture &f, const char *name) {
       const auto old = f.h.particles64(),
                  expected = physical_reference(f, p, round == 0 && ticks == 0);
       const auto before = f.h.inspect_live_hierarchy();
-      no_new([&] {
-        f.h.tick64(p);
-        f.h.inspect_prepared();
-      });
+      try {
+        no_new([&] {
+          f.h.tick64(p);
+          f.h.inspect_prepared();
+        });
+      } catch (...) {
+        std::cerr << "failed_motion,name=" << name << ",round=" << round
+                  << ",tick=" << ticks << ",numerical_errors="
+                  << f.h.demand().numerical_errors << '\n';
+        const auto failed = f.h.ready() ? f.h.particles64() : LiveHierarchyAccess::failed_particles(f.h);
+        for (std::size_t body = 0; body < f.denominators.size(); ++body)
+          for (int k = 0; k < kParticleFieldCount; ++k) {
+            const auto at = k * f.h.particle_capacity() +
+                            f.in.particle_rows[body].record;
+            std::cerr << "failed_motion_buffer,body=" << body << ",field=" << k
+                      << ",before=" << std::hexfloat << old[at]
+                      << ",after=" << failed[at] << std::defaultfloat << '\n';
+          }
+        throw;
+      }
       verify_physical(f, expected, old, p);
       poll_lifetime(f, before);
       const auto &s = f.h.prepared_storage();
@@ -2281,7 +2328,7 @@ void capture_current(engine::Runtime &r,
     require(viewport::Json::parse(value.dump()) == value,
             "snapshot JSON round-trip changed values");
     require(state.tick == f.h.prepared_storage().completed_ticks &&
-                state.backend == "native_cpu" &&
+                state.backend == (r.on_cuda() ? "native_cuda" : "native_cpu") &&
                 state.comparisons.size() == 3 &&
                 state.comparisons.back().retained_fraction_bits == 5,
             "capture backend/tick/precision identity mismatch");
@@ -2354,7 +2401,7 @@ void capture_current(engine::Runtime &r,
       capture();
   }
   viewport::Json evidence{{"contract", "same_active_execution_v1"},
-                          {"backend", "native_cpu"},
+                          {"backend", r.on_cuda() ? "native_cuda" : "native_cpu"},
                           {"ticks", ticks},
                           {"captures", captures},
                           {"capture_state_equivalent", true},
@@ -2365,7 +2412,7 @@ void capture_current(engine::Runtime &r,
                           {"observation_ms", observation_ms},
                           {"export_ms", export_ms},
                           {"engine_ms", engine_ms},
-                          {"cuda_executed", false},
+                          {"cuda_executed", r.on_cuda()},
                           {"field_overlays", false}};
   viewport::write_atomic((directory / "hierarchy-evidence.json").string(),
                          evidence);
@@ -2379,7 +2426,7 @@ int main(int argc, char **argv) {
     engine::InstanceSettings settings;
     settings.cpu_threads = 1;
     HostPath path = HostPath::BulkCopy;
-    bool quick = false, no_unroll = false;
+    bool quick = false, no_unroll = false, dump_code = false;
 #ifdef HCP_HAS_VIEWPORT
     std::string capture_output;
     std::uint64_t capture_ticks = 64, capture_every = 8;
@@ -2388,6 +2435,8 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
       if (std::string(argv[i]) == "--direct")
         path = HostPath::CpuDirect;
+      else if (std::string(argv[i]) == "--dump-code")
+        dump_code = true;
       else if (std::string(argv[i]) == "--quick")
         quick = true;
       else if (std::string(argv[i]) == "--compiler-no-unroll")
@@ -2408,10 +2457,8 @@ int main(int argc, char **argv) {
 #endif
       else if (std::string(argv[i]) == "--backend" && i + 1 < argc) {
         const std::string backend = argv[++i];
-        if (backend != "cpu")
-          throw std::runtime_error(
-              "C3 runner supports CPU only; CUDA publication qualification "
-              "remains required");
+        require(backend == "cpu" || backend == "cuda", "unknown backend");
+        settings.cuda = backend == "cuda";
       } else
         throw std::runtime_error("unknown argument");
     }
@@ -2423,13 +2470,25 @@ int main(int argc, char **argv) {
                                "-unroll-full-max-count=1"};
       llvm::cl::ParseCommandLineOptions(4, options);
     }
+    require(!(settings.cuda && path == HostPath::CpuDirect),
+            "CpuDirect cannot execute on CUDA");
+    require(!(settings.cuda && (!audit_ir_dir.empty() || only == "ir")),
+            "offline CPU IR optimizer/auditor requires CPU; use CUDA --dump-code");
+    if (settings.cuda) {
+      require(engine::cuda_available(), "CUDA requested but no visible device");
+      settings.device_memory_gb = 1.0;
+    }
+    settings.read_environment = false;
+    taichi::lang::default_compile_config.print_kernel_asm = dump_code;
+    taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);
     std::cout << std::setprecision(17)
-              << "actual_backend=cpu,threads=" << *settings.cpu_threads
+              << "actual_backend=" << (r.on_cuda() ? "cuda" : "cpu") << ",threads=" << *settings.cpu_threads
               << ",path=" << (path == HostPath::BulkCopy ? "bulk" : "direct")
               << ",llvm_unroll="
               << (no_unroll ? "disabled-test-control" : "default") << '\n';
-    require(r.arch() == taichi::Arch::x64, "actual CPU required");
+    require(r.arch() == (settings.cuda ? taichi::Arch::cuda : taichi::Arch::x64),
+            "requested backend differs from actual Program backend");
     const auto wants = [&](const char *name) {
       return only.empty() || only == name;
     };
@@ -2495,10 +2554,10 @@ int main(int argc, char **argv) {
       });
 #endif
     std::cout
-        << "physical_reference,force=independent_long_double_sum,velocity=long_"
-           "double_conditioned_on_verified_force,velocity_bound=128u_times_"
-           "intermediate_magnitudes,no_activity_epsilon=1\n";
-    std::cout << "publication_reference,conditioned_on_verified_final_velocity="
+        << "physical_reference,force=independent_long_double_sum,position=bounded_"
+           "long_double_integration_then_Q,retained_velocity=accepted_displacement_"
+           "over_dt,no_activity_epsilon=1\n";
+    std::cout << "publication_reference,independent_dynamics_interval="
                  "1,long_double_cell_boundary_cases="
               << publication_boundaries << '\n';
     std::cout << "live_hierarchy_matrix,case_failures=" << failures
@@ -2506,6 +2565,9 @@ int main(int argc, char **argv) {
     return failures ? 1 : 0;
   } catch (const std::exception &e) {
     std::cerr << "live hierarchy: " << e.what() << '\n';
+    return 1;
+  } catch (const std::string &e) {
+    std::cerr << "live hierarchy: " << e << '\n';
     return 1;
   }
 }

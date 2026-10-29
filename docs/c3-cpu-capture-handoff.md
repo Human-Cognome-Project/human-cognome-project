@@ -37,6 +37,18 @@ Successful retained-letter tests are sufficient scope for an
 experimental mini-release; no broader linguistic population, analyst system or
 complete operational admission is implied.
 
+### Local workflow clarification — 2026-10-28
+
+Patrick confirmed that development tests and visual pattern studies run directly
+on the local machine against NAS PostgreSQL. Docker is the release state.
+GPU0/GTX 1070 is the primary target; GPU1/GTX 750 Ti is deferred. Minimize local
+disk writes because the working machine's spinning drives are old; prefer
+RAM-backed transient builds, caches and observations within available memory.
+The release will include a separate PostgreSQL service initialized from the
+retained paired snapshots, with a clean load/restore/run check before shipping.
+The [local qualification record](../engine/docs/CUDA-C3-QUALIFICATION.md) tracks
+implementation and evidence separately from these workflow decisions.
+
 ### Packaging and documentation to implement locally
 
 - Package the native substrate, physics engine, harness and capture/viewer path

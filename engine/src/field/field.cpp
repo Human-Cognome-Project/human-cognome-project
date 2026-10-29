@@ -631,20 +631,16 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       vy = b.create_sub(vy, b.create_mul(factor, ruy));
       vz = b.create_sub(vz, b.create_mul(factor, ruz));
 
-      store(b, particles, at(b, kVelX, i), vx);
-      store(b, particles, at(b, kVelY, i), vy);
-      store(b, particles, at(b, kVelZ, i), vz);
-
-      if (profile_.wide()) {
-        // A quiet publication may consume activity despite a velocity change.
-        // Publish the final physical speed before that consumption, rather
-        // than leaving a stale cache behind the later active-only determiner.
-        auto *value = b.create_sqrt(b.create_add(
-            b.create_add(b.create_mul(vx, vx), b.create_mul(vy, vy)),
-            b.create_mul(vz, vz)));
-        detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
-        store(b, final_speed, {i}, value);
+      if (!profile_.wide()) {
+        store(b, particles, at(b, kVelX, i), vx);
+        store(b, particles, at(b, kVelY, i), vy);
+        store(b, particles, at(b, kVelZ, i), vz);
       }
+      std::array<Stmt *, 3> retained_velocity{};
+      auto *positive_dt = profile_.wide()
+                              ? b.create_cmp_gt(dt, real(b, 0)) : nullptr;
+      auto *safe_dt = profile_.wide()
+                          ? b.create_select(positive_dt, dt, real(b, 1)) : nullptr;
 
       Stmt *moved = b.get_int32(0), *continued = b.get_int32(0),
            *attempted = b.get_int32(0);
@@ -656,13 +652,25 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
             attempted, b.create_cmp_ne(trial, old_position[pair]));
         if (profile_.wide()) {
           detail::mark_nonfinite(b, counters, trial, detail::TrialErrors);
-          detail::mark_nonfinite(b, counters, v, detail::TrialErrors);
+          detail::mark_nonfinite_motion(b, counters, v, detail::TrialErrors);
         }
         auto *next = profile_.wide()
                          ? detail::publish_position(b, trial,
                                                     profile_.body_fraction_bits)
                          : trial;
-        store(b, pd, at(b, pair, i), b.create_sub(next, old_position[pair]));
+        auto *accepted = b.create_sub(next, old_position[pair]);
+        store(b, pd, at(b, pair, i), accepted);
+        if (profile_.wide()) {
+          // One publication precision governs position and retained motion.
+          // A zero-duration visit preserves incoming motion; no division by
+          // zero or artificial velocity reset is introduced by observation.
+          retained_velocity[pair] = b.create_select(
+              positive_dt, b.create_div(accepted, safe_dt), old_velocity[pair]);
+          detail::mark_nonfinite(b, counters, retained_velocity[pair],
+                                detail::TrialErrors);
+          store(b, particles, at(b, kVelX + pair, i), retained_velocity[pair]);
+        }
+
         moved = b.create_logical_or(moved,
                                     b.create_cmp_ne(next, old_position[pair]));
         if (!profile_.wide())
@@ -670,8 +678,17 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
               continued, b.create_cmp_ne(v, old_velocity[pair]));
         store(b, particles, at(b, pos_field, i), next);
       }
+      if (profile_.wide()) {
+        auto *speed2 = real(b, 0);
+        for (auto *v : retained_velocity)
+          speed2 = b.create_add(speed2, b.create_mul(v, v));
+        auto *value = b.create_sqrt(speed2);
+        detail::mark_nonfinite(b, counters, value, detail::TrialErrors);
+        store(b, final_speed, {i}, value);
+      }
       {
         // Trial movement activity follows the complete published change.
+
         // Attempts and velocity remain physical/diagnostic state, not another
         // reason to poll. No same-type notifier overlaps this phase; later
         // contact/centroid notifications remain pending after consumption.

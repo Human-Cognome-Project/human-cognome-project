@@ -36,6 +36,13 @@ KernelCompiler::CKDPtr KernelCompiler::compile(
   auto codegen = KernelCodeGen::create(compile_config, &kernel_def, &chi_ir,
                                        *config_.tlctx);
   data.compiled_data = codegen->compile_kernel_to_module();
+  // The CUDA JIT session is shared by kernels with different math modes.
+  // Keep each kernel's setting with its cloned/serialized LLVM module.
+  if (compile_config.arch == Arch::cuda)
+    data.compiled_data.module->addModuleFlag(
+        llvm::Module::Error, "taichi.cuda.fast_math",
+        static_cast<uint32_t>(compile_config.fast_math));
+
   data.args.reserve(kernel_def.nested_parameters.size());
   for (const auto &p : kernel_def.nested_parameters)
     data.args.push_back(p);

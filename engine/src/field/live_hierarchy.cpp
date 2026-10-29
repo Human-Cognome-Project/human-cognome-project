@@ -3,6 +3,9 @@
 #include <limits>
 #include <stdexcept>
 #include "engine/transfer.h"
+#ifdef HCP_WITH_CUDA_QUALIFICATION
+#include "engine/device.h"
+#endif
 #include "field/activity.h"
 #include "field/centroid_cascade.h"
 #include "field/contact_math.h"
@@ -243,6 +246,8 @@ struct LiveHierarchy::Impl {
   Harness &h;
   const int H, S, U, R, P, G, L;
   bool bound{};
+  // Local qualification only; normal builds continue to refuse CUDA C3.
+  bool cuda_qualification_device{};
   std::uint64_t generation{}, nodes{}, responses{};
   LiveHierarchyInspection inspection;
   std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
@@ -275,6 +280,15 @@ struct LiveHierarchy::Impl {
         masks(H),
         weights(2 * R),
         source_headers(S) {
+#ifdef HCP_WITH_CUDA_QUALIFICATION
+    if (h.runtime_->on_cuda()) {
+      const auto device = engine::bound_cuda_device();
+      cuda_qualification_device =
+          device.name == "NVIDIA GeForce GTX 1070" &&
+          device.compute_capability_major == 6 &&
+          device.compute_capability_minor == 1;
+    }
+#endif
     inspection.nodes.resize(H);
     inspection.slots.resize(8 * H);
     inspection.previous.resize(4 * H);
@@ -737,7 +751,8 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     out.status = CascadeStatus::Unready;
     return out;
   }
-  if (a.bound || !h.profile_.wide() || h.runtime_->arch() != taichi::Arch::x64)
+  if (a.bound || !h.profile_.wide() ||
+      (h.runtime_->arch() != taichi::Arch::x64 && !a.cuda_qualification_device))
     return out;
   if (expected != s.generation) {
     out.status = CascadeStatus::Stale;

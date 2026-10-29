@@ -1,4 +1,6 @@
 #include <memory>
+#include <unordered_map>
+#include <mutex>
 
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/DynamicLibrary.h"
@@ -37,6 +39,8 @@ namespace taichi::lang {
 class JITModuleCUDA : public JITModule {
  private:
   void *module_;
+  std::unordered_map<std::string, void *> functions_;
+  std::mutex functions_mutex_;
 
  public:
   explicit JITModuleCUDA(void *module) : module_(module) {
@@ -46,6 +50,10 @@ class JITModuleCUDA : public JITModule {
     // TODO: figure out why using the guard leads to wrong tests results
     // auto context_guard = CUDAContext::get_instance().get_guard();
     CUDAContext::get_instance().make_current();
+    const std::lock_guard<std::mutex> lock(functions_mutex_);
+    const auto found = functions_.find(name);
+    if (found != functions_.end())
+      return found->second;
     void *func = nullptr;
     auto t = Time::get_time();
     auto err = CUDADriver::get_instance().module_get_function.call_with_warning(
@@ -56,6 +64,7 @@ class JITModuleCUDA : public JITModule {
     t = Time::get_time() - t;
     TI_TRACE("CUDA module_get_function {} costs {} ms", name, t * 1000);
     TI_ASSERT(func != nullptr);
+    functions_.emplace(name, func);
     return func;
   }
 
