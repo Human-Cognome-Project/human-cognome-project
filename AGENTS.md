@@ -37,6 +37,30 @@ Snapshots must observe the same active execution, never a separate CPU replay.
 Keep numerical controls minimal and general; do not tune physics to force
 every letter fixture to stop.
 
+## Core continuation — 2026-10-29
+
+Follow the [core/local-study implementation sequence](docs/core-local-study-continuation-plan.md).
+#196's local CUDA and authorized accepted-displacement motion corrections have
+been source-reviewed without a new blocking defect at `1af1cac`; merge acceptance
+awaits the existing hosted native CPU run. Its GTX 1070 results are contributor
+local evidence, not hosted qualification. Mixed f32-to-f64 subnormal promotion
+still fails and remains a distinct backend task.
+
+Next core work: C3-2 coherent source/hierarchy refresh, native admission with
+contact-safe candidate ticks, enduring owner/occurrence integration, then
+observable same-execution commands/capture. Preserve native Taichi storage and
+activity; no guard removal, global reseed or CPU replay substitutes for refresh.
+The new wide motion rule retains accepted displacement/dt when dt is positive,
+and incoming velocity when dt is zero; use the recorded rule after #196 lands.
+It supersedes older untrimmed-motion intent, not survivor preservation at edits.
+
+Local development/visual studies use the native build and NAS PostgreSQL.
+Docker is the later ready-to-load release state with a separate fixture-backed
+PostgreSQL service; prior model states are optional. Command-line users and
+coding agents are the audience, so a new GUI is not required. Prefer bounded
+RAM-backed transient work; GPU1 remains deferred. The continuation plan defines
+per-slice tests and separates the bounded release from full #156/#145 exits.
+
 ## C3 plan acceptance — 2026-10-27
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
@@ -93,7 +117,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-28**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-10-29**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production

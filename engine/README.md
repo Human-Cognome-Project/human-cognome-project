@@ -220,13 +220,16 @@ The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
 [CPU evidence](tests/weighted_handoff/README.md) are accepted in #193. Comparison
 ownership, inherited response and coupled settling/recovery now have the accepted
 [#194 production integration plan](../docs/production-hierarchy-response-plan.md).
-C3-1 fixed-tree implementation is released; C3-2 refresh awaits C3-1 acceptance.
+C3-1 fixed-tree implementation is accepted in #195; C3-2 refresh is the next
+core slice in the [current continuation plan](../docs/core-local-study-continuation-plan.md).
 The [C3-1 fixed-tree implementation](docs/LIVE-HIERARCHY.md) and
-[CPU investigation](tests/live_hierarchy/README.md) are for review under the
+[CPU investigation](tests/live_hierarchy/README.md) are accepted under the
 [coherent-dynamics direction](../docs/coherent-dynamics-gpu-snapshots.md).
 Moving state is observed separately from invariant failure. The bounded
 [active-capture handoff](../docs/c3-cpu-capture-handoff.md) reuses the current
-execution; actual CUDA C3 qualification remains local. C3-2 is unbuilt and held.
+execution. #196's bounded local GTX 1070 corrections/evidence are under review;
+full CUDA qualification remains local and mixed-precision conversion still has
+a retained failure. C3-2 is unbuilt; its C3-1 prerequisite is satisfied.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded

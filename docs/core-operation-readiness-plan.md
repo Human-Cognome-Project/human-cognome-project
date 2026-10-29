@@ -1,5 +1,15 @@
 # Complete the core operation path before full GPU qualification
 
+**Current sequencing, 2026-10-29:** see the [core/local-study continuation](core-local-study-continuation-plan.md).
+C3-1 is accepted in #195; #196's bounded GTX 1070/backend/motion corrections
+are under review with hosted native CPU CI pending. Complete C3-2 refresh,
+then integrate admission/contact transactions and enduring ownership before
+claiming live letter insertion. The full operation matrix below still owns
+#156 completion. Bounded local observation and an honestly scoped mini-release
+need not wait for every deferred feature or imply full #145 qualification.
+The current wide numerical profile and authorized #196 motion revision govern
+new work; historical f32/residue examples below remain profile-specific.
+
 **Issue handoff (2026-10-23):** #162's original bounded foundation is accepted and
 closed; #156 now owns the remaining operation matrix. Historical requests below
 to keep #162 open are superseded by this explicit handoff. #171 completed Segment 1;

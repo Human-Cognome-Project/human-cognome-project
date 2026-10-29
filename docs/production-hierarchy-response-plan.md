@@ -1,7 +1,10 @@
 # Production hierarchy, response ownership and coupled recovery
 
-Status: **accepted in #194, 2026-10-27**. C3-1 is released for implementation;
-C3-2 remains gated on C3-1 acceptance. Baseline: `main` at
+Status: **plan accepted in #194, 2026-10-27; C3-1 accepted in #195**.
+C3-2 is the next core implementation slice; see the
+[current continuation sequence](core-local-study-continuation-plan.md).
+#196's local CUDA/motion corrections are under review. Earlier evidence below
+retains its original source and numerical contract. Baseline: `main` at
 `33c4a4f50eacbcaaf0638e34cf22568dd9044473`, the merge of #193.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 and [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172).
@@ -13,7 +16,7 @@ in #193. Hosted native CPU job 122025151768 passed 92/92 suites in 1600.20 secon
 contributor evidence remains separately pinned at 930.44 seconds. This qualifies
 held-input propagation on the tested CPU kernels. The following production
 ownership, readers and moving-body coupling are accepted as the bounded plan in
-#194; they have not been implemented.
+#194; the fixed-tree CPU implementation was accepted in #195.
 
 The proposed result is an explicitly installed, source-validated hierarchy in
 the existing prepared f64 trial execution. Local and coarser responses reach the
@@ -33,8 +36,18 @@ must retain declared observation windows, independent checks and all recovery/re
 rounds while reporting settled versus evolving separately. Historical failed runs
 remain failed under their original criteria; revised acceptance needs new evidence.
 The immediate bounded GPU observation milestone does not require completion of
-all #156 operations. Actual CUDA qualification and a current-hierarchy capture
-adapter are required; neither exists in the reviewed #195 runtime.
+all #156 operations. The current-hierarchy capture adapter is accepted in #195. #196 supplies
+bounded contributor GTX 1070 execution evidence and backend corrections under
+review; this is not full GPU operation/transfer qualification.
+
+## Motion clarification — 2026-10-29
+
+The [continuation plan](core-local-study-continuation-plan.md) records Patrick's
+authorized wide-profile accepted-displacement motion change proposed in #196.
+For positive dt, retain published displacement/dt; for zero dt, retain incoming
+velocity. This supersedes earlier untrimmed-velocity intent for that profile.
+C3-2 must preserve the current accepted motion/state at structural boundaries;
+this does not authorize resetting survivors. Historical evidence remains pinned.
 
 ## 1. Installed ownership and supported subset
 

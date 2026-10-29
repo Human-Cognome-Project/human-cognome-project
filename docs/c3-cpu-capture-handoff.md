@@ -312,3 +312,14 @@ The next local qualification/adaptation must:
 Independent CPU/export/viewer preparation is complete only to its recorded scope.
 Actual CUDA publication/activity/f64 execution and rendered GPU-stream snapshots
 remain local work. C3-1 acceptance clears its prerequisite for C3-2, but does not implement structural refresh.
+
+## Core continuation — 2026-10-29
+
+The [core/local-study plan](core-local-study-continuation-plan.md) records #196's
+review, scoped local CUDA evidence and remaining precision failure, and sequences
+coherent refresh, native admission/contact transactions, enduring ownership and
+observable command-line operation. It supersedes earlier statements here that
+no C3 CUDA execution has occurred: bounded contributor GTX 1070 runs now exist,
+while general/full GPU qualification remains open. Native local development
+uses NAS PostgreSQL; Docker is the ready-to-load release state. Prior model
+states are optional; no consumer-facing launcher is required.
