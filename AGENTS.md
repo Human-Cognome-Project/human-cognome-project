@@ -50,6 +50,8 @@ Next core work: C3-2 coherent source/hierarchy refresh, native admission with
 contact-safe candidate ticks, enduring owner/occurrence integration, then
 observable same-execution commands/capture. Preserve native Taichi storage and
 activity; no guard removal, global reseed or CPU replay substitutes for refresh.
+The [C3-2 implementation detail](docs/live-hierarchy-refresh-plan.md) is proposed
+for review; it does not implement refresh or change the accepted contracts.
 The new wide motion rule retains accepted displacement/dt when dt is positive,
 and incoming velocity when dt is zero; use the recorded rule after #196 lands.
 It supersedes older untrimmed-motion intent, not survivor preservation at edits.
