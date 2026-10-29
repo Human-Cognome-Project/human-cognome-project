@@ -1,5 +1,21 @@
 # Agent guidance
 
+## Local decisions — 2026-10-29
+
+Patrick authorized [retained motion from accepted displacement](engine/docs/ACCEPTED-MOTION.md)
+during GTX 1070 qualification. For positive dt, retain accepted displacement/dt;
+a quiet publication retains zero velocity. Zero dt preserves incoming velocity.
+This supersedes earlier untrimmed-velocity intent for the wide trial profile;
+legacy arithmetic is unchanged. The local corrections and bounded validation are proposed for review, not merged
+acceptance or blanket GPU qualification. [Remaining core issues](engine/docs/CUDA-C3-QUALIFICATION.md#core-issues-still-to-address) include coherent live
+insertion, native admission and an observable active stream. The build/Docker
+PR remains separate until those issues are addressed.
+
+Release Docker bundles are filed under repository-root
+`docker/snapshots/<date>-<source-revision>/`. Native local tests and observation
+use NAS PostgreSQL; Docker is the release state. Use RAM for transient builds,
+image validation and restores to limit wear on the old local disks.
+
 ## Immediate action — local Docker physics study, 2026-10-28
 
 C3-1 is accepted and merged in #195 at `6edb9d4`, reviewed head `b4a37f2`.

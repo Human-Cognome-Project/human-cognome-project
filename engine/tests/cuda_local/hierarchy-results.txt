@@ -1,0 +1,57 @@
+SOURCE_LOG hierarchy-cuda-accepted-motion-basic.log
+f52523b34a2ca915752e55ccc6e8b76a7bc8ad0a544aae9719cbe2ef0ea60222  hierarchy-cuda-accepted-motion-basic.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=basic PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-capture.log
+17036b4a8fc82ea79bd137c32afbc9c3eb02df15d42421c644234f21ea771e68  hierarchy-cuda-accepted-motion-capture.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+current_capture,{"backend":"native_cuda","capture_state_equivalent":true,"captures":9,"contract":"same_active_execution_v1","cuda_executed":true,"engine_ms":32.52805400000001,"export_ms":1.080413,"f64_round_trip":true,"field_overlays":false,"numeric_copy_bytes":100800,"observation_ms":2.075157,"requested_readback_bytes":236232,"source_mapping_checked":true,"ticks":64} PASS
+case_result,name=capture PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-cumulative.log
+eec316b89c001fbaf5c1f26db20a65979abf71451d4ae3f8da5e1c1753831d88  hierarchy-cuda-accepted-motion-cumulative.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=cumulative_crossing PASS
+case_result,name=cumulative_cancellation PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-forces.log
+062bdc100f050fd9bb99a30bb21552f4302042d478bfeadc1aa5daaf570d0ba8  hierarchy-cuda-accepted-motion-forces.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=forces PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-letters.log
+9982c43d02775a047f39dc9c564ddbcba443e01b82787a04662380f6f3894f18  hierarchy-cuda-accepted-motion-letters.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+moving_sequence,name=letter_and_UTF8_bytes,contract=coherent_dynamics_v2,rounds=33,perturbations=32,evolving_rounds=0,continuous_publications=1,reuse=32 PASS
+case_result,name=letters PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-moving.log
+e844023b0a40b6fa955d1d149b6c88d73dbb5c3ef5406f1fe5b42451a7cf99dc  hierarchy-cuda-accepted-motion-moving.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+moving_sequence,name=two_level,contract=coherent_dynamics_v2,rounds=33,perturbations=32,evolving_rounds=0,continuous_publications=1,reuse=32 PASS
+moving_sequence,name=three_level_overlap,contract=coherent_dynamics_v2,rounds=33,perturbations=32,evolving_rounds=0,continuous_publications=1,reuse=32 PASS
+case_result,name=moving PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-moving_permuted.log
+c14fa6197b88af064e948461fb6dfd95f289144ae176a44378e15cbc09746cee  hierarchy-cuda-accepted-motion-moving_permuted.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+moving_sequence,name=two_level_permuted,contract=coherent_dynamics_v2,rounds=33,perturbations=32,evolving_rounds=0,continuous_publications=1,reuse=32 PASS
+moving_sequence,name=three_level_overlap_permuted,contract=coherent_dynamics_v2,rounds=33,perturbations=32,evolving_rounds=0,continuous_publications=1,reuse=32 PASS
+case_result,name=moving_permuted PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-publication.log
+0f14280e6a3863412b9335e099e373f83681dba85bc1e1273d1318b27642f192  hierarchy-cuda-accepted-motion-publication.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=publication PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-singleton.log
+9536d3a08f16682b84ee39cb77ee68f8493b31bfbbfcedcce7be1339d589f0b5  hierarchy-cuda-accepted-motion-singleton.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=singleton PASS
+live_hierarchy_matrix,case_failures=0 PASS
+SOURCE_LOG hierarchy-cuda-accepted-motion-tree.log
+e7b7d06a854502dff323da3e60020928913f0dce2c663cbe33e152cb43a05f2f  hierarchy-cuda-accepted-motion-tree.log
+actual_backend=cuda,threads=1,path=bulk,llvm_unroll=default
+case_result,name=tree PASS
+live_hierarchy_matrix,case_failures=0 PASS

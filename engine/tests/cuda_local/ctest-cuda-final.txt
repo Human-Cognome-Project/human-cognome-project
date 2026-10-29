@@ -1,0 +1,17 @@
+Internal ctest changing into directory: /dev/shm/hcp-c3-1070/engine-cuda
+Test project /dev/shm/hcp-c3-1070/engine-cuda
+    Start  98: native_handoff_cuda
+1/4 Test  #98: native_handoff_cuda ..............   Passed    5.33 sec
+    Start  99: weighted_handoff_cuda
+2/4 Test  #99: weighted_handoff_cuda ............   Passed  313.81 sec
+    Start 100: strict_math_cuda
+3/4 Test #100: strict_math_cuda .................   Passed    1.58 sec
+    Start 101: accepted_motion_cuda
+4/4 Test #101: accepted_motion_cuda .............   Passed  103.13 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+cuda-qualification    = 423.85 sec*proc (4 tests)
+
+Total Test time (real) = 423.86 sec

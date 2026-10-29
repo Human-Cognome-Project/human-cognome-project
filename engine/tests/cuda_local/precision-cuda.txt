@@ -1,0 +1,9 @@
+actual_backend=cuda,path=bulk
+before_32_32_bulk,0,0,0,4,20750408,4,20750400,0,0,0,0.379526
+after_32_32_bulk,0,0,0,4,20750408,4,20750400,0,0,0,0.379526
+boundaries,32_32_bulk,cases=7776,invalid=360,cycles=32,host_bytes=94608,backend_bytes=94608,bindings=288,first_us=118.085,cpp_new=0 PASS
+before_64_64_bulk,0,0,0,6,20750472,6,20750400,0,0,0,1.24102
+after_64_64_bulk,0,0,0,6,20750472,6,20750400,0,0,0,1.24102
+boundaries,64_64_bulk,cases=17172,invalid=265,cycles=32,host_bytes=277344,backend_bytes=277344,bindings=288,first_us=212.119,cpp_new=0 PASS
+32_64_bulk retained=0 row=4 input=0x1p-149 converted=0x1p-149 expected=0x1p-149 actual=0x0p+0
+native quantization differs from independent arithmetic oracle

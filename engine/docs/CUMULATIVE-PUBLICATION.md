@@ -1,5 +1,9 @@
 # C2b-1 cumulative publication and activity
 
+**Local motion revision, 2026-10-29:** [accepted-displacement motion](ACCEPTED-MOTION.md)
+supersedes the untrimmed-velocity rule described below. The historical accepted
+runs retain their original source pins; validation of the revision is separate.
+
 ## Maintainer acceptance — 2026-10-26
 
 C2b-1 is accepted in #192 at reviewed head `67c7bdc`. Hosted
