@@ -53,6 +53,11 @@ No routine permission step is added to the accepted implementation scope.
 
 ## A. Coherent source/hierarchy refresh
 
+The [C3-2 implementation detail](live-hierarchy-refresh-plan.md) is proposed for
+review. It maps this accepted slice onto prospective source references, stable
+comparison identity, native repair/commit phases and executable acceptance.
+Refresh remains unimplemented; that proposal changes no acceptance or runtime.
+
 Owning contract: [production plan, section 4](production-hierarchy-response-plan.md#4-initialization-structural-changes-and-failure).
 Start at `engine/src/field/prepared_update.cpp`, `live_hierarchy.cpp` and
 their prepared storage/binding interfaces. The nonempty-update guard stays until
