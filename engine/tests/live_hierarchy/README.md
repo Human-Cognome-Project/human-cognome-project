@@ -69,6 +69,17 @@ The two later test commits add field-order coverage and full-round diagnostics;
 they change no runtime or earlier CPU suite. Documentation/evidence changes
 follow these pins. Contributor runs are separate from hosted checks.
 
+## Interpretation note — 2026-10-30
+
+The raw output and original test confirm that each failed moving window completed
+4,096 ticks before failing its settling criterion, not a CPU processing timeout.
+Observed window elapsed times were 710.63–1,679.86 ms, including inspection and
+reference checks; accumulated tick times were 505.34–1,270.44 ms. These three/four
+body fixtures support Patrick's observation of practical CPU calculation speed,
+without establishing large-population throughput or a controlled path speedup.
+See the [verified timing table](../../../docs/coherent-dynamics-gpu-snapshots.md#historical-tick-limits-and-cpu-execution--2026-10-30).
+Original failure results remain unchanged.
+
 ## Results and blocker
 
 The original **96/96 CPU suites passed in 1296.85 seconds** on the runtime

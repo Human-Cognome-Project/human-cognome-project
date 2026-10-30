@@ -19,6 +19,37 @@ should settle. Preserve physical velocity, cumulative destination publication,
 mass/count accounting and pending inputs. No forced stillness, arbitrary sleep
 epsilon, extra damping or new scheduler is authorized by this clarification.
 
+## Historical tick limits and CPU execution — 2026-10-30
+
+Confirmed against the original test at `eeb8ce9`, the
+[raw CPU output](../engine/tests/live_hierarchy/cpu-native-output.txt) and
+[investigation record](../engine/tests/live_hierarchy/investigation.json):
+all four historical moving-fixture failures completed **4,096 ticks** and then
+failed the required quiet/settling criterion. They were not CPU processing
+timeouts. This is separate from the later compiler-audit failure and cancelled
+hosted job.
+
+| Workers / path | Failing fixture / round | Completed ticks | Accumulated tick time | Observed window elapsed |
+|---|---|---|---|---|
+| 1 / BulkCopy | Three-level overlap permuted / 23 | 4,096 | 1,270.44 ms | 1,679.86 ms |
+| 1 / CpuDirect | Three-level overlap permuted / 23 | 4,096 | 1,092.08 ms | 1,456.02 ms |
+| 2 / BulkCopy | Two-level permuted / 6 | 4,096 | 609.61 ms | 837.22 ms |
+| 2 / CpuDirect | Two-level permuted / 2 | 4,096 | 505.34 ms | 710.63 ms |
+
+The test accumulates `Demand::tick_ms` as `ordinary_ms`; the observed-window
+clock also covers inspections, independent physical/publication checks and trace
+sampling, but starts after fixture installation. These are retained contributor
+CPU/x64 results, not a new benchmark or hosted timing. Three-level fixtures have
+four bodies; two-level fixtures have three. The differing active work and
+trajectories mean these rows are not a controlled worker/path speedup comparison.
+
+Patrick's interpretation is supported within that scope: even the unsuccessful
+settling windows demonstrate substantial calculation at practical CPU speed.
+Keep convergence, invariant correctness and execution cost separate in summaries.
+Do not infer larger-population throughput from tiny fixtures or divide complete
+suite wall time into an engine-only rate. Preserve original failed outcomes and
+source pins; completed work and timing evidence remain useful independently.
+
 ## Revision required in #195
 
 Keep the original source pins, 92/96 hosted result and all failing traces intact.
