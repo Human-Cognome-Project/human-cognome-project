@@ -6,6 +6,11 @@ and the accepted [#194 structural-refresh contract](production-hierarchy-respons
 It changes no executable behavior. Owners remain #172/#177, with subsequent
 operational admission under #156 and hardware qualification under #145.
 
+The [C3-2 implementation](../engine/docs/LIVE-REFRESH.md) is accepted and merged
+in #198 at `5ea9c76`; its complete hosted CPU result and retained earlier failures
+are recorded separately from this planning contract. Native admission/contact-safe
+ticks are the next continuation slice.
+
 The result is one prepared execution that can commit a source edit and its
 replacement calculation tree between completed ticks, then continue with its
 surviving state intact. Operational letter Add will build on this boundary

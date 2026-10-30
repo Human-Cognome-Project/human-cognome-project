@@ -9,8 +9,10 @@ integration binaries remain byte-identical to the completed local regression.
 The [implementation contract](../../../docs/LIVE-REFRESH.md) follows accepted
 [#197](../../../../docs/live-hierarchy-refresh-plan.md).
 
-This is contributor CPU evidence for a contribution awaiting maintainer
-acceptance. It does not qualify CUDA refresh, native admission, contact-safe
+Maintainer acceptance is complete in #198, reviewed head `f4c5ba9`, merge
+`5ea9c7674f87ef01d5cad3024785b574bc79a75f`. This record preserves contributor
+and independently inspected hosted CPU evidence separately. It does not qualify
+CUDA refresh, native admission, contact-safe
 candidate ticks, an enduring owner or the later interactive/Docker study.
 The accepted-displacement motion rule from #196 is unchanged.
 
@@ -26,7 +28,7 @@ The accepted-displacement motion rule from #196 is unchanged.
 | Clean-environment CTest correction | **4/4**, 335.23 seconds, parent `TI_LIB_DIR` explicitly unset; CMake-only change committed as `204eff7`. |
 | First hosted native CPU | [Run 41065599375 / job 124096008985](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41065599375/job/124096008985): **97/101**, 2070.71 seconds. Four new refresh registrations fail during initialization, before assertions, because `TI_LIB_DIR` was omitted. Later scalar/integration/backend steps skipped. |
 | Budget-limited hosted native CPU | [Run 41101471179 / job 124219287541](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41101471179/job/124219287541), source `204eff7`: **101/101**, 3353.15 seconds. Compiler collection/audit passed; the overall 90-minute job limit cancelled the final extra refresh mode. Integration/backend steps skipped, so this is incomplete hosted acceptance. |
-| Replacement hosted native CPU | [Run 41123391538 / job 124295521781](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41123391538/job/124295521781) is in progress at `904f2bc`, which raises only the native job budget from 90 to 150 minutes. No acceptance command, mode, assertion or runtime source changed. Its result is not claimed. |
+| Accepted hosted native CPU | [Run 41123391538 / job 124295521781](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41123391538/job/124295521781), source `904f2bc`: **101/101**, 3355.27 seconds; all four extra hierarchy and four refresh no-unroll modes; compiler collection/audit; **180/180** integration with zero private reads and unchanged cold fingerprints; actual CPU-only backend verification. All nine checks passed. Total job: 5697 seconds. |
 
 All eight refresh modes execute nine case groups. The tests retain a nonzero
 selector, unequal selected/inactive packets and distinct old history on an
@@ -124,6 +126,15 @@ source/build/compiler metadata and audit output. Integration and final backend
 checks were skipped, so neither local integration nor CTest success completes
 this hosted gate. Source review at `d97027c` found no implementation blockers
 and requested the narrow CI budget correction before one replacement run.
+
+`accepted-hosted/` retains that completed replacement's full CTest and job logs,
+all eight complete extra modes, integration output/fingerprints, job/step and
+nine-check dispositions, acceptance review and actual source/build/compiler
+metadata. Its 56 modules are also byte-identical to the retained `hosted-ir/`
+files, as recorded by the comparison manifest. The successful hosted warm
+fixture is `hcp_warm_d_20261030220147_309`. This record downloads existing
+artifacts; it launches no new native run or database operation. #198's acceptance
+supersedes earlier pending-hosted wording while preserving those earlier results.
 
 ## Reproduction
 

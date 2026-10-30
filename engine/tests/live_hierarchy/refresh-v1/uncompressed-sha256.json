@@ -962,5 +962,197 @@
   "budget-limited-hosted/cpu-ctest.txt.gz": {
     "bytes": 13093,
     "sha256": "b9b2db959821c245cf6b6abf6de107b8cff9228a02f160c2b0d8fdd1de0cc4a3"
+  },
+  "accepted-hosted/job.json": {
+    "bytes": 4214,
+    "sha256": "6c5fdce8b9b2a111889f74d0cf653e333eb500a1dfaa95556816529114a4d048"
+  },
+  "accepted-hosted/run.json": {
+    "bytes": 15128,
+    "sha256": "f73224d06550f2c1ee823dc6123f6d5069808b743262950e2481a771958dbf3d"
+  },
+  "accepted-hosted/checks.json": {
+    "bytes": 28452,
+    "sha256": "748e3ad5d69361b4a1f5f51bc0f0dac1848188b83d1cd1e6abfe938e2e1294ed"
+  },
+  "accepted-hosted/artifacts.json": {
+    "bytes": 1556,
+    "sha256": "8458f93f24ad86c67b1e2f519f804aa2bb7e14943ad747185103e163aba5382f"
+  },
+  "accepted-hosted/reviews.json": {
+    "bytes": 7072,
+    "sha256": "1f87107eb4523d37b123f2a9007a9acc750963c1ed8d058a0cda6b0c7215299a"
+  },
+  "accepted-hosted/module-comparison.json": {
+    "bytes": 10978,
+    "sha256": "f46e1cc069d286e524c2d9fb5d58931a0c006fb53337a2354fa832584eb44663"
+  },
+  "accepted-hosted/job.log.gz": {
+    "bytes": 155322,
+    "sha256": "d888f8ac4d3099f16eab2519924ba98e2273d49bc344ffe2bb452166a61b13a7"
+  },
+  "accepted-hosted/cpu-ctest.txt.gz": {
+    "bytes": 13093,
+    "sha256": "e76fca6d7c4f3feee6cd001bff2a8da862d2bf6503906b67a99014222748f4ef"
+  },
+  "accepted-hosted/LastTest.log.gz": {
+    "bytes": 2282795,
+    "sha256": "d38576626b71b0f2b6144c87125a907a9485ae082d2d107dfade01ec32ca322c"
+  },
+  "accepted-hosted/compiler/source.txt": {
+    "bytes": 82,
+    "sha256": "9a8e4cf9220d6e40fb9f2eeca27602ff801d1afe9753610f943763f50c26e51d"
+  },
+  "accepted-hosted/compiler/toolchain.txt": {
+    "bytes": 1648,
+    "sha256": "8838cc4f09d3c959a8d55ceec58a3abd1cba78daf82a5528d5b04391cc107bbd"
+  },
+  "accepted-hosted/compiler/binaries.sha256": {
+    "bytes": 208,
+    "sha256": "fa2d8087f2843d0223786764d771d661dd39bdaa5345a494243610c401bdce78"
+  },
+  "accepted-hosted/compiler/cmake.txt.gz": {
+    "bytes": 2948,
+    "sha256": "76e70f00161a047df7254e9777473838732433582632dbac675d540c2554a854"
+  },
+  "accepted-hosted/compiler/1-bulk-default/audit.txt.gz": {
+    "bytes": 14989,
+    "sha256": "2935ce4fee46198e5147a3791569a1cb51a9165757691248aaac0feb21648234"
+  },
+  "accepted-hosted/compiler/1-bulk-default/collection.txt.gz": {
+    "bytes": 281,
+    "sha256": "1051d1b63bcefb09d654a7c415dc43cea8e345945f01d945fcdecfeadab34d5f"
+  },
+  "accepted-hosted/compiler/1-bulk-default/configuration.txt.gz": {
+    "bytes": 8939,
+    "sha256": "b9194838f0c845b176bfdfb58a0a6a744c3773fb6e7fbf6a0d152320c6ae6a5b"
+  },
+  "accepted-hosted/compiler/1-bulk-no-unroll/audit.txt.gz": {
+    "bytes": 12489,
+    "sha256": "50deb70c4ccf145e49ffdcf478477b42d466a1ad100567d4744a5c6731b6a47a"
+  },
+  "accepted-hosted/compiler/1-bulk-no-unroll/collection.txt.gz": {
+    "bytes": 295,
+    "sha256": "48953d4cc6827d75a2d8fd43298c7254c88c66b7915a0d127feb59e6810c4db4"
+  },
+  "accepted-hosted/compiler/1-bulk-no-unroll/configuration.txt.gz": {
+    "bytes": 8953,
+    "sha256": "5cbf6afeee865f3de9b13f312fb3b087687a9331de288685f624c48114b06c74"
+  },
+  "accepted-hosted/compiler/1-direct-default/audit.txt.gz": {
+    "bytes": 14997,
+    "sha256": "b38d5a58ba7d27b90645e327ce7bc40c1917f632dc6280c1faa43f346ca2173a"
+  },
+  "accepted-hosted/compiler/1-direct-default/collection.txt.gz": {
+    "bytes": 283,
+    "sha256": "51288f0aa68e17dc48f84e8cbbc2d3790d16b6908a4cee8a51dd3caeb6cef64f"
+  },
+  "accepted-hosted/compiler/1-direct-default/configuration.txt.gz": {
+    "bytes": 8941,
+    "sha256": "f297c64f05d0d0a01ae7139f7839ad584b576dd9ebed67fd50c7db632d5f2636"
+  },
+  "accepted-hosted/compiler/1-direct-no-unroll/audit.txt.gz": {
+    "bytes": 12478,
+    "sha256": "d611fe3372b86183b479fef7c19c8239bd20e540efd7dd405acf49987a589f8e"
+  },
+  "accepted-hosted/compiler/1-direct-no-unroll/collection.txt.gz": {
+    "bytes": 297,
+    "sha256": "800bfaab4c9b4f3d0c04a9dc2a272cf970001d5f33b908385c43ea0985e45e7b"
+  },
+  "accepted-hosted/compiler/1-direct-no-unroll/configuration.txt.gz": {
+    "bytes": 8955,
+    "sha256": "4080a8427648366e0f165a442b3b248d912ecb37af4a7c2c4d55ed356097e780"
+  },
+  "accepted-hosted/compiler/2-bulk-default/audit.txt.gz": {
+    "bytes": 14989,
+    "sha256": "24c689d4afe72b8d1971645a5444b3ac9d4536e4ac0f1a2bf669697879b9548d"
+  },
+  "accepted-hosted/compiler/2-bulk-default/collection.txt.gz": {
+    "bytes": 273,
+    "sha256": "289e81236c898b8ac91a9f928c30a2b51aadcfd16c84032b5d3b2cd83b2896d6"
+  },
+  "accepted-hosted/compiler/2-bulk-default/configuration.txt.gz": {
+    "bytes": 8939,
+    "sha256": "e183652c4ca03b77adb3357758f35642583c54a384a17f6d473ec16d2b3d272d"
+  },
+  "accepted-hosted/compiler/2-bulk-no-unroll/audit.txt.gz": {
+    "bytes": 12489,
+    "sha256": "b8f740b400839c27fdbd9c20903cbcc4e0b76713c3441c1b4723520eacc1579d"
+  },
+  "accepted-hosted/compiler/2-bulk-no-unroll/collection.txt.gz": {
+    "bytes": 287,
+    "sha256": "95815a262414115fd67af653037f040b2872035ee00a0cbc31c6f9c5e2a337f0"
+  },
+  "accepted-hosted/compiler/2-bulk-no-unroll/configuration.txt.gz": {
+    "bytes": 8953,
+    "sha256": "24cbd23b68e219220c05012e163e72ba65a7fcfee26690a82931c8829d7e076b"
+  },
+  "accepted-hosted/compiler/2-direct-default/audit.txt.gz": {
+    "bytes": 14997,
+    "sha256": "abfd20715865315bfba1e982f108105bb48c5184741c95bf06daebe4bb0afeb0"
+  },
+  "accepted-hosted/compiler/2-direct-default/collection.txt.gz": {
+    "bytes": 283,
+    "sha256": "529e3a72a68e5353bf5c3146569731b71170f7a4b0ad14b825844ab5939c4e39"
+  },
+  "accepted-hosted/compiler/2-direct-default/configuration.txt.gz": {
+    "bytes": 8941,
+    "sha256": "5cb1c8d4b32c53648c5fff16b4e819c66035dc974fd007d44c1543808dd1b11f"
+  },
+  "accepted-hosted/compiler/2-direct-no-unroll/audit.txt.gz": {
+    "bytes": 12479,
+    "sha256": "42767984eda2d1c980b42e564c1de220d74f32b191e44fc70e1e5c8ec8657cdd"
+  },
+  "accepted-hosted/compiler/2-direct-no-unroll/collection.txt.gz": {
+    "bytes": 297,
+    "sha256": "5ee9684dfaa723525086213ea983de697d22f9cd10fdbf7d3686ed90a970792f"
+  },
+  "accepted-hosted/compiler/2-direct-no-unroll/configuration.txt.gz": {
+    "bytes": 8955,
+    "sha256": "646c18bdf0a73576ed6a2484d1adbaf22169c1a20acb213e1b3e1d8efc9b3f08"
+  },
+  "accepted-hosted/no-unroll/1-bulk-no-unroll/native.txt.gz": {
+    "bytes": 246519,
+    "sha256": "73b0a9de875f07d65bc8c727623d41e8e17aaa07e91016976a901f904f62ad93"
+  },
+  "accepted-hosted/no-unroll/1-bulk-no-unroll/refresh.txt.gz": {
+    "bytes": 48336,
+    "sha256": "023bbfe392595b10135ff0e9544cb7a7602ef03a7f7c0cb4925101d651cc7311"
+  },
+  "accepted-hosted/no-unroll/1-direct-no-unroll/native.txt.gz": {
+    "bytes": 246331,
+    "sha256": "5acaf02c38bbd6b070c1eee5eb6b111b75eed7fc09b25af69996d40db32917b9"
+  },
+  "accepted-hosted/no-unroll/1-direct-no-unroll/refresh.txt.gz": {
+    "bytes": 48376,
+    "sha256": "77be6dc584578e4a0a78490cac30ac36aa845f86f89b1c4363bfc30b81fd8295"
+  },
+  "accepted-hosted/no-unroll/2-bulk-no-unroll/native.txt.gz": {
+    "bytes": 246567,
+    "sha256": "6bad5760477b1f4bd353038e1093bab63e631bcc0327e7ad0253086b6a629740"
+  },
+  "accepted-hosted/no-unroll/2-bulk-no-unroll/refresh.txt.gz": {
+    "bytes": 48323,
+    "sha256": "7c01be9b39ed77143b0ae4f3c832079a39144fbc4bbe34b8a893529d081f4797"
+  },
+  "accepted-hosted/no-unroll/2-direct-no-unroll/native.txt.gz": {
+    "bytes": 246645,
+    "sha256": "5958d2be11dbc01124271aec89a0c6911cfef3af1cb3f8fdc8bb60c904125804"
+  },
+  "accepted-hosted/no-unroll/2-direct-no-unroll/refresh.txt.gz": {
+    "bytes": 48354,
+    "sha256": "d10f1908c20b312e67869be33e5c3cd9bb58be57b720fed42f7b3ca0afe4fcf1"
+  },
+  "accepted-hosted/integration/native-checks.txt.gz": {
+    "bytes": 13729,
+    "sha256": "e7c2561b81ba2f3e635bafea0ab84182c91f4f7b1ef3cf8f02c2e08f39c8e507"
+  },
+  "accepted-hosted/integration/cold-before.sha256": {
+    "bytes": 130,
+    "sha256": "02e1e1d457ac4c270d6a5585faeaf9084c69f8ba04a412f6600de354894db5eb"
+  },
+  "accepted-hosted/integration/cold-after.sha256": {
+    "bytes": 130,
+    "sha256": "02e1e1d457ac4c270d6a5585faeaf9084c69f8ba04a412f6600de354894db5eb"
   }
 }

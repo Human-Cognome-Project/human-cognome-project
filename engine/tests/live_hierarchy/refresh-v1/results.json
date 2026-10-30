@@ -355,10 +355,81 @@
     "same_integration_binary": true
   },
   "hosted": {
-    "status": "in_progress",
+    "status": "success",
     "source": "904f2bc5e04fe27fd02babfdc562be445925150a",
     "run": 41123391538,
-    "job": 124295521781
+    "job": 124295521781,
+    "checkout": "c586b4134cdf7efb1794455b06b36d55dbabbfc3",
+    "backend_tree": "350b7516fba428710a65ec04bf74b1b963daa840",
+    "full_cpu": {
+      "passed": 101,
+      "total": 101,
+      "seconds": 3355.27
+    },
+    "additional_modes": [
+      {
+        "configuration": "1-bulk-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "1-bulk-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "1-direct-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "1-direct-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "2-bulk-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "2-bulk-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "2-direct-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "2-direct-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      }
+    ],
+    "compiler_collection_and_audit": "success",
+    "modules_byte_identical_to_retained_hosted_ir": 56,
+    "integration": {
+      "checks": 180,
+      "addressed_reads": 24,
+      "private_reads": 0,
+      "cold_fingerprints_unchanged": true,
+      "warm_fixture": "hcp_warm_d_20261030220147_309"
+    },
+    "cpu_only_backend_verification": "success",
+    "all_checks_passed": 9,
+    "total_job_seconds": 5697,
+    "evidence_artifact": 13016265778,
+    "compiler_artifact": 13010159028
   },
   "superseded": {
     "source": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
@@ -367,7 +438,6 @@
     "disposition": "Cancelled/superseded during module collection after strengthening the dirty-history test; not a passing hosted run."
   },
   "limits": [
-    "Maintainer acceptance pending",
     "CUDA refresh unqualified",
     "native admission/contact-safe ticks/owners/controls/Docker separate",
     "mixed-precision subnormal failure remains independent"
@@ -497,5 +567,12 @@
     "new_minutes": 150,
     "acceptance_commands_and_modes_unchanged": true,
     "production_source_unchanged_since_review": true
+  },
+  "acceptance": {
+    "pr": 198,
+    "reviewed_head": "f4c5ba98541707d52b9086345faaa8f319c4ca30",
+    "merge": "5ea9c7674f87ef01d5cad3024785b574bc79a75f",
+    "scope": "CPU structural live-hierarchy refresh",
+    "cuda_refresh": "unqualified"
   }
 }

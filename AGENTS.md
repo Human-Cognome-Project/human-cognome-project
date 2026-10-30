@@ -1,25 +1,28 @@
 # Agent guidance
 
-## C3-2 contribution — CPU evidence for review, 2026-10-30
+## C3-2 accepted; native admission is next — 2026-10-30
 
-The [combined refresh implementation](engine/docs/LIVE-REFRESH.md) is built for
-review under accepted #197. It retains ordinary installed-update guards and
-uses one prospective ledger, stable packet identities and native repair/commit
-with survivor/history/pending-work preservation. [Source-pinned CPU evidence](engine/tests/live_hierarchy/refresh-v1/README.md)
-retains 101/101 local suites in 1830.99 seconds, all eight default/scalar refresh
-modes, 180 integration checks and unchanged cold fingerprints. All 56 local/hosted
-module pairs differ only in Clang ident metadata. Hosted run 41065599375 passed
-97/101; four new CTest registrations lacked the runtime path and failed before
-refresh assertions. `204eff7` fixes that test environment; all four registrations
-pass with the parent runtime path explicitly unset. Source review at `d97027c`
-found no implementation blockers. Hosted run 41101471179 passed 101/101 in
-3353.15 seconds, then exceeded its 90-minute job budget during the extra
-no-unroll matrix; PostgreSQL integration and final backend verification skipped.
-`904f2bc` raises only that job budget to 150 minutes, preserving every mode.
-Replacement run 41123391538 is running; complete hosted acceptance remains pending.
-This is not maintainer acceptance or CUDA refresh qualification. Native admission,
-contact-safe candidate ticks, enduring owners, controls and Docker remain the
-subsequent continuation slices. The accepted #196 motion rule is unchanged.
+The [combined refresh implementation](engine/docs/LIVE-REFRESH.md) is accepted
+and merged in #198 at `5ea9c76`, reviewed head `f4c5ba9`. Independently inspected
+[hosted run 41123391538/job 124295521781](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41123391538/job/124295521781)
+at workflow source `904f2bc` passed 101/101 CPU suites in 3355.27 seconds, all
+four extra no-unroll hierarchy modes and four refresh modes, compiler collection/
+audit, 180 integration checks with zero private reads and unchanged cold
+fingerprints, and actual CPU-only backend verification. All nine checks passed.
+[Retained evidence](engine/tests/live_hierarchy/refresh-v1/README.md) preserves
+the earlier initialization failure and timeout separately. Do not rerun the
+accepted baseline merely to obtain another result.
+
+C3-2 supplies CPU structural refresh with fixture-only new-body starts. Proceed
+with native operational admission/contact-safe candidate ticks under the accepted
+continuation and #170 contracts; enduring owners and observable controls follow.
+CUDA refresh qualification, mixed-precision repair and Docker remain separate.
+The accepted #196 motion rule is unchanged.
+
+The [accepted #199 slice B implementation plan](docs/native-admission-contact-transaction-plan.md)
+maps the next work to contact-safe native candidate ticks, certified placement,
+then combined bootstrap/admission. It is accepted for implementation, beginning with B1 candidate ticks. It is not
+built behavior or a change to the accepted #170 operation/model contracts.
 
 ## Local decisions — 2026-10-29
 
@@ -67,8 +70,8 @@ pending-input, identity and resource invariants. State snapshots are observation
 not a claim of complete restart/checkpoint support. Full #156 completion is not
 a prerequisite for this bounded study; #172/#177/#156/#145 remain open.
 
-C3-1 acceptance clears that prerequisite for C3-2, but coherent structural
-refresh is now the next core implementation slice under the accepted #197 plan. Actual CUDA execution/publication/activity/f64 qualification remains
+C3-2 structural refresh is now accepted in #198 under the #197 plan; native
+admission/contact-safe ticks follow. Actual CUDA execution/publication/activity/f64 qualification remains
 local. Never claim CPU execution or CUDA-enabled compilation as GPU evidence.
 Snapshots must observe the same active execution, never a separate CPU replay.
 Keep numerical controls minimal and general; do not tune physics to force
@@ -84,14 +87,13 @@ passed: 97/97 CPU-only suites in 1482.34 seconds, all four extra no-unroll modes
 remain contributor local evidence, separate from hosted CPU validation. Mixed f32-to-f64 subnormal promotion
 still fails and remains a distinct backend task.
 
-Next core work: C3-2 coherent source/hierarchy refresh, native admission with
-contact-safe candidate ticks, enduring owner/occurrence integration, then
+Next core work: native admission with contact-safe candidate ticks, enduring
+owner/occurrence integration, then
 observable same-execution commands/capture. Preserve native Taichi storage and
 activity; no guard removal, global reseed or CPU replay substitutes for refresh.
 The [C3-2 implementation plan](docs/live-hierarchy-refresh-plan.md) is accepted
-and merged in #197 at `0eea42a`. Begin its implementation from current main in
-one focused PR. The contribution above implements that boundary for review;
-acceptance still requires its complete source-pinned matrix and evidence.
+and merged in #197 at `0eea42a`; its implementation is accepted and merged in
+#198 at `5ea9c76` with the complete hosted matrix recorded above.
 The new wide motion rule retains accepted displacement/dt when dt is positive,
 and incoming velocity when dt is zero; use the accepted #196 rule.
 It supersedes older untrimmed-motion intent, not survivor preservation at edits.
@@ -164,7 +166,8 @@ Last checked: **2026-10-30**. C2b-1 is accepted in #192 under the [#191 plan](do
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
-fixed-tree implementation is accepted in #195; C3-2 coherent refresh remains separate follow-up.
+fixed-tree implementation is accepted in #195; C3-2 coherent refresh is accepted
+in #198. Native admission/contact-safe ticks remain the next implementation slice.
 
 The [accepted C3-1 implementation](engine/docs/LIVE-HIERARCHY.md) now supplies
 that opt-in fixed-tree CPU path. Its executable acceptance now follows the
@@ -186,6 +189,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
+| Built combined hierarchy refresh | #198's [C3-2 implementation](engine/docs/LIVE-REFRESH.md) commits one prospective source/hierarchy generation, preserving survivor state, dirty history and pending work. All nine hosted checks passed, including 101 CPU suites, both extra no-unroll matrices and 180 integration checks. New-body starts remain private fixtures; operational admission/contact-safe ticks are next. |
 | Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | The current priority is the bounded Docker/letter/snapshot study above. Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
