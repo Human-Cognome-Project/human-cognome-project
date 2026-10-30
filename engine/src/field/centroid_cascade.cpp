@@ -1,4 +1,5 @@
 #include "field/centroid_cascade.h"
+#include "field/cascade_source.h"
 
 #include <algorithm>
 #include <limits>
@@ -633,21 +634,13 @@ CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
       std::uint64_t numerator = 1, denominator = 1;
       if (weighted) {
         const auto &source = weighted->contributions[index].source;
-        if (source.generation != s.generation)
-          return finish(CascadeStatus::Stale);
-        if (source.row >= s.live.edges)
-          return finish(CascadeStatus::InvalidReference);
+        const CascadeSourceView view{s.edges, s.source_counts, s.source_masses,
+                                     s.live.edges, s.generation};
+        const auto status =
+            view.contribution(ref, node.field, source, numerator, denominator);
+        if (status != CascadeStatus::Ok)
+          return finish(status);
         match = int(source.row);
-        const auto &edge = s.edges[match];
-        if (!same(edge.first, ref) || !same(edge.second, node.field) ||
-            source.ordinal != edge.ordinal)
-          return finish(CascadeStatus::InvalidReference);
-        numerator = s.source_counts[match];
-        denominator = s.source_masses[ref.record];
-        if (!numerator || !denominator || numerator > denominator ||
-            edge.share != static_cast<float>(static_cast<double>(numerator) /
-                                             static_cast<double>(denominator)))
-          return finish(CascadeStatus::UnsupportedAccounting);
       }
       bool duplicate = false;
       for (std::uint64_t j = rb; j < nr; ++j) {
@@ -716,9 +709,8 @@ CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
           a.coverage_work[entry] = 0;
         }
         auto &coverage = a.inspection.coverage[entry];
-        if (numerator > denominator - coverage.count)
+        if (!add_coverage(coverage, numerator, denominator))
           return finish(CascadeStatus::InvalidCoverage);
-        coverage.count += numerator;
       }
       ++nr;
     }
@@ -783,12 +775,9 @@ CascadeBinding CentroidCascade::bind_impl(std::uint64_t expected,
             if (same(a.inspection.coverage[entry].occurrence, part.occurrence))
               break;
           }
-          if (entry == nc ||
-              part.denominator != a.inspection.coverage[entry].denominator ||
-              part.count >
-                  a.inspection.coverage[entry].count - a.coverage_work[entry])
+          if (entry == nc || !account_child(a.inspection.coverage[entry], part,
+                                            a.coverage_work[entry]))
             return finish(CascadeStatus::InvalidCoverage);
-          a.coverage_work[entry] += part.count;
         }
       }
       for (auto entry = coverage_begin; entry < nc; ++entry) {
