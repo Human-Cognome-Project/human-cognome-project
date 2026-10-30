@@ -249,8 +249,15 @@ class Harness {
   UpdateResult update_prepared(std::uint64_t expected_generation,
                                const UpdateCommand *commands,
                                std::size_t count);
-  // Every bind attempt invalidates the previous hierarchy/candidate. Ordinary
-  // failure leaves physical execution healthy; retry is an explicit bind.
+  UpdateResult refresh_live_hierarchy(
+      std::uint64_t expected_generation,
+      const UpdateCommand *commands,
+      std::size_t count,
+      const LiveRefreshSpec &replacement,
+      std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
+  // Every bind attempt invalidates the previous candidate binding. Installed
+  // hierarchy ownership is separate; ordinary candidate failure leaves it
+  // healthy.
   CascadeBinding bind_centroid_cascade(
       std::uint64_t expected_generation,
       const CascadeSpec &spec,
@@ -394,8 +401,13 @@ class Harness {
   void launch_geometry_source_order();
   void launch_geometry_discover();
   void launch_geometry_finalize();
-  void launch_update_candidate();
-  void launch_update_commit();
+  void launch_update_candidate(bool hierarchy = false);
+  void launch_update_commit(bool hierarchy = false);
+  UpdateResult update_prepared_impl(std::uint64_t,
+                                    const UpdateCommand *,
+                                    std::size_t,
+                                    const LiveRefreshSpec *,
+                                    std::uint64_t);
   void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);

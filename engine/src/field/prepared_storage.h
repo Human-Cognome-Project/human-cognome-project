@@ -76,6 +76,9 @@ class PreparedStorage {
   // Scratch indexes are candidate row names, never a replacement allocator.
   std::vector<int> destinations, claim_addresses, claim_kinds, command_indexes;
   std::vector<int> candidate_edges;
+  // Untouched committed row, or -(participation command+1). Only reserved
+  // for live refresh; this is source provenance, never an activity scheduler.
+  std::vector<int> refresh_origins;
   std::vector<float> candidate_shares;
   RealBuffer new_row_values, inspection_motion_values;
   std::vector<float> &new_rows{new_row_values.legacy()};

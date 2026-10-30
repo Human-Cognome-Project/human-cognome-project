@@ -92,6 +92,7 @@ void Harness::prepare_update_execution() {
   const auto fv = engine::Param::array(f), fa = engine::Param::array(f, 2),
              iv = engine::Param::array(i), ia = engine::Param::array(i, 2),
              integer = engine::Param::scalar(i);
+  const bool live = s.capacity.limits()[Budget::LiveResponses] != 0;
   const int p = particles_, g = groups_, gs = std::max(g, 1), n = p + g,
             threads = runtime_->cpu_threads();
   // Validation: [P state | G state | P wake | E edits | C edits].
@@ -110,8 +111,13 @@ void Harness::prepare_update_execution() {
     auto *ratios =
         profile_.wide() ? array(b, 14, PrimitiveType::u64, 1) : nullptr;
     auto *fcount = b.create_arg_load({12}, i, false, 0);
+    auto *hierarchy =
+        live ? static_cast<Stmt *>(b.create_arg_load({15}, i, false, 0))
+             : b.get_int32(0);
     put(b, status, 0, b.get_int32(0));
     {
+      auto flat = b.get_if_guard(
+          b.create_if(b.create_cmp_eq(hierarchy, b.get_int32(0))), true);
       auto *loop =
           b.create_range_for(b.get_int32(0), b.get_int32(g), false, threads);
       auto guard = b.get_loop_guard(loop);
@@ -273,16 +279,17 @@ void Harness::prepare_update_execution() {
                        body(b, particles, starts, v, kMass, row, f, profile_)));
     }
     finite(b, status, get(b, out, 14 * gs), profile_.wide());
+    auto candidate_parameters = detail::ratio_parameters(
+        {fa, fa, ia, engine::Param::array(PrimitiveType::f32), fv, iv, fa, ia,
+         iv, iv, iv, fv, integer, fa},
+        profile_.wide());
+    if (live)
+      candidate_parameters.push_back(integer);
     update_candidate_ = engine::CompiledKernel(
         *runtime_,
         "prepared_candidate_" +
             std::to_string(s.particles.bindings().presence->id),
-        b.extract_ir(),
-        detail::ratio_parameters(
-            {fa, fa, ia, engine::Param::array(PrimitiveType::f32), fv, iv, fa,
-             ia, iv, iv, iv, fv, integer, fa},
-            profile_.wide()),
-        engine::MathMode::Strict);
+        b.extract_ir(), candidate_parameters, engine::MathMode::Strict);
   }
   {
     IRBuilder b;
@@ -294,6 +301,9 @@ void Harness::prepare_update_execution() {
          *v = array(b, 10, i), *starts = array(b, 11, f, 2),
          *dest = array(b, 12, i), *status = array(b, 14, i);
     auto *radial = b.create_arg_load({13}, i, false, 0);
+    auto *hierarchy =
+        live ? static_cast<Stmt *>(b.create_arg_load({15}, i, false, 0))
+             : b.get_int32(0);
     {
       auto *loop =
           b.create_range_for(b.get_int32(0), b.get_int32(p), false, threads);
@@ -350,8 +360,11 @@ void Harness::prepare_update_execution() {
         activity_->centroids.deactivate(b, row);
       }
       {
-        auto changed = b.get_if_guard(
-            b.create_if(b.create_cmp_ge(state, b.get_int32(2))), true);
+        auto changed =
+            b.get_if_guard(b.create_if(b.create_logical_and(
+                               b.create_cmp_ge(state, b.get_int32(2)),
+                               b.create_cmp_eq(hierarchy, b.get_int32(0)))),
+                           true);
         for (int j = 0; j < 8; ++j)
           write(b, groups, cell(b, j, target),
                 read(b, derived, {plus(b, row, j * gs)}));
@@ -401,13 +414,15 @@ void Harness::prepare_update_execution() {
     }
     for (int j = 0; j < 11; ++j)
       put(b, focus, j, get(b, derived, 14 * gs + 1 + j));
+    std::vector<engine::Param> commit_parameters{
+        fa, fa, fv, fv, ia, fa, ia, fa, fv, fv, iv, fa, iv, integer, iv};
+    if (live)
+      commit_parameters.push_back(integer);
     update_commit_ = engine::CompiledKernel(
         *runtime_,
         "prepared_commit_" +
             std::to_string(s.particles.bindings().presence->id),
-        b.extract_ir(),
-        {fa, fa, fv, fv, ia, fa, ia, fa, fv, fv, iv, fa, iv, integer, iv},
-        engine::MathMode::Strict);
+        b.extract_ir(), commit_parameters, engine::MathMode::Strict);
   }
   // Empty, but actual bindings and all offloaded families are prepared here.
   launch_update_candidate();
@@ -415,7 +430,7 @@ void Harness::prepare_update_execution() {
   runtime_->synchronize();
 }
 
-void Harness::launch_update_candidate() {
+void Harness::launch_update_candidate(bool hierarchy) {
   auto &s = *prepared_;
   auto call = update_candidate_.invocation(true);
   auto &ctx = call.get();
@@ -439,9 +454,11 @@ void Harness::launch_update_candidate() {
   engine::argument_int(ctx, 12, int(s.live.focus));
   if (profile_.wide() && !ctx.prepared)
     ctx.set_arg_ndarray({14}, *s.candidate_ratios_array);
+  if (s.capacity.limits()[Budget::LiveResponses])
+    engine::argument_int(ctx, 15, hierarchy);
   update_candidate_.launch(ctx);
 }
-void Harness::launch_update_commit() {
+void Harness::launch_update_commit(bool hierarchy) {
   auto &s = *prepared_;
   auto call = update_commit_.invocation(true);
   auto &ctx = call.get();
@@ -465,12 +482,28 @@ void Harness::launch_update_commit() {
     ctx.set_arg_ndarray({14}, *s.candidate_status_array);
   }
   engine::argument_int(ctx, 13, previous_parameters_.reach_strength != 0);
+  if (s.capacity.limits()[Budget::LiveResponses])
+    engine::argument_int(ctx, 15, hierarchy);
   update_commit_.launch(ctx);
 }
 
 UpdateResult Harness::update_prepared(std::uint64_t expected,
                                       const UpdateCommand *input,
                                       std::size_t count) {
+  return update_prepared_impl(expected, input, count, nullptr, UINT64_MAX);
+}
+UpdateResult Harness::refresh_live_hierarchy(std::uint64_t expected,
+                                             const UpdateCommand *input,
+                                             std::size_t count,
+                                             const LiveRefreshSpec &spec,
+                                             std::uint64_t work_limit) {
+  return update_prepared_impl(expected, input, count, &spec, work_limit);
+}
+UpdateResult Harness::update_prepared_impl(std::uint64_t expected,
+                                           const UpdateCommand *input,
+                                           std::size_t count,
+                                           const LiveRefreshSpec *refresh,
+                                           std::uint64_t work_limit) {
   UpdateResult answer;
   if (!prepared_ || !ready_) {
     answer.status = UpdateStatus::Unready;
@@ -496,14 +529,48 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   const auto &limits = s.capacity.limits();
   if (expected != s.generation)
     return reject(UpdateStatus::Stale);
-  if (count && live_hierarchy_installed())
+  if (refresh && !live_hierarchy_installed())
+    return reject(UpdateStatus::Unsupported);
+  if (!refresh && count && live_hierarchy_installed())
     return reject(UpdateStatus::Unsupported);
   if (count > limits[Budget::Batch])
     return exhausted(Budget::Batch, count);
-  if (!count)
+  if (!count && !refresh)
     return reject(UpdateStatus::NoChange);
-  if (!input)
+  if (count && !input)
     return reject(UpdateStatus::InvalidInput);
+  if (refresh) {
+    // Reserve the shared source preflight before its scans and sort. The
+    // hierarchy validator subsequently charges its visits/native repair bound
+    // against this same budget. These are conservative work charges, not FLOPs.
+    const auto capacity = limits[Budget::CascadeWork];
+    const auto budget = work_limit == UINT64_MAX ? capacity : work_limit;
+    if (budget > capacity) {
+      answer.failure = {Budget::CascadeWork, budget, capacity};
+      return reject(UpdateStatus::CapacityExhausted);
+    }
+    std::uint64_t reserved = 0;
+    const auto reserve = [&](std::uint64_t items, std::uint64_t per_item) {
+      if (items && per_item > (budget - reserved) / items)
+        return false;
+      reserved += items * per_item;
+      return true;
+    };
+    const auto P = limits[Budget::Particles], G = limits[Budget::Fields],
+               E = limits[Budget::Participation], C = limits[Budget::Contacts];
+    std::uint64_t logarithm = 1;
+    for (auto n = E; n > 1; n >>= 1)
+      ++logarithm;
+    if (!reserve(P + G + E + C + count + 1, 16) ||
+        !reserve(count, 4 * (P + G + limits[Budget::Focus] + 12)) ||
+        !reserve(E + C, 4 * (count + 1)) || !reserve(G, 4 * E) ||
+        !reserve(E, 64 * logarithm)) {
+      answer.failure = {Budget::CascadeWork,
+                        budget == UINT64_MAX ? budget : budget + 1, budget};
+      return reject(UpdateStatus::CapacityExhausted);
+    }
+    answer.structural_visits = reserved;
+  }
   try {
     validate_prepared_bindings();
   } catch (...) {
@@ -716,8 +783,11 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
           command = &s.commands[edit - 1];
         else {
           next[row] = old[source];
-          if (edge)
+          if (edge) {
             s.prospective_source_counts[row] = s.source_counts[source];
+            if (refresh)
+              s.refresh_origins[row] = int(source);
+          }
         }
         ++source;
       }
@@ -728,8 +798,11 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
           return false;
         value.ordinal = command->ordinal;
         value.share = edge ? command->share : 0;
-        if (edge)
+        if (edge) {
           s.prospective_source_counts[row] = command->exact_count.value_or(0);
+          if (refresh)
+            s.refresh_origins[row] = -int(command - s.commands.data()) - 1;
+        }
         if ((edge && (!std::isfinite(value.share) || !(value.share > 0) ||
                       value.share > 1)) ||
             (!edge && same(value.first, value.second)))
@@ -772,9 +845,9 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   for (std::size_t row = 0; row < std::min(candidate.contacts, s.live.contacts);
        ++row)
     changed |= !same(s.contacts[row], s.prospective_contacts[row]);
-  if (!changed)
+  if (!changed && !refresh)
     return reject(UpdateStatus::NoChange);
-  if (s.generation == std::numeric_limits<std::uint64_t>::max()) {
+  if (!refresh && s.generation == std::numeric_limits<std::uint64_t>::max()) {
     ready_ = false;
     return reject(UpdateStatus::Unready);
   }
@@ -861,7 +934,21 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
   for (std::size_t row = 0; row < candidate.edges; ++row)
     order[s.cursors[s.prospective_edges[row].second.record]++] = int(row);
   answer.index_visits += 2 * candidate.edges + g;
+  if (refresh) {
+    const auto status = live_hierarchy_->prepare_refresh(
+        *refresh, candidate, count, changed, answer, work_limit);
+    if (status != UpdateStatus::Ok)
+      return reject(status);
+    if (s.generation == UINT64_MAX) {
+      ready_ = false;
+      return reject(UpdateStatus::Unready);
+    }
+  }
   try {
+    if (refresh) {
+      runtime_->synchronize();  // Drain every old packet reader before staging.
+      ++answer.synchronizations;
+    }
     const auto upload = [&](Ndarray &array, const void *data,
                             std::size_t bytes) {
       engine::upload(array, data, bytes);
@@ -880,7 +967,9 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     if (profile_.wide())
       upload(*s.candidate_ratios_array, s.candidate_ratios.data(),
              s.candidate_ratios.size() * sizeof(std::uint64_t));
-    launch_update_candidate();
+    if (refresh && !live_hierarchy_->stage_refresh(answer))
+      return reject(UpdateStatus::InvalidNumerics);
+    launch_update_candidate(refresh != nullptr);
     runtime_->synchronize();
     ++answer.synchronizations;
     engine::readback(*s.candidate_status_array, s.candidate_status.data(),
@@ -922,7 +1011,9 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
       throw std::runtime_error("injected failure after native claims");
     upload(*s.destinations_array, s.destinations.data(),
            s.destinations.size() * sizeof(int));
-    launch_update_commit();
+    launch_update_commit(refresh != nullptr);
+    if (refresh)
+      live_hierarchy_->commit_refresh(answer);
     runtime_->synchronize();
     ++answer.synchronizations;
     engine::readback(*s.candidate_status_array, s.candidate_status.data(),
@@ -1030,7 +1121,12 @@ UpdateResult Harness::update_prepared(std::uint64_t expected,
     for (int row = 0; row < g; ++row)
       exposed_fields_ += s.counts[row];
     s.populated = true;
+    if (s.failure_point == 5)
+      throw std::runtime_error(
+          "injected failure before generation publication");
     answer.generation = ++s.generation;
+    if (refresh)
+      live_hierarchy_->finish_refresh(s.generation);
     return reject(UpdateStatus::Ok);
   } catch (...) {
     // Backend failure is never advertised as ordinary invalid input. Mutation
