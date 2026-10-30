@@ -7,7 +7,11 @@ The [source-pinned CPU record](../tests/live_hierarchy/refresh-v1/README.md) ret
 local 101/101 regression, eight default/scalar refresh modes and integration
 evidence. The first hosted regression passed 97/101; four new registrations failed
 before assertions because they lacked the Taichi runtime path. The CMake-only
-correction passes all four with that parent path unset. Replacement hosted
+correction passes all four with that parent path unset. The next hosted CTest
+passed 101/101; its overall 90-minute job budget expired during the extra
+no-unroll matrix, before integration/backend checks. A workflow-only correction
+raises that budget to 150 minutes with every acceptance mode preserved.
+Source review found no implementation blockers. Complete replacement hosted
 validation and maintainer acceptance are still pending.
 Actual refresh execution on CUDA remains unqualified.
 

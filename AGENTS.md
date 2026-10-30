@@ -11,8 +11,12 @@ modes, 180 integration checks and unchanged cold fingerprints. All 56 local/host
 module pairs differ only in Clang ident metadata. Hosted run 41065599375 passed
 97/101; four new CTest registrations lacked the runtime path and failed before
 refresh assertions. `204eff7` fixes that test environment; all four registrations
-pass with the parent runtime path explicitly unset. Replacement hosted run
-41101471179 is queued; its final result is not yet claimed.
+pass with the parent runtime path explicitly unset. Source review at `d97027c`
+found no implementation blockers. Hosted run 41101471179 passed 101/101 in
+3353.15 seconds, then exceeded its 90-minute job budget during the extra
+no-unroll matrix; PostgreSQL integration and final backend verification skipped.
+`904f2bc` raises only that job budget to 150 minutes, preserving every mode.
+Replacement run 41123391538 is running; complete hosted acceptance remains pending.
 This is not maintainer acceptance or CUDA refresh qualification. Native admission,
 contact-safe candidate ticks, enduring owners, controls and Docker remain the
 subsequent continuation slices. The accepted #196 motion rule is unchanged.

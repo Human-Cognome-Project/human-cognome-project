@@ -25,7 +25,8 @@ The accepted-displacement motion rule from #196 is unchanged.
 | PostgreSQL integration | **180/180**, zero private reads and unchanged cold fingerprints; separately pinned at `fe7299c` with unchanged production and integration executable. |
 | Clean-environment CTest correction | **4/4**, 335.23 seconds, parent `TI_LIB_DIR` explicitly unset; CMake-only change committed as `204eff7`. |
 | First hosted native CPU | [Run 41065599375 / job 124096008985](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41065599375/job/124096008985): **97/101**, 2070.71 seconds. Four new refresh registrations fail during initialization, before assertions, because `TI_LIB_DIR` was omitted. Later scalar/integration/backend steps skipped. |
-| Replacement hosted native CPU | [Run 41101471179 / job 124219287541](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41101471179/job/124219287541) is queued at `204eff7`. Its result is not claimed. |
+| Budget-limited hosted native CPU | [Run 41101471179 / job 124219287541](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41101471179/job/124219287541), source `204eff7`: **101/101**, 3353.15 seconds. Compiler collection/audit passed; the overall 90-minute job limit cancelled the final extra refresh mode. Integration/backend steps skipped, so this is incomplete hosted acceptance. |
+| Replacement hosted native CPU | [Run 41123391538 / job 124295521781](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41123391538/job/124295521781) is in progress at `904f2bc`, which raises only the native job budget from 90 to 150 minutes. No acceptance command, mode, assertion or runtime source changed. Its result is not claimed. |
 
 All eight refresh modes execute nine case groups. The tests retain a nonzero
 selector, unequal selected/inactive packets and distinct old history on an
@@ -111,6 +112,18 @@ preserves the focused correction, generated CTest environment, passing
 clean-environment output and byte-identical executable/runtime hashes. The local
 full regression inherited the runtime path, which explains why it did not expose
 the missing registration property. No engine arithmetic or assertion changed.
+
+`budget-limited-hosted/` retains run 41101471179's complete passing CTest log,
+raw job log, explicit GitHub time-limit annotation and step dispositions. Four
+extra no-unroll hierarchy modes and three refresh modes finished successfully;
+the fourth refresh log is partial, with four passing case groups and no suite
+completion. Its partial output is not counted as a mode pass. All 56 actual
+compiler modules are byte-identical to the earlier retained `hosted-ir/` files;
+the comparison manifest records their hashes alongside this run's actual
+source/build/compiler metadata and audit output. Integration and final backend
+checks were skipped, so neither local integration nor CTest success completes
+this hosted gate. Source review at `d97027c` found no implementation blockers
+and requested the narrow CI budget correction before one replacement run.
 
 ## Reproduction
 

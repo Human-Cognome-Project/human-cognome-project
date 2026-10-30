@@ -782,5 +782,185 @@
   "failed-hosted/source.json": {
     "bytes": 254,
     "sha256": "2bb4be017d1e900691502ed5fc441ea1e9c7c2d45a42eb273fbac466e1d0c0e9"
+  },
+  "budget-limited-hosted/job.json": {
+    "bytes": 4218,
+    "sha256": "4d3df45da8183b9028b5f6cb7c34c79009e7056577e1d57102cf380ee9b52c37"
+  },
+  "budget-limited-hosted/run.json": {
+    "bytes": 15693,
+    "sha256": "49034116d129c2bf82bba9d27711e227427ef271ec351ab56f3e00411bb5a4b5"
+  },
+  "budget-limited-hosted/artifacts.json": {
+    "bytes": 1556,
+    "sha256": "2780613ba586c19c0906272b81a8817e47072d282c639f0b2860c5e20d34c9fc"
+  },
+  "budget-limited-hosted/annotations.json": {
+    "bytes": 1220,
+    "sha256": "149eaadf40cd0c1f33244c5f2b780d6ea471cbf9c40a938b7d4b7df11d92de8f"
+  },
+  "budget-limited-hosted/reviews.json": {
+    "bytes": 4139,
+    "sha256": "d0368a948684ad1cf96dbd0a7b635783ecb001431c708b3e7981600b47824b6f"
+  },
+  "budget-limited-hosted/module-comparison.json": {
+    "bytes": 10698,
+    "sha256": "c46a6040bd5cfbebd3d088c3364eab63d94fe8a6778800fa3c0ac2c9e43a0eb5"
+  },
+  "budget-limited-hosted/job.log.gz": {
+    "bytes": 127231,
+    "sha256": "336b4231696a882d51acd402856b4f2bcefd3a69bb0ec2bedd7cd465c3ead224"
+  },
+  "budget-limited-hosted/LastTest.log.gz": {
+    "bytes": 2283990,
+    "sha256": "45612afbafc1ac9b5c7198136b3fd96dfc05af586bdfa81159b9ba7a9e6d8aa8"
+  },
+  "budget-limited-hosted/compiler/source.txt": {
+    "bytes": 82,
+    "sha256": "878f54e06c21ce6d91908c0340ff4b465d7d467b5f57475849d55f59f4bdd75e"
+  },
+  "budget-limited-hosted/compiler/toolchain.txt": {
+    "bytes": 1648,
+    "sha256": "8838cc4f09d3c959a8d55ceec58a3abd1cba78daf82a5528d5b04391cc107bbd"
+  },
+  "budget-limited-hosted/compiler/binaries.sha256": {
+    "bytes": 208,
+    "sha256": "467f7e5e933f46ee22786d705ad2dabd22d475e8b912b787fb9da0d8d2c1b080"
+  },
+  "budget-limited-hosted/compiler/cmake.txt.gz": {
+    "bytes": 2948,
+    "sha256": "76e70f00161a047df7254e9777473838732433582632dbac675d540c2554a854"
+  },
+  "budget-limited-hosted/compiler/1-bulk-default/audit.txt.gz": {
+    "bytes": 14989,
+    "sha256": "ad802dd9e92a590fe16dbcd532544b5e2d6adb82e5ba56e280731bba8217dad0"
+  },
+  "budget-limited-hosted/compiler/1-bulk-default/collection.txt.gz": {
+    "bytes": 281,
+    "sha256": "97a5b2afc2646e3c562e3267fcb6d6c18dd045c5607c14ee36a1514c4b75240a"
+  },
+  "budget-limited-hosted/compiler/1-bulk-default/configuration.txt.gz": {
+    "bytes": 8939,
+    "sha256": "b9194838f0c845b176bfdfb58a0a6a744c3773fb6e7fbf6a0d152320c6ae6a5b"
+  },
+  "budget-limited-hosted/compiler/1-bulk-no-unroll/audit.txt.gz": {
+    "bytes": 12489,
+    "sha256": "a0b8360fe16ead99a2da2bf2baa4a61438a53495cd82224c4fee849df9134d12"
+  },
+  "budget-limited-hosted/compiler/1-bulk-no-unroll/collection.txt.gz": {
+    "bytes": 288,
+    "sha256": "39a43454982a988a221324e1460db25a67040fbc42fa74c554ef33acaf5e3a81"
+  },
+  "budget-limited-hosted/compiler/1-bulk-no-unroll/configuration.txt.gz": {
+    "bytes": 8953,
+    "sha256": "5cbf6afeee865f3de9b13f312fb3b087687a9331de288685f624c48114b06c74"
+  },
+  "budget-limited-hosted/compiler/1-direct-default/audit.txt.gz": {
+    "bytes": 14986,
+    "sha256": "bc859dacf2cb3ba7fb6401e80b69275d8cc7899d96b82954d5d05656e8f9219b"
+  },
+  "budget-limited-hosted/compiler/1-direct-default/collection.txt.gz": {
+    "bytes": 283,
+    "sha256": "c1c71b29dad6814661792511f73cc5a87a0958bf364d865566e8d762cf36ffbc"
+  },
+  "budget-limited-hosted/compiler/1-direct-default/configuration.txt.gz": {
+    "bytes": 8941,
+    "sha256": "f297c64f05d0d0a01ae7139f7839ad584b576dd9ebed67fd50c7db632d5f2636"
+  },
+  "budget-limited-hosted/compiler/1-direct-no-unroll/audit.txt.gz": {
+    "bytes": 12490,
+    "sha256": "13280ab678c01edf4ed536b571faddae19dd54125f3fcbd732ebac63f7d5ece4"
+  },
+  "budget-limited-hosted/compiler/1-direct-no-unroll/collection.txt.gz": {
+    "bytes": 297,
+    "sha256": "098a014722e54ce8b7d31dd714d4db284c32477f1ec695530a90ecaf458c003b"
+  },
+  "budget-limited-hosted/compiler/1-direct-no-unroll/configuration.txt.gz": {
+    "bytes": 8955,
+    "sha256": "4080a8427648366e0f165a442b3b248d912ecb37af4a7c2c4d55ed356097e780"
+  },
+  "budget-limited-hosted/compiler/2-bulk-default/audit.txt.gz": {
+    "bytes": 14978,
+    "sha256": "c2492819271a2f8030f229dcc3f75713d0aa05582df7240dd5462634b5d56584"
+  },
+  "budget-limited-hosted/compiler/2-bulk-default/collection.txt.gz": {
+    "bytes": 281,
+    "sha256": "09e9a95286058502f3d5145c1cf697e13aa90b0606f0daaaccff70421f3908bf"
+  },
+  "budget-limited-hosted/compiler/2-bulk-default/configuration.txt.gz": {
+    "bytes": 8939,
+    "sha256": "e183652c4ca03b77adb3357758f35642583c54a384a17f6d473ec16d2b3d272d"
+  },
+  "budget-limited-hosted/compiler/2-bulk-no-unroll/audit.txt.gz": {
+    "bytes": 12489,
+    "sha256": "66f984d735f85c3476139c50eda0e9e75e1fa58cec27d271b9f100b1644b749f"
+  },
+  "budget-limited-hosted/compiler/2-bulk-no-unroll/collection.txt.gz": {
+    "bytes": 295,
+    "sha256": "e5645969ea196172de30a5034fd11f73f6019d734e47a3aeaa129bd1a53e1521"
+  },
+  "budget-limited-hosted/compiler/2-bulk-no-unroll/configuration.txt.gz": {
+    "bytes": 8953,
+    "sha256": "24cbd23b68e219220c05012e163e72ba65a7fcfee26690a82931c8829d7e076b"
+  },
+  "budget-limited-hosted/compiler/2-direct-default/audit.txt.gz": {
+    "bytes": 14986,
+    "sha256": "d120891c825691b996edbab6c8e8899f82a911780e90262f46e8506c69d19051"
+  },
+  "budget-limited-hosted/compiler/2-direct-default/collection.txt.gz": {
+    "bytes": 283,
+    "sha256": "75bf970836ac77bcbb8a51eca5bc6214cbff9cebacec76a65c50b5655f7ebc5e"
+  },
+  "budget-limited-hosted/compiler/2-direct-default/configuration.txt.gz": {
+    "bytes": 8941,
+    "sha256": "5cb1c8d4b32c53648c5fff16b4e819c66035dc974fd007d44c1543808dd1b11f"
+  },
+  "budget-limited-hosted/compiler/2-direct-no-unroll/audit.txt.gz": {
+    "bytes": 12497,
+    "sha256": "ba886fc5160beba33f71666b85d26e73a7d0d5443b494d20543fc8c8be02ddfe"
+  },
+  "budget-limited-hosted/compiler/2-direct-no-unroll/collection.txt.gz": {
+    "bytes": 297,
+    "sha256": "0b78c261acf360608f1c7f96cab06576622cb001dfc6667a434b690b15e70b68"
+  },
+  "budget-limited-hosted/compiler/2-direct-no-unroll/configuration.txt.gz": {
+    "bytes": 8955,
+    "sha256": "646c18bdf0a73576ed6a2484d1adbaf22169c1a20acb213e1b3e1d8efc9b3f08"
+  },
+  "budget-limited-hosted/no-unroll/1-bulk-no-unroll/native.txt.gz": {
+    "bytes": 246189,
+    "sha256": "90dc6adede413ace09570ef5d813c6b766596c1cf573406b86f76a12be90a649"
+  },
+  "budget-limited-hosted/no-unroll/1-bulk-no-unroll/refresh.txt.gz": {
+    "bytes": 48318,
+    "sha256": "219603f88245b058d9ef399ac7d9b46636cfdb56db4a5be55e9fe58f8f0fca10"
+  },
+  "budget-limited-hosted/no-unroll/1-direct-no-unroll/native.txt.gz": {
+    "bytes": 246327,
+    "sha256": "9bea68026a04024127f4737964912db7d820ef9d0875720bc8daed29e2a8c3ca"
+  },
+  "budget-limited-hosted/no-unroll/1-direct-no-unroll/refresh.txt.gz": {
+    "bytes": 48357,
+    "sha256": "f1ed5f0d3b3f17a2b984673b8f7fd359e8e8ca3939256c82e226740920f05cbb"
+  },
+  "budget-limited-hosted/no-unroll/2-bulk-no-unroll/native.txt.gz": {
+    "bytes": 246663,
+    "sha256": "7a3fbd464d94d54e8ccf9097c7abebd845b1a7acaea6620370c9b3584ea0d1ca"
+  },
+  "budget-limited-hosted/no-unroll/2-bulk-no-unroll/refresh.txt.gz": {
+    "bytes": 48334,
+    "sha256": "8a62e7c51311afa811a871373a30218b00b2b173d7e3089682648b059a388a23"
+  },
+  "budget-limited-hosted/no-unroll/2-direct-no-unroll/native.txt.gz": {
+    "bytes": 246703,
+    "sha256": "680b200186f48ddd9e1a6c1167941119a1cc2ffd6d9dc4a527576bc95101623d"
+  },
+  "budget-limited-hosted/no-unroll/2-direct-no-unroll/refresh.txt.gz": {
+    "bytes": 11160,
+    "sha256": "5db810a087e826e6bcc4024c381142fedcac41956934b5f16f9135f7be6f950d"
+  },
+  "budget-limited-hosted/cpu-ctest.txt.gz": {
+    "bytes": 13093,
+    "sha256": "b9b2db959821c245cf6b6abf6de107b8cff9228a02f160c2b0d8fdd1de0cc4a3"
   }
 }

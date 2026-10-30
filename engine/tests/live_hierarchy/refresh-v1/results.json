@@ -355,10 +355,10 @@
     "same_integration_binary": true
   },
   "hosted": {
-    "status": "queued",
-    "source": "204eff7e74075906e96e6dd476a418e21ae1d772",
-    "run": 41101471179,
-    "job": 124219287541
+    "status": "in_progress",
+    "source": "904f2bc5e04fe27fd02babfdc562be445925150a",
+    "run": 41123391538,
+    "job": 124295521781
   },
   "superseded": {
     "source": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
@@ -418,5 +418,84 @@
     "production_test_and_runtime_binaries_unchanged": true
   },
   "backend_tree": "350b7516fba428710a65ec04bf74b1b963daa840",
-  "configuration_note": "The original configuration.json backend field is the repository checkout revision, not the backend tree. backend_tree records HEAD:engine/taichi. Original capture retained unchanged."
+  "configuration_note": "The original configuration.json backend field is the repository checkout revision, not the backend tree. backend_tree records HEAD:engine/taichi. Original capture retained unchanged.",
+  "hosted_budget_limited": {
+    "status": "cancelled",
+    "reason": "GitHub annotation: The job has exceeded the maximum execution time of 1h30m0s",
+    "run": 41101471179,
+    "job": 124219287541,
+    "source": "204eff7e74075906e96e6dd476a418e21ae1d772",
+    "checkout": "6d48b15ca77b6382c845c00348234b8abfafcb29",
+    "backend_tree": "350b7516fba428710a65ec04bf74b1b963daa840",
+    "full_cpu": {
+      "passed": 101,
+      "total": 101,
+      "seconds": 3353.15
+    },
+    "compiler_collection_and_audit": "success",
+    "modules_byte_identical_to_prior_hosted_record": 56,
+    "additional_modes": [
+      {
+        "configuration": "1-bulk-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "1-bulk-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "1-direct-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "1-direct-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "2-bulk-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "2-bulk-no-unroll",
+        "suite": "refresh",
+        "complete_pass": true,
+        "passing_case_groups": 9
+      },
+      {
+        "configuration": "2-direct-no-unroll",
+        "suite": "hierarchy",
+        "complete_pass": true,
+        "passing_case_groups": 11
+      },
+      {
+        "configuration": "2-direct-no-unroll",
+        "suite": "refresh",
+        "complete_pass": false,
+        "passing_case_groups": 4
+      }
+    ],
+    "skipped": [
+      "PostgreSQL-to-active integration",
+      "CPU-only backend verification"
+    ],
+    "evidence_artifact": 13003539839,
+    "compiler_artifact": 13000067852
+  },
+  "ci_budget_correction": {
+    "source": "904f2bc5e04fe27fd02babfdc562be445925150a",
+    "old_minutes": 90,
+    "new_minutes": 150,
+    "acceptance_commands_and_modes_unchanged": true,
+    "production_source_unchanged_since_review": true
+  }
 }
