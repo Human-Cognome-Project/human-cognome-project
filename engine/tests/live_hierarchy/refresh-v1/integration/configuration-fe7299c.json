@@ -1,0 +1,15 @@
+{
+  "source": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
+  "base": "5b6d7957d452fe56a23735241a0307419ee0e638",
+  "backend": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
+  "compiler": "Debian clang version 15.0.6\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /workspace/.hcp-setup/sysroot/usr/lib/llvm-15/bin\n",
+  "target": "Debian LLVM version 15.0.6\n  Optimized build.\n  Default target: x86_64-pc-linux-gnu\n  Host CPU: znver3\n\n  Registered Targets:\n    aarch64    - AArch64 (little endian)\n    aarch64_32 - AArch64 (little endian ILP32)\n    aarch64_be - AArch64 (big endian)\n    amdgcn     - AMD GCN GPUs\n    arm        - ARM\n    arm64      - ARM64 (little endian)\n    arm64_32   - ARM64 (little endian ILP32)\n    armeb      - ARM (big endian)\n    avr        - Atmel AVR Microcontroller\n    bpf        - BPF (host endian)\n    bpfeb      - BPF (big endian)\n    bpfel      - BPF (little endian)\n    hexagon    - Hexagon\n    lanai      - Lanai\n    m68k       - Motorola 68000 family\n    mips       - MIPS (32-bit big endian)\n    mips64     - MIPS (64-bit big endian)\n    mips64el   - MIPS (64-bit little endian)\n    mipsel     - MIPS (32-bit little endian)\n    msp430     - MSP430 [experimental]\n    nvptx      - NVIDIA PTX 32-bit\n    nvptx64    - NVIDIA PTX 64-bit\n    ppc32      - PowerPC 32\n    ppc32le    - PowerPC 32 LE\n    ppc64      - PowerPC 64\n    ppc64le    - PowerPC 64 LE\n    r600       - AMD GPUs HD2XXX-HD6XXX\n    riscv32    - 32-bit RISC-V\n    riscv64    - 64-bit RISC-V\n    sparc      - Sparc\n    sparcel    - Sparc LE\n    sparcv9    - Sparc V9\n    systemz    - SystemZ\n    thumb      - Thumb\n    thumbeb    - Thumb (big endian)\n    ve         - VE\n    wasm32     - WebAssembly 32-bit\n    wasm64     - WebAssembly 64-bit\n    x86        - 32-bit X86: Pentium-Pro and above\n    x86-64     - 64-bit X86: EM64T and AMD64\n    xcore      - XCore\n",
+  "date_utc": "2026-10-30T13:23:27.436Z",
+  "test_scope": "CPU-only substrate and actual x64 execution; no CUDA refresh claim",
+  "working_tree": "",
+  "binaries": {
+    "engine/build/live_hierarchy_test": "018b4699327df5bf7c5524c03f7987b52dc29c6a823b74ed5f372c69144267cf",
+    "engine/build/warm_active_integration": "19750387de0a90b6cfc36a4e941ff73637f1c8d2fa10a970cda2110cb35466ef",
+    "engine/build/taichi-runtime/runtime_x64.bc": "7f5e6efd7dca6c28d83573043bf160d49b5ac2f9e07b636741ebde35374631b5"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "base_source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+  "tested_change_committed_as": "204eff7e74075906e96e6dd476a418e21ae1d772",
+  "scope": "CMake runtime-path property only; all three recorded binaries byte-identical to full local regression source.",
+  "command": "source /workspace/.hcp-setup/env.sh; cmake -S engine -B engine/build; env -u TI_LIB_DIR ctest --test-dir engine/build -R '^live_refresh_' --output-on-failure -j2",
+  "passed": 4,
+  "total": 4,
+  "seconds": 335.23,
+  "parent_TI_LIB_DIR": "explicitly unset",
+  "production_test_and_runtime_binaries_unchanged": true
+}

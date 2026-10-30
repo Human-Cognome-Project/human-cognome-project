@@ -1,12 +1,18 @@
 # Agent guidance
 
-## C3-2 contribution — validation in progress, 2026-10-30
+## C3-2 contribution — CPU evidence for review, 2026-10-30
 
 The [combined refresh implementation](engine/docs/LIVE-REFRESH.md) is built for
 review under accepted #197. It retains ordinary installed-update guards and
 uses one prospective ledger, stable packet identities and native repair/commit
-with survivor/history/pending-work preservation. Targeted CPU controls have
-passed; the complete CPU/integration/compiler-shape matrix is being collected.
+with survivor/history/pending-work preservation. [Source-pinned CPU evidence](engine/tests/live_hierarchy/refresh-v1/README.md)
+retains 101/101 local suites in 1830.99 seconds, all eight default/scalar refresh
+modes, 180 integration checks and unchanged cold fingerprints. All 56 local/hosted
+module pairs differ only in Clang ident metadata. Hosted run 41065599375 passed
+97/101; four new CTest registrations lacked the runtime path and failed before
+refresh assertions. `204eff7` fixes that test environment; all four registrations
+pass with the parent runtime path explicitly unset. Replacement hosted run
+41101471179 is queued; its final result is not yet claimed.
 This is not maintainer acceptance or CUDA refresh qualification. Native admission,
 contact-safe candidate ticks, enduring owners, controls and Docker remain the
 subsequent continuation slices. The accepted #196 motion rule is unchanged.

@@ -227,10 +227,14 @@ The [C3-1 fixed-tree implementation](docs/LIVE-HIERARCHY.md) and
 [coherent-dynamics direction](../docs/coherent-dynamics-gpu-snapshots.md).
 Moving state is observed separately from invariant failure. The bounded
 [active-capture handoff](../docs/c3-cpu-capture-handoff.md) reuses the current
-execution. #196's bounded local GTX 1070 corrections/evidence are under review;
+execution. #196's bounded local GTX 1070 corrections/evidence are accepted;
 full CUDA qualification remains local and mixed-precision conversion still has
 a retained failure. The [C3-2 combined refresh contribution](docs/LIVE-REFRESH.md) is built for review
-under accepted #197; complete CPU acceptance/evidence is in progress.
+under accepted #197 with [source-pinned CPU evidence](tests/live_hierarchy/refresh-v1/README.md).
+Local 101/101 suites and all eight refresh modes pass. A CTest runtime-path omission
+caused four hosted initialization failures; the corrected four registrations
+pass with that path unset in the parent. Replacement hosted validation is queued.
+Maintainer acceptance remains pending.
 Operational admission/owners and CUDA refresh qualification remain separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and

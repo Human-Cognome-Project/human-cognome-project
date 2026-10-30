@@ -3,8 +3,13 @@
 Status: **implementation for review** under the accepted
 [#197 plan](../../docs/live-hierarchy-refresh-plan.md). This extends the
 [installed hierarchy](LIVE-HIERARCHY.md) with one combined owner-exclusive edit.
-Acceptance and source-pinned CPU evidence are separate from this implementation
-description. Actual refresh execution on CUDA remains unqualified.
+The [source-pinned CPU record](../tests/live_hierarchy/refresh-v1/README.md) retains
+local 101/101 regression, eight default/scalar refresh modes and integration
+evidence. The first hosted regression passed 97/101; four new registrations failed
+before assertions because they lacked the Taichi runtime path. The CMake-only
+correction passes all four with that parent path unset. Replacement hosted
+validation and maintainer acceptance are still pending.
+Actual refresh execution on CUDA remains unqualified.
 
 ## Entry point and references
 

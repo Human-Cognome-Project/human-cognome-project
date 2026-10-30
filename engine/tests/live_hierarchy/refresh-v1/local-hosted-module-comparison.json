@@ -1,0 +1,458 @@
+{
+  "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+  "hosted_run": 41065599375,
+  "modules": 56,
+  "identical": 0,
+  "identical_except_clang_ident": 56,
+  "removed": "Only metadata lines containing the clang version string; no executable instructions or other configuration removed.",
+  "rows": [
+    {
+      "configuration": "1-bulk-default",
+      "module": "c3-0.ll",
+      "local_sha256": "93fb3a4c95acc41dd717f645a2f060dab516d134dbf1614730ea1e0e8fd5b2a0",
+      "hosted_sha256": "061a6af98583c60a70fdfacf4a3273375db017fa17de9a6a5564569f537596f4",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "c3-1.ll",
+      "local_sha256": "4548b90671bb8291159ceb2e8b2f2ce361b8add130144e9e6105a71be1df2bfc",
+      "hosted_sha256": "43600e4194bc0424bd0aac89d8b974d63db50bb713b586b651c7b6d8dd17d0bc",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "c3-2.ll",
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "refresh-0.ll",
+      "local_sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5",
+      "hosted_sha256": "cc8e14652c44541f2e03f37e554a7726f93acc46c8d5b9259e6c551468ad2f3b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "refresh-1.ll",
+      "local_sha256": "0905df23b03d53b914d1adcca5f01be36328cfabc6cc87f7c94af45ffed51f8e",
+      "hosted_sha256": "f055ad9798a661a65c2ef86f7b55149608ca68989967287af0d5bfe6e0441d9b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e",
+      "hosted_sha256": "bf55a7ef53d40727ff89c7bd0c66e6dbbd7660d35971dd41fec76f957d098733",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-default",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "ddfb32fb32984edba9429a86f7a0655cc17d90c3e88b654a3cc85633ea4f106d",
+      "hosted_sha256": "575e6e026eb9cc31552f2dac32d363447e54b8253a89a960f580d4e53ec62c59",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "c3-0.ll",
+      "local_sha256": "faaa0c874a2c1097628c1e514e67cd1b96dae8717c438981e0aa81dca9eccd84",
+      "hosted_sha256": "b7be113348ac1773a36e74c1436ea66c43b675d7a7924456d4d2c31b5c75816c",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "c3-1.ll",
+      "local_sha256": "9860c7d18e82095c3e88bab860ec202fccc442a3a102dc957258aaf2a1b5d748",
+      "hosted_sha256": "0f0caac4b54d1a3605ba0fee2731e430aa013c5f5b016abd08f719aad8013726",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "c3-2.ll",
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "refresh-0.ll",
+      "local_sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83",
+      "hosted_sha256": "6e18a2814c06b0a963f331bd6b3917c1dac634cb0b8295fd36d216dcd7984352",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "refresh-1.ll",
+      "local_sha256": "8c7f3e9eee5cce8e62e027ef99128879368a00fe73e78dc757186b9e489077a3",
+      "hosted_sha256": "1684569fcbf1920d0ce12d3bc53be3319177d7281c83d382e521d05cf453a293",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157",
+      "hosted_sha256": "482f8b85babb2957c83deed2067f36d2c3c87141dea616a643662e21c62b8f12",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "03d531c106ff97ed84fbe71d53c0907a2976e117107253e849f1bbf4d2e9ba06",
+      "hosted_sha256": "7b07b0d3852226b0da43593d01ced819fe79b4aead136f747decd03cffc40edf",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "c3-0.ll",
+      "local_sha256": "93fb3a4c95acc41dd717f645a2f060dab516d134dbf1614730ea1e0e8fd5b2a0",
+      "hosted_sha256": "061a6af98583c60a70fdfacf4a3273375db017fa17de9a6a5564569f537596f4",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "c3-1.ll",
+      "local_sha256": "4548b90671bb8291159ceb2e8b2f2ce361b8add130144e9e6105a71be1df2bfc",
+      "hosted_sha256": "43600e4194bc0424bd0aac89d8b974d63db50bb713b586b651c7b6d8dd17d0bc",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "c3-2.ll",
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "refresh-0.ll",
+      "local_sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5",
+      "hosted_sha256": "cc8e14652c44541f2e03f37e554a7726f93acc46c8d5b9259e6c551468ad2f3b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "refresh-1.ll",
+      "local_sha256": "0905df23b03d53b914d1adcca5f01be36328cfabc6cc87f7c94af45ffed51f8e",
+      "hosted_sha256": "f055ad9798a661a65c2ef86f7b55149608ca68989967287af0d5bfe6e0441d9b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e",
+      "hosted_sha256": "bf55a7ef53d40727ff89c7bd0c66e6dbbd7660d35971dd41fec76f957d098733",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "ddfb32fb32984edba9429a86f7a0655cc17d90c3e88b654a3cc85633ea4f106d",
+      "hosted_sha256": "575e6e026eb9cc31552f2dac32d363447e54b8253a89a960f580d4e53ec62c59",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "c3-0.ll",
+      "local_sha256": "faaa0c874a2c1097628c1e514e67cd1b96dae8717c438981e0aa81dca9eccd84",
+      "hosted_sha256": "b7be113348ac1773a36e74c1436ea66c43b675d7a7924456d4d2c31b5c75816c",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "c3-1.ll",
+      "local_sha256": "9860c7d18e82095c3e88bab860ec202fccc442a3a102dc957258aaf2a1b5d748",
+      "hosted_sha256": "0f0caac4b54d1a3605ba0fee2731e430aa013c5f5b016abd08f719aad8013726",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "c3-2.ll",
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "refresh-0.ll",
+      "local_sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83",
+      "hosted_sha256": "6e18a2814c06b0a963f331bd6b3917c1dac634cb0b8295fd36d216dcd7984352",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "refresh-1.ll",
+      "local_sha256": "8c7f3e9eee5cce8e62e027ef99128879368a00fe73e78dc757186b9e489077a3",
+      "hosted_sha256": "1684569fcbf1920d0ce12d3bc53be3319177d7281c83d382e521d05cf453a293",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157",
+      "hosted_sha256": "482f8b85babb2957c83deed2067f36d2c3c87141dea616a643662e21c62b8f12",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "03d531c106ff97ed84fbe71d53c0907a2976e117107253e849f1bbf4d2e9ba06",
+      "hosted_sha256": "7b07b0d3852226b0da43593d01ced819fe79b4aead136f747decd03cffc40edf",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "c3-0.ll",
+      "local_sha256": "d21405b883c117844db426896e2fc7e15385dd0ec3c2613bb4b4c9675bf4f939",
+      "hosted_sha256": "c62d5dae4fc28c3c803d151f7eeabefc142e82f5eb3c2a597b915aff16088459",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "c3-1.ll",
+      "local_sha256": "fb438e18e89075d0b760d24feee37890835812ab2696ed5dd1924b396f3fadc3",
+      "hosted_sha256": "53bd0b195e4d2382b7f1bb1508d592f93eed5c523a1f14473cebd452bc4e448b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "c3-2.ll",
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "refresh-0.ll",
+      "local_sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5",
+      "hosted_sha256": "cc8e14652c44541f2e03f37e554a7726f93acc46c8d5b9259e6c551468ad2f3b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "refresh-1.ll",
+      "local_sha256": "974d5d86a9db6dd55f5c1a655e0eed33379c1f7e3e7d0182c76e2c3311a91130",
+      "hosted_sha256": "aa87af4e093af2ab719208feafd096217c6cad18d6dfdfa5f0b157d226f0d279",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e",
+      "hosted_sha256": "bf55a7ef53d40727ff89c7bd0c66e6dbbd7660d35971dd41fec76f957d098733",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "1d51b095586ac4e1d11f2872880112602833e477038b6aee1ff729f935794a5f",
+      "hosted_sha256": "9cc879c770fb4efd74389b19e99483e63b7866a10aeffbb16c6b4b9e26717dc0",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "c3-0.ll",
+      "local_sha256": "dd9ddcd32675e4f843cee99a8bc4dca4f0628859ec5cd4e4a3c94939dad84856",
+      "hosted_sha256": "70775d0e2e7c2bedd850b1e89426bfd9cf03ae7c5f871a904f4ca0f42e54201e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "c3-1.ll",
+      "local_sha256": "27a675a44621fce9da1035e783155b22ef03c4d4221fdb364e10c24db942fb51",
+      "hosted_sha256": "5418629ac28247bbf3d87daa23816a93cf37a725c14456ace8af6d959efd8be5",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "c3-2.ll",
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "refresh-0.ll",
+      "local_sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83",
+      "hosted_sha256": "6e18a2814c06b0a963f331bd6b3917c1dac634cb0b8295fd36d216dcd7984352",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "refresh-1.ll",
+      "local_sha256": "14271cec12cb44d64db3d974ff9f8b8a91ab4f3288b14045e5eb8ea233952a16",
+      "hosted_sha256": "014a3a684c354b71cb5a6ba6c8d2f9d2b8f7015eb9bc0863e4da3e9e3602feee",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157",
+      "hosted_sha256": "482f8b85babb2957c83deed2067f36d2c3c87141dea616a643662e21c62b8f12",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "f7006f986234634e2189913973b64c6d7a87d4de693e5d718e1f6d08e8b6225c",
+      "hosted_sha256": "095ab3c5022c848420027daf3ae10b58680f3c9b0ca7154b21596d7789675c63",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "c3-0.ll",
+      "local_sha256": "d21405b883c117844db426896e2fc7e15385dd0ec3c2613bb4b4c9675bf4f939",
+      "hosted_sha256": "c62d5dae4fc28c3c803d151f7eeabefc142e82f5eb3c2a597b915aff16088459",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "c3-1.ll",
+      "local_sha256": "fb438e18e89075d0b760d24feee37890835812ab2696ed5dd1924b396f3fadc3",
+      "hosted_sha256": "53bd0b195e4d2382b7f1bb1508d592f93eed5c523a1f14473cebd452bc4e448b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "c3-2.ll",
+      "local_sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b",
+      "hosted_sha256": "dd497e5cb26bfdf521f48fc4778482a3334e5a144fd93f21be715917f93041f1",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "refresh-0.ll",
+      "local_sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5",
+      "hosted_sha256": "cc8e14652c44541f2e03f37e554a7726f93acc46c8d5b9259e6c551468ad2f3b",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "refresh-1.ll",
+      "local_sha256": "974d5d86a9db6dd55f5c1a655e0eed33379c1f7e3e7d0182c76e2c3311a91130",
+      "hosted_sha256": "aa87af4e093af2ab719208feafd096217c6cad18d6dfdfa5f0b157d226f0d279",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e",
+      "hosted_sha256": "bf55a7ef53d40727ff89c7bd0c66e6dbbd7660d35971dd41fec76f957d098733",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "1d51b095586ac4e1d11f2872880112602833e477038b6aee1ff729f935794a5f",
+      "hosted_sha256": "9cc879c770fb4efd74389b19e99483e63b7866a10aeffbb16c6b4b9e26717dc0",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "c3-0.ll",
+      "local_sha256": "dd9ddcd32675e4f843cee99a8bc4dca4f0628859ec5cd4e4a3c94939dad84856",
+      "hosted_sha256": "70775d0e2e7c2bedd850b1e89426bfd9cf03ae7c5f871a904f4ca0f42e54201e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "c3-1.ll",
+      "local_sha256": "27a675a44621fce9da1035e783155b22ef03c4d4221fdb364e10c24db942fb51",
+      "hosted_sha256": "5418629ac28247bbf3d87daa23816a93cf37a725c14456ace8af6d959efd8be5",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "c3-2.ll",
+      "local_sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f",
+      "hosted_sha256": "c445c922039083cffc48bd9f0a0ee7ad032f91a2a804428a0eaa6fac159bc30e",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "refresh-0.ll",
+      "local_sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83",
+      "hosted_sha256": "6e18a2814c06b0a963f331bd6b3917c1dac634cb0b8295fd36d216dcd7984352",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "refresh-1.ll",
+      "local_sha256": "14271cec12cb44d64db3d974ff9f8b8a91ab4f3288b14045e5eb8ea233952a16",
+      "hosted_sha256": "014a3a684c354b71cb5a6ba6c8d2f9d2b8f7015eb9bc0863e4da3e9e3602feee",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "refresh-b8-0.ll",
+      "local_sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157",
+      "hosted_sha256": "482f8b85babb2957c83deed2067f36d2c3c87141dea616a643662e21c62b8f12",
+      "identical": false,
+      "identical_except_clang_ident": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "module": "refresh-b8-1.ll",
+      "local_sha256": "f7006f986234634e2189913973b64c6d7a87d4de693e5d718e1f6d08e8b6225c",
+      "hosted_sha256": "095ab3c5022c848420027daf3ae10b58680f3c9b0ca7154b21596d7789675c63",
+      "identical": false,
+      "identical_except_clang_ident": true
+    }
+  ]
+}

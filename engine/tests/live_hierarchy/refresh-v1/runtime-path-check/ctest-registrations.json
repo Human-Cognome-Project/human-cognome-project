@@ -1,0 +1,114 @@
+{
+  "tests": [
+    {
+      "backtrace": 69,
+      "command": [
+        "/workspace/human-cognome-project/engine/build/live_hierarchy_test",
+        "--threads",
+        "1",
+        "--case",
+        "refresh"
+      ],
+      "name": "live_refresh_1_bulk",
+      "properties": [
+        {
+          "name": "ENVIRONMENT",
+          "value": [
+            "TI_LIB_DIR=/workspace/human-cognome-project/engine/build/taichi-runtime"
+          ]
+        },
+        {
+          "name": "TIMEOUT",
+          "value": 900
+        },
+        {
+          "name": "WORKING_DIRECTORY",
+          "value": "/workspace/human-cognome-project/engine/build"
+        }
+      ]
+    },
+    {
+      "backtrace": 73,
+      "command": [
+        "/workspace/human-cognome-project/engine/build/live_hierarchy_test",
+        "--threads",
+        "1",
+        "--direct",
+        "--case",
+        "refresh"
+      ],
+      "name": "live_refresh_1_direct",
+      "properties": [
+        {
+          "name": "ENVIRONMENT",
+          "value": [
+            "TI_LIB_DIR=/workspace/human-cognome-project/engine/build/taichi-runtime"
+          ]
+        },
+        {
+          "name": "TIMEOUT",
+          "value": 900
+        },
+        {
+          "name": "WORKING_DIRECTORY",
+          "value": "/workspace/human-cognome-project/engine/build"
+        }
+      ]
+    },
+    {
+      "backtrace": 77,
+      "command": [
+        "/workspace/human-cognome-project/engine/build/live_hierarchy_test",
+        "--threads",
+        "2",
+        "--case",
+        "refresh"
+      ],
+      "name": "live_refresh_2_bulk",
+      "properties": [
+        {
+          "name": "ENVIRONMENT",
+          "value": [
+            "TI_LIB_DIR=/workspace/human-cognome-project/engine/build/taichi-runtime"
+          ]
+        },
+        {
+          "name": "TIMEOUT",
+          "value": 900
+        },
+        {
+          "name": "WORKING_DIRECTORY",
+          "value": "/workspace/human-cognome-project/engine/build"
+        }
+      ]
+    },
+    {
+      "backtrace": 81,
+      "command": [
+        "/workspace/human-cognome-project/engine/build/live_hierarchy_test",
+        "--threads",
+        "2",
+        "--direct",
+        "--case",
+        "refresh"
+      ],
+      "name": "live_refresh_2_direct",
+      "properties": [
+        {
+          "name": "ENVIRONMENT",
+          "value": [
+            "TI_LIB_DIR=/workspace/human-cognome-project/engine/build/taichi-runtime"
+          ]
+        },
+        {
+          "name": "TIMEOUT",
+          "value": 900
+        },
+        {
+          "name": "WORKING_DIRECTORY",
+          "value": "/workspace/human-cognome-project/engine/build"
+        }
+      ]
+    }
+  ]
+}

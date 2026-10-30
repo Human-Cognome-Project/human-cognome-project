@@ -1,0 +1,422 @@
+{
+  "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+  "production_implementation": "fc48ac3",
+  "actual_backend": "x64",
+  "full_cpu": {
+    "passed": 101,
+    "total": 101,
+    "seconds": 1830.99,
+    "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab"
+  },
+  "modes": [
+    {
+      "workers": 1,
+      "host_path": "bulk",
+      "compiler_shape": "default",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 1,
+      "host_path": "bulk",
+      "compiler_shape": "scalar",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 1,
+      "host_path": "direct",
+      "compiler_shape": "default",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 1,
+      "host_path": "direct",
+      "compiler_shape": "scalar",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 2,
+      "host_path": "bulk",
+      "compiler_shape": "default",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 2,
+      "host_path": "bulk",
+      "compiler_shape": "scalar",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 2,
+      "host_path": "direct",
+      "compiler_shape": "default",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    },
+    {
+      "workers": 2,
+      "host_path": "direct",
+      "compiler_shape": "scalar",
+      "actual_backend": "x64",
+      "cases": [
+        "refresh_basics",
+        "refresh_dirty_counts",
+        "refresh_u64_overlap",
+        "refresh_rejections",
+        "refresh_fields",
+        "refresh_occurrences",
+        "refresh_failures",
+        "refresh_limits",
+        "refresh_capture"
+      ],
+      "case_count": 9,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "reuse_rounds": 32,
+      "reuse_commits": 64,
+      "ordinary_rejections": 21,
+      "budget_exhaustions": 10,
+      "late_failure_points": 4,
+      "refresh_modules_audited": 4,
+      "negative_controls": 8,
+      "safe_controls": 4,
+      "known_resource_counters_unchanged": true,
+      "cpp_new_observed": 0,
+      "source_precision_profiles": [
+        "body52,comparison52 (per-node changes)",
+        "body8,comparison6"
+      ],
+      "nonzero_selector_and_distinct_old_history": true
+    }
+  ],
+  "ir": [
+    {
+      "configuration": "1-bulk-default",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "1-direct-default",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "2-bulk-default",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "2-direct-default",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "modules": 7,
+      "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+      "parsed_with_llvm_as": true,
+      "original_hierarchy_semantic_audit_passed": true
+    }
+  ],
+  "retained_modules": 56,
+  "total_refresh_case_groups": 72,
+  "integration": {
+    "source": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
+    "checks": 180,
+    "private_source_reads": 0,
+    "cold_fingerprints_unchanged": true,
+    "subsequent_changes": [
+      "engine/tests/live_hierarchy_refresh_cases.inc",
+      "engine/tests/live_hierarchy_test.cpp"
+    ],
+    "warm_fixture": "hcp_warm_d_20261030132420_15483",
+    "same_integration_binary": true
+  },
+  "hosted": {
+    "status": "queued",
+    "source": "204eff7e74075906e96e6dd476a418e21ae1d772",
+    "run": 41101471179,
+    "job": 124219287541
+  },
+  "superseded": {
+    "source": "fe7299c5a0afcaf5eeebbf0b736bbb1740eada57",
+    "local_cpu": "Intentionally stopped after 30/101 suites completed, before the changed refresh cases; not a full regression result.",
+    "native_hosted_run": 41062786258,
+    "disposition": "Cancelled/superseded during module collection after strengthening the dirty-history test; not a passing hosted run."
+  },
+  "limits": [
+    "Maintainer acceptance pending",
+    "CUDA refresh unqualified",
+    "native admission/contact-safe ticks/owners/controls/Docker separate",
+    "mixed-precision subnormal failure remains independent"
+  ],
+  "hosted_compiler_modules": {
+    "run": 41065599375,
+    "artifact": 12983422307,
+    "modules": 56,
+    "identical_except_clang_ident": 56,
+    "configuration_files": "hosted-ir/"
+  },
+  "retained_local_modules": 56,
+  "retained_hosted_modules": 56,
+  "retained_module_files": 112,
+  "hosted_failed": {
+    "status": "failure",
+    "run": 41065599375,
+    "job": 124096008985,
+    "checkout": "f9e7e8224fa678feb98987c21f351d9c3899b412",
+    "base": "5b6d7957d452fe56a23735241a0307419ee0e638",
+    "source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+    "passed": 97,
+    "total": 101,
+    "seconds": 2070.71,
+    "failures": [
+      "live_refresh_1_bulk",
+      "live_refresh_1_direct",
+      "live_refresh_2_bulk",
+      "live_refresh_2_direct"
+    ],
+    "reason": "CTest registration omitted TI_LIB_DIR; all four refresh processes failed during engine initialization, before assertions.",
+    "skipped": [
+      "additional no-unroll matrices",
+      "PostgreSQL integration",
+      "CPU backend verification"
+    ],
+    "evidence_artifact": 12986111114
+  },
+  "runtime_path_check": {
+    "base_source": "e0773b838efcf57cb14bff053b93ac56be03f2ab",
+    "tested_change_committed_as": "204eff7e74075906e96e6dd476a418e21ae1d772",
+    "scope": "CMake runtime-path property only; all three recorded binaries byte-identical to full local regression source.",
+    "command": "source /workspace/.hcp-setup/env.sh; cmake -S engine -B engine/build; env -u TI_LIB_DIR ctest --test-dir engine/build -R '^live_refresh_' --output-on-failure -j2",
+    "passed": 4,
+    "total": 4,
+    "seconds": 335.23,
+    "parent_TI_LIB_DIR": "explicitly unset",
+    "production_test_and_runtime_binaries_unchanged": true
+  },
+  "backend_tree": "350b7516fba428710a65ec04bf74b1b963daa840",
+  "configuration_note": "The original configuration.json backend field is the repository checkout revision, not the backend tree. backend_tree records HEAD:engine/taichi. Original capture retained unchanged."
+}

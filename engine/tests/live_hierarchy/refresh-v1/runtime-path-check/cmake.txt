@@ -1,0 +1,9 @@
+-- Engine checkout : /workspace/human-cognome-project/engine/taichi (350b7516fba428710a65ec04bf74b1b963daa840)
+-- Engine build    : /workspace/human-cognome-project/engine/taichi/build-review
+-- Engine LLVM     : 15.0.6 (/workspace/.hcp-setup/sysroot/usr/lib/llvm-15/lib)
+-- Engine CUDA     : FALSE
+-- Engine runtime source : /workspace/human-cognome-project/engine/taichi/taichi/runtime/llvm/runtime_module
+-- Engine runtime stage  : /workspace/human-cognome-project/engine/build/taichi-runtime
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/human-cognome-project/engine/build
