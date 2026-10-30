@@ -1,11 +1,20 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, 2026-10-29. This organizes the
+Status: maintainer implementation sequencing, updated 2026-10-30. This organizes the
 already accepted #194 C3-2 and #170 operation contracts; it does not claim they
 are implemented. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
 
 ## Reviewed baseline and limits
+
+C3-2 is accepted and merged in #198 at `5ea9c76`, reviewed head `f4c5ba9`.
+Final hosted run 41123391538/job 124295521781 at `904f2bc` passed 101/101 CPU
+suites in 3355.27 seconds, both extra four-mode no-unroll matrices, compiler
+collection/audit, 180 PostgreSQL-to-active checks and actual CPU-only backend
+verification; all nine checks passed. Its [retained evidence](../engine/tests/live_hierarchy/refresh-v1/README.md)
+keeps the earlier initialization failure and job-budget cancellation. Slice A
+is complete for CPU structural refresh; B is the next core slice. No manual
+rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
 `1af1cacef98d34928d8b0bbbbb5753c6790c61fa` found no new blocking source defect
@@ -41,8 +50,8 @@ conversion path must remain separately described.
 
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
-| A | C3-2 combined source/hierarchy refresh | Next core implementation PR, using accepted #195 plus reviewed #196 corrections now merged; CPU evidence first. |
-| B | Native admission and candidate contact/tick transaction | Build on A and #175 geometry preflight; source work and CPU acceptance can run remotely. |
+| A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
+| B | Native admission and candidate contact/tick transaction | Next core slice, building on A and #175 geometry preflight; source work and CPU acceptance can run remotely. |
 | C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
@@ -57,7 +66,8 @@ No routine permission step is added to the accepted implementation scope.
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in
 #197 at merge `0eea42a`. It maps this slice onto prospective source references,
 stable comparison identity, native repair/commit phases and executable acceptance.
-Begin implementation from current main in its own PR; refresh remains unbuilt.
+The implementation is accepted in #198 at merge `5ea9c76`; the contract below
+remains the boundary of that accepted numerical-fixture refresh foundation.
 
 Owning contract: [production plan, section 4](production-hierarchy-response-plan.md#4-initialization-structural-changes-and-failure).
 Start at `engine/src/field/prepared_update.cpp`, `live_hierarchy.cpp` and

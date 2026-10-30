@@ -220,8 +220,9 @@ The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
 [CPU evidence](tests/weighted_handoff/README.md) are accepted in #193. Comparison
 ownership, inherited response and coupled settling/recovery now have the accepted
 [#194 production integration plan](../docs/production-hierarchy-response-plan.md).
-C3-1 fixed-tree implementation is accepted in #195; C3-2 refresh is the next
-core slice in the [current continuation plan](../docs/core-local-study-continuation-plan.md).
+C3-1 fixed-tree implementation is accepted in #195; C3-2 refresh is accepted in
+#198. Native admission/contact-safe ticks are next in the
+[current continuation plan](../docs/core-local-study-continuation-plan.md).
 The [C3-1 fixed-tree implementation](docs/LIVE-HIERARCHY.md) and
 [CPU investigation](tests/live_hierarchy/README.md) are accepted under the
 [coherent-dynamics direction](../docs/coherent-dynamics-gpu-snapshots.md).
@@ -229,15 +230,12 @@ Moving state is observed separately from invariant failure. The bounded
 [active-capture handoff](../docs/c3-cpu-capture-handoff.md) reuses the current
 execution. #196's bounded local GTX 1070 corrections/evidence are accepted;
 full CUDA qualification remains local and mixed-precision conversion still has
-a retained failure. The [C3-2 combined refresh contribution](docs/LIVE-REFRESH.md) is built for review
-under accepted #197 with [source-pinned CPU evidence](tests/live_hierarchy/refresh-v1/README.md).
-Local 101/101 suites and all eight refresh modes pass. A CTest runtime-path omission
-caused four hosted initialization failures; the corrected four registrations
-pass with that path unset in the parent. Hosted CTest then passed 101/101, but
-the expanded sequential job exceeded 90 minutes during the extra no-unroll
-matrix. Its budget is now 150 minutes with all coverage preserved; a replacement
-run is in progress. Source review found no implementation blockers; complete hosted
-validation and maintainer acceptance remain pending.
+a retained failure. The [C3-2 combined refresh implementation](docs/LIVE-REFRESH.md)
+is accepted in #198 with [source-pinned CPU evidence](tests/live_hierarchy/refresh-v1/README.md).
+Final hosted validation passed 101/101 suites in 3355.27 seconds, all extra
+no-unroll hierarchy/refresh modes, 180 integration checks and actual CPU-only
+backend verification; all nine checks passed. Earlier failed/cancelled runs remain
+separately retained. Native admission/contact-safe ticks are next.
 Operational admission/owners and CUDA refresh qualification remain separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and

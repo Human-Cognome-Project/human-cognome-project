@@ -1,18 +1,15 @@
 # Coherent source/hierarchy refresh (C3-2)
 
-Status: **implementation for review** under the accepted
+Status: **accepted in #198**, merge `5ea9c76`, reviewed head `f4c5ba9`, under the accepted
 [#197 plan](../../docs/live-hierarchy-refresh-plan.md). This extends the
 [installed hierarchy](LIVE-HIERARCHY.md) with one combined owner-exclusive edit.
 The [source-pinned CPU record](../tests/live_hierarchy/refresh-v1/README.md) retains
-local 101/101 regression, eight default/scalar refresh modes and integration
-evidence. The first hosted regression passed 97/101; four new registrations failed
-before assertions because they lacked the Taichi runtime path. The CMake-only
-correction passes all four with that parent path unset. The next hosted CTest
-passed 101/101; its overall 90-minute job budget expired during the extra
-no-unroll matrix, before integration/backend checks. A workflow-only correction
-raises that budget to 150 minutes with every acceptance mode preserved.
-Source review found no implementation blockers. Complete replacement hosted
-validation and maintainer acceptance are still pending.
+local 101/101 regression and eight default/scalar refresh modes. Final hosted
+run 41123391538 at workflow source `904f2bc` passed 101/101 in 3355.27 seconds,
+all four extra no-unroll hierarchy and four refresh modes, compiler collection/
+audit, 180 integration checks and CPU-only backend verification. All nine checks
+passed. The earlier initialization failure and job-budget cancellation remain
+separate retained evidence. Native operational admission/contact-safe ticks follow.
 Actual refresh execution on CUDA remains unqualified.
 
 ## Entry point and references
