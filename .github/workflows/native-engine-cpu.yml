@@ -136,6 +136,9 @@ jobs:
               engine/build/live_hierarchy_test --threads "$workers" \
                 --compiler-no-unroll "${hcp_ir_args[@]}" \
                 > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/native.txt"
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll --case refresh "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/refresh.txt"
             done
           done
 
@@ -176,6 +179,7 @@ jobs:
             engine/build/Testing/Temporary/LastTest.log
             ${{ runner.temp }}/native-cpu-ctest.log
             ${{ runner.temp }}/c3-compiler-ir/*/native.txt
+            ${{ runner.temp }}/c3-compiler-ir/*/refresh.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

@@ -160,7 +160,8 @@ class Analyzer {
       std::int64_t offset = 0;
       bool shape = false;
       if (argument_buffer(load->getPointerOperand(), offset))
-        for (int arg : {0, 10})
+        for (int arg : (mode_ >= 3 ? std::initializer_list<int>{0, 2, 3, 5}
+                                   : std::initializer_list<int>{0, 10}))
           if (offset ==
               kernel_.args_type->get_element_offset(
                   {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1})) {
@@ -312,6 +313,9 @@ class Analyzer {
   bool shape_value(const llvm::Value *v, int arg) {
     return expression(v) == Expr::atom(shape_id(arg));
   }
+  Expr data_index(const llvm::Value *ptr, int arg, int bytes) {
+    return divide(byte_offset(ptr, arg), bytes);
+  }
   int data_arg(const llvm::Value *ptr) const {
     const auto *base =
         llvm::dyn_cast<llvm::LoadInst>(llvm::getUnderlyingObject(ptr));
@@ -320,8 +324,8 @@ class Analyzer {
     std::int64_t offset = 0;
     if (!argument_buffer(base->getPointerOperand(), offset))
       return -1;
-    for (int id = 0; id < 30; ++id)
-      if ((id < 24 || id >= 28) &&
+    for (int id = 0; id < (mode_ >= 3 ? 22 : 30); ++id)
+      if ((mode_ >= 3 || id < 24 || id >= 28) &&
           offset ==
               kernel_.args_type->get_element_offset(
                   {id, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}))

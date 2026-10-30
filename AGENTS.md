@@ -1,5 +1,16 @@
 # Agent guidance
 
+## C3-2 contribution — validation in progress, 2026-10-30
+
+The [combined refresh implementation](engine/docs/LIVE-REFRESH.md) is built for
+review under accepted #197. It retains ordinary installed-update guards and
+uses one prospective ledger, stable packet identities and native repair/commit
+with survivor/history/pending-work preservation. Targeted CPU controls have
+passed; the complete CPU/integration/compiler-shape matrix is being collected.
+This is not maintainer acceptance or CUDA refresh qualification. Native admission,
+contact-safe candidate ticks, enduring owners, controls and Docker remain the
+subsequent continuation slices. The accepted #196 motion rule is unchanged.
+
 ## Local decisions — 2026-10-29
 
 Patrick authorized [retained motion from accepted displacement](engine/docs/ACCEPTED-MOTION.md)
@@ -69,8 +80,8 @@ observable same-execution commands/capture. Preserve native Taichi storage and
 activity; no guard removal, global reseed or CPU replay substitutes for refresh.
 The [C3-2 implementation plan](docs/live-hierarchy-refresh-plan.md) is accepted
 and merged in #197 at `0eea42a`. Begin its implementation from current main in
-one focused PR. Refresh is not yet built; the accepted plan supplies the next
-implementation and evidence contract.
+one focused PR. The contribution above implements that boundary for review;
+acceptance still requires its complete source-pinned matrix and evidence.
 The new wide motion rule retains accepted displacement/dt when dt is positive,
 and incoming velocity when dt is zero; use the accepted #196 rule.
 It supersedes older untrimmed-motion intent, not survivor preservation at edits.
@@ -138,7 +149,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-29**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-10-30**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production

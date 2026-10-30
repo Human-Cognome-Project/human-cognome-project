@@ -229,7 +229,9 @@ Moving state is observed separately from invariant failure. The bounded
 [active-capture handoff](../docs/c3-cpu-capture-handoff.md) reuses the current
 execution. #196's bounded local GTX 1070 corrections/evidence are under review;
 full CUDA qualification remains local and mixed-precision conversion still has
-a retained failure. C3-2 is unbuilt; its C3-1 prerequisite is satisfied.
+a retained failure. The [C3-2 combined refresh contribution](docs/LIVE-REFRESH.md) is built for review
+under accepted #197; complete CPU acceptance/evidence is in progress.
+Operational admission/owners and CUDA refresh qualification remain separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
