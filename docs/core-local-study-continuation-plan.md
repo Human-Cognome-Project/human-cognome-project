@@ -101,10 +101,10 @@ nearest-free operational admission.
 
 ## B. Native admission and contact-safe ticks
 
-The [detailed implementation proposal](native-admission-contact-transaction-plan.md)
+The [accepted #199 implementation plan](native-admission-contact-transaction-plan.md)
 maps this released slice to B1 candidate ticks, B2 certified placement and B3
-combined bootstrap/admission. That proposal is for review; its mechanisms are
-not yet implemented. The accepted #170 requirements below remain authoritative.
+combined bootstrap/admission. Begin with a focused B1 implementation PR; the mechanisms are not yet
+implemented. The accepted #170 requirements below remain authoritative.
 
 Owning contract: [core operation plan, sections 2–3](core-operation-readiness-plan.md#2-native-engine-admission-and-occupancy).
 Reuse #175 current geometry/contact queries and the native numerical kernels.

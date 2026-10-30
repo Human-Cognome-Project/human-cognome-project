@@ -1,6 +1,6 @@
 # Native admission and contact-safe tick publication
 
-Status: **implementation proposal for review, 2026-10-30**. This develops
+Status: **accepted in #199, 2026-10-30**. Begin with a focused B1 implementation PR; transient native selection must pass the qualification below before production integration. This develops
 slice B of the [core continuation](core-local-study-continuation-plan.md#b-native-admission-and-contact-safe-ticks)
 under the accepted [#170 operation contract](core-operation-readiness-plan.md).
 It specifies implementation portions of the released work; it changes no engine
