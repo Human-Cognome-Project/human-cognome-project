@@ -8,6 +8,7 @@
 #endif
 #include "field/activity.h"
 #include "field/centroid_cascade.h"
+#include "field/cascade_source.h"
 #include "field/contact_math.h"
 #include "field/field.h"
 #include "field/numeric_ir.h"
@@ -240,6 +241,27 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("live-node-observations", 2 * h, 8);
   add("live-node-identities", h, sizeof(CascadeNode), 1);
   add("live-source-identities", s, sizeof(CascadeSourceRow), 1);
+  add("live-logical-order", h, sizeof(int), 1);
+  add("refresh-slots", 8 * h, sizeof(double), 1);
+  add("refresh-selectors", h, sizeof(int), 1);
+  add("refresh-history", 4 * h, sizeof(double), 1);
+  add("refresh-node-controls", Columns * h, sizeof(int));
+  add("refresh-children", physical(l[Budget::CascadeLinks]), sizeof(int));
+  add("refresh-sources", 2 * s, sizeof(int));
+  add("refresh-source-ratios", 2 * s, sizeof(std::uint64_t));
+  add("refresh-masks", h, sizeof(std::uint64_t));
+  add("refresh-plan", 5 * h, sizeof(int));
+  add("refresh-ranks", h, sizeof(int), 1);
+  add("refresh-node-identities", 2 * h, sizeof(CascadeNode), 1);
+  add("refresh-source-identities", s, sizeof(CascadeSourceRow), 1);
+  add("refresh-exact-coverage", u, sizeof(CascadeCoverage), 1);
+  add("refresh-coverage-sums", u, sizeof(std::uint64_t), 1);
+  add("refresh-coverage-bodies", u, sizeof(int), 1);
+  add("refresh-response-controls", 4 * r, sizeof(int), 1);
+  add("refresh-response-ratios", 2 * r, sizeof(std::uint64_t), 1);
+  add("refresh-response-offsets", 2 * p, sizeof(int), 1);
+  add("refresh-leaf-fields", g, sizeof(int), 1);
+  add("refresh-owners", g, sizeof(int), 1);
 }
 
 struct LiveHierarchy::Impl {
@@ -256,6 +278,38 @@ struct LiveHierarchy::Impl {
   std::vector<CascadeSourceRow> source_headers;
   std::array<std::unique_ptr<Ndarray>, 20> owned;
   std::array<Ndarray *, 19> arrays{};
+  struct Refresh {
+    std::vector<int> cfg, children, sources, coverage, influences, offsets,
+        leaf, owners, plan, rank;
+    std::vector<std::uint64_t> ratios, masks, weights, coverage_sum;
+    std::vector<CascadeNode> nodes, proposed;
+    std::vector<CascadeSourceRow> source_headers;
+    std::vector<CascadeCoverage> exact;
+    std::array<std::unique_ptr<Ndarray>, 9> arrays;
+    engine::CompiledKernel candidate, commit;
+    std::size_t count{}, responses{};
+    explicit Refresh(Impl &a)
+        : cfg(Columns * a.H),
+          children(a.L),
+          sources(2 * a.S),
+          coverage(a.U),
+          influences(4 * a.R),
+          offsets(2 * std::max(a.P, 1)),
+          leaf(std::max(a.G, 1)),
+          owners(std::max(a.G, 1), -1),
+          plan(5 * a.H),
+          rank(a.H),
+          ratios(2 * a.S),
+          masks(a.H),
+          weights(2 * a.R),
+          coverage_sum(a.U),
+          nodes(a.H),
+          proposed(a.H),
+          source_headers(a.S),
+          exact(a.U) {
+    }
+  };
+  std::unique_ptr<Refresh> refresh;
   engine::CompiledKernel force_kernel, poll_kernel, command_kernel;
   explicit Impl(Harness &owner)
       : h(owner),
@@ -290,6 +344,7 @@ struct LiveHierarchy::Impl {
     }
 #endif
     inspection.nodes.resize(H);
+    inspection.order.resize(H);
     inspection.slots.resize(8 * H);
     inspection.previous.resize(4 * H);
     inspection.selectors.resize(H);
@@ -335,6 +390,7 @@ struct LiveHierarchy::Impl {
         &h.runtime_->program(), PrimitiveType::i64, std::vector<int>{2, H});
     h.runtime_->program().fill_ndarray_fast_u32(owned[19].get(), 0);
     compile();
+    prepare_refresh_execution();
     launch(command_kernel, 0, 0);
     launch(force_kernel, 0, -1);
     launch(poll_kernel, 0, -1);
@@ -344,6 +400,8 @@ struct LiveHierarchy::Impl {
     return cfg[c * H + n];
   }
   void compile();
+  void prepare_refresh_execution();
+  void launch_refresh(bool commit);
   void launch(engine::CompiledKernel &kernel,
               double gravity,
               int op,
@@ -695,13 +753,15 @@ void LiveHierarchy::validate() const {
 std::size_t LiveHierarchy::binding_bytes() const {
   return impl_->force_kernel.prepared_bytes() +
          impl_->poll_kernel.prepared_bytes() +
-         impl_->command_kernel.prepared_bytes();
+         impl_->command_kernel.prepared_bytes() +
+         impl_->refresh->candidate.prepared_bytes() +
+         impl_->refresh->commit.prepared_bytes();
 }
 std::array<const engine::CompiledKernel *, 3> LiveHierarchy::kernels() const {
   return {&impl_->force_kernel, &impl_->poll_kernel, &impl_->command_kernel};
 }
 std::size_t LiveHierarchy::fixed_object_bytes() const {
-  return sizeof(Impl);
+  return sizeof(Impl) + sizeof(Impl::Refresh);
 }
 void LiveHierarchy::poll_target(double gravity, int target, double stiffness) {
   validate();
@@ -946,6 +1006,9 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     upload(12, a.offsets);
     upload(17, a.leaf);
     upload(18, a.owners);
+    a.inspection.node_count = spec.node_count;
+    for (std::size_t i = 0; i < spec.node_count; ++i)
+      a.inspection.order[i] = int(i);
     a.nodes = spec.node_count;
     a.responses = nr;
     a.generation = s.generation;
@@ -963,4 +1026,5 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     throw;
   }
 }
+#include "live_hierarchy_refresh.inc"
 }  // namespace field::detail

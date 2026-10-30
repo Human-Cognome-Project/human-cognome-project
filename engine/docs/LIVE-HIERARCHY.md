@@ -1,6 +1,6 @@
 # Fixed installed trial hierarchy (C3-1)
 
-Status: **implementation and coherent-dynamics acceptance for review** under
+Status: **C3-1 accepted in #195** under
 [#194](../../docs/production-hierarchy-response-plan.md) and the superseding
 [maintainer direction](../../docs/coherent-dynamics-gpu-snapshots.md).
 Moving studies use finite observation windows; continuing motion is recorded
@@ -50,6 +50,10 @@ structural mutation. Raw prepared publication, upload, seed and focus replacemen
 remain rejected. Source generation is checked before body motion. There is no
 repair-after-motion workaround, uninstall or live representation exchange here.
 Native failure after mutation makes execution unready; no rollback is claimed.
+
+The separate [C3-2 refresh contribution](LIVE-REFRESH.md) adds the combined
+source/hierarchy entry point for review. Its preservation/failure/resource matrix
+does not remove the ordinary-update guard or implement operational admission.
 
 ## Force and phase ownership
 

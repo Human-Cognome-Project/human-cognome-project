@@ -1,0 +1,4 @@
+host: 5 cpu threads, 33.3 GiB memory
+cuda: no visible CUDA device (or no CUDA driver) on this host
+instance: arch x64, snode capacity 1024, tree capacity 512, device memory budget 1.00 GiB, 5 launch threads
+snode identifiers issued in this process: 0

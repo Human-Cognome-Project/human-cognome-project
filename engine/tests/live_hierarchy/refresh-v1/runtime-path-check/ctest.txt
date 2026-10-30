@@ -1,0 +1,14 @@
+Internal ctest changing into directory: /workspace/human-cognome-project/engine/build
+Test project /workspace/human-cognome-project/engine/build
+    Start 39: live_refresh_2_bulk
+    Start 41: live_refresh_2_direct
+1/4 Test #39: live_refresh_2_bulk ..............   Passed  162.11 sec
+    Start 35: live_refresh_1_bulk
+2/4 Test #41: live_refresh_2_direct ............   Passed  163.29 sec
+    Start 37: live_refresh_1_direct
+3/4 Test #35: live_refresh_1_bulk ..............   Passed  171.72 sec
+4/4 Test #37: live_refresh_1_direct ............   Passed  171.93 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) = 335.23 sec

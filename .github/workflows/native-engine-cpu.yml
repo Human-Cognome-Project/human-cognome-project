@@ -33,7 +33,9 @@ jobs:
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-cpu:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    # The 101-suite regression, both four-mode no-unroll matrices, native build
+    # and PostgreSQL integration exceeded 90 minutes in run 41101471179.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
         with:
@@ -136,6 +138,9 @@ jobs:
               engine/build/live_hierarchy_test --threads "$workers" \
                 --compiler-no-unroll "${hcp_ir_args[@]}" \
                 > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/native.txt"
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll --case refresh "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/refresh.txt"
             done
           done
 
@@ -176,6 +181,7 @@ jobs:
             engine/build/Testing/Temporary/LastTest.log
             ${{ runner.temp }}/native-cpu-ctest.log
             ${{ runner.temp }}/c3-compiler-ir/*/native.txt
+            ${{ runner.temp }}/c3-compiler-ir/*/refresh.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

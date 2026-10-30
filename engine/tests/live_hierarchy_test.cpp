@@ -22,6 +22,7 @@
 #include "prepared_fixture.h"
 #include "prepared_metrics.h"
 #include "field/live_hierarchy.h"
+#include "field/cascade_source.h"
 #include "assembly/study.h"
 #include "membership_fixture.h"
 #include "taichi/program/kernel.h"
@@ -69,6 +70,12 @@ struct LiveHierarchyAccess {
 
   static auto kernels(Harness &h) {
     return h.live_hierarchy_->kernels();
+  }
+  static auto refresh_kernels(Harness &h) {
+    return h.live_hierarchy_->refresh_kernels();
+  }
+  static const auto &children(Harness &h) {
+    return h.live_hierarchy_->child_links();
   }
   static std::size_t fixed_bytes(Harness &h) {
     return h.live_hierarchy_->fixed_object_bytes();
@@ -528,10 +535,13 @@ struct Fixture {
           bool focus = false,
           bool permute = false,
           int response_capacity = 1024,
-          const std::vector<double> &radii = {})
+          const std::vector<double> &radii = {},
+          const BudgetDemand *custom_limits = nullptr)
       : runtime(r),
         h(r,
-          PreparedCapacity(limits(response_capacity, r.on_cuda()),
+          PreparedCapacity(custom_limits
+                               ? *custom_limits
+                               : limits(response_capacity, r.on_cuda()),
                            NumericalProfile::trial(body_bits, field_bits)),
           path) {
     FixtureSource src;
@@ -703,7 +713,48 @@ void collect_compiler_ir(engine::Runtime &r, HostPath path, bool no_unroll) {
                << '\n';
     ++mode;
   }
-  std::cout << "compiler_ir_collection,modules=3,diagnostic_only=1,no_semantic_"
+  const auto retain_refresh = [&](Fixture &fixture, const std::string &prefix) {
+    int mode = 0;
+    for (const auto *compiled :
+         LiveHierarchyAccess::refresh_kernels(fixture.h)) {
+      const auto &kernel =
+          engine::testing::CompiledKernelAccess::kernel(*compiled);
+      const auto &module =
+          *dynamic_cast<const taichi::lang::LLVM::CompiledKernelData &>(
+               engine::testing::CompiledKernelAccess::compiled(*compiled))
+               .get_internal_data()
+               .compiled_data.module;
+      std::error_code ec;
+      llvm::raw_fd_ostream file(
+          std::string(dir) + "/" + prefix + std::to_string(mode) + ".ll", ec,
+          llvm::sys::fs::OF_Text);
+      require(!ec, "refresh IR output");
+      module.print(file, nullptr);
+      metadata << "refresh_mode=" << mode++ << ",body_bits="
+               << fixture.h.numerical_profile().body_fraction_bits
+               << ",kernel=" << kernel.get_name()
+               << ",triple=" << module.getTargetTriple()
+               << ",layout=" << module.getDataLayoutStr() << '\n';
+      for (int arg = 0; arg < 22; ++arg)
+        metadata << "refresh_argument=" << arg << ",data_offset="
+                 << kernel.args_type->get_element_offset(
+                        {arg,
+                         taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY})
+                 << '\n';
+      for (int arg : {0, 2, 3, 5, 6, 8, 9, 11, 12, 13, 17, 18, 19, 21})
+        metadata << "refresh_argument=" << arg << ",shape1_offset="
+                 << kernel.args_type->get_element_offset(
+                        {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY,
+                         1})
+                 << '\n';
+    }
+  };
+  retain_refresh(f, "refresh-");
+  Fixture reduced(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+                  {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 8, 6);
+  retain_refresh(reduced, "refresh-b8-");
+  std::cout << "compiler_ir_collection,modules=3,refresh_modules=4,diagnostic_"
+               "only=1,no_semantic_"
                "acceptance_claim=1\n";
 }
 
@@ -1262,6 +1313,9 @@ std::uint64_t state_hash(Fixture &f) {
     vector(v.previous);
     vector(v.selectors);
     vector(v.visits);
+    vector(v.nodes);
+    vector(v.order);
+    block(&v.node_count, sizeof(v.node_count));
     block(v.counters.data(), sizeof(v.counters));
   }
   return hash;
@@ -2420,6 +2474,7 @@ void capture_current(engine::Runtime &r,
 }
 #endif
 
+#include "live_hierarchy_refresh_cases.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2511,6 +2566,23 @@ int main(int argc, char **argv) {
                   << '\n';
       }
     };
+    if (only == "refresh_limits")
+      run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "refresh_dirty")
+      run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
+    if (only == "refresh") {
+      run("refresh_basics", [&] { refresh_basics(r, path); });
+      run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
+      run("refresh_u64_overlap", [&] { refresh_u64_and_overlap(r, path); });
+      run("refresh_rejections", [&] { refresh_rejections(r, path); });
+      run("refresh_fields", [&] { refresh_field_lifecycle(r, path); });
+      run("refresh_occurrences", [&] { refresh_occurrence_reuse(r, path); });
+      run("refresh_failures", [&] { refresh_late_failures(r, path); });
+      run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+#ifdef HCP_HAS_VIEWPORT
+      run("refresh_capture", [&] { refresh_capture(r, path); });
+#endif
+    }
     if (wants("basic"))
       run("basic", [&] { basic(r, path); });
     if (!quick) {

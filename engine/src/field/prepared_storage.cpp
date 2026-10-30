@@ -72,6 +72,8 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   extent("derived-results", 14 * physical(g) + 12, profile.bytes(), 1);
   extent("candidate-edges", 2 * physical(e), sizeof(int), 2);
   extent("candidate-shares", e, sizeof(float), 2);
+  if (l[Budget::LiveResponses])
+    extent("refresh-source-origins", e, sizeof(int), 1);
   extent("candidate-group-offsets", 2 * physical(g), sizeof(int), 1);
   extent("candidate-group-order", e, sizeof(int), 1);
   extent("destination-records", p + g, sizeof(int), 2);
@@ -140,13 +142,14 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   // weighted.
   // Trial adds six arguments, including final-speed output in integration.
   // Installed hierarchy: three 30-parameter contexts plus two integration
-  // arguments. Numerical arrays are inventoried separately above.
+  // arguments. Refresh adds two 23-argument contexts and two update scalars.
+  // Numerical arrays are inventoried separately above.
   const std::size_t parameters = 151 + (geometry ? 33 : 0) +
                                  (cascade ? 22 : 0) +
                                  (cascade && weighted ? 2 : 0) +
-                                 (wide ? 6 : 0) + (live ? 92 : 0),
+                                 (wide ? 6 : 0) + (live ? 92 + 2 + 46 : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
-                               (live ? 3 : 0),
+                               (live ? 5 : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
@@ -219,6 +222,8 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   command_indexes.resize(b);
   candidate_edges.resize(2 * e);
   candidate_shares.resize(e);
+  if (l[Budget::LiveResponses])
+    refresh_origins.resize(e);
   new_row_values.configure(profile.wide());
   new_row_values.resize(12 * b);
   inspection_state.resize(2 * (p + g));

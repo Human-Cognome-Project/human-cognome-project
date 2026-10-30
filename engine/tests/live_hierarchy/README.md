@@ -1,5 +1,10 @@
 # C3-1 coherent dynamics and active capture
 
+The [C3-2 combined refresh evidence](refresh-v1/README.md) is a separate
+contribution under accepted #197. It retains its own source, full CPU matrix,
+compiler modules and integration provenance; the historical records below are
+unchanged. C3-2 acceptance and CUDA refresh qualification remain pending.
+
 Latest compiler-audit revision: `3eee41e`, with target/optimizer metadata at
 `d762111`. The [separate portability evidence](compiler-v3/README.md) retains
 the original hosted 92/96 count failure, actual local/hosted optimized modules,

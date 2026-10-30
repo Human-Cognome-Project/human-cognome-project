@@ -137,10 +137,17 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding) {
         (v.slots.size() + v.previous.size()) * sizeof(double) +
         v.selectors.size() * sizeof(int) +
         (v.counters.size() + v.visits.size()) * sizeof(std::int64_t);
-    require(v.nodes.size() >= s.live.fields,
+    require(v.node_count == s.live.fields && v.order.size() >= v.node_count,
             "viewport: incomplete installed comparison metadata");
-    // Inspection reserves capacity; only the installed logical prefix is live.
-    out.comparisons.assign(v.nodes.begin(), v.nodes.begin() + s.live.fields);
+    // Refresh preserves packet slots by identity, so live comparisons can have
+    // holes. Logical order is separate from their stable numerical locations.
+    out.comparisons.reserve(v.node_count);
+    for (std::size_t logical = 0; logical < v.node_count; ++logical) {
+      const int slot = v.order[logical];
+      require(slot >= 0 && std::size_t(slot) < v.nodes.size(),
+              "viewport: invalid live comparison slot");
+      out.comparisons.push_back(v.nodes[slot]);
+    }
     for (const auto &node : out.comparisons)
       require(node.field.record >= 0 &&
                   node.field.record < h.field_capacity() &&

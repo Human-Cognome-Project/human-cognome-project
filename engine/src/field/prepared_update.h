@@ -60,5 +60,6 @@ struct UpdateResult {
   std::uint64_t generation{};
   std::uint64_t structural_visits{}, index_visits{}, upload_bytes{},
       readback_bytes{}, synchronizations{}, collections{};
+  std::uint64_t hierarchy_nodes{}, responses{}, repair_visits{};
 };
 }  // namespace field
