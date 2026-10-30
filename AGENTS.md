@@ -19,6 +19,11 @@ continuation and #170 contracts; enduring owners and observable controls follow.
 CUDA refresh qualification, mixed-precision repair and Docker remain separate.
 The accepted #196 motion rule is unchanged.
 
+The [slice B implementation proposal](docs/native-admission-contact-transaction-plan.md)
+maps the next work to contact-safe native candidate ticks, certified placement,
+then combined bootstrap/admission. It is a plan for review, not built behavior
+or a change to the accepted #170 operation/model contracts.
+
 ## Local decisions — 2026-10-29
 
 Patrick authorized [retained motion from accepted displacement](engine/docs/ACCEPTED-MOTION.md)
