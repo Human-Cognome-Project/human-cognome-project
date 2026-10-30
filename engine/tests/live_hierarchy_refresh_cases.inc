@@ -329,11 +329,23 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
             {D, D, D}, {1, 1, 2}, {0, 2, 5});
   f.install();
   f.h.inspect_prepared();
+  // First publish once so the surviving node has selector 1, unequal slots
+  // and nontrivial old history. A subsequent body edit is deliberately left
+  // pending while an unrelated subtree is refreshed.
+  f.h.particle64(kPosX, f.in.particle_rows[0].record) = 4;
+  PreparedFixtureAccess::upload_body_fixture64(f.h);
+  f.control->set(1, f.nodes[0].field.record);
+  LiveHierarchyAccess::poll(f.h, 0, 0);
+  f.h.inspect_prepared();
   f.h.particle64(kPosX, f.in.particle_rows[0].record) = 8;
   PreparedFixtureAccess::upload_body_fixture64(f.h);
   f.control->set(1, f.nodes[0].field.record);
   runtime.synchronize();
   const auto before = f.h.inspect_live_hierarchy();
+  require(before.selectors[0] == 1 &&
+              before.slots[0] != before.slots[4 * before.selectors.size()] &&
+              before.previous[0] != selected(before, 0)[0],
+          "dirty fixture lacks distinguishing selector/slot/history state");
   RefreshRequest request(f.h);
   // Change only the other leaf's precision, repairing the root from the
   // deliberately lagged left packet rather than from its changed body.
@@ -354,7 +366,9 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
                                                   f.nodes[0].field.record] &
               2,
           "dirty pending native bit was consumed by refresh");
-  near(selected(after, 2)[0], selected(before, 2)[0],
+  const auto expected_parent = fold({selected(before, 0), selected(before, 1)},
+                                    f.nodes[2].retained_fraction_bits);
+  near(selected(after, 2)[0], expected_parent[0],
        "root used an unpublished body input");
   LiveHierarchyAccess::poll(f.h, 0, 0);
   LiveHierarchyAccess::poll(f.h, 0, 2);
@@ -397,7 +411,8 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
   require(f.h.prepared_storage().inspection_flags[body.record] & 2,
           "count-only input did not wake recipient");
   std::cout
-      << "refresh_dirty_counts,unaffected_slots=exact,history=exact,pending="
+      << "refresh_dirty_counts,selector=1,unequal_slots=1,unaffected_slots="
+         "exact,history=exact,pending="
          "preserved,root_uses_publications=1,f32_share_unchanged=1 PASS\n";
 }
 void refresh_rejections(engine::Runtime &runtime, HostPath path) {

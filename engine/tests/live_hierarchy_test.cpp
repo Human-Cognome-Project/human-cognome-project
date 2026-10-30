@@ -2568,6 +2568,8 @@ int main(int argc, char **argv) {
     };
     if (only == "refresh_limits")
       run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "refresh_dirty")
+      run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
     if (only == "refresh") {
       run("refresh_basics", [&] { refresh_basics(r, path); });
       run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
