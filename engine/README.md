@@ -247,11 +247,11 @@ Local validation at `ada217a` passes 105 CPU suites, eight selection modes and
 CPU-only backend verification; all eight checks passed.
 This first gate preserves committed selection through abandon/retry and native
 same-poll full centroid work. #201 now implements the remaining
-[contact-safe candidate ticks](docs/CONTACT-SAFE-TICKS.md) for CPU review:
+[contact-safe candidate ticks](docs/CONTACT-SAFE-TICKS.md) accepted for CPU execution:
 prepared numerical/control/contact staging, typed unchanged rejection and one
 publication through `tick_prepared`. [Local CPU qualification](tests/contact_ticks/v1/README.md)
-passes 109 suites, all eight B1 modes and 180 integration checks; hosted CPU
-validation and acceptance remain pending. Fixture inputs
+passes 109 suites, all eight B1 modes and 180 integration checks; hosted validation independently passed 109 suites in 4746.01 seconds, all
+extra modes, 180 integration checks and backend verification (all eight checks). Fixture inputs
 remain private; certified placement, operational admission and owners are separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
@@ -269,7 +269,7 @@ Its first [structural recipe segment](../kernels/database/warm/STRUCTURAL-RECIPE
 is accepted and merged in #171. The first portion of Segment 2 supplies
 [native geometry preflight](docs/PREPARED-GEOMETRY.md), accepted in #175. It reads current
 occupancy/focus and prepares candidate contacts. #201 adds transactional ticks and
-physical contact installation for review; placement and the enduring operational
+accepted CPU physical contact installation; placement and the enduring operational
 lifecycle remain unbuilt.
 
 Historical machine-specific measurements and development decisions remain under

@@ -1,12 +1,11 @@
 # Contact-safe candidate ticks — B1 integration
 
-Status: implemented and locally CPU-qualified for review in #201 under the accepted
+Status: **CPU implementation accepted in #201, 2026-10-31**, under the accepted
 [#199 plan](../../docs/native-admission-contact-transaction-plan.md), following
 #200's accepted [native selection qualification](NATIVE-SELECTION.md).
 The [source-pinned record](../tests/contact_ticks/v1/README.md) at `3cabc70`
 passes 109 CPU suites, all eight B1 modes, 544 new LLVM modules and 180
-PostgreSQL integration checks. Maintainer acceptance and hosted CPU validation
-remain pending. Placement (B2), bootstrap/admission (B3), enduring
+PostgreSQL integration checks. Hosted run 41220868948/job 124594948773 at `3cabc70` independently passed 109/109 CPU suites in 4746.01 seconds, compiler collection/audit, all extra no-unroll hierarchy/refresh/selection/contact-tick modes, 180 PostgreSQL integration checks with zero private reads, and final CPU-only backend verification. All eight checks passed. Placement (B2), bootstrap/admission (B3), enduring
 owners and CUDA remain separate. This does not close #156/#172/#177/#145.
 
 A nonzero `Budget::TickWork` opts a prepared f64/x64 owner into

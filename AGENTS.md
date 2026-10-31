@@ -1,6 +1,6 @@
 # Agent guidance
 
-## B1 candidate-tick integration under review — 2026-10-31
+## B1 candidate-tick integration accepted in #201 — 2026-10-31
 
 #201 implements the remaining [B1 candidate ticks](engine/docs/CONTACT-SAFE-TICKS.md)
 under accepted #199/#200: shared native numerical/control staging, current and
@@ -8,8 +8,7 @@ post-motion geometry, unchanged typed rejection and one completed publication.
 Local [CPU qualification](engine/tests/contact_ticks/v1/README.md) at `3cabc70`
 passes 109/109 suites in 2520.39 seconds, all eight B1 modes, 544 new verified
 modules, 224 byte-identical existing modules and 180 integration checks with
-unchanged cold fingerprints and zero private reads. Hosted CPU validation and
-maintainer acceptance remain pending. Preserve
+unchanged cold fingerprints and zero private reads. Hosted run 41220868948/job 124594948773 at `3cabc70` independently passed 109/109 CPU suites in 4746.01 seconds, compiler collection/audit, all extra no-unroll hierarchy/refresh/selection/contact-tick modes, 180 PostgreSQL integration checks with zero private reads, and final CPU-only backend verification. All eight checks passed. Preserve
 the complete B1 scope and independent no-attempt retry/full-state witnesses.
 B2 placement, B3 bootstrap/admission, enduring owners, CUDA and Docker remain
 separate. Do not infer operational insertion from this fixture-backed tick API.
@@ -29,7 +28,7 @@ cold fingerprints and zero private reads. Hosted run 41162316957/job 12442235171
 
 At #200, Harness did not construct the workspace. Complete numerical/control/contact
 staging, typed contact/work rejection and one candidate-tick publication are now
-under review in #201. Preserve native same-poll full centroid work,
+accepted in #201. Preserve native same-poll full centroid work,
 at-most-one visitation and late pending notifications; a frozen centroid work
 list is not an accepted replacement. CUDA qualification remains separate.
 
@@ -200,7 +199,7 @@ The [production hierarchy/response plan](docs/production-hierarchy-response-plan
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
 fixed-tree implementation is accepted in #195; C3-2 coherent refresh is accepted
-in #198. B1 contact-safe ticks are under review in #201; native admission follows.
+in #198. B1 contact-safe ticks are accepted in #201; native admission follows.
 
 The [accepted C3-1 implementation](engine/docs/LIVE-HIERARCHY.md) now supplies
 that opt-in fixed-tree CPU path. Its executable acceptance now follows the
@@ -223,9 +222,9 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
 | Built combined hierarchy refresh | #198's [C3-2 implementation](engine/docs/LIVE-REFRESH.md) commits one prospective source/hierarchy generation, preserving survivor state, dirty history and pending work. All nine hosted checks passed, including 101 CPU suites, both extra no-unroll matrices and 180 integration checks. New-body starts remain private fixtures; operational admission/contact-safe ticks are next. |
-| Accepted B1 selection gate | #200's [native workspace](engine/docs/NATIVE-SELECTION.md) qualifies scratch selections with the actual C3 builders under accepted #199. [CPU evidence](engine/tests/native_selection/v1/README.md) is source-pinned. At that merge the complete tick API remained unbuilt; #201 now supplies it for review. Admission remains separate. |
-| B1 implementation under review | #201 adds the opt-in [contact-safe tick](engine/docs/CONTACT-SAFE-TICKS.md) using prepared fixture inputs. [Local CPU qualification](engine/tests/contact_ticks/v1/README.md) passes 109 suites and all eight modes; hosted CPU validation and acceptance remain pending. Placement, admission and enduring owners remain unbuilt. |
-| Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing. #201's candidate ticks are under review. Engine-owned placement/admission, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
+| Accepted B1 selection gate | #200's [native workspace](engine/docs/NATIVE-SELECTION.md) qualifies scratch selections with the actual C3 builders under accepted #199. [CPU evidence](engine/tests/native_selection/v1/README.md) is source-pinned. At that merge the complete tick API remained unbuilt; #201 now supplies the accepted CPU tick API. Admission remains separate. |
+| Accepted CPU B1 implementation | #201 adds the opt-in [contact-safe tick](engine/docs/CONTACT-SAFE-TICKS.md) using prepared fixture inputs. [Local CPU qualification](engine/tests/contact_ticks/v1/README.md) passes 109 suites and all eight modes; hosted validation independently passes 109 suites and all eight checks. Placement, admission and enduring owners remain unbuilt. |
+| Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing. #201's CPU candidate ticks are accepted. Engine-owned placement/admission, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | The current priority is the bounded Docker/letter/snapshot study above. Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
 | Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
