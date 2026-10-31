@@ -29,6 +29,8 @@ enum class Budget {
   LiveResponses,    // Explicit installed-hierarchy recipient references; zero
                     // leaves the existing execution and reservation unchanged.
   TickWork,         // Candidate copies, numerical phases and publication.
+  PlacementWork,    // Validated source staging, occupancy and bounded search.
+  PlacementCells,   // Simultaneously unresolved interval boxes.
   Count
 };
 struct BudgetDemand {

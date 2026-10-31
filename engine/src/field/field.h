@@ -13,6 +13,7 @@
 #include "field/prepared_geometry.h"
 #include "field/prepared_update.h"
 #include "field/prepared_tick.h"
+#include "field/prepared_placement.h"
 #include "field/real_buffer.h"
 #include "taichi/program/ndarray.h"
 
@@ -32,12 +33,15 @@ class PreparedStorage;
 class CentroidCascade;
 class LiveHierarchy;
 class TickExecution;
+class Placement;
+struct SourceProjection;
 struct NativeSet;
 }  // namespace detail
 class PreparedCapacity;
 namespace testing {
 struct PreparedFixtureAccess;
 struct TickExecutionAccess;
+struct PlacementAccess;
 }
 enum class TickMode { Selective, AllLoaded };
 using FrameAnchor = std::array<double, 3>;
@@ -254,6 +258,15 @@ class Harness {
                            const Parameters64 &,
                            std::uint64_t tick_work = UINT64_MAX,
                            std::uint64_t geometry_work = UINT64_MAX);
+  PlacementResult query_prepared_placement(std::uint64_t expected_generation,
+                                           const UpdateCommand *proposal,
+                                           std::size_t command_count,
+                                           const PlacementIntrinsic *intrinsics,
+                                           std::size_t body_count,
+                                           std::uint64_t work = UINT64_MAX,
+                                           std::uint64_t cells = UINT64_MAX);
+  const PlacementInspection &inspect_prepared_placement(
+      const PlacementResult &);
   UpdateResult update_prepared(std::uint64_t expected_generation,
                                const UpdateCommand *commands,
                                std::size_t count);
@@ -375,11 +388,13 @@ class Harness {
 
  private:
   friend class detail::TickExecution;
+  friend class detail::Placement;
   friend class detail::Activity;
   friend class detail::CentroidCascade;
   friend class detail::LiveHierarchy;
   friend struct testing::PreparedFixtureAccess;
   friend struct testing::TickExecutionAccess;
+  friend struct testing::PlacementAccess;
   friend struct testing::LiveHierarchyAccess;
   Harness(engine::Runtime &runtime,
           int particle_count,
@@ -410,6 +425,7 @@ class Harness {
       detail::NativeSet);
   std::array<engine::CompiledKernel, 4> build_geometry_kernels(
       detail::NativeSet);
+  engine::CompiledKernel build_geometry_collect_kernel(detail::NativeSet);
   void prepare_empty_execution();
   void prepare_update_execution();
   void prepare_geometry_execution();
@@ -423,7 +439,8 @@ class Harness {
                                     const UpdateCommand *,
                                     std::size_t,
                                     const LiveRefreshSpec *,
-                                    std::uint64_t);
+                                    std::uint64_t,
+                                    detail::SourceProjection * = nullptr);
   void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);
@@ -485,6 +502,7 @@ class Harness {
   std::unique_ptr<detail::CentroidCascade> centroid_cascade_;
   std::unique_ptr<detail::LiveHierarchy> live_hierarchy_;
   std::unique_ptr<detail::TickExecution> tick_execution_;
+  std::unique_ptr<detail::Placement> placement_;
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;

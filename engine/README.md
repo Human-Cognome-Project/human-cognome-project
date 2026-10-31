@@ -254,6 +254,11 @@ passes 109 suites, all eight B1 modes and 180 integration checks; hosted validat
 extra modes, 180 integration checks and backend verification (all eight checks). Fixture inputs
 remain private; certified placement, operational admission and owners are separate.
 
+The opt-in [B2 certified placement candidate](docs/CERTIFIED-PLACEMENT.md) is in
+review under #199/#201. It reserves native interval-search storage, reports a
+global lower/feasible upper distance certificate and checks actual published
+coordinates. It claims no occurrence; B3 bootstrap/admission remains separate.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)

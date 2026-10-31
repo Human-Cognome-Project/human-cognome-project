@@ -33,9 +33,10 @@ jobs:
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-cpu:
     runs-on: ubuntu-24.04
-    # #200 took 103 minutes for build, regression, compiler matrices and DB
-    # integration. B1 adds 544 retained modules and eight full candidate modes.
-    timeout-minutes: 210
+    # #201 took 145 minutes for build, regression, compiler matrices and DB
+    # integration. B2 retains those gates and adds eight placement modes and
+    # two strict interval/publication compiler profiles.
+    timeout-minutes: 270
     steps:
       - uses: actions/checkout@v4
         with:
@@ -123,6 +124,10 @@ jobs:
                 HCP_B1_TICK_IR_DIR="$hcp_ir_dir/contact-ticks" engine/build/live_hierarchy_test \
                   --threads "$workers" --case contact_tick_ir "${hcp_ir_args[@]}" \
                   > "$hcp_ir_dir/contact-ticks/collection.txt"
+                mkdir -p "$hcp_ir_dir/placement"
+                HCP_B2_IR_DIR="$hcp_ir_dir/placement" engine/build/live_hierarchy_test \
+                  --threads "$workers" --case placement_compiler "${hcp_ir_args[@]}" \
+                  > "$hcp_ir_dir/placement/collection.txt"
               done
             done
           done
@@ -155,7 +160,12 @@ jobs:
               engine/build/live_hierarchy_test --threads "$workers" \
                 --compiler-no-unroll --case contact_tick "${hcp_ir_args[@]}" \
                 > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/contact-ticks.txt"
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll --case placement "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/placement.txt"
             done
+            engine/build/placement_math_test --threads "$workers" --compiler-no-unroll \
+              > "$RUNNER_TEMP/c3-compiler-ir/placement-math-${workers}-no-unroll.txt"
           done
 
       - name: Restore new cold fixtures and run native PostgreSQL-to-active integration
