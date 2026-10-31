@@ -41,6 +41,8 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "taichi/ir/type_factory.h"
 #include "live_hierarchy_audit.h"
+#include "field/native_selection.h"
+#include "native_selection_audit.h"
 #include "cuda_selector_audit.h"
 #include "engine/device.h"
 
@@ -73,6 +75,28 @@ struct LiveHierarchyAccess {
   }
   static auto refresh_kernels(Harness &h) {
     return h.live_hierarchy_->refresh_kernels();
+  }
+  static auto selection_kernels(Harness &h,
+                                const detail::NativeSelectionWorkspace &s) {
+    return h.live_hierarchy_->build_kernels(s.particles(), s.centroids());
+  }
+  static void bind_input(Harness &h,
+                         taichi::lang::LaunchContextBuilder &c,
+                         int argument,
+                         int input) {
+    h.live_hierarchy_->bind_input(c, argument, input);
+  }
+  static taichi::lang::Ndarray *input_array(Harness &h, int input) {
+    return h.live_hierarchy_->input_array(input);
+  }
+  static void read_input(Harness &h, int input, void *out, std::size_t bytes) {
+    if (h.path_ == HostPath::CpuDirect && (input == 7 || input == 8)) {
+      const auto &values = input == 7 ? h.particle_values_ : h.group_values_;
+      if (bytes != values.bytes())
+        throw std::logic_error("input size mismatch");
+      std::memcpy(out, values.data(), bytes);
+    } else
+      engine::readback(*input_array(h, input), out, bytes);
   }
   static const auto &children(Harness &h) {
     return h.live_hierarchy_->child_links();
@@ -111,6 +135,17 @@ struct LiveHierarchyAccess {
   }
 };
 }  // namespace field::testing
+namespace field::detail::testing {
+struct NativeSelectionAccess {
+  static auto committed(const NativeSelectionWorkspace &s) {
+    return s.committed_;
+  }
+  static auto kernels(const NativeSelectionWorkspace &s) {
+    return std::array<const engine::CompiledKernel *, 3>{&s.stage_, &s.abandon_,
+                                                         &s.publish_};
+  }
+};
+}  // namespace field::detail::testing
 namespace {
 using namespace field;
 using namespace field::testing;
@@ -2475,6 +2510,7 @@ void capture_current(engine::Runtime &r,
 #endif
 
 #include "live_hierarchy_refresh_cases.inc"
+#include "native_selection_cases.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2529,6 +2565,8 @@ int main(int argc, char **argv) {
             "CpuDirect cannot execute on CUDA");
     require(!(settings.cuda && (!audit_ir_dir.empty() || only == "ir")),
             "offline CPU IR optimizer/auditor requires CPU; use CUDA --dump-code");
+    require(!(settings.cuda && (only == "selection" || only == "selection_ir")),
+            "B1 native selection qualification requires actual x64 execution");
     if (settings.cuda) {
       require(engine::cuda_available(), "CUDA requested but no visible device");
       settings.device_memory_gb = 1.0;
@@ -2551,6 +2589,10 @@ int main(int argc, char **argv) {
       collect_compiler_ir(r, path, no_unroll);
       return 0;
     }
+    if (only == "selection_ir") {
+      collect_selection_ir(r, path, no_unroll);
+      return 0;
+    }
     if (!audit_ir_dir.empty()) {
       audit_compiler_ir(r, path, audit_ir_dir, no_unroll);
       return 0;
@@ -2568,6 +2610,15 @@ int main(int argc, char **argv) {
     };
     if (only == "refresh_limits")
       run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "selection") {
+      run("selection_isolation", [&] { selection_isolation(r, path); });
+      run("selection_controls", [&] { selection_controls(r, path); });
+      run("selection_dirty_force", [&] { selection_dirty_force(r, path); });
+      run("selection_reuse", [&] { selection_reuse(r, path); });
+      run("selection_capacity", [&] { selection_capacity(r); });
+      run("selection_compiler_controls",
+          [&] { selection_compiler_controls(r, path); });
+    }
     if (only == "refresh_dirty")
       run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
     if (only == "refresh") {

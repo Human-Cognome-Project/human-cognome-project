@@ -115,6 +115,10 @@ jobs:
                   --threads "$workers" --case ir "${hcp_ir_args[@]}" > "$hcp_ir_dir/collection.txt"
                 engine/build/live_hierarchy_test --threads "$workers" \
                   --audit-ir "$hcp_ir_dir" "${hcp_ir_args[@]}" > "$hcp_ir_dir/audit.txt"
+                mkdir -p "$hcp_ir_dir/selection"
+                HCP_B1_IR_DIR="$hcp_ir_dir/selection" engine/build/live_hierarchy_test \
+                  --threads "$workers" --case selection_ir "${hcp_ir_args[@]}" \
+                  > "$hcp_ir_dir/selection/collection.txt"
               done
             done
           done
@@ -141,6 +145,9 @@ jobs:
               engine/build/live_hierarchy_test --threads "$workers" \
                 --compiler-no-unroll --case refresh "${hcp_ir_args[@]}" \
                 > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/refresh.txt"
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll --case selection "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/selection.txt"
             done
           done
 
@@ -182,6 +189,7 @@ jobs:
             ${{ runner.temp }}/native-cpu-ctest.log
             ${{ runner.temp }}/c3-compiler-ir/*/native.txt
             ${{ runner.temp }}/c3-compiler-ir/*/refresh.txt
+            ${{ runner.temp }}/c3-compiler-ir/*/selection.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

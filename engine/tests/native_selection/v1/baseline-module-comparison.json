@@ -1,0 +1,399 @@
+{
+  "complete": true,
+  "modules": 56,
+  "byte_identical": 56,
+  "rows": [
+    {
+      "configuration": "1-bulk-default",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "93fb3a4c95acc41dd717f645a2f060dab516d134dbf1614730ea1e0e8fd5b2a0"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "4548b90671bb8291159ceb2e8b2f2ce361b8add130144e9e6105a71be1df2bfc"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "0905df23b03d53b914d1adcca5f01be36328cfabc6cc87f7c94af45ffed51f8e"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e"
+    },
+    {
+      "configuration": "1-bulk-default",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-default/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "ddfb32fb32984edba9429a86f7a0655cc17d90c3e88b654a3cc85633ea4f106d"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "faaa0c874a2c1097628c1e514e67cd1b96dae8717c438981e0aa81dca9eccd84"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "9860c7d18e82095c3e88bab860ec202fccc442a3a102dc957258aaf2a1b5d748"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "8c7f3e9eee5cce8e62e027ef99128879368a00fe73e78dc757186b9e489077a3"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157"
+    },
+    {
+      "configuration": "1-bulk-no-unroll",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-bulk-no-unroll/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "03d531c106ff97ed84fbe71d53c0907a2976e117107253e849f1bbf4d2e9ba06"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "93fb3a4c95acc41dd717f645a2f060dab516d134dbf1614730ea1e0e8fd5b2a0"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "4548b90671bb8291159ceb2e8b2f2ce361b8add130144e9e6105a71be1df2bfc"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "0905df23b03d53b914d1adcca5f01be36328cfabc6cc87f7c94af45ffed51f8e"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e"
+    },
+    {
+      "configuration": "1-direct-default",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-default/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "ddfb32fb32984edba9429a86f7a0655cc17d90c3e88b654a3cc85633ea4f106d"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "faaa0c874a2c1097628c1e514e67cd1b96dae8717c438981e0aa81dca9eccd84"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "9860c7d18e82095c3e88bab860ec202fccc442a3a102dc957258aaf2a1b5d748"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "8c7f3e9eee5cce8e62e027ef99128879368a00fe73e78dc757186b9e489077a3"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157"
+    },
+    {
+      "configuration": "1-direct-no-unroll",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/1-direct-no-unroll/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "03d531c106ff97ed84fbe71d53c0907a2976e117107253e849f1bbf4d2e9ba06"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "d21405b883c117844db426896e2fc7e15385dd0ec3c2613bb4b4c9675bf4f939"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "fb438e18e89075d0b760d24feee37890835812ab2696ed5dd1924b396f3fadc3"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "974d5d86a9db6dd55f5c1a655e0eed33379c1f7e3e7d0182c76e2c3311a91130"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e"
+    },
+    {
+      "configuration": "2-bulk-default",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-default/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "1d51b095586ac4e1d11f2872880112602833e477038b6aee1ff729f935794a5f"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "dd9ddcd32675e4f843cee99a8bc4dca4f0628859ec5cd4e4a3c94939dad84856"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "27a675a44621fce9da1035e783155b22ef03c4d4221fdb364e10c24db942fb51"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "14271cec12cb44d64db3d974ff9f8b8a91ab4f3288b14045e5eb8ea233952a16"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157"
+    },
+    {
+      "configuration": "2-bulk-no-unroll",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-bulk-no-unroll/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "f7006f986234634e2189913973b64c6d7a87d4de693e5d718e1f6d08e8b6225c"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "d21405b883c117844db426896e2fc7e15385dd0ec3c2613bb4b4c9675bf4f939"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "fb438e18e89075d0b760d24feee37890835812ab2696ed5dd1924b396f3fadc3"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "69cf600fcd9dc91d484027a3bf63989ec2c856dcf6e4ff3cfa30df5f84aaea0b"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "55bd964f9ccd6b81989abd347758181e6dd8806d875d6440995e5f717e6c29e5"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "974d5d86a9db6dd55f5c1a655e0eed33379c1f7e3e7d0182c76e2c3311a91130"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "7cb32ebb1395491f812a56d83a76d97ddb868fbe0b4d5c4e3f6e92fd5f7c157e"
+    },
+    {
+      "configuration": "2-direct-default",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-default/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "1d51b095586ac4e1d11f2872880112602833e477038b6aee1ff729f935794a5f"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "c3-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/c3-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "dd9ddcd32675e4f843cee99a8bc4dca4f0628859ec5cd4e4a3c94939dad84856"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "c3-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/c3-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "27a675a44621fce9da1035e783155b22ef03c4d4221fdb364e10c24db942fb51"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "c3-2.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/c3-2.ll.gz",
+      "byte_identical": true,
+      "sha256": "b9bf0e04da9997c0b2ee3d4e8477102080ad51a28835d9dc5423e37dda25e64f"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "refresh-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/refresh-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "9cbb917e52f7d0347498b0188df5ed1e0817eb9b565942a43e095fc3cb0bfe83"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "refresh-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/refresh-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "14271cec12cb44d64db3d974ff9f8b8a91ab4f3288b14045e5eb8ea233952a16"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "refresh-b8-0.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/refresh-b8-0.ll.gz",
+      "byte_identical": true,
+      "sha256": "826fe5ee008c587be7c1e3348a2988d8576fdc7ae7aaa12cd700dd8e2f3b1157"
+    },
+    {
+      "configuration": "2-direct-no-unroll",
+      "file": "refresh-b8-1.ll",
+      "baseline": "engine/tests/live_hierarchy/refresh-v1/ir/2-direct-no-unroll/refresh-b8-1.ll.gz",
+      "byte_identical": true,
+      "sha256": "f7006f986234634e2189913973b64c6d7a87d4de693e5d718e1f6d08e8b6225c"
+    }
+  ]
+}

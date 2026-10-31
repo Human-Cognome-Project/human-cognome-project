@@ -389,7 +389,11 @@ struct LiveHierarchy::Impl {
     owned[19] = std::make_unique<Ndarray>(
         &h.runtime_->program(), PrimitiveType::i64, std::vector<int>{2, H});
     h.runtime_->program().fill_ndarray_fast_u32(owned[19].get(), 0);
-    compile();
+    auto kernels =
+        build_kernels(h.activity_->particle_activity, h.activity_->centroids);
+    force_kernel = std::move(kernels[0]);
+    poll_kernel = std::move(kernels[1]);
+    command_kernel = std::move(kernels[2]);
     prepare_refresh_execution();
     launch(command_kernel, 0, 0);
     launch(force_kernel, 0, -1);
@@ -399,9 +403,50 @@ struct LiveHierarchy::Impl {
   int &config(int c, int n) {
     return cfg[c * H + n];
   }
-  void compile();
+  std::array<engine::CompiledKernel, 3> build_kernels(NativeSet, NativeSet);
   void prepare_refresh_execution();
   void launch_refresh(bool commit);
+  Ndarray *input_array(int input) const {
+    switch (input) {
+      case 7:
+        return h.particle_array_.get();
+      case 8:
+        return h.group_array_.get();
+      case 15:
+        return h.activity_->counters.get();
+      case 16:
+        return h.activity_->group_delta.get();
+      case 19:
+        return h.contact_int_array_.get();
+      case 20:
+        return h.activity_->contact_a_offsets.get();
+      case 21:
+        return h.activity_->contact_a_edges.get();
+      case 22:
+        return h.activity_->contact_b_offsets.get();
+      case 23:
+        return h.activity_->contact_b_edges.get();
+      case 28:
+        return owned[19].get();
+      case 29:
+        return h.activity_->group_flags.get();
+      default:
+        return arrays.at(input);
+    }
+  }
+  void bind_input(LaunchContextBuilder &c, int argument, int input) const {
+    if (input == 7)
+      h.bind(c, argument, h.particle_array_.get(), h.particle_values_,
+             {kParticleFieldCount, std::max(P, 1)});
+    else if (input == 8)
+      h.bind(c, argument, h.group_array_.get(), h.group_values_,
+             {kGroupFieldCount, std::max(G, 1)});
+    else if (input == 19)
+      h.bind(c, argument, h.contact_int_array_.get(), h.contact_int_data,
+             {kContactIntFieldCount, std::max(h.contacts_, 1)});
+    else
+      c.set_arg_ndarray({argument}, *input_array(input));
+  }
   void launch(engine::CompiledKernel &kernel,
               double gravity,
               int op,
@@ -409,23 +454,10 @@ struct LiveHierarchy::Impl {
     auto call = kernel.invocation(true);
     auto &c = call.get();
     if (!c.prepared) {
-      for (int i = 0; i < 19; ++i)
-        if (arrays[i])
-          c.set_arg_ndarray({i}, *arrays[i]);
-      h.bind(c, 7, h.particle_array_.get(), h.particle_values_,
-             {kParticleFieldCount, std::max(P, 1)});
-      h.bind(c, 8, h.group_array_.get(), h.group_values_,
-             {kGroupFieldCount, std::max(G, 1)});
-      c.set_arg_ndarray({15}, *h.activity_->counters);
-      c.set_arg_ndarray({16}, *h.activity_->group_delta);
-      h.bind(c, 19, h.contact_int_array_.get(), h.contact_int_data,
-             {kContactIntFieldCount, std::max(h.contacts_, 1)});
-      c.set_arg_ndarray({20}, *h.activity_->contact_a_offsets);
-      c.set_arg_ndarray({21}, *h.activity_->contact_a_edges);
-      c.set_arg_ndarray({22}, *h.activity_->contact_b_offsets);
-      c.set_arg_ndarray({23}, *h.activity_->contact_b_edges);
-      c.set_arg_ndarray({28}, *owned[19]);
-      c.set_arg_ndarray({29}, *h.activity_->group_flags);
+      for (int i = 0; i < 24; ++i)
+        bind_input(c, i, i);
+      for (int i : {28, 29})
+        bind_input(c, i, i);
     }
     engine::argument_int(c, 24, nodes);
     engine::argument_float(c, 25, gravity);
@@ -435,8 +467,11 @@ struct LiveHierarchy::Impl {
   }
 };
 
-void LiveHierarchy::Impl::compile() {
-  const auto suffix = std::to_string(h.activity_->centroids.cells->id);
+std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
+    NativeSet particle_selection,
+    NativeSet centroid_selection) {
+  std::array<engine::CompiledKernel, 3> kernels;
+  const auto suffix = std::to_string(centroid_selection.cells->id);
   const int threads = h.runtime_->cpu_threads();
   {
     IRBuilder b;
@@ -467,15 +502,14 @@ void LiveHierarchy::Impl::compile() {
         }
       }
     }
-    command_kernel = engine::CompiledKernel(
+    kernels[2] = engine::CompiledKernel(
         *h.runtime_, "live_hierarchy_control_" + suffix, b.extract_ir(),
         signature(), engine::MathMode::Strict);
   }
   {
     IRBuilder b;
     Args a(b);
-    auto *loop = b.create_struct_for(h.activity_->particle_activity.cells,
-                                     false, threads);
+    auto *loop = b.create_struct_for(particle_selection.cells, false, threads);
     auto scope = b.get_loop_guard(loop);
     auto *body = b.get_loop_index(loop);
     auto *refs = b.create_range_for(read(b, a.offsets, cell(b, 0, body)),
@@ -494,7 +528,7 @@ void LiveHierarchy::Impl::compile() {
     for (int k = 0; k < 3; ++k)
       write(b, a.bodies, cell(b, kForceX + k, body),
             b.create_add(read(b, a.bodies, cell(b, kForceX + k, body)), f[k]));
-    force_kernel = engine::CompiledKernel(
+    kernels[0] = engine::CompiledKernel(
         *h.runtime_, "live_hierarchy_force_" + suffix, b.extract_ir(),
         signature(), engine::MathMode::Strict);
   }
@@ -502,7 +536,7 @@ void LiveHierarchy::Impl::compile() {
     IRBuilder b;
     Args a(b);
     auto *loop =
-        b.create_struct_for(h.activity_->centroids.cells, false, threads, 1);
+        b.create_struct_for(centroid_selection.cells, false, threads, 1);
     auto scope = b.get_loop_guard(loop);
     auto *field = b.get_loop_index(loop);
     auto *node = read(b, a.owners, {field});
@@ -512,7 +546,7 @@ void LiveHierarchy::Impl::compile() {
             b.create_logical_or(b.create_cmp_lt(a.op, b.get_int32(0)),
                                 b.create_cmp_eq(node, a.op)))),
         true);
-    h.activity_->centroids.deactivate(b, field);
+    centroid_selection.deactivate(b, field);
     write(b, a.group_flags, cell(b, Flagged, field), b.get_int32(1));
     write(b, a.group_flags, cell(b, Changed, field), b.get_int32(0));
     for (int k = kAccX; k <= kAccM; ++k)
@@ -632,8 +666,7 @@ void LiveHierarchy::Impl::compile() {
       auto *parent = read(b, a.cfg, cell(b, Parent, node));
       auto has_parent = b.get_if_guard(
           b.create_if(b.create_cmp_ge(parent, b.get_int32(0))), true);
-      h.activity_->centroids.activate(b,
-                                      read(b, a.cfg, cell(b, Field, parent)));
+      centroid_selection.activate(b, read(b, a.cfg, cell(b, Field, parent)));
     }
     auto *begin = read(b, a.cfg, cell(b, CoverBegin, node));
     auto *recipients = b.create_range_for(
@@ -730,11 +763,12 @@ void LiveHierarchy::Impl::compile() {
     }
     auto wake = b.get_if_guard(
         b.create_if(b.create_logical_or(different, baseline_changed)), true);
-    h.activity_->particle_activity.activate(b, body);
-    poll_kernel = engine::CompiledKernel(
+    particle_selection.activate(b, body);
+    kernels[1] = engine::CompiledKernel(
         *h.runtime_, "live_hierarchy_poll_" + suffix, b.extract_ir(),
         signature(), engine::MathMode::Strict);
   }
+  return kernels;
 }
 
 LiveHierarchy::LiveHierarchy(Harness &h) : impl_(std::make_unique<Impl>(h)) {
@@ -759,6 +793,19 @@ std::size_t LiveHierarchy::binding_bytes() const {
 }
 std::array<const engine::CompiledKernel *, 3> LiveHierarchy::kernels() const {
   return {&impl_->force_kernel, &impl_->poll_kernel, &impl_->command_kernel};
+}
+std::array<engine::CompiledKernel, 3> LiveHierarchy::build_kernels(
+    NativeSet particles,
+    NativeSet centroids) {
+  return impl_->build_kernels(particles, centroids);
+}
+void LiveHierarchy::bind_input(LaunchContextBuilder &c,
+                               int argument,
+                               int input) const {
+  impl_->bind_input(c, argument, input);
+}
+Ndarray *LiveHierarchy::input_array(int input) const {
+  return impl_->input_array(input);
 }
 std::size_t LiveHierarchy::fixed_object_bytes() const {
   return sizeof(Impl) + sizeof(Impl::Refresh);

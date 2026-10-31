@@ -1,0 +1,17 @@
+commit ada217a68c1af546e51ebb69f2f0c43ac42b8248
+Author:     Brandon Patrick Handley-McCarthy <bp@donaeley.com>
+AuthorDate: Sat Oct 31 02:54:28 2026 +0000
+Commit:     Brandon Patrick Handley-McCarthy <bp@donaeley.com>
+CommitDate: Sat Oct 31 02:54:28 2026 +0000
+
+    engine: qualify transaction-local native selection for B1
+.github/workflows/native-engine-cpu.yml
+engine/CMakeLists.txt
+engine/docs/NATIVE-SELECTION.md
+engine/src/field/live_hierarchy.cpp
+engine/src/field/live_hierarchy.h
+engine/src/field/native_selection.cpp
+engine/src/field/native_selection.h
+engine/tests/live_hierarchy_test.cpp
+engine/tests/native_selection_audit.h
+engine/tests/native_selection_cases.inc

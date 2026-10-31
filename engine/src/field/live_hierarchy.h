@@ -52,6 +52,7 @@ struct LiveHierarchyAccess;
 namespace detail {
 struct StorageExtent;
 struct PreparedCounts;
+struct NativeSet;
 class LiveHierarchy {
  public:
   static void append_layout(const BudgetDemand &, std::vector<StorageExtent> &);
@@ -85,6 +86,14 @@ class LiveHierarchy {
   const std::vector<int> &child_links() const;
   void poll_target(double, int, double contact_stiffness = 0);
   std::size_t fixed_object_bytes() const;
+  // Build the same numerical kernels for a qualified transaction-local native
+  // selection surface. Returned kernels have no bindings until their owner
+  // supplies complete, fixed-lifetime inputs.
+  std::array<engine::CompiledKernel, 3> build_kernels(NativeSet, NativeSet);
+  void bind_input(taichi::lang::LaunchContextBuilder &,
+                  int argument,
+                  int input) const;
+  taichi::lang::Ndarray *input_array(int input) const;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
