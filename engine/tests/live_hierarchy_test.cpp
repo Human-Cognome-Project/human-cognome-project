@@ -2511,6 +2511,7 @@ void capture_current(engine::Runtime &r,
 
 #include "live_hierarchy_refresh_cases.inc"
 #include "native_selection_cases.inc"
+#include "contact_tick_cases.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2610,6 +2611,9 @@ int main(int argc, char **argv) {
     };
     if (only == "refresh_limits")
       run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "contact_tick") {
+      run("contact_tick_smoke", [&] { contact_tick_smoke(r, path); });
+    }
     if (only == "selection") {
       run("selection_isolation", [&] { selection_isolation(r, path); });
       run("selection_controls", [&] { selection_controls(r, path); });

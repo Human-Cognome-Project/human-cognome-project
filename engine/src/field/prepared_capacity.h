@@ -28,6 +28,7 @@ enum class Budget {
                     // weighted binds.
   LiveResponses,    // Explicit installed-hierarchy recipient references; zero
                     // leaves the existing execution and reservation unchanged.
+  TickWork,         // Candidate copies, numerical phases and publication.
   Count
 };
 struct BudgetDemand {

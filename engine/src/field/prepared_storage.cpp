@@ -7,6 +7,7 @@
 #include "engine/transfer.h"
 #include "field/centroid_cascade.h"
 #include "field/live_hierarchy.h"
+#include "field/tick_execution.h"
 
 namespace field::detail {
 namespace {
@@ -115,6 +116,7 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
            sizeof(std::uint64_t), 4);
   CentroidCascade::append_layout(l, result);
   LiveHierarchy::append_layout(l, result);
+  TickExecution::append_layout(l, result);
   return result;
 }
 std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l,
@@ -129,7 +131,8 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                                                    bool cascade,
                                                    bool weighted,
                                                    bool wide,
-                                                   bool live) {
+                                                   bool live,
+                                                   bool ticks) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
@@ -147,9 +150,10 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   const std::size_t parameters = 151 + (geometry ? 33 : 0) +
                                  (cascade ? 22 : 0) +
                                  (cascade && weighted ? 2 : 0) +
-                                 (wide ? 6 : 0) + (live ? 92 + 2 + 46 : 0),
+                                 (wide ? 6 : 0) + (live ? 92 + 2 + 46 : 0) +
+                                 (ticks ? (live ? 531 : 417) : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
-                               (live ? 5 : 0),
+                               (live ? 5 : 0) + (ticks ? (live ? 34 : 31) : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
@@ -165,10 +169,11 @@ std::size_t PreparedStorage::required_scratch(const BudgetDemand &l, bool cuda,
     if (entry.count > (std::size_t{1} << 30))
       throw std::invalid_argument(
           "prepared typed workspace exceeds supported axis");
-  add(result, binding_reserve_bytes(
-                  cuda, l[Budget::GeometryWork] != 0,
-                  l[Budget::CascadeNodes] != 0, l[Budget::CascadeCoverage] != 0,
-                  profile.wide(), l[Budget::LiveResponses] != 0));
+  add(result,
+      binding_reserve_bytes(
+          cuda, l[Budget::GeometryWork] != 0, l[Budget::CascadeNodes] != 0,
+          l[Budget::CascadeCoverage] != 0, profile.wide(),
+          l[Budget::LiveResponses] != 0, l[Budget::TickWork] != 0));
   return result;
 }
 PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)

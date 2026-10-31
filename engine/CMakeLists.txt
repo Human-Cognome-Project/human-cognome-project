@@ -30,6 +30,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
     src/field/native_selection.cpp
+  src/field/tick_execution.cpp
     src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
     src/field/prepared_update.cpp src/field/prepared_geometry.cpp
     src/field/centroid_cascade.cpp src/field/live_hierarchy.cpp)
