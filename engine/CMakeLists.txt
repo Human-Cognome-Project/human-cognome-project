@@ -182,6 +182,10 @@ foreach(threads 1 2)
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case refresh)
     add_test(NAME native_selection_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case selection)
+    add_test(NAME contact_tick_${threads}_${path}
+        COMMAND live_hierarchy_test ${live_hierarchy_args} --case contact_tick)
+    set_tests_properties(contact_tick_${threads}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 1200)
     set_tests_properties(native_selection_${threads}_${path} PROPERTIES
         ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
     set_tests_properties(live_refresh_${threads}_${path} PROPERTIES

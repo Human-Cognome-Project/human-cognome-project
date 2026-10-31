@@ -122,9 +122,45 @@ class Analyzer {
   }
   const llvm::LoadInst *argument_buffer(const llvm::Value *address,
                                         std::int64_t &offset) const {
-    const auto *buffer =
-        llvm::dyn_cast<llvm::LoadInst>(llvm::GetPointerBaseWithConstantOffset(
-            address, offset, module_.getDataLayout()));
+    const auto *base = llvm::GetPointerBaseWithConstantOffset(
+        address, offset, module_.getDataLayout());
+    const auto *buffer = llvm::dyn_cast<llvm::LoadInst>(base);
+    // The candidate family also contains error branches which reload the
+    // context's argument buffer. LLVM joins these equivalent loads with a PHI.
+    // Accept that join only when every incoming value has the same proven ABI
+    // origin; an arbitrary pointer PHI is not an argument buffer.
+    if (!buffer && mode_ >= 5) {
+      std::set<const llvm::Value *> visiting;
+      const auto resolve =
+          [&](const auto &self,
+              const llvm::Value *value) -> const llvm::LoadInst * {
+        if (!visiting.insert(value).second)
+          return nullptr;
+        const llvm::LoadInst *result = nullptr;
+        if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(value)) {
+          std::int64_t at = 0;
+          const auto *ctx = llvm::dyn_cast<llvm::Argument>(
+              llvm::GetPointerBaseWithConstantOffset(
+                  load->getPointerOperand(), at, module_.getDataLayout()));
+          if (ctx && ctx->getArgNo() == 0 && at == 0 &&
+              ctx->getParent() == load->getFunction())
+            result = load;
+        } else if (const auto *phi = llvm::dyn_cast<llvm::PHINode>(value)) {
+          for (const auto &incoming : phi->incoming_values()) {
+            const auto *load = self(self, incoming.get());
+            if (!load ||
+                (result && load->getFunction() != result->getFunction())) {
+              result = nullptr;
+              break;
+            }
+            result = load;
+          }
+        }
+        visiting.erase(value);
+        return result;
+      };
+      buffer = resolve(resolve, base);
+    }
     if (!buffer)
       return nullptr;
     std::int64_t context_offset = 0;
@@ -159,15 +195,29 @@ class Analyzer {
     } else if (const auto *load = llvm::dyn_cast<llvm::LoadInst>(v)) {
       std::int64_t offset = 0;
       bool shape = false;
-      if (argument_buffer(load->getPointerOperand(), offset))
-        for (int arg : (mode_ >= 3 ? std::initializer_list<int>{0, 2, 3, 5}
-                                   : std::initializer_list<int>{0, 10}))
-          if (offset ==
+      if (argument_buffer(load->getPointerOperand(), offset)) {
+        const auto match_shape = [&](int arg) {
+          if (offset !=
               kernel_.args_type->get_element_offset(
-                  {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1})) {
-            out = Expr::atom(shape_id(arg));
-            shape = true;
-          }
+                  {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1}))
+            return false;
+          out = Expr::atom(shape_id(arg));
+          shape = true;
+          return true;
+        };
+        if (mode_ >= 5) {
+          for (std::size_t arg = 0; arg < kernel_.parameter_list.size(); ++arg)
+            if (kernel_.parameter_list[arg].is_array &&
+                kernel_.parameter_list[arg].total_dim == 2 &&
+                match_shape(int(arg)))
+              break;
+        } else {
+          for (int arg : (mode_ >= 3 ? std::initializer_list<int>{0, 2, 3, 5}
+                                     : std::initializer_list<int>{0, 10}))
+            if (match_shape(arg))
+              break;
+        }
+      }
       if (!shape)
         out = unknown(v);
     } else if (const auto *op = llvm::dyn_cast<llvm::BinaryOperator>(v)) {
@@ -324,8 +374,12 @@ class Analyzer {
     std::int64_t offset = 0;
     if (!argument_buffer(base->getPointerOperand(), offset))
       return -1;
-    for (int id = 0; id < (mode_ >= 3 ? 22 : 30); ++id)
-      if ((mode_ >= 3 || id < 24 || id >= 28) &&
+    const int count = mode_ >= 5   ? int(kernel_.parameter_list.size())
+                      : mode_ >= 3 ? 22
+                                   : 30;
+    for (int id = 0; id < count; ++id)
+      if ((mode_ >= 5 ? kernel_.parameter_list[id].is_array
+                      : mode_ >= 3 || id < 24 || id >= 28) &&
           offset ==
               kernel_.args_type->get_element_offset(
                   {id, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}))

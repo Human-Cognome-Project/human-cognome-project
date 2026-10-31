@@ -79,6 +79,7 @@ class Activity {
       contact_b_offsets, contact_b_edges;
 
  private:
+  friend class TickExecution;
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
   PreparedStorage *prepared_{};

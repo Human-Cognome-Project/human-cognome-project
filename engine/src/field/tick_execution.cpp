@@ -326,9 +326,30 @@ void TickExecution::add(Surface id,
   copy_values_ += std::uint64_t(rows) * stride;
 }
 
+engine::Runtime &TickExecution::checked_runtime(Harness &h) {
+  if (!h.prepared_ || !h.activity_ || !h.profile_.wide() ||
+      !h.prepared_->capacity.limits()[Budget::TickWork] ||
+      !h.prepared_->capacity.limits()[Budget::GeometryWork] ||
+      h.runtime_->arch() != taichi::Arch::x64 ||
+      &h.activity_->runtime_ != h.runtime_ || h.activity_->p_ != h.particles_ ||
+      h.activity_->g_ != h.groups_ ||
+      h.prepared_->capacity.limits()[Budget::Particles] !=
+          std::uint64_t(h.particles_) ||
+      h.prepared_->capacity.limits()[Budget::Fields] !=
+          std::uint64_t(h.groups_))
+    throw std::invalid_argument("candidate owner Runtime/capacity mismatch");
+  h.validate_prepared_bindings();
+  return *h.runtime_;
+}
+Ndarray &TickExecution::installed_array(int id) const {
+  if (id < 0 || id >= GeometryArrayCount || !installed_->arrays[id])
+    throw std::out_of_range("installed contact array");
+  return *installed_->arrays[id];
+}
+
 TickExecution::TickExecution(Harness &h)
     : h_(h),
-      native_before_(native_requested(*h.runtime_)),
+      native_before_(native_requested(checked_runtime(h))),
       selection_(*h.runtime_,
                  h.activity_->particle_activity,
                  h.particles_,
@@ -402,6 +423,8 @@ TickExecution::TickExecution(Harness &h)
   current_->discover(h.prepared_->capacity.limits()[Budget::GeometryWork]);
   split_contacts();
   run_physics({});
+  h.launch_determine(this);  // Trial ticks publish speed during integration;
+                             // provision this shared enabled binding as well.
   if (h.live_hierarchy_)
     for (int phase = 0; phase < 3; ++phase)
       run_hierarchy(phase, {});
@@ -525,8 +548,6 @@ void TickExecution::compile_copies() {
     IRBuilder b;
     std::vector<Param> params;
     const int enabled_id = 2 * int(copies_.size());
-    auto *enabled =
-        b.create_arg_load({enabled_id}, PrimitiveType::i32, false, 0);
     for (std::size_t n = 0; n < copies_.size(); ++n) {
       const auto &s = copies_[n];
       auto *from = array(b, 2 * n, s.type, s.rank);
@@ -539,6 +560,10 @@ void TickExecution::compile_copies() {
         auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(s.stride),
                                         false, h_.runtime_->cpu_threads());
         auto guard = b.get_loop_guard(loop);
+        // Read the invocation scalar in its own offload, rather than carrying
+        // it between offloads through a shared runtime temporary.
+        auto *enabled =
+            b.create_arg_load({enabled_id}, PrimitiveType::i32, false, 0);
         auto active = b.get_if_guard(b.create_if(enabled), true);
         auto *index = b.get_loop_index(loop);
         const auto cell =
@@ -885,6 +910,7 @@ TickResult TickExecution::tick(std::uint64_t expected,
   auto &s = *h_.prepared_;
   const auto &l = s.capacity.limits();
   TickResult q;
+  q.numerical_profile = h_.profile_;
   q.context = s.particles.context();
   q.generation = s.generation;
   q.completed_ticks = s.completed_ticks;
@@ -946,6 +972,14 @@ TickResult TickExecution::tick(std::uint64_t expected,
     selection_.stage();
     if (!collect_geometry(*current_, q.current))
       return q;
+    const auto hierarchy_references =
+        h_.live_hierarchy_ ? h_.live_hierarchy_->reference_count() : 0;
+    const auto current_references =
+        s.live.references() + hierarchy_references +
+        2 * (std::uint64_t(installed_->counts[PairCount]) + q.current.contacts);
+    if (current_references > l[Budget::References])
+      return exhaust(Budget::References, current_references,
+                     l[Budget::References]);
     coverage(*current_, *installed_, before_, true);
     split_contacts();
     if (s.failure_point == 200)
@@ -953,7 +987,7 @@ TickResult TickExecution::tick(std::uint64_t expected,
     run_physics(p);
     if (!collect_geometry(*candidate_, q.candidate))
       return q;
-    const auto references = s.live.references() +
+    const auto references = s.live.references() + hierarchy_references +
                             2 * (std::uint64_t(installed_->counts[PairCount]) +
                                  q.current.contacts + q.candidate.contacts);
     if (references > l[Budget::References])
@@ -1021,6 +1055,40 @@ TickResult TickExecution::tick(std::uint64_t expected,
   }
 }
 
+std::array<const Kernel *, 31> TickExecution::qualification_kernels() const {
+  std::array<const Kernel *, 31> out{};
+  int n = 0;
+  for (const auto &k : numerical_)
+    out[n++] = &k;
+  for (int i = 0; i < 4; ++i)
+    out[n++] = &activity_[i];
+  for (const auto &k : hierarchy_)
+    out[n++] = h_.live_hierarchy_ ? &k : nullptr;
+  for (const auto *geometry : {current_.get(), candidate_.get()}) {
+    for (const auto &k : geometry->kernels)
+      out[n++] = &k;
+    out[n++] = &geometry->reset;
+  }
+  for (const auto *k :
+       {&stage_, &publish_, &before_, &after_, &compare_, &split_, &validate_})
+    out[n++] = k;
+  return out;
+}
+
+std::array<const Ndarray *, 46> TickExecution::qualification_surfaces() const {
+  std::array<const Ndarray *, 46> out{};
+  int n = 0;
+  for (const auto &value : values_)
+    out[n++] = value.get();
+  for (const auto *geometry : {current_.get(), candidate_.get()})
+    for (const auto &value : geometry->arrays)
+      out[n++] = value.get();
+  for (const auto &value : contact_csr_)
+    out[n++] = value.get();
+  out[n++] = status_.get();
+  return out;
+}
+
 std::size_t TickExecution::binding_bytes() const {
   std::size_t bytes = selection_.binding_bytes();
   for (const auto *group : {&numerical_})
@@ -1050,6 +1118,7 @@ TickResult Harness::tick_prepared(std::uint64_t generation,
                                   std::uint64_t geometry_work) {
   if (!tick_execution_) {
     TickResult q;
+    q.numerical_profile = profile_;
     q.status = TickStatus::Unsupported;
     return q;
   }

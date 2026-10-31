@@ -26,7 +26,6 @@ enum class TickKernel {
 class TickExecution {
  public:
   static void append_layout(const BudgetDemand &, std::vector<StorageExtent> &);
-  explicit TickExecution(Harness &);
   ~TickExecution();
   TickResult tick(std::uint64_t,
                   const Parameters64 &,
@@ -40,6 +39,14 @@ class TickExecution {
   }
 
  private:
+  friend class field::Harness;
+  friend struct field::testing::TickExecutionAccess;
+  explicit TickExecution(Harness &);
+  static engine::Runtime &checked_runtime(Harness &);
+  taichi::lang::Ndarray &installed_array(int) const;
+  // Cold qualification access only; never part of attempt dispatch.
+  std::array<const engine::CompiledKernel *, 31> qualification_kernels() const;
+  std::array<const taichi::lang::Ndarray *, 46> qualification_surfaces() const;
   enum Surface {
     Bodies,
     Groups,

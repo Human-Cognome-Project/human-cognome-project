@@ -1,5 +1,15 @@
 # Agent guidance
 
+## B1 candidate-tick integration under review — 2026-10-31
+
+#201 implements the remaining [B1 candidate ticks](engine/docs/CONTACT-SAFE-TICKS.md)
+under accepted #199/#200: shared native numerical/control staging, current and
+post-motion geometry, unchanged typed rejection and one completed publication.
+Qualification is in progress; this implementation is not accepted yet. Preserve
+the complete B1 scope and independent no-attempt retry/full-state witnesses.
+B2 placement, B3 bootstrap/admission, enduring owners, CUDA and Docker remain
+separate. Do not infer operational insertion from this fixture-backed tick API.
+
 ## B1 native selection gate accepted in #200 — 2026-10-31
 
 Under the accepted #199 plan, #200 implements the first
@@ -13,9 +23,9 @@ eight selection modes passed, 168 new modules parsed and all 56 existing modules
 remained byte-identical. PostgreSQL integration passed 180 checks with unchanged
 cold fingerprints and zero private reads. Hosted run 41162316957/job 124422351715 at `ada217a` passed all eight checks: 105/105 CPU suites in 3576.79 seconds, compiler collection/audit, extra no-unroll hierarchy/refresh/selection modes, 180 PostgreSQL integration checks with zero private reads, and final CPU-only backend verification.
 
-Harness does not construct the workspace yet. Complete numerical/control/contact
-staging, typed contact/work rejection and one candidate-tick publication remain
-the following B1 integration. Preserve native same-poll full centroid work,
+At #200, Harness did not construct the workspace. Complete numerical/control/contact
+staging, typed contact/work rejection and one candidate-tick publication are now
+under review in #201. Preserve native same-poll full centroid work,
 at-most-one visitation and late pending notifications; a frozen centroid work
 list is not an accepted replacement. CUDA qualification remains separate.
 
@@ -210,6 +220,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
 | Built combined hierarchy refresh | #198's [C3-2 implementation](engine/docs/LIVE-REFRESH.md) commits one prospective source/hierarchy generation, preserving survivor state, dirty history and pending work. All nine hosted checks passed, including 101 CPU suites, both extra no-unroll matrices and 180 integration checks. New-body starts remain private fixtures; operational admission/contact-safe ticks are next. |
 | Accepted B1 selection gate | #200's [native workspace](engine/docs/NATIVE-SELECTION.md) qualifies scratch selections with the actual C3 builders under accepted #199. [CPU evidence](engine/tests/native_selection/v1/README.md) is source-pinned. No operational tick/admission entry point is enabled; complete candidate numerical/control/contact staging and publication remain unbuilt. |
+| B1 implementation under review | #201 adds the opt-in [contact-safe tick](engine/docs/CONTACT-SAFE-TICKS.md) using prepared fixture inputs. Qualification is in progress. Placement, admission and enduring owners remain unbuilt. |
 | Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | The current priority is the bounded Docker/letter/snapshot study above. Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |

@@ -17,6 +17,7 @@ enum class TickStatus {
 // Attempt diagnostics are separate from Harness::demand(), which always
 // describes the last successfully published tick.
 struct TickResult {
+  NumericalProfile numerical_profile{};
   TickStatus status{TickStatus::Unready};
   BudgetFailure failure{};
   std::uint64_t context{}, generation{}, completed_ticks{};
@@ -24,6 +25,8 @@ struct TickResult {
       selection_work_bound{}, geometry_work{}, synchronizations{},
       readback_bytes{};
   bool coverage_changed{};
+  // Attempt diagnostics only: query remains zero and is not an inspection
+  // token.
   GeometryResult current, candidate;
 };
 }  // namespace field

@@ -1683,7 +1683,7 @@ void Harness::prepare_empty_execution() {
   if (s.capacity.limits()[Budget::CascadeNodes])
     centroid_cascade_ = std::make_unique<detail::CentroidCascade>(*this);
   if (s.capacity.limits()[Budget::TickWork]) {
-    tick_execution_ = std::make_unique<detail::TickExecution>(*this);
+    tick_execution_.reset(new detail::TickExecution(*this));
     const auto required = detail::PreparedStorage::required_scratch(
         s.capacity.limits(), runtime_->on_cuda(), profile_);
     const auto native = tick_execution_->native_bytes();

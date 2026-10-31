@@ -246,9 +246,11 @@ Local validation at `ada217a` passes 105 CPU suites, eight selection modes and
 3576.79 seconds, the additional compiler-mode tests, 180 integration checks and
 CPU-only backend verification; all eight checks passed.
 This first gate preserves committed selection through abandon/retry and native
-same-poll full centroid work. Complete candidate numerical/control/contact
-staging and contact-safe tick publication remain the following B1 integration;
-Harness does not enable the workspace or a new operational API yet.
+same-poll full centroid work. #201 now implements the remaining
+[contact-safe candidate ticks](docs/CONTACT-SAFE-TICKS.md) for CPU review:
+prepared numerical/control/contact staging, typed unchanged rejection and one
+publication through `tick_prepared`. Qualification is in progress. Fixture inputs
+remain private; certified placement, operational admission and owners are separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
@@ -264,8 +266,9 @@ lifecycle and complete CPU operation matrix before full local GPU testing.
 Its first [structural recipe segment](../kernels/database/warm/STRUCTURAL-RECIPES.md)
 is accepted and merged in #171. The first portion of Segment 2 supplies
 [native geometry preflight](docs/PREPARED-GEOMETRY.md), accepted in #175. It reads current
-occupancy/focus and prepares candidate contacts; placement, contact installation,
-transactional ticks and the enduring operational lifecycle remain unbuilt.
+occupancy/focus and prepares candidate contacts. #201 adds transactional ticks and
+physical contact installation for review; placement and the enduring operational
+lifecycle remain unbuilt.
 
 Historical machine-specific measurements and development decisions remain under
 `docs/`; read their dates and scope rather than treating each as a current guarantee.

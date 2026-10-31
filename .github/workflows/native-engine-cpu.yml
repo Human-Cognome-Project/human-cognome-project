@@ -33,9 +33,9 @@ jobs:
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-cpu:
     runs-on: ubuntu-24.04
-    # The 101-suite regression, both four-mode no-unroll matrices, native build
-    # and PostgreSQL integration exceeded 90 minutes in run 41101471179.
-    timeout-minutes: 150
+    # #200 took 103 minutes for build, regression, compiler matrices and DB
+    # integration. B1 adds 544 retained modules and eight full candidate modes.
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v4
         with:
@@ -119,6 +119,10 @@ jobs:
                 HCP_B1_IR_DIR="$hcp_ir_dir/selection" engine/build/live_hierarchy_test \
                   --threads "$workers" --case selection_ir "${hcp_ir_args[@]}" \
                   > "$hcp_ir_dir/selection/collection.txt"
+                mkdir -p "$hcp_ir_dir/contact-ticks"
+                HCP_B1_TICK_IR_DIR="$hcp_ir_dir/contact-ticks" engine/build/live_hierarchy_test \
+                  --threads "$workers" --case contact_tick_ir "${hcp_ir_args[@]}" \
+                  > "$hcp_ir_dir/contact-ticks/collection.txt"
               done
             done
           done
@@ -148,6 +152,9 @@ jobs:
               engine/build/live_hierarchy_test --threads "$workers" \
                 --compiler-no-unroll --case selection "${hcp_ir_args[@]}" \
                 > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/selection.txt"
+              engine/build/live_hierarchy_test --threads "$workers" \
+                --compiler-no-unroll --case contact_tick "${hcp_ir_args[@]}" \
+                > "$RUNNER_TEMP/c3-compiler-ir/${workers}-${source_path}-no-unroll/contact-ticks.txt"
             done
           done
 
@@ -190,6 +197,7 @@ jobs:
             ${{ runner.temp }}/c3-compiler-ir/*/native.txt
             ${{ runner.temp }}/c3-compiler-ir/*/refresh.txt
             ${{ runner.temp }}/c3-compiler-ir/*/selection.txt
+            ${{ runner.temp }}/c3-compiler-ir/*/contact-ticks.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |

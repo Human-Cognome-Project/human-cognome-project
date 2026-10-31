@@ -37,6 +37,7 @@ struct NativeSet;
 class PreparedCapacity;
 namespace testing {
 struct PreparedFixtureAccess;
+struct TickExecutionAccess;
 }
 enum class TickMode { Selective, AllLoaded };
 using FrameAnchor = std::array<double, 3>;
@@ -378,6 +379,7 @@ class Harness {
   friend class detail::CentroidCascade;
   friend class detail::LiveHierarchy;
   friend struct testing::PreparedFixtureAccess;
+  friend struct testing::TickExecutionAccess;
   friend struct testing::LiveHierarchyAccess;
   Harness(engine::Runtime &runtime,
           int particle_count,
