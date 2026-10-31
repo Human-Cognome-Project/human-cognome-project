@@ -1,0 +1,622 @@
+{
+  "source": "3cabc70f1812fceaaf759460fe9328279bfa9d23",
+  "backend_tree": "350b7516fba428710a65ec04bf74b1b963daa840",
+  "date_utc": "2026-10-31T17:24:06.104Z",
+  "base": "157f46c2c07331429387376c0db2aef22a0839fb",
+  "scope": "B1 contact-safe candidate ticks; B2/B3/owners/CUDA/Docker separate",
+  "cpu": {
+    "passed": 109,
+    "total": 109,
+    "failed": 0,
+    "seconds": 2520.39,
+    "parallel_jobs": 2
+  },
+  "matrix": {
+    "modes": 8,
+    "case_groups": 96,
+    "actual_llvm_modules": 544,
+    "all_llvm_modules_verified": true,
+    "original_C3_refresh_byte_identical": 56,
+    "previous_selection_byte_identical": 168,
+    "collector_copy_writer_unsafe_controls": 592,
+    "collector_safe_duplicates": 464,
+    "collector_C3_unsafe_controls": 960,
+    "collector_C3_safe_controls": 64
+  },
+  "integration": {
+    "checks": 180,
+    "private_reads": 0,
+    "cold_fingerprints_unchanged": true,
+    "container": "hcp-linguistics-validation",
+    "core": "hcp_c3_core_20261027231537_16221",
+    "linguistics": "hcp_c3_ling_20261027231537_16221",
+    "image": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "postgres": "postgres (PostgreSQL) 16.15 (Debian 16.15-1.pgdg13+2)"
+  },
+  "modes": [
+    {
+      "workers": 1,
+      "host_path": "bulk",
+      "llvm_shape": "default",
+      "actual_backend": "x64",
+      "functional_log": "functional/1-bulk-default.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927432,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 133.3929407596588
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927432,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 133.3929407596588
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 1,
+      "host_path": "bulk",
+      "llvm_shape": "no-unroll",
+      "actual_backend": "x64",
+      "functional_log": "functional/1-bulk-no-unroll.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927432,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 119.99366116523743
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927432,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 119.99366116523743
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 1,
+      "host_path": "direct",
+      "llvm_shape": "default",
+      "actual_backend": "x64",
+      "functional_log": "functional/1-direct-default.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067952,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 132.55870246887207
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067952,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 132.55870246887207
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 1,
+      "host_path": "direct",
+      "llvm_shape": "no-unroll",
+      "actual_backend": "x64",
+      "functional_log": "functional/1-direct-no-unroll.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067952,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 156.58090329170227
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067952,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 156.58090329170227
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 2,
+      "host_path": "bulk",
+      "llvm_shape": "default",
+      "actual_backend": "x64",
+      "functional_log": "functional/2-bulk-default.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927452,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 129.99394726753235
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927452,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 129.99394726753235
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 2,
+      "host_path": "bulk",
+      "llvm_shape": "no-unroll",
+      "actual_backend": "x64",
+      "functional_log": "functional/2-bulk-no-unroll.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927452,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 158.24960207939148
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3151,
+        "pool_requested_bytes": 822927452,
+        "pool_raw_allocation_calls": 1884,
+        "pool_reserved_bytes": 1075166628,
+        "host_pool_cursor": 804330916,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 158.24960207939148
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 2,
+      "host_path": "direct",
+      "llvm_shape": "default",
+      "actual_backend": "x64",
+      "functional_log": "functional/2-direct-default.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067972,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 129.3314700126648
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067972,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 129.3314700126648
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    },
+    {
+      "workers": 2,
+      "host_path": "direct",
+      "llvm_shape": "no-unroll",
+      "actual_backend": "x64",
+      "functional_log": "functional/2-direct-no-unroll.txt.gz",
+      "case_groups": [
+        "contact_tick_modes",
+        "contact_tick_references",
+        "contact_tick_compiler",
+        "contact_tick_source_union",
+        "contact_tick_failures",
+        "contact_tick_capacity",
+        "contact_tick_dirty",
+        "contact_tick_reuse",
+        "contact_tick_smoke",
+        "contact_tick_overflow",
+        "contact_tick_cross_block",
+        "contact_tick_reverse_block"
+      ],
+      "collector_profiles": 2,
+      "actual_llvm_modules": 68,
+      "copy_writer_unsafe_controls": 74,
+      "safe_duplicate_controls": 58,
+      "C3_unsafe_controls": 120,
+      "C3_safe_controls": 8,
+      "reuse_rounds": 32,
+      "late_rejections": 32,
+      "cpp_new_observed": 0,
+      "reuse_before": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067972,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 160.03011989593506
+      },
+      "reuse_after": {
+        "runtime_requested_bytes": 800497324,
+        "native_list_bytes": 61374464,
+        "native_allocator_elements": 152,
+        "pool_allocation_calls": 3053,
+        "pool_requested_bytes": 822067972,
+        "pool_raw_allocation_calls": 1786,
+        "pool_reserved_bytes": 1075148716,
+        "host_pool_cursor": 804313004,
+        "trees": 30,
+        "issued_snode_ids": 416,
+        "compilation_seconds": 160.03011989593506
+      },
+      "capacity_profiles": [
+        {
+          "particles": 4096,
+          "fields": 70,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "rounds": 32
+        },
+        {
+          "particles": 70,
+          "fields": 4096,
+          "present_bodies": 3,
+          "present_fields": 3,
+          "last_field": 4095,
+          "rounds": 32
+        }
+      ]
+    }
+  ]
+}

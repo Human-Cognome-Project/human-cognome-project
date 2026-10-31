@@ -1,9 +1,12 @@
 # Contact-safe candidate ticks — B1 integration
 
-Status: implemented for CPU review in #201 under the accepted
+Status: implemented and locally CPU-qualified for review in #201 under the accepted
 [#199 plan](../../docs/native-admission-contact-transaction-plan.md), following
 #200's accepted [native selection qualification](NATIVE-SELECTION.md).
-Qualification is in progress. Placement (B2), bootstrap/admission (B3), enduring
+The [source-pinned record](../tests/contact_ticks/v1/README.md) at `3cabc70`
+passes 109 CPU suites, all eight B1 modes, 544 new LLVM modules and 180
+PostgreSQL integration checks. Maintainer acceptance and hosted CPU validation
+remain pending. Placement (B2), bootstrap/admission (B3), enduring
 owners and CUDA remain separate. This does not close #156/#172/#177/#145.
 
 A nonzero `Budget::TickWork` opts a prepared f64/x64 owner into
@@ -50,7 +53,9 @@ the complete union/mapping/CSR, then native membership. The owner synchronizes
 before exposing a successful report. Changed union or mapping advances one
 prepared generation and retags installed source stamps without reseeding
 packets/history. Unchanged coverage retains generation. Every accepted tick
-advances completed-tick observation, invalidating prior query/capture bindings.
+advances completed-tick observation, invalidating prior geometry query tokens.
+Changed generation invalidates source/capture mappings; a stable mapping remains
+usable to observe subsequent completed ticks.
 `TickResult.current/candidate` are attempt diagnostics with query zero, not
 public inspection tokens.
 
@@ -128,4 +133,4 @@ for each of two capacity/precision profiles, across one/two workers,
 BulkCopy/CpuDirect and default/no-unroll LLVM shapes: 544 modules. Existing C3,
 refresh and selection gates remain enabled. Final source-pinned regression,
 compiler matrix, resource observations and read-only-cold PostgreSQL integration
-will be recorded with the review evidence.
+are retained in the [review evidence](../tests/contact_ticks/v1/README.md).

@@ -249,7 +249,9 @@ This first gate preserves committed selection through abandon/retry and native
 same-poll full centroid work. #201 now implements the remaining
 [contact-safe candidate ticks](docs/CONTACT-SAFE-TICKS.md) for CPU review:
 prepared numerical/control/contact staging, typed unchanged rejection and one
-publication through `tick_prepared`. Qualification is in progress. Fixture inputs
+publication through `tick_prepared`. [Local CPU qualification](tests/contact_ticks/v1/README.md)
+passes 109 suites, all eight B1 modes and 180 integration checks; hosted CPU
+validation and acceptance remain pending. Fixture inputs
 remain private; certified placement, operational admission and owners are separate.
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
