@@ -817,6 +817,23 @@ void LiveHierarchy::poll_target(double gravity, int target, double stiffness) {
 const Ndarray &LiveHierarchy::leaf_fields() const {
   return *impl_->arrays[17];
 }
+std::uint64_t LiveHierarchy::node_count() const {
+  return impl_->nodes;
+}
+void LiveHierarchy::retag_generation(std::uint64_t generation) {
+  if (!impl_->bound)
+    return;
+  for (std::size_t logical = 0; logical < impl_->nodes; ++logical) {
+    const auto slot = impl_->inspection.order[logical];
+    for (int j = impl_->config(SourceBegin, slot);
+         j <
+         impl_->config(SourceBegin, slot) + impl_->config(SourceCount, slot);
+         ++j)
+      impl_->source_headers[j].generation = generation;
+  }
+  impl_->generation = generation;
+}
+
 void LiveHierarchy::force(double gravity) {
   validate();
   impl_->launch(impl_->command_kernel, gravity, 0);

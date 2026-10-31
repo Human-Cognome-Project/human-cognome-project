@@ -78,13 +78,28 @@ void Harness::prepare_geometry_execution() {
   auto &s = *prepared_;
   if (!s.capacity.limits()[Budget::GeometryWork])
     return;
+  auto kernels = build_geometry_kernels(activity_->particle_activity);
+  geometry_collect_ = std::move(kernels[0]);
+  geometry_source_order_ = std::move(kernels[1]);
+  geometry_discover_ = std::move(kernels[2]);
+  geometry_finalize_ = std::move(kernels[3]);
+}
+
+std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
+    detail::NativeSet particle_selection) {
+  auto &s = *prepared_;
+  std::array<engine::CompiledKernel, 4> kernels;
   const auto f = real_type(), i = PrimitiveType::i32, wide = PrimitiveType::i64;
   const auto fa = engine::Param::array(f, 2), fv = engine::Param::array(f),
              ia = engine::Param::array(i, 2), iv = engine::Param::array(i),
              cv = engine::Param::array(wide),
              integer = engine::Param::scalar(i);
   const int threads = runtime_->cpu_threads();
-  const auto suffix = std::to_string(s.particles.bindings().presence->id);
+  const auto suffix =
+      std::to_string(s.particles.bindings().presence->id) +
+      (particle_selection.cells == activity_->particle_activity.cells
+           ? ""
+           : "_selection_" + std::to_string(particle_selection.cells->id));
   {
     IRBuilder b;
     auto *particles = array(b, 0, f, 2), *groups = array(b, 1, f, 2),
@@ -111,8 +126,8 @@ void Harness::prepare_geometry_execution() {
       auto *row = b.get_loop_index(loop);
       write(b, rows, {row}, b.get_int32(1));
       count(b, stats, PresenceEntries);
-      auto awake = b.get_if_guard(
-          b.create_if(activity_->particle_activity.active(b, row)), true);
+      auto awake =
+          b.get_if_guard(b.create_if(particle_selection.active(b, row)), true);
       count(b, stats, Awake);
     }
     {
@@ -240,7 +255,7 @@ void Harness::prepare_geometry_execution() {
       finite(b, stats, value, profile_.wide());
       put(b, focal, axis, value);
     }
-    geometry_collect_ = engine::CompiledKernel(
+    kernels[0] = engine::CompiledKernel(
         *runtime_, "geometry_collect_" + suffix, b.extract_ir(),
         {fa, fa, ia, iv, cv, fv, fv, iv, integer, integer},
         engine::MathMode::Strict);
@@ -282,7 +297,7 @@ void Harness::prepare_geometry_execution() {
     write(b, end, {r},
           b.create_add(b.create_sub(r, b.create_local_load(before)),
                        b.create_local_load(equal)));
-    geometry_source_order_ = engine::CompiledKernel(
+    kernels[1] = engine::CompiledKernel(
         *runtime_, "geometry_source_order_" + suffix, b.extract_ir(),
         {ia, iv, iv, integer}, engine::MathMode::Strict);
   }
@@ -389,7 +404,7 @@ void Harness::prepare_geometry_execution() {
       b.create_local_store(cursor, b.create_local_load(group_end));
     }
     invalid(b, stats, b.create_cmp_ne(b.create_local_load(cursor), scount));
-    geometry_discover_ = engine::CompiledKernel(
+    kernels[2] = engine::CompiledKernel(
         *runtime_, "geometry_discover_" + suffix, b.extract_ir(),
         {fa, ia, iv, iv, iv, ia, iv, cv, integer}, engine::MathMode::Strict);
   }
@@ -483,11 +498,12 @@ void Harness::prepare_geometry_execution() {
         write(b, cursors, at(b, side, p), b.create_add(cursor, b.get_int32(1)));
       }
     }
-    geometry_finalize_ = engine::CompiledKernel(
+    kernels[3] = engine::CompiledKernel(
         *runtime_, "geometry_finalize_" + suffix, b.extract_ir(),
         {ia, ia, iv, iv, iv, ia, ia, ia, cv, integer},
         engine::MathMode::Strict);
   }
+  return kernels;
 }
 
 void Harness::launch_geometry_collect() {

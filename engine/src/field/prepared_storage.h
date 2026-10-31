@@ -42,7 +42,8 @@ class PreparedStorage {
                                            bool cascade = false,
                                            bool weighted = false,
                                            bool wide = false,
-                                           bool live = false);
+                                           bool live = false,
+                                           bool ticks = false);
   static std::size_t required_scratch(const BudgetDemand &limits, bool cuda,
                                       NumericalProfile profile = {});
 

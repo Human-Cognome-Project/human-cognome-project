@@ -57,6 +57,13 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits,
        !limits[Budget::CascadeCoverage]))
     throw std::invalid_argument(
         "live hierarchy requires weighted f64 capacity");
+  if (limits[Budget::TickWork] > std::uint64_t(INT64_MAX))
+    throw std::invalid_argument(
+        "tick work exceeds signed native counter range");
+  if (limits[Budget::TickWork] &&
+      (!profile.wide() || !limits[Budget::GeometryWork]))
+    throw std::invalid_argument(
+        "contact-safe ticks require f64 geometry capacity");
   const auto base = numerical_bytes();
   if (limits[Budget::ScratchBytes] >
       std::numeric_limits<std::size_t>::max() - base)
@@ -125,6 +132,7 @@ const char *budget_name(Budget budget) {
                              "cascade-work",
                              "cascade-coverage",
                              "live-responses",
+                             "tick-work",
                              "none"};
   const auto i = static_cast<std::size_t>(budget);
   return names[i <= static_cast<std::size_t>(Budget::Count)

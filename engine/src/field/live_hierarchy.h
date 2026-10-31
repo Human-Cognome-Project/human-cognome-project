@@ -80,7 +80,10 @@ class LiveHierarchy {
   void finish_refresh(std::uint64_t generation);
 
  private:
+  friend class TickExecution;
   friend struct field::testing::LiveHierarchyAccess;
+  std::uint64_t node_count() const;
+  void retag_generation(std::uint64_t);
   std::array<const engine::CompiledKernel *, 3> kernels() const;
   std::array<const engine::CompiledKernel *, 2> refresh_kernels() const;
   const std::vector<int> &child_links() const;
