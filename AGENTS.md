@@ -1,5 +1,16 @@
 # Agent guidance
 
+## B2 certified placement in review — 2026-10-31
+
+The [B2 candidate implementation](engine/docs/CERTIFIED-PLACEMENT.md) follows
+#201's release under accepted #199. It prepares native strict-f64 interval
+search, validates actual stored coordinates against present/sleeping/prospective
+occupancy, and publishes candidate diagnostics without claims or model changes.
+The derivation and bounded CPU qualification belong to this slice; final
+source-pinned regression/evidence is in progress. B3 bootstrap/admission,
+enduring owners, CUDA and Docker remain separate. Do not treat a placement
+query result as an admission ticket or change accepted B1 behavior.
+
 ## B1 candidate-tick integration accepted in #201 — 2026-10-31
 
 #201 implements the remaining [B1 candidate ticks](engine/docs/CONTACT-SAFE-TICKS.md)

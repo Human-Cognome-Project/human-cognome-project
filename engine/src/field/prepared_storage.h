@@ -24,6 +24,10 @@ struct PreparedCounts {
     return particles + fields + 2 * edges + 2 * contacts + focus;
   }
 };
+struct SourceProjection {
+  PreparedCounts counts;
+  std::size_t particle_claims{}, field_claims{};
+};
 struct StorageExtent {
   const char *name;
   std::size_t count, element_bytes, copies, bytes;
@@ -43,7 +47,8 @@ class PreparedStorage {
                                            bool weighted = false,
                                            bool wide = false,
                                            bool live = false,
-                                           bool ticks = false);
+                                           bool ticks = false,
+                                           bool placement = false);
   static std::size_t required_scratch(const BudgetDemand &limits, bool cuda,
                                       NumericalProfile profile = {});
 

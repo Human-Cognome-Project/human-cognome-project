@@ -83,7 +83,8 @@ CompiledKernel::CompiledKernel(Runtime &runtime,
                                const std::string &name,
                                std::unique_ptr<Block> body,
                                const std::vector<Param> &params,
-                               MathMode math)
+                               MathMode math,
+                               Optimization optimization)
     : runtime_(&runtime) {
   Program &program = runtime.program();
   kernel_ = std::make_unique<Kernel>(program, std::move(body), name);
@@ -99,6 +100,13 @@ CompiledKernel::CompiledKernel(Runtime &runtime,
   auto config = program.compile_config();
   if (math == MathMode::Strict)
     config.fast_math = false;
+  // Native local simplification remains enabled. Large interval-search graphs
+  // can omit optional whole-kernel CSE/CFG passes without changing LLVM's
+  // external optimization level or other kernels' Program configuration.
+  if (optimization == Optimization::Local) {
+    config.opt_level = 0;
+    config.cfg_optimization = false;
+  }
   compiled_ =
       &program.compile_kernel(config, program.get_device_caps(), *kernel_);
 }

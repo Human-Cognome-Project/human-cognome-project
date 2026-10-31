@@ -80,6 +80,7 @@ class Activity {
 
  private:
   friend class TickExecution;
+  friend class Placement;
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
   PreparedStorage *prepared_{};

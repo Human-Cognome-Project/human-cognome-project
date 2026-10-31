@@ -85,10 +85,9 @@ void Harness::prepare_geometry_execution() {
   geometry_finalize_ = std::move(kernels[3]);
 }
 
-std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
+engine::CompiledKernel Harness::build_geometry_collect_kernel(
     detail::NativeSet particle_selection) {
   auto &s = *prepared_;
-  std::array<engine::CompiledKernel, 4> kernels;
   const auto f = real_type(), i = PrimitiveType::i32, wide = PrimitiveType::i64;
   const auto fa = engine::Param::array(f, 2), fv = engine::Param::array(f),
              ia = engine::Param::array(i, 2), iv = engine::Param::array(i),
@@ -255,11 +254,28 @@ std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
       finite(b, stats, value, profile_.wide());
       put(b, focal, axis, value);
     }
-    kernels[0] = engine::CompiledKernel(
+    return engine::CompiledKernel(
         *runtime_, "geometry_collect_" + suffix, b.extract_ir(),
         {fa, fa, ia, iv, cv, fv, fv, iv, integer, integer},
         engine::MathMode::Strict);
   }
+}
+
+std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
+    detail::NativeSet particle_selection) {
+  auto &s = *prepared_;
+  std::array<engine::CompiledKernel, 4> kernels;
+  const auto f = real_type(), i = PrimitiveType::i32, wide = PrimitiveType::i64;
+  const auto fa = engine::Param::array(f, 2), ia = engine::Param::array(i, 2),
+             iv = engine::Param::array(i), cv = engine::Param::array(wide),
+             integer = engine::Param::scalar(i);
+  const int threads = runtime_->cpu_threads();
+  const auto suffix =
+      std::to_string(s.particles.bindings().presence->id) +
+      (particle_selection.cells == activity_->particle_activity.cells
+           ? ""
+           : "_selection_" + std::to_string(particle_selection.cells->id));
+  kernels[0] = build_geometry_collect_kernel(particle_selection);
   {
     IRBuilder b;
     auto *source = array(b, 0, i, 2), *order = array(b, 1, i),

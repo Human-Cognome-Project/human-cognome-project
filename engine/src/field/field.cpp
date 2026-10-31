@@ -17,6 +17,7 @@
 #include "field/contact_math.h"
 #include "field/prepared_storage.h"
 #include "field/tick_execution.h"
+#include "field/placement.h"
 
 namespace field {
 namespace {
@@ -137,6 +138,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       runtime.arch() != taichi::Arch::x64)
     throw std::invalid_argument(
         "contact-safe candidate ticks currently require x64");
+  if (capacity && capacity->limits()[Budget::PlacementWork] &&
+      runtime.arch() != taichi::Arch::x64)
+    throw std::invalid_argument("certified placement currently requires x64");
   if (capacity) {
     const auto required = detail::PreparedStorage::required_scratch(
         capacity->limits(), runtime.on_cuda(), profile_);
@@ -1693,6 +1697,21 @@ void Harness::prepare_empty_execution() {
     s.manifest.push_back({"tick-native-metadata-measured", std::size_t(native),
                           1, 1, std::size_t(native)});
   }
+  if (s.capacity.limits()[Budget::PlacementWork]) {
+    placement_.reset(new detail::Placement(*this));
+    const auto required = detail::PreparedStorage::required_scratch(
+        s.capacity.limits(), runtime_->on_cuda(), profile_);
+    const auto native = placement_->native_bytes();
+    const auto tick_native =
+        tick_execution_ ? tick_execution_->native_bytes() : 0;
+    if (native >
+        s.capacity.limits()[Budget::ScratchBytes] - required - tick_native)
+      throw CapacityError({Budget::ScratchBytes,
+                           required + tick_native + native,
+                           s.capacity.limits()[Budget::ScratchBytes]});
+    s.manifest.push_back({"placement-native-metadata-measured",
+                          std::size_t(native), 1, 1, std::size_t(native)});
+  }
   s.binding_bytes =
       activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
       s.fields.prepared_bytes() + inspection_.prepared_bytes() +
@@ -1710,12 +1729,15 @@ void Harness::prepare_empty_execution() {
     s.binding_bytes += live_hierarchy_->binding_bytes();
   if (tick_execution_)
     s.binding_bytes += tick_execution_->binding_bytes();
+  if (placement_)
+    s.binding_bytes += placement_->binding_bytes();
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
       runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
       s.capacity.limits()[Budget::CascadeNodes] != 0,
       s.capacity.limits()[Budget::CascadeCoverage] != 0, profile_.wide(),
       s.capacity.limits()[Budget::LiveResponses] != 0,
-      s.capacity.limits()[Budget::TickWork] != 0);
+      s.capacity.limits()[Budget::TickWork] != 0,
+      s.capacity.limits()[Budget::PlacementWork] != 0);
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");
