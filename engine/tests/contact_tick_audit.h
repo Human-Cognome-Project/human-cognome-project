@@ -77,7 +77,9 @@ inline bool guarded(const llvm::Instruction &store,
             llvm::dyn_cast<llvm::BranchInst>(block.getTerminator()))
       if (branch->isConditional())
         for (int side = 0; side < 2; ++side)
-          if (dom.dominates(branch->getSuccessor(side), store.getParent()) &&
+          if (dom.dominates(
+                  llvm::BasicBlockEdge(&block, branch->getSuccessor(side)),
+                  store.getParent()) &&
               implies_enabled(branch->getCondition(), side == 0, kernel, module,
                               enabled))
             return true;
