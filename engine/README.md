@@ -240,10 +240,11 @@ Operational admission/owners and CUDA refresh qualification remain separate.
 
 The accepted [#199 plan](../docs/native-admission-contact-transaction-plan.md)
 starts B1 with native selection qualification. #200's
-[workspace and shared C3 builders](docs/NATIVE-SELECTION.md) are submitted for
-review with [source-pinned CPU evidence](tests/native_selection/v1/README.md).
+[workspace and shared C3 builders](docs/NATIVE-SELECTION.md) are accepted in #200 with [source-pinned CPU evidence](tests/native_selection/v1/README.md).
 Local validation at `ada217a` passes 105 CPU suites, eight selection modes and
-180 integration checks; hosted native validation remains pending.
+180 integration checks. Hosted validation separately passed 105/105 CPU suites in
+3576.79 seconds, the additional compiler-mode tests, 180 integration checks and
+CPU-only backend verification; all eight checks passed.
 This first gate preserves committed selection through abandon/retry and native
 same-poll full centroid work. Complete candidate numerical/control/contact
 staging and contact-safe tick publication remain the following B1 integration;

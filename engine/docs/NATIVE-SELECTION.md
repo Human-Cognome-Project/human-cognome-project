@@ -1,6 +1,6 @@
 # Native selection workspace — B1 qualification
 
-Status: implementation/qualification for review under the accepted
+Status: **accepted in #200, 2026-10-31**, under the accepted
 [#199 plan](../../docs/native-admission-contact-transaction-plan.md). This is
 B1's first native selection gate. It does **not** enable contact-safe ticks,
 operational admission or a new Harness entry point. Typed contact/work rejection,
@@ -11,6 +11,8 @@ the following B1 integration work.
 complete regression, eight qualification modes, actual compiler modules,
 unsafe/safe controls, native resource observations and PostgreSQL integration.
 Hosted validation is recorded separately from these local observations.
+
+Hosted run 41162316957/job 124422351715 at `ada217a` passed all eight checks: 105/105 CPU suites in 3576.79 seconds, compiler collection/audit, extra no-unroll hierarchy/refresh/selection modes, 180 PostgreSQL integration checks with zero private reads, and final CPU-only backend verification.
 
 `detail::NativeSelectionWorkspace` prepares two transient native bitmasked type
 sets in the same Program. Input sets belong to that Runtime, have the declared
