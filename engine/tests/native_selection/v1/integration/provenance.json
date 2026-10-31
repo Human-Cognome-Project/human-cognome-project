@@ -1,0 +1,11 @@
+{
+  "source": "ada217a68c1af546e51ebb69f2f0c43ac42b8248",
+  "cold_container": "hcp-linguistics-validation",
+  "cold_core": "hcp_c3_core_20261027231537_16221",
+  "cold_linguistics": "hcp_c3_ling_20261027231537_16221",
+  "warm_fixture": "hcp_warm_d_20261031025718_26277",
+  "checks": 180,
+  "addressed_reads": 24,
+  "private_reads": 0,
+  "cold_fingerprints_unchanged": true
+}

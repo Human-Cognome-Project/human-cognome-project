@@ -1,5 +1,25 @@
 # Agent guidance
 
+## B1 native selection gate for review — 2026-10-31
+
+Under the accepted #199 plan, #200 implements the first
+[native selection qualification](engine/docs/NATIVE-SELECTION.md) gate:
+transaction-local particle/centroid masks in the same Program, exercised with
+the shared actual C3 force/poll builders. It is submitted for review, not
+accepted B1 completion. [Source-pinned CPU evidence](engine/tests/native_selection/v1/README.md)
+records the worker/path/compiler matrix, emitted-code controls and integration.
+On tested `ada217a`, all 105 local CPU suites passed in 1616.66 seconds, all
+eight selection modes passed, 168 new modules parsed and all 56 existing modules
+remained byte-identical. PostgreSQL integration passed 180 checks with unchanged
+cold fingerprints and zero private reads. Hosted native validation is pending;
+local results do not substitute for its acceptance.
+
+Harness does not construct the workspace yet. Complete numerical/control/contact
+staging, typed contact/work rejection and one candidate-tick publication remain
+the following B1 integration. Preserve native same-poll full centroid work,
+at-most-one visitation and late pending notifications; a frozen centroid work
+list is not an accepted replacement. CUDA qualification remains separate.
+
 ## C3-2 accepted; native admission is next — 2026-10-30
 
 The [combined refresh implementation](engine/docs/LIVE-REFRESH.md) is accepted
@@ -161,7 +181,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-10-30**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-10-31**. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
@@ -190,6 +210,7 @@ a merge or review changes Built/Held/Active status; other entry points link here
 | Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
 | Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
 | Built combined hierarchy refresh | #198's [C3-2 implementation](engine/docs/LIVE-REFRESH.md) commits one prospective source/hierarchy generation, preserving survivor state, dirty history and pending work. All nine hosted checks passed, including 101 CPU suites, both extra no-unroll matrices and 180 integration checks. New-body starts remain private fixtures; operational admission/contact-safe ticks are next. |
+| For review: B1 selection gate | #200's [native workspace](engine/docs/NATIVE-SELECTION.md) qualifies scratch selections with the actual C3 builders under accepted #199. [CPU evidence](engine/tests/native_selection/v1/README.md) is source-pinned. No operational tick/admission entry point is enabled; complete candidate numerical/control/contact staging and publication remain unbuilt. |
 | Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing; it does not install contacts or advance transactional ticks. Engine-owned admission, candidate ticks, enduring owner lifecycle and the integrated CPU exit remain unbuilt. General LoD selection remains deferred. |
 | Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
 | Local qualification | The current priority is the bounded Docker/letter/snapshot study above. Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |

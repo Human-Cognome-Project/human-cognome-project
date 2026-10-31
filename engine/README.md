@@ -238,6 +238,17 @@ backend verification; all nine checks passed. Earlier failed/cancelled runs rema
 separately retained. Native admission/contact-safe ticks are next.
 Operational admission/owners and CUDA refresh qualification remain separate.
 
+The accepted [#199 plan](../docs/native-admission-contact-transaction-plan.md)
+starts B1 with native selection qualification. #200's
+[workspace and shared C3 builders](docs/NATIVE-SELECTION.md) are submitted for
+review with [source-pinned CPU evidence](tests/native_selection/v1/README.md).
+Local validation at `ada217a` passes 105 CPU suites, eight selection modes and
+180 integration checks; hosted native validation remains pending.
+This first gate preserves committed selection through abandon/retry and native
+same-poll full centroid work. Complete candidate numerical/control/contact
+staging and contact-safe tick publication remain the following B1 integration;
+Harness does not enable the workspace or a new operational API yet.
+
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
 backing/binding implementation; the [coherent-update plan](../docs/prepared-coherent-update-plan.md)

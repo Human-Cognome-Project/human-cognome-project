@@ -7,6 +7,11 @@ operational admission or a new Harness entry point. Typed contact/work rejection
 complete candidate numerical/control staging and one tick publication remain
 the following B1 integration work.
 
+[Source-pinned CPU evidence](../tests/native_selection/v1/README.md) retains the
+complete regression, eight qualification modes, actual compiler modules,
+unsafe/safe controls, native resource observations and PostgreSQL integration.
+Hosted validation is recorded separately from these local observations.
+
 `detail::NativeSelectionWorkspace` prepares two transient native bitmasked type
 sets in the same Program. Input sets belong to that Runtime, have the declared
 logical bounds and provisioned backing/list high-water, and remain the committed
