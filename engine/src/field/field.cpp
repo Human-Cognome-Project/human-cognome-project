@@ -16,6 +16,7 @@
 #include "field/centroid_cascade.h"
 #include "field/contact_math.h"
 #include "field/prepared_storage.h"
+#include "field/tick_execution.h"
 
 namespace field {
 namespace {
@@ -132,6 +133,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                                engine::numeric::Real::F64,
                                profile_.body_fraction_bits)
         .require_backend(runtime);
+  if (capacity && capacity->limits()[Budget::TickWork] &&
+      runtime.arch() != taichi::Arch::x64)
+    throw std::invalid_argument(
+        "contact-safe candidate ticks currently require x64");
   if (capacity) {
     const auto required = detail::PreparedStorage::required_scratch(
         capacity->limits(), runtime.on_cuda(), profile_);
@@ -195,6 +200,26 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
   // include its id to avoid reusing another study's tree-bound machine code.
   const auto compilation_start = Clock::now();
 
+  auto kernels = build_numerical_kernels(activity_->particle_activity,
+                                         activity_->centroids);
+  clear_ = std::move(kernels[0]);
+  force_ = std::move(kernels[1]);
+  contact_ = std::move(kernels[2]);
+  integrate_ = std::move(kernels[3]);
+  determine_ = std::move(kernels[4]);
+  centroid_ = std::move(kernels[5]);
+  finalize_ = std::move(kernels[6]);
+  timings_.compilation_ms =
+      activity_->compilation_ms + elapsed(compilation_start);
+  if (prepared_)
+    prepare_empty_execution();
+}
+
+std::array<engine::CompiledKernel, 7> Harness::build_numerical_kernels(
+    detail::NativeSet particle_selection,
+    detail::NativeSet centroid_selection) {
+  auto &runtime = *runtime_;
+  std::array<engine::CompiledKernel, 7> kernels;
   const int threads = runtime.cpu_threads();
 
   // Clear: particle accumulators, then the group side the next centroid pass
@@ -212,8 +237,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *mass_count = scalar_param(b, 7, PrimitiveType::i32);
     auto *zero = real(b, 0.0f);
     {
-      auto *loop = b.create_struct_for(activity_->particle_activity.cells,
-                                       false, threads);
+      auto *loop =
+          b.create_struct_for(particle_selection.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       for (int f : {kForceX, kForceY, kForceZ}) {
@@ -222,7 +247,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     }
     {
       auto *loop =
-          b.create_struct_for(activity_->centroids.cells, false, threads);
+          b.create_struct_for(centroid_selection.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       for (int f : {kAccX, kAccY, kAccZ}) {
@@ -264,9 +289,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
             b.create_add(load(b, universal, {b.get_int32(0)}),
                          load(b, particles, at(b, kMass, i))));
     }
-    clear_ = engine::CompiledKernel(
-        runtime,
-        "field_clear_" + std::to_string(activity_->particle_activity.cells->id),
+    kernels[0] = engine::CompiledKernel(
+        runtime, "field_clear_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(),
         {engine::Param::array(real_type(), /*total_dim=*/2),
          engine::Param::array(real_type(), /*total_dim=*/2),
@@ -299,8 +323,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     (void)g;
     (void)e;
 
-    auto *loop =
-        b.create_struct_for(activity_->particle_activity.cells, false, threads);
+    auto *loop = b.create_struct_for(particle_selection.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
@@ -388,9 +411,8 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       store(b, particles, at(b, kForceZ, p),
             b.create_add(load(b, particles, at(b, kForceZ, p)), fz));
     }
-    force_ = engine::CompiledKernel(
-        runtime,
-        "field_force_" + std::to_string(activity_->particle_activity.cells->id),
+    kernels[1] = engine::CompiledKernel(
+        runtime, "field_force_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(),
         detail::ratio_parameters(
             {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
@@ -423,8 +445,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *b_offsets = array_param(b, 8, PrimitiveType::i32, 2);
     auto *b_order = array_param(b, 9, PrimitiveType::i32, 1);
     (void)count;
-    auto *loop =
-        b.create_struct_for(activity_->particle_activity.cells, false, threads);
+    auto *loop = b.create_struct_for(particle_selection.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *p = b.get_loop_index(loop);
@@ -468,10 +489,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         }
       }
     }
-    contact_ = engine::CompiledKernel(
+    kernels[2] = engine::CompiledKernel(
         runtime,
-        "field_contact_" +
-            std::to_string(activity_->particle_activity.cells->id),
+        "field_contact_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(),
         {engine::Param::array(PrimitiveType::i32, 2),
          engine::Param::array(real_type(), 2),
@@ -511,8 +531,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *live_installed =
         live_capacity ? scalar_param(b, 14, PrimitiveType::i32) : nullptr;
 
-    auto *loop =
-        b.create_struct_for(activity_->particle_activity.cells, false, threads);
+    auto *loop = b.create_struct_for(particle_selection.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
@@ -697,7 +716,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                 profile_.wide() ? moved
                                 : b.create_logical_or(continued, moved))),
             true);
-        activity_->particle_activity.deactivate(b, i);
+        particle_selection.deactivate(b, i);
       }
       if (profile_.wide()) {
         auto attempted_guard = b.get_if_guard(b.create_if(attempted), true);
@@ -723,7 +742,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
                                    b.create_logical_not(live_installed),
                                    load(b, leaf_fields, {field}))),
                                true));
-          activity_->centroids.activate(b, field);
+          centroid_selection.activate(b, field);
           count_work(b, counters, detail::AdjacencyVisits);
         }
         auto newly = b.get_if_guard(
@@ -756,10 +775,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       params.push_back(engine::Param::array(PrimitiveType::i32));
       params.push_back(engine::Param::scalar(PrimitiveType::i32));
     }
-    integrate_ = engine::CompiledKernel(
+    kernels[3] = engine::CompiledKernel(
         runtime,
-        "field_integrate_" +
-            std::to_string(activity_->particle_activity.cells->id),
+        "field_integrate_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(), params, engine::MathMode::Strict);
   }
 
@@ -772,8 +790,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         profile_.wide() ? array_param(b, 3, PrimitiveType::i64, 1) : nullptr;
     auto *particles = array_param(b, 0, real_type(), /*total_dim=*/2);
     auto *out = array_param(b, 1, real_type(), /*total_dim=*/1);
-    auto *loop =
-        b.create_struct_for(activity_->particle_activity.cells, false, threads);
+    auto *loop = b.create_struct_for(particle_selection.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
@@ -792,10 +809,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
         engine::Param::scalar(PrimitiveType::i32)};
     if (profile_.wide())
       params.push_back(engine::Param::array(PrimitiveType::i64));
-    determine_ = engine::CompiledKernel(
+    kernels[4] = engine::CompiledKernel(
         runtime,
-        "field_determine_" +
-            std::to_string(activity_->particle_activity.cells->id),
+        "field_determine_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(), params, engine::MathMode::Strict);
   }
 
@@ -822,8 +838,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     (void)g;
     (void)e;
 
-    auto *loop =
-        b.create_struct_for(activity_->centroids.cells, false, threads);
+    auto *loop = b.create_struct_for(centroid_selection.cells, false, threads);
     {
       auto guard = b.get_loop_guard(loop);
       auto *grp = b.get_loop_index(loop);
@@ -884,10 +899,9 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
               b.create_add(load(b, groups, at(b, kAccM, grp)), m));
       }
     }
-    centroid_ = engine::CompiledKernel(
+    kernels[5] = engine::CompiledKernel(
         runtime,
-        "field_centroid_" +
-            std::to_string(activity_->particle_activity.cells->id),
+        "field_centroid_" + std::to_string(particle_selection.cells->id),
         b.extract_ir(),
         detail::ratio_parameters(
             {engine::Param::array(PrimitiveType::i32, /*total_dim=*/2),
@@ -916,7 +930,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
     auto *counters = array_param(b, 4, PrimitiveType::i64, 1);
     {
       auto *loop =
-          b.create_struct_for(activity_->centroids.cells, false, threads);
+          b.create_struct_for(centroid_selection.cells, false, threads);
       auto guard = b.get_loop_guard(loop);
       auto *i = b.get_loop_index(loop);
       store(b, gs, at(b, detail::Changed, i), b.get_int32(0));
@@ -951,10 +965,10 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
       }
       store(b, groups, at(b, kCenM, i), m);
     }
-    finalize_ = engine::CompiledKernel(
+    kernels[6] = engine::CompiledKernel(
         runtime,
         "field_publish_centroids_" +
-            std::to_string(activity_->particle_activity.cells->id),
+            std::to_string(particle_selection.cells->id),
         b.extract_ir(),
         {engine::Param::array(real_type(), /*total_dim=*/2),
          engine::Param::scalar(PrimitiveType::i32),
@@ -963,10 +977,7 @@ Harness::Harness(engine::Runtime &runtime, int particle_count, int group_count,
          engine::Param::array(PrimitiveType::i64)},
         engine::MathMode::Strict);
   }
-  timings_.compilation_ms =
-      activity_->compilation_ms + elapsed(compilation_start);
-  if (prepared_)
-    prepare_empty_execution();
+  return kernels;
 }
 
 template <class T>
@@ -1281,8 +1292,9 @@ bool Harness::uploaded_payload_matches() {
          matches(*contact_int_array_, contact_int_data);
 }
 
-void Harness::launch_clear(bool seed) {
-  auto call = clear_.invocation(bool(prepared_));
+void Harness::launch_clear(bool seed, detail::TickExecution *target) {
+  auto &kernel = target ? target->kernel(detail::TickKernel::Clear) : clear_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     bind(ctx, 0, particle_array_.get(), particle_values_,
@@ -1302,11 +1314,15 @@ void Harness::launch_clear(bool seed) {
     ctx.set_arg_ndarray({6}, *activity_->particle_flags);
   }
   engine::argument_int(ctx, 7, seed ? particles_ : 0);
-  clear_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(detail::TickKernel::Clear, ctx);
+  kernel.launch(ctx);
 }
 
-void Harness::launch_force(const Parameters64 &p) {
-  auto call = force_.invocation(bool(prepared_));
+void Harness::launch_force(const Parameters64 &p,
+                           detail::TickExecution *target) {
+  auto &kernel = target ? target->kernel(detail::TickKernel::Force) : force_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     bind(ctx, 0, edge_int_array_.get(), edge_int_data,
@@ -1342,11 +1358,16 @@ void Harness::launch_force(const Parameters64 &p) {
   }
   if (profile_.wide() && !ctx.prepared)
     ctx.set_arg_ndarray({12}, *prepared_->live_ratios_array);
-  force_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(detail::TickKernel::Force, ctx);
+  kernel.launch(ctx);
 }
 
-void Harness::launch_contact(const Parameters64 &p) {
-  auto call = contact_.invocation(bool(prepared_));
+void Harness::launch_contact(const Parameters64 &p,
+                             detail::TickExecution *target) {
+  auto &kernel =
+      target ? target->kernel(detail::TickKernel::Contact) : contact_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     bind(ctx, 0, contact_int_array_.get(), contact_int_data,
@@ -1377,11 +1398,16 @@ void Harness::launch_contact(const Parameters64 &p) {
     ctx.set_arg_ndarray({9}, *activity_->contact_b_edges);
   }
   engine::argument_int(ctx, 10, particles_);
-  contact_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(detail::TickKernel::Contact, ctx);
+  kernel.launch(ctx);
 }
 
-void Harness::launch_integrate(const Parameters64 &p) {
-  auto call = integrate_.invocation(bool(prepared_));
+void Harness::launch_integrate(const Parameters64 &p,
+                               detail::TickExecution *target) {
+  auto &kernel =
+      target ? target->kernel(detail::TickKernel::Integrate) : integrate_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     bind(ctx, 0, particle_array_.get(), particle_values_,
@@ -1424,11 +1450,15 @@ void Harness::launch_integrate(const Parameters64 &p) {
       ctx.set_arg_ndarray({13}, live_hierarchy_->leaf_fields());
     engine::argument_int(ctx, 14, live_hierarchy_->installed());
   }
-  integrate_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(detail::TickKernel::Integrate, ctx);
+  kernel.launch(ctx);
 }
 
-void Harness::launch_determine() {
-  auto call = determine_.invocation(bool(prepared_));
+void Harness::launch_determine(detail::TickExecution *target) {
+  auto &kernel =
+      target ? target->kernel(detail::TickKernel::Determine) : determine_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     bind(ctx, 0, particle_array_.get(), particle_values_,
@@ -1442,12 +1472,18 @@ void Harness::launch_determine() {
   engine::argument_int(ctx, 2, particles_);
   if (profile_.wide() && !ctx.prepared)
     ctx.set_arg_ndarray({3}, *activity_->counters);
-  determine_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(detail::TickKernel::Determine, ctx);
+  kernel.launch(ctx);
 }
 
-void Harness::launch_centroid(const Parameters64 &, bool seed) {
+void Harness::launch_centroid(const Parameters64 &,
+                              bool seed,
+                              detail::TickExecution *target) {
   {
-    auto call = centroid_.invocation(bool(prepared_));
+    auto &kernel =
+        target ? target->kernel(detail::TickKernel::Centroid) : centroid_;
+    auto call = kernel.invocation(bool(prepared_));
     auto &ctx = call.get();
     if (!ctx.prepared) {
       bind(ctx, 0, edge_int_array_.get(), edge_int_data,
@@ -1484,10 +1520,14 @@ void Harness::launch_centroid(const Parameters64 &, bool seed) {
     }
     if (profile_.wide() && !ctx.prepared)
       ctx.set_arg_ndarray({12}, *prepared_->live_ratios_array);
-    centroid_.launch(ctx);
+    if (target && !ctx.prepared)
+      target->redirect(detail::TickKernel::Centroid, ctx);
+    kernel.launch(ctx);
   }
   {
-    auto call = finalize_.invocation(bool(prepared_));
+    auto &kernel =
+        target ? target->kernel(detail::TickKernel::Finalize) : finalize_;
+    auto call = kernel.invocation(bool(prepared_));
     auto &ctx = call.get();
     if (!ctx.prepared) {
       bind(ctx, 0, group_array_.get(), group_values_,
@@ -1503,7 +1543,9 @@ void Harness::launch_centroid(const Parameters64 &, bool seed) {
     if (!ctx.prepared) {
       ctx.set_arg_ndarray({4}, *activity_->counters);
     }
-    finalize_.launch(ctx);
+    if (target && !ctx.prepared)
+      target->redirect(detail::TickKernel::Finalize, ctx);
+    kernel.launch(ctx);
   }
 }
 
@@ -1640,6 +1682,17 @@ void Harness::prepare_empty_execution() {
   }
   if (s.capacity.limits()[Budget::CascadeNodes])
     centroid_cascade_ = std::make_unique<detail::CentroidCascade>(*this);
+  if (s.capacity.limits()[Budget::TickWork]) {
+    tick_execution_.reset(new detail::TickExecution(*this));
+    const auto required = detail::PreparedStorage::required_scratch(
+        s.capacity.limits(), runtime_->on_cuda(), profile_);
+    const auto native = tick_execution_->native_bytes();
+    if (native > s.capacity.limits()[Budget::ScratchBytes] - required)
+      throw CapacityError({Budget::ScratchBytes, required + native,
+                           s.capacity.limits()[Budget::ScratchBytes]});
+    s.manifest.push_back({"tick-native-metadata-measured", std::size_t(native),
+                          1, 1, std::size_t(native)});
+  }
   s.binding_bytes =
       activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
       s.fields.prepared_bytes() + inspection_.prepared_bytes() +
@@ -1655,11 +1708,14 @@ void Harness::prepare_empty_execution() {
     s.binding_bytes += centroid_cascade_->binding_bytes();
   if (live_hierarchy_)
     s.binding_bytes += live_hierarchy_->binding_bytes();
+  if (tick_execution_)
+    s.binding_bytes += tick_execution_->binding_bytes();
   const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
       runtime_->on_cuda(), s.capacity.limits()[Budget::GeometryWork] != 0,
       s.capacity.limits()[Budget::CascadeNodes] != 0,
       s.capacity.limits()[Budget::CascadeCoverage] != 0, profile_.wide(),
-      s.capacity.limits()[Budget::LiveResponses] != 0);
+      s.capacity.limits()[Budget::LiveResponses] != 0,
+      s.capacity.limits()[Budget::TickWork] != 0);
   if (s.binding_bytes > reserve)
     throw std::runtime_error(
         "prepared binding signature exceeds declared reservation");
@@ -1787,6 +1843,15 @@ void Harness::initialize_prepared_fixture(const Parameters64 &p) {
   }
 }
 
+void Harness::validate_tick_parameters(const Parameters64 &p) const {
+  validate_parameters(p);
+  if (profile_.wide())
+    for (double x : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength})
+      if (!NumericalProfile::supported_real(x))
+        throw std::invalid_argument(
+            "trial parameter outside supported finite/FTZ domain");
+}
+
 void Harness::tick(const Parameters &p) {
   require_legacy();
   tick_values(p);
@@ -1800,12 +1865,9 @@ void Harness::tick_values(const Parameters64 &p) {
     throw std::logic_error(
         "field::Harness: successful publication required before tick");
   }
-  validate_parameters(p);
-  if (profile_.wide())
-    for (double x : {p.gravity, p.dt, p.contact_stiffness, p.reach_strength})
-      if (!NumericalProfile::supported_real(x))
-        throw std::invalid_argument(
-            "trial parameter outside supported finite/FTZ domain");
+  if (tick_execution_)
+    throw std::logic_error("contact-safe execution requires tick_prepared");
+  validate_tick_parameters(p);
   if (prepared_ &&
       prepared_->completed_ticks == std::numeric_limits<std::uint64_t>::max())
     throw std::overflow_error("completed tick observation counter exhausted");

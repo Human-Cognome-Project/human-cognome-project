@@ -1,4 +1,5 @@
 #include "field/activity.h"
+#include "field/tick_execution.h"
 
 #include <algorithm>
 #include <chrono>
@@ -100,6 +101,23 @@ Activity::Activity(engine::Runtime &r,
   // this tree's SNode ids, so its name must distinguish the execution layout.
   // CHI IR is memory-cached only, never restored from the offline disk cache.
   const auto compile_start = std::chrono::steady_clock::now();
+  auto kernels = build_kernels(particle_activity, centroids);
+  begin_ = std::move(kernels[0]);
+  touch_ = std::move(kernels[1]);
+  contact_touch_ = std::move(kernels[2]);
+  mark_ = std::move(kernels[3]);
+  reset_ = std::move(kernels[4]);
+  clear_ = std::move(kernels[5]);
+  compilation_ms = std::chrono::duration<double, std::milli>(
+                       std::chrono::steady_clock::now() - compile_start)
+                       .count();
+}
+
+std::array<engine::CompiledKernel, 6> Activity::build_kernels(
+    NativeSet particle_activity,
+    NativeSet centroids) {
+  auto &r = runtime_;
+  std::array<engine::CompiledKernel, 6> kernels;
   const int threads = r.cpu_threads();
   const auto f = real_type(wide()), i32 = PrimitiveType::i32;
   const auto fa = engine::Param::array(f, 2), ia = engine::Param::array(i32, 2);
@@ -234,7 +252,7 @@ Activity::Activity(engine::Runtime &r,
       for (int axis = 0; axis < 3; ++axis)
         write(b, pd, cell(b, axis, p), real(b, 0));
     }
-    begin_ = engine::CompiledKernel(
+    kernels[0] = engine::CompiledKernel(
         r, "activity_begin_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(),
         {fa, fa, ia, fa, ia, cv, fv, iv, integer, integer, integer, integer,
@@ -269,7 +287,7 @@ Activity::Activity(engine::Runtime &r,
       particle_activity.activate(b, other);
       count(b, c, AdjacencyVisits);
     }
-    contact_touch_ = engine::CompiledKernel(
+    kernels[2] = engine::CompiledKernel(
         r,
         "activity_contact_touch_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(), {ia, cv, ia, iv, ia, iv, ia}, engine::MathMode::Strict);
@@ -336,7 +354,7 @@ Activity::Activity(engine::Runtime &r,
       auto zero = b.get_if_guard(response, false);
       count(b, c, ZeroTouches);
     }
-    touch_ = engine::CompiledKernel(
+    kernels[1] = engine::CompiledKernel(
         r, "activity_propagate_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(),
         ratio_parameters(
@@ -417,7 +435,7 @@ Activity::Activity(engine::Runtime &r,
       write(b, gs, cell(b, Flagged, g), b.get_int32(1));
       count(b, c, Flags);
     }
-    mark_ = engine::CompiledKernel(
+    kernels[3] = engine::CompiledKernel(
         r,
         "activity_mark_centroids_" +
             std::to_string(particle_activity.cells->id),
@@ -453,7 +471,7 @@ Activity::Activity(engine::Runtime &r,
       if (group)
         write(b, flags, cell(b, Flagged, row), b.get_int32(1));
     }
-    reset_ = engine::CompiledKernel(
+    kernels[4] = engine::CompiledKernel(
         r, "activity_reset_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(), {ia}, engine::MathMode::Strict);
   }
@@ -464,13 +482,11 @@ Activity::Activity(engine::Runtime &r,
       auto guard = b.get_loop_guard(loop);
       set.deactivate(b, b.get_loop_index(loop));
     }
-    clear_ = engine::CompiledKernel(
+    kernels[5] = engine::CompiledKernel(
         r, "activity_clear_" + std::to_string(particle_activity.cells->id),
         b.extract_ir(), {}, engine::MathMode::Strict);
   }
-  compilation_ms = std::chrono::duration<double, std::milli>(
-                       std::chrono::steady_clock::now() - compile_start)
-                       .count();
+  return kernels;
 }
 
 void Activity::reset() {
@@ -583,8 +599,13 @@ void Activity::index(const std::vector<int> &edges,
   one(p_, k_, klive, contacts, kContactB, *contact_b_offsets, *contact_b_edges);
 }
 
-void Activity::begin(Harness &h, bool all, bool invalid, bool radial) {
-  auto call = begin_.invocation(bool(prepared_));
+void Activity::begin(Harness &h,
+                     bool all,
+                     bool invalid,
+                     bool radial,
+                     TickExecution *target) {
+  auto &kernel = target ? target->kernel(TickKernel::Begin) : begin_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
@@ -618,10 +639,13 @@ void Activity::begin(Harness &h, bool all, bool invalid, bool radial) {
   engine::argument_int(ctx, 11, invalid);
   engine::argument_int(ctx, 12, int(selected_groups_.size()));
   engine::argument_int(ctx, 13, radial);
-  begin_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(TickKernel::Begin, ctx);
+  kernel.launch(ctx);
 }
-void Activity::touch(Harness &h, double gravity) {
-  auto call = touch_.invocation(bool(prepared_));
+void Activity::touch(Harness &h, double gravity, TickExecution *target) {
+  auto &kernel = target ? target->kernel(TickKernel::Touch) : touch_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
@@ -657,12 +681,18 @@ void Activity::touch(Harness &h, double gravity) {
   engine::argument_float(ctx, 9, gravity);
   if (wide() && !ctx.prepared)
     ctx.set_arg_ndarray({10}, *prepared_->live_ratios_array);
-  touch_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(TickKernel::Touch, ctx);
+  kernel.launch(ctx);
 }
-void Activity::touch_contacts(Harness &h, double stiffness) {
+void Activity::touch_contacts(Harness &h,
+                              double stiffness,
+                              TickExecution *target) {
   if ((!prepared_ && k_ == 0) || stiffness == 0)
     return;
-  auto call = contact_touch_.invocation(bool(prepared_));
+  auto &kernel =
+      target ? target->kernel(TickKernel::ContactTouch) : contact_touch_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     ctx.set_arg_ndarray({0}, *particle_flags);
@@ -686,10 +716,13 @@ void Activity::touch_contacts(Harness &h, double stiffness) {
     h.bind(ctx, 6, h.contact_int_array_.get(), h.contact_int_data,
            {kContactIntFieldCount, std::max(k_, 1)});
   }
-  contact_touch_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(TickKernel::ContactTouch, ctx);
+  kernel.launch(ctx);
 }
-void Activity::mark(Harness &h, bool all) {
-  auto call = mark_.invocation(bool(prepared_));
+void Activity::mark(Harness &h, bool all, TickExecution *target) {
+  auto &kernel = target ? target->kernel(TickKernel::Mark) : mark_;
+  auto call = kernel.invocation(bool(prepared_));
   auto &ctx = call.get();
   if (!ctx.prepared) {
     h.bind(ctx, 0, h.particle_array_.get(), h.particle_values_,
@@ -730,7 +763,9 @@ void Activity::mark(Harness &h, bool all) {
   if (!ctx.prepared) {
     ctx.set_arg_ndarray({12}, *group_edges);
   }
-  mark_.launch(ctx);
+  if (target && !ctx.prepared)
+    target->redirect(TickKernel::Mark, ctx);
+  kernel.launch(ctx);
 }
 void Activity::clear() {
   auto call = clear_.invocation(bool(prepared_));
@@ -770,17 +805,22 @@ std::size_t Activity::prepared_binding_bytes() const {
          contact_touch_.prepared_bytes() + mark_.prepared_bytes() +
          reset_.prepared_bytes() + clear_.prepared_bytes();
 }
-Demand Activity::report(std::uint64_t exposed, std::uint64_t fields_exposed) {
+Demand Activity::report(std::uint64_t exposed,
+                        std::uint64_t fields_exposed,
+                        Ndarray *candidate_counters,
+                        Ndarray *candidate_focus) {
   std::array<std::int64_t, TrialCounterCount> c{};
   std::array<float, 8> origin{};
   engine::readback(
-      *counters, c.data(),
+      *(candidate_counters ? candidate_counters : counters.get()), c.data(),
       (wide() ? TrialCounterCount : CounterCount) * sizeof(std::int64_t));
   std::array<double, 8> origin64{};
   if (wide())
-    engine::readback(*focus, origin64.data(), sizeof(origin64));
+    engine::readback(*(candidate_focus ? candidate_focus : focus.get()),
+                     origin64.data(), sizeof(origin64));
   else {
-    engine::readback(*focus, origin.data(), origin.size() * sizeof(float));
+    engine::readback(*(candidate_focus ? candidate_focus : focus.get()),
+                     origin.data(), origin.size() * sizeof(float));
     std::copy(origin.begin(), origin.end(), origin64.begin());
   }
   Demand d;

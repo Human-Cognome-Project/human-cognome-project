@@ -41,6 +41,7 @@ class Activity {
            int edges,
            int contacts,
            PreparedStorage *prepared = nullptr);
+  std::array<engine::CompiledKernel, 6> build_kernels(NativeSet, NativeSet);
   void provision();
   std::size_t prepared_binding_bytes() const;
   void reset();
@@ -50,12 +51,21 @@ class Activity {
   const taichi::lang::Ndarray &selected_slots() const {
     return *selected_slots_array_;
   }
-  void begin(Harness &h, bool all_loaded, bool invalidate, bool radial);
-  void touch(Harness &h, double gravity);
-  void touch_contacts(Harness &h, double stiffness);
-  void mark(Harness &h, bool all_loaded);
+  void begin(Harness &h,
+             bool all_loaded,
+             bool invalidate,
+             bool radial,
+             TickExecution *target = nullptr);
+  void touch(Harness &h, double gravity, TickExecution *target = nullptr);
+  void touch_contacts(Harness &h,
+                      double stiffness,
+                      TickExecution *target = nullptr);
+  void mark(Harness &h, bool all_loaded, TickExecution *target = nullptr);
   void clear();  // Publication only; type phases consume their own activity.
-  Demand report(std::uint64_t exposed, std::uint64_t fields_exposed);
+  Demand report(std::uint64_t exposed,
+                std::uint64_t fields_exposed,
+                taichi::lang::Ndarray *candidate_counters = nullptr,
+                taichi::lang::Ndarray *candidate_focus = nullptr);
   NativeSet particle_activity, centroids;
   double compilation_ms{0};
   std::unique_ptr<taichi::lang::Ndarray> particle_flags, particle_delta;
@@ -69,6 +79,7 @@ class Activity {
       contact_b_offsets, contact_b_edges;
 
  private:
+  friend class TickExecution;
   engine::Runtime &runtime_;
   int p_, g_, e_, k_;
   PreparedStorage *prepared_{};

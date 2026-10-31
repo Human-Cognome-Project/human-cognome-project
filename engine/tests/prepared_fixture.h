@@ -134,7 +134,8 @@ struct PreparedFixtureAccess {
                    const FixtureSource &source,
                    Input &input,
                    const Parameters &parameters,
-                   bool holes) {
+                   bool holes,
+                   bool field_holes = false) {
     auto &s = *h.prepared_;
     const auto &limits = s.capacity.limits();
     const auto b = std::size_t(limits[Budget::Batch]);
@@ -235,7 +236,27 @@ struct PreparedFixtureAccess {
             engine::RecordStatus::Ok)
           throw std::runtime_error("fixture native retirement failed");
       }
-      define(s.fields, source.kinds.size(), input.field_rows, false);
+      const auto fclaims = field_holes ? std::size_t(limits[Budget::Fields])
+                                       : source.kinds.size();
+      define(s.fields, fclaims, input.field_rows, false);
+      if (field_holes && !source.kinds.empty()) {
+        const auto last = std::find_if(
+            input.field_rows.begin(), input.field_rows.begin() + fclaims,
+            [&](const auto &h) {
+              return h.record == int(limits[Budget::Fields] - 1);
+            });
+        if (last == input.field_rows.begin() + fclaims)
+          throw std::runtime_error("last field not claimable");
+        std::swap(*last, input.field_rows[source.kinds.size() - 1]);
+      }
+      for (std::size_t start = source.kinds.size(); start < fclaims;
+           start += b) {
+        const auto n = std::min(b, fclaims - start);
+        if (s.fields.release_batch(input.field_rows.data() + start, n,
+                                   s.results.data()) !=
+            engine::RecordStatus::Ok)
+          throw std::runtime_error("fixture field retirement failed");
+      }
       for (std::size_t i = 0; i < source.particles.size(); ++i) {
         const auto ref = input.particle_rows[i];
         s.particle_headers[ref.record] = ref;

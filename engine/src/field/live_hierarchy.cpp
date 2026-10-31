@@ -270,7 +270,7 @@ struct LiveHierarchy::Impl {
   bool bound{};
   // Local qualification only; normal builds continue to refuse CUDA C3.
   bool cuda_qualification_device{};
-  std::uint64_t generation{}, nodes{}, responses{};
+  std::uint64_t generation{}, nodes{}, responses{}, references{};
   LiveHierarchyInspection inspection;
   std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
       owners;
@@ -817,6 +817,26 @@ void LiveHierarchy::poll_target(double gravity, int target, double stiffness) {
 const Ndarray &LiveHierarchy::leaf_fields() const {
   return *impl_->arrays[17];
 }
+std::uint64_t LiveHierarchy::node_count() const {
+  return impl_->nodes;
+}
+std::uint64_t LiveHierarchy::reference_count() const {
+  return impl_->bound ? impl_->references : 0;
+}
+void LiveHierarchy::retag_generation(std::uint64_t generation) {
+  if (!impl_->bound)
+    return;
+  for (std::size_t logical = 0; logical < impl_->nodes; ++logical) {
+    const auto slot = impl_->inspection.order[logical];
+    for (int j = impl_->config(SourceBegin, slot);
+         j <
+         impl_->config(SourceBegin, slot) + impl_->config(SourceCount, slot);
+         ++j)
+      impl_->source_headers[j].generation = generation;
+  }
+  impl_->generation = generation;
+}
+
 void LiveHierarchy::force(double gravity) {
   validate();
   impl_->launch(impl_->command_kernel, gravity, 0);
@@ -1057,6 +1077,10 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     for (std::size_t i = 0; i < spec.node_count; ++i)
       a.inspection.order[i] = int(i);
     a.nodes = spec.node_count;
+    a.references = nr + spec.node_count;
+    for (std::size_t node = 0; node < spec.node_count; ++node)
+      a.references += a.config(ChildCount, node) + a.config(SourceCount, node) +
+                      a.config(CoverCount, node);
     a.responses = nr;
     a.generation = s.generation;
     a.launch(a.command_kernel, 0, 1);

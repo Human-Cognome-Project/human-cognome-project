@@ -928,9 +928,12 @@ void LiveHierarchy::finish_refresh(std::uint64_t generation) {
   std::fill(a.inspection.fields.begin(), a.inspection.fields.end(), -1);
   std::fill(a.inspection.nodes.begin(), a.inspection.nodes.end(),
             CascadeNode{});
+  a.references = r.responses + r.count;
   for (std::size_t logical = 0; logical < r.count; ++logical) {
     int slot = r.plan[LogicalOrder * a.H + logical],
         field = a.config(Field, slot);
+    a.references += a.config(ChildCount, slot) + a.config(SourceCount, slot) +
+                    a.config(CoverCount, slot);
     a.inspection.order[logical] = slot;
     a.inspection.nodes[slot] = r.nodes[slot];
     a.inspection.nodes[slot].field = s.field_headers[field];

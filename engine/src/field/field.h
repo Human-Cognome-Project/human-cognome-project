@@ -12,6 +12,7 @@
 #include "field/numeric_ir.h"
 #include "field/prepared_geometry.h"
 #include "field/prepared_update.h"
+#include "field/prepared_tick.h"
 #include "field/real_buffer.h"
 #include "taichi/program/ndarray.h"
 
@@ -30,10 +31,13 @@ class Activity;
 class PreparedStorage;
 class CentroidCascade;
 class LiveHierarchy;
+class TickExecution;
+struct NativeSet;
 }  // namespace detail
 class PreparedCapacity;
 namespace testing {
 struct PreparedFixtureAccess;
+struct TickExecutionAccess;
 }
 enum class TickMode { Selective, AllLoaded };
 using FrameAnchor = std::array<double, 3>;
@@ -246,6 +250,10 @@ class Harness {
       std::uint64_t work_limit = std::numeric_limits<std::uint64_t>::max());
   const GeometryInspection &inspect_prepared_geometry(
       const GeometryResult &query);
+  TickResult tick_prepared(std::uint64_t expected_generation,
+                           const Parameters64 &,
+                           std::uint64_t tick_work = UINT64_MAX,
+                           std::uint64_t geometry_work = UINT64_MAX);
   UpdateResult update_prepared(std::uint64_t expected_generation,
                                const UpdateCommand *commands,
                                std::size_t count);
@@ -366,10 +374,12 @@ class Harness {
   }
 
  private:
+  friend class detail::TickExecution;
   friend class detail::Activity;
   friend class detail::CentroidCascade;
   friend class detail::LiveHierarchy;
   friend struct testing::PreparedFixtureAccess;
+  friend struct testing::TickExecutionAccess;
   friend struct testing::LiveHierarchyAccess;
   Harness(engine::Runtime &runtime,
           int particle_count,
@@ -380,6 +390,7 @@ class Harness {
           const PreparedCapacity *capacity);
   void initialize_prepared_fixture(const Parameters64 &parameters);
   void tick_values(const Parameters64 &p);
+  void validate_tick_parameters(const Parameters64 &) const;
   void require_wide() const {
     if (!profile_.wide())
       throw std::logic_error("f64 view requires trial profile");
@@ -394,6 +405,11 @@ class Harness {
   taichi::lang::Stmt *real(taichi::lang::IRBuilder &b, double x) const {
     return detail::real_constant(b, profile_.wide(), x);
   }
+  std::array<engine::CompiledKernel, 7> build_numerical_kernels(
+      detail::NativeSet,
+      detail::NativeSet);
+  std::array<engine::CompiledKernel, 4> build_geometry_kernels(
+      detail::NativeSet);
   void prepare_empty_execution();
   void prepare_update_execution();
   void prepare_geometry_execution();
@@ -423,12 +439,17 @@ class Harness {
             const taichi::lang::Ndarray *array, detail::RealBuffer &values,
             std::vector<int> shape);
 
-  void launch_clear(bool seed);
-  void launch_force(const Parameters64 &p);
-  void launch_contact(const Parameters64 &p);
-  void launch_integrate(const Parameters64 &p);
-  void launch_determine();
-  void launch_centroid(const Parameters64 &p, bool seed);
+  void launch_clear(bool seed, detail::TickExecution *target = nullptr);
+  void launch_force(const Parameters64 &p,
+                    detail::TickExecution *target = nullptr);
+  void launch_contact(const Parameters64 &p,
+                      detail::TickExecution *target = nullptr);
+  void launch_integrate(const Parameters64 &p,
+                        detail::TickExecution *target = nullptr);
+  void launch_determine(detail::TickExecution *target = nullptr);
+  void launch_centroid(const Parameters64 &p,
+                       bool seed,
+                       detail::TickExecution *target = nullptr);
 
   engine::Runtime *runtime_;
   NumericalProfile profile_;
@@ -463,6 +484,7 @@ class Harness {
   std::unique_ptr<detail::Activity> activity_;
   std::unique_ptr<detail::CentroidCascade> centroid_cascade_;
   std::unique_ptr<detail::LiveHierarchy> live_hierarchy_;
+  std::unique_ptr<detail::TickExecution> tick_execution_;
   engine::CompiledKernel clear_;
   engine::CompiledKernel force_;
   engine::CompiledKernel contact_;

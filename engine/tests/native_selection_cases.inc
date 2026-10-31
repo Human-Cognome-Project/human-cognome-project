@@ -4,8 +4,10 @@
 template <std::size_t N>
 void retain_selection_modules(
     const std::array<const engine::CompiledKernel *, N> &kernels,
-    const std::string &stem) {
-  const char *dir = std::getenv("HCP_B1_IR_DIR");
+    const std::string &stem,
+    const char *explicit_directory = nullptr) {
+  const char *dir =
+      explicit_directory ? explicit_directory : std::getenv("HCP_B1_IR_DIR");
   if (!dir)
     return;
   std::ofstream metadata(std::string(dir) + "/" + stem + ".configuration.txt");

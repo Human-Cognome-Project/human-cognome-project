@@ -42,12 +42,20 @@
 #include "taichi/ir/type_factory.h"
 #include "live_hierarchy_audit.h"
 #include "field/native_selection.h"
+#include "field/tick_execution.h"
 #include "native_selection_audit.h"
+#include "contact_tick_audit.h"
 #include "cuda_selector_audit.h"
 #include "engine/device.h"
 
 namespace engine::testing {
 struct CompiledKernelAccess {
+  static const taichi::lang::LaunchContextBuilder &context(
+      const CompiledKernel &k) {
+    if (!k.bound_context_ || !k.bound_context_->prepared)
+      throw std::runtime_error("unprepared qualification context");
+    return *k.bound_context_;
+  }
   static const taichi::lang::Kernel &kernel(const CompiledKernel &k) {
     return *k.kernel_;
   }
@@ -146,6 +154,125 @@ struct NativeSelectionAccess {
   }
 };
 }  // namespace field::detail::testing
+namespace field::testing {
+struct TickExecutionAccess {
+  static auto &selection(Harness &h) {
+    return h.tick_execution_->selection_;
+  }
+  static auto kernels(Harness &h) {
+    return h.tick_execution_->qualification_kernels();
+  }
+  static void verify_writer_bindings(Harness &h,
+                                     const engine::CompiledKernel &kernel,
+                                     const std::set<int> &writers) {
+    const auto &owner = *h.tick_execution_;
+    const auto &ctx = engine::testing::CompiledKernelAccess::context(kernel);
+    const auto surfaces = owner.qualification_surfaces();
+    for (int arg : writers) {
+      const auto pointer = ctx.array_ptrs.at(
+          {arg, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
+      const taichi::lang::Ndarray *matched = nullptr;
+      for (const auto *surface : surfaces)
+        if (surface &&
+            pointer == reinterpret_cast<void *>(
+                           surface->get_device_allocation_ptr_as_int()))
+          matched = surface;
+      if (!matched || ctx.array_bindings[arg].type != matched->dtype ||
+          ctx.array_bindings[arg].rank != int(matched->shape.size()) ||
+          ctx.array_bindings[arg].elements != matched->get_nelement())
+        throw std::runtime_error(
+            "candidate writer lacks its owned frozen typed surface");
+      for (const auto &slot : owner.copies_) {
+        const auto committed =
+            slot.host && h.path_ == HostPath::CpuDirect
+                ? slot.host->data()
+                : reinterpret_cast<void *>(
+                      slot.source->get_device_allocation_ptr_as_int());
+        if (pointer == committed)
+          throw std::runtime_error(
+              "candidate writer aliases a committed surface");
+      }
+    }
+  }
+  static std::vector<tick_audit::CopyRows> copy_layout(Harness &h) {
+    std::vector<tick_audit::CopyRows> out;
+    for (const auto &slot : h.tick_execution_->copies_)
+      out.push_back({slot.rows, slot.stride, slot.rank,
+                     int(slot.destination->get_element_size()), slot.staged});
+    return out;
+  }
+  static void verify_copy_bindings(Harness &h) {
+    const auto &owner = *h.tick_execution_;
+    for (int publication = 0; publication < 2; ++publication) {
+      const auto &ctx = engine::testing::CompiledKernelAccess::context(
+          publication ? owner.publish_ : owner.stage_);
+      for (std::size_t slot = 0; slot < owner.copies_.size(); ++slot) {
+        const auto &s = owner.copies_[slot];
+        auto expected_live =
+            s.host && h.path_ == HostPath::CpuDirect
+                ? s.host->data()
+                : reinterpret_cast<void *>(
+                      s.source->get_device_allocation_ptr_as_int());
+        auto expected_scratch = reinterpret_cast<void *>(
+            s.destination->get_device_allocation_ptr_as_int());
+        const int live = 2 * slot + publication,
+                  scratch = 2 * slot + !publication;
+        const std::vector<int> live_key{
+            live, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY},
+            scratch_key{scratch,
+                        taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY};
+        if (ctx.array_ptrs.at(live_key) != expected_live ||
+            ctx.array_ptrs.at(scratch_key) != expected_scratch ||
+            expected_live == expected_scratch ||
+            ctx.array_bindings[live].type != s.type ||
+            ctx.array_bindings[scratch].rank != s.rank ||
+            ctx.array_bindings[scratch].elements !=
+                std::size_t(s.rows) * s.stride)
+          throw std::runtime_error(
+              "candidate frozen copy binding ownership/type/shape mismatch");
+      }
+    }
+  }
+
+  static auto &topology(Harness &h, int id) {
+    return h.tick_execution_->installed_array(id);
+  }
+  static std::vector<unsigned char> controls(Harness &h) {
+    std::vector<unsigned char> out;
+    const auto bytes = [&](const void *p, std::size_t n) {
+      const auto *data = static_cast<const unsigned char *>(p);
+      out.insert(out.end(), data, data + n);
+    };
+    bytes(&h.previous_parameters_, sizeof(h.previous_parameters_));
+    bytes(&h.invalidated_, sizeof(h.invalidated_));
+    bytes(&h.ready_, sizeof(h.ready_));
+    bytes(&h.frame_anchor_, sizeof(h.frame_anchor_));
+    const auto &s = *h.prepared_;
+    bytes(&s.geometry_valid, sizeof(s.geometry_valid));
+    bytes(&s.geometry_query, sizeof(s.geometry_query));
+    bytes(&s.geometry_last, sizeof(s.geometry_last));
+    return out;
+  }
+  static std::vector<taichi::lang::Ndarray *> source_indexes(Harness &h) {
+    auto &a = *h.activity_;
+    return {a.counters.get(),        a.particle_offsets.get(),
+            a.particle_edges.get(),  a.group_offsets.get(),
+            a.group_edges.get(),     a.contact_a_offsets.get(),
+            a.contact_a_edges.get(), a.contact_b_offsets.get(),
+            a.contact_b_edges.get(), h.prepared_->live_ratios_array.get()};
+  }
+  static std::vector<taichi::lang::Ndarray *> public_geometry(Harness &h) {
+    auto &s = *h.prepared_;
+    return {s.geometry_rows.get(),         s.geometry_temporary.get(),
+            s.geometry_pairs.get(),        s.geometry_flags.get(),
+            s.geometry_source_order.get(), s.geometry_group_end.get(),
+            s.geometry_source_map.get(),   s.geometry_permutation.get(),
+            s.geometry_offsets.get(),      s.geometry_cursors.get(),
+            s.geometry_orders.get(),       s.geometry_counters.get(),
+            s.geometry_focus.get()};
+  }
+};
+}  // namespace field::testing
 namespace {
 using namespace field;
 using namespace field::testing;
@@ -545,7 +672,7 @@ struct Fixture {
       std::chrono::steady_clock::now();
   engine::Runtime &runtime;
   Harness h;
-  PreparedFixtureAccess::Input in{70, 70, 70, 70};
+  PreparedFixtureAccess::Input in;
   std::vector<CascadeNode> nodes;
   std::vector<int> children;
   std::vector<CascadeContribution> refs;
@@ -571,14 +698,19 @@ struct Fixture {
           bool permute = false,
           int response_capacity = 1024,
           const std::vector<double> &radii = {},
-          const BudgetDemand *custom_limits = nullptr)
+          const BudgetDemand *custom_limits = nullptr,
+          bool field_holes = false)
       : runtime(r),
         h(r,
           PreparedCapacity(custom_limits
                                ? *custom_limits
                                : limits(response_capacity, r.on_cuda()),
                            NumericalProfile::trial(body_bits, field_bits)),
-          path) {
+          path),
+        in(h.particle_capacity(),
+           h.field_capacity(),
+           h.prepared_storage().capacity.limits()[Budget::Batch],
+           h.prepared_storage().capacity.limits()[Budget::Focus]) {
     FixtureSource src;
     src.kinds.assign(edges.size(), 1);
     src.exact_masses = denominators;
@@ -620,7 +752,8 @@ struct Fixture {
     }
     Parameters p;
     p.gravity = p.contact_stiffness = p.reach_strength = 0;
-    no_new([&] { PreparedFixtureAccess::load(h, src, in, p, true); });
+    no_new(
+        [&] { PreparedFixtureAccess::load(h, src, in, p, true, field_holes); });
     const auto &s = h.prepared_storage();
     for (std::size_t i = 0; i < edges.size(); ++i) {
       CascadeNode n;
@@ -1042,9 +1175,11 @@ Vector attraction(long double weight,
     f[k] = scale * delta[k];
   return f;
 }
-std::vector<double> physical_reference(Fixture &f,
-                                       const Parameters64 &p,
-                                       bool invalidate) {
+std::vector<double> physical_reference(
+    Fixture &f,
+    const Parameters64 &p,
+    bool invalidate,
+    const std::vector<std::array<int, 2>> *physical_contacts = nullptr) {
   const auto &state = f.h.prepared_storage();
   const auto &v = f.h.inspect_live_hierarchy();
   auto expected = f.h.particles64();
@@ -1115,9 +1250,13 @@ std::vector<double> physical_reference(Fixture &f,
       }
     }
     for (int side = 0; side < 2; ++side)
-      for (std::size_t j = 0; j < state.live.contacts; ++j) {
-        const auto &pair = state.contacts[j];
-        const int a = pair.first.record, b = pair.second.record;
+      for (std::size_t j = 0; j < (physical_contacts ? physical_contacts->size()
+                                                     : state.live.contacts);
+           ++j) {
+        const int a = physical_contacts ? (*physical_contacts)[j][0]
+                                        : state.contacts[j].first.record;
+        const int b = physical_contacts ? (*physical_contacts)[j][1]
+                                        : state.contacts[j].second.record;
         if ((side ? b : a) != body)
           continue;
         Vector delta{};
@@ -2511,6 +2650,7 @@ void capture_current(engine::Runtime &r,
 
 #include "live_hierarchy_refresh_cases.inc"
 #include "native_selection_cases.inc"
+#include "contact_tick_cases.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2567,6 +2707,8 @@ int main(int argc, char **argv) {
             "offline CPU IR optimizer/auditor requires CPU; use CUDA --dump-code");
     require(!(settings.cuda && (only == "selection" || only == "selection_ir")),
             "B1 native selection qualification requires actual x64 execution");
+    require(!(settings.cuda && only.rfind("contact_tick", 0) == 0),
+            "B1 candidate tick qualification requires actual x64 execution");
     if (settings.cuda) {
       require(engine::cuda_available(), "CUDA requested but no visible device");
       settings.device_memory_gb = 1.0;
@@ -2610,6 +2752,39 @@ int main(int argc, char **argv) {
     };
     if (only == "refresh_limits")
       run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "contact_tick_modes" || only == "contact_tick") {
+      run("contact_tick_modes", [&] { contact_tick_modes(r, path); });
+      run("contact_tick_references", [&] { contact_tick_references(r, path); });
+    }
+    if (only == "contact_tick_compiler" || only == "contact_tick")
+      run("contact_tick_compiler", [&] { contact_tick_compiler(r, path); });
+    if (only == "contact_tick_ir") {
+      collect_contact_tick_ir(r, path, no_unroll);
+      return 0;
+    }
+    if (only == "contact_tick_references")
+      run("contact_tick_references", [&] { contact_tick_references(r, path); });
+    if (only == "contact_tick_capacity")
+      run("contact_tick_capacity", [&] { contact_tick_capacity(r, path); });
+    if (only == "contact_tick_edges" || only == "contact_tick") {
+      run("contact_tick_source_union",
+          [&] { contact_tick_source_union(r, path); });
+      run("contact_tick_failures", [&] { contact_tick_failures(r, path); });
+      run("contact_tick_capacity", [&] { contact_tick_capacity(r, path); });
+    }
+    if (only == "contact_tick_more" || only == "contact_tick") {
+      run("contact_tick_dirty", [&] { contact_tick_dirty(r, path); });
+      run("contact_tick_reuse", [&] { contact_tick_reuse(r, path); });
+    }
+    if (only == "contact_tick") {
+      run("contact_tick_smoke", [&] { contact_tick_smoke(r, path); });
+      run("contact_tick_overflow",
+          [&] { contact_tick_overflow(r, path, false); });
+      run("contact_tick_cross_block",
+          [&] { contact_tick_overflow(r, path, true); });
+      run("contact_tick_reverse_block",
+          [&] { contact_tick_overflow(r, path, true, true); });
+    }
     if (only == "selection") {
       run("selection_isolation", [&] { selection_isolation(r, path); });
       run("selection_controls", [&] { selection_controls(r, path); });
