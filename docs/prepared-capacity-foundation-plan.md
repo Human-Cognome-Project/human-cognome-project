@@ -14,7 +14,7 @@ in #165; its [CPU implementation](../engine/docs/PREPARED-EXECUTION.md) is
 accepted and merged in #166 at `4e7b193`. The
 [coherent-update section](prepared-coherent-update-plan.md) was accepted in
 #167 at `284b45d`; its [bounded implementation](../engine/docs/PREPARED-UPDATES.md)
-is submitted for review under #162. Production #156 remains open.
+is accepted in #169; #162 is complete and #156 owns remaining operations. Production #156 remains open.
 
 [The final #161 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/161#issuecomment-6322166930)
 accepts dense declarations with budgeted native presence records as the candidate
@@ -310,3 +310,4 @@ refactor the named native storage/bindings and add a narrowly justified native
 adapter; it must preserve the existing model and activity contract. Database
 contents, shared warm storage, private-manager boundaries, the viewport and
 production initialization conventions are unchanged by this segment's scope.
+

@@ -1,9 +1,9 @@
 # Production hierarchy, response ownership and coupled recovery
 
-Status: **plan accepted in #194, 2026-10-27; C3-1 accepted in #195**.
-C3-2 is the next core implementation slice; see the
-[current continuation sequence](core-local-study-continuation-plan.md).
-#196's local CUDA/motion corrections are under review. Earlier evidence below
+Status: **plan accepted in #194; C3-1 accepted in #195; C3-2 accepted in #198**.
+#196's scoped local CUDA/motion corrections are accepted. CPU B1 is accepted
+in #201; follow the [current continuation sequence](core-local-study-continuation-plan.md)
+for B2/B3 and subsequent owner/control integration. Earlier evidence below
 retains its original source and numerical contract. Baseline: `main` at
 `33c4a4f50eacbcaaf0638e34cf22568dd9044473`, the merge of #193.
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
@@ -37,8 +37,7 @@ rounds while reporting settled versus evolving separately. Historical failed run
 remain failed under their original criteria; revised acceptance needs new evidence.
 The immediate bounded GPU observation milestone does not require completion of
 all #156 operations. The current-hierarchy capture adapter is accepted in #195. #196 supplies
-bounded contributor GTX 1070 execution evidence and backend corrections under
-review; this is not full GPU operation/transfer qualification.
+bounded contributor GTX 1070 execution evidence and accepted backend corrections; this is not full GPU operation/transfer qualification.
 
 ## Motion clarification — 2026-10-29
 
@@ -438,3 +437,4 @@ This plan leaves general matching/exposure, anonymous grouping, transition/round
 calibration, #156 operational admission/contact/rebase/owner completion and #145
 GPU execution/pinning qualification open. It adds no database, cache-manager,
 analyst or swarm implementation and closes none of those owning issues.
+

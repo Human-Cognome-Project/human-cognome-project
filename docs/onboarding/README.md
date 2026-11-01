@@ -1,5 +1,7 @@
 # Orientation
 
+**New coding environment or agent:** start with the [fresh-instance onboarding/spec brief](AGENT-START.md).
+
 HCP models explicit objects and their relationships using field mechanics.
 The engine calculates their relative motion; storage supplies reusable
 definitions, and a harness controls execution. Analyst reasoning remains future
@@ -85,3 +87,4 @@ Then take the relevant path; there is no need to read all research first.
 Research explains derivations and possibilities. Accepted implementation contracts
 and executable evidence establish the scope of engineering work. A held proposal
 does not become authorized because an introductory page mentions its topic.
+

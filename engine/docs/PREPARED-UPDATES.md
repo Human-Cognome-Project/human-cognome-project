@@ -1,10 +1,11 @@
 # Coherent prepared structural updates
 
-Status: **accepted in #184 under #162, 2026-10-22**. The contract was
+Status: **accepted in #169 under #162, 2026-10-22**.
+#184 later added exact source-count preservation; it is not the original updater acceptance. The contract was
 accepted in [#167](https://github.com/Human-Cognome-Project/human-cognome-project/pull/167#issuecomment-6342453057)
 and merged at `284b45d`. This extends the accepted [#166 backing/binding
-baseline](PREPARED-EXECUTION.md). #162 and #156 remain open pending their
-respective acceptance and remaining integration work.
+baseline](PREPARED-EXECUTION.md). #162 is complete and closed; #156 owns remaining operational integration.
+The combined hierarchy-aware refresh is accepted in #198.
 
 A prepared Harness can now change its occurrence records, fields, ordered
 participation and contacts between complete ticks and continue using current
@@ -225,3 +226,4 @@ actual driver allocations and transfers under #145. These CPU results do not
 qualify GPU execution, driver allocation, pinning, browser interaction or failed-
 device recovery. The structural fixture foundation does not implement #156's
 production placement and source-to-report lifecycle.
+

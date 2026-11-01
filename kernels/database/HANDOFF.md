@@ -1,5 +1,13 @@
 # HANDOFF — reload pointer for the next session
 
+> **Historical component handoff.** Reload current work from the
+> [fresh-instance brief](../../docs/onboarding/AGENT-START.md) and
+> [AGENTS](../../AGENTS.md#current-state). The dated “CURRENT” pointers, local
+> paths, population instructions and GPU observations below describe their
+> original sessions. They do not authorize reseeding retained stores or establish
+> current hardware qualification. Shared warm v2 recipes are accepted in #171;
+> held #111 command atomicity remains separate.
+
 > **⚠ CURRENT reload pointer (2026-09-28) — supersedes the 2026-09-22 pointer below for WHAT'S NEXT.**
 >
 > **Done since:** the hex encoding floor is seeded into `hcp_core` and dumped (PR #103) — 276 tokens
@@ -381,3 +389,4 @@ decisions".
 | `kernels/wal/USAGE.md` | Working *with* the WAL manager (consumer contract) — read before writing cache-manager code against it; carries the push-model-built flag. |
 | `network/SWARM-NOTES.md` | Preliminary swarm/p2p direction notes — gated, not designed. |
 | `HANDOFF.md` | This file. |
+

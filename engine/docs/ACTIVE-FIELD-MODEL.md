@@ -1,6 +1,13 @@
 # Active field model and tick dependencies
 
-**LoD cascade direction (2026-10-23, unimplemented):** [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
+**Current profile map, 2026-11-01:** the detailed legacy tick explanation
+below remains profile-specific. The opt-in f64 path now includes accepted
+[cumulative publication](CUMULATIVE-PUBLICATION.md), [production hierarchy](LIVE-HIERARCHY.md),
+[coherent refresh](LIVE-REFRESH.md), [accepted motion](ACCEPTED-MOTION.md) and
+[contact-safe ticks](CONTACT-SAFE-TICKS.md). Their contracts govern that path.
+Historical descriptions of unresolved multilevel work do not reopen #195/#198.
+
+**Historical LoD direction (2026-10-23):** [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
 requires local finest-exposed centroid resolution compounded through successive
 exposed comparison levels to the current coarsest level. Downward proportional
 response is provisionally agreed; matching and scheduling remain open. The flat
@@ -18,8 +25,8 @@ is accepted in #188 for the native investigation/probe only.
 [C2b-1](CUMULATIVE-PUBLICATION.md), under accepted #191, is accepted in #192:
 existing trial movement activity follows cumulative position publication and
 integration writes final speed before consumption. The
-[C2b-2 numerical probe](WEIGHTED-NATIVE-HANDOFF.md) is for review. Production hierarchy
-installation and local/inherited response remain unimplemented. See the
+[C2b-2 numerical probe](WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193.
+Production hierarchy and local/inherited response followed in #195. See the
 [decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
 
 **Status (2026-10-19):** The native object-support corrections approved in
@@ -436,3 +443,4 @@ tick; a human browser display might refresh only every few hundred ticks.
 Those cadences are independent. CPU functions/kernels can be parallelized or
 combined where dependencies allow; reading last tick's centroids and
 publishing updated ones at the tick boundary remain part of the model.
+

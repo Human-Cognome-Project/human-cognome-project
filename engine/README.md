@@ -75,7 +75,8 @@ cmake -S engine/taichi -B engine/taichi/build-review -G Ninja \
       -DTI_WITH_CUDA=OFF -DTI_WITH_AMDGPU=OFF \
       -DTI_WITH_OPENGL=OFF -DTI_WITH_VULKAN=OFF \
       -DTI_WITH_METAL=OFF -DTI_WITH_GGUI=OFF \
-      -DTI_BUILD_TESTS=OFF -DTI_BUILD_EXAMPLES=OFF
+      -DTI_WITH_DX11=OFF -DTI_WITH_DX12=OFF -DTI_WITH_BACKTRACE=OFF \
+      -DTI_BUILD_TESTS=OFF -DTI_BUILD_EXAMPLES=OFF -DTI_BUILD_RHI_EXAMPLES=OFF
 cmake --build engine/taichi/build-review --target taichi_c_api -j 2
 ```
 
@@ -180,6 +181,11 @@ qualification ladder.
 
 ## Current status
 
+Start a new instance with the [onboarding/spec brief](../docs/onboarding/AGENT-START.md).
+The accepted baseline is through #201. B2 placement is in draft #202 as checked
+2026-11-01; inspect that contribution before duplicating it. Earlier stage
+descriptions below retain their bounded acceptance scope, not a second work queue.
+
 The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
 first #172 slice, accepted in #178: double packed transport, an experimental significand
 clearing helper and a [live state/conversion audit](docs/PRECISION-STATE-AUDIT.md).
@@ -221,7 +227,7 @@ The [C2b-2 weighted native probe](docs/WEIGHTED-NATIVE-HANDOFF.md) and
 ownership, inherited response and coupled settling/recovery now have the accepted
 [#194 production integration plan](../docs/production-hierarchy-response-plan.md).
 C3-1 fixed-tree implementation is accepted in #195; C3-2 refresh is accepted in
-#198. Native admission/contact-safe ticks are next in the
+#198. CPU contact-safe ticks are accepted in #201; placement/admission follow the
 [current continuation plan](../docs/core-local-study-continuation-plan.md).
 The [C3-1 fixed-tree implementation](docs/LIVE-HIERARCHY.md) and
 [CPU investigation](tests/live_hierarchy/README.md) are accepted under the
@@ -235,7 +241,7 @@ is accepted in #198 with [source-pinned CPU evidence](tests/live_hierarchy/refre
 Final hosted validation passed 101/101 suites in 3355.27 seconds, all extra
 no-unroll hierarchy/refresh modes, 180 integration checks and actual CPU-only
 backend verification; all nine checks passed. Earlier failed/cancelled runs remain
-separately retained. Native admission/contact-safe ticks are next.
+separately retained. #201 supplies CPU contact-safe ticks; native admission follows.
 Operational admission/owners and CUDA refresh qualification remain separate.
 
 The accepted [#199 plan](../docs/native-admission-contact-transaction-plan.md)
@@ -274,3 +280,4 @@ lifecycle remain unbuilt.
 
 Historical machine-specific measurements and development decisions remain under
 `docs/`; read their dates and scope rather than treating each as a current guarantee.
+

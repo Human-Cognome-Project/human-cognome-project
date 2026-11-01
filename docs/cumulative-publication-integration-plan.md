@@ -1,5 +1,11 @@
 # Cumulative publication and native activity
 
+**Continuation status, 2026-11-01:** C2a/C2b are accepted through #193;
+production hierarchy and coherent refresh followed in #195/#198, and CPU B1
+in #201. Dated release/next-action statements below retain their stage-local
+scope. Use the [current continuation](core-local-study-continuation-plan.md) for new work;
+they do not hold production implementation or require a duplicate planning PR.
+
 ## C2b-2 acceptance — 2026-10-27
 
 Accepted in #193 at reviewed `a96a05e`. Hosted
@@ -371,3 +377,4 @@ Following C2b evidence, a new production hierarchy/response plan still must reso
 
 This plan changes no runtime, database, cache-manager or analyst code. It closes
 none of #172/#177/#156/#145 and creates no immediate GPU gate.
+

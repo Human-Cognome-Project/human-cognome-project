@@ -1,5 +1,9 @@
 # First local native check
 
+For environment recovery and existing contribution selection, read the
+[fresh-instance brief](AGENT-START.md) first. A clean smoke check is the setup
+gate; it is not a request to duplicate an already running full CI suite.
+
 Goal: build the matched native runtime and pass `engine_smoke_test`, a test
 included in the hosted [native CPU workflow](../../.github/workflows/native-engine-cpu.yml).
 This checks local native execution; it is not the full acceptance suite or proof
@@ -55,7 +59,7 @@ executables, source the generated environment first:
 ./engine/build/engine_devices --cpu-only
 ```
 
-Next, run the full configured suite with
+For implementation qualification, run the required configured suite with
 `ctest --test-dir engine/build --output-on-failure`.
 Its test count depends on enabled optional targets; a smoke pass is not a claim
 that the broader suite or PostgreSQL integration has run.
@@ -90,3 +94,4 @@ and separately generating new captures.
   performance qualification.
 - Pick implementation work through [current state](../../AGENTS.md#current-state)
   and its accepted issue/plan, not through this first-run recipe.
+

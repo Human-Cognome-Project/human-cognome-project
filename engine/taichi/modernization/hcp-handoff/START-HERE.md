@@ -1,5 +1,12 @@
 # HCP execution handoff — 2026-09-11
 
+> **Recovered September 2026 record.** Workspace paths, agent assignments,
+> build status and next actions below describe the original session. Start a
+> fresh instance with the [current onboarding/spec brief](../../../../docs/onboarding/AGENT-START.md)
+> and follow [current agent guidance](../../../../AGENTS.md). Upstream Python
+> tooling is not permission to implement HCP operational components in Python.
+
+
 Read this first when opening /opt/project/repo. This is a record of Patrick's
 current specification and a proposed execution plan, not a replacement for his
 input. Ask when ambiguity changes meaning. Do not normalize unfamiliar rules
@@ -246,3 +253,4 @@ state, then begin step 1 with the existing live-schema evidence. Do not restart
 the Taichi review, port the diffusion solver wholesale, apply migrations, or
 invent runner cognition. Discuss whether to apply the staged legacy mass patch
 or retain it as a regression reference while building the new C++ slice.
+

@@ -1,9 +1,10 @@
 # Coordinate-free structural recipes
 
 Segment 1 of the accepted [#170 plan](../../../docs/core-operation-readiness-plan.md),
-implemented for review on 2026-10-23. This supplies versioned values, persistence,
-projection and a structural input boundary. Engine admission, candidate ticks,
-enduring owner refresh and the complete CPU/GPU handoff remain later segments.
+accepted in #171 on 2026-10-23. This supplies versioned values, persistence,
+projection and a structural input boundary. CPU candidate ticks followed in
+#201; engine admission, enduring owner refresh and the complete CPU/GPU handoff
+remain separate segments.
 The existing numerical engine and its v1 fixtures retain their behavior.
 
 ## Values and projection
@@ -132,3 +133,4 @@ compatibility does not promise cross-version C++ object-layout ABI compatibility
 [Acceptance evidence](structural-acceptance.json) records the native source,
 commands, bounded results and retained fixture fingerprints. No GPU behavior,
 pinning, natural packing or completed operational source-to-tick path is claimed.
+

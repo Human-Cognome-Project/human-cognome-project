@@ -1,6 +1,6 @@
 # Human viewport: purpose and implementation plan
 
-Status: **accepted plan in #154, 2026-10-20; first implementation under review**. This document records Patrick's
+Status: **accepted plan in #154; viewport accepted in #155, capture/watch follow-ups in #158/#159**. This document records Patrick's
 purpose clarification and proposes the first implementation of
 [#151](https://github.com/Human-Cognome-Project/human-cognome-project/issues/151).
 The optional [viewport and exporter](../tools/viewport/README.md) now implement
@@ -238,3 +238,4 @@ changes, deferred #75 and held #123 are outside this plan. GPU execution and
 pinning remain under #145. Warm stays the tool/part box, hot the owner-controlled
 assembly workbench, and GPU memory the execution surface; this optional viewport
 adds no new required architecture layer.
+

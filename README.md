@@ -1,5 +1,7 @@
 # Human Cognome Project (HCP)
 
+**New coding environment or agent:** start with the [fresh-instance onboarding/spec brief](docs/onboarding/AGENT-START.md).
+
 The Human Cognome Project is an open-source experimental architecture for digital intelligence built around explicit structure, field dynamics, and auditable data rather than a monolithic statistical model.
 
 The September repository reconciliation is complete, and a subsequent recovery pass restored the native C++ engine workspace that had remained local. See [REORGANIZATION.md](REORGANIZATION.md) for the provenance and recovery map.
@@ -85,3 +87,4 @@ before implementing a proposal.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow.
 - [AGENTS.md](AGENTS.md) — operational guidance for contributing agents.
 - [LICENSE](LICENSE) — AGPL-3.0.
+

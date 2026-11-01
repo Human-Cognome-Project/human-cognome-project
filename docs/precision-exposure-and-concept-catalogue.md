@@ -1,5 +1,12 @@
 # Precision, exposure and the concept catalogue
 
+**Implementation update, 2026-11-01:** bounded CPU precision, cumulative
+publication and hierarchy work is accepted through #187/#192/#195/#198/#201.
+The [#196 accepted-motion rule](../engine/docs/ACCEPTED-MOTION.md) supersedes
+earlier untrimmed-velocity intent for the wide profile. Calibration, regional
+precision experiments and broader exposure/catalogue work remain open. Dated
+“not implemented” statements below describe the decision at that time.
+
 Status: **direction confirmed by Patrick, 2026-10-23; implementation and calibration pending**.
 Owning issues: [precision #172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172),
 [view scaling #115](https://github.com/Human-Cognome-Project/human-cognome-project/issues/115),
@@ -290,3 +297,4 @@ entire issue's acceptance is met. A merged plan or partial implementation does
 not close an umbrella concern. Keep accepted contracts in repository documents
 and current status in AGENTS; link evidence and source revisions from both the
 PR disposition and owning issue.
+

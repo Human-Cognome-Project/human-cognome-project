@@ -26,8 +26,9 @@ Status: **accepted in #192**, under accepted
 [#191](../../docs/cumulative-publication-integration-plan.md), following #190.
 This corrects the existing single-level live f64 trial profile. Default legacy
 arithmetic and its activity rules remain unchanged. The subsequent C2b-2 weighted
-multilevel probe is now [implemented for review](WEIGHTED-NATIVE-HANDOFF.md)
-in its own test-only PR.
+multilevel probe is [accepted in #193](WEIGHTED-NATIVE-HANDOFF.md).
+Production hierarchy followed in #195 and coherent refresh in #198; the dated
+release statement above describes the #192 acceptance boundary.
 
 ## Publication and physical state
 
@@ -167,3 +168,4 @@ analyst/cache-manager behavior or database data. C2b-2 follows only after C2b-1
 acceptance; production comparison ownership, publication/history/repair lifetimes
 and coupled multilevel settling remain later review boundaries under #177/#172.
 The #156 CPU operation exit and #145 GPU qualification remain open.
+

@@ -52,7 +52,7 @@ repair-after-motion workaround, uninstall or live representation exchange here.
 Native failure after mutation makes execution unready; no rollback is claimed.
 
 The separate [C3-2 refresh contribution](LIVE-REFRESH.md) adds the combined
-source/hierarchy entry point for review. Its preservation/failure/resource matrix
+source/hierarchy entry point accepted in #198. Its preservation/failure/resource matrix
 does not remove the ordinary-update guard or implement operational admission.
 
 ## Force and phase ownership
@@ -234,3 +234,4 @@ offline viewer. This is not #156 admission/owner completion. Actual CUDA C3
 installation remains explicitly unsupported until its native publication/activity/
 f64 contract is qualified locally; the backend-independent reader does not
 constitute that qualification.
+

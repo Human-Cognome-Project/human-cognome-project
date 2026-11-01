@@ -1,9 +1,9 @@
 # Current native geometry preflight
 
-Status: **first portion of Segment 2, implemented for review, 2026-10-23**.
+Status: **first portion of Segment 2, accepted in #175, 2026-10-23**.
 Baseline is #171 merged at `c6b85de0d513dcc8d60fa38bdcfb8d1640c07e66`.
 The accepted [#170 plan](../../docs/core-operation-readiness-plan.md) continues
-to govern the full operation path under #162/#156.
+to govern the full operation path under #156; #162's bounded foundation is complete.
 
 `Harness::query_prepared_geometry(expected_generation, work_limit)` reads
 current resident backend values and prepares candidate occupancy/contact
@@ -13,12 +13,11 @@ Its outputs give later admission and candidate-tick work a common geometry
 foundation. The query does not move bodies, install contacts, modify native
 activity, publish a generation or advance a tick.
 
-Engine-owned nearest-free search, bootstrap, structural admission, native
-contact installation and candidate tick publication remain unbuilt. Existing
-ticks still use the explicit contact ledger and publish movement directly.
-A successful query before a tick cannot guarantee that contacts after that
-tick fit capacity. The accepted requirement to validate candidate motion and
-its contact coverage before any live movement remains outstanding.
+This query does not supply engine-owned placement or structural admission.
+#201 now supplies opt-in [contact-safe candidate ticks](CONTACT-SAFE-TICKS.md)
+and physical contact installation; legacy direct ticks remain separate.
+A successful geometry query alone cannot guarantee post-motion capacity.
+B2 placement is in draft #202; bootstrap/admission remains a following slice.
 
 ## Observation and ownership
 
@@ -174,3 +173,4 @@ capabilities/pinning. Segments 3/4 retain the enduring owner lifecycle and full
 integrated CPU operation matrix. Actual CUDA execution, transfers/pinning and
 GPU allocation checks remain the later local #145 gate. No database writes,
 Python runtime, private-manager path or new analyst policy is introduced.
+

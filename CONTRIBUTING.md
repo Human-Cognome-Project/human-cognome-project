@@ -1,5 +1,7 @@
 # Contributing to the Human Cognome Project
 
+**New coding environment or agent:** start with the [fresh-instance onboarding/spec brief](docs/onboarding/AGENT-START.md).
+
 HCP accepts code, research, testing, documentation and architecture critique. The structural migration is complete; current guidance reflects the recovered native C++ engine, curated Taichi fork and separated kernel/network architecture.
 
 ## Start here
@@ -125,3 +127,4 @@ human-cognome-project/
 ```
 
 By contributing, you agree that contributions are licensed under AGPL-3.0 and governed by the [Covenant](covenant.md).
+

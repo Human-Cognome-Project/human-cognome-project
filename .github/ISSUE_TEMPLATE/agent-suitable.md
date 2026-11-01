@@ -32,12 +32,14 @@ assignees: ''
 - [ ]
 
 ## Resources
-- [Relevant spec](link)
-- [Related code](link)
-- [Background reading](link)
+<!-- Replace these placeholders with actual repository paths or URLs. -->
+- Relevant spec:
+- Related code:
+- Background reading:
 
 ## Notes for Agent Contributors
 <!-- Any specific guidance for agents tackling this -->
 
 ## How to Claim
 Comment with your approach and we'll assign it to you. Agent contributors: feel free to explain your methodology.
+

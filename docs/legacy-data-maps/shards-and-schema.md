@@ -59,7 +59,7 @@ prefix-compressed traversal. This is **decision 001, still current**, used unifo
 `morphology`, `tokenized_etymology`, `form_of_tags`, `alt_of_tags`. Decision 005's original approach
 (junction tables for every array ref, "zero TEXT[]", ~18.4M junction rows) was
 **abandoned/superseded**; those junction tables are dropped. (See
-[../06-status/decisions/](../06-status/decisions/) for the annotated decision records.)
+[../../archive/2026-08-rebase/docs/06-status/decisions/](../../archive/2026-08-rebase/docs/06-status/decisions/) for the annotated decision records.)
 
 **(C) The remaining debt:** those array *elements* are stored as full dotted `token_id` strings —
 lost B-tree compression, ~5× bloat. This is exactly the substrate-efficiency debt (claim 31). The
@@ -68,8 +68,8 @@ proper form is `text[]` with diff-only encoding.
 > **Why this debt is an *intelligence* problem, not just storage:** dot-strings in the connection
 > columns cripple the index-walking that *traversal* depends on — and intelligence is data-quality ×
 > traversal (claim 255). See
-> [../02-architecture/intelligence.md](../02-architecture/intelligence.md) and
-> [../06-status/deferred-and-open.md](../06-status/deferred-and-open.md).
+> [../../archive/2026-08-rebase/docs/02-architecture/intelligence.md](../../archive/2026-08-rebase/docs/02-architecture/intelligence.md) and
+> [../../archive/2026-08-rebase/docs/06-status/deferred-and-open.md](../../archive/2026-08-rebase/docs/06-status/deferred-and-open.md).
 
 ---
 
@@ -83,7 +83,7 @@ A shared surface label does **not** mean a shared entity (claim 209, decision 00
 The NSM prime **WANT** (AA) and the English word **want** (AB.AB) carry the same spelling but are
 distinct entities. *"Words in the core database are labels for understanding; they are not the thing
 itself."* This is the namespace-level realization of the
-[linguistic/conceptual separation](../02-architecture/linguistic-vs-conceptual.md).
+[linguistic/conceptual separation](../../archive/2026-08-rebase/docs/02-architecture/linguistic-vs-conceptual.md).
 
 ---
 
@@ -101,7 +101,7 @@ Proper-Noun bond pattern that assembles a Person/Place/Thing entity from word to
    duplication — it is gone from the live DB.
 
 This underlies the chamber's first-stage Label resolution (claim 175, see
-[../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md)): shards hold surface
+[../../archive/2026-08-rebase/docs/04-engine/resolution-chamber.md](../../archive/2026-08-rebase/docs/04-engine/resolution-chamber.md)): shards hold surface
 Labels; entity DBs hold meaning.
 
 ---
@@ -124,4 +124,5 @@ Durable data-pipeline policies (claim 210):
 
 - [kaikki-pipeline.md](kaikki-pipeline.md) — how `source_english` was built and drained.
 - [tokenization-policies.md](tokenization-policies.md) — see-it-mint-it, inflection-at-runtime.
-- [var-and-continuation.md](var-and-continuation.md) — the var DB and continuation index.
+- [var-and-continuation.md](../../archive/2026-08-rebase/docs/05-data-layer/var-and-continuation.md) — the var DB and continuation index.
+
