@@ -1,13 +1,18 @@
 # Effective-motion CPU evidence
 
-**Later direction (2026-10-23, not implemented):** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
+**Profile boundary (updated 2026-11-01):** The opt-in trial path now has
+accepted precision/publication/hierarchy/motion implementations through
+#187/#192/#195/#196. This file retains the earlier legacy-profile evidence.
+The original direction below is historical, not an unimplemented current gate.
+
+**Direction at 2026-10-23:** [#172](https://github.com/Human-Cognome-Project/human-cognome-project/issues/172)
 introduces LoD-dependent calculation/storage precision with discarded subthreshold
 positional rounding residuals. The carried-residue mechanics/evidence below remain
 the built baseline; reconcile them through a reviewed numerical conversion rather
 than silently retaining or deleting all remainder/physical-state fields. See the
 [decision notes](../../docs/precision-exposure-and-concept-catalogue.md).
 
-Status: #150 accepted/merged; #152 type-phase revision for review, 2026-10-19, under
+Status: #150 accepted/merged; #152 type-phase revision accepted in #153, under
 [#91](https://github.com/Human-Cognome-Project/human-cognome-project/issues/91).
 The [active field model](ACTIVE-FIELD-MODEL.md#current-selective-tick-and-the-effective-motion-predicate)
 specifies the exact calculation. This evidence uses the native C++ path and
@@ -146,7 +151,7 @@ ctest --test-dir engine/build --output-on-failure
 ```
 
 #150's accepted CPU review permits Patrick's bounded local validation under
-#145. The #152 single-set revision is a focused follow-up for review; neither
+#145. The #152 single-set revision is accepted in #153; neither
 baseline acceptance nor CPU execution asserts GPU qualification. Local cases are:
 
 ```sh
@@ -168,3 +173,4 @@ not a new warm record or a cache-manager selection policy. Each run creates
 new warm fixtures and verifies complete retained cold-data hashes unchanged.
 Actual GPU/pinning evidence remains under #145. The combined-destination use
 of `|F_net|` for brake reach is unchanged and remains a separate open formula.
+

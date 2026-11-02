@@ -75,5 +75,6 @@ meaning. (Full classification policies are in
 ## See also
 
 - [kaikki-pipeline.md](kaikki-pipeline.md) — where the stored surfaces come from.
-- [../04-engine/resolution-chamber.md](../04-engine/resolution-chamber.md) — the mint/learning loop:
+- [../../archive/2026-08-rebase/docs/04-engine/resolution-chamber.md](../../archive/2026-08-rebase/docs/04-engine/resolution-chamber.md) — the mint/learning loop:
   unresolved input → atomized + mint flag → concept engine → dictionary.
+

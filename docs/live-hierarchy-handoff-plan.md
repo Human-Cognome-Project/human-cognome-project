@@ -1,5 +1,11 @@
 # Live hierarchy handoff and response ownership
 
+**Continuation status, 2026-11-01:** C2a/C2b are accepted through #193;
+production hierarchy and coherent refresh followed in #195/#198, and CPU B1
+in #201. Dated release/next-action statements below retain their stage-local
+scope. Use the [current continuation](core-local-study-continuation-plan.md) for new work;
+they do not hold production implementation or require a duplicate planning PR.
+
 Status: **accepted in #188; C2a probe accepted in #189, 2026-10-26**. See the [native investigation](../engine/docs/NATIVE-HANDOFF.md) and
 [source-pinned CPU evidence](../engine/tests/native_handoff/README.md).
 Owners: [#177](https://github.com/Human-Cognome-Project/human-cognome-project/issues/177)
@@ -271,3 +277,4 @@ The review sequence is accepted C2a plan → native probe implementation/evidenc
 and review → concrete live hierarchy/response contract → separately reviewed
 implementation and settling/recovery evidence. This plan closes none of
 #177/#172/#156/#145 and adds no immediate GPU gate.
+

@@ -10,7 +10,7 @@ under #172/#177. Runtime/test source is pinned in the
 remains selectable and is covered by the existing regression suites.
 
 This describes pinned C1. The later [C2b-1 correction](CUMULATIVE-PUBLICATION.md)
-is implemented for review under accepted #191: revised trial activity and final
+is accepted in #192 under accepted #191: revised trial activity and final
 speed publication. Its evidence is separate from C1's retained run.
 
 ## Boundary and use
@@ -95,7 +95,7 @@ The following provisional activity rule describes built C1. The merged
 [#190 clarification](../../docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
 supersedes it. The accepted #191
 [cumulative publication/activity plan](../../docs/cumulative-publication-integration-plan.md)
-releases the [C2b-1 implementation](CUMULATIVE-PUBLICATION.md), now for review,
+specifies the [C2b-1 implementation](CUMULATIVE-PUBLICATION.md), accepted in #192,
 including cached speed and preserved input invalidation. The historical C1 rule
 below is not the revised activity predicate.
 
@@ -187,3 +187,4 @@ multi-depth settling/recovery and matching/exposure remain the following
 bounded contract. The full candidate solve is still optional, not a mandatory
 per-tick barrier. #172/#177/#156/#145 remain open; GPU acceptance remains after
 the CPU operation matrix. No database work is included.
+

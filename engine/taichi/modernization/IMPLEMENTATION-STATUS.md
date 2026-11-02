@@ -1,5 +1,12 @@
 # Implementation status
 
+> **Recovered September 2026 record.** Workspace paths, agent assignments,
+> build status and next actions below describe the original session. Start a
+> fresh instance with the [current onboarding/spec brief](../../../docs/onboarding/AGENT-START.md)
+> and follow [current agent guidance](../../../AGENTS.md). Upstream Python
+> tooling is not permission to implement HCP operational components in Python.
+
+
 Updated 2026-09-10. This implementation milestone is built and validated on LLVM CPU and GTX 1070 CUDA, including the native C API loader.
 
 ## Scope agreed with user
@@ -192,3 +199,4 @@ Deferred, as noted above: `snode.cpp` has the same accumulate-seed pattern
 (an int-seeded product feeding a warning check there) — flagged but not
 fixed here, since it's on the sparse path and this fix targets the dense
 harness only; real-bug status on that path is unverified.
+

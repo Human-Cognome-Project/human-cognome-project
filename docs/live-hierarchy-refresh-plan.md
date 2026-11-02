@@ -8,8 +8,9 @@ operational admission under #156 and hardware qualification under #145.
 
 The [C3-2 implementation](../engine/docs/LIVE-REFRESH.md) is accepted and merged
 in #198 at `5ea9c76`; its complete hosted CPU result and retained earlier failures
-are recorded separately from this planning contract. Native admission/contact-safe
-ticks are the next continuation slice.
+are recorded separately from this planning contract. CPU contact-safe ticks are accepted in #201; native placement/admission
+remain the active continuation. Planning-baseline instructions below retain
+their original scope and do not reopen C3-2.
 
 The result is one prepared execution that can commit a source edit and its
 replacement calculation tree between completed ticks, then continue with its
@@ -273,3 +274,4 @@ the explicit qualification guard. Mixed-precision conversion repair remains
 independent and must retain its failing oracle until corrected. This work
 closes none of #172/#177/#156/#145 and adds no new data population or analyst
 behavior.
+

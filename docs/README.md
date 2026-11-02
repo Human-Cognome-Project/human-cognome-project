@@ -1,6 +1,7 @@
 # Documentation
 
-Start with [orientation](onboarding/README.md) and the [current state](../AGENTS.md#current-state) and
+Start with the [fresh-instance onboarding/spec brief](onboarding/AGENT-START.md),
+[documentation map](documentation-map.md), [orientation](onboarding/README.md) and the [current state](../AGENTS.md#current-state) and
 [canonical reading paths](../AGENTS.md#reading-paths). This index supplies
 references, not another mandatory reading sequence.
 
@@ -61,14 +62,22 @@ references, not another mandatory reading sequence.
   and [CPU evidence](../engine/tests/cumulative_publication/README.md) are accepted in #192.
   The [C2b-2 weighted native probe](../engine/docs/WEIGHTED-NATIVE-HANDOFF.md)
   and [CPU evidence](../engine/tests/weighted_handoff/README.md) are accepted in #193.
-  Production hierarchy and inherited response remain unbuilt; #194 releases the
-  bounded C3-1 implementation described below.
+  Production hierarchy followed in #195 and coherent refresh in #198;
+  the probe evidence retains its original numerical-only scope.
 
 - [Production hierarchy, response ownership and coupled recovery](production-hierarchy-response-plan.md) —
   accepted in #194 after #193: distinct field/comparison ownership, every production
   reader/history lifetime, local versus inherited force examples and one combined
-  integration. C3-1 releases a fixed installed tree implementation; C3-2 coherent
-  source refresh remains gated on C3-1 acceptance. Neither is built yet.
+  integration. C3-1 is accepted in #195 and C3-2 in #198.
+- [Core continuation](core-local-study-continuation-plan.md) — current sequence
+  from CPU B1 through placement/admission, enduring owners, observation and GPU.
+- [Native admission/contact plan](native-admission-contact-transaction-plan.md) —
+  accepted #199; CPU B1 built in #200/#201, B2 in draft #202, B3 pending.
+- [Core operation specification](core-operation-readiness-plan.md) — accepted
+  D1–D7 and full #156 operation matrix; bounded PRs do not complete the whole matrix.
+- [Live refresh](live-hierarchy-refresh-plan.md) — accepted #197 plan and #198 CPU implementation.
+- [Current dynamics and observation intent](coherent-dynamics-gpu-snapshots.md) —
+  distinguish evolving structures from invariant failures; exact stillness is not universal acceptance.
 
 - [Native precision prerequisite plan](native-precision-truncation-plan.md) — accepted
   in #176 for f64 transport, an experimental quantization primitive and a source/state
@@ -166,3 +175,4 @@ Reference:
 - **[/review/](../review/)** — review records and dispositions from repository recovery/rebase work.
 - **[/archive/](../archive/)** — preserved prior generations, superseded implementations and
   historical records.
+

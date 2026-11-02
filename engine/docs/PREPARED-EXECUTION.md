@@ -12,7 +12,7 @@ remaining #156 integration are not implemented by this step.
 All eight hosted checks and all 37 CPU suites passed at the accepted head
 `34c01e0`. The [coherent-update plan](../../docs/prepared-coherent-update-plan.md)
 was accepted in #167 at `284b45d`; its [implementation](PREPARED-UPDATES.md)
-is now submitted for review. The remaining description records #166
+is accepted in #169. The remaining description records #166
 historically; the new implementation supersedes its workspace/binding totals.
 
 ## Working storage and native selection
@@ -212,4 +212,6 @@ allocation traces separately; CpuDirect is CPU-only. Cloud CPU results do not
 qualify GPU behavior, pinning or the browser.
 
 The [coherent-update implementation](PREPARED-UPDATES.md) now supplies the next
-#162 step for review, with separate source-pinned evidence. #162 and #156 remain open.
+#162 step accepted in #169, with separate source-pinned evidence. #162 is
+complete; #156 retains the full operation boundary.
+

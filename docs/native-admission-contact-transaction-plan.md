@@ -1,6 +1,10 @@
 # Native admission and contact-safe tick publication
 
-Status: **accepted in #199, 2026-10-30**. Begin with a focused B1 implementation PR; transient native selection must pass the qualification below before production integration. This develops
+Status: **plan accepted in #199, 2026-10-30; CPU B1 accepted in #200/#201**.
+B2 is in [draft #202](https://github.com/Human-Cognome-Project/human-cognome-project/pull/202)
+as checked 2026-11-01; qualification/review remains pending. B3 is not yet built.
+The source-audit and imperative sections below specify the original plan; they
+do not instruct a new agent to repeat accepted B1. This develops
 slice B of the [core continuation](core-local-study-continuation-plan.md#b-native-admission-and-contact-safe-ticks)
 under the accepted [#170 operation contract](core-operation-readiness-plan.md).
 It specifies implementation portions of the released work; it changes no engine
@@ -325,3 +329,4 @@ LLVM/PTX need actual GTX 1070 evidence. Preserve the CUDA qualification guard.
 This proposal does not implement owner commands, cache-manager functions, new
 database population, analyst behavior, a GUI or Docker packaging, and it closes
 none of #172/#177/#156/#145.
+

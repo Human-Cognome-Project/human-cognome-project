@@ -1,5 +1,11 @@
 # Current hierarchy: CPU observations and local CUDA handoff
 
+**Historical #195 handoff, current continuation:** #196 subsequently accepted
+scoped local GTX 1070/motion corrections, #198 CPU structural refresh, and
+#201 CPU contact-safe ticks. Follow the [current sequence](core-local-study-continuation-plan.md).
+Source pins and statements about unexecuted CUDA below describe #195, not the
+current repository. The release intent remains applicable.
+
 Status: C3-1 accepted and merged in #195 at `6edb9d4`; reviewed head `b4a37f2`, under the
 [coherent-dynamics/capture direction](coherent-dynamics-gpu-snapshots.md).
 Current complete source pin: `d7621117cc03b62eac498c50093761434b95c5ec`,
@@ -335,3 +341,4 @@ no C3 CUDA execution has occurred: bounded contributor GTX 1070 runs now exist,
 while general/full GPU qualification remains open. Native local development
 uses NAS PostgreSQL; Docker is the ready-to-load release state. Prior model
 states are optional; no consumer-facing launcher is required.
+

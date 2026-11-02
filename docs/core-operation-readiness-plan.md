@@ -1,9 +1,10 @@
 # Complete the core operation path before full GPU qualification
 
-**Current sequencing, 2026-10-30:** see the [core/local-study continuation](core-local-study-continuation-plan.md).
+**Current sequencing, 2026-11-01:** see the [core/local-study continuation](core-local-study-continuation-plan.md).
 C3-1 is accepted in #195; #196's bounded GTX 1070/backend/motion corrections and
-#198's CPU C3-2 refresh are accepted and merged. Integrate native admission/contact
-transactions and enduring ownership before
+#198's CPU C3-2 refresh are accepted and merged. CPU B1 contact-safe ticks
+are accepted in #201; B2 is in draft #202, B3 and enduring ownership remain
+pending. Complete those boundaries before
 claiming live letter insertion. The full operation matrix below still owns
 #156 completion. Bounded local observation and an honestly scoped mini-release
 need not wait for every deferred feature or imply full #145 qualification.
@@ -49,7 +50,7 @@ The [follow-up disposition](https://github.com/Human-Cognome-Project/human-cogno
 accepts the complete contract, including contact publication, D1–D7 and all four
 implementation segments. This acceptance is not runtime completion or GPU
 qualification. Segment 1's [structural recipe implementation](../kernels/database/warm/STRUCTURAL-RECIPES.md)
-was accepted and merged in #171. The [current native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) in #175 supplies bounded current occupancy/focus and candidate contact queries. Placement/admission, contact installation, candidate motion publication and remaining lifecycle/CPU exit work are still unbuilt.
+was accepted and merged in #171. The [current native geometry preflight](../engine/docs/PREPARED-GEOMETRY.md) in #175 supplies bounded current occupancy/focus and candidate contact queries. CPU contact installation/candidate motion publication followed in #201. Placement/admission and remaining lifecycle/CPU exit work remain pending.
 
 ## Result and finite operation set
 
@@ -558,3 +559,4 @@ results, not deductions from CPU timing or a requested architecture flag.
 No GPU run is requested during these planning/CPU implementation segments. The
 exit is a core that can exercise its declared operations end to end, leaving
 actual full hardware behavior as the next gate rather than another core rewrite.
+

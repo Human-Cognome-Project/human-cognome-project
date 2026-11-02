@@ -11,7 +11,7 @@ accepted and merged in #166 at `4e7b193`, including the originating-context and
 target-ABI correction. All eight hosted checks and all 37 CPU suites passed.
 The [coherent-update section](prepared-coherent-update-plan.md) was accepted
 in #167 at `284b45d`; its [bounded implementation](../engine/docs/PREPARED-UPDATES.md)
-is submitted for review under #162.
+is accepted in #169; #162 is complete and #156 owns remaining operations.
 
 [The final #165 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/165#issuecomment-6328267055)
 releases implementation and requires explicit completion ownership and cleanup
@@ -242,3 +242,4 @@ single initial fixture load and stable ticks do not satisfy that later proof.
 report integration, general LoD exchanges, #115's exploratory coupling note,
 databases and private-manager behavior remain outside this section. All runtime
 and test implementation stays native C++; there is no operational Python work.
+

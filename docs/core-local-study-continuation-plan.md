@@ -1,8 +1,8 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-10-30. This organizes the
-already accepted #194 C3-2 and #170 operation contracts; it does not claim they
-are implemented. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
+Status: maintainer implementation sequencing, updated 2026-11-01. This organizes the
+accepted #194/#197 hierarchy and #170 operation contracts. The status table
+distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
 
 ## Reviewed baseline and limits
@@ -13,7 +13,8 @@ suites in 3355.27 seconds, both extra four-mode no-unroll matrices, compiler
 collection/audit, 180 PostgreSQL-to-active checks and actual CPU-only backend
 verification; all nine checks passed. Its [retained evidence](../engine/tests/live_hierarchy/refresh-v1/README.md)
 keeps the earlier initialization failure and job-budget cancellation. Slice A
-is complete for CPU structural refresh; B is the next core slice. No manual
+is complete for CPU structural refresh. CPU B1 is accepted in #201; B2/B3
+remain the active portion of B. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -51,7 +52,7 @@ conversion path must remain separately described.
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
-| B | Native admission and candidate contact/tick transaction | Next core slice, building on A and #175 geometry preflight; source work and CPU acceptance can run remotely. |
+| B | Native admission and candidate contact/tick transaction | CPU B1 accepted in #200/#201; B2 in draft #202, B3 pending. Source work and CPU acceptance can run remotely. |
 | C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
@@ -103,8 +104,13 @@ nearest-free operational admission.
 
 The [accepted #199 implementation plan](native-admission-contact-transaction-plan.md)
 maps this released slice to B1 candidate ticks, B2 certified placement and B3
-combined bootstrap/admission. Begin with a focused B1 implementation PR; the mechanisms are not yet
-implemented. The accepted #170 requirements below remain authoritative.
+combined bootstrap/admission. B1 is accepted in #200/#201; see
+[contact-safe ticks](../engine/docs/CONTACT-SAFE-TICKS.md). B2 already has
+[draft #202](https://github.com/Human-Cognome-Project/human-cognome-project/pull/202),
+whose contributor reports full qualification outstanding as of 2026-11-01.
+Inspect and continue that work before starting another implementation. B3 remains
+pending; candidate placement alone is not structural admission. The accepted
+#170 requirements below remain authoritative.
 
 Owning contract: [core operation plan, sections 2–3](core-operation-readiness-plan.md#2-native-engine-admission-and-occupancy).
 Reuse #175 current geometry/contact queries and the native numerical kernels.
@@ -221,3 +227,4 @@ active execution with an honest supported-operation/backend list. It does not
 require all deferred analyst/LoD research or automatically close #156/#145.
 Any unsupported #156 operation remains explicitly tracked. Do not publish a
 release merely because this plan exists.
+

@@ -11,7 +11,7 @@ The historical stage-release statements below are not current gates.
 in #141 at `e7acdea`. [Stage B projection](../engine/docs/LETTER-PROJECTION.md)
 is accepted/merged in #143 at `6ccd5a3`. C is implemented in #146, with no code
 blockers and all nine hosted checks green, accepted and merged at `43f418a`.
-D is released in #148 and [implemented for review](../engine/docs/ACTIVE-WORKBENCH.md).
+D was released in #148 and its [implementation](../engine/docs/ACTIVE-WORKBENCH.md) accepted in #149.
 The [pre-D design](pre-d-hot-workbench-design.md)
 is accepted in #147 under #145. The proposal wording below records the design's origin; the accepted
 [implementation contract](warm-toolbox-implementation-plan.md) and stage tracker
@@ -337,3 +337,4 @@ This is plan-development input, not authorization to implement all open
 interfaces or modify existing stores. Operational code is C++; Python remains
 restricted to early bulk bootstrap population and its preparation/validation.
 WAL, endpoints and engine harness keep their existing separate responsibilities.
+

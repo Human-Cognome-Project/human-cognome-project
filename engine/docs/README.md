@@ -1,5 +1,13 @@
 # Engine documentation status
 
+For a new instance, read the [onboarding/spec brief](../../docs/onboarding/AGENT-START.md).
+Current CPU contracts include [live hierarchy](LIVE-HIERARCHY.md),
+[combined refresh](LIVE-REFRESH.md), [accepted motion](ACCEPTED-MOTION.md),
+[native selection](NATIVE-SELECTION.md) and [contact-safe ticks](CONTACT-SAFE-TICKS.md).
+Use [AGENTS current state](../../AGENTS.md#current-state) for acceptance and
+[core continuation](../../docs/core-local-study-continuation-plan.md) for remaining work.
+The recovered record below is not a complete current implementation inventory.
+
 This directory was recovered on 2026-09-24 from the native C++ engine workspace
 that had remained local while the repository was reorganized.
 
@@ -83,3 +91,4 @@ load remain empirical work.
 Python is not part of the HCP engine/data runtime path. Python contained in the
 Taichi fork is upstream frontend/build/test material unless a specific build
 step proves it is required.
+
