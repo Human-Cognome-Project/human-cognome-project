@@ -380,9 +380,21 @@ void placement_capacity(engine::Runtime &r, HostPath path) {
   }
   require(measured, "placement native scratch measurement missing");
   {
-    Harness h(r, PreparedCapacity(l, NumericalProfile::trial()), path);
+    auto bootstrap = l;
+    bootstrap[Budget::BootstrapCommands] = l[Budget::Batch] + 17;
+    require(detail::PreparedStorage::required_scratch(
+                bootstrap, false, NumericalProfile::trial()) >
+                detail::PreparedStorage::required_scratch(
+                    l, false, NumericalProfile::trial()),
+            "bootstrap backing was omitted from scratch accounting");
+    Harness h(r, PreparedCapacity(bootstrap, NumericalProfile::trial()), path);
     const auto command = placement_definition();
     const auto intrinsic = placement_intrinsic();
+    const auto oversized = h.update_prepared(
+        0, &command, l[Budget::Batch] + 1);
+    require(oversized.status == UpdateStatus::CapacityExhausted &&
+                oversized.failure.budget == Budget::Batch,
+            "bootstrap backing widened ordinary update admission");
     PlacementResult q;
     no_new(
         [&] { q = h.query_prepared_placement(0, &command, 1, &intrinsic, 1); });

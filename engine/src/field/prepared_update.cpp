@@ -582,7 +582,7 @@ UpdateResult Harness::update_prepared_impl(
   std::copy_n(input, count, s.commands.begin());
   const int p = particles_, g = groups_, n = p + g, es = std::max(edges_, 1),
             gs = std::max(groups_, 1),
-            bs = int(std::max(limits[Budget::Batch], std::uint64_t{1}));
+            bs = int(std::max(s.capacity.command_capacity(), std::uint64_t{1}));
   std::fill(s.validation.begin(), s.validation.end(), 0);
   std::fill(s.resolved.begin(), s.resolved.end(), RecordHandle{});
   std::copy(s.particle_headers.begin(), s.particle_headers.end(),

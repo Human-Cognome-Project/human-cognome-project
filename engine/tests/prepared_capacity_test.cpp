@@ -27,6 +27,20 @@ int main() {
     BudgetDemand limits;
     limits.values = {1048576, 70, 9, 280, 140, 1024, 9, 32, 65536};
     const PreparedCapacity prepared(limits);
+    auto bootstrap_limits = limits;
+    bootstrap_limits[Budget::BootstrapCommands] = 128;
+    const PreparedCapacity bootstrap(bootstrap_limits);
+    require(bootstrap.command_capacity() == 128 &&
+                prepared.command_capacity() == 32,
+            "bootstrap backing must cover the larger transaction");
+    BudgetDemand oversized_batch;
+    oversized_batch[Budget::Batch] = 33;
+    require(bootstrap.check(oversized_batch).budget == Budget::Batch,
+            "bootstrap reservation widened ordinary edits");
+    bootstrap_limits[Budget::BootstrapCommands] =
+        (std::uint64_t{1} << 20) + 1;
+    rejects<std::invalid_argument>(
+        [&] { PreparedCapacity bad(bootstrap_limits); });
     require(!prepared.check(limits).exhausted(), "exact limits rejected");
     for (std::size_t i = 0; i < limits.values.size(); ++i) {
       BudgetDemand demand;

@@ -79,7 +79,7 @@ struct PreparedFixtureAccess {
                         const std::array<T, kParticleFieldCount> &row) {
     auto &s = *h.prepared_;
     const auto b =
-        std::max(s.capacity.limits()[Budget::Batch], std::uint64_t{1});
+        std::max(s.capacity.command_capacity(), std::uint64_t{1});
     if (command < 0 ||
         std::uint64_t(command) >= s.capacity.limits()[Budget::Batch])
       throw std::invalid_argument("fixture start command out of range");

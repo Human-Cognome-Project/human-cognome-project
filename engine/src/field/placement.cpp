@@ -65,7 +65,8 @@ void Placement::append_layout(const BudgetDemand &l,
   if (!l[Budget::PlacementWork])
     return;
   const auto p = std::max<std::uint64_t>(l[Budget::Particles], 1),
-             b = std::max<std::uint64_t>(l[Budget::Batch], 1),
+             b = std::max({l[Budget::Batch], l[Budget::BootstrapCommands],
+                           std::uint64_t{1}}),
              c = l[Budget::PlacementCells];
   const auto add = [&](const char *name, std::uint64_t count,
                        std::size_t bytes) {
@@ -104,7 +105,7 @@ Placement::Placement(Harness &h) : h_(h) {
   const auto before = native_requested(r);
   const int p = std::max(h.particles_, 1),
             b = std::max<std::uint64_t>(
-                h.prepared_->capacity.limits()[Budget::Batch], 1),
+                h.prepared_->capacity.command_capacity(), 1),
             c = h.prepared_->capacity.limits()[Budget::PlacementCells];
   const auto d = PrimitiveType::f64, i = PrimitiveType::i32;
   rows_ = allocate(r, i, {p});
@@ -234,7 +235,7 @@ void Placement::build() {
          *destination =
              b.create_ndarray_arg_load({1}, PrimitiveType::f64, 2, 0);
     const int count = std::max<std::uint64_t>(
-        h_.prepared_->capacity.limits()[Budget::Batch], 1);
+        h_.prepared_->capacity.command_capacity(), 1);
     for (int field = 0; field < 7; ++field) {
       auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(count), false,
                                       h_.runtime_->cpu_threads());
@@ -388,7 +389,7 @@ PlacementResult Placement::query(std::uint64_t expected,
     ++logarithm;
   const auto p = l[Budget::Particles], g = l[Budget::Fields],
              e = l[Budget::Participation], c = l[Budget::Contacts],
-             f = l[Budget::Focus], b = l[Budget::Batch];
+             f = l[Budget::Focus], b = s.capacity.command_capacity();
   std::uint64_t prefix = 0;
   for (auto term : {sat_mul(16, p + g + e + c + b + f + 1),
                     sat_mul(4 * command_count, p + g + f + 12),

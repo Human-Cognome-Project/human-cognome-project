@@ -17,6 +17,14 @@ historically; the new implementation supersedes its workspace/binding totals.
 
 ## Working storage and native selection
 
+The admission follow-up adds a `BootstrapCommands` reservation, defaulting to
+zero. Command maps, source staging, generated-row buffers and placement scratch
+reserve `max(Batch, BootstrapCommands)` at preparation. Scratch accounting uses
+that same extent. Ordinary updates and placement queries still enforce `Batch`;
+the larger backing alone does not authorize initial admission. The complete
+single-publication bootstrap protocol remains pending under the
+[admission plan](../../docs/native-admission-contact-transaction-plan.md).
+
 The [capacity constructor](../src/field/field.h) allocates particle, field,
 participation and contact arrays at independent capacity strides. It preserves
 the legacy fixed-count constructor/getters and adds explicit capacity and
