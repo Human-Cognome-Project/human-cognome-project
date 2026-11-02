@@ -208,6 +208,8 @@ jobs:
             ${{ runner.temp }}/c3-compiler-ir/*/refresh.txt
             ${{ runner.temp }}/c3-compiler-ir/*/selection.txt
             ${{ runner.temp }}/c3-compiler-ir/*/contact-ticks.txt
+            ${{ runner.temp }}/c3-compiler-ir/*/placement.txt
+            ${{ runner.temp }}/c3-compiler-ir/placement-math-*-no-unroll.txt
 
       - name: Verify CPU-only runtime reports no CUDA requirement
         run: |
