@@ -46,6 +46,7 @@ admin -d postgres -c "CREATE DATABASE $db OWNER $role" > "$evidence/create.log" 
 # Feed SQL on stdin so the OS administrator need not traverse a private checkout.
 { printf 'SET ROLE %s;\n' "$role"; cat "$repo/kernels/database/warm/schema.sql"; } |
   admin -d "$db" > "$evidence/schema.log" 2>&1
+# shellcheck source=/dev/null
 source "$build/engine-env.sh"
 export HCP_CORE_TEST_CONNINFO="service=$core"
 export HCP_LING_TEST_CONNINFO="service=$ling"
