@@ -30,3 +30,17 @@ timings are not performance qualification.
 Full CPU regression, all compiler/worker modes, PostgreSQL and GPU profiles were
 not run for this increment. No first-admission D1 focus, native record claim,
 contact publication or operational Add/Remove behavior is claimed.
+
+## Hosted acceptance — 2026-11-03
+
+PR #205 at `a8a14fdee36ca6b70b08d4c9f1d274c4b16493ac` was source-reviewed
+without blockers and passed all eight hosted checks. The independently inspected
+[native job 125871626394](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41622544766/job/125871626394)
+passed 115/115 CPU tests in 4319.55 seconds and 180 integration checks, with
+24 addressed reads and zero private reads. Both evidence artifacts uploaded.
+This hosted result is separate from the contributor-local evidence above.
+
+Merged as `ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b` after CI-only #206.
+Acceptance covers the private staging prerequisite only. D1 bootstrap/focus,
+prospective contact validation, record claims and coordinated single-publication
+admission remain the next B3 work. Integrated main CI is pending.

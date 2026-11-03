@@ -68,3 +68,24 @@ they do not reduce total numerical work. Runner queues, artifact transfer and
 uneven test lengths affect the result. Compare actual cold/warm build statistics,
 job timings and full test coverage before claiming a speedup. Hosted CPU success
 does not qualify local GPU behavior.
+
+## Initial hosted acceptance — 2026-11-03
+
+PR #206 at `9f78602f96859d461370213ae7770372278e617b` passed all
+18 checks in [run 41667320655](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41667320655).
+Inspected regression logs cover all indexes 1–115 exactly once across shards
+of 29, 29, 29 and 28 tests. All four compiler jobs completed and retained their
+mode evidence; database integration passed 180 checks with 24 addressed reads
+and zero private reads. Provenance/backend and artifact checks passed.
+
+The native critical path ran from 15:46:21 to 16:31:02 UTC: **44m41s**, compared
+with approximately **129m48s** for the reference run above. This is an observed
+cross-run comparison, not a controlled benchmark. The inspected build artifact
+(13247902226) reports 260 cacheable compilations, zero hits and 260 misses;
+cache restore also explicitly missed. The elapsed-time improvement therefore
+establishes the benefit of the job layout without a warm-cache benefit claim.
+
+Merged as `943e0549c62af92a4aefc0c7b9f78a2e2fb214e8`, followed by #205
+at `ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b`. Integrated main run
+[41720357523](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357523)
+is pending; cache publication and integrated execution will be checked there.
