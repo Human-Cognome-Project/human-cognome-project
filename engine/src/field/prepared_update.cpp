@@ -8,6 +8,7 @@
 #include "field/activity.h"
 #include "field/centroid_math.h"
 #include "field/prepared_storage.h"
+#include "field/placement.h"
 
 namespace field {
 namespace {
@@ -499,13 +500,57 @@ UpdateResult Harness::refresh_live_hierarchy(std::uint64_t expected,
                                              std::uint64_t work_limit) {
   return update_prepared_impl(expected, input, count, &spec, work_limit);
 }
+UpdateResult Harness::stage_current_admission(
+    std::uint64_t expected, const UpdateCommand *commands, std::size_t count,
+    const PlacementIntrinsic *intrinsics, std::size_t bodies,
+    const LiveRefreshSpec &hierarchy, std::uint64_t placement_work,
+    std::uint64_t placement_cells, std::uint64_t hierarchy_work) {
+  UpdateResult out;
+  if (!prepared_ || !ready_) {
+    out.status = UpdateStatus::Unready;
+    return out;
+  }
+  out.generation = prepared_->generation;
+  if (expected != out.generation) {
+    out.status = UpdateStatus::Stale;
+    return out;
+  }
+  if (!placement_ || !live_hierarchy_installed()) {
+    out.status = UpdateStatus::Unsupported;
+    return out;
+  }
+  const auto placed = placement_->stage(expected, commands, count, intrinsics,
+                                         bodies, placement_work, placement_cells);
+  out.failure = placed.failure;
+  switch (placed.status) {
+    case PlacementStatus::Ok: break;
+    case PlacementStatus::Stale: out.status = UpdateStatus::Stale; return out;
+    case PlacementStatus::Unready: out.status = UpdateStatus::Unready; return out;
+    case PlacementStatus::Unsupported: out.status = UpdateStatus::Unsupported; return out;
+    case PlacementStatus::CapacityExhausted:
+      out.status = UpdateStatus::CapacityExhausted; return out;
+    case PlacementStatus::InvalidNumerics:
+      out.status = UpdateStatus::InvalidNumerics; return out;
+    default: out.status = UpdateStatus::InvalidInput; return out;
+  }
+  // This mode is never exposed on update/refresh: the immediately preceding
+  // successful native producer is its only source of initialized rows.
+  out = update_prepared_impl(expected, commands, count, &hierarchy,
+                             hierarchy_work, nullptr,
+                             PreparedUpdateMode::GeneratedPreflight);
+  out.upload_bytes += placed.upload_bytes;
+  out.readback_bytes += placed.readback_bytes;
+  out.synchronizations += placed.synchronizations;
+  return out;
+}
 UpdateResult Harness::update_prepared_impl(
     std::uint64_t expected,
     const UpdateCommand *input,
     std::size_t count,
     const LiveRefreshSpec *refresh,
     std::uint64_t work_limit,
-    detail::SourceProjection *projection) {
+    detail::SourceProjection *projection,
+    PreparedUpdateMode mode) {
   UpdateResult answer;
   if (!prepared_ || !ready_) {
     answer.status = UpdateStatus::Unready;
@@ -707,7 +752,7 @@ UpdateResult Harness::update_prepared_impl(
           (headers[row].record >= 0 && headers[row].address == cmd.address))
         return reject(UpdateStatus::InvalidInput);
     }
-    if (particle) {
+    if (particle && mode == PreparedUpdateMode::FixtureCommit) {
       for (int field = 0; field < 12; ++field)
         if (!std::isfinite(s.new_row_values[field * std::size_t(bs) + c]) ||
             (profile_.wide() &&
@@ -969,8 +1014,9 @@ UpdateResult Harness::update_prepared_impl(
            s.candidate_edges.size() * sizeof(int));
     upload(*s.candidate_shares_array, s.candidate_shares.data(),
            s.candidate_shares.size() * sizeof(float));
-    upload(*s.new_rows_array, s.new_row_values.data(),
-           s.new_row_values.bytes());
+    if (mode == PreparedUpdateMode::FixtureCommit)
+      upload(*s.new_rows_array, s.new_row_values.data(),
+             s.new_row_values.bytes());
     upload(*s.candidate_offsets_array, offsets, 2 * gs * sizeof(int));
     upload(*s.candidate_order_array, order, es * sizeof(int));
     if (profile_.wide())
@@ -988,6 +1034,8 @@ UpdateResult Harness::update_prepared_impl(
       return reject(UpdateStatus::InvalidNumerics);
     if (s.failure_point == 1)
       return reject(UpdateStatus::InvalidInput);
+    if (mode == PreparedUpdateMode::GeneratedPreflight)
+      return reject(UpdateStatus::Ok);
     // Claims begin mutation, even though no numerical survivor has been
     // written.
     for (bool particle : {true, false}) {

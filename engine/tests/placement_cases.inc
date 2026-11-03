@@ -324,6 +324,83 @@ void placement_boundaries(engine::Runtime &r, HostPath path) {
       << "placement_boundaries,rejected_cases=14,successful_retry=identical,"
          "rounds=32,backing=stable,compiler=stable,cpp_new_observed=0 PASS\n";
 }
+void admission_preflight(engine::Runtime &r, HostPath path) {
+  const auto limits = placement_limits();
+  Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
+            true, false, 1024, {1}, &limits);
+  f.install();
+  RefreshRequest request(f.h);
+  std::vector<UpdateCommand> commands{placement_definition(901)};
+  UpdateCommand edge;
+  edge.operation = UpdateOp::InsertParticipation;
+  edge.first = UpdateRef::pending(0);
+  edge.second = UpdateRef::existing(request.nodes[0].field);
+  edge.share = 1;
+  edge.exact_count = 1;
+  edge.ordinal = 12345;
+  edge.position = f.h.prepared_storage().live.edges;
+  commands.push_back(edge);
+  request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+  const std::vector<PlacementIntrinsic> inputs{placement_intrinsic()};
+  const auto query = place(f, commands, inputs);
+  require(query.status == PlacementStatus::Ok, "preflight placement baseline");
+  const auto certificate = f.h.inspect_prepared_placement(query).certificates[0];
+  const TickSnapshot before(f);
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+  const auto backing = metrics.sample();
+  const auto invoke = [&](std::uint64_t work = UINT64_MAX) {
+    const auto spec = request.spec();
+    UpdateResult result;
+    no_new([&] {
+      result = PlacementAccess::preflight(f.h, commands.data(), commands.size(),
+                                          inputs.data(), inputs.size(), spec,
+                                          work);
+    });
+    return result;
+  };
+  for (int repeat = 0; repeat < 3; ++repeat) {
+    const auto result = invoke();
+    require(result.status == UpdateStatus::Ok &&
+                result.generation == f.h.prepared_storage().generation,
+            "generated source/hierarchy preflight failed");
+  }
+  const auto derived = PlacementAccess::derived(f.h);
+  const auto stride = f.h.field_capacity();
+  const auto field = request.nodes[0].field.record;
+  require(derived[kCenM * stride + field] == 2,
+          "prospective hierarchy did not consume generated mass");
+  for (int axis = 0; axis < 3; ++axis)
+    require(derived[(kCenX + axis) * stride + field] ==
+                certificate.position[axis] / 2,
+            "prospective hierarchy lost native generated position");
+  require(backing.same_backing(metrics.sample()) && before == TickSnapshot(f),
+          "preflight claimed records, published state or changed backing");
+  const auto exhausted = invoke(0);
+  require(exhausted.status == UpdateStatus::CapacityExhausted &&
+              exhausted.failure.budget == Budget::CascadeWork,
+          "prospective hierarchy work was not bounded");
+  request.cohorts[0].pop_back();
+  require(invoke().status == UpdateStatus::InvalidInput,
+          "incomplete prospective hierarchy was accepted");
+  request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+  PreparedFixtureAccess::inject_failure(f.h, 1);
+  require(invoke().status == UpdateStatus::InvalidInput,
+          "late preclaim rejection was not retained");
+  PreparedFixtureAccess::inject_failure(f.h, 0);
+  require(invoke().status == UpdateStatus::Ok && f.h.ready(),
+          "healthy preflight retry failed");
+  const auto spec = request.spec();
+  require(f.h.refresh_live_hierarchy(f.h.prepared_storage().generation,
+                                     commands.data(), commands.size(), spec)
+              .status == UpdateStatus::InvalidNumerics,
+          "public fixture refresh consumed private generated starts");
+  require(before == TickSnapshot(f) &&
+              f.h.inspect_prepared_placement(query).certificates[0].position ==
+                  certificate.position,
+          "rejected preflight changed committed state or public observation");
+  std::cout << "admission_preflight,native_starts_consumed=1,prospective_tree=1,"
+               "no_claims=1,no_publication=1,rejections=3,healthy_retry=1 PASS\n";
+}
 void placement_generated(engine::Runtime &r, HostPath path) {
   auto limits = placement_limits();
   limits[Budget::BootstrapCommands] = limits[Budget::Batch] + 7;
