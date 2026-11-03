@@ -29,11 +29,28 @@ consumed as a transaction: scratch has no independent validity/identity token.
 Existing public update/refresh guards remain unchanged, and fixture starts stay
 private to their existing test adapter.
 
+## Prospective source and hierarchy preflight
+
+The private `Harness::stage_current_admission` coordinator immediately follows
+successful native placement with the existing source/hierarchy preflight. It
+requires an installed hierarchy, retains the ordinary Batch limit and stages
+the same commands against the same generation. `GeneratedPreflight` consumes
+the native start array without uploading the fixture host rows over it. It
+validates the prospective source, hierarchy ownership/coverage and numerical
+repair, then returns before the first native record claim.
+
+Only this private producer-to-consumer call uses that mode. Public update and
+refresh still use fixture validation and cannot consume generated starts left
+in scratch. Candidate success changes neither the installed hierarchy nor
+generation, ticks, survivor physical/history state or existing observations.
+Capacity, incomplete-hierarchy and late preclaim rejections remain typed and
+permit retry. No candidate token or admission-ready guarantee is exposed: the
+prospective contact union has not yet been validated.
+
 ## Remaining B3 work
 
-Connect generated rows to one prospective source/hierarchy/contact validation
-and commit boundary, bypassing fixture initialization without bypassing any
-preflight checks. Add complete first admission under BootstrapCommands, explicit
+Extend the prospective source/hierarchy path with contact validation and one
+commit boundary, without bypassing any preflight checks. Add complete first admission under BootstrapCommands, explicit
 prospective focal selection and D1 partial-focus/anchor placement. Validate the
 candidate contact union and peak references before native claims. Publish source,
 hierarchy/history, contacts, focus and activity together once, with no tick advance.

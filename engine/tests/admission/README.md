@@ -30,3 +30,30 @@ timings are not performance qualification.
 Full CPU regression, all compiler/worker modes, PostgreSQL and GPU profiles were
 not run for this increment. No first-admission D1 focus, native record claim,
 contact publication or operational Add/Remove behavior is claimed.
+
+## Prospective source/hierarchy preflight — 2026-11-03
+
+Tested commit `162dcae43865b5ea3a0daa85bb3e54c8fe09c3a0`, stacked on
+provisionally accepted #205 (`a8a14fde`). Ubuntu 24.04/WSL2, Clang/LLVM 15,
+native CPU/x64; no GPU execution. Later commit documents evidence only.
+
+- `live_hierarchy_test --threads 1 --case admission_preflight`: passed.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case admission_preflight`: passed.
+- `prepared_update_test`: passed, including ordinary rejection/no-op/capacity,
+  structural wake/history and late-failure cases.
+- `live_hierarchy_test --threads 1 --case refresh_dirty`: passed.
+
+Candidate mass/centroid checks prove the hierarchy consumes native generated
+positions and mass rather than fixture host rows. Repeated attempts preserve
+backing, survivor velocity, pending work, installed state and the earlier public
+placement observation. CascadeWork exhaustion, incomplete hierarchy (the existing
+Unsupported result), and injected late preclaim rejection retain healthy retry.
+Public fixture refresh still rejects missing fixture starts after private staging.
+Successful preflight advances neither generation nor ticks and claims no records.
+
+Raw logs, commands, configuration, source/submodule pins and binary/runtime hashes
+are retained locally as `admission-preflight-162dcae4`. Its `SHA256SUMS` digest is
+`33fb647fc4a90c3d28cc072241cab98a7842fcef6e76b9bc869b75528f944ffd`.
+No full CPU regression, full compiler matrix, PostgreSQL or GPU rerun is claimed.
+Prospective contact validation, complete bootstrap and atomic publication remain
+unimplemented; this evidence does not establish operational admission readiness.
