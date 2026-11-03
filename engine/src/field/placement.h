@@ -27,7 +27,7 @@ class Placement {
   Harness &h_;
   std::unique_ptr<taichi::lang::Ndarray> rows_, stats_, focal_, keep_,
       requests_, occupancy_, cells_, attempt_, published_, counts_;
-  engine::CompiledKernel collect_, capture_, solve_, publish_;
+  engine::CompiledKernel collect_, capture_, solve_, publish_, initialize_;
   std::vector<int> keep_values_;
   std::vector<double> request_values_, result_values_;
   std::vector<PlacementIntrinsic> intrinsics_, published_intrinsics_;
@@ -44,5 +44,14 @@ class Placement {
   void capture();
   void solve(int, std::uint64_t, std::uint64_t, int);
   void publish(bool enabled);
+  void initialize(int bodies);
+  // Private admission preparation: native generated rows only, no record claims
+  // or public candidate publication. Full admission owns subsequent validation.
+  PlacementResult stage(std::uint64_t, const UpdateCommand *, std::size_t,
+                        const PlacementIntrinsic *, std::size_t,
+                        std::uint64_t, std::uint64_t);
+  PlacementResult attempt(std::uint64_t, const UpdateCommand *, std::size_t,
+                          const PlacementIntrinsic *, std::size_t,
+                          std::uint64_t, std::uint64_t, bool publication);
 };
 }  // namespace field::detail

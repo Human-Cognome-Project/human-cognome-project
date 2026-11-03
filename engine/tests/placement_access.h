@@ -5,16 +5,29 @@ namespace field::testing {
 struct PlacementAccess {
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 4>{
-        &p.collect_, &p.capture_, &p.solve_, &p.publish_};
+    return std::array<const engine::CompiledKernel *, 5>{
+        &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<taichi::lang::Ndarray *, 10>{
+    return std::array<taichi::lang::Ndarray *, 11>{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
-        p.counts_.get()};
+        p.counts_.get(), h.prepared_->new_rows_array.get()};
+  }
+  static PlacementResult stage(Harness &h, const UpdateCommand *commands,
+                                std::size_t count,
+                                const PlacementIntrinsic *inputs,
+                                std::size_t bodies) {
+    return h.placement_->stage(h.prepared_->generation, commands, count,
+                               inputs, bodies, UINT64_MAX, UINT64_MAX);
+  }
+  static std::vector<double> generated(Harness &h) {
+    std::vector<double> rows(h.prepared_->new_rows_array->get_nelement());
+    engine::readback(*h.prepared_->new_rows_array, rows.data(),
+                     rows.size() * sizeof(double));
+    return rows;
   }
   static void configure(Harness &h,
                         const std::vector<engine::RecordHandle> &handles,
