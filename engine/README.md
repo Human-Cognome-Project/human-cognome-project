@@ -105,6 +105,10 @@ ctest --test-dir engine/build --output-on-failure
 A different fork/build can still be supplied with
 `ENGINE_TAICHI_ROOT` / `ENGINE_TAICHI_BUILD`.
 
+For repeatable local CPU checks with source pins, retained logs and provisional
+review reports, use the [local CI profiles](docs/LOCAL-CI.md). These include a
+separate local PostgreSQL fixture flow and do not replace hosted acceptance.
+
 ### Local CUDA build
 
 Observed 2026-10-20 (see below) on a GTX 1070 (compute capability 6.1), NVIDIA
