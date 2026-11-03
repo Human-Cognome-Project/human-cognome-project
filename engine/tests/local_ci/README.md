@@ -41,3 +41,22 @@ No full `regression` or `matrix` run is claimed for this tooling validation.
 Those profiles mirror the named hosted native stages but do not implement every
 other repository workflow. Follow [LOCAL-CI.md](../../docs/LOCAL-CI.md) for scope,
 commands, reporting and the distinction between provisional and final acceptance.
+
+## Reused-cache provenance correction — 2026-11-03
+
+At `d4adfd7047aabf8e94988b977bc43a0ef4d5af4c`, the focused
+`check_local_ci_cache.sh` witness passed. It first configured and verified three
+valid alternate CPU cache paths (source/build aliases and a separate runtime
+copy). The real quick runner replaced all three with this checkout's absolute
+paths. Runtime bytes matched the rebuilt source; compiled archive paths, sizes
+and modification times remained identical across another incremental build.
+Taichi's expected runtime-bitcode regeneration was allowed.
+
+Bash syntax and ShellCheck passed. The quick profile again passed all three
+CTest checks, 632 arithmetic samples and the placement-capacity cases. No full
+physics regression, compiler matrix, database or GPU rerun is claimed for this
+path-binding correction. The prior database evidence retains its original pin.
+Local evidence is retained as `cache-d4adfd70`, including before/after CMake
+caches, archive inventories, the quick run and its verified checksum manifest.
+The outer evidence `SHA256SUMS` digest is
+`692a2633c74bf3a8b29e22d54d71c231b64fa73304b0c2d8b178d4ee07e9e764`.
