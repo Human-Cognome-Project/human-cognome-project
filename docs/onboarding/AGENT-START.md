@@ -155,6 +155,27 @@ local GTX 1070 evidence; full integrated GPU qualification remains open. The
 CUDA f32-to-f64 `0x1p-149` promotion failure is still a separate task. Keep the
 C3 CUDA qualification guard and supported-backend limits explicit.
 
+## Local evidence and provisional continuation — 2026-11-02
+
+Patrick confirmed that contributions from the app on his local machine will
+include local CI evidence for provisional maintainer acceptance and continued
+work. Review the source and evidence appropriate to the changed scope; do not
+hold otherwise accepted follow-on work solely for hosted CI latency.
+
+Record the tested commit, actual backend, configuration, commands, results,
+retained evidence and the profiles not run. A focused local pass supports only
+its tested scope. Distinguish contributor-reported results from raw evidence
+personally inspected, and local execution from hosted execution. Machine-local
+hashes identify evidence but do not make the raw bundle remotely available.
+
+Hosted CI remains authoritative for the checks it can perform. Provisional
+acceptance is permission to continue the reviewed scope, not a claim that
+pending hosted checks passed or that untested behavior is qualified. Reconcile
+later hosted findings before final acceptance/merge; do not duplicate a running
+suite merely to permit local progress. Keep dependent work in reviewable
+commits or stacked PRs, with its provisional dependencies explicit. GPU behavior
+requires actual local hardware evidence and is not inferred from hosted CPU CI.
+
 ## Intended local study and release
 
 The purpose is to observe mathematically derived organization and its changes
