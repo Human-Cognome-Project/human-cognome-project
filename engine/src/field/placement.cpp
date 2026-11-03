@@ -80,7 +80,7 @@ void Placement::append_layout(const BudgetDemand &l,
   add("placement-geometry-counters", 32,
       sizeof(std::int64_t));                                // native + host
   add("placement-focal", 8, sizeof(double));                // native + host
-  add("placement-intrinsic-input", 4 * b, sizeof(double));  // native + host
+  add("placement-intrinsic-input", 6 * b, sizeof(double));  // native + host
   add("placement-occupancy", 4 * (p + b), sizeof(double));
   add("placement-interval-heap", 7 * c, sizeof(double));
   add("placement-candidate-output", 21 * b,
@@ -112,14 +112,14 @@ Placement::Placement(Harness &h) : h_(h) {
   stats_ = allocate(r, PrimitiveType::i64, {16});
   focal_ = allocate(r, d, {4});
   keep_ = allocate(r, i, {p});
-  requests_ = allocate(r, d, {2, b});
+  requests_ = allocate(r, d, {3, b});
   occupancy_ = allocate(r, d, {4, p + b});
   cells_ = allocate(r, d, {7, c});
   attempt_ = allocate(r, d, {7, b});
   published_ = allocate(r, d, {7, b});
   counts_ = allocate(r, PrimitiveType::u64, {16});
   keep_values_.resize(p);
-  request_values_.resize(2 * b);
+  request_values_.resize(3 * b);
   result_values_.resize(7 * b);
   intrinsics_.resize(b);
   published_intrinsics_.resize(b);
@@ -131,6 +131,7 @@ Placement::Placement(Harness &h) : h_(h) {
   capture();
   solve(0, INT64_MAX, 0, c);
   publish(false);
+  initialize(0);
   r.synchronize();
   native_bytes_ = native_requested(r) - before;
 }
@@ -255,6 +256,61 @@ void Placement::build() {
          Param::scalar(PrimitiveType::i32)},
         engine::MathMode::Strict);
   }
+  {
+    IRBuilder b;
+    auto *positions = b.create_ndarray_arg_load({0}, PrimitiveType::f64, 2, 0),
+         *inputs = b.create_ndarray_arg_load({1}, PrimitiveType::f64, 2, 0),
+         *starts = b.create_ndarray_arg_load({2}, PrimitiveType::f64, 2, 0);
+    auto *number = b.create_arg_load({3}, PrimitiveType::i32, false, 0);
+    const int capacity = std::max<std::uint64_t>(
+        h_.prepared_->capacity.command_capacity(), 1);
+    // One record per iteration: zero the whole prospective row, then scatter
+    // certified coordinates by command index (not canonical placement rank).
+    // These are transient rows; no live body, activity or history is written.
+    for (int field = 0; field < 12; ++field) {
+      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(capacity),
+                                     false, r.cpu_threads());
+      auto guard = b.get_loop_guard(loop);
+      b.create_global_store(b.create_external_ptr(
+          starts, {b.get_int32(field), b.get_loop_index(loop)}), b.get_float64(0));
+    }
+    auto *loop = b.create_range_for(b.get_int32(0), number, false,
+                                   r.cpu_threads());
+    {
+      auto guard = b.get_loop_guard(loop);
+      auto *rank = b.get_loop_index(loop);
+      auto *command = b.create_cast(b.create_global_load(
+          b.create_external_ptr(inputs, {b.get_int32(2), rank})),
+          PrimitiveType::i32);
+      for (int k = 0; k < 3; ++k)
+        b.create_global_store(
+            b.create_external_ptr(starts, {b.get_int32(kPosX + k), command}),
+            b.create_global_load(b.create_external_ptr(positions,
+                {b.get_int32(k), rank})));
+      for (const auto &mapping : {std::pair<int, int>{kMass, 0},
+                                  std::pair<int, int>{kRadius, 1}})
+        b.create_global_store(
+            b.create_external_ptr(starts, {b.get_int32(mapping.first), command}),
+            b.create_global_load(b.create_external_ptr(inputs,
+                {b.get_int32(mapping.second), rank})));
+    }
+    initialize_ = engine::CompiledKernel(
+        r, "placement_initialize_b" + std::to_string(capacity), b.extract_ir(),
+        {Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::f64, 2),
+         Param::array(PrimitiveType::f64, 2), Param::scalar(PrimitiveType::i32)},
+        engine::MathMode::Strict);
+  }
+}
+void Placement::initialize(int bodies) {
+  auto call = initialize_.invocation(true);
+  auto &c = call.get();
+  if (!c.prepared) {
+    c.set_arg_ndarray({0}, *attempt_);
+    c.set_arg_ndarray({1}, *requests_);
+    c.set_arg_ndarray({2}, *h_.prepared_->new_rows_array);
+  }
+  engine::argument_int(c, 3, bodies);
+  initialize_.launch(c);
 }
 void Placement::collect() {
   auto call = collect_.invocation(true);
@@ -325,7 +381,8 @@ void Placement::publish(bool enabled) {
 }
 std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
-         solve_.prepared_bytes() + publish_.prepared_bytes();
+         solve_.prepared_bytes() + publish_.prepared_bytes() +
+         initialize_.prepared_bytes();
 }
 
 PlacementResult Placement::query(std::uint64_t expected,
@@ -335,6 +392,27 @@ PlacementResult Placement::query(std::uint64_t expected,
                                  std::size_t body_count,
                                  std::uint64_t work,
                                  std::uint64_t cells) {
+  return attempt(expected, commands, command_count, inputs, body_count, work,
+                 cells, true);
+}
+PlacementResult Placement::stage(std::uint64_t expected,
+                                 const UpdateCommand *commands,
+                                 std::size_t command_count,
+                                 const PlacementIntrinsic *inputs,
+                                 std::size_t body_count,
+                                 std::uint64_t work,
+                                 std::uint64_t cells) {
+  return attempt(expected, commands, command_count, inputs, body_count, work,
+                 cells, false);
+}
+PlacementResult Placement::attempt(std::uint64_t expected,
+                                   const UpdateCommand *commands,
+                                   std::size_t command_count,
+                                   const PlacementIntrinsic *inputs,
+                                   std::size_t body_count,
+                                   std::uint64_t work,
+                                   std::uint64_t cells,
+                                   bool publication) {
   auto &h = h_;
   auto &s = *h.prepared_;
   const auto &l = s.capacity.limits();
@@ -397,6 +475,10 @@ PlacementResult Placement::query(std::uint64_t expected,
                     sat_mul(64 * e, logarithm), 8 * (p + b + f) + 7 * b + 64})
     prefix = sat_add(prefix, term);
   q.source_work_bound = prefix;
+  if (!publication) {
+    prefix = sat_add(prefix, sat_add(sat_mul(12, b), sat_mul(8, body_count)));
+    q.source_work_bound = prefix;
+  }
   if (prefix > work)
     return fail(Budget::PlacementWork, prefix, work);
   std::size_t definitions = 0;
@@ -455,6 +537,7 @@ PlacementResult Placement::query(std::uint64_t expected,
     for (std::size_t i = 0; i < body_count; ++i) {
       request_values_[i] = intrinsics_[i].mass;
       request_values_[stride + i] = intrinsics_[i].radius;
+      request_values_[2 * stride + i] = double(intrinsics_[i].command);
     }
     engine::upload(*keep_, keep_values_.data(),
                    keep_values_.size() * sizeof(int));
@@ -522,6 +605,13 @@ PlacementResult Placement::query(std::uint64_t expected,
       throw std::runtime_error("incomplete certified placement result");
     if (s.failure_point == 300)
       throw std::runtime_error("injected placement candidate failure");
+    if (!publication) {
+      initialize(int(body_count));
+      h.runtime_->synchronize();
+      ++q.synchronizations;
+      q.placements = body_count;
+      return q;
+    }
     publish(true);
     if (s.failure_point == 301)
       throw std::runtime_error("injected placement result publication failure");

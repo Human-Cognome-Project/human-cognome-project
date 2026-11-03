@@ -324,6 +324,72 @@ void placement_boundaries(engine::Runtime &r, HostPath path) {
       << "placement_boundaries,rejected_cases=14,successful_retry=identical,"
          "rounds=32,backing=stable,compiler=stable,cpp_new_observed=0 PASS\n";
 }
+void placement_generated(engine::Runtime &r, HostPath path) {
+  auto limits = placement_limits();
+  limits[Budget::BootstrapCommands] = limits[Budget::Batch] + 7;
+  Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
+            true, false, 1024, {1}, &limits);
+  f.install();
+  const std::vector<UpdateCommand> commands{placement_definition(901),
+                                            placement_definition(902)};
+  // Canonical order is deliberately opposite to request/command order.
+  const std::vector<PlacementIntrinsic> inputs{
+      placement_intrinsic(0, 20, 0.25), placement_intrinsic(1, 10, 0.5)};
+  const auto query = place(f, commands, inputs);
+  require(query.status == PlacementStatus::Ok, "generated rows baseline");
+  const auto expected = f.h.inspect_prepared_placement(query).certificates;
+  const TickSnapshot before(f);
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+  const auto backing = metrics.sample();
+  PlacementResult staged;
+  for (int repeat = 0; repeat < 3; ++repeat) {
+    no_new([&] {
+      staged = PlacementAccess::stage(f.h, commands.data(), commands.size(),
+                                      inputs.data(), inputs.size());
+    });
+    require(staged.status == PlacementStatus::Ok && !staged.query &&
+                staged.placements == inputs.size(),
+            "private placement stage published an observation");
+  }
+  require(backing.same_backing(metrics.sample()),
+          "generated initialization allocated or compiled during reuse");
+  const auto rows = PlacementAccess::generated(f.h);
+  const auto stride = f.h.prepared_storage().capacity.command_capacity();
+  for (const auto &certificate : expected) {
+    const auto command = certificate.intrinsic.command;
+    for (int field = 0; field < 12; ++field) {
+      double value = 0;
+      if (field >= kPosX && field <= kPosZ)
+        value = certificate.position[field - kPosX];
+      if (field == kMass) value = certificate.intrinsic.mass;
+      if (field == kRadius) value = certificate.intrinsic.radius;
+      require(rows[field * stride + command] == value,
+              "native start differs from certificate or has nonzero motion");
+    }
+  }
+  // A later shorter stage clears earlier rows, without replacing the B2 query.
+  no_new([&] {
+    staged = PlacementAccess::stage(f.h, commands.data(), 1, inputs.data(), 1);
+  });
+  require(staged.status == PlacementStatus::Ok, "shorter generated stage");
+  const auto shorter = PlacementAccess::generated(f.h);
+  for (int field = 0; field < 12; ++field)
+    for (std::size_t row = 1; row < stride; ++row)
+      require(shorter[field * stride + row] == 0, "stale generated row survived");
+  auto invalid = inputs[0];
+  invalid.geometry.complete = false;
+  staged = PlacementAccess::stage(f.h, commands.data(), 1, &invalid, 1);
+  require(staged.status == PlacementStatus::InvalidInput && f.h.ready(),
+          "invalid stage was not rejected healthily");
+  const auto &observed = f.h.inspect_prepared_placement(query).certificates;
+  require(observed.size() == expected.size() &&
+              observed[0].position == expected[0].position &&
+              observed[1].position == expected[1].position &&
+              before == TickSnapshot(f),
+          "private staging changed committed state or public observation");
+  std::cout << "placement_generated,native_rows=1,zero_motion=1,canonical_remap=1,"
+               "private_observation=1,survivors_preserved=1,reuse=1 PASS\n";
+}
 void placement_capacity(engine::Runtime &r, HostPath path) {
   auto l = placement_limits();
   int rejected = 0;

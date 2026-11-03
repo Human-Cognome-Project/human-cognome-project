@@ -2771,6 +2771,8 @@ int main(int argc, char **argv) {
       run("placement_compiler", [&] { placement_compiler(r, path); });
     if (only == "placement" || only == "placement_capacity")
       run("placement_capacity", [&] { placement_capacity(r, path); });
+    if (only == "placement" || only == "placement_generated")
+      run("placement_generated", [&] { placement_generated(r, path); });
     if (only == "contact_tick_modes" || only == "contact_tick") {
       run("contact_tick_modes", [&] { contact_tick_modes(r, path); });
       run("contact_tick_references", [&] { contact_tick_references(r, path); });

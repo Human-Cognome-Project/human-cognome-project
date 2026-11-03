@@ -105,11 +105,10 @@ nearest-free operational admission.
 The [accepted #199 implementation plan](native-admission-contact-transaction-plan.md)
 maps this released slice to B1 candidate ticks, B2 certified placement and B3
 combined bootstrap/admission. B1 is accepted in #200/#201; see
-[contact-safe ticks](../engine/docs/CONTACT-SAFE-TICKS.md). B2 already has
-[draft #202](https://github.com/Human-Cognome-Project/human-cognome-project/pull/202),
-whose contributor reports full qualification outstanding as of 2026-11-01.
-Inspect and continue that work before starting another implementation. B3 remains
-pending; candidate placement alone is not structural admission. The accepted
+[contact-safe ticks](../engine/docs/CONTACT-SAFE-TICKS.md). B2 is accepted in
+[#203](https://github.com/Human-Cognome-Project/human-cognome-project/pull/203),
+superseding #202. B3 implementation is now released; candidate placement and
+private generated-row staging alone are not structural admission. The accepted
 #170 requirements below remain authoritative.
 
 Owning contract: [core operation plan, sections 2–3](core-operation-readiness-plan.md#2-native-engine-admission-and-occupancy).

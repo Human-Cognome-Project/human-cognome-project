@@ -112,11 +112,10 @@ with C2a's publication/consume contract without a same-tick global solve.
 
 ## Active and deferred work
 
-**Immediate work:** [draft #202](https://github.com/Human-Cognome-Project/human-cognome-project/pull/202)
-contains B2 placement at `1214e9a0265eb693e4d605add7c496f16e124d36` as checked
-2026-11-01. The contributor reports full qualification outstanding. Inspect its
-latest source, comments and checks before continuing; this is not acceptance.
-B1 is complete in #201. Follow B2 with B3 admission, enduring owners and
+**Immediate work:** B2 placement is accepted in #203, superseding #202, and
+local evidence tooling is accepted in #204. B3 combined bootstrap/admission is
+released under the accepted admission plan. Native generated-row staging is an
+in-progress prerequisite, not an operational admission API. Follow with enduring owners and
 same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
 
 The stage descriptions below preserve the scope at each acceptance; “following”
