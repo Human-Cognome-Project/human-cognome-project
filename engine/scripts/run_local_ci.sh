@@ -84,6 +84,9 @@ run configure-taichi cmake -S engine/taichi -B engine/taichi/build-review -G Nin
   -DTI_BUILD_TESTS=OFF -DTI_BUILD_EXAMPLES=OFF -DTI_BUILD_RHI_EXAMPLES=OFF
 run build-taichi cmake --build engine/taichi/build-review --target taichi_c_api -j "$jobs"
 run configure-engine cmake -S engine -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DENGINE_TAICHI_ROOT="$repo/engine/taichi" \
+  -DENGINE_TAICHI_BUILD="$repo/engine/taichi/build-review" \
+  -DENGINE_TAICHI_RUNTIME_SOURCE="$repo/engine/taichi/taichi/runtime/llvm/runtime_module" \
   -DCMAKE_CXX_COMPILER=/usr/lib/llvm-15/bin/clang++ \
   -DENGINE_LLVM_CONFIG=/usr/lib/llvm-15/bin/llvm-config -DENGINE_TAICHI_CUDA=OFF \
   -DHCP_WITH_CUDA_QUALIFICATION=OFF -DHCP_WITH_WARM_INTEGRATION=ON -DHCP_WITH_VIEWPORT=ON
