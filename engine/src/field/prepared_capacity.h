@@ -29,6 +29,9 @@ enum class Budget {
   LiveResponses,    // Explicit installed-hierarchy recipient references; zero
                     // leaves the existing execution and reservation unchanged.
   TickWork,         // Candidate copies, numerical phases and publication.
+  PlacementWork,    // Validated source staging, occupancy and bounded search.
+  PlacementCells,   // Simultaneously unresolved interval boxes.
+  BootstrapCommands,  // Complete initial transaction, independent of Batch.
   Count
 };
 struct BudgetDemand {
@@ -71,6 +74,8 @@ class PreparedCapacity {
     return limits_;
   }
   BudgetFailure check(const BudgetDemand &demand) const;
+  // Shared preallocated command backing; this does not widen ordinary Batch.
+  std::uint64_t command_capacity() const;
   // The existing Harness/Activity array families at fixed capacity strides.
   // Native masks/map metadata, host mirrors, prospective indexes, reference
   // buffers and batch scratch require separate actual backing measurements.

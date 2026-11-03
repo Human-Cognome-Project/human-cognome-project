@@ -47,6 +47,9 @@
 #include "contact_tick_audit.h"
 #include "cuda_selector_audit.h"
 #include "engine/device.h"
+#include "placement_reference.h"
+#include "placement_access.h"
+#include <cfenv>
 
 namespace engine::testing {
 struct CompiledKernelAccess {
@@ -2651,6 +2654,8 @@ void capture_current(engine::Runtime &r,
 #include "live_hierarchy_refresh_cases.inc"
 #include "native_selection_cases.inc"
 #include "contact_tick_cases.inc"
+#include "placement_cases.inc"
+#include "placement_audit.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2709,6 +2714,8 @@ int main(int argc, char **argv) {
             "B1 native selection qualification requires actual x64 execution");
     require(!(settings.cuda && only.rfind("contact_tick", 0) == 0),
             "B1 candidate tick qualification requires actual x64 execution");
+    require(!(settings.cuda && only.rfind("placement", 0) == 0),
+            "B2 placement qualification requires actual x64 execution");
     if (settings.cuda) {
       require(engine::cuda_available(), "CUDA requested but no visible device");
       settings.device_memory_gb = 1.0;
@@ -2752,6 +2759,18 @@ int main(int argc, char **argv) {
     };
     if (only == "refresh_limits")
       run("refresh_limits", [&] { refresh_budget_and_numerics(r, path); });
+    if (only == "placement" || only == "placement_geometry")
+      run("placement_geometry", [&] { placement_geometry(r, path); });
+    if (only == "placement" || only == "placement_boundaries")
+      run("placement_boundaries", [&] { placement_boundaries(r, path); });
+    if (only == "placement" || only == "placement_ownership")
+      run("placement_ownership", [&] { placement_ownership(r, path); });
+    if (only == "placement" || only == "placement_failures")
+      run("placement_failures", [&] { placement_failures(r, path); });
+    if (only == "placement" || only == "placement_compiler")
+      run("placement_compiler", [&] { placement_compiler(r, path); });
+    if (only == "placement" || only == "placement_capacity")
+      run("placement_capacity", [&] { placement_capacity(r, path); });
     if (only == "contact_tick_modes" || only == "contact_tick") {
       run("contact_tick_modes", [&] { contact_tick_modes(r, path); });
       run("contact_tick_references", [&] { contact_tick_references(r, path); });

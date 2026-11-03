@@ -8,6 +8,7 @@
 #include "field/centroid_cascade.h"
 #include "field/live_hierarchy.h"
 #include "field/tick_execution.h"
+#include "field/placement.h"
 
 namespace field::detail {
 namespace {
@@ -26,7 +27,7 @@ std::size_t physical(std::size_t n) {
 }
 PreparedCapacity checked_storage(engine::Runtime &runtime,
                                  const PreparedCapacity &capacity) {
-  if (capacity.limits()[Budget::Batch] > (std::uint64_t{1} << 20))
+  if (capacity.command_capacity() > (std::uint64_t{1} << 20))
     throw std::invalid_argument(
         "prepared native batch exceeds supported command axis");
   const auto required = PreparedStorage::required_scratch(
@@ -43,7 +44,7 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   const PreparedCapacity validate(l, profile);
   const auto p = l[Budget::Particles], g = l[Budget::Fields],
              e = l[Budget::Participation], c = l[Budget::Contacts],
-             f = l[Budget::Focus], b = l[Budget::Batch];
+             f = l[Budget::Focus], b = validate.command_capacity();
   std::vector<StorageExtent> result;
   const auto extent = [&](const char *name, std::size_t n, std::size_t bytes,
                           std::size_t copies) {
@@ -117,6 +118,7 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   CentroidCascade::append_layout(l, result);
   LiveHierarchy::append_layout(l, result);
   TickExecution::append_layout(l, result);
+  Placement::append_layout(l, result);
   return result;
 }
 std::size_t PreparedStorage::workspace_bytes(const BudgetDemand &l,
@@ -132,7 +134,8 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                                                    bool weighted,
                                                    bool wide,
                                                    bool live,
-                                                   bool ticks) {
+                                                   bool ticks,
+                                                   bool placement) {
   // Seven Harness signatures: 8+12+11+12+3+12+5 = 63 parameters.
   // Six Activity signatures: 14+10+7+13+1+0 = 45. Two maps, each with
   // mutate/find/batch signatures: 12. Inspection: 2. Total 122, 20 contexts.
@@ -147,13 +150,14 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   // Installed hierarchy: three 30-parameter contexts plus two integration
   // arguments. Refresh adds two 23-argument contexts and two update scalars.
   // Numerical arrays are inventoried separately above.
-  const std::size_t parameters = 151 + (geometry ? 33 : 0) +
-                                 (cascade ? 22 : 0) +
-                                 (cascade && weighted ? 2 : 0) +
-                                 (wide ? 6 : 0) + (live ? 92 + 2 + 46 : 0) +
-                                 (ticks ? (live ? 531 : 417) : 0),
+  const std::size_t parameters =
+                        151 + (geometry ? 33 : 0) + (cascade ? 22 : 0) +
+                        (cascade && weighted ? 2 : 0) + (wide ? 6 : 0) +
+                        (live ? 92 + 2 + 46 : 0) +
+                        (ticks ? (live ? 531 : 417) : 0) + (placement ? 60 : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
-                               (live ? 5 : 0) + (ticks ? (live ? 34 : 31) : 0),
+                               (live ? 5 : 0) + (ticks ? (live ? 34 : 31) : 0) +
+                               (placement ? 4 : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
@@ -169,11 +173,11 @@ std::size_t PreparedStorage::required_scratch(const BudgetDemand &l, bool cuda,
     if (entry.count > (std::size_t{1} << 30))
       throw std::invalid_argument(
           "prepared typed workspace exceeds supported axis");
-  add(result,
-      binding_reserve_bytes(
-          cuda, l[Budget::GeometryWork] != 0, l[Budget::CascadeNodes] != 0,
-          l[Budget::CascadeCoverage] != 0, profile.wide(),
-          l[Budget::LiveResponses] != 0, l[Budget::TickWork] != 0));
+  add(result, binding_reserve_bytes(
+                  cuda, l[Budget::GeometryWork] != 0,
+                  l[Budget::CascadeNodes] != 0, l[Budget::CascadeCoverage] != 0,
+                  profile.wide(), l[Budget::LiveResponses] != 0,
+                  l[Budget::TickWork] != 0, l[Budget::PlacementWork] != 0));
   return result;
 }
 PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
@@ -181,18 +185,18 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
       particles(r,
                 int(c.limits()[Budget::Potential]),
                 int(c.limits()[Budget::Particles]),
-                int(c.limits()[Budget::Batch])),
+                int(c.command_capacity())),
       fields(r,
              int(physical(c.limits()[Budget::Fields])),
              int(c.limits()[Budget::Fields]),
-             int(c.limits()[Budget::Batch])) {
+             int(c.command_capacity())) {
   const auto &l = capacity.limits();
   const auto profile = capacity.profile();
   const auto p = physical(l[Budget::Particles]),
              g = physical(l[Budget::Fields]),
              e = physical(l[Budget::Participation]),
              k = physical(l[Budget::Contacts]), f = physical(l[Budget::Focus]),
-             b = physical(l[Budget::Batch]);
+             b = physical(c.command_capacity());
   if (required_scratch(l, r.on_cuda(), profile) > l[Budget::ScratchBytes])
     throw CapacityError({Budget::ScratchBytes,
                          required_scratch(l, r.on_cuda(), profile),

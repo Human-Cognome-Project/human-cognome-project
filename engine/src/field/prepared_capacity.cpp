@@ -26,6 +26,8 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits,
                                    NumericalProfile profile)
     : limits_(limits), profile_(profile) {
   profile_.validate();
+  if (limits[Budget::BootstrapCommands] > (std::uint64_t{1} << 20))
+    throw std::invalid_argument("bootstrap commands exceed native reservation");
   if (profile_.wide() &&
       2 * std::max<std::uint64_t>(limits[Budget::Participation], 1) +
               std::max<std::uint64_t>(limits[Budget::Fields], 1) >
@@ -64,11 +66,22 @@ PreparedCapacity::PreparedCapacity(BudgetDemand limits,
       (!profile.wide() || !limits[Budget::GeometryWork]))
     throw std::invalid_argument(
         "contact-safe ticks require f64 geometry capacity");
+  if (limits[Budget::PlacementWork] > std::uint64_t(INT64_MAX) ||
+      limits[Budget::PlacementCells] > (std::uint64_t{1} << 20) ||
+      bool(limits[Budget::PlacementWork]) !=
+          bool(limits[Budget::PlacementCells]) ||
+      (limits[Budget::PlacementWork] &&
+       (!profile.wide() || limits[Budget::Particles] + command_capacity() >
+                               (std::uint64_t{1} << 30))))
+    throw std::invalid_argument("unsupported placement reservation/profile");
   const auto base = numerical_bytes();
   if (limits[Budget::ScratchBytes] >
       std::numeric_limits<std::size_t>::max() - base)
     throw std::overflow_error(
         "prepared numerical plus scratch byte sum overflow");
+}
+std::uint64_t PreparedCapacity::command_capacity() const {
+  return std::max(limits_[Budget::Batch], limits_[Budget::BootstrapCommands]);
 }
 BudgetFailure PreparedCapacity::check(const BudgetDemand &demand) const {
   for (std::size_t i = 0; i < demand.values.size(); ++i)
@@ -133,6 +146,9 @@ const char *budget_name(Budget budget) {
                              "cascade-coverage",
                              "live-responses",
                              "tick-work",
+                             "placement-work",
+                             "placement-cells",
+                             "bootstrap-commands",
                              "none"};
   const auto i = static_cast<std::size_t>(budget);
   return names[i <= static_cast<std::size_t>(Budget::Count)

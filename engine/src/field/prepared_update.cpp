@@ -499,11 +499,13 @@ UpdateResult Harness::refresh_live_hierarchy(std::uint64_t expected,
                                              std::uint64_t work_limit) {
   return update_prepared_impl(expected, input, count, &spec, work_limit);
 }
-UpdateResult Harness::update_prepared_impl(std::uint64_t expected,
-                                           const UpdateCommand *input,
-                                           std::size_t count,
-                                           const LiveRefreshSpec *refresh,
-                                           std::uint64_t work_limit) {
+UpdateResult Harness::update_prepared_impl(
+    std::uint64_t expected,
+    const UpdateCommand *input,
+    std::size_t count,
+    const LiveRefreshSpec *refresh,
+    std::uint64_t work_limit,
+    detail::SourceProjection *projection) {
   UpdateResult answer;
   if (!prepared_ || !ready_) {
     answer.status = UpdateStatus::Unready;
@@ -531,7 +533,7 @@ UpdateResult Harness::update_prepared_impl(std::uint64_t expected,
     return reject(UpdateStatus::Stale);
   if (refresh && !live_hierarchy_installed())
     return reject(UpdateStatus::Unsupported);
-  if (!refresh && count && live_hierarchy_installed())
+  if (!refresh && !projection && count && live_hierarchy_installed())
     return reject(UpdateStatus::Unsupported);
   if (count > limits[Budget::Batch])
     return exhausted(Budget::Batch, count);
@@ -580,7 +582,7 @@ UpdateResult Harness::update_prepared_impl(std::uint64_t expected,
   std::copy_n(input, count, s.commands.begin());
   const int p = particles_, g = groups_, n = p + g, es = std::max(edges_, 1),
             gs = std::max(groups_, 1),
-            bs = int(std::max(limits[Budget::Batch], std::uint64_t{1}));
+            bs = int(std::max(s.capacity.command_capacity(), std::uint64_t{1}));
   std::fill(s.validation.begin(), s.validation.end(), 0);
   std::fill(s.resolved.begin(), s.resolved.end(), RecordHandle{});
   std::copy(s.particle_headers.begin(), s.particle_headers.end(),
@@ -834,6 +836,13 @@ UpdateResult Harness::update_prepared_impl(std::uint64_t expected,
   if (profile_.wide() &&
       !s.prepare_ratios(true, candidate.edges, answer.structural_visits))
     return reject(UpdateStatus::InvalidInput);
+  if (projection) {
+    // B2 borrows the existing fully checked prospective source ledger, before
+    // any numerical staging, native claim, hierarchy repair or publication.
+    // This validates occupancy exclusions, not B3 admission/readiness.
+    *projection = {candidate, pclaims, gclaims};
+    return reject(UpdateStatus::Ok);
+  }
   bool changed =
       pclaims || gclaims || candidate.particles != s.live.particles ||
       candidate.fields != s.live.fields || candidate.edges != s.live.edges ||
