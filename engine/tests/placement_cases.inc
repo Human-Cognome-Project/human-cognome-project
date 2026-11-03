@@ -329,6 +329,10 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
             true, false, 1024, {1}, &limits);
   f.install();
+  PreparedFixtureAccess::inject_value64(f.h, kVelX,
+                                        f.in.particle_rows[0].record, 0.25);
+  f.control->set(2, f.in.particle_rows[0].record);
+  r.synchronize();
   RefreshRequest request(f.h);
   std::vector<UpdateCommand> commands{placement_definition(901)};
   UpdateCommand edge;
@@ -380,8 +384,8 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
               exhausted.failure.budget == Budget::CascadeWork,
           "prospective hierarchy work was not bounded");
   request.cohorts[0].pop_back();
-  require(invoke().status == UpdateStatus::InvalidInput,
-          "incomplete prospective hierarchy was accepted");
+  require(invoke().status == UpdateStatus::Unsupported,
+          "incomplete prospective hierarchy lost its existing typed rejection");
   request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
   PreparedFixtureAccess::inject_failure(f.h, 1);
   require(invoke().status == UpdateStatus::InvalidInput,
