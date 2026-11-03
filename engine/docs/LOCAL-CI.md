@@ -3,6 +3,10 @@
 `bash engine/scripts/run_local_ci.sh PROFILE /absolute/new/evidence-directory`
 runs the existing native tests from a clean, committed Linux checkout, including
 WSL2. It rebuilds incrementally with LLVM 15 and explicitly disables GPU backends.
+Wrapper configuration explicitly binds `ENGINE_TAICHI_ROOT`,
+`ENGINE_TAICHI_BUILD` and `ENGINE_TAICHI_RUNTIME_SOURCE` to absolute paths in
+that checkout, replacing inherited cache overrides. Incremental reuse remains
+enabled for this matched build.
 No Python frontend, Docker or GPU is needed. It does not install packages, fetch
 source, reset databases or change hosted CI. Use a separate checkout while a run
 is active: edits or a changed HEAD invalidate its final result.
@@ -40,6 +44,15 @@ covers all retained files; check it from the evidence directory with
 `sha256sum -c SHA256SUMS`. Do not publish machine evidence without reviewing it
 for hostnames, paths or identifiers; the runner never dumps the environment or
 connection secrets. Build configuration may contain local paths.
+
+To check that a reused CPU cache cannot redirect these source pins, run
+`bash engine/scripts/check_local_ci_cache.sh /absolute/new/cache-evidence` after
+the first CPU build. It configures valid alternate source/build path aliases
+and a copied runtime, verifies those cache entries, runs the quick profile,
+then verifies all three corrected paths, runtime bytes and unchanged compiled
+archives on an incremental substrate build (runtime bitcode is regenerated).
+It retains before/after caches and does not require another
+fork compilation. Do not run this witness concurrently with other build work.
 
 ## Local PostgreSQL
 

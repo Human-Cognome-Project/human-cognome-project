@@ -37,6 +37,13 @@ grep -Fx "ENGINE_TAICHI_BUILD:PATH=$repo/engine/taichi/build-review" "$out/cache
 grep -Fx "ENGINE_TAICHI_RUNTIME_SOURCE:PATH=$repo/engine/taichi/taichi/runtime/llvm/runtime_module" "$out/cache-after.txt"
 cmp "$build/taichi-runtime/runtime_x64.bc" \
   "$repo/engine/taichi/taichi/runtime/llvm/runtime_module/runtime_x64.bc"
+find engine/taichi/build-review -type f -name '*.a' -printf '%p %s %T@\n' |
+  sort > "$out/archives-before.txt"
+test -s "$out/archives-before.txt"
 cmake --build engine/taichi/build-review --target taichi_c_api -j 2 > "$out/incremental.log" 2>&1
-grep -F 'no work to do' "$out/incremental.log"
+# Taichi intentionally regenerates runtime bitcode even on an incremental run.
+# Existing compiled archives must retain their paths, sizes and modification times.
+find engine/taichi/build-review -type f -name '*.a' -printf '%p %s %T@\n' |
+  sort > "$out/archives-after.txt"
+cmp "$out/archives-before.txt" "$out/archives-after.txt"
 printf 'PASS: alternate cache replaced; matched runtime; incremental backing reused\n' > "$out/result.txt"
