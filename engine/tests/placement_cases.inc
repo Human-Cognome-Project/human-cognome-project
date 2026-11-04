@@ -1000,7 +1000,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
       if (i != std::size_t(capacity + root_field))
         require(f.h.prepared_storage().inspection_flags[i] == reference.h.prepared_storage().inspection_flags[i],
                 "non-parent activity differs");
-    const auto complete_pending = [&](Fixture &x, long double root_x) {
+    const auto complete_pending = [&](Fixture &x, double root_x) {
       const auto prior = x.h.inspect_live_hierarchy();
       x.h.inspect_prepared();
       const auto physical = x.h.particles64();
