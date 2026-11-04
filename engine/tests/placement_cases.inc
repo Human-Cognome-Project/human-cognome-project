@@ -443,8 +443,10 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
                "no_claims=1,no_publication=1,rejections=3,healthy_retry=1 PASS\n";
 }
 void admission_contact_capacity(engine::Runtime &r, HostPath path) {
+  for (bool references : {false, true}) {
   auto limits = placement_limits();
-  limits[Budget::Contacts] = 2;
+  limits[Budget::Contacts] = references ? 4 : 2;
+  if (references) limits[Budget::References] = 37;
   Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 1, 1},
             {0, 0, 0}, 52, 52, false, false, true, false, 1024,
             {1, 1, 1}, &limits);
@@ -478,10 +480,15 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   };
   const auto overflow = invoke();
   require(overflow.status == UpdateStatus::CapacityExhausted &&
-              overflow.failure.budget == Budget::Contacts &&
-              overflow.failure.required == 3 &&
+              overflow.failure.budget ==
+                  (references ? Budget::References : Budget::Contacts) &&
+              overflow.contact_pairs == 3 &&
               before == TickSnapshot(f) && f.h.ready(),
           "sleeping source-empty prospective contact overflow mutated state");
+  std::cout << "admission_contact_rejection,budget="
+            << budget_name(overflow.failure.budget) << ",required="
+            << overflow.failure.required << ",capacity="
+            << overflow.failure.capacity << " PASS\n";
   UpdateCommand remove;
   remove.operation = UpdateOp::RemoveParticipation;
   remove.row = 0;
@@ -502,6 +509,7 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
           "source-empty derived discovery missed sleepers or kept retirement");
   std::cout << "admission_contacts,source_empty=1,sleepers=3,overflow=3,"
                "capacity=2,retirement_retry=1,no_publication=1 PASS\n";
+  }
 }
 
 void placement_generated(engine::Runtime &r, HostPath path) {
