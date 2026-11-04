@@ -79,8 +79,14 @@ hosted checks. Independently inspected [native job 126197667121](https://github.
 passed 115 CPU suites in 5822.67 seconds and 180 integration checks, with
 24 addressed reads and zero private reads. Source review found no blockers
 within private source/hierarchy preflight scope. Contributor-local evidence
-above remains separate. Integration with the new main CI workflow is pending;
-complete B3 admission and GPU qualification remain outstanding.
+above remains separate. Integration head `ecd1d6aed6007d6859c4e451d233feccf1627610` passed all 18
+hosted checks in [run 41827027659](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41827027659).
+Independently inspected shard jobs 126566575256, 126566575205,
+126566575355 and 126566575272 cover all 115 test indexes exactly once
+(29/29/29/28); database job 126566575257 passed 180 integration checks,
+24 addressed reads and zero private reads. All compiler jobs and the aggregate
+passed. Merged as `c51cab73ef21752bfa9d849a08b941846881aaeb`.
+Complete B3 admission and GPU qualification remain outstanding.
 
 ## Prospective contact preflight — 2026-11-04
 
