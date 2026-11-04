@@ -575,9 +575,7 @@ UpdateResult Harness::replace_current_focus(
     return exhausted(Budget::CascadeWork, work == UINT64_MAX ? work : work + 1, work);
   out.structural_visits = charged;
   const auto references = s.live.references() + count + hierarchy_refs +
-      2 * (std::max<std::uint64_t>(s.live.contacts,
-                                  tick_execution_->installed_contact_count()) -
-           s.live.contacts);
+      2 * tick_execution_->installed_contact_count();
   if (references > l[Budget::References])
     return exhausted(Budget::References, references, l[Budget::References]);
   bool unchanged = count == s.live.focus;

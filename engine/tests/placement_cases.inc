@@ -891,6 +891,48 @@ void live_focus(engine::Runtime &r, HostPath path) {
     std::cout << "live_focus,radial=" << radial << ",history=preserved,source_contacts=preserved,"
                  "ordered_centroid=pass,publication=one,no_tick=1,backing=stable,retry=pass PASS\n";
   }
+  // The explicit ledger and installed physical union have separate endpoints,
+  // even when they describe the same pair. Exercise both retained allocations.
+  std::uint64_t contact_peak = 0;
+  for (int boundary : {0, -1, 1}) {
+    auto l = placement_limits();
+    if (boundary) l[Budget::References] = contact_peak - (boundary < 0);
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
+              {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, true, true,
+              false, 1024, {}, &l);
+    f.install();
+    require(f.h.prepared_storage().live.contacts == 1 &&
+                PlacementAccess::installed_contacts(f.h) == 1,
+            "focus reference fixture lacks separately retained contact endpoints");
+    if (!boundary) {
+      contact_peak = PlacementAccess::focal_reference_peak(f.h, 1);
+      continue;
+    }
+    f.control->set(0);
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[1].record, 5);
+    f.control->set(1, f.in.field_rows[1].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[1].record);
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    require(geometry.status == GeometryStatus::Ok, "focus contact witness observation");
+    const TickSnapshot before(f);
+    const auto generation = f.h.prepared_storage().generation;
+    const auto result = PlacementAccess::focus(f.h, {f.in.field_rows[0]});
+    if (boundary < 0) {
+      require(result.status == UpdateStatus::CapacityExhausted &&
+                  result.failure.budget == Budget::References &&
+                  result.failure.required == contact_peak &&
+                  result.failure.capacity == contact_peak - 1 &&
+                  before == TickSnapshot(f) && f.h.ready(),
+              "focus omitted separately retained source/union contact references");
+      f.h.inspect_prepared_geometry(geometry);
+    } else {
+      require(result.status == UpdateStatus::Ok && result.generation == generation + 1,
+              "focus rejected exact source/union reference limit");
+    }
+    std::cout << "live_focus_contact_references,source=1,installed=1,required="
+              << contact_peak << ",capacity=" << l[Budget::References]
+              << ",rejected=" << (boundary < 0) << " PASS\n";
+  }
   for (int failure : {401, 402}) {
     const auto l = placement_limits();
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},

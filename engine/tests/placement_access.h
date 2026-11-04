@@ -23,10 +23,13 @@ struct PlacementAccess {
     h.runtime_->synchronize();
   }
   // Unique-source fixture only: each cohort row is a distinct covered body.
+  static std::uint64_t installed_contacts(Harness &h) {
+    return h.tick_execution_->installed_contact_count();
+  }
   static std::uint64_t focal_reference_peak(Harness &h, std::size_t count) {
     const auto &tree = h.inspect_live_hierarchy();
     auto refs = h.prepared_->live.references() + count + tree.node_count +
-                h.live_hierarchy_->response_count();
+                h.live_hierarchy_->response_count() + 2 * installed_contacts(h);
     for (std::size_t i = 0; i < tree.node_count; ++i) {
       const auto &node = tree.nodes[tree.order[i]];
       refs += node.child_count + 2 * node.cohort_count;
