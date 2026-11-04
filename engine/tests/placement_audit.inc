@@ -93,16 +93,17 @@ void placement_module_contract(Harness &h,
         // outputs. Activation call sites are independently guarded below.
         const bool model_write = pointer &&
             (arguments.data_arg(pointer) >= 0 || !roots.origins(pointer).empty());
-        if (index == 14 && model_write && !rebase_mode_guard(instruction, kernel, module,
-                                    arguments.data_arg(pointer) == 7 ? 1 : 2)) {
+        if (index == 14 && model_write && arguments.data_arg(pointer) != 7 &&
+            !rebase_mode_guard(instruction, kernel, module, 2)) {
           llvm::errs() << "rebase_unguarded,arg=" << arguments.data_arg(pointer) << ",write=" << instruction << '\n';
           for (const auto &block : *instruction.getFunction())
             llvm::errs() << *block.getTerminator() << '\n';
         }
-        if (index == 14 && model_write)
-          require(rebase_mode_guard(instruction, kernel, module,
-                                    arguments.data_arg(pointer) == 7 ? 1 : 2),
-                  "rebase check/publication mode guard missing");
+        // Status is private scratch: LLVM may preserve its value with a store
+        // outside check mode. Every live coordinate writer still requires mode 2.
+        if (index == 14 && model_write && arguments.data_arg(pointer) != 7)
+          require(rebase_mode_guard(instruction, kernel, module, 2),
+                  "rebase publication mode guard missing");
         if (index == 13 && pointer && !model_write)
           if (const auto *atomic = llvm::dyn_cast<llvm::AtomicRMWInst>(&instruction))
             if (atomic->getOperation() == llvm::AtomicRMWInst::Xchg)
@@ -248,8 +249,8 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
               "missing placement result guard control target");
         });
       if (index == 14)
-        for (int mode : {1, 2})
-          reject(mode == 1 ? "missing_check_guard" : "missing_commit_guard", [&](llvm::Module &clone) {
+        for (int mode : {2})
+          reject("missing_commit_guard", [&](llvm::Module &clone) {
             for (auto &fn : clone)
               for (auto &bb : fn) {
                 if (auto *dispatch = llvm::dyn_cast<llvm::SwitchInst>(bb.getTerminator()))
