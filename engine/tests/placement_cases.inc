@@ -434,6 +434,68 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
   std::cout << "admission_preflight,native_starts_consumed=1,prospective_tree=1,"
                "no_claims=1,no_publication=1,rejections=3,healthy_retry=1 PASS\n";
 }
+void admission_contact_capacity(engine::Runtime &r, HostPath path) {
+  auto limits = placement_limits();
+  limits[Budget::Contacts] = 2;
+  Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 1, 1},
+            {0, 0, 0}, 52, 52, false, false, true, false, 1024,
+            {1, 1, 1}, &limits);
+  PlacementAccess::configure(f.h, f.in.particle_rows,
+                             {{{0, 0, 0}, 1}, {{0, 0, 0}, 1}, {{0, 0, 0}, 1}},
+                             f.in.field_rows[0], {});
+  f.install();
+  f.control->set(0);  // All overlapping survivors sleep during discovery.
+  RefreshRequest request(f.h);
+  std::vector<UpdateCommand> commands{placement_definition(901)};
+  UpdateCommand edge;
+  edge.operation = UpdateOp::InsertParticipation;
+  edge.first = UpdateRef::pending(0);
+  edge.second = UpdateRef::existing(f.in.field_rows[0]);
+  edge.share = 1;
+  edge.exact_count = 1;
+  edge.ordinal = 999;
+  edge.position = 3;
+  commands.push_back(edge);
+  request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+  const auto input = placement_intrinsic();
+  const TickSnapshot before(f);
+  const auto invoke = [&] {
+    const auto spec = request.spec();
+    UpdateResult result;
+    no_new([&] {
+      result = PlacementAccess::preflight(f.h, commands.data(), commands.size(),
+                                          &input, 1, spec);
+    });
+    return result;
+  };
+  const auto overflow = invoke();
+  require(overflow.status == UpdateStatus::CapacityExhausted &&
+              overflow.failure.budget == Budget::Contacts &&
+              overflow.failure.required == 3 &&
+              before == TickSnapshot(f) && f.h.ready(),
+          "sleeping source-empty prospective contact overflow mutated state");
+  UpdateCommand remove;
+  remove.operation = UpdateOp::RemoveParticipation;
+  remove.row = 0;
+  remove.ordinal = f.h.prepared_storage().edges[0].ordinal;
+  remove.generation = f.h.prepared_storage().generation;
+  commands.push_back(remove);
+  UpdateCommand retire;
+  retire.operation = UpdateOp::RetireParticle;
+  retire.first = UpdateRef::existing(f.in.particle_rows[0]);
+  commands.push_back(retire);
+  request.cohorts[0].erase(request.cohorts[0].begin());
+  // RemoveParticipation compacts the prospective ledger before insertion.
+  commands[1].position = 2;
+  require(invoke().status == UpdateStatus::Ok && before == TickSnapshot(f),
+          "closed retirement did not remove prospective contact occupancy");
+  const auto counts = PlacementAccess::contact_counts(f.h);
+  require(counts[0] == 3 && counts[2] == 0 && counts[3] == 1 && counts[4] == 1,
+          "source-empty derived discovery missed sleepers or kept retirement");
+  std::cout << "admission_contacts,source_empty=1,sleepers=3,overflow=3,"
+               "capacity=2,retirement_retry=1,no_publication=1 PASS\n";
+}
+
 void placement_generated(engine::Runtime &r, HostPath path) {
   auto limits = placement_limits();
   limits[Budget::BootstrapCommands] = limits[Budget::Batch] + 7;

@@ -101,7 +101,8 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
     auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(h.particles_),
                                      false, 1, 0, true);
     auto guard = b.get_loop_guard(loop);
-    auto *row = b.get_loop_index(loop), *status = read(b, state, {row});
+    auto *row = b.get_loop_index(loop);
+    auto *status = read(b, state, {row});
     auto present = b.get_if_guard(
         b.create_if(b.create_cmp_gt(status, b.get_int32(0))), true);
     auto *next = read(b, stats, {b.get_int32(0)});
