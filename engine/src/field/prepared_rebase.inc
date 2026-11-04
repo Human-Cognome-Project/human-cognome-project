@@ -41,18 +41,22 @@ void Harness::prepare_rebase_execution() {
       }
     };
     {
-      auto *loop = b.create_struct_for(prepared_->particles.bindings().presence, false,
-                                      runtime_->cpu_threads());
+      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(particles_), false,
+                                     runtime_->cpu_threads());
       auto guard = b.get_loop_guard(loop);
       auto *row = b.get_loop_index(loop);
+      auto present = b.get_if_guard(b.create_if(
+          detail::NativeSet{prepared_->particles.bindings().presence}.active(b, row)), true);
       for (int axis = 0; axis < 3; ++axis)
         translate(body, cell(b, kPosX + axis, row), axis);
     }
     {
-      auto *loop = b.create_struct_for(prepared_->fields.bindings().presence, false,
-                                      runtime_->cpu_threads());
+      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(groups_), false,
+                                     runtime_->cpu_threads());
       auto guard = b.get_loop_guard(loop);
       auto *row = b.get_loop_index(loop);
+      auto present = b.get_if_guard(b.create_if(
+          detail::NativeSet{prepared_->fields.bindings().presence}.active(b, row)), true);
       for (int axis = 0; axis < 3; ++axis) {
         translate(groups, cell(b, kCenX + axis, row), axis);
         translate(history, cell(b, 3 + axis, row), axis);

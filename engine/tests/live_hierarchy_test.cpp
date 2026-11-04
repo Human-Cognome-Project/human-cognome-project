@@ -145,6 +145,10 @@ struct LiveHierarchyAccess {
     h.runtime_->synchronize();
   }
 };
+std::array<taichi::lang::Ndarray *, 2>
+PlacementAccess::rebase_history_arrays(Harness &h) {
+  return {LiveHierarchyAccess::input_array(h, 0), LiveHierarchyAccess::input_array(h, 13)};
+}
 }  // namespace field::testing
 namespace field::detail::testing {
 struct NativeSelectionAccess {
