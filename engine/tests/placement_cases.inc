@@ -553,18 +553,18 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   std::vector<UpdateCommand> commands;
   for (int i = 0; i < 3; ++i)
     commands.push_back(placement_definition(900 + i));
-  for (int i = 0; i < 2; ++i) {
+  for (int i = 0; i < 3; ++i) {
     UpdateCommand field;
     field.operation = UpdateOp::DefineField;
     field.kind = 1;
     field.address = i;
     commands.push_back(field);
   }
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 6; ++i) {
     UpdateCommand edge;
     edge.operation = UpdateOp::InsertParticipation;
-    edge.first = UpdateRef::pending(i);
-    edge.second = UpdateRef::pending(i == 2 ? 3 : 4);
+    edge.first = UpdateRef::pending(i % 3);
+    edge.second = UpdateRef::pending(i >= 3 ? 5 : i == 2 ? 3 : 4);
     edge.position = i;
     edge.ordinal = 100 + i;
     edge.share = 1;
@@ -578,17 +578,25 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   if (bits == 52)
     inputs[0].radius = 0;
   inputs[1].mass = 2;
-  std::vector<LiveRefreshNode> nodes(2);
+  std::vector<LiveRefreshNode> nodes(3);
   for (int i = 0; i < 2; ++i) {
     nodes[i].field_command = 3 + i;
     nodes[i].comparison = 1 + i;
     nodes[i].cohort_begin = i;
     nodes[i].cohort_count = i == 0 ? 1 : 2;
   }
+  nodes[2].field_command = 5;
+  nodes[2].comparison = 3;
+  nodes[2].level = 1;
+  nodes[2].child_count = 2;
+  nodes[2].cohort_begin = 3;
+  nodes[2].cohort_count = 3;
+  const std::array<int, 2> children{0, 1};
   std::vector<LiveRefreshContribution> members{
-      {UpdateRef::pending(2), {}, 7}, {UpdateRef::pending(0), {}, 5},
-      {UpdateRef::pending(1), {}, 6}};
-  LiveRefreshSpec spec{nodes.data(), nodes.size(), nullptr, 0,
+      {UpdateRef::pending(2), {}, 8}, {UpdateRef::pending(0), {}, 6},
+      {UpdateRef::pending(1), {}, 7}, {UpdateRef::pending(0), {}, 9},
+      {UpdateRef::pending(1), {}, 10}, {UpdateRef::pending(2), {}, 11}};
+  LiveRefreshSpec spec{nodes.data(), nodes.size(), children.data(), children.size(),
                        members.data(), members.size()};
   const std::vector<UpdateRef> focus{UpdateRef::pending(3), UpdateRef::pending(4)};
   const auto generation = h.prepared_storage().generation;
@@ -614,7 +622,7 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   extra.address = 3;
   empty_field.push_back(extra);
   require(PlacementAccess::bootstrap(h, empty_field, inputs, spec,
-              {UpdateRef::pending(8)}).status == UpdateStatus::InvalidInput,
+              {UpdateRef::pending(12)}).status == UpdateStatus::InvalidInput,
           "bootstrap accepted a selected field without participants");
   unchanged();
   for (const auto &invalid : std::vector<std::vector<UpdateRef>>{
@@ -702,7 +710,21 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
           "bootstrap hierarchy/contact publication failed following tick");
   require(PlacementAccess::bootstrap(h, commands, inputs, spec, focus).status ==
               UpdateStatus::InvalidInput, "bootstrap replaced a populated owner");
-  std::cout << "admission_bootstrap,explicit_focus=2,anchor_command=2,commands=8,batch=2,"
+  if (bits == 52)
+    for (int failure : {2, 6}) {
+      Harness failed(r, PreparedCapacity(l, NumericalProfile::trial(bits, 52)), path);
+      const auto before = failed.prepared_storage().generation;
+      PreparedFixtureAccess::inject_failure(failed, failure);
+      bool threw = false;
+      try { PlacementAccess::bootstrap(failed, commands, inputs, spec, focus); }
+      catch (const std::runtime_error &) { threw = true; }
+      require(threw && !failed.ready() &&
+                  failed.prepared_storage().generation == before &&
+                  PlacementAccess::bootstrap(failed, commands, inputs, spec, focus).status ==
+                      UpdateStatus::Unready,
+              "failed bootstrap advertised readiness or a completed generation");
+    }
+  std::cout << "admission_bootstrap,explicit_focus=2,anchor_command=2,commands=12,batch=2,"
                "partial_centroid=certified,preclaim_rejection=unchanged,publication=one,"
                "backing=stable,following_tick=pass PASS\n";
   }
