@@ -611,6 +611,15 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
               UpdateStatus::InvalidInput, "bootstrap accepted implicit focus");
   unchanged();
   auto oversized = commands;
+  const std::vector<UpdateRef> excess_focus(l[Budget::Focus] + 1, UpdateRef::pending(3));
+  const auto excess = PlacementAccess::bootstrap(h, commands, inputs, spec, excess_focus);
+  require(excess.status == UpdateStatus::CapacityExhausted &&
+              excess.failure.budget == Budget::Focus, "bootstrap focal capacity status");
+  unchanged();
+  const auto no_work = PlacementAccess::bootstrap(h, commands, inputs, spec, focus, true, 0);
+  require(no_work.status == UpdateStatus::CapacityExhausted &&
+              no_work.failure.budget == Budget::PlacementWork, "bootstrap work reservation");
+  unchanged();
   oversized.resize(17);
   const auto over = PlacementAccess::bootstrap(h, oversized, inputs, spec, focus);
   require(over.status == UpdateStatus::CapacityExhausted &&

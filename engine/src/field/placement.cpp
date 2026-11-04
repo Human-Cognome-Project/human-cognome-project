@@ -494,8 +494,10 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   q.status = PlacementStatus::InvalidInput;
   if (!body_count || !commands || !inputs || body_count > command_count)
     return q;
+  if (bootstrap && focus_count > l[Budget::Focus])
+    return fail(Budget::Focus, focus_count, l[Budget::Focus]);
   if (bootstrap && (!bootstrap_contributions_ || publication ||
-                    !focus || !focus_count || focus_count > l[Budget::Focus]))
+                    !focus || !focus_count))
     return q;
   const auto sat_add = [](std::uint64_t a, std::uint64_t b) {
     return b > UINT64_MAX - a ? UINT64_MAX : a + b;

@@ -8,9 +8,9 @@ struct PlacementAccess {
                                 const std::vector<PlacementIntrinsic> &inputs,
                                 const LiveRefreshSpec &hierarchy,
                                 const std::vector<UpdateRef> &focus,
-                                bool commit = true) {
+                                bool commit = true, std::uint64_t work = UINT64_MAX) {
     return h.stage_current_admission(h.prepared_->generation, commands.data(),
-        commands.size(), inputs.data(), inputs.size(), hierarchy, UINT64_MAX,
+        commands.size(), inputs.data(), inputs.size(), hierarchy, work,
         UINT64_MAX, UINT64_MAX, commit, true, focus.data(), focus.size());
   }
   static std::vector<double> bootstrap_output(Harness &h) {

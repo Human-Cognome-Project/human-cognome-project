@@ -138,6 +138,11 @@ class Search {
     set(a, x);
     return a;
   }
+  V *normal(V *x) {
+    auto *ok = field::detail::supported_real(b, x);
+    m.invalid(b.create_logical_not(ok));
+    return b.create_select(ok, x, m.f(0));
+  }
   V *read(A *a, std::vector<V *> index) {
     return b.create_global_load(b.create_external_ptr(a, index));
   }
@@ -702,15 +707,15 @@ class Search {
                                           taichi::lang::PrimitiveType::f64);
           auto *denominator = b.create_cast(at(contributions, 2, edge),
                                             taichi::lang::PrimitiveType::f64);
-          auto *weight = m.checked(b.create_mul(at(requests, 0, rank),
-              b.create_div(numerator, denominator)), -256, 256);
+          auto *weight = normal(b.create_mul(at(requests, 0, rank),
+              b.create_div(numerator, denominator)));
           m.invalid(b.create_cmp_le(weight, m.f(0)));
-          set(mass, m.checked(b.create_add(v(mass), weight), -256, 256));
+          set(mass, normal(b.create_add(v(mass), weight)));
         });
-        set(focal_mass, m.checked(b.create_add(v(focal_mass), v(mass)), -256, 256));
+        set(focal_mass, normal(b.create_add(v(focal_mass), v(mass))));
         for (int k = 0; k < 3; ++k)
-          set(focal_weighted[k], m.checked(b.create_add(v(focal_weighted[k]),
-              m.checked(b.create_mul(v(mass), v(best[k])), -512, 512)), -512, 512));
+          set(focal_weighted[k], normal(b.create_add(v(focal_weighted[k]),
+              normal(b.create_mul(v(mass), v(best[k]))))));
       }
       increment(completed);
     });
