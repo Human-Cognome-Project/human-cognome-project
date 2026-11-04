@@ -768,6 +768,9 @@ void exchange_state(engine::Runtime &r, HostPath path) {
     PreparedFixtureAccess::inject_value64(f.h, kPosY, a.record, 4);
     PreparedFixtureAccess::inject_value64(f.h, kPosY, b.record, -4);
     PreparedFixtureAccess::inject_value64(f.h, kVelZ, a.record, 8);
+    f.control->set(1, f.in.field_rows[0].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[0].record);
+    f.control->set(4);  // Keep dirty packets, put all outgoing bodies to sleep.
     // Current resident values, including a sleeper, are the authority.
     const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
     const auto query = place(f, {placement_definition()}, {placement_intrinsic()});
@@ -811,6 +814,23 @@ void exchange_state(engine::Runtime &r, HostPath path) {
             "exchange retry did not retain original state");
     f.h.inspect_prepared_geometry(geometry);
     f.h.inspect_prepared_placement(query);
+    for (double mass : {0., -1., 0x1p-129, 0x1p129}) {
+      PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, mass);
+      const TickSnapshot invalid(f);
+      require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  invalid == TickSnapshot(f) && f.h.ready(), "invalid outgoing mass accepted");
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[2].record,
+                                         std::numeric_limits<double>::quiet_NaN());
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok &&
+                state == PlacementAccess::exchange_output(f.h), "unselected body polluted outgoing state");
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[2].record, 0);
+    require(before == TickSnapshot(f), "exchange numerical tests failed to restore live state");
+    const auto required = 64 * (l[Budget::Particles] + 1);
+    require(PlacementAccess::exchange_state(f.h, selected, required - 1).status == UpdateStatus::CapacityExhausted &&
+                PlacementAccess::exchange_state(f.h, selected, required).status == UpdateStatus::Ok,
+            "exchange work boundary differs from reservation");
     std::cout << "exchange_state,bits=" << bits
               << ",mass_weighted=1,current_velocity=1,order_independent=1,rejection=unchanged,backing=stable PASS\n";
   }
