@@ -793,6 +793,16 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidInput,
             "rebase prepublication failure hook");
     PreparedFixtureAccess::inject_failure(f.h, 0);
+    const auto history_before_rejection = PlacementAccess::rebase_history(f.h);
+    auto inexact_history = history_before_rejection;
+    inexact_history[3 * f.h.field_capacity() + f.in.field_rows[0].record] = 0x1p-100;
+    engine::upload(*LiveHierarchyAccess::input_array(f.h, 16), inexact_history.data(),
+                     inexact_history.size() * sizeof(double));
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidNumerics &&
+                PlacementAccess::rebase_history(f.h) == inexact_history,
+            "rebase ignored inexact retained previous centre");
+    engine::upload(*LiveHierarchyAccess::input_array(f.h, 16), history_before_rejection.data(),
+                     history_before_rejection.size() * sizeof(double));
     require(before == TickSnapshot(f) && anchor == f.h.frame_anchor() && f.h.ready(),
             "rebase rejection or disabled publication changed live state");
     f.h.inspect_prepared_geometry(geometry);
@@ -849,7 +859,9 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                     (col < 3 ? delta[col] : 0), "rebase reader history translation");
     }
     require(moved.selectors == hierarchy.selectors && moved.counters == hierarchy.counters &&
-                moved.visits == hierarchy.visits && s.motion64() == motion && s.inspection_flags == flags,
+                moved.visits == hierarchy.visits &&
+                std::equal(motion.begin(), motion.begin() + 3 * (f.h.particle_capacity() + f.h.field_capacity()),
+                           s.motion64().begin()) && s.inspection_flags == flags,
             "rebase consumed pending work or changed activity/motion");
     const TickSnapshot after(f);
     require(after.installed == before.installed && after.query == before.query,
@@ -865,8 +877,32 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                 restored.slots == hierarchy.slots && restored.previous == hierarchy.previous &&
                 PlacementAccess::rebase_history(f.h) == history,
             "exact rebase round trip lost physical/history state");
-    require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
-            "rebase execution could not continue ticking");
+    Fixture reference(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
+                      {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, true, true,
+                      false, 1024, {}, &l, true);
+    reference.install();
+    require(reference.h.tick_prepared(reference.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
+            "rebase continuity reference tick");
+    reference.control->set(0);
+    PreparedFixtureAccess::inject_value64(reference.h, kPosX, reference.in.particle_rows[1].record, 6);
+    PreparedFixtureAccess::inject_value64(reference.h, kVelX, reference.in.particle_rows[0].record, .5);
+    reference.control->set(1, reference.in.field_rows[1].record);
+    LiveHierarchyAccess::poll(reference.h, 0, reference.in.field_rows[1].record);
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok &&
+                f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok &&
+                reference.h.tick_prepared(reference.h.prepared_storage().generation, stationary).status == TickStatus::Ok &&
+                PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "rebase translated-frame tick failed");
+    f.h.inspect_prepared();
+    reference.h.inspect_prepared();
+    const auto continued = f.h.inspect_live_hierarchy(), expected = reference.h.inspect_live_hierarchy();
+    require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64() &&
+                f.h.determined64() == reference.h.determined64() &&
+                f.h.prepared_storage().inspection_flags == reference.h.prepared_storage().inspection_flags &&
+                continued.slots == expected.slots && continued.previous == expected.previous &&
+                continued.selectors == expected.selectors &&
+                PlacementAccess::rebase_history(f.h) == PlacementAccess::rebase_history(reference.h),
+            "translated-frame tick differs from unrebased continuation");
     std::cout << "coordinate_rebase,capacity=" << capacity << ",translation=2^27,exact=1,history=both_slots,"
                  "rejection=unchanged,round_trip=exact,following_tick=pass,backing=stable PASS\n";
   }
@@ -882,6 +918,16 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(failed && !f.h.ready() && f.h.prepared_storage().generation == generation &&
                 PlacementAccess::rebase(f.h, {}).status == UpdateStatus::Unready,
             "rebase postpublication failure advertised resumable execution");
+  }
+  for (bool reduced_body : {false, true}) {
+    const auto l = placement_limits();
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced_body ? 8 : 52,
+              reduced_body ? 52 : 8, false, false, true, false, 1024, {}, &l);
+    f.install();
+    const TickSnapshot before(f);
+    require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::Unsupported &&
+                before == TickSnapshot(f) && f.h.ready(),
+            "rebase silently accepted a reduced-precision profile");
   }
 }
 
