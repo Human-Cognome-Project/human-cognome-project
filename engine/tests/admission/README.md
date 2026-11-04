@@ -536,3 +536,4 @@ raw logs, emitted LLVM and frozen ABI metadata. Its `SHA256SUMS` digest is
 A matching archive is retained in the Windows workspace. This is contributor-local
 evidence; the raw bundle is not remotely available or independently verified
 merely by publishing its digest.
+
