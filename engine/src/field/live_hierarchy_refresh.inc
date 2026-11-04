@@ -802,8 +802,9 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
     const auto peak = s.live.particles + s.live.fields + claims +
                       2 * std::max(s.live.edges, candidate.edges) +
                       2 * std::max(s.live.contacts, candidate.contacts) +
-                      s.live.focus + old_refs + spec.node_count + ns + nl + nc +
+                      candidate.focus + old_refs + spec.node_count + ns + nl + nc +
                       nr;
+    r.reference_peak = peak;
     if (peak > limits[Budget::References])
       exhaust(Budget::References, peak, limits[Budget::References]);
     // Charge complete native candidate/copy/focus/U/commit/invalidation loops
@@ -947,5 +948,6 @@ void LiveHierarchy::finish_refresh(std::uint64_t generation) {
   a.inspection.node_count = r.count;
   a.nodes = r.count;
   a.generation = generation;
+  a.bound = true;
   s.geometry_valid = false;
 }

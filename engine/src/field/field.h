@@ -34,6 +34,7 @@ class CentroidCascade;
 class LiveHierarchy;
 class TickExecution;
 class Placement;
+class AdmissionContacts;
 struct SourceProjection;
 struct NativeSet;
 }  // namespace detail
@@ -389,6 +390,7 @@ class Harness {
  private:
   friend class detail::TickExecution;
   friend class detail::Placement;
+  friend class detail::AdmissionContacts;
   friend class detail::Activity;
   friend class detail::CentroidCascade;
   friend class detail::LiveHierarchy;
@@ -424,7 +426,7 @@ class Harness {
       detail::NativeSet,
       detail::NativeSet);
   std::array<engine::CompiledKernel, 4> build_geometry_kernels(
-      detail::NativeSet);
+      detail::NativeSet, bool canonical_endpoints = false);
   engine::CompiledKernel build_geometry_collect_kernel(detail::NativeSet);
   void prepare_empty_execution();
   void prepare_update_execution();
@@ -435,22 +437,30 @@ class Harness {
   void launch_geometry_finalize();
   void launch_update_candidate(bool hierarchy = false);
   void launch_update_commit(bool hierarchy = false);
-  enum class PreparedUpdateMode { FixtureCommit, GeneratedPreflight };
-  // B3 intermediate boundary: private, no record claims or publication. The
-  // eventual admission transaction must add prospective contact validation.
+  enum class PreparedUpdateMode {
+    FixtureCommit, GeneratedPreflight, GeneratedCommit,
+    BootstrapProjection, BootstrapPreflight, BootstrapCommit
+  };
+  // Private admission boundary. Initial admission requires an explicit selection
+  // against the same prospective source and publishes it with the first hierarchy.
   UpdateResult stage_current_admission(std::uint64_t,
                                         const UpdateCommand *, std::size_t,
                                         const PlacementIntrinsic *, std::size_t,
                                         const LiveRefreshSpec &,
                                         std::uint64_t, std::uint64_t,
-                                        std::uint64_t);
+                                        std::uint64_t, bool commit = false,
+                                        bool bootstrap = false,
+                                        const UpdateRef *focus = nullptr,
+                                        std::size_t focus_count = 0);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,
                                     const LiveRefreshSpec *,
                                     std::uint64_t,
                                     detail::SourceProjection * = nullptr,
-                                    PreparedUpdateMode = PreparedUpdateMode::FixtureCommit);
+                                    PreparedUpdateMode = PreparedUpdateMode::FixtureCommit,
+                                    const UpdateRef *focus = nullptr,
+                                    std::size_t focus_count = 0);
   void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);

@@ -2775,6 +2775,16 @@ int main(int argc, char **argv) {
       run("placement_generated", [&] { placement_generated(r, path); });
     if (only == "placement" || only == "admission_preflight")
       run("admission_preflight", [&] { admission_preflight(r, path); });
+    if (only == "placement" || only == "admission_contacts")
+      run("admission_contacts", [&] { admission_contact_capacity(r, path); });
+    if (only == "placement" || only == "admission_commit")
+      run("admission_commit", [&] { admission_commit(r, path); });
+    if (only == "placement" || only == "admission_bootstrap")
+      run("admission_bootstrap", [&] { admission_bootstrap(r, path); });
+    if (only == "placement" || only == "admission_commit_failures")
+      run("admission_commit_failures", [&] { admission_commit_failures(r, path); });
+    if (only == "placement" || only == "admission_contact_remap")
+      run("admission_contact_remap", [&] { admission_contact_remap(r, path); });
     if (only == "contact_tick_modes" || only == "contact_tick") {
       run("contact_tick_modes", [&] { contact_tick_modes(r, path); });
       run("contact_tick_references", [&] { contact_tick_references(r, path); });

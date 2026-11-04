@@ -82,6 +82,8 @@ class LiveHierarchy {
  private:
   friend class TickExecution;
   friend class Placement;
+  friend class AdmissionContacts;
+  std::uint64_t refresh_reference_peak() const;
   friend struct field::testing::LiveHierarchyAccess;
   std::uint64_t node_count() const;
   std::uint64_t reference_count() const;

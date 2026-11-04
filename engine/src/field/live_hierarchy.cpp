@@ -288,6 +288,7 @@ struct LiveHierarchy::Impl {
     std::array<std::unique_ptr<Ndarray>, 9> arrays;
     engine::CompiledKernel candidate, commit;
     std::size_t count{}, responses{};
+    std::uint64_t reference_peak{};
     explicit Refresh(Impl &a)
         : cfg(Columns * a.H),
           children(a.L),
@@ -822,6 +823,9 @@ std::uint64_t LiveHierarchy::node_count() const {
 }
 std::uint64_t LiveHierarchy::reference_count() const {
   return impl_->bound ? impl_->references : 0;
+}
+std::uint64_t LiveHierarchy::refresh_reference_peak() const {
+  return impl_->refresh->reference_peak;
 }
 void LiveHierarchy::retag_generation(std::uint64_t generation) {
   if (!impl_->bound)

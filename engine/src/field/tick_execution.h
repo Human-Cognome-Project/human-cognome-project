@@ -40,7 +40,12 @@ class TickExecution {
 
  private:
   friend class field::Harness;
+  friend class AdmissionContacts;
+  std::uint64_t installed_contact_count() const;
+  taichi::lang::Ndarray &admission_array(int) const;
+  void finish_admission(const std::array<std::int64_t, 16> &);
   friend struct field::testing::TickExecutionAccess;
+  friend struct field::testing::PlacementAccess;
   explicit TickExecution(Harness &);
   static engine::Runtime &checked_runtime(Harness &);
   taichi::lang::Ndarray &installed_array(int) const;

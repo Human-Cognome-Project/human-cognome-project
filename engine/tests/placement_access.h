@@ -1,20 +1,82 @@
 #pragma once
 #include "field/placement.h"
+#include "field/admission_contacts.h"
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult bootstrap(Harness &h, const std::vector<UpdateCommand> &commands,
+                                const std::vector<PlacementIntrinsic> &inputs,
+                                const LiveRefreshSpec &hierarchy,
+                                const std::vector<UpdateRef> &focus,
+                                bool commit = true, std::uint64_t work = UINT64_MAX) {
+    return h.stage_current_admission(h.prepared_->generation, commands.data(),
+        commands.size(), inputs.data(), inputs.size(), hierarchy, work,
+        UINT64_MAX, UINT64_MAX, commit, true, focus.data(), focus.size());
+  }
+  static std::vector<double> bootstrap_output(Harness &h) {
+    std::vector<double> out(h.placement_->attempt_->get_nelement());
+    engine::readback(*h.placement_->attempt_, out.data(), out.size() * sizeof(double));
+    return out;
+  }
+  static const engine::CompiledKernel &bootstrap_kernel(Harness &h) {
+    return h.placement_->bootstrap_solve_;
+  }
+  static GeometryResult contacts(Harness &h, std::size_t particles,
+                                  std::size_t contacts,
+                                  std::uint64_t work = UINT64_MAX) {
+    detail::PreparedCounts counts;
+    counts.particles = particles;
+    counts.contacts = contacts;
+    return h.placement_->contacts_->validate(counts, work);
+  }
+  static auto contact_counts(Harness &h) {
+    return h.placement_->contacts_->counts_;
+  }
+  static void remap_contacts(Harness &h, const std::vector<int> &destinations) {
+    engine::upload(*h.prepared_->destinations_array, destinations.data(),
+                     destinations.size() * sizeof(int));
+    auto &c = *h.placement_->contacts_;
+    c.remap(true);
+    c.launch(4, int(c.counts_[2]));
+    h.runtime_->synchronize();
+  }
+  static GeometryInspection contact_inspection(Harness &h) {
+    auto &c = *h.placement_->contacts_;
+    GeometryInspection result;
+    const auto copy = [&](int id, std::vector<int> &out) {
+      auto &a = *c.arrays_[id];
+      out.resize(a.get_nelement());
+      engine::readback(a, out.data(), out.size() * sizeof(int));
+    };
+    copy(c.Rows, result.occupied_rows);
+    copy(c.Pairs, result.pairs);
+    copy(c.Flags, result.pair_flags);
+    copy(c.SourceMap, result.source_to_pair);
+    copy(c.Offsets, result.offsets);
+    copy(c.Orders, result.orders);
+    return result;
+  }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 5>{
-        &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_};
+    return std::array<const engine::CompiledKernel *, 13>{
+        &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
+        &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
+        &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
+        &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
+        &p.bootstrap_solve_};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<taichi::lang::Ndarray *, 11>{
+    std::array<taichi::lang::Ndarray *, 32> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
         p.counts_.get(), h.prepared_->new_rows_array.get()};
+    for (int i = 0; i < 15; ++i)
+      result[11 + i] = p.contacts_->arrays_[i].get();
+    for (int i = 0; i < 6; ++i)
+      result[26 + i] = &h.tick_execution_->admission_array(i);
+    return result;
   }
   static PlacementResult stage(Harness &h, const UpdateCommand *commands,
                                 std::size_t count,
@@ -34,10 +96,11 @@ struct PlacementAccess {
                                 const PlacementIntrinsic *inputs,
                                 std::size_t bodies,
                                 const LiveRefreshSpec &hierarchy,
-                                std::uint64_t work = UINT64_MAX) {
+                                std::uint64_t work = UINT64_MAX,
+                                bool commit = false) {
     return h.stage_current_admission(h.prepared_->generation, commands, count,
                                      inputs, bodies, hierarchy, UINT64_MAX,
-                                     UINT64_MAX, work);
+                                     UINT64_MAX, work, commit);
   }
   static std::vector<double> derived(Harness &h) {
     std::vector<double> values(h.prepared_->derived_array->get_nelement());

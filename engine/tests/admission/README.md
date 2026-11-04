@@ -87,3 +87,155 @@ Independently inspected shard jobs 126566575256, 126566575205,
 24 addressed reads and zero private reads. All compiler jobs and the aggregate
 passed. Merged as `c51cab73ef21752bfa9d849a08b941846881aaeb`.
 Complete B3 admission and GPU qualification remain outstanding.
+
+## Prospective contact preflight — 2026-11-04
+
+Contributor-local qualification at `e2720b511b4f266ef47d553d22c4f06e0157a9d3`,
+stacked on provisionally accepted #207 integration `ecd1d6ae`. Later changes
+document scope/evidence only. Ubuntu 24.04/WSL2, Clang/LLVM 15, CPU/x64:
+
+- `live_hierarchy_test --threads 1 --case placement`: all nine focused cases
+  passed, including generated starts, source/hierarchy/contact preflight,
+  placement geometry/rejection/capacity/ownership and compiler checks.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case admission_preflight`: passed.
+- The same two-worker/direct/no-unroll configuration with `--case admission_contacts`: passed.
+- The same configuration with `--case placement_compiler`: passed at 52 and 8
+  body fraction bits. Ten emitted kernels were audited per profile, with twelve
+  unsafe controls rejected per profile; LLVM and ABI outputs retained.
+- `prepared_update_test`: passed.
+- `live_hierarchy_test --threads 1 --case refresh_dirty`: passed.
+
+The prospective union includes generated endpoints, preserves the first explicit
+orientation, maps duplicate/reversed sources to one pair, and retains tangency
+semantics. Sleeping survivors participate in source-empty derived discovery.
+Tests reject three required contacts against capacity two and 43 simultaneous
+source/tree/contact references against capacity 37. Closed retirement removes
+exactly the outgoing occupant and permits healthy retry. Preparation and final
+union-order work limits reject unchanged. Repeated preflight retains native
+backing/compiler state, observes no recurring C++ allocation, and preserves
+survivor/history/pending state and prior public placement observations.
+
+Raw logs, exact commands, source/submodule pins, configuration, toolchain,
+binary/runtime hashes and emitted modules are retained locally as
+`admission-contacts-e2720b51`, with a Windows workspace archive of the same name.
+The `SHA256SUMS` digest is
+`a5007f96eab199ecb4e42d58584cd731ed61335aa6e5148380a21ad93eff5ab2`.
+This hash identifies a machine-local bundle, not remotely available evidence.
+
+No full CPU regression, remaining compiler matrix, PostgreSQL or GPU run is
+claimed. Shared-host timings are not performance qualification. This remains a
+private preclaim prerequisite: complete D1 bootstrap/focus and coherent
+source/hierarchy/contact/activity publication are not implemented. Hosted CI
+and maintainer acceptance remain separate from these contributor-local results.
+
+## Ordinary combined publication — 2026-11-04
+
+Contributor-local CPU/x64 qualification at
+`edee7e2ff4a097a797cd5d515d06fc8f229539c6`, stacked on provisionally accepted
+#208 with main's #207 acceptance notes integrated. Later changes document scope
+and evidence only. Environment: Ubuntu 24.04/WSL2, Clang/LLVM 15.
+
+- `live_hierarchy_test --threads 1 --case placement`: all twelve focused cases passed.
+- Two-worker/direct/no-unroll runs passed for `admission_commit`,
+  `admission_contacts`, `admission_preflight`, `admission_contact_remap` and
+  `admission_commit_failures`.
+- `placement_compiler` passed in one-worker/bulk/default and
+  two-worker/direct/no-unroll configurations at 52 and 8 body fraction bits.
+  Each profile audited twelve kernels and rejected fifteen unsafe controls,
+  including omitted contact outputs and a missing publication enable guard.
+  LLVM modules and ABI descriptions are retained for both configurations.
+- `prepared_update_test` and one-worker `refresh_dirty` regression passed.
+
+Ordinary admission runs twice between ticks at both 70- and 128-row capacities.
+It preserves the original survivor's complete numerical payload, initializes
+new bodies from native certificates with zero motion, resolves source/contact
+endpoints to actual claims, installs the contact view, and advances exactly one
+generation without a tick. The following tick observes no further coverage
+change. Preclaim rejection retains the entire committed snapshot and permits
+retry. Backing/compiler metrics stay fixed and successful prepared operations
+observe no recurring C++ allocation.
+
+Capacity cases reject three contacts against two and 49 simultaneous references
+against 40 while retaining an old installed union. Closed retirement permits
+combined publication and a following tick. Synthetic nonidentity endpoint maps
+verify explicit orientation, duplicate mappings, both adjacency directions and
+canonical derived-only ordering without changing committed state. Failures after
+native claims and after contact publication make the execution unready without
+advertising a completed generation or tick.
+
+The first ownership audit at `8941b1f3` rejected the second prepared owner's
+publication kernel. Native CHI kernel caching uses names rather than IR hashes:
+generic names could reuse another owner's SNode identities or fixed capacities.
+The publication owner suffix fixed that audit at `ade8602d`; its remaining run
+was deliberately interrupted to isolate all capacity-dependent helpers and the
+canonical-order variant as well. Final qualification above passes on the
+corrected source. Earlier logs are retained separately from passing evidence.
+
+Bundle `admission-commit-edee7e2f` contains raw logs, commands, source/submodule
+pins, configuration, toolchain, binary/runtime hashes and emitted modules. Its
+`SHA256SUMS` digest is
+`d5169003237d9479b55b56c8a62ceb22fc06bec4d1724eabcf3697ca142bf7b2`.
+A matching archive is retained in the Windows workspace. This is machine-local
+evidence, not a remotely accessible artifact or independent hosted acceptance.
+
+Full CPU regression, remaining compiler modes, PostgreSQL and GPU were not run.
+Shared-host timings are not performance qualification. Complete D1 bootstrap,
+prospective initial focus and the operational owner/API remain outstanding;
+this contribution publishes ordinary arrivals into an already installed model.
+
+## Private D1 bootstrap and initial focus — 2026-11-04
+
+The continuation of provisionally accepted #209 implements first admission into
+an empty, never-populated prepared owner. Source, rooted hierarchy, generated
+body starts, contact view and explicit initial focus publish as one unticked
+generation. The boundary remains private; representation exchange, an enduring
+operational owner/public Add API and GPU qualification are separate work.
+
+Local CPU source pin: `d31a0f1d3e579ff57ae6f0ffa5900268d1149f9f`.
+
+All listed qualification runs passed. Bundle `admission-bootstrap-d31a0f1d`
+contains commands, source/submodule pins, configuration, toolchain, binary/runtime
+hashes, raw logs and emitted modules. Its `SHA256SUMS` digest is
+`d10bc3b797ab681811fd5eb716f4a5f251c0436b024e565781dadd66e58fe75b`.
+A matching archive is retained in the Windows workspace. The raw bundle is
+machine-local; its digest does not make it remotely accessible or independently
+verified. The subsequent documentation commit does not change tested code.
+
+The focused qualification covers the complete thirteen-case placement/admission
+suite in one-worker bulk/default mode; two-worker direct/no-unroll bootstrap and
+ordinary admission; compiler checks in both configurations at 52 and 8 body
+fraction bits; `prepared_update_test`; and `refresh_dirty`. Compiler checks audit
+thirteen kernels per precision profile, reject seventeen unsafe variants and
+accept legal repeated writes. Raw emitted LLVM and frozen ABI descriptions are
+retained. This is contributor-local evidence, not hosted acceptance.
+
+Bootstrap cases exercise three new bodies and three new fields in twelve source
+commands against ordinary Batch=2 and BootstrapCommands=16, at 70 and 128 physical
+capacities. The first selected field's canonical participant establishes zero,
+including when that occurrence comes last in ordinary canonical order. Independent
+test-only certificate checks use the changing partial focal centroid. A sole
+selected field leaves the target unchanged when unselected bodies arrive;
+reversing selection order changes the anchor. Missing, duplicate, wrong-kind,
+absent-participant and over-capacity selections reject before claims. Separate
+bootstrap command/work limits and incomplete hierarchy reject with healthy retry.
+
+Preflight leaves the empty owner unchanged. Successful admission resolves native
+field references, retains fixed backing, observes no recurring C++ allocation,
+initializes zero motion/force, advances one generation without a tick, and installs
+a contact/hierarchy view consumed by the following tick without a coverage change.
+Injected failures after native claims and after contact publication leave execution
+unready without publishing a completed generation. A populated owner cannot be
+bootstrapped again.
+
+The initial full-precision three-radius-one fixture at `a1e7c784` exhausted its
+65,536-cell search reservation before hierarchy validation; that rejected attempt
+is not passing evidence. Full-precision coverage now uses an exact-boundary
+zero-extent final occurrence, while the 8-bit profile retains three positive
+radii. A subsequent fixture at `30cd1b90` correctly failed hierarchy validation
+because its two leaves lacked a common root. The final fixture supplies that root
+and complete source coverage. Both diagnostic logs are retained separately.
+
+Full CPU regression, other compiler modes, PostgreSQL and GPU were not rerun.
+Shared-host timings are not performance qualification. The implementation and
+source-pinned evidence support provisional review only; hosted CI and maintainer
+acceptance remain independent.

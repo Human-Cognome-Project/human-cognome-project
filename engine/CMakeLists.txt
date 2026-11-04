@@ -32,6 +32,7 @@ add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
     src/field/native_selection.cpp
   src/field/tick_execution.cpp
     src/field/placement.cpp
+    src/field/admission_contacts.cpp
     src/field/prepared_capacity.cpp src/field/prepared_storage.cpp
     src/field/prepared_update.cpp src/field/prepared_geometry.cpp
     src/field/centroid_cascade.cpp src/field/live_hierarchy.cpp)
