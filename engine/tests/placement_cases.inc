@@ -827,6 +827,16 @@ void exchange_state(engine::Runtime &r, HostPath path) {
                 state == PlacementAccess::exchange_output(f.h), "unselected body polluted outgoing state");
     PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[2].record, 0);
     require(before == TickSnapshot(f), "exchange numerical tests failed to restore live state");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 2);
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok,
+            "nonbinary weighted velocity rejected");
+    const auto fractional = PlacementAccess::exchange_output(f.h);
+    const long double velocity = (1.L * 2.L + 2.L * -2.L) / 3.L;
+    require(fractional[0] == 4 && fractional[6] == 3 &&
+                std::abs(static_cast<long double>(fractional[3]) - velocity) <
+                    4 * std::numeric_limits<double>::epsilon(),
+            "exchange applied destination precision to outgoing velocity");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 3);
     const auto required = 64 * (l[Budget::Particles] + 1);
     require(PlacementAccess::exchange_state(f.h, selected, required - 1).status == UpdateStatus::CapacityExhausted &&
                 PlacementAccess::exchange_state(f.h, selected, required).status == UpdateStatus::Ok,
