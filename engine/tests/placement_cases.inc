@@ -543,12 +543,13 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
 }
 
 void admission_bootstrap(engine::Runtime &r, HostPath path) {
-  auto l = placement_limits();
-  l[Budget::Batch] = 4;
+  for (int bits : {52, 8}) {
+  auto l = placement_limits(bits == 52 ? 70 : 128);
+  l[Budget::Batch] = 2;
   l[Budget::BootstrapCommands] = 16;
   l[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
-      l, false, NumericalProfile::trial()) + 256 * 1024 * 1024;
-  Harness h(r, PreparedCapacity(l, NumericalProfile::trial()), path);
+      l, false, NumericalProfile::trial(bits, 52)) + 256 * 1024 * 1024;
+  Harness h(r, PreparedCapacity(l, NumericalProfile::trial(bits, 52)), path);
   std::vector<UpdateCommand> commands;
   for (int i = 0; i < 3; ++i)
     commands.push_back(placement_definition(900 + i));
@@ -574,6 +575,8 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
       placement_intrinsic(1, 20), placement_intrinsic(2, 30),
       placement_intrinsic(0, 10)};
   inputs[0].mass = 3;
+  if (bits == 52)
+    inputs[0].radius = 0;
   inputs[1].mass = 2;
   std::vector<LiveRefreshNode> nodes(2);
   for (int i = 0; i < 2; ++i) {
@@ -599,6 +602,21 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   require(PlacementAccess::bootstrap(h, commands, inputs, spec, {}).status ==
               UpdateStatus::InvalidInput, "bootstrap accepted implicit focus");
   unchanged();
+  auto oversized = commands;
+  oversized.resize(17);
+  const auto over = PlacementAccess::bootstrap(h, oversized, inputs, spec, focus);
+  require(over.status == UpdateStatus::CapacityExhausted &&
+              over.failure.budget == Budget::BootstrapCommands,
+          "bootstrap did not enforce its separate command reservation");
+  unchanged();
+  auto empty_field = commands;
+  auto extra = commands[3];
+  extra.address = 3;
+  empty_field.push_back(extra);
+  require(PlacementAccess::bootstrap(h, empty_field, inputs, spec,
+              {UpdateRef::pending(8)}).status == UpdateStatus::InvalidInput,
+          "bootstrap accepted a selected field without participants");
+  unchanged();
   for (const auto &invalid : std::vector<std::vector<UpdateRef>>{
            {UpdateRef::pending(3), UpdateRef::pending(3)}, {UpdateRef::pending(0)},
            {UpdateRef::pending(99)}}) {
@@ -621,6 +639,11 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
             << ",budget=" << budget_name(preflight.failure.budget) << std::endl;
   require(preflight.status == UpdateStatus::Ok, "bootstrap preflight failed");
   unchanged();
+  PreparedFixtureAccess::inject_failure(h, 1);
+  require(PlacementAccess::bootstrap(h, commands, inputs, spec, focus).status ==
+              UpdateStatus::InvalidInput, "bootstrap preclaim failure hook");
+  unchanged();
+  PreparedFixtureAccess::inject_failure(h, 0);
   // Independent test-only certificate replay with the D1 changing target.
   const auto output = PlacementAccess::bootstrap_output(h);
   const int stride = l[Budget::BootstrapCommands];
@@ -638,7 +661,7 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
     certificate.upper_distance = output[4 * stride + rank];
     certificate.tolerance = output[5 * stride + rank];
     certificate.coordinate_bound = output[6 * stride + rank];
-    placement_reference::certificate(certificate, occupancy, target, 52);
+    placement_reference::certificate(certificate, occupancy, target, bits);
     if (!rank)
       require(certificate.position == std::array<double, 3>{},
               "first selected occurrence did not establish local zero");
@@ -660,6 +683,12 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
           "bootstrap failed one-generation publication or allocated backing");
   h.inspect_prepared();
   const auto &s = h.prepared_storage();
+  for (const auto &body : s.particle_headers)
+    if (body.record >= 0)
+      for (int k = 0; k < kParticleFieldCount; ++k)
+        if (k != kMass && k != kRadius && (k < kPosX || k > kPosZ))
+          require(h.particle64(k, body.record) == 0,
+                  "bootstrap body inherited nonzero motion or force");
   for (int i = 0; i < 2; ++i)
     require(s.focal[i].address == i && s.focal[i].context != 0,
             "bootstrap focus did not resolve native field claims");
@@ -673,9 +702,10 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
           "bootstrap hierarchy/contact publication failed following tick");
   require(PlacementAccess::bootstrap(h, commands, inputs, spec, focus).status ==
               UpdateStatus::InvalidInput, "bootstrap replaced a populated owner");
-  std::cout << "admission_bootstrap,explicit_focus=2,anchor_command=2,commands=8,batch=4,"
+  std::cout << "admission_bootstrap,explicit_focus=2,anchor_command=2,commands=8,batch=2,"
                "partial_centroid=certified,preclaim_rejection=unchanged,publication=one,"
                "backing=stable,following_tick=pass PASS\n";
+  }
 }
 
 void admission_commit(engine::Runtime &r, HostPath path) {
