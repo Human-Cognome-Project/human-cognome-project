@@ -3,6 +3,7 @@
 #include "field/field.h"
 
 namespace field::detail {
+class AdmissionContacts;
 class Placement {
  public:
   static void append_layout(const BudgetDemand &, std::vector<StorageExtent> &);
@@ -25,6 +26,7 @@ class Placement {
   friend struct field::testing::PlacementAccess;
   explicit Placement(Harness &);
   Harness &h_;
+  std::unique_ptr<AdmissionContacts> contacts_;
   std::unique_ptr<taichi::lang::Ndarray> rows_, stats_, focal_, keep_,
       requests_, occupancy_, cells_, attempt_, published_, counts_;
   engine::CompiledKernel collect_, capture_, solve_, publish_, initialize_;

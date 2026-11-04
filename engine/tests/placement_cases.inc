@@ -346,6 +346,16 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
   commands.push_back(edge);
   request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
   const std::vector<PlacementIntrinsic> inputs{placement_intrinsic()};
+  UpdateCommand contact;
+  contact.operation = UpdateOp::InsertContact;
+  contact.first = UpdateRef::pending(0);
+  contact.second = UpdateRef::existing(f.in.particle_rows[0]);
+  contact.ordinal = 12346;
+  commands.push_back(contact);
+  std::swap(contact.first, contact.second);
+  contact.position = 1;
+  contact.ordinal = 12347;
+  commands.push_back(contact);
   const auto query = place(f, commands, inputs);
   require(query.status == PlacementStatus::Ok, "preflight placement baseline");
   const auto certificate = f.h.inspect_prepared_placement(query).certificates[0];
@@ -369,6 +379,25 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
             "generated source/hierarchy preflight failed");
   }
   const auto derived = PlacementAccess::derived(f.h);
+  const auto counts = PlacementAccess::contact_counts(f.h);
+  const auto contacts = PlacementAccess::contact_inspection(f.h);
+  require(counts[0] == 2 && counts[2] == 2 && counts[3] == 1 &&
+              counts[4] == 0 && contacts.source_to_pair[0] == 0 &&
+              contacts.source_to_pair[1] == 0 &&
+              contacts.pair_flags[0] == ExplicitContact &&
+              contacts.pairs[0] != f.in.particle_rows[0].record &&
+              contacts.pairs[f.h.contact_capacity()] == f.in.particle_rows[0].record,
+          "prospective contacts lost generated endpoints, source orientation, "
+          "deduplication or tangency");
+  GeometryResult contact_work;
+  no_new([&] { contact_work = PlacementAccess::contacts(f.h, 2, 2, 0); });
+  require(contact_work.status == GeometryStatus::CapacityExhausted &&
+              contact_work.failure.budget == Budget::GeometryWork &&
+              before == TickSnapshot(f),
+          "contact preparation work did not reject unchanged");
+  no_new([&] { contact_work = PlacementAccess::contacts(f.h, 2, 2); });
+  require(contact_work.status == GeometryStatus::Ok,
+          "private contact retry failed");
   const auto stride = f.h.field_capacity();
   const auto field = request.nodes[0].field.record;
   require(derived[kCenM * stride + field] == 2,

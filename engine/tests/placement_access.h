@@ -1,8 +1,36 @@
 #pragma once
 #include "field/placement.h"
+#include "field/admission_contacts.h"
 
 namespace field::testing {
 struct PlacementAccess {
+  static GeometryResult contacts(Harness &h, std::size_t particles,
+                                  std::size_t contacts,
+                                  std::uint64_t work = UINT64_MAX) {
+    detail::PreparedCounts counts;
+    counts.particles = particles;
+    counts.contacts = contacts;
+    return h.placement_->contacts_->validate(counts, work);
+  }
+  static auto contact_counts(Harness &h) {
+    return h.placement_->contacts_->counts_;
+  }
+  static GeometryInspection contact_inspection(Harness &h) {
+    auto &c = *h.placement_->contacts_;
+    GeometryInspection result;
+    const auto copy = [&](int id, std::vector<int> &out) {
+      auto &a = *c.arrays_[id];
+      out.resize(a.get_nelement());
+      engine::readback(a, out.data(), out.size() * sizeof(int));
+    };
+    copy(c.Rows, result.occupied_rows);
+    copy(c.Pairs, result.pairs);
+    copy(c.Flags, result.pair_flags);
+    copy(c.SourceMap, result.source_to_pair);
+    copy(c.Offsets, result.offsets);
+    copy(c.Orders, result.orders);
+    return result;
+  }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
     return std::array<const engine::CompiledKernel *, 5>{

@@ -34,6 +34,7 @@ class CentroidCascade;
 class LiveHierarchy;
 class TickExecution;
 class Placement;
+class AdmissionContacts;
 struct SourceProjection;
 struct NativeSet;
 }  // namespace detail
@@ -389,6 +390,7 @@ class Harness {
  private:
   friend class detail::TickExecution;
   friend class detail::Placement;
+  friend class detail::AdmissionContacts;
   friend class detail::Activity;
   friend class detail::CentroidCascade;
   friend class detail::LiveHierarchy;

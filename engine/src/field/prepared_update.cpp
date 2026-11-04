@@ -9,6 +9,7 @@
 #include "field/centroid_math.h"
 #include "field/prepared_storage.h"
 #include "field/placement.h"
+#include "field/admission_contacts.h"
 
 namespace field {
 namespace {
@@ -1034,8 +1035,20 @@ UpdateResult Harness::update_prepared_impl(
       return reject(UpdateStatus::InvalidNumerics);
     if (s.failure_point == 1)
       return reject(UpdateStatus::InvalidInput);
-    if (mode == PreparedUpdateMode::GeneratedPreflight)
-      return reject(UpdateStatus::Ok);
+    if (mode == PreparedUpdateMode::GeneratedPreflight) {
+      if (!placement_->contacts_)
+        return reject(UpdateStatus::Unsupported);
+      const auto geometry = placement_->contacts_->validate(
+          candidate, limits[Budget::GeometryWork]);
+      answer.readback_bytes += geometry.readback_bytes;
+      answer.synchronizations += geometry.synchronizations;
+      answer.upload_bytes += placement_->contacts_->upload_bytes();
+      answer.failure = geometry.failure;
+      return reject(geometry.status == GeometryStatus::Ok ? UpdateStatus::Ok
+                    : geometry.status == GeometryStatus::CapacityExhausted
+                        ? UpdateStatus::CapacityExhausted
+                        : UpdateStatus::InvalidNumerics);
+    }
     // Claims begin mutation, even though no numerical survivor has been
     // written.
     for (bool particle : {true, false}) {

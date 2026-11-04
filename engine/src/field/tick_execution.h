@@ -40,6 +40,8 @@ class TickExecution {
 
  private:
   friend class field::Harness;
+  friend class AdmissionContacts;
+  std::uint64_t installed_contact_count() const;
   friend struct field::testing::TickExecutionAccess;
   explicit TickExecution(Harness &);
   static engine::Runtime &checked_runtime(Harness &);

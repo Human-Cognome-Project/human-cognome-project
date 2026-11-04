@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include "engine/transfer.h"
 #include "field/activity.h"
+#include "field/admission_contacts.h"
 #include "field/placement_search.h"
 #include "field/prepared_storage.h"
 #include "taichi/jit/jit_module.h"
@@ -91,6 +92,7 @@ void Placement::append_layout(const BudgetDemand &l,
   add("placement-inspection-certificates", b, sizeof(PlacementCertificate));
   add("placement-array-control", 10, sizeof(Ndarray) + 4 * sizeof(int));
   add("placement-fixed-owner-control", 1, sizeof(Placement));
+  AdmissionContacts::append_layout(l, out);
 }
 Placement::Placement(Harness &h) : h_(h) {
   if (!h.prepared_ || !h.activity_ || !h.profile_.wide() ||
@@ -132,6 +134,8 @@ Placement::Placement(Harness &h) : h_(h) {
   solve(0, INT64_MAX, 0, c);
   publish(false);
   initialize(0);
+  if (h.prepared_->capacity.limits()[Budget::LiveResponses])
+    contacts_ = std::make_unique<AdmissionContacts>(h);
   r.synchronize();
   native_bytes_ = native_requested(r) - before;
 }
@@ -382,7 +386,8 @@ void Placement::publish(bool enabled) {
 std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
          solve_.prepared_bytes() + publish_.prepared_bytes() +
-         initialize_.prepared_bytes();
+         initialize_.prepared_bytes() +
+         (contacts_ ? contacts_->binding_bytes() : 0);
 }
 
 PlacementResult Placement::query(std::uint64_t expected,

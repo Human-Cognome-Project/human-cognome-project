@@ -277,6 +277,10 @@ struct TickExecution::Geometry {
   }
 };
 
+std::uint64_t TickExecution::installed_contact_count() const {
+  return installed_->counts[PairCount];
+}
+
 void TickExecution::append_layout(const BudgetDemand &l,
                                   std::vector<StorageExtent> &out) {
   if (!l[Budget::TickWork])
