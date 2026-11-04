@@ -464,3 +464,39 @@ A matching archive is retained in the Windows workspace. The raw bundle is local
 not remotely available or independently verified merely by publishing its hash.
 Subsequent documentation changes no tested code. Hosted CI and maintainer
 acceptance remain independent.
+
+### Maintainer hosted acceptance of #211 — 2026-11-04
+
+Corrected head `153f6124193bfe027253716e0672ec41b755bc9e` is accepted in
+[review 5775143515](https://github.com/Human-Cognome-Project/human-cognome-project/pull/211#pullrequestreview-5775143515).
+All 18 hosted checks passed. Independently inspected native run 41886914617:
+regression jobs 126782664057, 126782664215, 126782664440 and 126782664008 passed
+29/29, 29/29, 29/29 and 28/28 tests respectively, collectively indexes 1–115
+exactly once. Job 126782663799 passed 180 integration checks with 24 addressed
+reads and zero private reads. All four downloaded compiler artifacts cover the
+eight worker/source/unroll configurations; placement audits pass 14 kernels and
+19 unsafe controls per precision profile. Extra no-unroll placement runs include
+the real source/installed-contact reference witness: required 36, rejected at 35,
+accepted at 36. Contributor-local evidence above remains separately pinned.
+
+This accepts private existing-model focus selection only. Exact coordinate
+rebasing is reviewed separately in #212/#213; representation exchange,
+operational owner/public controls and GPU qualification remain outstanding.
+
+### Maintainer hosted acceptance of #212 — 2026-11-04
+
+Head `78b5360211050aa02fb541cbc140eda7cf257ddf` is accepted in
+[review 5775169104](https://github.com/Human-Cognome-Project/human-cognome-project/pull/212#pullrequestreview-5775169104).
+All 18 hosted checks passed. Independently inspected native run 41894881085:
+regression jobs 126804479193, 126804478860, 126804479017 and 126804478903 cover
+all 115 test indexes exactly once; database job 126804478949 passes 180 checks
+with 24 addressed reads and zero private reads. Downloaded compiler artifacts
+13357258083, 13356489852, 13356468362 and 13355869838 pass all eight configurations,
+with 16 kernels and 24 unsafe controls per profile. All four extra no-unroll
+placement logs pass capacities 70/128, exact 2^27 translation/inverse, both history
+slots, unchanged rejection and moving continuation. These are inspected hosted
+CPU results, distinct from the contributor-local evidence above.
+
+Only private full-precision exact rebasing is accepted here. #213 reduced-profile
+support remains provisional; legacy f32, rounded transforms, D7 exchange,
+operational controls and GPU qualification remain separate.
