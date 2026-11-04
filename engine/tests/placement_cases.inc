@@ -907,6 +907,8 @@ void live_focus(engine::Runtime &r, HostPath path) {
         stationary.reach_strength = 0;
     require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
             "focus contact fixture could not establish installed union");
+    for (auto &ref : f.refs)
+      ref.source.generation = f.h.prepared_storage().generation;
     f.install();
     require(f.h.prepared_storage().live.contacts == 1 &&
                 PlacementAccess::installed_contacts(f.h) == 1,
