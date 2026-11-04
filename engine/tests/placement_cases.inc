@@ -793,16 +793,24 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidInput,
             "rebase prepublication failure hook");
     PreparedFixtureAccess::inject_failure(f.h, 0);
-    const auto history_before_rejection = PlacementAccess::rebase_history(f.h);
-    auto inexact_history = history_before_rejection;
-    inexact_history[3 * f.h.field_capacity() + f.in.field_rows[0].record] = 0x1p-100;
-    engine::upload(*LiveHierarchyAccess::input_array(f.h, 16), inexact_history.data(),
-                     inexact_history.size() * sizeof(double));
-    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidNumerics &&
-                PlacementAccess::rebase_history(f.h) == inexact_history,
-            "rebase ignored inexact retained previous centre");
-    engine::upload(*LiveHierarchyAccess::input_array(f.h, 16), history_before_rejection.data(),
-                     history_before_rejection.size() * sizeof(double));
+    const auto &tree = f.h.inspect_live_hierarchy();
+    for (int input : {16, 0, 13}) {
+      auto *array = LiveHierarchyAccess::input_array(f.h, input);
+      std::vector<double> original(array->get_nelement()), observed(original.size());
+      engine::readback(*array, original.data(), original.size() * sizeof(double));
+      auto inexact = original;
+      const auto at = input == 16 ? 3 * f.h.field_capacity() + f.in.field_rows[0].record :
+          (input == 0 ? 4 * tree.selectors.size() : 0) + tree.order[0];
+      for (double tiny : {0x1p-100, 0x1p-1000}) {
+        inexact[at] = tiny;
+        engine::upload(*array, inexact.data(), inexact.size() * sizeof(double));
+        require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidNumerics,
+                "rebase ignored inexact or FTZ-range history");
+        engine::readback(*array, observed.data(), observed.size() * sizeof(double));
+        require(observed == inexact && f.h.ready(), "rebase rejection changed retained history");
+      }
+      engine::upload(*array, original.data(), original.size() * sizeof(double));
+    }
     require(before == TickSnapshot(f) && anchor == f.h.frame_anchor() && f.h.ready(),
             "rebase rejection or disabled publication changed live state");
     f.h.inspect_prepared_geometry(geometry);
@@ -919,10 +927,11 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                 PlacementAccess::rebase(f.h, {}).status == UpdateStatus::Unready,
             "rebase postpublication failure advertised resumable execution");
   }
-  for (bool reduced_body : {false, true}) {
+  for (int reduced : {0, 1, 2}) {
     const auto l = placement_limits();
-    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced_body ? 8 : 52,
-              reduced_body ? 52 : 8, false, false, true, false, 1024, {}, &l);
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 0 ? 8 : 52,
+              reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
+    if (reduced == 2) f.nodes[0].retained_fraction_bits = 8;
     f.install();
     const TickSnapshot before(f);
     require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::Unsupported &&
