@@ -4,6 +4,23 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult bootstrap(Harness &h, const std::vector<UpdateCommand> &commands,
+                                const std::vector<PlacementIntrinsic> &inputs,
+                                const LiveRefreshSpec &hierarchy,
+                                const std::vector<UpdateRef> &focus,
+                                bool commit = true) {
+    return h.stage_current_admission(h.prepared_->generation, commands.data(),
+        commands.size(), inputs.data(), inputs.size(), hierarchy, UINT64_MAX,
+        UINT64_MAX, UINT64_MAX, commit, true, focus.data(), focus.size());
+  }
+  static std::vector<double> bootstrap_output(Harness &h) {
+    std::vector<double> out(h.placement_->attempt_->get_nelement());
+    engine::readback(*h.placement_->attempt_, out.data(), out.size() * sizeof(double));
+    return out;
+  }
+  static const engine::CompiledKernel &bootstrap_kernel(Harness &h) {
+    return h.placement_->bootstrap_solve_;
+  }
   static GeometryResult contacts(Harness &h, std::size_t particles,
                                   std::size_t contacts,
                                   std::uint64_t work = UINT64_MAX) {

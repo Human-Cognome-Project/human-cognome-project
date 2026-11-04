@@ -30,6 +30,10 @@ class Placement {
   std::unique_ptr<taichi::lang::Ndarray> rows_, stats_, focal_, keep_,
       requests_, occupancy_, cells_, attempt_, published_, counts_;
   engine::CompiledKernel collect_, capture_, solve_, publish_, initialize_;
+  engine::CompiledKernel bootstrap_solve_;
+  std::unique_ptr<taichi::lang::Ndarray> bootstrap_contributions_;
+  std::vector<std::uint64_t> bootstrap_values_;
+  std::size_t bootstrap_edges_{};
   std::vector<int> keep_values_;
   std::vector<double> request_values_, result_values_;
   std::vector<PlacementIntrinsic> intrinsics_, published_intrinsics_;
@@ -44,16 +48,19 @@ class Placement {
   void build();
   void collect();
   void capture();
-  void solve(int, std::uint64_t, std::uint64_t, int);
+  void solve(int, std::uint64_t, std::uint64_t, int, bool bootstrap = false);
   void publish(bool enabled);
   void initialize(int bodies);
   // Private admission preparation: native generated rows only, no record claims
   // or public candidate publication. Full admission owns subsequent validation.
   PlacementResult stage(std::uint64_t, const UpdateCommand *, std::size_t,
                         const PlacementIntrinsic *, std::size_t,
-                        std::uint64_t, std::uint64_t);
+                        std::uint64_t, std::uint64_t, bool bootstrap = false,
+                        const UpdateRef *focus = nullptr, std::size_t focus_count = 0);
   PlacementResult attempt(std::uint64_t, const UpdateCommand *, std::size_t,
                           const PlacementIntrinsic *, std::size_t,
-                          std::uint64_t, std::uint64_t, bool publication);
+                          std::uint64_t, std::uint64_t, bool publication,
+                          bool bootstrap = false, const UpdateRef *focus = nullptr,
+                          std::size_t focus_count = 0);
 };
 }  // namespace field::detail

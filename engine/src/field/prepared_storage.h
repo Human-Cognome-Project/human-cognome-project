@@ -53,7 +53,8 @@ class PreparedStorage {
                                       NumericalProfile profile = {});
 
   PreparedStorage(engine::Runtime &runtime, const PreparedCapacity &capacity);
-  BudgetFailure check(const PreparedCounts &counts, std::size_t batch) const;
+  BudgetFailure check(const PreparedCounts &counts, std::size_t batch,
+                      bool bootstrap = false) const;
   bool prepare_ratios(bool prospective, std::size_t count,
                       std::uint64_t &visits);
   const PreparedCapacity capacity;
@@ -75,6 +76,9 @@ class PreparedStorage {
   // Ordered participation rows only; contacts have no count payload.
   std::vector<std::uint64_t> source_counts, prospective_source_counts;
   std::vector<engine::RecordHandle> focal;
+  std::vector<int> candidate_focus;
+  std::unique_ptr<taichi::lang::Ndarray> candidate_focus_array;
+  std::size_t candidate_focus_count{};
   std::vector<UpdateCommand> commands;
   std::vector<engine::RecordResult> results;
   std::vector<engine::RecordHandle> retired, resolved;

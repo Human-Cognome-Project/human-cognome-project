@@ -449,11 +449,11 @@ void Harness::launch_update_candidate(bool hierarchy) {
     ctx.set_arg_ndarray({7}, *s.candidate_offsets_array);
     ctx.set_arg_ndarray({8}, *s.candidate_order_array);
     ctx.set_arg_ndarray({9}, *s.candidate_status_array);
-    ctx.set_arg_ndarray({10}, activity_->selected_slots());
+    ctx.set_arg_ndarray({10}, *s.candidate_focus_array);
     ctx.set_arg_ndarray({11}, *activity_->focus);
     ctx.set_arg_ndarray({13}, *activity_->group_delta);
   }
-  engine::argument_int(ctx, 12, int(s.live.focus));
+  engine::argument_int(ctx, 12, int(s.candidate_focus_count));
   if (profile_.wide() && !ctx.prepared)
     ctx.set_arg_ndarray({14}, *s.candidate_ratios_array);
   if (s.capacity.limits()[Budget::LiveResponses])
@@ -505,7 +505,8 @@ UpdateResult Harness::stage_current_admission(
     std::uint64_t expected, const UpdateCommand *commands, std::size_t count,
     const PlacementIntrinsic *intrinsics, std::size_t bodies,
     const LiveRefreshSpec &hierarchy, std::uint64_t placement_work,
-    std::uint64_t placement_cells, std::uint64_t hierarchy_work, bool commit) {
+    std::uint64_t placement_cells, std::uint64_t hierarchy_work, bool commit,
+    bool bootstrap, const UpdateRef *focus, std::size_t focus_count) {
   UpdateResult out;
   if (!prepared_ || !ready_) {
     out.status = UpdateStatus::Unready;
@@ -516,12 +517,20 @@ UpdateResult Harness::stage_current_admission(
     out.status = UpdateStatus::Stale;
     return out;
   }
-  if (!placement_ || !live_hierarchy_installed() || (commit && !tick_execution_)) {
+  if (!placement_ || !live_hierarchy_ ||
+      (!bootstrap && !live_hierarchy_installed()) ||
+      (commit && !tick_execution_)) {
     out.status = UpdateStatus::Unsupported;
     return out;
   }
+  if (bootstrap && (prepared_->populated || prepared_->live.references() ||
+                    live_hierarchy_installed() || !focus || !focus_count)) {
+    out.status = UpdateStatus::InvalidInput;
+    return out;
+  }
   const auto placed = placement_->stage(expected, commands, count, intrinsics,
-                                         bodies, placement_work, placement_cells);
+                                         bodies, placement_work, placement_cells,
+                                         bootstrap, focus, focus_count);
   out.failure = placed.failure;
   switch (placed.status) {
     case PlacementStatus::Ok: break;
@@ -538,8 +547,12 @@ UpdateResult Harness::stage_current_admission(
   // successful native producer is its only source of initialized rows.
   out = update_prepared_impl(expected, commands, count, &hierarchy,
                              hierarchy_work, nullptr,
-                             commit ? PreparedUpdateMode::GeneratedCommit
-                                    : PreparedUpdateMode::GeneratedPreflight);
+                             bootstrap
+                                 ? (commit ? PreparedUpdateMode::BootstrapCommit
+                                           : PreparedUpdateMode::BootstrapPreflight)
+                                 : (commit ? PreparedUpdateMode::GeneratedCommit
+                                           : PreparedUpdateMode::GeneratedPreflight),
+                             focus, focus_count);
   out.upload_bytes += placed.upload_bytes;
   out.readback_bytes += placed.readback_bytes;
   out.synchronizations += placed.synchronizations;
@@ -552,13 +565,18 @@ UpdateResult Harness::update_prepared_impl(
     const LiveRefreshSpec *refresh,
     std::uint64_t work_limit,
     detail::SourceProjection *projection,
-    PreparedUpdateMode mode) {
+    PreparedUpdateMode mode, const UpdateRef *focus, std::size_t focus_count) {
   UpdateResult answer;
   if (!prepared_ || !ready_) {
     answer.status = UpdateStatus::Unready;
     return answer;
   }
   auto &s = *prepared_;
+  const bool bootstrap = mode == PreparedUpdateMode::BootstrapProjection ||
+                         mode == PreparedUpdateMode::BootstrapPreflight ||
+                         mode == PreparedUpdateMode::BootstrapCommit;
+  const bool generated_commit = mode == PreparedUpdateMode::GeneratedCommit ||
+                                mode == PreparedUpdateMode::BootstrapCommit;
   answer.generation = s.generation;
   // New starts have a single call lifetime, including rejected batches.
   struct StartsGuard {
@@ -578,12 +596,18 @@ UpdateResult Harness::update_prepared_impl(
   const auto &limits = s.capacity.limits();
   if (expected != s.generation)
     return reject(UpdateStatus::Stale);
-  if (refresh && !live_hierarchy_installed())
+  if (bootstrap && (s.populated || s.live.references() ||
+                    live_hierarchy_installed() || !focus || !focus_count))
+    return reject(UpdateStatus::InvalidInput);
+  if (refresh && !live_hierarchy_installed() && !bootstrap)
     return reject(UpdateStatus::Unsupported);
   if (!refresh && !projection && count && live_hierarchy_installed())
     return reject(UpdateStatus::Unsupported);
-  if (count > limits[Budget::Batch])
-    return exhausted(Budget::Batch, count);
+  const auto command_budget = bootstrap ? Budget::BootstrapCommands : Budget::Batch;
+  if (count > limits[command_budget])
+    return exhausted(command_budget, count);
+  if (bootstrap && focus_count > limits[Budget::Focus])
+    return exhausted(Budget::Focus, focus_count);
   if (!count && !refresh)
     return reject(UpdateStatus::NoChange);
   if (count && !input)
@@ -614,7 +638,8 @@ UpdateResult Harness::update_prepared_impl(
         !reserve(count, 4 * (P + G + limits[Budget::Focus] + 12)) ||
         !reserve(E + C, 4 * (count + 1)) || !reserve(G, 4 * E) ||
         !reserve(E, 64 * logarithm) ||
-        (mode == PreparedUpdateMode::GeneratedCommit &&
+        (bootstrap && !reserve(limits[Budget::Focus], E + 1)) ||
+        (generated_commit &&
          !reserve(P + G + count, 4))) {
       answer.failure = {Budget::CascadeWork,
                         budget == UINT64_MAX ? budget : budget + 1, budget};
@@ -651,6 +676,8 @@ UpdateResult Harness::update_prepared_impl(
     s.destinations[p + row] = row;
   }
   detail::PreparedCounts candidate = s.live;
+  if (bootstrap)
+    candidate.focus = focus_count;
   std::size_t pclaims = 0, gclaims = 0;
   for (std::size_t c = 0; c < count; ++c) {
     const auto &cmd = s.commands[c];
@@ -726,14 +753,14 @@ UpdateResult Harness::update_prepared_impl(
     return exhausted(Budget::Particles, s.live.particles + pclaims);
   if (s.live.fields + gclaims > limits[Budget::Fields])
     return exhausted(Budget::Fields, s.live.fields + gclaims);
-  if (const auto failure = s.check(candidate, count); failure.exhausted()) {
+  if (const auto failure = s.check(candidate, count, bootstrap); failure.exhausted()) {
     answer.failure = failure;
     return reject(UpdateStatus::CapacityExhausted);
   }
   const auto peak = s.live.particles + pclaims + s.live.fields + gclaims +
                     2 * std::max(s.live.edges, candidate.edges) +
                     2 * std::max(s.live.contacts, candidate.contacts) +
-                    s.live.focus;
+                    candidate.focus;
   if (peak > limits[Budget::References])
     return exhausted(Budget::References, peak);
   // Allocate only scratch names here. Native ownership stays in NodeManager.
@@ -882,6 +909,29 @@ UpdateResult Harness::update_prepared_impl(
   };
   if (!ledger(true) || !ledger(false))
     return reject(UpdateStatus::InvalidInput);
+  s.candidate_focus_count = candidate.focus;
+  std::fill(s.candidate_focus.begin(), s.candidate_focus.end(), 0);
+  for (std::size_t i = 0; i < candidate.focus; ++i) {
+    RecordHandle selected;
+    if (bootstrap) {
+      if (focus[i].command < 0 || !same(focus[i].handle, RecordHandle{}) ||
+          !resolve(focus[i], false, selected))
+        return reject(UpdateStatus::InvalidInput);
+    } else {
+      selected = s.focal[i];
+    }
+    if (std::find(s.candidate_focus.begin(), s.candidate_focus.begin() + i,
+                  selected.record) != s.candidate_focus.begin() + i)
+      return reject(UpdateStatus::InvalidInput);
+    if (bootstrap) {
+      bool member = false;
+      for (std::size_t edge = 0; edge < candidate.edges; ++edge)
+        member |= s.prospective_edges[edge].second.record == selected.record;
+      if (!member)
+        return reject(UpdateStatus::InvalidInput);
+    }
+    s.candidate_focus[i] = selected.record;
+  }
   if (profile_.wide() &&
       !s.prepare_ratios(true, candidate.edges, answer.structural_visits))
     return reject(UpdateStatus::InvalidInput);
@@ -1014,6 +1064,8 @@ UpdateResult Harness::update_prepared_impl(
     };
     upload(*s.validation_array, s.validation.data(),
            s.validation.size() * sizeof(int));
+    upload(*s.candidate_focus_array, s.candidate_focus.data(),
+           s.candidate_focus.size() * sizeof(int));
     upload(*s.candidate_edges_array, s.candidate_edges.data(),
            s.candidate_edges.size() * sizeof(int));
     upload(*s.candidate_shares_array, s.candidate_shares.data(),
@@ -1053,7 +1105,8 @@ UpdateResult Harness::update_prepared_impl(
         return reject(geometry.status == GeometryStatus::CapacityExhausted
                           ? UpdateStatus::CapacityExhausted
                           : UpdateStatus::InvalidNumerics);
-      if (mode == PreparedUpdateMode::GeneratedPreflight)
+      if (mode == PreparedUpdateMode::GeneratedPreflight ||
+          mode == PreparedUpdateMode::BootstrapPreflight)
         return reject(UpdateStatus::Ok);
     }
     // Claims begin mutation, even though no numerical survivor has been
@@ -1080,7 +1133,7 @@ UpdateResult Harness::update_prepared_impl(
         const int c = s.command_indexes[j];
         const auto provisional = s.resolved[c];
         const auto &claimed = s.results[j];
-        if (mode == PreparedUpdateMode::GeneratedCommit &&
+        if (generated_commit &&
             (claimed.status != engine::RecordStatus::Ok ||
              claimed.handle.context != map.context() || !claimed.handle.incarnation ||
              claimed.kind != s.commands[c].kind ||
@@ -1092,7 +1145,7 @@ UpdateResult Harness::update_prepared_impl(
             s.results[j].handle.record;
         s.resolved[c] = s.results[j].handle;
       }
-      if (mode == PreparedUpdateMode::GeneratedCommit) {
+      if (generated_commit) {
         std::fill(s.counts.begin(), s.counts.end(), 0);
         for (int row = 0; row < (particle ? p : g); ++row) {
           ++answer.structural_visits;
@@ -1219,7 +1272,16 @@ UpdateResult Harness::update_prepared_impl(
     if (s.failure_point == 5)
       throw std::runtime_error(
           "injected failure before generation publication");
-    if (mode == PreparedUpdateMode::GeneratedCommit) {
+    if (bootstrap) {
+      for (std::size_t i = 0; i < candidate.focus; ++i) {
+        s.candidate_focus[i] = s.destinations[p + s.candidate_focus[i]];
+        s.focal[i] = s.field_headers[s.candidate_focus[i]];
+      }
+      activity_->set_focus(s.candidate_focus.data(), candidate.focus);
+      answer.upload_bytes += s.candidate_focus.size() * sizeof(int);
+      ++answer.synchronizations;
+    }
+    if (generated_commit) {
       placement_->contacts_->publish(answer);
       if (s.failure_point == 6)
         throw std::runtime_error("injected failure after admission contact publication");

@@ -92,6 +92,11 @@ void Placement::append_layout(const BudgetDemand &l,
   add("placement-inspection-certificates", b, sizeof(PlacementCertificate));
   add("placement-array-control", 10, sizeof(Ndarray) + 4 * sizeof(int));
   add("placement-fixed-owner-control", 1, sizeof(Placement));
+  if (l[Budget::BootstrapCommands]) {
+    add("bootstrap-focal-contributions", 6 * std::max<std::uint64_t>(
+        l[Budget::Participation], 1), sizeof(std::uint64_t));
+    add("bootstrap-focal-control", 1, sizeof(Ndarray) + 4 * sizeof(int));
+  }
   AdmissionContacts::append_layout(l, out);
 }
 Placement::Placement(Harness &h) : h_(h) {
@@ -120,6 +125,11 @@ Placement::Placement(Harness &h) : h_(h) {
   attempt_ = allocate(r, d, {7, b});
   published_ = allocate(r, d, {7, b});
   counts_ = allocate(r, PrimitiveType::u64, {16});
+  if (h.prepared_->capacity.limits()[Budget::BootstrapCommands]) {
+    const int e = std::max(h.edges_, 1);
+    bootstrap_contributions_ = allocate(r, PrimitiveType::u64, {3, e});
+    bootstrap_values_.resize(3 * e);
+  }
   keep_values_.resize(p);
   request_values_.resize(3 * b);
   result_values_.resize(7 * b);
@@ -132,6 +142,8 @@ Placement::Placement(Harness &h) : h_(h) {
   collect();
   capture();
   solve(0, INT64_MAX, 0, c);
+  if (bootstrap_contributions_)
+    solve(0, INT64_MAX, 0, c, true);
   publish(false);
   initialize(0);
   if (h.prepared_->capacity.limits()[Budget::LiveResponses])
@@ -201,7 +213,9 @@ void Placement::build() {
          Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::u64)},
         engine::MathMode::Strict);
   }
-  {
+  for (bool bootstrap : {false, true}) {
+    if (bootstrap && !bootstrap_contributions_)
+      continue;
     IRBuilder b;
     auto *occupants = b.create_ndarray_arg_load({0}, PrimitiveType::f64, 2, 0),
          *input = b.create_ndarray_arg_load({1}, PrimitiveType::f64, 2, 0),
@@ -220,18 +234,28 @@ void Placement::build() {
                            PrimitiveType::u64);
     placement::Search search(b, occupants, input, focus, cells, out, counts,
                              number, current, limit, prefix, capacity,
-                             h_.profile_.body_fraction_bits);
+                             h_.profile_.body_fraction_bits,
+                             bootstrap ? b.create_ndarray_arg_load(
+                                 {12}, PrimitiveType::u64, 2, 0) : nullptr,
+                             bootstrap ? b.create_arg_load(
+                                 {13}, PrimitiveType::i32, false, 0) : nullptr);
     search.emit();
-    solve_ = engine::CompiledKernel(
-        r, "placement_solve_b" + std::to_string(h_.profile_.body_fraction_bits),
-        b.extract_ir(),
-        {Param::array(PrimitiveType::f64, 2),
+    std::vector<Param> parameters{
+         Param::array(PrimitiveType::f64, 2),
          Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::f64),
          Param::array(PrimitiveType::f64, 2),
          Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::u64),
          Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32),
          Param::scalar(PrimitiveType::i64), Param::scalar(PrimitiveType::i64),
-         Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32)},
+         Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32)};
+    if (bootstrap) {
+      parameters.push_back(Param::array(PrimitiveType::u64, 2));
+      parameters.push_back(Param::scalar(PrimitiveType::i32));
+    }
+    (bootstrap ? bootstrap_solve_ : solve_) = engine::CompiledKernel(
+        r, std::string(bootstrap ? "placement_bootstrap_solve_b" : "placement_solve_b") +
+               std::to_string(h_.profile_.body_fraction_bits),
+        b.extract_ir(), parameters,
         engine::MathMode::Strict, engine::Optimization::Local);
   }
   {
@@ -354,8 +378,9 @@ void Placement::capture() {
 void Placement::solve(int number,
                       std::uint64_t limit,
                       std::uint64_t prefix,
-                      int cells) {
-  auto call = solve_.invocation(true);
+                      int cells, bool bootstrap) {
+  auto &kernel = bootstrap ? bootstrap_solve_ : solve_;
+  auto call = kernel.invocation(true);
   auto &c = call.get();
   if (!c.prepared) {
     c.set_arg_ndarray({0}, *occupancy_);
@@ -364,6 +389,8 @@ void Placement::solve(int number,
     c.set_arg_ndarray({3}, *cells_);
     c.set_arg_ndarray({4}, *attempt_);
     c.set_arg_ndarray({5}, *counts_);
+    if (bootstrap)
+      c.set_arg_ndarray({12}, *bootstrap_contributions_);
   }
   engine::argument_int(c, 6, number);
   engine::argument_int(c, 7, count_values_[PlacementCounters::Occupants]);
@@ -371,7 +398,9 @@ void Placement::solve(int number,
   engine::argument_int(c, 9, prefix);
   engine::argument_int(c, 10, cells);
   engine::argument_int(c, 11, intrinsics_.size());
-  solve_.launch(c);
+  if (bootstrap)
+    engine::argument_int(c, 13, bootstrap_edges_);
+  kernel.launch(c);
 }
 void Placement::publish(bool enabled) {
   auto call = publish_.invocation(true);
@@ -387,6 +416,7 @@ std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
          solve_.prepared_bytes() + publish_.prepared_bytes() +
          initialize_.prepared_bytes() +
+         (bootstrap_contributions_ ? bootstrap_solve_.prepared_bytes() : 0) +
          (contacts_ ? contacts_->binding_bytes() : 0);
 }
 
@@ -406,9 +436,10 @@ PlacementResult Placement::stage(std::uint64_t expected,
                                  const PlacementIntrinsic *inputs,
                                  std::size_t body_count,
                                  std::uint64_t work,
-                                 std::uint64_t cells) {
+                                 std::uint64_t cells, bool bootstrap,
+                                 const UpdateRef *focus, std::size_t focus_count) {
   return attempt(expected, commands, command_count, inputs, body_count, work,
-                 cells, false);
+                 cells, false, bootstrap, focus, focus_count);
 }
 PlacementResult Placement::attempt(std::uint64_t expected,
                                    const UpdateCommand *commands,
@@ -417,7 +448,8 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                                    std::size_t body_count,
                                    std::uint64_t work,
                                    std::uint64_t cells,
-                                   bool publication) {
+                                   bool publication, bool bootstrap,
+                                   const UpdateRef *focus, std::size_t focus_count) {
   auto &h = h_;
   auto &s = *h.prepared_;
   const auto &l = s.capacity.limits();
@@ -451,15 +483,19 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     return fail(Budget::PlacementWork, work, l[Budget::PlacementWork]);
   if (cells > l[Budget::PlacementCells])
     return fail(Budget::PlacementCells, cells, l[Budget::PlacementCells]);
-  if (command_count > l[Budget::Batch])
-    return fail(Budget::Batch, command_count, l[Budget::Batch]);
-  if (body_count > l[Budget::Batch])
-    return fail(Budget::Batch, body_count, l[Budget::Batch]);
+  const auto command_budget = bootstrap ? Budget::BootstrapCommands : Budget::Batch;
+  if (command_count > l[command_budget])
+    return fail(command_budget, command_count, l[command_budget]);
+  if (body_count > l[command_budget])
+    return fail(command_budget, body_count, l[command_budget]);
   if (s.live.particles + body_count > l[Budget::Particles])
     return fail(Budget::Particles, s.live.particles + body_count,
                 l[Budget::Particles]);
   q.status = PlacementStatus::InvalidInput;
   if (!body_count || !commands || !inputs || body_count > command_count)
+    return q;
+  if (bootstrap && (!bootstrap_contributions_ || publication ||
+                    !focus || !focus_count || focus_count > l[Budget::Focus]))
     return q;
   const auto sat_add = [](std::uint64_t a, std::uint64_t b) {
     return b > UINT64_MAX - a ? UINT64_MAX : a + b;
@@ -480,6 +516,10 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                     sat_mul(64 * e, logarithm), 8 * (p + b + f) + 7 * b + 64})
     prefix = sat_add(prefix, term);
   q.source_work_bound = prefix;
+  if (bootstrap) {
+    prefix = sat_add(prefix, sat_mul(64, sat_mul(e + 1, body_count + f + 1)));
+    q.source_work_bound = prefix;
+  }
   if (!publication) {
     prefix = sat_add(prefix, sat_add(sat_mul(12, b), sat_mul(8, body_count)));
     q.source_work_bound = prefix;
@@ -519,7 +559,10 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     }
     SourceProjection projection;
     const auto source = h.update_prepared_impl(
-        expected, commands, command_count, nullptr, UINT64_MAX, &projection);
+        expected, commands, command_count, nullptr, UINT64_MAX, &projection,
+        bootstrap ? Harness::PreparedUpdateMode::BootstrapProjection
+                  : Harness::PreparedUpdateMode::FixtureCommit,
+        focus, focus_count);
     if (source.status != UpdateStatus::Ok) {
       q.status = translate(source.status);
       q.failure = source.failure;
@@ -530,10 +573,47 @@ PlacementResult Placement::attempt(std::uint64_t expected,
         projection.field_claims +
         2 * std::max(s.live.edges, projection.counts.edges) +
         2 * std::max(s.live.contacts, projection.counts.contacts) +
-        s.live.focus +
+        projection.counts.focus +
         (h.live_hierarchy_ ? h.live_hierarchy_->reference_count() : 0);
     if (references > l[Budget::References])
       return fail(Budget::References, references, l[Budget::References]);
+    if (bootstrap) {
+      // First exposed participant of the first selected field, in canonical
+      // occurrence order. All other occurrences retain that canonical order.
+      std::size_t anchor = body_count;
+      for (std::size_t rank = 0; rank < body_count && anchor == body_count; ++rank)
+        for (std::size_t edge = 0; edge < projection.counts.edges; ++edge)
+          if (s.prospective_edges[edge].second.record == s.candidate_focus[0] &&
+              s.prospective_edges[edge].first.record ==
+                  s.resolved[intrinsics_[rank].command].record) {
+            anchor = rank;
+            break;
+          }
+      if (anchor == body_count)
+        return q;
+      std::rotate(intrinsics_.begin(), intrinsics_.begin() + anchor,
+                  intrinsics_.begin() + anchor + 1);
+      const auto es = std::max(h.edges_, 1);
+      std::fill(bootstrap_values_.begin(), bootstrap_values_.end(), 0);
+      bootstrap_edges_ = 0;
+      for (std::size_t edge = 0; edge < projection.counts.edges; ++edge) {
+        const auto &source = s.prospective_edges[edge];
+        if (std::find(s.candidate_focus.begin(),
+                      s.candidate_focus.begin() + focus_count,
+                      source.second.record) == s.candidate_focus.begin() + focus_count)
+          continue;
+        std::size_t rank = 0;
+        while (rank < body_count && s.resolved[intrinsics_[rank].command].record !=
+                                       source.first.record)
+          ++rank;
+        if (rank == body_count)
+          return q;
+        bootstrap_values_[bootstrap_edges_] = rank;
+        bootstrap_values_[es + bootstrap_edges_] = s.candidate_ratios[edge];
+        bootstrap_values_[2 * es + bootstrap_edges_] = s.candidate_ratios[es + edge];
+        ++bootstrap_edges_;
+      }
+    }
     std::fill(keep_values_.begin(), keep_values_.end(), 0);
     for (int row = 0; row < h.particles_; ++row)
       keep_values_[row] =
@@ -550,6 +630,11 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                    request_values_.size() * sizeof(double));
     q.upload_bytes = keep_values_.size() * sizeof(int) +
                      request_values_.size() * sizeof(double);
+    if (bootstrap) {
+      engine::upload(*bootstrap_contributions_, bootstrap_values_.data(),
+                     bootstrap_values_.size() * sizeof(std::uint64_t));
+      q.upload_bytes += bootstrap_values_.size() * sizeof(std::uint64_t);
+    }
     collect();
     h.runtime_->synchronize();
     ++q.synchronizations;
@@ -583,7 +668,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
       return q;
     }
     q.retained = count_values_[PlacementCounters::Occupants];
-    solve(body_count, work, prefix, int(cells));
+    solve(body_count, work, prefix, int(cells), bootstrap);
     h.runtime_->synchronize();
     ++q.synchronizations;
     engine::readback(*counts_, count_values_.data(), sizeof(count_values_));

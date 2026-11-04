@@ -542,6 +542,138 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   }
 }
 
+void admission_bootstrap(engine::Runtime &r, HostPath path) {
+  auto l = placement_limits();
+  l[Budget::Batch] = 4;
+  l[Budget::BootstrapCommands] = 16;
+  l[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
+      l, false, NumericalProfile::trial()) + 256 * 1024 * 1024;
+  Harness h(r, PreparedCapacity(l, NumericalProfile::trial()), path);
+  std::vector<UpdateCommand> commands;
+  for (int i = 0; i < 3; ++i)
+    commands.push_back(placement_definition(900 + i));
+  for (int i = 0; i < 2; ++i) {
+    UpdateCommand field;
+    field.operation = UpdateOp::DefineField;
+    field.kind = 1;
+    field.address = i;
+    commands.push_back(field);
+  }
+  for (int i = 0; i < 3; ++i) {
+    UpdateCommand edge;
+    edge.operation = UpdateOp::InsertParticipation;
+    edge.first = UpdateRef::pending(i);
+    edge.second = UpdateRef::pending(i == 2 ? 3 : 4);
+    edge.position = i;
+    edge.ordinal = 100 + i;
+    edge.share = 1;
+    edge.exact_count = 1;
+    commands.push_back(edge);
+  }
+  std::vector<PlacementIntrinsic> inputs{
+      placement_intrinsic(1, 20), placement_intrinsic(2, 30),
+      placement_intrinsic(0, 10)};
+  inputs[0].mass = 3;
+  inputs[1].mass = 2;
+  std::vector<LiveRefreshNode> nodes(2);
+  for (int i = 0; i < 2; ++i) {
+    nodes[i].field_command = 3 + i;
+    nodes[i].comparison = 1 + i;
+    nodes[i].cohort_begin = i;
+    nodes[i].cohort_count = i == 0 ? 1 : 2;
+  }
+  std::vector<LiveRefreshContribution> members{
+      {UpdateRef::pending(2), {}, 7}, {UpdateRef::pending(0), {}, 5},
+      {UpdateRef::pending(1), {}, 6}};
+  LiveRefreshSpec spec{nodes.data(), nodes.size(), nullptr, 0,
+                       members.data(), members.size()};
+  const std::vector<UpdateRef> focus{UpdateRef::pending(3), UpdateRef::pending(4)};
+  const auto generation = h.prepared_storage().generation;
+  const auto unchanged = [&] {
+    require(h.ready() && h.present_particles() == 0 &&
+                h.prepared_storage().generation == generation &&
+                !h.live_hierarchy_installed() &&
+                h.prepared_storage().live.references() == 0,
+            "rejected bootstrap changed the empty owner");
+  };
+  require(PlacementAccess::bootstrap(h, commands, inputs, spec, {}).status ==
+              UpdateStatus::InvalidInput, "bootstrap accepted implicit focus");
+  unchanged();
+  for (const auto &invalid : std::vector<std::vector<UpdateRef>>{
+           {UpdateRef::pending(3), UpdateRef::pending(3)}, {UpdateRef::pending(0)},
+           {UpdateRef::pending(99)}}) {
+    require(PlacementAccess::bootstrap(h, commands, inputs, spec, invalid).status ==
+                UpdateStatus::InvalidInput, "bootstrap accepted invalid focus");
+    unchanged();
+  }
+  auto bad = spec;
+  bad.node_count = 1;
+  require(PlacementAccess::bootstrap(h, commands, inputs, bad, focus).status ==
+              UpdateStatus::InvalidInput, "bootstrap accepted incomplete hierarchy");
+  unchanged();
+  UpdateResult preflight;
+  no_new([&] { preflight = PlacementAccess::bootstrap(h, commands, inputs, spec, focus, false); });
+  std::cout << "bootstrap_preflight,status=" << int(preflight.status)
+            << ",budget=" << budget_name(preflight.failure.budget) << std::endl;
+  require(preflight.status == UpdateStatus::Ok, "bootstrap preflight failed");
+  unchanged();
+  // Independent test-only certificate replay with the D1 changing target.
+  const auto output = PlacementAccess::bootstrap_output(h);
+  const int stride = l[Budget::BootstrapCommands];
+  std::vector<PlacementSphere> occupancy;
+  std::array<double, 3> target{}, weighted{};
+  double mass = 0;
+  for (int rank = 0; rank < 3; ++rank) {
+    const int command = std::array<int, 3>{2, 0, 1}[rank];
+    PlacementCertificate certificate;
+    certificate.intrinsic = *std::find_if(inputs.begin(), inputs.end(),
+        [&](const auto &x) { return int(x.command) == command; });
+    for (int k = 0; k < 3; ++k)
+      certificate.position[k] = output[k * stride + rank];
+    certificate.lower_distance = output[3 * stride + rank];
+    certificate.upper_distance = output[4 * stride + rank];
+    certificate.tolerance = output[5 * stride + rank];
+    certificate.coordinate_bound = output[6 * stride + rank];
+    placement_reference::certificate(certificate, occupancy, target, 52);
+    if (!rank)
+      require(certificate.position == std::array<double, 3>{},
+              "first selected occurrence did not establish local zero");
+    occupancy.push_back({certificate.position, certificate.intrinsic.radius});
+    mass += certificate.intrinsic.mass;
+    for (int k = 0; k < 3; ++k) {
+      weighted[k] += certificate.intrinsic.mass * certificate.position[k];
+      target[k] = weighted[k] / mass;
+    }
+  }
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(h));
+  const auto backing = metrics.sample();
+  UpdateResult committed;
+  no_new([&] { committed = PlacementAccess::bootstrap(h, commands, inputs, spec, focus); });
+  require(committed.status == UpdateStatus::Ok && committed.generation == generation + 1 &&
+              h.live_hierarchy_installed() && h.present_particles() == 3 &&
+              h.prepared_storage().live.focus == 2 &&
+              h.prepared_storage().completed_ticks == 0 && backing.same_backing(metrics.sample()),
+          "bootstrap failed one-generation publication or allocated backing");
+  h.inspect_prepared();
+  const auto &s = h.prepared_storage();
+  for (int i = 0; i < 2; ++i)
+    require(s.focal[i].address == i && s.focal[i].context != 0,
+            "bootstrap focus did not resolve native field claims");
+  for (int k = 0; k < 3; ++k)
+    require(std::abs(s.inspection_focus64[k] - target[k]) < 1e-12,
+            "published bootstrap focus differs from complete selected centroid");
+  Parameters64 parameters;
+  parameters.dt = parameters.gravity = parameters.contact_stiffness = parameters.reach_strength = 0;
+  const auto tick = h.tick_prepared(s.generation, parameters);
+  require(tick.status == TickStatus::Ok && !tick.coverage_changed,
+          "bootstrap hierarchy/contact publication failed following tick");
+  require(PlacementAccess::bootstrap(h, commands, inputs, spec, focus).status ==
+              UpdateStatus::InvalidInput, "bootstrap replaced a populated owner");
+  std::cout << "admission_bootstrap,explicit_focus=2,anchor_command=2,commands=8,batch=4,"
+               "partial_centroid=certified,preclaim_rejection=unchanged,publication=one,"
+               "backing=stable,following_tick=pass PASS\n";
+}
+
 void admission_commit(engine::Runtime &r, HostPath path) {
   for (int capacity : {70, 128}) {
   const auto limits = placement_limits(capacity);

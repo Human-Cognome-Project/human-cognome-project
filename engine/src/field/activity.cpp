@@ -519,12 +519,15 @@ void Activity::reset() {
   reset_.launch(context);
 }
 void Activity::set_focus(const std::vector<int> &groups) {
-  if (groups.size() > selected_slots_.size())
+  set_focus(groups.data(), groups.size());
+}
+void Activity::set_focus(const int *groups, std::size_t count) {
+  if (count > selected_slots_.size())
     throw std::invalid_argument("focus capacity exhausted");
-  for (std::size_t i = 0; i < groups.size(); ++i) {
+  for (std::size_t i = 0; i < count; ++i) {
     const int g = groups[i];
     if (g < 0 || g >= g_ ||
-        std::find(groups.begin(), groups.begin() + i, g) != groups.begin() + i)
+        std::find(groups, groups + i, g) != groups + i)
       throw std::invalid_argument(
           "focus requires distinct prepared field slots");
     if (prepared_ && prepared_->field_headers[g].record < 0)
@@ -532,7 +535,9 @@ void Activity::set_focus(const std::vector<int> &groups) {
   }
   runtime_.synchronize();
   std::fill(selected_slots_.begin(), selected_slots_.end(), 0);
-  selected_groups_.assign(groups.begin(), groups.end());
+  selected_groups_.clear();
+  if (count)
+    selected_groups_.assign(groups, groups + count);
   if (!prepared_)
     std::sort(selected_groups_.begin(), selected_groups_.end());
   std::copy(selected_groups_.begin(), selected_groups_.end(),

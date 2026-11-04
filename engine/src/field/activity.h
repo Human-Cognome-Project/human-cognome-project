@@ -47,6 +47,7 @@ class Activity {
   void reset();
   void index(const std::vector<int> &edges, const std::vector<int> &contacts);
   void set_focus(const std::vector<int> &groups);
+  void set_focus(const int *groups, std::size_t count);
   void set_frame_anchor(const FrameAnchor &anchor);
   const taichi::lang::Ndarray &selected_slots() const {
     return *selected_slots_array_;

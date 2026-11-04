@@ -2779,6 +2779,8 @@ int main(int argc, char **argv) {
       run("admission_contacts", [&] { admission_contact_capacity(r, path); });
     if (only == "placement" || only == "admission_commit")
       run("admission_commit", [&] { admission_commit(r, path); });
+    if (only == "placement" || only == "admission_bootstrap")
+      run("admission_bootstrap", [&] { admission_bootstrap(r, path); });
     if (only == "placement" || only == "admission_commit_failures")
       run("admission_commit_failures", [&] { admission_commit_failures(r, path); });
     if (only == "placement" || only == "admission_contact_remap")

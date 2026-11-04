@@ -437,21 +437,30 @@ class Harness {
   void launch_geometry_finalize();
   void launch_update_candidate(bool hierarchy = false);
   void launch_update_commit(bool hierarchy = false);
-  enum class PreparedUpdateMode { FixtureCommit, GeneratedPreflight, GeneratedCommit };
-  // Private ordinary admission boundary; bootstrap remains a separate prerequisite.
+  enum class PreparedUpdateMode {
+    FixtureCommit, GeneratedPreflight, GeneratedCommit,
+    BootstrapProjection, BootstrapPreflight, BootstrapCommit
+  };
+  // Private admission boundary. Initial admission requires an explicit selection
+  // against the same prospective source and publishes it with the first hierarchy.
   UpdateResult stage_current_admission(std::uint64_t,
                                         const UpdateCommand *, std::size_t,
                                         const PlacementIntrinsic *, std::size_t,
                                         const LiveRefreshSpec &,
                                         std::uint64_t, std::uint64_t,
-                                        std::uint64_t, bool commit = false);
+                                        std::uint64_t, bool commit = false,
+                                        bool bootstrap = false,
+                                        const UpdateRef *focus = nullptr,
+                                        std::size_t focus_count = 0);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,
                                     const LiveRefreshSpec *,
                                     std::uint64_t,
                                     detail::SourceProjection * = nullptr,
-                                    PreparedUpdateMode = PreparedUpdateMode::FixtureCommit);
+                                    PreparedUpdateMode = PreparedUpdateMode::FixtureCommit,
+                                    const UpdateRef *focus = nullptr,
+                                    std::size_t focus_count = 0);
   void validate_prepared_bindings() const;
   static std::size_t offset(int f, int count, int i) {
     return std::size_t(f) * std::size_t(count) + std::size_t(i);

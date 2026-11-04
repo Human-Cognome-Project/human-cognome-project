@@ -60,6 +60,9 @@ std::vector<StorageExtent> PreparedStorage::workspace_layout(
   extent("source-counts", e, sizeof(std::uint64_t), 2);
   extent("contact-headers", c, sizeof(RelationshipHeader), 2);
   extent("focal-references", f, sizeof(engine::RecordHandle), 1);
+  extent("prospective-focus", f, sizeof(int), 2);
+  extent("prospective-focus-control", 1,
+         sizeof(taichi::lang::Ndarray) + 4 * sizeof(int), 1);
   extent("batch-commands", b, sizeof(UpdateCommand), 1);
   extent("batch-results", b, sizeof(engine::RecordResult), 1);
   extent("retired-references", b, sizeof(engine::RecordHandle), 1);
@@ -154,11 +157,11 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                         151 + (geometry ? 33 : 0) + (cascade ? 22 : 0) +
                         (cascade && weighted ? 2 : 0) + (wide ? 6 : 0) +
                         (live ? 92 + 2 + 46 : 0) +
-                        (ticks ? (live ? 531 : 417) : 0) + (placement ? 64 : 0) +
+                        (ticks ? (live ? 531 : 417) : 0) + (placement ? 78 : 0) +
                         (placement && live ? 51 + (ticks ? 13 : 0) : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
                                (live ? 5 : 0) + (ticks ? (live ? 34 : 31) : 0) +
-                               (placement ? 5 : 0) +
+                               (placement ? 6 : 0) +
                                (placement && live ? 6 + (ticks ? 1 : 0) : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
@@ -217,6 +220,7 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   contacts.resize(k);
   prospective_contacts.resize(k);
   focal.resize(f);
+  candidate_focus.resize(f);
   commands.resize(b);
   results.resize(b);
   retired.resize(b);
@@ -258,6 +262,7 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
   candidate_status_array = array(PrimitiveType::i32, 1, 1);
   candidate_offsets_array = array(PrimitiveType::i32, 2, int(g));
   candidate_order_array = array(PrimitiveType::i32, 1, int(e));
+  candidate_focus_array = array(PrimitiveType::i32, 1, int(f));
   if (l[Budget::GeometryWork]) {
     geometry_rows = array(PrimitiveType::i32, 1, int(p));
     geometry_temporary = array(PrimitiveType::i32, 4, int(k));
@@ -313,7 +318,7 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
                  sizeof(inspection_counts));
 }
 BudgetFailure PreparedStorage::check(const PreparedCounts &n,
-                                     std::size_t batch) const {
+                                     std::size_t batch, bool bootstrap) const {
   BudgetDemand demand;
   demand[Budget::Particles] = n.particles;
   demand[Budget::Fields] = n.fields;
@@ -321,7 +326,7 @@ BudgetFailure PreparedStorage::check(const PreparedCounts &n,
   demand[Budget::Contacts] = n.contacts;
   demand[Budget::Focus] = n.focus;
   demand[Budget::References] = n.references();
-  demand[Budget::Batch] = batch;
+  demand[bootstrap ? Budget::BootstrapCommands : Budget::Batch] = batch;
   return capacity.check(demand);
 }
 bool PreparedStorage::prepare_ratios(bool prospective, std::size_t count,

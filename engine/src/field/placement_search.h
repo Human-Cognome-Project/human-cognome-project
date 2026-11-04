@@ -43,6 +43,10 @@ class Search {
   Vector focus;
   V *radius{};
   int bits;
+  A *contributions{};
+  V *contribution_count{};
+  L *focal_mass{};
+  std::array<L *, 3> focal_weighted{};
 
   Search(taichi::lang::IRBuilder &builder,
          A *occupants,
@@ -56,7 +60,8 @@ class Search {
          V *limit,
          V *prefix,
          V *cells,
-         int fraction_bits)
+         int fraction_bits, A *bootstrap_contributions = nullptr,
+         V *bootstrap_count = nullptr)
       : b(builder),
         status(b.create_local_var(taichi::lang::PrimitiveType::i32)),
         m(b, status),
@@ -70,7 +75,8 @@ class Search {
         work_limit(limit),
         cell_limit(cells),
         base_work(prefix),
-        bits(fraction_bits) {
+        bits(fraction_bits), contributions(bootstrap_contributions),
+        contribution_count(bootstrap_count) {
     using namespace taichi::lang;
     b.create_local_store(status, b.get_int32(0));
     const auto u = [&](V *x) {
@@ -100,6 +106,11 @@ class Search {
     for (int k = 0; k < 3; ++k) {
       best[k] = real_local(m.f(0));
       focus[k] = read(focal, {m.i(k)});
+    }
+    if (contributions) {
+      focal_mass = real_local(m.f(0));
+      for (auto &weighted : focal_weighted)
+        weighted = real_local(m.f(0));
     }
   }
   V *v(L *x) {
@@ -651,6 +662,18 @@ class Search {
           });
     range(new_count, [&](V *rank) {
       auto active = b.get_if_guard(b.create_if(m.healthy()), true);
+      if (contributions) {
+        for (int k = 0; k < 3; ++k) {
+          auto *target = real_local(m.f(0));
+          {
+            auto present = b.get_if_guard(
+                b.create_if(b.create_cmp_gt(v(focal_mass), m.f(0))), true);
+            set(target, m.checked(b.create_div(v(focal_weighted[k]),
+                                               v(focal_mass)), -256, 128));
+          }
+          focus[k] = v(target);
+        }
+      }
       radius = at(requests, 1, rank);
       set(heap_size, m.i(0));
       set(have_best, m.i(0));
@@ -668,6 +691,27 @@ class Search {
       at(output, 4, rank, v(best_upper));
       at(output, 5, rank, tolerance());
       at(output, 6, rank, coordinate_bound());
+      if (contributions) {
+        // Structural descriptors only cross from the host. Contribution mass,
+        // reduction and the partial focal centroid all remain native strict f64.
+        auto *mass = real_local(m.f(0));
+        range(contribution_count, [&](V *edge) {
+          auto match = b.get_if_guard(b.create_if(b.create_cmp_eq(
+              at(contributions, 0, edge), as_u(rank))), true);
+          auto *numerator = b.create_cast(at(contributions, 1, edge),
+                                          taichi::lang::PrimitiveType::f64);
+          auto *denominator = b.create_cast(at(contributions, 2, edge),
+                                            taichi::lang::PrimitiveType::f64);
+          auto *weight = m.checked(b.create_mul(at(requests, 0, rank),
+              b.create_div(numerator, denominator)), -256, 256);
+          m.invalid(b.create_cmp_le(weight, m.f(0)));
+          set(mass, m.checked(b.create_add(v(mass), weight), -256, 256));
+        });
+        set(focal_mass, m.checked(b.create_add(v(focal_mass), v(mass)), -256, 256));
+        for (int k = 0; k < 3; ++k)
+          set(focal_weighted[k], m.checked(b.create_add(v(focal_weighted[k]),
+              m.checked(b.create_mul(v(mass), v(best[k])), -512, 512)), -512, 512));
+      }
       increment(completed);
     });
     const std::array<V *, 16> result{as_u(v(status)),
