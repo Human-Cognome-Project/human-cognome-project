@@ -127,3 +127,58 @@ claimed. Shared-host timings are not performance qualification. This remains a
 private preclaim prerequisite: complete D1 bootstrap/focus and coherent
 source/hierarchy/contact/activity publication are not implemented. Hosted CI
 and maintainer acceptance remain separate from these contributor-local results.
+
+## Ordinary combined publication — 2026-11-04
+
+Contributor-local CPU/x64 qualification at
+`edee7e2ff4a097a797cd5d515d06fc8f229539c6`, stacked on provisionally accepted
+#208 with main's #207 acceptance notes integrated. Later changes document scope
+and evidence only. Environment: Ubuntu 24.04/WSL2, Clang/LLVM 15.
+
+- `live_hierarchy_test --threads 1 --case placement`: all twelve focused cases passed.
+- Two-worker/direct/no-unroll runs passed for `admission_commit`,
+  `admission_contacts`, `admission_preflight`, `admission_contact_remap` and
+  `admission_commit_failures`.
+- `placement_compiler` passed in one-worker/bulk/default and
+  two-worker/direct/no-unroll configurations at 52 and 8 body fraction bits.
+  Each profile audited twelve kernels and rejected fifteen unsafe controls,
+  including omitted contact outputs and a missing publication enable guard.
+  LLVM modules and ABI descriptions are retained for both configurations.
+- `prepared_update_test` and one-worker `refresh_dirty` regression passed.
+
+Ordinary admission runs twice between ticks at both 70- and 128-row capacities.
+It preserves the original survivor's complete numerical payload, initializes
+new bodies from native certificates with zero motion, resolves source/contact
+endpoints to actual claims, installs the contact view, and advances exactly one
+generation without a tick. The following tick observes no further coverage
+change. Preclaim rejection retains the entire committed snapshot and permits
+retry. Backing/compiler metrics stay fixed and successful prepared operations
+observe no recurring C++ allocation.
+
+Capacity cases reject three contacts against two and 49 simultaneous references
+against 40 while retaining an old installed union. Closed retirement permits
+combined publication and a following tick. Synthetic nonidentity endpoint maps
+verify explicit orientation, duplicate mappings, both adjacency directions and
+canonical derived-only ordering without changing committed state. Failures after
+native claims and after contact publication make the execution unready without
+advertising a completed generation or tick.
+
+The first ownership audit at `8941b1f3` rejected the second prepared owner's
+publication kernel. Native CHI kernel caching uses names rather than IR hashes:
+generic names could reuse another owner's SNode identities or fixed capacities.
+The publication owner suffix fixed that audit at `ade8602d`; its remaining run
+was deliberately interrupted to isolate all capacity-dependent helpers and the
+canonical-order variant as well. Final qualification above passes on the
+corrected source. Earlier logs are retained separately from passing evidence.
+
+Bundle `admission-commit-edee7e2f` contains raw logs, commands, source/submodule
+pins, configuration, toolchain, binary/runtime hashes and emitted modules. Its
+`SHA256SUMS` digest is
+`d5169003237d9479b55b56c8a62ceb22fc06bec4d1724eabcf3697ca142bf7b2`.
+A matching archive is retained in the Windows workspace. This is machine-local
+evidence, not a remotely accessible artifact or independent hosted acceptance.
+
+Full CPU regression, remaining compiler modes, PostgreSQL and GPU were not run.
+Shared-host timings are not performance qualification. Complete D1 bootstrap,
+prospective initial focus and the operational owner/API remain outstanding;
+this contribution publishes ordinary arrivals into an already installed model.
