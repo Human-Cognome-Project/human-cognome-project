@@ -47,13 +47,19 @@ void placement_module_contract(Harness &h,
           require((index == 11 || index == 13) && tick_audit::guarded(
                       instruction, kernel, module, index == 11 ? 12 : 4),
                   "placement kernel mutates native selection without publication");
-        if (index == 13 && pointer && !tick_audit::guarded(instruction, kernel, module, 4)) {
+        // LLVM's parallel-task closure stores its RuntimeContext pointer in a
+        // stack allocation before dispatch. That is not model publication.
+        // Exempt only proven stack storage, never an unclassified global write.
+        const bool stack_write = pointer &&
+            llvm::isa<llvm::AllocaInst>(llvm::getUnderlyingObject(pointer));
+        if (index == 13 && pointer && !stack_write &&
+            !tick_audit::guarded(instruction, kernel, module, 4)) {
           hierarchy_audit::Analyzer arguments(kernel, module, 100);
           llvm::errs() << "focal_unguarded_store,arg=" << arguments.data_arg(pointer)
                        << ",native_origins=" << roots.origins(pointer).size()
                        << ",instruction=" << instruction << '\n';
         }
-        if (index == 13 && pointer)
+        if (index == 13 && pointer && !stack_write)
           require(tick_audit::guarded(instruction, kernel, module, 4),
                   "focal publication lacks enable guard");
         if (index == 11 || index == 13)
