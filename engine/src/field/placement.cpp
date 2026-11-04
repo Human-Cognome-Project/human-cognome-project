@@ -520,6 +520,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   q.source_work_bound = prefix;
   if (bootstrap) {
     prefix = sat_add(prefix, sat_mul(64, sat_mul(e + 1, body_count + f + 1)));
+    prefix = sat_add(prefix, sat_mul(focus_count, focus_count));
     q.source_work_bound = prefix;
   }
   if (!publication) {

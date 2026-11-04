@@ -1,7 +1,8 @@
 # Native admission implementation work
 
 Status: **private generated-row staging accepted in #205 and source/hierarchy
-preflight accepted in #207**; complete B3 remains
+preflight accepted in #207; ordinary combined admission provisionally accepted
+in #209**. Private D1 bootstrap/initial focus is implemented for review; complete B3 remains
 in progress, following accepted B2 (#203) and local CI tooling (#204). The [accepted admission plan](../../docs/native-admission-contact-transaction-plan.md)
 governs B3. No operational admission API is implemented by the initial increment.
 
@@ -24,7 +25,7 @@ warmed during preparation; attempts do not allocate or compile it. Emitted-code
 ownership checks include the new kernel and reject omitted scratch output.
 
 Staging has no authority to claim records, install hierarchy, change activity,
-advance generation/ticks or publish a model. It retains the current-focus D2
+advance generation/ticks or publish a model. Ordinary staging retains the current-focus D2
 candidate semantics and ordinary Batch limit. A failed stage must never be
 consumed as a transaction: scratch has no independent validity/identity token.
 Existing public update/refresh guards remain unchanged, and fixture starts stay
@@ -32,7 +33,7 @@ private to their existing test adapter.
 
 ## Prospective source and hierarchy preflight
 
-The private `Harness::stage_current_admission` coordinator immediately follows
+The ordinary mode of private `Harness::stage_current_admission` immediately follows
 successful native placement with the existing source/hierarchy preflight. It
 requires an installed hierarchy, retains the ordinary Batch limit and stages
 the same commands against the same generation. `GeneratedPreflight` consumes
@@ -122,14 +123,47 @@ or contact publication leave the execution unready, with no rollback claim.
 Fixture update/refresh retain their original route. This remains private engine
 integration, not an operational owner or public Add API.
 
+## Private first admission and initial focus
+
+The private coordinator also accepts D1 bootstrap into an empty, never-populated
+prepared owner. A populated request requires an explicit nonempty ordered list of
+pending field references. Duplicate selections, wrong reference kinds, missing
+participants and selections beyond the Focus reservation reject before claims.
+Empty prepared execution remains valid without selecting a field. This mode does
+not replace focus on an existing model or make ReplaceFocus an operational API.
+
+Bootstrap uses its separate BootstrapCommands limit, including native claim
+blocks larger than ordinary Batch. It validates the complete prospective source
+and selection before placement. The first canonical occurrence contributing to
+the first selected field establishes local zero. Remaining occurrences retain
+canonical order. Native strict-f64 arithmetic combines the already placed focal
+contributions for each subsequent nearest-free target; unselected contributions
+do not move that target. Exact source count/denominator descriptors and occurrence
+ranks are structural host inputs. Contribution masses, centroid arithmetic,
+certified coordinates and initialized body rows stay native. Unsupported numerical
+intermediates or exhausted search reservations reject without publishing.
+
+The bootstrap solver and structural descriptor backing are prepared and warmed
+in advance when BootstrapCommands is reserved. Their storage, frozen bindings,
+structural scans, focal reduction and selection validation are budgeted. A
+separate kernel identity distinguishes the changing-focus solver from ordinary
+fixed-focus placement. Initial selection also has reserved candidate backing;
+preflight never overwrites the installed activity selection.
+
+The same source/hierarchy/contact preflight validates the entire first rooted
+hierarchy, positive selected masses and simultaneous reference/contact demand.
+There is no intermediate source commit followed by a fallible hierarchy install.
+After verified native claims, initial hierarchy/history, source, body activity,
+resolved focus references and the contact view publish under the same exclusive
+boundary. Success advances one generation without a tick. Ordinary rejection
+remains healthy and retryable; an unexpected failure after claims leaves the
+owner unready. The private fixture routes remain separate.
+
 ## Remaining B3 work
 
-Add complete first admission under BootstrapCommands, explicit
-prospective focal selection and D1 partial-focus/anchor placement. Validate the
-first-admission contact union and peak references before native claims. Publish source,
-hierarchy/history, contacts, focus and activity together once, with no tick advance.
-Exercise capacity/work rejection, healthy retry, survivor/history preservation,
-late-failure unready disposition and ticks immediately before/after admission.
+Representation exchange and complete operational command integration remain.
+The first-admission path has local CPU qualification only; GPU execution has not
+been qualified by this increment.
 
 The enduring owner and operational Add/Remove/browser control remain later
 continuation slices. Do not wire these controls to a fixture reset or expose

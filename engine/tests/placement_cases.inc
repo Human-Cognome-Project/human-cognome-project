@@ -650,6 +650,23 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   require(bad_result.status ==
               UpdateStatus::InvalidInput, "bootstrap accepted incomplete hierarchy");
   unchanged();
+  const std::vector<UpdateRef> solo{UpdateRef::pending(3)};
+  require(PlacementAccess::bootstrap(h, commands, inputs, spec, solo, false).status ==
+              UpdateStatus::Ok, "single-field bootstrap preflight failed");
+  const auto solo_output = PlacementAccess::bootstrap_output(h);
+  require(solo_output[4 * l[Budget::BootstrapCommands] + 2] == (bits == 52 ? 1 : 2),
+          "unselected occurrence moved the partial bootstrap target");
+  unchanged();
+  if (bits == 52) {
+    const std::vector<UpdateRef> reversed{focus[1], focus[0]};
+    require(PlacementAccess::bootstrap(h, commands, inputs, spec, reversed, false).status ==
+                UpdateStatus::Ok, "reordered initial selection rejected");
+    const auto starts = PlacementAccess::generated(h);
+    for (int k = 0; k < 3; ++k)
+      require(starts[(kPosX + k) * l[Budget::BootstrapCommands]] == 0,
+              "first selected field did not determine the canonical anchor");
+    unchanged();
+  }
   UpdateResult preflight;
   no_new([&] { preflight = PlacementAccess::bootstrap(h, commands, inputs, spec, focus, false); });
   std::cout << "bootstrap_preflight,status=" << int(preflight.status)

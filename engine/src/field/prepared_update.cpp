@@ -638,7 +638,7 @@ UpdateResult Harness::update_prepared_impl(
         !reserve(count, 4 * (P + G + limits[Budget::Focus] + 12)) ||
         !reserve(E + C, 4 * (count + 1)) || !reserve(G, 4 * E) ||
         !reserve(E, 64 * logarithm) ||
-        (bootstrap && !reserve(limits[Budget::Focus], E + 1)) ||
+        (bootstrap && !reserve(focus_count, E + focus_count + 1)) ||
         (generated_commit &&
          !reserve(P + G + count, 4))) {
       answer.failure = {Budget::CascadeWork,
@@ -920,7 +920,8 @@ UpdateResult Harness::update_prepared_impl(
     } else {
       selected = s.focal[i];
     }
-    if (std::find(s.candidate_focus.begin(), s.candidate_focus.begin() + i,
+    if (bootstrap &&
+        std::find(s.candidate_focus.begin(), s.candidate_focus.begin() + i,
                   selected.record) != s.candidate_focus.begin() + i)
       return reject(UpdateStatus::InvalidInput);
     if (bootstrap) {
