@@ -17,6 +17,11 @@ canonical placement rank to original command index. Mass and radius come from
 validated intrinsic inputs. Velocity, force and determiner entries start at zero;
 unused command rows are cleared on each successful stage.
 
+The following private [D7 replacement staging](EXCHANGE-PLACEMENT.md) reuses this
+initializer with native outgoing velocity and an outgoing-centre placement target.
+Ordinary/bootstrap paths retain zero motion; replacement staging is not yet a
+coherent exchange publication.
+
 Positions never pass through a host readback/re-upload initialization path.
 The host carries structural command indices and intrinsic inputs only. The
 additional command-index column, kernel bindings and bounded initialization work

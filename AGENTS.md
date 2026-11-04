@@ -63,6 +63,13 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
+Private [replacement staging](engine/docs/EXCHANGE-PLACEMENT.md) is implemented
+on the follow-on review branch: native outgoing-centre placement, exact matching
+of outgoing and retiring handle sets, prospective occupancy exclusion and native
+velocity transfer into scratch. Logical occurrence/source conservation validation
+and atomic exchange publication remain unbuilt. This does not change the
+provisional dependencies or hosted integration gates above.
+
 ## Latest model direction — 2026-10-23
 
 The directions below have bounded CPU implementations through #201. Read

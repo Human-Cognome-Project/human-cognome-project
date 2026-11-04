@@ -2,9 +2,10 @@
 
 This is the first D7 prerequisite after #213's provisionally accepted exact
 rebasing. It derives an outgoing set's mass-weighted centre and linear velocity
-from resident physical bodies in the current operative frame. It does not yet
-place replacement bodies, transfer velocity, claim/retire records or publish an
-exchange. The accepted [D7 contract](../../docs/core-operation-readiness-plan.md#decision-status)
+from resident physical bodies in the current operative frame. The following
+[private replacement staging](EXCHANGE-PLACEMENT.md) consumes it for placement
+and velocity transfer; neither prerequisite claims/retires records or publishes
+an exchange. The accepted [D7 contract](../../docs/core-operation-readiness-plan.md#decision-status)
 still governs that following integration and the enduring occurrence owner.
 
 `detail::Placement::stage_exchange_state` is private to engine/test access.
