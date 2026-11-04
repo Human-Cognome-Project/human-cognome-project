@@ -900,7 +900,8 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     std::cout << "exchange_placement,bits=" << bits
               << ",compression=1,expansion=1,native_motion=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
   }
-  const auto limits = placement_limits(3);
+  auto limits = placement_limits();
+  limits[Budget::Particles] = 3;
   Fixture full(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 1, 1}, {0, 8, 16},
                52, 52, false, false, true, false, 1024, {1, 1, 1}, &limits);
   const auto before = TickSnapshot(full);
