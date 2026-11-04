@@ -128,7 +128,8 @@ UpdateResult Harness::rebase_current(std::uint64_t expected,
   if (!changed) return reject(UpdateStatus::NoChange);
   const auto &limits = s.capacity.limits();
   if (work == UINT64_MAX) work = limits[Budget::CascadeWork];
-  const auto need = 64 * (limits[Budget::Particles] + limits[Budget::Fields] + 1);
+  const auto need = 64 * (limits[Budget::Particles] + limits[Budget::Fields] + 1) +
+                    4 * live_hierarchy_->reference_count();
   if (work > limits[Budget::CascadeWork] || need > work) {
     out.failure = {Budget::CascadeWork, work > limits[Budget::CascadeWork] ? work : need,
                    work > limits[Budget::CascadeWork] ? limits[Budget::CascadeWork] : work};
