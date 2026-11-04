@@ -88,4 +88,36 @@ establishes the benefit of the job layout without a warm-cache benefit claim.
 Merged as `943e0549c62af92a4aefc0c7b9f78a2e2fb214e8`, followed by #205
 at `ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b`. Integrated main run
 [41720357523](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357523)
-is pending; cache publication and integrated execution will be checked there.
+passed, including the final native-cpu gate (job 126238016942). The separate
+[main smoke run 41720357550](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357550)
+also passed.
+
+### Integrated main verification
+
+The native critical path was **51m21s**, from 21:16:59 to 22:08:20 UTC on
+2026-11-03. Build job 126211185168 took 25m48s including checkout/submodule
+setup. Independently inspected shard logs cover indexes 1–115 exactly once:
+
+| Shard | Job | Tests | CTest seconds |
+|---|---|---:|---:|
+| 1 | 126224780479 | 29 | 1477.49 |
+| 2 | 126224780703 | 29 | 765.34 |
+| 3 | 126224780592 | 29 | 732.26 |
+| 4 | 126224780719 | 28 | 1048.40 |
+
+Compiler jobs 126224780344, 126224780486, 126224780212 and 126224780046
+passed. Their independently inspected artifacts (13274111031, 13275117418,
+13275530538 and 13275770327) retain all eight default/no-unroll configurations,
+passing audits and five extra no-unroll cases per worker/source-path job.
+Both bulk artifacts also report 632 passing placement arithmetic samples.
+Database job 126224780021 passed 180 checks, with 24 addressed reads and zero
+private reads. Consumer digest/source/path/backend checks and artifact uploads
+succeeded.
+
+Build evidence artifact 13271479740 reports **260 cacheable calls, zero hits,
+260 misses**, using 2.99% of the 1 GB cache limit. Restore explicitly missed;
+the main build successfully saved its toolchain-qualified cache under source
+`ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b` at 21:42:44 UTC.
+This verifies cache publication, not warm-cache reuse or a warm-cache speedup.
+The rollout is complete. No additional benchmark rerun was needed, and these
+hosted CPU results do not qualify contributor-local or GPU execution.

@@ -43,4 +43,4 @@ This hosted result is separate from the contributor-local evidence above.
 Merged as `ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b` after CI-only #206.
 Acceptance covers the private staging prerequisite only. D1 bootstrap/focus,
 prospective contact validation, record claims and coordinated single-publication
-admission remain the next B3 work. Integrated main CI is pending.
+admission remain the next B3 work. Integrated main [run 41720357523](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357523) passed at the merge pin above: all 115 tests exactly once, all eight compiler configurations and extra no-unroll cases, plus 180 integration checks with zero private reads. [CI acceptance details](../../docs/HOSTED-CI.md#integrated-main-verification) retain job/artifact pins and measured timings.
