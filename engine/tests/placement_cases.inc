@@ -791,6 +791,15 @@ void live_focus(engine::Runtime &r, HostPath path) {
             "focus prepublication failure hook");
     PreparedFixtureAccess::inject_failure(f.h, 0);
     require(before == TickSnapshot(f) && f.h.ready(), "rejected focus changed execution");
+    for (double mass : {0., -1., std::numeric_limits<double>::quiet_NaN()}) {
+      PlacementAccess::focal_mass(f.h, selected[0].record, mass);
+      const TickSnapshot poisoned(f);
+      require(PlacementAccess::focus(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  poisoned == TickSnapshot(f) && f.h.ready(),
+              "nonpositive/nonfinite selected mass was published");
+    }
+    PlacementAccess::focal_mass(f.h, selected[0].record, 1);
+    require(before == TickSnapshot(f), "focus negative fixture did not restore its source");
     f.h.inspect_prepared_geometry(geometry);
     f.h.inspect_prepared();
     const auto particles = f.h.particles64(), groups = f.h.groups64(),
@@ -824,6 +833,10 @@ void live_focus(engine::Runtime &r, HostPath path) {
     require(s.live.focus == 1 && s.focal[0].record == selected[0].record &&
                 s.inspection_focus64[0] == -4 && s.inspection_focus64[1] == 0 &&
                 s.inspection_focus64[2] == 0, "focus origin/selection not published");
+    const auto focal_candidate = PlacementAccess::derived(f.h);
+    for (int k = 0; k < 11; ++k)
+      require(s.inspection_focus64[k] == focal_candidate[14 * f.h.field_capacity() + 1 + k],
+              "focal publication omitted part of the candidate control tuple");
     for (int row = 0; row < f.h.particle_capacity(); ++row)
       require(s.inspection_flags[row] ==
                   (radial && s.particle_headers[row].record >= 0 ? 3 : flags[row]),
@@ -853,6 +866,22 @@ void live_focus(engine::Runtime &r, HostPath path) {
     const auto tick = f.h.tick_prepared(f.h.prepared_storage().generation, parameters);
     require(tick.status == TickStatus::Ok && !tick.coverage_changed,
             "following tick rejected retagged hierarchy or changed contact coverage");
+    if (!radial) {
+      auto limited = l;
+      const auto peak = PlacementAccess::focal_reference_peak(f.h, 1);
+      // f now selects two fields; the fresh fixture below selects one.
+      limited[Budget::References] = peak - 2;
+      Fixture pressure(r, path, {{}, {}, {0, 1}}, {{1, 0, 0}, {0, 1, 1}, {0, 0, 0}},
+                       {1, 1, 1}, {1, 2, 1}, {-4, 0, 8}, 52, 52, false, false, true,
+                       false, 1024, {}, &limited);
+      pressure.install();
+      const TickSnapshot retained(pressure);
+      const auto rejected = PlacementAccess::focus(pressure.h, {pressure.in.field_rows[0]});
+      require(rejected.status == UpdateStatus::CapacityExhausted &&
+                  rejected.failure.budget == Budget::References &&
+                  rejected.failure.required == limited[Budget::References] + 1 &&
+                  retained == TickSnapshot(pressure), "focus old-plus-new reference peak not enforced");
+    }
     std::cout << "live_focus,radial=" << radial << ",history=preserved,source_contacts=preserved,"
                  "ordered_centroid=pass,publication=one,no_tick=1,backing=stable,retry=pass PASS\n";
   }

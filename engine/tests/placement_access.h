@@ -12,6 +12,23 @@ struct PlacementAccess {
   }
   static const engine::CompiledKernel &focus_kernel(Harness &h) { return h.focus_commit_; }
   static void radial(Harness &h, bool enabled) { h.previous_parameters_.reach_strength = enabled; }
+  static void focal_mass(Harness &h, int row, double mass) {
+    h.inspect_prepared();
+    h.group64(kCenM, row) = mass;
+    if (h.path_ == HostPath::BulkCopy) h.group_values_.upload(*h.group_array_);
+    h.runtime_->synchronize();
+  }
+  // Unique-source fixture only: each cohort row is a distinct covered body.
+  static std::uint64_t focal_reference_peak(Harness &h, std::size_t count) {
+    const auto &tree = h.inspect_live_hierarchy();
+    auto refs = h.prepared_->live.references() + count + tree.node_count +
+                h.live_hierarchy_->response_count();
+    for (std::size_t i = 0; i < tree.node_count; ++i) {
+      const auto &node = tree.nodes[tree.order[i]];
+      refs += node.child_count + 2 * node.cohort_count;
+    }
+    return refs;
+  }
   static UpdateResult bootstrap(Harness &h, const std::vector<UpdateCommand> &commands,
                                 const std::vector<PlacementIntrinsic> &inputs,
                                 const LiveRefreshSpec &hierarchy,
