@@ -900,6 +900,13 @@ void live_focus(engine::Runtime &r, HostPath path) {
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
               {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, true, true,
               false, 1024, {}, &l);
+    // Establish the retained union before hierarchy installation adds its own
+    // references; a later tick's multi-union peak is intentionally not this test.
+    Parameters64 stationary;
+    stationary.dt = stationary.gravity = stationary.contact_stiffness =
+        stationary.reach_strength = 0;
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
+            "focus contact fixture could not establish installed union");
     f.install();
     require(f.h.prepared_storage().live.contacts == 1 &&
                 PlacementAccess::installed_contacts(f.h) == 1,
