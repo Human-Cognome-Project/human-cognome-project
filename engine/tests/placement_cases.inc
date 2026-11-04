@@ -896,14 +896,21 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     PreparedFixtureAccess::inject_value64(reference.h, kVelX, reference.in.particle_rows[0].record, .5);
     reference.control->set(1, reference.in.field_rows[1].record);
     LiveHierarchyAccess::poll(reference.h, 0, reference.in.field_rows[1].record);
+    f.control->set(2, f.in.particle_rows[0].record);
+    reference.control->set(2, reference.in.particle_rows[0].record);
+    auto moving = stationary;
+    moving.dt = .25;
     require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok &&
-                f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok &&
-                reference.h.tick_prepared(reference.h.prepared_storage().generation, stationary).status == TickStatus::Ok &&
+                f.h.tick_prepared(f.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
+                reference.h.tick_prepared(reference.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
                 PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
             "rebase translated-frame tick failed");
     f.h.inspect_prepared();
     reference.h.inspect_prepared();
     const auto continued = f.h.inspect_live_hierarchy(), expected = reference.h.inspect_live_hierarchy();
+    require(f.h.particle64(kPosX, f.in.particle_rows[0].record) !=
+                bodies[kPosX * f.h.particle_capacity() + f.in.particle_rows[0].record],
+            "rebase continuation witness did not move a body");
     require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64() &&
                 f.h.determined64() == reference.h.determined64() &&
                 f.h.prepared_storage().inspection_flags == reference.h.prepared_storage().inspection_flags &&
@@ -912,7 +919,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                 PlacementAccess::rebase_history(f.h) == PlacementAccess::rebase_history(reference.h),
             "translated-frame tick differs from unrebased continuation");
     std::cout << "coordinate_rebase,capacity=" << capacity << ",translation=2^27,exact=1,history=both_slots,"
-                 "rejection=unchanged,round_trip=exact,following_tick=pass,backing=stable PASS\n";
+                 "rejection=unchanged,round_trip=exact,following_tick=moving,backing=stable PASS\n";
   }
   for (int failure : {411, 412}) {
     const auto l = placement_limits();

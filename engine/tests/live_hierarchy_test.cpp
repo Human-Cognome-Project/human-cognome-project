@@ -2725,6 +2725,10 @@ int main(int argc, char **argv) {
       settings.device_memory_gb = 1.0;
     }
     settings.read_environment = false;
+    // The combined placement suite creates many independent owners in one
+    // Program. Native SNode IDs are monotonic even after a fixture is released.
+    // Reserve this test-runner metadata explicitly; model budgets are unchanged.
+    if (only == "placement") settings.snode_capacity = 2048;
     taichi::lang::default_compile_config.print_kernel_asm = dump_code;
     taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);
