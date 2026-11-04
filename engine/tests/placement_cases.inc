@@ -543,7 +543,8 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
 }
 
 void admission_commit(engine::Runtime &r, HostPath path) {
-  const auto limits = placement_limits();
+  for (int capacity : {70, 128}) {
+  const auto limits = placement_limits(capacity);
   Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
             true, false, 1024, {1}, &limits);
   f.install();
@@ -637,6 +638,51 @@ void admission_commit(engine::Runtime &r, HostPath path) {
   require(backing.same_backing(metrics.sample()), "admission grew prepared backing");
   std::cout << "admission_commit,rounds=2,survivors=exact,claims=resolved,"
                "generation_once=1,no_tick_advance=1,following_tick=1,cpp_new=0 PASS\n";
+  }
+}
+
+void admission_contact_remap(engine::Runtime &r, HostPath path) {
+  const auto limits = placement_limits();
+  Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 1, 1}, {0, 0, 0},
+            52, 52, false, false, true, false, 1024, {1, 1, 1}, &limits);
+  PlacementAccess::configure(f.h, f.in.particle_rows,
+      {{{0, 0, 0}, 1}, {{0, 0, 0}, 1}, {{0, 0, 0}, 1}}, f.in.field_rows[0], {});
+  f.install();
+  RefreshRequest request(f.h);
+  std::vector<UpdateCommand> commands{placement_definition(901)};
+  UpdateCommand edge;
+  edge.operation = UpdateOp::InsertParticipation;
+  edge.first = UpdateRef::pending(0);
+  edge.second = UpdateRef::existing(f.in.field_rows[0]);
+  edge.share = 1;
+  edge.exact_count = 1;
+  edge.position = 3;
+  edge.ordinal = 10001;
+  commands.push_back(edge);
+  request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+  const auto input = placement_intrinsic();
+  const auto spec = request.spec();
+  const TickSnapshot before(f);
+  require(PlacementAccess::preflight(f.h, commands.data(), commands.size(),
+                                      &input, 1, spec).status == UpdateStatus::Ok,
+          "derived remap preparation failed");
+  std::vector<int> destinations(f.h.particle_capacity() + f.h.field_capacity());
+  for (int row = 0; row < f.h.particle_capacity(); ++row) destinations[row] = row;
+  std::array<int, 3> rows{f.in.particle_rows[0].record,
+                         f.in.particle_rows[1].record, f.in.particle_rows[2].record};
+  std::sort(rows.begin(), rows.end());
+  std::swap(destinations[rows[0]], destinations[rows[2]]);
+  no_new([&] { PlacementAccess::remap_contacts(f.h, destinations); });
+  const auto contacts = PlacementAccess::contact_inspection(f.h);
+  const int c = f.h.contact_capacity();
+  require(PlacementAccess::contact_counts(f.h)[3] == 3 &&
+              contacts.pairs[0] == rows[0] && contacts.pairs[c] == rows[1] &&
+              contacts.pairs[1] == rows[0] && contacts.pairs[c + 1] == rows[2] &&
+              contacts.pairs[2] == rows[1] && contacts.pairs[c + 2] == rows[2] &&
+              before == TickSnapshot(f),
+          "derived contact ordering used provisional rather than resolved endpoints");
+  std::cout << "admission_contact_remap,nonidentity=1,derived_order=canonical,"
+               "committed_state=unchanged PASS\n";
 }
 
 void admission_commit_failures(engine::Runtime &r, HostPath path) {

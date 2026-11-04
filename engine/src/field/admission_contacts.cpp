@@ -43,6 +43,9 @@ void AdmissionContacts::append_layout(const BudgetDemand &l,
 }
 
 AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
+  // Native CHI kernels are cached by name, not by their IR. Fixed dimensions
+  // and embedded SNode identities belong to this prepared owner.
+  const auto suffix = std::to_string(h.prepared_->particles.bindings().presence->id);
   const int p = std::max(h.particles_, 1), c = std::max(h.contacts_, 1);
   const auto i = PrimitiveType::i32, f = PrimitiveType::f64,
              wide = PrimitiveType::i64;
@@ -85,7 +88,7 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
               zero);
       }
     }
-    kernels_[0] = Kernel(*h.runtime_, "admission_contacts_reset",
+    kernels_[0] = Kernel(*h.runtime_, "admission_contacts_reset_" + suffix,
                          b.extract_ir(), params, engine::MathMode::Strict);
   }
   {
@@ -123,7 +126,7 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
               read(b, starts, {b.get_int32(k),
                                b.create_sub(status, b.get_int32(2))}));
     }
-    kernels_[1] = Kernel(*h.runtime_, "admission_contacts_collect",
+    kernels_[1] = Kernel(*h.runtime_, "admission_contacts_collect_" + suffix,
         b.extract_ir(), {Param::array(f, 2), Param::array(f, 2),
         Param::array(i), Param::array(f, 2), Param::array(i),
         Param::array(wide), Param::scalar(i)}, engine::MathMode::Strict);
@@ -159,7 +162,7 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
       auto backup = b.get_if_guard(change, false);
       write(b, original, {row}, read(b, mapping, {row}));
     }
-    remap_ = Kernel(*h.runtime_, "admission_contacts_remap", b.extract_ir(),
+    remap_ = Kernel(*h.runtime_, "admission_contacts_remap_" + suffix, b.extract_ir(),
         {Param::array(i, 2), Param::array(i), Param::array(i), Param::array(i),
          Param::array(wide), Param::scalar(i)}, engine::MathMode::Strict);
   }

@@ -517,7 +517,8 @@ std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
       }
     }
     kernels[3] = engine::CompiledKernel(
-        *runtime_, "geometry_finalize_" + suffix, b.extract_ir(),
+        *runtime_, "geometry_finalize_" + suffix +
+                       (canonical_endpoints ? "_canonical" : ""), b.extract_ir(),
         {ia, ia, iv, iv, iv, ia, ia, ia, cv, integer},
         engine::MathMode::Strict);
   }
