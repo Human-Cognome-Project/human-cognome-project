@@ -320,3 +320,44 @@ retained separately and are not passing qualification.
 Full CPU regression, remaining compiler configurations, PostgreSQL and GPU were
 not rerun. Shared-host timings are not performance qualification. This evidence
 supports provisional review; hosted CI and maintainer acceptance are independent.
+
+### PR #211 review correction: retained contact references
+
+[Review 5773022878](https://github.com/Human-Cognome-Project/human-cognome-project/pull/211#pullrequestreview-5773022878)
+found that focus selection charged the maximum of source/installed contacts,
+although their endpoint arrays are separately resident. The corrected demand is
+the source ledger's complete references plus proposed focus, installed hierarchy
+and twice the installed union pair count. No additional union is built by focus
+selection. Counts remain bounded by the prepared native dimension limits.
+
+The new tight-budget fixture contains one explicit source pair and one separately
+installed union pair. It first establishes the union through a stationary tick,
+then installs the hierarchy and creates dirty child history. At one reference
+below the required peak, focus selection must return typed References exhaustion
+with the exact demand and retain the state snapshot and prior geometry observation.
+At the exact limit it must publish successfully. The test reference helper now
+also counts installed union endpoints.
+
+The first attempt at `8c663874` failed its fixture prerequisite because a source
+contact alone does not install a physical union; that log is retained separately
+and is not passing evidence. The corrected fixture establishes the union through
+the normal tick path before adding hierarchy references.
+The intermediate fixture at `fe5cb0cc` then correctly rejected stale hierarchy
+source references after that tick advanced the generation. The final fixture
+binds those references to the current generation; both failed setup logs are
+retained separately.
+
+Corrected code/test pin: `df624c42aee53c17822c403fb0cee2552fd065cb`.
+The complete `live_focus` case passed on CPU in one-worker bulk/default and
+two-worker direct/no-unroll modes. Both report required=36, capacity=35 rejected
+without publication and capacity=36 successful. Native kernels are unchanged;
+the full placement/regression and compiler matrices, PostgreSQL and GPU were not
+rerun for this host accounting correction. Prior green hosted results apply to
+the prior head, not this revision. Subsequent documentation does not alter code.
+
+Bundle `focus-reference-df624c42` retains commands, raw logs, failed setup attempts,
+source/submodule pins, build configuration, toolchain and binary/runtime hashes.
+Its `SHA256SUMS` digest is
+`b10320d394488e9161969fcc7f181de19c3e47c9afca5c60b9077c94ae371d85`.
+The archive is retained in the Windows workspace. This contributor-local evidence
+is not remotely available or independently verified merely by publishing its hash.

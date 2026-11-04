@@ -169,8 +169,10 @@ automatically, translate coordinates or expose an operational owner API.
 
 Validate full handle identity, uniqueness, participation, positive finite
 published mass and the Focus/CascadeWork/References reservations before mutation.
-Reference demand includes the simultaneous old/new selections, installed hierarchy
-and the installed physical contact union. The existing native candidate builder
+Reference demand includes the simultaneous old/new selections, installed hierarchy,
+explicit source contact ledger and separately retained physical contact union.
+Charge both endpoint representations even for the same pair; focus selection
+builds no additional current/candidate union. The existing native candidate builder
 computes the ordered combined centroid from current published field values with
 all field states marked unchanged. It neither repairs dirty hierarchy packets nor
 consumes pending field notifications. An identical ordered selection is a NoChange
