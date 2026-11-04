@@ -115,6 +115,15 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
       placement_module_contract(f.h, compiled, module, index);
       const auto &ctx =
           engine::testing::CompiledKernelAccess::context(compiled);
+      if (index == 14 || index == 15) {
+        const auto *masks = LiveHierarchyAccess::input_array(f.h, 6);
+        require(ctx.array_ptrs.at({12, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
+                    reinterpret_cast<void *>(masks->get_device_allocation_ptr_as_int()) &&
+                    ctx.array_bindings[12].type == taichi::lang::PrimitiveType::u64 &&
+                    ctx.array_bindings[12].rank == 1 &&
+                    ctx.array_bindings[12].elements == masks->get_nelement(),
+                "rebase precision masks lack their current native binding");
+      }
       for (int writer : placement_writers()[index]) {
         const auto pointer = ctx.array_ptrs.at(
             {writer, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});

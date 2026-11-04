@@ -940,6 +940,28 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
               reduced == 3 ? 0 : reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
     if (reduced == 2) f.nodes[0].retained_fraction_bits = 8;
     f.install();
+    if (reduced != 0) {
+      const auto &tree = f.h.inspect_live_hierarchy();
+      for (int input : {16, 0, 13}) {
+        auto *array = LiveHierarchyAccess::input_array(f.h, input);
+        std::vector<double> original(array->get_nelement()), observed(original.size());
+        engine::readback(*array, original.data(), original.size() * sizeof(double));
+        auto prior = original;
+        const auto at = input == 16 ? 3 * f.h.field_capacity() + f.in.field_rows[0].record :
+            (input == 0 ? 4 * tree.selectors.size() : 0) + tree.order[0];
+        prior[at] = 0x1p-10;  // Exactly retained even with zero fraction bits.
+        engine::upload(*array, prior.data(), prior.size() * sizeof(double));
+        const auto observation = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+        const TickSnapshot before(f);
+        require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::InvalidNumerics &&
+                    before == TickSnapshot(f) && f.h.ready(),
+                "rebase ignored reduced precision in an old history slot");
+        engine::readback(*array, observed.data(), observed.size() * sizeof(double));
+        require(observed == prior, "reduced-history rejection changed previous coordinates");
+        f.h.inspect_prepared_geometry(observation);
+        engine::upload(*array, original.data(), original.size() * sizeof(double));
+      }
+    }
     const auto generation = f.h.prepared_storage().generation;
     prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
     const auto backing = metrics.sample();
