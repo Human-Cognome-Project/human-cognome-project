@@ -922,6 +922,8 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     reference.control->set(2, reference.in.particle_rows[0].record);
     auto moving = stationary;
     moving.dt = .25;
+    const auto continuation_before = f.h.inspect_live_hierarchy();
+    const auto reference_before = reference.h.inspect_live_hierarchy();
     dump("before-translated", f);
     dump("before-reference", reference);
     require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok, "continuation forward rebase");
@@ -956,13 +958,90 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(f.h.particle64(kPosX, f.in.particle_rows[0].record) !=
                 bodies[kPosX * f.h.particle_capacity() + f.in.particle_rows[0].record],
             "rebase continuation witness did not move a body");
-    require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64() &&
+    // Independent native traversals need not choose the same parent/child order.
+    // This dyadic fixture has exactly two legal parent publications, not an
+    // epsilon band. A parent that read the old moving child must remain pending.
+    const int root = 2, root_field = f.in.field_rows[root].record;
+    const auto coherent = [&](Fixture &x, const LiveHierarchyInspection &prior) {
+      poll_lifetime(x, prior);
+      const auto current = x.h.inspect_live_hierarchy();
+      const auto left = selected(current, 0), right = selected(current, 1), parent = selected(current, root);
+      require(left == Packet{-3.875L, 0, 0, 1} && right == Packet{6, 0, 0, 1},
+              "continuation leaf packet differs from exact moved bodies");
+      const int flags = x.h.prepared_storage().inspection_flags[capacity + root_field];
+      require((parent == Packet{1, 0, 0, 2} || parent == Packet{1.0625L, 0, 0, 2}) &&
+                  (flags == 1 || flags == 3) && (parent[0] != 1 || (flags & 2)),
+              "continuation parent packet is incoherent or lost pending child input");
+      require(x.h.group64(kCenX, root_field) == parent[0], "continuation parent mirror differs");
+      std::cout << "rebase_continuation_order,capacity=" << capacity
+                << ",parent_x=" << parent[0] << ",pending=" << bool(flags & 2) << " PASS\n";
+    };
+    coherent(f, continuation_before);
+    coherent(reference, reference_before);
+    require(f.h.particles64() == reference.h.particles64() &&
                 f.h.determined64() == reference.h.determined64() &&
-                f.h.prepared_storage().inspection_flags == reference.h.prepared_storage().inspection_flags &&
-                continued.slots == expected.slots && continued.previous == expected.previous &&
-                continued.selectors == expected.selectors &&
+                continued.previous == expected.previous && continued.selectors == expected.selectors &&
                 PlacementAccess::rebase_history(f.h) == PlacementAccess::rebase_history(reference.h),
-            "translated-frame tick differs from unrebased continuation");
+            "continuation changed exact body motion or old publication history");
+    for (std::size_t i = 0; i < f.h.groups64().size(); ++i)
+      if (i != std::size_t(kCenX * capacity + root_field))
+        require(f.h.groups64()[i] == reference.h.groups64()[i], "non-parent field payload differs");
+    for (std::size_t i = 0; i < continued.slots.size(); ++i)
+      if (i != std::size_t(4 * continued.selectors[root]) * continued.selectors.size() + root)
+        require(continued.slots[i] == expected.slots[i], "non-parent packet word differs");
+    for (std::size_t i = 0; i < f.h.prepared_storage().inspection_flags.size(); ++i)
+      if (i != std::size_t(capacity + root_field))
+        require(f.h.prepared_storage().inspection_flags[i] == reference.h.prepared_storage().inspection_flags[i],
+                "non-parent activity differs");
+    const auto complete_pending = [&](Fixture &x, long double root_x) {
+      const auto prior = x.h.inspect_live_hierarchy();
+      x.h.inspect_prepared();
+      const auto physical = x.h.particles64();
+      LiveHierarchyAccess::poll(x.h, 0);
+      x.h.inspect_prepared();
+      poll_lifetime(x, prior);
+      require(x.h.particles64() == physical &&
+                  selected(x.h.inspect_live_hierarchy(), root) == Packet{root_x, 0, 0, 2} &&
+                  !(x.h.prepared_storage().inspection_flags[capacity + root_field] & 2),
+              "pending parent did not catch up without changing bodies");
+    };
+    complete_pending(f, 1.0625L);
+    complete_pending(reference, 1.0625L);
+    require(f.h.groups64() == reference.h.groups64(), "completed parent mirrors differ");
+
+    // Deterministic counterexample to cross-execution history equality. These
+    // private targeted polls force both legal orders, not a production scheduler.
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok, "ordered witness rebase");
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[0].record, -3.75 - delta[0]);
+    PreparedFixtureAccess::inject_value64(reference.h, kPosX, reference.in.particle_rows[0].record, -3.75);
+    for (auto *x : {&f, &reference}) {
+      x->control->set(1, x->in.field_rows[0].record);
+      x->control->set(1, x->in.field_rows[root].record);
+    }
+    const auto targeted = [&](Fixture &x, int node) {
+      const auto prior = x.h.inspect_live_hierarchy();
+      LiveHierarchyAccess::poll(x.h, 0, node);
+      x.h.inspect_prepared();
+      poll_lifetime(x, prior);
+    };
+    targeted(f, root);
+    targeted(f, 0);
+    targeted(reference, 0);
+    targeted(reference, root);
+    require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "ordered witness inverse");
+    f.h.inspect_prepared();
+    require(selected(f.h.inspect_live_hierarchy(), root) == Packet{1.0625L, 0, 0, 2} &&
+                selected(reference.h.inspect_live_hierarchy(), root) == Packet{1.125L, 0, 0, 2} &&
+                (f.h.prepared_storage().inspection_flags[capacity + root_field] & 2) &&
+                !(reference.h.prepared_storage().inspection_flags[capacity + root_field] & 2),
+            "ordered witness did not expose distinct coherent parent publications");
+    complete_pending(f, 1.125L);
+    complete_pending(reference, 1.125L);
+    require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64(),
+            "ordered continuation failed exact physical convergence");
+    std::cout << "rebase_ordered_continuation,parent_first=1.0625,child_first=1.125,"
+                 "lagging_pending=1,following_poll=exact,history_lifetime=preserved PASS\n";
     std::cout << "coordinate_rebase,capacity=" << capacity << ",translation=2^27,exact=1,history=both_slots,"
                  "rejection=unchanged,round_trip=exact,following_tick=moving,backing=stable PASS\n";
   }
