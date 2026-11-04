@@ -159,6 +159,43 @@ boundary. Success advances one generation without a tick. Ordinary rejection
 remains healthy and retryable; an unexpected failure after claims leaves the
 owner unready. The private fixture routes remain separate.
 
+## Private existing-model focus selection
+
+`Harness::replace_current_focus` is a separate private D6 selection boundary for
+an installed wide-profile hierarchy with the contact-safe tick owner. Its input
+is an ordered, nonempty list of current native field handles and an expected
+generation. It does not interpret ReplaceFocus source commands, choose fields
+automatically, translate coordinates or expose an operational owner API.
+
+Validate full handle identity, uniqueness, participation, positive finite
+published mass and the Focus/CascadeWork/References reservations before mutation.
+Reference demand includes the simultaneous old/new selections, installed hierarchy
+and the installed physical contact union. The existing native candidate builder
+computes the ordered combined centroid from current published field values with
+all field states marked unchanged. It neither repairs dirty hierarchy packets nor
+consumes pending field notifications. An identical ordered selection is a NoChange
+after numerical validation and preserves the completed state and observations.
+
+A separately prepared, owner-identified native kernel publishes only the complete
+focal control tuple and its wake effects. An origin change wakes present bodies
+only when the existing radial damping term depends on that origin. Existing awake
+bits remain set; unused records are not activated. No body payload, universal
+value, source/contact index, field accumulator or hierarchy packet/history is
+republished. The selected slots and full field handles then publish under the
+same exclusive boundary, followed by one generation advance and hierarchy source
+stamp update. Completed ticks, the frame and the last tick report are unchanged.
+
+Invalid input, numerical rejection, capacity exhaustion and injected prepublication
+rejection retain the healthy execution and its observation tokens. Unexpected
+failure after focal writes begin makes execution unready, including failure while
+publishing the selected slots. Successful selection changes invalidate earlier
+observations by generation; the following tick uses the new selection in the same
+execution. Kernel bindings are warmed during preparation, and their added context
+is included in the prepared reservation.
+
+This implements focus selection only. D6 coordinate rebasing, D7 representation
+exchange and the enduring owner remain separate continuation work.
+
 ## Remaining B3 work
 
 Representation exchange and complete operational command integration remain.

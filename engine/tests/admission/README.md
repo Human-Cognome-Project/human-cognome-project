@@ -270,3 +270,53 @@ D1 bootstrap. Contributor-local bundles above were not independently inspected;
 the hosted evidence here is separate. This does not qualify representation
 exchange, focus replacement on an existing model, operational owner/public
 Add/browser controls or GPU execution.
+
+## Private existing-model focus selection — 2026-11-04
+
+The continuation after accepted #210 implements the selection portion of D6:
+an ordered set of current participating fields replaces the focus in the same
+installed model. Native calculation and guarded publication update the complete
+focal tuple and applicable wake bits, followed by one unticked generation.
+Coordinate rebasing, representation exchange and operational public controls
+remain separate work.
+
+Local CPU code/test source: `28f96082c252b847db6464b67677a4af699cf7ef`.
+The following documentation commit changes no tested code.
+
+All qualification runs listed below passed. Bundle `live-focus-28f96082` retains
+raw logs, commands, source/submodule pins, configuration, toolchain, binary/runtime
+hashes and emitted modules. Its `SHA256SUMS` digest is
+`ff9f10222ba34161b2ef5f194fdcaa12f3a8e4cca7a1bcddac2c69ef4f192215`.
+A matching archive is retained in the Windows workspace. This is machine-local
+evidence; its digest does not establish remote availability or independent review.
+
+Qualification covers the fourteen-case placement/admission suite with one worker
+in bulk/default mode, two-worker direct/no-unroll live focus and compiler checks,
+`prepared_update_test` and `refresh_dirty`. Both compiler configurations inspect
+14 kernels and reject 19 unsafe controls per precision profile (52 and 8 bits),
+including omitted focal output and a removed publication guard. Legal repeated
+writes remain accepted; emitted LLVM and frozen ABI descriptions are retained.
+
+Focus cases cover ordered weighted centroids, full focal tuple publication,
+positive finite participant mass, stale identities/generations, duplicates,
+Focus/References/CascadeWork limits, identical-selection NoChange and stable
+prepared backing without recurring C++ allocation. Populated disabled publication
+preserves all state. Successful selection preserves body payloads, source/contact
+indices, pending notifications, unequal dirty hierarchy packets and reader history.
+Radial-dependent origin changes wake present bodies; unrelated sleepers and unused
+rows remain unchanged. Subsequent placement uses the new focus, and the following
+tick consumes the same installed model. Observation validity and prepublication
+healthy rejection versus postpublication unready failure are checked explicitly.
+
+The first expanded run at `55b33de0` passed functional cases but failed an
+overbroad compiler guard check: it classified compiler/runtime bookkeeping stores
+as model publication. Diagnostics at `47124f3f` identify a RuntimeContext stack
+closure; a subsequent attempt also encountered runtime locking. The final checker
+matches the contact publisher's scope: external model arrays, native selection
+writes and activation must be guarded. Owned-writer checks remain active, and
+missing-guard/omitted-output unsafe controls still fail. Earlier failed logs are
+retained separately and are not passing qualification.
+
+Full CPU regression, remaining compiler configurations, PostgreSQL and GPU were
+not rerun. Shared-host timings are not performance qualification. This evidence
+supports provisional review; hosted CI and maintainer acceptance are independent.
