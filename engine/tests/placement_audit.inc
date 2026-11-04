@@ -115,6 +115,17 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
       placement_module_contract(f.h, compiled, module, index);
       const auto &ctx =
           engine::testing::CompiledKernelAccess::context(compiled);
+      if (index == 16) {
+        const auto pointer = ctx.array_ptrs.at({0, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
+        require((PlacementAccess::rebase_payload_binding(f.h, 0, pointer) ||
+                    pointer == reinterpret_cast<void *>(surfaces[33]->get_device_allocation_ptr_as_int())) &&
+                    ctx.array_bindings[0].type == taichi::lang::PrimitiveType::f64 &&
+                    ctx.array_bindings[0].rank == 2 &&
+                    ctx.array_bindings[0].elements == kParticleFieldCount * f.h.particle_capacity() &&
+                    ctx.array_ptrs.at({1, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
+                        reinterpret_cast<void *>(surfaces[3]->get_device_allocation_ptr_as_int()),
+                "exchange reduction lacks resident body and selection bindings");
+      }
       if (index == 14 || index == 15) {
         const auto *masks = LiveHierarchyAccess::input_array(f.h, 6);
         require(ctx.array_ptrs.at({12, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
