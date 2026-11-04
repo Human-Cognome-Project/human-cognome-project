@@ -1,9 +1,9 @@
-const std::array<std::set<int>, 16> &placement_writers() {
-  static const std::array<std::set<int>, 16> value{
+const std::array<std::set<int>, 17> &placement_writers() {
+  static const std::array<std::set<int>, 17> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -103,7 +103,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 16; ++index) {
+    for (int index = 0; index < 17; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -266,7 +266,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=16,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=17,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

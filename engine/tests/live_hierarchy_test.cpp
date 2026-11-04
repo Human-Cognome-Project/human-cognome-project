@@ -2791,6 +2791,8 @@ int main(int argc, char **argv) {
       run("admission_bootstrap", [&] { admission_bootstrap(r, path); });
     if (only == "placement" || only == "coordinate_rebase")
       run("coordinate_rebase", [&] { coordinate_rebase(r, path); });
+    if (only == "placement" || only == "exchange_state")
+      run("exchange_state", [&] { exchange_state(r, path); });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")

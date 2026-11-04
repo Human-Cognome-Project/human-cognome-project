@@ -92,6 +92,8 @@ void Placement::append_layout(const BudgetDemand &l,
   add("placement-inspection-certificates", b, sizeof(PlacementCertificate));
   add("placement-array-control", 10, sizeof(Ndarray) + 4 * sizeof(int));
   add("placement-fixed-owner-control", 1, sizeof(Placement));
+  add("exchange-state", 8, sizeof(double));
+  add("exchange-state-control", 1, sizeof(Ndarray) + 4 * sizeof(int));
   if (l[Budget::BootstrapCommands]) {
     add("bootstrap-focal-contributions", 6 * std::max<std::uint64_t>(
         l[Budget::Participation], 1), sizeof(std::uint64_t));
@@ -125,6 +127,7 @@ Placement::Placement(Harness &h) : h_(h) {
   attempt_ = allocate(r, d, {7, b});
   published_ = allocate(r, d, {7, b});
   counts_ = allocate(r, PrimitiveType::u64, {16});
+  exchange_state_ = allocate(r, d, {8});
   if (h.prepared_->capacity.limits()[Budget::BootstrapCommands]) {
     const int e = std::max(h.edges_, 1);
     bootstrap_contributions_ = allocate(r, PrimitiveType::u64, {3, e});
@@ -139,6 +142,8 @@ Placement::Placement(Harness &h) : h_(h) {
   inspection_.certificates.reserve(b);
   inspection_.proposal.reserve(b);
   build();
+  build_exchange();
+  reduce_exchange();
   collect();
   capture();
   solve(0, INT64_MAX, 0, c);
@@ -415,7 +420,7 @@ void Placement::publish(bool enabled) {
 std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
          solve_.prepared_bytes() + publish_.prepared_bytes() +
-         initialize_.prepared_bytes() +
+         initialize_.prepared_bytes() + exchange_reduce_.prepared_bytes() +
          (bootstrap_contributions_ ? bootstrap_solve_.prepared_bytes() : 0) +
          (contacts_ ? contacts_->binding_bytes() : 0);
 }
@@ -758,6 +763,7 @@ const PlacementInspection &Placement::inspect(const PlacementResult &q) {
     throw;
   }
 }
+#include "field/placement_exchange.inc"
 }  // namespace field::detail
 
 namespace field {

@@ -756,6 +756,66 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void exchange_state(engine::Runtime &r, HostPath path) {
+  for (int bits : {52, 8}) {
+    const auto l = placement_limits();
+    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 3, 2}, {-4, 8, 40},
+              bits, 52, false, false, true, false, 1024, {}, &l, true);
+    f.install();
+    const auto a = f.in.particle_rows[0], b = f.in.particle_rows[1];
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, 2);
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, b.record, -2);
+    PreparedFixtureAccess::inject_value64(f.h, kPosY, a.record, 4);
+    PreparedFixtureAccess::inject_value64(f.h, kPosY, b.record, -4);
+    PreparedFixtureAccess::inject_value64(f.h, kVelZ, a.record, 8);
+    // Current resident values, including a sleeper, are the authority.
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    const auto query = place(f, {placement_definition()}, {placement_intrinsic()});
+    const TickSnapshot before(f);
+    const auto history = PlacementAccess::rebase_history(f.h);
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    std::vector<engine::RecordHandle> selected{b, a};
+    UpdateResult result;
+    no_new([&] { result = PlacementAccess::exchange_state(f.h, selected); });
+    require(result.status == UpdateStatus::Ok && before == TickSnapshot(f) &&
+                history == PlacementAccess::rebase_history(f.h) &&
+                backing.same_backing(metrics.sample()), "exchange state changed live execution");
+    const auto state = PlacementAccess::exchange_output(f.h);
+    require(state == std::array<double, 8>{5, -2, 0, -1, 0, 2, 4, 0},
+            "outgoing state did not use resident mass-weighted centre/velocity");
+    std::reverse(selected.begin(), selected.end());
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok &&
+                state == PlacementAccess::exchange_output(f.h), "caller order changed exchange reduction");
+    require(PlacementAccess::exchange_state(f.h, {a}).status == UpdateStatus::Ok &&
+                PlacementAccess::exchange_output(f.h) ==
+                    std::array<double, 8>{-4, 4, 0, 2, 0, 8, 1, 0},
+            "aggregate outgoing state differs from its current body");
+    auto stale = a;
+    ++stale.incarnation;
+    require(PlacementAccess::exchange_state(f.h, {stale}).status == UpdateStatus::Stale &&
+                PlacementAccess::exchange_state(f.h, selected, UINT64_MAX,
+                    f.h.prepared_storage().generation + 1).status == UpdateStatus::Stale &&
+                PlacementAccess::exchange_state(f.h, {}).status == UpdateStatus::InvalidInput &&
+                PlacementAccess::exchange_state(f.h, {a, a}).status == UpdateStatus::InvalidInput &&
+                PlacementAccess::exchange_state(f.h, selected, 0).status == UpdateStatus::CapacityExhausted,
+            "invalid exchange selection or work accepted");
+    for (auto poison : {std::numeric_limits<double>::quiet_NaN(), 0x1p-300, 0x1p129}) {
+      PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, poison);
+      const TickSnapshot invalid(f);
+      require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  invalid == TickSnapshot(f) && f.h.ready(), "invalid exchange velocity published");
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, 2);
+    require(before == TickSnapshot(f) && PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok,
+            "exchange retry did not retain original state");
+    f.h.inspect_prepared_geometry(geometry);
+    f.h.inspect_prepared_placement(query);
+    std::cout << "exchange_state,bits=" << bits
+              << ",mass_weighted=1,current_velocity=1,order_independent=1,rejection=unchanged,backing=stable PASS\n";
+  }
+}
+
 void coordinate_rebase(engine::Runtime &r, HostPath path) {
   for (int capacity : {70, 128}) {
     const auto l = placement_limits(capacity);
