@@ -89,6 +89,7 @@ class LiveHierarchy {
   std::uint64_t node_count() const;
   std::uint64_t reference_count() const;
   void retag_generation(std::uint64_t);
+  bool full_precision_rebase() const;
   std::array<const engine::CompiledKernel *, 3> kernels() const;
   std::array<const engine::CompiledKernel *, 2> refresh_kernels() const;
   const std::vector<int> &child_links() const;

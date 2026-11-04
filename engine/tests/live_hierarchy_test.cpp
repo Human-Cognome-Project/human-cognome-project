@@ -145,6 +145,10 @@ struct LiveHierarchyAccess {
     h.runtime_->synchronize();
   }
 };
+std::array<taichi::lang::Ndarray *, 2>
+PlacementAccess::rebase_history_arrays(Harness &h) {
+  return {LiveHierarchyAccess::input_array(h, 0), LiveHierarchyAccess::input_array(h, 13)};
+}
 }  // namespace field::testing
 namespace field::detail::testing {
 struct NativeSelectionAccess {
@@ -2721,6 +2725,10 @@ int main(int argc, char **argv) {
       settings.device_memory_gb = 1.0;
     }
     settings.read_environment = false;
+    // The combined placement suite creates many independent owners in one
+    // Program. Native SNode IDs are monotonic even after a fixture is released.
+    // Reserve this test-runner metadata explicitly; model budgets are unchanged.
+    if (only == "placement") settings.snode_capacity = 2048;
     taichi::lang::default_compile_config.print_kernel_asm = dump_code;
     taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);
@@ -2781,6 +2789,8 @@ int main(int argc, char **argv) {
       run("admission_commit", [&] { admission_commit(r, path); });
     if (only == "placement" || only == "admission_bootstrap")
       run("admission_bootstrap", [&] { admission_bootstrap(r, path); });
+    if (only == "placement" || only == "coordinate_rebase")
+      run("coordinate_rebase", [&] { coordinate_rebase(r, path); });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")

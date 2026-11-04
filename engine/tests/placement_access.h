@@ -4,6 +4,21 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult rebase(Harness &h, const FrameAnchor &delta,
+                              std::uint64_t work = UINT64_MAX,
+                              std::uint64_t generation = UINT64_MAX) {
+    return h.rebase_current(generation == UINT64_MAX ? h.prepared_->generation : generation,
+                            delta, work);
+  }
+  static void disabled_rebase(Harness &h, const FrameAnchor &delta) {
+    h.launch_rebase(delta, 0);
+    h.runtime_->synchronize();
+  }
+  static std::vector<double> rebase_history(Harness &h) {
+    std::vector<double> out(h.activity_->group_delta->get_nelement());
+    engine::readback(*h.activity_->group_delta, out.data(), out.size() * sizeof(double));
+    return out;
+  }
   static UpdateResult focus(Harness &h, const std::vector<engine::RecordHandle> &fields,
                             std::uint64_t work = UINT64_MAX,
                             std::uint64_t generation = UINT64_MAX) {
@@ -90,16 +105,20 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 14>{
+    return std::array<const engine::CompiledKernel *, 16>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
-        &p.bootstrap_solve_, &h.focus_commit_};
+        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_};
+  }
+  static bool rebase_payload_binding(Harness &h, int argument, const void *pointer) {
+    if (argument > 1 || h.path_ != HostPath::CpuDirect) return false;
+    return pointer == (argument ? h.group_values_.data() : h.particle_values_.data());
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    std::array<taichi::lang::Ndarray *, 33> result{
+    std::array<taichi::lang::Ndarray *, 39> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
@@ -109,8 +128,16 @@ struct PlacementAccess {
     for (int i = 0; i < 6; ++i)
       result[26 + i] = &h.tick_execution_->admission_array(i);
     result[32] = h.activity_->focus.get();
+    result[33] = h.particle_array_.get();
+    result[34] = h.group_array_.get();
+    result[35] = h.activity_->group_delta.get();
+    const auto history = rebase_history_arrays(h);
+    result[36] = history[0];
+    result[37] = history[1];
+    result[38] = h.prepared_->candidate_status_array.get();
     return result;
   }
+  static std::array<taichi::lang::Ndarray *, 2> rebase_history_arrays(Harness &);
   static PlacementResult stage(Harness &h, const UpdateCommand *commands,
                                 std::size_t count,
                                 const PlacementIntrinsic *inputs,

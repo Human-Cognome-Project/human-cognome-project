@@ -1,9 +1,9 @@
-const std::array<std::set<int>, 14> &placement_writers() {
-  static const std::array<std::set<int>, 14> value{
+const std::array<std::set<int>, 16> &placement_writers() {
+  static const std::array<std::set<int>, 16> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -53,6 +53,9 @@ void placement_module_contract(Harness &h,
         // outputs. Activation call sites are independently guarded below.
         const bool model_write = pointer &&
             (arguments.data_arg(pointer) >= 0 || !roots.origins(pointer).empty());
+        if (index == 14 && model_write)
+          require(tick_audit::guarded(instruction, kernel, module, 11),
+                  "rebase publication lacks enable guard");
         if (index == 13 && pointer && !model_write)
           if (const auto *atomic = llvm::dyn_cast<llvm::AtomicRMWInst>(&instruction))
             if (atomic->getOperation() == llvm::AtomicRMWInst::Xchg)
@@ -100,7 +103,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 14; ++index) {
+    for (int index = 0; index < 16; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -115,9 +118,13 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
       for (int writer : placement_writers()[index]) {
         const auto pointer = ctx.array_ptrs.at(
             {writer, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
-        bool owned = false;
+        bool owned = index == 14 && PlacementAccess::rebase_payload_binding(f.h, writer, pointer) &&
+                     ctx.array_bindings[writer].type == taichi::lang::PrimitiveType::f64 &&
+                     ctx.array_bindings[writer].rank == 2 &&
+                     ctx.array_bindings[writer].elements ==
+                         (writer ? kGroupFieldCount * f.h.field_capacity() : kParticleFieldCount * f.h.particle_capacity());
         for (const auto *a : surfaces)
-          if (pointer ==
+          if (a && pointer ==
               reinterpret_cast<void *>(a->get_device_allocation_ptr_as_int()))
             owned = ctx.array_bindings[writer].type == a->dtype &&
                   ctx.array_bindings[writer].rank == int(a->shape.size()) &&
@@ -161,7 +168,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         for (auto *i : erase)
           i->eraseFromParent();
       });
-      if (index == 2 || index == 12)
+      if (index == 2 || index == 12 || index >= 14)
         reject("contracted_interval_math", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -175,7 +182,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
           throw std::runtime_error(
               "missing placement interval math control target");
         });
-      if (index == 3 || index == 11 || index == 13)
+      if (index == 3 || index == 11 || index == 13 || index == 14)
         reject("missing_result_publication_guard", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -185,7 +192,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                   for (bool truth : {true, false})
                     if (tick_audit::implies_enabled(branch->getCondition(),
                                                     truth, kernel, clone,
-                                                    index == 3 ? 2 : index == 11 ? 12 : 4)) {
+                                                    index == 3 ? 2 : index == 11 ? 12 : index == 14 ? 11 : 4)) {
                       branch->setCondition(llvm::ConstantInt::get(
                           llvm::Type::getInt1Ty(clone.getContext()), truth));
                       return;
@@ -250,7 +257,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=14,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=16,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

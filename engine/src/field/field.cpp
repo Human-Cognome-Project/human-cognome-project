@@ -1712,11 +1712,13 @@ void Harness::prepare_empty_execution() {
     s.manifest.push_back({"placement-native-metadata-measured",
                           std::size_t(native), 1, 1, std::size_t(native)});
   }
+  if (live_hierarchy_ && tick_execution_)
+    prepare_rebase_execution();
   s.binding_bytes =
       activity_->prepared_binding_bytes() + s.particles.prepared_bytes() +
       s.fields.prepared_bytes() + inspection_.prepared_bytes() +
       update_candidate_.prepared_bytes() + update_commit_.prepared_bytes() +
-      focus_commit_.prepared_bytes();
+      focus_commit_.prepared_bytes() + rebase_.prepared_bytes() + rebase_check_.prepared_bytes();
   for (const auto *kernel : {&clear_, &force_, &contact_, &integrate_,
                              &determine_, &centroid_, &finalize_})
     s.binding_bytes += kernel->prepared_bytes();

@@ -198,6 +198,10 @@ is included in the prepared reservation.
 This implements focus selection only. D6 coordinate rebasing, D7 representation
 exchange and the enduring owner remain separate continuation work.
 
+The following [private coordinate-rebase increment](COORDINATE-REBASE.md) supplies
+exact full-precision translations with separate native validation/publication.
+Reduced profiles and operational integration remain outside that increment.
+
 ## Remaining B3 work
 
 Representation exchange and complete operational command integration remain.
