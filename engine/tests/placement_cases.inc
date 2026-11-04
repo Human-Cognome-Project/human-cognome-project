@@ -757,6 +757,28 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
 }
 
 void coordinate_rebase(engine::Runtime &r, HostPath path) {
+  const auto dump = [](const char *phase, Fixture &f) {
+    if (!std::getenv("HCP_REBASE_DIAGNOSTICS")) return;
+    f.h.inspect_prepared();
+    const auto tree = f.h.inspect_live_hierarchy();
+    const auto history = PlacementAccess::rebase_history(f.h);
+    const auto print = [&](const char *surface, const auto &values, std::size_t stride) {
+      for (std::size_t i = 0; i < values.size(); ++i)
+        if (values[i] != 0)
+          std::cerr << "rebase_state,phase=" << phase << ",capacity=" << f.h.particle_capacity()
+                    << ",surface=" << surface << ",component=" << i / stride
+                    << ",slot=" << i % stride << ",value=" << std::setprecision(17)
+                    << values[i] << '\n';
+    };
+    print("body", f.h.particles64(), f.h.particle_capacity());
+    print("field", f.h.groups64(), f.h.field_capacity());
+    print("determined", f.h.determined64(), f.h.particle_capacity());
+    print("history", history, f.h.field_capacity());
+    print("slots", tree.slots, tree.selectors.size());
+    print("previous", tree.previous, tree.selectors.size());
+    print("selectors", tree.selectors, tree.selectors.size());
+    print("flags", f.h.prepared_storage().inspection_flags, f.h.particle_capacity());
+  };
   for (int capacity : {70, 128}) {
     const auto l = placement_limits(capacity);
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
@@ -900,14 +922,37 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     reference.control->set(2, reference.in.particle_rows[0].record);
     auto moving = stationary;
     moving.dt = .25;
-    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok &&
-                f.h.tick_prepared(f.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
-                reference.h.tick_prepared(reference.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
-                PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
-            "rebase translated-frame tick failed");
+    dump("before-translated", f);
+    dump("before-reference", reference);
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok, "continuation forward rebase");
+    dump("translated-before-tick", f);
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, moving).status == TickStatus::Ok,
+            "translated continuation tick");
+    require(reference.h.tick_prepared(reference.h.prepared_storage().generation, moving).status == TickStatus::Ok,
+            "reference continuation tick");
+    dump("translated-after-tick", f);
+    dump("reference-after-tick", reference);
+    require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "continuation inverse rebase");
     f.h.inspect_prepared();
     reference.h.inspect_prepared();
     const auto continued = f.h.inspect_live_hierarchy(), expected = reference.h.inspect_live_hierarchy();
+    const auto difference = [&](const char *surface, const auto &a, const auto &b, std::size_t stride) {
+      require(a.size() == b.size(), "continuation surface extent differs");
+      for (std::size_t i = 0; i < a.size(); ++i)
+        if (a[i] != b[i])
+          std::cerr << "rebase_difference,capacity=" << capacity << ",surface=" << surface
+                    << ",component=" << i / stride << ",slot=" << i % stride
+                    << ",actual=" << std::setprecision(17) << a[i] << ",expected=" << b[i] << '\n';
+    };
+    difference("body", f.h.particles64(), reference.h.particles64(), capacity);
+    difference("field", f.h.groups64(), reference.h.groups64(), capacity);
+    difference("determined", f.h.determined64(), reference.h.determined64(), capacity);
+    difference("flags", f.h.prepared_storage().inspection_flags, reference.h.prepared_storage().inspection_flags, capacity);
+    difference("slots", continued.slots, expected.slots, continued.selectors.size());
+    difference("previous", continued.previous, expected.previous, continued.selectors.size());
+    difference("selectors", continued.selectors, expected.selectors, continued.selectors.size());
+    difference("history", PlacementAccess::rebase_history(f.h), PlacementAccess::rebase_history(reference.h), capacity);
     require(f.h.particle64(kPosX, f.in.particle_rows[0].record) !=
                 bodies[kPosX * f.h.particle_capacity() + f.in.particle_rows[0].record],
             "rebase continuation witness did not move a body");
