@@ -937,7 +937,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
   for (int reduced : {0, 1, 2, 3}) {
     const auto l = placement_limits();
     Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 3 ? 0 : reduced == 0 ? 8 : 52,
-              reduced == 3 ? 0 : reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
+              reduced == 3 ? 0 : reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l, true);
     if (reduced == 2) f.nodes[0].retained_fraction_bits = 8;
     f.install();
     if (reduced != 0) {
