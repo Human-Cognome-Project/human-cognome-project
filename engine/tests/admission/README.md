@@ -239,3 +239,34 @@ Full CPU regression, other compiler modes, PostgreSQL and GPU were not rerun.
 Shared-host timings are not performance qualification. The implementation and
 source-pinned evidence support provisional review only; hosted CI and maintainer
 acceptance remain independent.
+
+## Integrated hosted acceptance — 2026-11-04
+
+PR #210 at `e359b6e31eb38a3f69512c7ac69f25eb7186c36f` passed all 18 hosted
+checks and merged as `3f042d706e73e42f5e312a1362a73043ef504b4e`. It includes
+#208's contact prerequisite and #209's ordinary commit plus the kernel-identity
+correction; GitHub marked both antecedent PRs merged through this integration.
+This does not independently accept the uncorrected #208 source.
+
+Inspected [native run 41851862998](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41851862998):
+
+| Shard | Job | Tests | CTest seconds |
+|---|---|---:|---:|
+| 1 | 126653824877 | 29 | 1448.04 |
+| 2 | 126653824803 | 29 | 1622.28 |
+| 3 | 126653824990 | 29 | 1669.57 |
+| 4 | 126653825042 | 28 | 1714.07 |
+
+Logs cover every index 1–115 exactly once. Database job 126653824761 passed
+180 integration checks with 24 addressed reads and zero private reads.
+Downloaded compiler artifacts 13337786195, 13337875523, 13337990147 and
+13337621864 cover all eight worker/source/compiler configurations: each
+placement audit reports 13 kernels and 17 rejected unsafe controls at both
+fraction-bit profiles. All four extra no-unroll placement outputs include
+passing bootstrap witnesses and zero case failures.
+
+Source review found no blockers within private ordinary arrival and initial
+D1 bootstrap. Contributor-local bundles above were not independently inspected;
+the hosted evidence here is separate. This does not qualify representation
+exchange, focus replacement on an existing model, operational owner/public
+Add/browser controls or GPU execution.
