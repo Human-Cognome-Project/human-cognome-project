@@ -31,6 +31,20 @@ Full CPU regression, all compiler/worker modes, PostgreSQL and GPU profiles were
 not run for this increment. No first-admission D1 focus, native record claim,
 contact publication or operational Add/Remove behavior is claimed.
 
+## Hosted acceptance — 2026-11-03
+
+PR #205 at `a8a14fdee36ca6b70b08d4c9f1d274c4b16493ac` was source-reviewed
+without blockers and passed all eight hosted checks. The independently inspected
+[native job 125871626394](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41622544766/job/125871626394)
+passed 115/115 CPU tests in 4319.55 seconds and 180 integration checks, with
+24 addressed reads and zero private reads. Both evidence artifacts uploaded.
+This hosted result is separate from the contributor-local evidence above.
+
+Merged as `ef0ede690900e6b3cea4bdfce7fc0e33b7a6021b` after CI-only #206.
+Acceptance covers the private staging prerequisite only. D1 bootstrap/focus,
+prospective contact validation, record claims and coordinated single-publication
+admission remain the next B3 work. Integrated main [run 41720357523](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357523) passed at the merge pin above: all 115 tests exactly once, all eight compiler configurations and extra no-unroll cases, plus 180 integration checks with zero private reads. [CI acceptance details](../../docs/HOSTED-CI.md#integrated-main-verification) retain job/artifact pins and measured timings.
+
 ## Prospective source/hierarchy preflight — 2026-11-03
 
 Tested commit `162dcae43865b5ea3a0daa85bb3e54c8fe09c3a0`, stacked on
@@ -57,3 +71,13 @@ are retained locally as `admission-preflight-162dcae4`. Its `SHA256SUMS` digest 
 No full CPU regression, full compiler matrix, PostgreSQL or GPU rerun is claimed.
 Prospective contact validation, complete bootstrap and atomic publication remain
 unimplemented; this evidence does not establish operational admission readiness.
+
+## Preflight hosted review — 2026-11-04
+
+PR #207 at `bf12964641ba5cd6f8fc2b49156e948827857e43` passed all eight
+hosted checks. Independently inspected [native job 126197667121](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41716471199/job/126197667121)
+passed 115 CPU suites in 5822.67 seconds and 180 integration checks, with
+24 addressed reads and zero private reads. Source review found no blockers
+within private source/hierarchy preflight scope. Contributor-local evidence
+above remains separate. Integration with the new main CI workflow is pending;
+complete B3 admission and GPU qualification remain outstanding.

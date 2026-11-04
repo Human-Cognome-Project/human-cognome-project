@@ -1,7 +1,7 @@
 # Native admission implementation work
 
-Status: **in progress**, following accepted B2 (#203) and local CI tooling
-(#204). The [accepted admission plan](../../docs/native-admission-contact-transaction-plan.md)
+Status: **private generated-row staging accepted in #205**; complete B3 remains
+in progress, following accepted B2 (#203) and local CI tooling (#204). The [accepted admission plan](../../docs/native-admission-contact-transaction-plan.md)
 governs B3. No operational admission API is implemented by the initial increment.
 
 ## Native generated-row staging
