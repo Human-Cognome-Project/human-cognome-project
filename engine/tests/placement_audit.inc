@@ -47,6 +47,12 @@ void placement_module_contract(Harness &h,
           require((index == 11 || index == 13) && tick_audit::guarded(
                       instruction, kernel, module, index == 11 ? 12 : 4),
                   "placement kernel mutates native selection without publication");
+        if (index == 13 && pointer && !tick_audit::guarded(instruction, kernel, module, 4)) {
+          hierarchy_audit::Analyzer arguments(kernel, module, 100);
+          llvm::errs() << "focal_unguarded_store,arg=" << arguments.data_arg(pointer)
+                       << ",native_origins=" << roots.origins(pointer).size()
+                       << ",instruction=" << instruction << '\n';
+        }
         if (index == 13 && pointer)
           require(tick_audit::guarded(instruction, kernel, module, 4),
                   "focal publication lacks enable guard");
