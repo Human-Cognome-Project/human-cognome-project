@@ -361,3 +361,63 @@ Its `SHA256SUMS` digest is
 `b10320d394488e9161969fcc7f181de19c3e47c9afca5c60b9077c94ae371d85`.
 The archive is retained in the Windows workspace. This contributor-local evidence
 is not remotely available or independently verified merely by publishing its hash.
+
+## Private exact coordinate rebase — 2026-11-04
+
+This is a continuation of provisionally accepted #211 at
+`153f6124193bfe027253716e0672ec41b755bc9e`. It does not claim that dependency's
+pending hosted checks or final merge have completed. The [implementation and
+numerical limits](../../docs/COORDINATE-REBASE.md) describe a private full-precision
+D6 boundary; reduced profiles, operational controls and GPU remain separate.
+
+Code/test pin: `26e8a74dfbe453dc420ea1ba85c4d609c15aa25e`.
+
+All scoped local CPU checks passed: fifteen combined placement/admission cases
+in one-worker bulk/default mode; rebase and compiler checks in two-worker
+direct/no-unroll mode; prepared update and dirty hierarchy regressions. Each
+compiler configuration covers 16 kernels and 24 rejected unsafe controls at
+both 52- and 8-bit body precision. The 8-bit compiler checks do not qualify
+reduced-precision rebasing; the operational request is explicitly rejected.
+
+Bundle `coordinate-rebase-26e8a74d` retains commands, source/submodule pins,
+configuration, toolchain, binary/runtime hashes, raw logs, emitted LLVM and frozen
+ABI metadata. Its `SHA256SUMS` digest is
+`02269c8e39af288e02d7ac380b3a19a42b65ec15b0e8a1479fb35855dc555f9a`.
+A matching archive is retained in the Windows workspace. These are contributor
+results; the local bundle is not remotely available or independently inspected
+merely because its digest is published. Subsequent documentation changes no tested
+code. Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were
+not rerun; shared-host timings are not performance qualification. Hosted CI and
+maintainer acceptance remain independent.
+
+The rebase case uses 70/128 capacities with holes, sleeping bodies, explicit and
+installed contacts, dirty hierarchy packets and live velocity. It checks exact
+translations around `2^27`, both packet slots and reader histories, native previous
+centres, frame/focal controls and inverse translation. A tick in the translated
+frame is compared with an otherwise identical unrebased execution. Rejections
+cover stale generation, work exhaustion, nonfinite inputs, lost small/large
+translations, tiny FTZ-range coordinates in all three retained-history surfaces,
+and independently reduced body/field/hierarchy precision. Ordinary rejection
+preserves state/readiness/observations; injected late failures refuse resumed use.
+Prepared backing remains stable with no observed recurring C++ allocation.
+
+The compiler matrix now includes separate rebase check and publication kernels.
+Check ownership permits only the status scalar; publication ownership permits
+only its coordinate arrays and requires its enable guard. Both use strict math.
+Omitted-output, contracted-arithmetic and missing-publication-guard mutations
+are negative controls, while legal repeated writes remain accepted.
+
+Earlier attempts are retained separately, not counted as passing qualification:
+`466a06f2` encountered the compiler's nested sparse-traversal restriction;
+`084aa195` exposed a test expectation that incorrectly treated previous-centre
+coordinates as untranslated motion. Combined check/commit kernels at `e0cf2c63`
+and `5a059d82` failed emitted guard audits, including live-coordinate stores
+outside an explicit publication guard. The implementation now uses two kernels
+so validation cannot write those coordinates. The conservative FTZ residual range
+was added without changing the runtime floating-point mode.
+
+The broader run at `21a41427` completed twelve cases, including rebase, before
+exhausting the Program's default 1,024 monotonic SNode IDs in later fixtures.
+It is retained as an incomplete run. The combined test runner now explicitly
+reserves 2,048 IDs without changing production model budgets. The final moving
+continuation witness also asserts nonzero displacement at positive dt.
