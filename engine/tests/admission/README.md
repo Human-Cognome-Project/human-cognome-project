@@ -81,3 +81,43 @@ passed 115 CPU suites in 5822.67 seconds and 180 integration checks, with
 within private source/hierarchy preflight scope. Contributor-local evidence
 above remains separate. Integration with the new main CI workflow is pending;
 complete B3 admission and GPU qualification remain outstanding.
+
+## Prospective contact preflight — 2026-11-04
+
+Contributor-local qualification at `e2720b511b4f266ef47d553d22c4f06e0157a9d3`,
+stacked on provisionally accepted #207 integration `ecd1d6ae`. Later changes
+document scope/evidence only. Ubuntu 24.04/WSL2, Clang/LLVM 15, CPU/x64:
+
+- `live_hierarchy_test --threads 1 --case placement`: all nine focused cases
+  passed, including generated starts, source/hierarchy/contact preflight,
+  placement geometry/rejection/capacity/ownership and compiler checks.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case admission_preflight`: passed.
+- The same two-worker/direct/no-unroll configuration with `--case admission_contacts`: passed.
+- The same configuration with `--case placement_compiler`: passed at 52 and 8
+  body fraction bits. Ten emitted kernels were audited per profile, with twelve
+  unsafe controls rejected per profile; LLVM and ABI outputs retained.
+- `prepared_update_test`: passed.
+- `live_hierarchy_test --threads 1 --case refresh_dirty`: passed.
+
+The prospective union includes generated endpoints, preserves the first explicit
+orientation, maps duplicate/reversed sources to one pair, and retains tangency
+semantics. Sleeping survivors participate in source-empty derived discovery.
+Tests reject three required contacts against capacity two and 43 simultaneous
+source/tree/contact references against capacity 37. Closed retirement removes
+exactly the outgoing occupant and permits healthy retry. Preparation and final
+union-order work limits reject unchanged. Repeated preflight retains native
+backing/compiler state, observes no recurring C++ allocation, and preserves
+survivor/history/pending state and prior public placement observations.
+
+Raw logs, exact commands, source/submodule pins, configuration, toolchain,
+binary/runtime hashes and emitted modules are retained locally as
+`admission-contacts-e2720b51`, with a Windows workspace archive of the same name.
+The `SHA256SUMS` digest is
+`a5007f96eab199ecb4e42d58584cd731ed61335aa6e5148380a21ad93eff5ab2`.
+This hash identifies a machine-local bundle, not remotely available evidence.
+
+No full CPU regression, remaining compiler matrix, PostgreSQL or GPU run is
+claimed. Shared-host timings are not performance qualification. This remains a
+private preclaim prerequisite: complete D1 bootstrap/focus and coherent
+source/hierarchy/contact/activity publication are not implemented. Hosted CI
+and maintainer acceptance remain separate from these contributor-local results.

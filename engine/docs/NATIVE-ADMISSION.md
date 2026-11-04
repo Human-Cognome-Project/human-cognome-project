@@ -76,7 +76,9 @@ Contact/reference/work exhaustion returns before claims, preserving published
 geometry and placement observations, activity, history, generation and ticks.
 `UpdateResult` reports attempted contact pairs/work; those counts confer no
 publication authority. Scratch is attempt-local, with no reusable admission
-token. The compiler audit covers all five new kernels and their frozen private
+token. New endpoints are provisional row names; the later combined commit must
+resolve them through verified claim destinations before installing the union.
+The compiler audit covers all five new kernels and their frozen private
 write bindings. CPU evidence does not qualify any GPU backend.
 
 ## Remaining B3 work
