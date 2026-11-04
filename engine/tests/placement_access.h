@@ -4,6 +4,12 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static PlacementResult exchange(Harness &h, const std::vector<UpdateCommand> &commands,
+      const std::vector<PlacementIntrinsic> &inputs,
+      const std::vector<engine::RecordHandle> &outgoing, std::uint64_t work = UINT64_MAX) {
+    return h.placement_->stage_exchange(h.prepared_->generation, commands.data(), commands.size(),
+        inputs.data(), inputs.size(), outgoing.data(), outgoing.size(), work, UINT64_MAX);
+  }
   static UpdateResult exchange_state(Harness &h, const std::vector<engine::RecordHandle> &rows,
                                     std::uint64_t work = UINT64_MAX,
                                     std::uint64_t generation = UINT64_MAX) {
@@ -117,12 +123,13 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 17>{
+    return std::array<const engine::CompiledKernel *, 18>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
-        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_, &p.exchange_reduce_};
+        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_, &p.exchange_reduce_,
+        &p.exchange_target_};
   }
   static bool rebase_payload_binding(Harness &h, int argument, const void *pointer) {
     if (argument > 1 || h.path_ != HostPath::CpuDirect) return false;

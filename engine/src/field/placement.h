@@ -31,10 +31,14 @@ class Placement {
       requests_, occupancy_, cells_, attempt_, published_, counts_;
   engine::CompiledKernel collect_, capture_, solve_, publish_, initialize_;
   engine::CompiledKernel bootstrap_solve_;
-  engine::CompiledKernel exchange_reduce_;
+  engine::CompiledKernel exchange_reduce_, exchange_target_;
   std::unique_ptr<taichi::lang::Ndarray> exchange_state_;
   void build_exchange();
   void reduce_exchange();
+  void target_exchange();
+  PlacementResult stage_exchange(std::uint64_t, const UpdateCommand *, std::size_t,
+      const PlacementIntrinsic *, std::size_t, const engine::RecordHandle *,
+      std::size_t, std::uint64_t, std::uint64_t);
   // Attempt-local D7 prerequisite, not an exchange or reusable candidate token.
   UpdateResult stage_exchange_state(std::uint64_t, const engine::RecordHandle *,
                                     std::size_t, std::uint64_t);
@@ -57,7 +61,7 @@ class Placement {
   void capture();
   void solve(int, std::uint64_t, std::uint64_t, int, bool bootstrap = false);
   void publish(bool enabled);
-  void initialize(int bodies);
+  void initialize(int bodies, bool exchange = false);
   // Private admission preparation: native generated rows only, no record claims
   // or public candidate publication. Full admission owns subsequent validation.
   PlacementResult stage(std::uint64_t, const UpdateCommand *, std::size_t,
@@ -68,6 +72,8 @@ class Placement {
                           const PlacementIntrinsic *, std::size_t,
                           std::uint64_t, std::uint64_t, bool publication,
                           bool bootstrap = false, const UpdateRef *focus = nullptr,
-                          std::size_t focus_count = 0);
+                          std::size_t focus_count = 0,
+                          const engine::RecordHandle *outgoing = nullptr,
+                          std::size_t outgoing_count = 0);
 };
 }  // namespace field::detail

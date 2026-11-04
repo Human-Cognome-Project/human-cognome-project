@@ -1,9 +1,9 @@
-const std::array<std::set<int>, 17> &placement_writers() {
-  static const std::array<std::set<int>, 17> value{
+const std::array<std::set<int>, 18> &placement_writers() {
+  static const std::array<std::set<int>, 18> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2}, {1}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -103,7 +103,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 17; ++index) {
+    for (int index = 0; index < 18; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -115,6 +115,14 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
       placement_module_contract(f.h, compiled, module, index);
       const auto &ctx =
           engine::testing::CompiledKernelAccess::context(compiled);
+      if (index == 4 || index == 17) {
+        const int arg = index == 4 ? 4 : 0;
+        require(ctx.array_ptrs.at({arg, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
+                    reinterpret_cast<void *>(surfaces[39]->get_device_allocation_ptr_as_int()) &&
+                    ctx.array_bindings[arg].type == taichi::lang::PrimitiveType::f64 &&
+                    ctx.array_bindings[arg].rank == 1 && ctx.array_bindings[arg].elements == 8,
+                "replacement staging lacks native outgoing-state binding");
+      }
       if (index == 16) {
         const auto pointer = ctx.array_ptrs.at({0, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
         require((PlacementAccess::rebase_payload_binding(f.h, 0, pointer) ||
@@ -188,7 +196,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         for (auto *i : erase)
           i->eraseFromParent();
       });
-      if (index == 2 || index == 12 || index >= 14)
+      if (index == 2 || index == 12 || (index >= 14 && index <= 16))
         reject("contracted_interval_math", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -277,7 +285,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=17,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=18,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

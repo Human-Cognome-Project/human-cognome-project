@@ -756,6 +756,108 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void exchange_placement(engine::Runtime &r, HostPath path) {
+  for (int bits : {52, 8}) {
+    const auto limits = placement_limits();
+    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 3, 2}, {-4, 8, 40},
+              bits, 52, false, false, true, false, 1024, {1, 1, 1}, &limits, true);
+    f.install();
+    const auto a = f.in.particle_rows[0], b = f.in.particle_rows[1];
+    const std::array<double, 3> velocity{1 + 0x1p-20, -2, 3};
+    for (int k = 0; k < 3; ++k) {
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, a.record, velocity[k]);
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, b.record, velocity[k]);
+    }
+    f.control->set(4);
+    const auto query = place(f, {placement_definition()}, {placement_intrinsic()});
+    require(query.status == PlacementStatus::Ok, "exchange baseline query");
+    const auto before = TickSnapshot(f);
+    const auto history = PlacementAccess::rebase_history(f.h);
+    const auto stride = f.h.prepared_storage().capacity.command_capacity();
+    const auto make_commands = [&](int outgoing, int incoming) {
+      std::vector<UpdateCommand> commands;
+      for (int i = 0; i < incoming; ++i) commands.push_back(placement_definition(900 + i));
+      for (int i = 0; i < outgoing; ++i) {
+        UpdateCommand remove;
+        remove.operation = UpdateOp::RemoveParticipation;
+        remove.row = i;
+        remove.ordinal = f.h.prepared_storage().edges[i].ordinal;
+        remove.generation = f.h.prepared_storage().generation;
+        commands.push_back(remove);
+        UpdateCommand retire;
+        retire.operation = UpdateOp::RetireParticle;
+        retire.first = UpdateRef::existing(f.in.particle_rows[i]);
+        commands.push_back(retire);
+      }
+      return commands;
+    };
+    auto commands = make_commands(2, 1);
+    commands[0].exact_mass = 4;
+    std::vector<PlacementIntrinsic> inputs{placement_intrinsic(0, 10, 0.5)};
+    inputs[0].mass = 4;
+    const std::vector<engine::RecordHandle> outgoing{b, a};
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    PlacementResult result;
+    for (int repeat = 0; repeat < 3; ++repeat) {
+      no_new([&] { result = PlacementAccess::exchange(f.h, commands, inputs, outgoing); });
+      require(result.status == PlacementStatus::Ok && !result.query && result.placements == 1 &&
+                  result.target == std::array<double, 3>{5, 0, 0},
+              "replacement did not target outgoing mass centre");
+      const auto rows = PlacementAccess::generated(f.h);
+      require(rows[kPosX * stride] == 5 && rows[kPosY * stride] == 0 && rows[kPosZ * stride] == 0 &&
+                  rows[kMass * stride] == 4, "compression start differs from native target");
+      for (int k = 0; k < 3; ++k)
+        require(rows[(kVelX + k) * stride] == velocity[k], "replacement velocity lost f64 detail");
+    }
+    auto stale = outgoing;
+    ++stale[0].incarnation;
+    auto mismatched = commands;
+    mismatched.back().first = UpdateRef::existing(f.in.particle_rows[2]);
+    require(PlacementAccess::exchange(f.h, commands, inputs, stale).status == PlacementStatus::Stale &&
+                PlacementAccess::exchange(f.h, commands, inputs, {}).status == PlacementStatus::InvalidInput &&
+                PlacementAccess::exchange(f.h, commands, inputs, {a, a}).status == PlacementStatus::InvalidInput &&
+                PlacementAccess::exchange(f.h, mismatched, inputs, outgoing).status == PlacementStatus::InvalidInput &&
+                PlacementAccess::exchange(f.h, commands, inputs, {a}).status == PlacementStatus::InvalidInput &&
+                PlacementAccess::exchange(f.h, commands, inputs, outgoing, 0).status == PlacementStatus::CapacityExhausted,
+            "replacement accepted invalid outgoing set or work");
+    // Expansion excludes the outgoing sphere but keeps the sleeping survivor.
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 2);
+    commands = make_commands(1, 2);
+    inputs = {placement_intrinsic(0, 20, 0.25), placement_intrinsic(1, 10, 0.5)};
+    const std::vector<engine::RecordHandle> aggregate{a};
+    no_new([&] { result = PlacementAccess::exchange(f.h, commands, inputs, aggregate); });
+    require(result.status == PlacementStatus::Ok && result.target[0] == -4,
+            "aggregate expansion failed");
+    auto rows = PlacementAccess::generated(f.h);
+    require(rows[kPosX * stride + 1] == -4 && rows[kPosY * stride + 1] == 0 &&
+                rows[kPosZ * stride + 1] == 0, "outgoing sphere blocked its own replacement");
+    double separation = 0;
+    for (int k = 0; k < 3; ++k) {
+      const auto delta = rows[(kPosX + k) * stride] - rows[(kPosX + k) * stride + 1];
+      separation += delta * delta;
+      for (int cmd = 0; cmd < 2; ++cmd)
+        require(rows[(kVelX + k) * stride + cmd] == velocity[k], "expansion motion remap");
+    }
+    require(separation >= 0.75 * 0.75, "replacement batch overlaps itself");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    // Ordinary arrivals must clear the exchange mode and retain focus targeting.
+    const auto ordinary = placement_definition(990);
+    const auto intrinsic = placement_intrinsic();
+    no_new([&] { result = PlacementAccess::stage(f.h, &ordinary, 1, &intrinsic, 1); });
+    require(result.status == PlacementStatus::Ok && result.target == query.target,
+            "exchange scratch leaked into ordinary focus target");
+    rows = PlacementAccess::generated(f.h);
+    for (int k = 0; k < 3; ++k)
+      require(rows[(kVelX + k) * stride] == 0, "exchange velocity leaked into ordinary arrival");
+    require(before == TickSnapshot(f) && history == PlacementAccess::rebase_history(f.h) &&
+                backing.same_backing(metrics.sample()), "private replacement staging changed live state/backing");
+    f.h.inspect_prepared_placement(query);
+    std::cout << "exchange_placement,bits=" << bits
+              << ",compression=1,expansion=1,native_motion=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
+  }
+}
+
 void exchange_state(engine::Runtime &r, HostPath path) {
   for (int bits : {52, 8}) {
     const auto l = placement_limits();

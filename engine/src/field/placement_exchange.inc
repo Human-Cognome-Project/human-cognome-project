@@ -47,6 +47,41 @@ void Placement::build_exchange() {
       b.extract_ir(), {Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::i32),
                        Param::array(PrimitiveType::f64), Param::scalar(PrimitiveType::i32)},
       engine::MathMode::Strict);
+  IRBuilder target;
+  auto *state = target.create_ndarray_arg_load({0}, PrimitiveType::f64, 1, 0),
+       *focal = target.create_ndarray_arg_load({1}, PrimitiveType::f64, 1, 0);
+  for (int k = 0; k < 4; ++k)
+    target.create_global_store(target.create_external_ptr(focal, {target.get_int32(k)}),
+        target.create_global_load(target.create_external_ptr(state,
+            {target.get_int32(k == 3 ? 6 : k)})));
+  exchange_target_ = engine::CompiledKernel(*h_.runtime_, "placement_exchange_target",
+      target.extract_ir(), {Param::array(PrimitiveType::f64), Param::array(PrimitiveType::f64)},
+      engine::MathMode::Strict);
+}
+
+void Placement::target_exchange() {
+  auto call = exchange_target_.invocation(true);
+  auto &c = call.get();
+  if (!c.prepared) {
+    c.set_arg_ndarray({0}, *exchange_state_);
+    c.set_arg_ndarray({1}, *focal_);
+  }
+  exchange_target_.launch(c);
+}
+
+PlacementResult Placement::stage_exchange(std::uint64_t expected,
+    const UpdateCommand *commands, std::size_t command_count,
+    const PlacementIntrinsic *inputs, std::size_t body_count,
+    const engine::RecordHandle *outgoing, std::size_t outgoing_count,
+    std::uint64_t work, std::uint64_t cells) {
+  if (!outgoing || !outgoing_count) {
+    PlacementResult result;
+    result.status = PlacementStatus::InvalidInput;
+    result.generation = h_.prepared_->generation;
+    return result;
+  }
+  return attempt(expected, commands, command_count, inputs, body_count, work, cells,
+                 false, false, nullptr, 0, outgoing, outgoing_count);
 }
 
 void Placement::reduce_exchange() {

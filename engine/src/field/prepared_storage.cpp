@@ -157,12 +157,12 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
                         151 + (geometry ? 33 : 0) + (cascade ? 22 : 0) +
                         (cascade && weighted ? 2 : 0) + (wide ? 6 : 0) +
                         (live ? 92 + 2 + 46 : 0) + (live && ticks ? 31 : 0) +
-                        (ticks ? (live ? 531 : 417) : 0) + (placement ? 82 : 0) +
+                        (ticks ? (live ? 531 : 417) : 0) + (placement ? 86 : 0) +
                         (placement && live ? 51 + (ticks ? 13 : 0) : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
                                (live ? 5 : 0) + (live && ticks ? 3 : 0) +
                                (ticks ? (live ? 34 : 31) : 0) +
-                               (placement ? 7 : 0) +
+                               (placement ? 8 : 0) +
                                (placement && live ? 6 + (ticks ? 1 : 0) : 0),
                     abi_per_arg = 24;
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
