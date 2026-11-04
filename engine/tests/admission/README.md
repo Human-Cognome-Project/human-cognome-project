@@ -541,3 +541,23 @@ Subsequent changes are documentation only. The initial controlled-witness build
 at `312d9cda` failed because a long-double expectation was narrowed into an f64
 packet initializer; the expectation parameter now matches the packet type. That
 failed build is retained separately and is not passing evidence.
+
+All corrected scoped checks passed: #213's complete 15-case placement suite in
+two-worker bulk/default, direct/default and direct/no-unroll, plus a separate
+standalone bulk rebase. Each combined compiler audit passes 16 kernels and 24
+unsafe controls per 52/8-bit profile. #214 passes the complete 16-case combined
+suite in two-worker direct/no-unroll (17 kernels/26 controls per profile), separate
+two-worker bulk rebase and one-worker bulk exchange_state. Both capacities retain
+the forced-order counterexample and exact catch-up in the corrected rebase case.
+
+Bundle `rebase-continuation-b38ad7e5-41fd4df2` retains all original diagnostic,
+controlled-baseline and corrected raw logs, exact pins, commands, binary/runtime
+hashes, configuration and toolchain. Its `SHA256SUMS` digest is
+`044ff224916315920620264f11f280ba791688571a326c61c4d470f7c899eafd`.
+A matching archive is retained in the Windows workspace. Raw evidence remains
+machine-local and is not independently verified merely by publishing its hash.
+
+Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were not
+rerun. No GPU work occurred; shared-host timing is not performance qualification.
+The source-only test correction and local passes do not replace current-head
+hosted reconciliation or maintainer approval for either PR.
