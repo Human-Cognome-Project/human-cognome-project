@@ -58,11 +58,12 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 12>{
+    return std::array<const engine::CompiledKernel *, 13>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
-        &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_};
+        &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
+        &p.bootstrap_solve_};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;

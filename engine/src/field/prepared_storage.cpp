@@ -297,7 +297,8 @@ PreparedStorage::PreparedStorage(engine::Runtime &r, const PreparedCapacity &c)
        {validation_array.get(), derived_array.get(), destinations_array.get(),
         candidate_edges_array.get(), candidate_shares_array.get(),
         new_rows_array.get(), candidate_status_array.get(),
-        candidate_offsets_array.get(), candidate_order_array.get()})
+        candidate_offsets_array.get(), candidate_order_array.get(),
+        candidate_focus_array.get()})
     r.program().fill_ndarray_fast_u32(a, 0);
   if (profile.wide()) {
     live_ratios.resize(2 * e + g);

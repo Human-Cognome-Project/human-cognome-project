@@ -608,7 +608,11 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
   auto bad = spec;
   bad.node_count = 1;
-  require(PlacementAccess::bootstrap(h, commands, inputs, bad, focus).status ==
+  const auto bad_result = PlacementAccess::bootstrap(h, commands, inputs, bad, focus);
+  std::cout << "bootstrap_incomplete,status=" << int(bad_result.status)
+            << ",budget=" << budget_name(bad_result.failure.budget)
+            << ",required=" << bad_result.failure.required << std::endl;
+  require(bad_result.status ==
               UpdateStatus::InvalidInput, "bootstrap accepted incomplete hierarchy");
   unchanged();
   UpdateResult preflight;
