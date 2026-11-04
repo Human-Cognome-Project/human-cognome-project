@@ -35,7 +35,7 @@ void Placement::build_exchange() {
   m.invalid(b.create_cmp_le(mass, m.f(0)));
   auto *denominator = b.create_select(b.create_cmp_gt(mass, m.f(0)), mass, m.f(1));
   for (int k = 0; k < 7; ++k) {
-    auto *v = k == 6 ? mass : b.create_div(b.create_local_load(sum[k]), denominator);
+    Stmt *v = k == 6 ? static_cast<Stmt *>(mass) : b.create_div(b.create_local_load(sum[k]), denominator);
     // Bounded operands keep products/sums/division out of the FTZ domain.
     // Cancellation may produce small normal results; retain all f64 bits.
     m.invalid(b.create_logical_not(m.supported(v, -768, 288)));
