@@ -86,7 +86,17 @@ both packet slots and reader history, exact frame/focal translation, typed
 rejections, prior observation validity, fixed backing, no observed recurring C++
 allocation and postpublication unready failures. A translated-frame tick is
 compared with a separate unrebased execution at positive dt, with an assertion
-that a body actually moves. Reduced cases independently exercise body, field and
+that a body actually moves. The dyadic continuation compares body/motion and
+unaffected state exactly, while checking each poll's packet/history lifetime.
+Independent concurrent traversals may publish the parent from either complete
+old or new child packets. This fixture accepts only its two exact parent values,
+requires pending work for the lagging value, and requires exact catch-up on the
+next native poll. Forced parent-first and child-first orders demonstrate distinct
+valid histories in translated/untranslated frames. Their old packets are retained;
+they are not normalized or erased to manufacture equality. Negative controls
+reject lost pending work, an intermediate coordinate and incorrect mass. These
+are the existing hierarchy semantics, not a rebase-specific relaxation or epsilon.
+Reduced cases independently exercise body, field and
 hierarchy precision at 8 bits, and a zero-fraction-bit profile. They accept an
 exact shift of 16 and inverse, reject an exact-f64 shift of `2^-10` whose reduced
 destination would lose bits, retain observations/history on rejection and continue
@@ -103,3 +113,28 @@ recorded in [admission evidence](../tests/admission/README.md).
 The combined placement test runner reserves 2,048 native SNode IDs because its
 many independent fixtures share a Program whose issued IDs are monotonic. This
 test-only reservation does not enlarge production model capacity.
+
+### Hosted continuation correction
+
+Review [5775793038](https://github.com/Human-Cognome-Project/human-cognome-project/pull/213#pullrequestreview-5775793038)
+found that #213's hosted combined two-worker placement runs failed the old
+cross-execution equality assertion. Local instrumented combined runs at the
+#213 source and accepted #212 baseline did not reproduce the natural timing
+failure. They are not evidence that the hosted failure was absent.
+
+The old assertion nevertheless exceeds the accepted [publication contract](LIVE-HIERARCHY.md#publication-history-and-recipient-checks):
+parents need not acquire a simultaneous sibling snapshot. Deterministic targeted
+polls reproduce the invalid assumption on the accepted #212 engine as well as
+the corrected branch: parent-first retains `1.0625` with work pending, while
+child-first publishes `1.125`. Both reach exactly `1.125` on the next poll, with
+old packet/history lifetime intact. During the original moving tick, the exact
+permitted parent values are `1` and `1.0625`; the old/new distinction affects only
+the parent's current coordinate, selected packet word and pending bit. Other
+words and old history still compare exactly across the two executions.
+
+Production kernels, precision gates, arithmetic and scheduling are unchanged.
+The no-tick rebase tests still require exact translation of all current/old
+surfaces and exact inverse restoration. This correction addresses the demonstrated
+test-contract defect; confirmation against the original hosted configuration
+remains necessary before maintainer integration. Source-pinned diagnostic and
+corrected results are in the admission evidence record.
