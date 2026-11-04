@@ -1,6 +1,8 @@
-const std::array<std::set<int>, 5> &placement_writers() {
-  static const std::array<std::set<int>, 5> value{
-      {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2}}};
+const std::array<std::set<int>, 10> &placement_writers() {
+  static const std::array<std::set<int>, 10> value{
+      {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
+       {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+       {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -59,7 +61,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 5; ++index) {
+    for (int index = 0; index < 10; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -207,7 +209,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << ",strict_f64=1,owned_writes=1,native_presence_read_only=1,"
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=5,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=10,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

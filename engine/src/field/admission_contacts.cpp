@@ -190,8 +190,8 @@ GeometryResult AdmissionContacts::validate(const PreparedCounts &candidate,
   q.pair_tests = q.present * (q.present ? q.present - 1 : 0) / 2;
   q.source_order_tests = q.source_contacts * q.source_contacts;
   // Charge fixed clearing/copy/compaction separately from pair comparisons.
-  for (const auto &a : arrays_) q.required_work += a->get_nelement();
-  q.required_work += std::uint64_t(h_.particles_) * (kParticleFieldCount + 1);
+  q.required_work = 96 * std::uint64_t(std::max(h_.particles_, 1)) +
+                    64 * std::uint64_t(std::max(h_.contacts_, 1)) + 32;
   q.required_work += q.pair_tests + q.source_order_tests;
   if (q.required_work > work)
     return exhaust(Budget::GeometryWork, q.required_work, work);

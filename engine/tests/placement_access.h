@@ -33,16 +33,22 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 5>{
-        &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_};
+    return std::array<const engine::CompiledKernel *, 10>{
+        &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
+        &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
+        &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
+        &p.contacts_->kernels_[4]};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<taichi::lang::Ndarray *, 11>{
+    std::array<taichi::lang::Ndarray *, 25> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
         p.counts_.get(), h.prepared_->new_rows_array.get()};
+    for (int i = 0; i < 14; ++i)
+      result[11 + i] = p.contacts_->arrays_[i].get();
+    return result;
   }
   static PlacementResult stage(Harness &h, const UpdateCommand *commands,
                                 std::size_t count,

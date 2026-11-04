@@ -1040,6 +1040,8 @@ UpdateResult Harness::update_prepared_impl(
         return reject(UpdateStatus::Unsupported);
       const auto geometry = placement_->contacts_->validate(
           candidate, limits[Budget::GeometryWork]);
+      answer.contact_pairs = geometry.contacts;
+      answer.contact_work = geometry.required_work;
       answer.readback_bytes += geometry.readback_bytes;
       answer.synchronizations += geometry.synchronizations;
       answer.upload_bytes += placement_->contacts_->upload_bytes();

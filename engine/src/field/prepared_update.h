@@ -61,5 +61,7 @@ struct UpdateResult {
   std::uint64_t structural_visits{}, index_visits{}, upload_bytes{},
       readback_bytes{}, synchronizations{}, collections{};
   std::uint64_t hierarchy_nodes{}, responses{}, repair_visits{};
+  // Private admission preflight demand; never an admission-ready token.
+  std::uint64_t contact_pairs{}, contact_work{};
 };
 }  // namespace field

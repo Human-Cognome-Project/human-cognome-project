@@ -398,6 +398,14 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
   no_new([&] { contact_work = PlacementAccess::contacts(f.h, 2, 2); });
   require(contact_work.status == GeometryStatus::Ok,
           "private contact retry failed");
+  const auto required_work = contact_work.required_work;
+  no_new([&] { contact_work = PlacementAccess::contacts(
+                  f.h, 2, 2, required_work - 1); });
+  require(contact_work.status == GeometryStatus::CapacityExhausted &&
+              contact_work.failure.budget == Budget::GeometryWork &&
+              contact_work.failure.required == required_work &&
+              before == TickSnapshot(f),
+          "union ordering work was not reserved before finalization");
   const auto stride = f.h.field_capacity();
   const auto field = request.nodes[0].field.record;
   require(derived[kCenM * stride + field] == 2,
