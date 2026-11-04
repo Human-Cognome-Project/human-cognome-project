@@ -962,6 +962,14 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     // This dyadic fixture has exactly two legal parent publications, not an
     // epsilon band. A parent that read the old moving child must remain pending.
     const int root = 2, root_field = f.in.field_rows[root].record;
+    const auto legal_parent = [](const Packet &parent, int flags) {
+      return (parent == Packet{1, 0, 0, 2} || parent == Packet{1.0625L, 0, 0, 2}) &&
+             (flags == 1 || flags == 3) && (parent[0] != 1 || (flags & 2));
+    };
+    require(!legal_parent(Packet{1, 0, 0, 2}, 1) &&
+                !legal_parent(Packet{1.03125L, 0, 0, 2}, 3) &&
+                !legal_parent(Packet{1.0625L, 0, 0, 3}, 3),
+            "continuation oracle accepted lost work, mixed coordinates or wrong mass");
     const auto coherent = [&](Fixture &x, const LiveHierarchyInspection &prior) {
       poll_lifetime(x, prior);
       const auto current = x.h.inspect_live_hierarchy();
@@ -969,8 +977,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
       require(left == Packet{-3.875L, 0, 0, 1} && right == Packet{6, 0, 0, 1},
               "continuation leaf packet differs from exact moved bodies");
       const int flags = x.h.prepared_storage().inspection_flags[capacity + root_field];
-      require((parent == Packet{1, 0, 0, 2} || parent == Packet{1.0625L, 0, 0, 2}) &&
-                  (flags == 1 || flags == 3) && (parent[0] != 1 || (flags & 2)),
+      require(legal_parent(parent, flags),
               "continuation parent packet is incoherent or lost pending child input");
       require(x.h.group64(kCenX, root_field) == parent[0], "continuation parent mirror differs");
       std::cout << "rebase_continuation_order,capacity=" << capacity
