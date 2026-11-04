@@ -4,6 +4,14 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult focus(Harness &h, const std::vector<engine::RecordHandle> &fields,
+                            std::uint64_t work = UINT64_MAX,
+                            std::uint64_t generation = UINT64_MAX) {
+    return h.replace_current_focus(generation == UINT64_MAX ? h.prepared_->generation : generation,
+                                    fields.data(), fields.size(), work);
+  }
+  static const engine::CompiledKernel &focus_kernel(Harness &h) { return h.focus_commit_; }
+  static void radial(Harness &h, bool enabled) { h.previous_parameters_.reach_strength = enabled; }
   static UpdateResult bootstrap(Harness &h, const std::vector<UpdateCommand> &commands,
                                 const std::vector<PlacementIntrinsic> &inputs,
                                 const LiveRefreshSpec &hierarchy,
@@ -58,16 +66,16 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 13>{
+    return std::array<const engine::CompiledKernel *, 14>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
-        &p.bootstrap_solve_};
+        &p.bootstrap_solve_, &h.focus_commit_};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    std::array<taichi::lang::Ndarray *, 32> result{
+    std::array<taichi::lang::Ndarray *, 33> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
@@ -76,6 +84,7 @@ struct PlacementAccess {
       result[11 + i] = p.contacts_->arrays_[i].get();
     for (int i = 0; i < 6; ++i)
       result[26 + i] = &h.tick_execution_->admission_array(i);
+    result[32] = h.activity_->focus.get();
     return result;
   }
   static PlacementResult stage(Harness &h, const UpdateCommand *commands,

@@ -10,6 +10,7 @@
 #include "field/prepared_storage.h"
 #include "field/placement.h"
 #include "field/admission_contacts.h"
+#include "field/tick_execution.h"
 
 namespace field {
 namespace {
@@ -225,7 +226,7 @@ void Harness::prepare_update_execution() {
       }
     }
     // Focal computation has the same source order and relative arithmetic as
-    // Activity::begin. Its handles and coordinate frame cannot change here.
+    // Activity::begin. Selection is prospective; the coordinate frame is fixed.
     for (int j = 0; j < 11; ++j)
       put(b, out, 14 * gs + 1 + j, get(b, focus, j));
     for (int j = 3; j < 8; ++j) put(b, out, 14 * gs + 1 + j, real(b, 0));
@@ -426,9 +427,38 @@ void Harness::prepare_update_execution() {
             std::to_string(s.particles.bindings().presence->id),
         b.extract_ir(), commit_parameters, engine::MathMode::Strict);
   }
+  if (live && s.capacity.limits()[Budget::TickWork]) {
+    IRBuilder b;
+    auto *derived = array(b, 0, f), *focus = array(b, 1, f),
+         *validation = array(b, 2, i);
+    {
+    auto enabled = b.get_if_guard(
+        b.create_if(b.create_arg_load({4}, i, false, 0)), true);
+    auto *wake = b.create_logical_and(
+        b.create_arg_load({3}, i, false, 0),
+        b.create_cmp_ne(get(b, derived, 14 * gs + 8), real(b, 0)));
+    {
+      auto global = b.get_if_guard(b.create_if(wake), true);
+      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(p), false, threads);
+      auto scope = b.get_loop_guard(loop);
+      auto *row = b.get_loop_index(loop);
+      auto present = b.get_if_guard(b.create_if(
+          b.create_cmp_gt(read(b, validation, {row}), b.get_int32(0))), true);
+      activity_->particle_activity.activate(b, row);
+    }
+    for (int k = 0; k < 11; ++k)
+      put(b, focus, k, get(b, derived, 14 * gs + 1 + k));
+    }
+    focus_commit_ = engine::CompiledKernel(
+        *runtime_, "prepared_focus_commit_" +
+            std::to_string(activity_->particle_activity.cells->id),
+        b.extract_ir(), {fv, fv, iv, integer, integer}, engine::MathMode::Strict);
+  }
   // Empty, but actual bindings and all offloaded families are prepared here.
   launch_update_candidate();
   launch_update_commit();
+  if (live && s.capacity.limits()[Budget::TickWork])
+    launch_focus_commit(false);
   runtime_->synchronize();
 }
 
@@ -487,6 +517,142 @@ void Harness::launch_update_commit(bool hierarchy) {
   if (s.capacity.limits()[Budget::LiveResponses])
     engine::argument_int(ctx, 15, hierarchy);
   update_commit_.launch(ctx);
+}
+
+void Harness::launch_focus_commit(bool enabled) {
+  auto call = focus_commit_.invocation(true);
+  auto &ctx = call.get();
+  if (!ctx.prepared) {
+    ctx.set_arg_ndarray({0}, *prepared_->derived_array);
+    ctx.set_arg_ndarray({1}, *activity_->focus);
+    ctx.set_arg_ndarray({2}, *prepared_->validation_array);
+  }
+  engine::argument_int(ctx, 3, previous_parameters_.reach_strength != 0);
+  engine::argument_int(ctx, 4, enabled);
+  focus_commit_.launch(ctx);
+}
+
+UpdateResult Harness::replace_current_focus(
+    std::uint64_t expected, const RecordHandle *fields, std::size_t count,
+    std::uint64_t work) {
+  UpdateResult out;
+  if (!prepared_ || !ready_) {
+    out.status = UpdateStatus::Unready;
+    return out;
+  }
+  auto &s = *prepared_;
+  out.generation = s.generation;
+  const auto reject = [&](UpdateStatus status) { out.status = status; return out; };
+  const auto &l = s.capacity.limits();
+  const auto exhausted = [&](Budget budget, std::uint64_t need, std::uint64_t cap) {
+    out.failure = {budget, need, cap};
+    return reject(UpdateStatus::CapacityExhausted);
+  };
+  if (expected != s.generation)
+    return reject(UpdateStatus::Stale);
+  if (!profile_.wide() || !tick_execution_ || !live_hierarchy_installed())
+    return reject(UpdateStatus::Unsupported);
+  if (count > l[Budget::Focus])
+    return exhausted(Budget::Focus, count, l[Budget::Focus]);
+  if (!count || !fields)
+    return reject(UpdateStatus::InvalidInput);
+  if (work == UINT64_MAX)
+    work = l[Budget::CascadeWork];
+  if (work > l[Budget::CascadeWork])
+    return exhausted(Budget::CascadeWork, work, l[Budget::CascadeWork]);
+  std::uint64_t charged = 0;
+  const auto reserve = [&](std::uint64_t n, std::uint64_t per) {
+    if (n && per > (work - charged) / n) return false;
+    charged += n * per;
+    return true;
+  };
+  const auto hierarchy_refs = live_hierarchy_->reference_count();
+  if (!reserve(l[Budget::Particles] + l[Budget::Fields] +
+                   l[Budget::Participation] + l[Budget::Contacts] +
+                   l[Budget::Focus] + 1, 64) ||
+      !reserve(count, count + s.live.edges + 1) ||
+      !reserve(hierarchy_refs, 4))
+    return exhausted(Budget::CascadeWork, work == UINT64_MAX ? work : work + 1, work);
+  out.structural_visits = charged;
+  const auto references = s.live.references() + count + hierarchy_refs +
+      2 * (std::max<std::uint64_t>(s.live.contacts,
+                                  tick_execution_->installed_contact_count()) -
+           s.live.contacts);
+  if (references > l[Budget::References])
+    return exhausted(Budget::References, references, l[Budget::References]);
+  bool unchanged = count == s.live.focus;
+  for (std::size_t i = 0; i < count; ++i) {
+    const auto selected = fields[i];
+    if (selected.record < 0 || selected.record >= groups_ ||
+        !selected.context || !same(selected, s.field_headers[selected.record]))
+      return reject(UpdateStatus::Stale);
+    for (std::size_t j = 0; j < i; ++j)
+      if (same(selected, fields[j]))
+        return reject(UpdateStatus::InvalidInput);
+    bool participates = false;
+    for (std::size_t edge = 0; edge < s.live.edges; ++edge)
+      participates |= same(selected, s.edges[edge].second);
+    if (!participates)
+      return reject(UpdateStatus::InvalidInput);
+    unchanged &= i < s.live.focus && same(selected, s.focal[i]);
+  }
+  try {
+    validate_prepared_bindings();
+    live_hierarchy_->validate();
+    std::fill(s.validation.begin(), s.validation.end(), 0);
+    for (int row = 0; row < particles_; ++row)
+      s.validation[row] = s.particle_headers[row].record >= 0;
+    for (int row = 0; row < groups_; ++row)
+      s.validation[particles_ + row] = s.field_headers[row].record >= 0;
+    std::fill(s.candidate_focus.begin(), s.candidate_focus.end(), 0);
+    for (std::size_t i = 0; i < count; ++i)
+      s.candidate_focus[i] = fields[i].record;
+    s.candidate_focus_count = count;
+    engine::upload(*s.validation_array, s.validation.data(), s.validation.size() * sizeof(int));
+    engine::upload(*s.candidate_focus_array, s.candidate_focus.data(),
+                   s.candidate_focus.size() * sizeof(int));
+    out.upload_bytes = (s.validation.size() + s.candidate_focus.size()) * sizeof(int);
+    // Every field is unchanged: the shared candidate builder reads published
+    // centres and retained history, never repairs or consumes dirty packets.
+    launch_update_candidate(false);
+    runtime_->synchronize();
+    ++out.synchronizations;
+    engine::readback(*s.candidate_status_array, s.candidate_status.data(),
+                     sizeof(s.candidate_status));
+    out.readback_bytes += sizeof(s.candidate_status);
+    if (s.candidate_status[0])
+      return reject(UpdateStatus::InvalidNumerics);
+    if (s.failure_point == 400)
+      return reject(UpdateStatus::InvalidInput);
+    if (unchanged)
+      return reject(UpdateStatus::NoChange);
+    if (s.generation == UINT64_MAX) {
+      ready_ = false;
+      return reject(UpdateStatus::Unready);
+    }
+    // Mutation starts here. No particle payload, universal value, comparison
+    // packet, source ledger or contact view is republished for a focus change.
+    launch_focus_commit(true);
+    if (s.failure_point == 401)
+      throw std::runtime_error("injected failure after focal publication");
+    activity_->set_focus(s.candidate_focus.data(), count);
+    runtime_->synchronize();
+    out.synchronizations += 2;
+    out.upload_bytes += s.candidate_focus.size() * sizeof(int);
+    for (std::size_t i = 0; i < count; ++i)
+      s.focal[i] = s.field_headers[s.candidate_focus[i]];
+    for (std::size_t i = count; i < s.live.focus; ++i) s.focal[i] = {};
+    s.live.focus = count;
+    if (s.failure_point == 402)
+      throw std::runtime_error("injected failure after focal selection publication");
+    out.generation = ++s.generation;
+    live_hierarchy_->retag_generation(s.generation);
+    s.geometry_valid = false;
+    return reject(UpdateStatus::Ok);
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
 }
 
 UpdateResult Harness::update_prepared(std::uint64_t expected,

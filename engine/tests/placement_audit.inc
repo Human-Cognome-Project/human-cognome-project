@@ -1,9 +1,9 @@
-const std::array<std::set<int>, 13> &placement_writers() {
-  static const std::array<std::set<int>, 13> value{
+const std::array<std::set<int>, 14> &placement_writers() {
+  static const std::array<std::set<int>, 14> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -44,13 +44,17 @@ void placement_module_contract(Harness &h,
             pointer = atomic->getPointerOperand();
         }
         if (pointer && !roots.origins(pointer).empty())
-          require(index == 11 && tick_audit::guarded(instruction, kernel, module, 12),
+          require((index == 11 || index == 13) && tick_audit::guarded(
+                      instruction, kernel, module, index == 11 ? 12 : 4),
                   "placement kernel mutates native selection without publication");
-        if (index == 11)
+        if (index == 13 && pointer)
+          require(tick_audit::guarded(instruction, kernel, module, 4),
+                  "focal publication lacks enable guard");
+        if (index == 11 || index == 13)
           if (const auto *call = llvm::dyn_cast<llvm::CallBase>(&instruction))
             if (const auto *callee = call->getCalledFunction())
               if (callee->getName().contains("activate"))
-                require(tick_audit::guarded(instruction, kernel, module, 12),
+                require(tick_audit::guarded(instruction, kernel, module, index == 11 ? 12 : 4),
                         "admission native activation lacks publication guard");
       }
   if (index == 3)
@@ -78,7 +82,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 13; ++index) {
+    for (int index = 0; index < 14; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -153,7 +157,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
           throw std::runtime_error(
               "missing placement interval math control target");
         });
-      if (index == 3 || index == 11)
+      if (index == 3 || index == 11 || index == 13)
         reject("missing_result_publication_guard", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -163,7 +167,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                   for (bool truth : {true, false})
                     if (tick_audit::implies_enabled(branch->getCondition(),
                                                     truth, kernel, clone,
-                                                    index == 3 ? 2 : 12)) {
+                                                    index == 3 ? 2 : index == 11 ? 12 : 4)) {
                       branch->setCondition(llvm::ConstantInt::get(
                           llvm::Type::getInt1Ty(clone.getContext()), truth));
                       return;
@@ -225,10 +229,10 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
       }
       std::cout << "placement_compiler,index=" << index
                 << ",strict_f64=1,owned_writes=1,native_activity_publication="
-                << (index == 11) << ","
+                << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=13,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=14,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }
