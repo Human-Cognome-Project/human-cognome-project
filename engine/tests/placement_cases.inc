@@ -439,6 +439,19 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
               f.h.inspect_prepared_placement(query).certificates[0].position ==
                   certificate.position,
           "rejected preflight changed committed state or public observation");
+  std::vector<int> destinations(f.h.particle_capacity() + f.h.field_capacity());
+  for (int row = 0; row < f.h.particle_capacity(); ++row) destinations[row] = row;
+  const int old_row = f.in.particle_rows[0].record, new_row = contacts.pairs[0];
+  std::swap(destinations[old_row], destinations[new_row]);
+  no_new([&] { PlacementAccess::remap_contacts(f.h, destinations); });
+  const auto remapped = PlacementAccess::contact_inspection(f.h);
+  const int p = f.h.particle_capacity();
+  require(remapped.pairs[0] == old_row && remapped.pairs[f.h.contact_capacity()] == new_row &&
+              remapped.source_to_pair[0] == 0 && remapped.source_to_pair[1] == 0 &&
+              remapped.offsets[p + old_row] - remapped.offsets[old_row] == 1 &&
+              remapped.offsets[3 * p + new_row] - remapped.offsets[2 * p + new_row] == 1 &&
+              before == TickSnapshot(f),
+          "nonidentity claim mapping lost source orientation, duplicate map or adjacency");
   std::cout << "admission_preflight,native_starts_consumed=1,prospective_tree=1,"
                "no_claims=1,no_publication=1,rejections=3,healthy_retry=1 PASS\n";
 }
@@ -446,7 +459,7 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   for (bool references : {false, true}) {
   auto limits = placement_limits();
   limits[Budget::Contacts] = references ? 4 : 2;
-  if (references) limits[Budget::References] = 37;
+  if (references) limits[Budget::References] = 40;
   Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 1, 1},
             {0, 0, 0}, 52, 52, false, false, true, false, 1024,
             {1, 1, 1}, &limits);
@@ -454,6 +467,12 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
                              {{{0, 0, 0}, 1}, {{0, 0, 0}, 1}, {{0, 0, 0}, 1}},
                              f.in.field_rows[0], {});
   f.install();
+  Parameters64 tick_parameters;
+  tick_parameters.dt = tick_parameters.gravity = tick_parameters.contact_stiffness =
+      tick_parameters.reach_strength = 0;
+  if (references)
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, tick_parameters).status ==
+                TickStatus::Ok, "could not install old contact union for reference peak");
   f.control->set(0);  // All overlapping survivors sleep during discovery.
   RefreshRequest request(f.h);
   std::vector<UpdateCommand> commands{placement_definition(901)};
@@ -469,12 +488,12 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
   const auto input = placement_intrinsic();
   const TickSnapshot before(f);
-  const auto invoke = [&] {
+  const auto invoke = [&](bool commit = false) {
     const auto spec = request.spec();
     UpdateResult result;
     no_new([&] {
       result = PlacementAccess::preflight(f.h, commands.data(), commands.size(),
-                                          &input, 1, spec);
+                                          &input, 1, spec, UINT64_MAX, commit);
     });
     return result;
   };
@@ -507,8 +526,19 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   const auto counts = PlacementAccess::contact_counts(f.h);
   require(counts[0] == 3 && counts[2] == 0 && counts[3] == 1 && counts[4] == 1,
           "source-empty derived discovery missed sleepers or kept retirement");
+  const auto generation = f.h.prepared_storage().generation;
+  const auto ticks = f.h.prepared_storage().completed_ticks;
+  require(invoke(true).status == UpdateStatus::Ok &&
+              f.h.prepared_storage().generation == generation + 1 &&
+              f.h.prepared_storage().completed_ticks == ticks &&
+              f.h.prepared_storage().particle_headers[retire.first.handle.record].record < 0,
+          "combined retirement admission failed or reused the outgoing claim");
+  const auto tick = f.h.tick_prepared(f.h.prepared_storage().generation, tick_parameters);
+  require(tick.status == TickStatus::Ok && tick.current.contacts == 1 &&
+              !tick.coverage_changed,
+          "retirement contact union was not coherently installed");
   std::cout << "admission_contacts,source_empty=1,sleepers=3,overflow=3,"
-               "capacity=2,retirement_retry=1,no_publication=1 PASS\n";
+               "retirement_retry=1,combined_commit=1,following_tick=1 PASS\n";
   }
 }
 
@@ -607,6 +637,49 @@ void admission_commit(engine::Runtime &r, HostPath path) {
   require(backing.same_backing(metrics.sample()), "admission grew prepared backing");
   std::cout << "admission_commit,rounds=2,survivors=exact,claims=resolved,"
                "generation_once=1,no_tick_advance=1,following_tick=1,cpp_new=0 PASS\n";
+}
+
+void admission_commit_failures(engine::Runtime &r, HostPath path) {
+  for (int failure : {2, 6}) {
+    const auto limits = placement_limits();
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
+              true, false, 1024, {1}, &limits);
+    f.install();
+    RefreshRequest request(f.h);
+    std::vector<UpdateCommand> commands{placement_definition(901)};
+    UpdateCommand edge;
+    edge.operation = UpdateOp::InsertParticipation;
+    edge.first = UpdateRef::pending(0);
+    edge.second = UpdateRef::existing(f.in.field_rows[0]);
+    edge.share = 1;
+    edge.exact_count = 1;
+    edge.position = 1;
+    edge.ordinal = 10001;
+    commands.push_back(edge);
+    request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+    UpdateCommand contact;
+    contact.operation = UpdateOp::InsertContact;
+    contact.first = UpdateRef::pending(0);
+    contact.second = UpdateRef::existing(f.in.particle_rows[0]);
+    contact.ordinal = 10002;
+    commands.push_back(contact);
+    const auto input = placement_intrinsic();
+    const auto spec = request.spec();
+    const auto generation = f.h.prepared_storage().generation;
+    const auto ticks = f.h.prepared_storage().completed_ticks;
+    PreparedFixtureAccess::inject_failure(f.h, failure);
+    bool failed = false;
+    try {
+      PlacementAccess::preflight(f.h, commands.data(), commands.size(), &input,
+                                  1, spec, UINT64_MAX, true);
+    } catch (const std::runtime_error &) { failed = true; }
+    require(failed && !f.h.ready() && f.h.prepared_storage().generation == generation &&
+                f.h.prepared_storage().completed_ticks == ticks,
+            "late admission failure advertised a healthy or completed generation");
+    require(f.h.tick_prepared(generation, {}).status == TickStatus::Unready,
+            "failed admission execution resumed");
+    std::cout << "admission_commit_failure,point=" << failure << ",unready=1 PASS\n";
+  }
 }
 
 void placement_generated(engine::Runtime &r, HostPath path) {

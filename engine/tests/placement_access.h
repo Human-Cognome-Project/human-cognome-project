@@ -15,6 +15,14 @@ struct PlacementAccess {
   static auto contact_counts(Harness &h) {
     return h.placement_->contacts_->counts_;
   }
+  static void remap_contacts(Harness &h, const std::vector<int> &destinations) {
+    engine::upload(*h.prepared_->destinations_array, destinations.data(),
+                     destinations.size() * sizeof(int));
+    auto &c = *h.placement_->contacts_;
+    c.remap(true);
+    c.launch(4, int(c.counts_[2]));
+    h.runtime_->synchronize();
+  }
   static GeometryInspection contact_inspection(Harness &h) {
     auto &c = *h.placement_->contacts_;
     GeometryInspection result;

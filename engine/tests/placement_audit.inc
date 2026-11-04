@@ -43,9 +43,15 @@ void placement_module_contract(Harness &h,
               !zero->isZero())
             pointer = atomic->getPointerOperand();
         }
-        if (pointer && index != 11)
-          require(roots.origins(pointer).empty(),
-                  "placement kernel mutates committed native selection");
+        if (pointer && !roots.origins(pointer).empty())
+          require(index == 11 && tick_audit::guarded(instruction, kernel, module, 12),
+                  "placement kernel mutates native selection without publication");
+        if (index == 11)
+          if (const auto *call = llvm::dyn_cast<llvm::CallBase>(&instruction))
+            if (const auto *callee = call->getCalledFunction())
+              if (callee->getName().contains("activate"))
+                require(tick_audit::guarded(instruction, kernel, module, 12),
+                        "admission native activation lacks publication guard");
       }
   if (index == 3)
     tick_audit::copy(
