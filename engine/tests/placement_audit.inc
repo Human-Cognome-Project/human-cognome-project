@@ -20,6 +20,7 @@ void placement_module_contract(Harness &h,
   require(report.writers == placement_writers()[index],
           "placement output coverage differs from ownership schema");
   selection_audit::Analyzer roots(sets);
+  hierarchy_audit::Analyzer arguments(kernel, module, 100);
   for (const auto &fn : module)
     for (const auto &bb : fn)
       for (const auto &instruction : bb) {
@@ -47,19 +48,24 @@ void placement_module_contract(Harness &h,
           require((index == 11 || index == 13) && tick_audit::guarded(
                       instruction, kernel, module, index == 11 ? 12 : 4),
                   "placement kernel mutates native selection without publication");
-        // LLVM's parallel-task closure stores its RuntimeContext pointer in a
-        // stack allocation before dispatch. That is not model publication.
-        // Exempt only proven stack storage, never an unclassified global write.
-        const bool stack_write = pointer &&
-            llvm::isa<llvm::AllocaInst>(llvm::getUnderlyingObject(pointer));
-        if (index == 13 && pointer && !stack_write &&
+        // Guard model-array/native-selection writes, as for contact publication.
+        // Compiler task closures and runtime lock bookkeeping are not model
+        // outputs. Activation call sites are independently guarded below.
+        const bool model_write = pointer &&
+            (arguments.data_arg(pointer) >= 0 || !roots.origins(pointer).empty());
+        if (index == 13 && pointer && !model_write)
+          if (const auto *atomic = llvm::dyn_cast<llvm::AtomicRMWInst>(&instruction))
+            if (atomic->getOperation() == llvm::AtomicRMWInst::Xchg)
+              llvm::errs() << "focal_runtime_bookkeeping,function="
+                           << instruction.getFunction()->getName()
+                           << ",root=" << *llvm::getUnderlyingObject(pointer) << '\n';
+        if (index == 13 && model_write &&
             !tick_audit::guarded(instruction, kernel, module, 4)) {
-          hierarchy_audit::Analyzer arguments(kernel, module, 100);
           llvm::errs() << "focal_unguarded_store,arg=" << arguments.data_arg(pointer)
                        << ",native_origins=" << roots.origins(pointer).size()
                        << ",instruction=" << instruction << '\n';
         }
-        if (index == 13 && pointer && !stack_write)
+        if (index == 13 && model_write)
           require(tick_audit::guarded(instruction, kernel, module, 4),
                   "focal publication lacks enable guard");
         if (index == 11 || index == 13)

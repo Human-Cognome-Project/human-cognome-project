@@ -11,6 +11,10 @@ struct PlacementAccess {
                                     fields.data(), fields.size(), work);
   }
   static const engine::CompiledKernel &focus_kernel(Harness &h) { return h.focus_commit_; }
+  static void disabled_focus_publication(Harness &h) {
+    h.launch_focus_commit(false);
+    h.runtime_->synchronize();
+  }
   static void radial(Harness &h, bool enabled) { h.previous_parameters_.reach_strength = enabled; }
   static void focal_mass(Harness &h, int row, double mass) {
     h.inspect_prepared();

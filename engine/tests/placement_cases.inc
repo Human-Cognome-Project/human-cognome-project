@@ -790,6 +790,7 @@ void live_focus(engine::Runtime &r, HostPath path) {
     require(PlacementAccess::focus(f.h, selected).status == UpdateStatus::InvalidInput,
             "focus prepublication failure hook");
     PreparedFixtureAccess::inject_failure(f.h, 0);
+    PlacementAccess::disabled_focus_publication(f.h);
     require(before == TickSnapshot(f) && f.h.ready(), "rejected focus changed execution");
     for (double mass : {0., -1., std::numeric_limits<double>::quiet_NaN()}) {
       PlacementAccess::focal_mass(f.h, selected[0].record, mass);
@@ -844,6 +845,11 @@ void live_focus(engine::Runtime &r, HostPath path) {
     for (int row = 0; row < f.h.field_capacity(); ++row)
       require(s.inspection_flags[f.h.particle_capacity() + row] ==
                   flags[f.h.particle_capacity() + row], "focus consumed a pending field notification");
+    const auto next_placement = place(f, {placement_definition()},
+                                        {placement_intrinsic(0, 10, 0)});
+    require(next_placement.status == PlacementStatus::Ok &&
+                next_placement.target == std::array<double, 3>{-4, 0, 0},
+            "subsequent placement did not use the newly selected focus");
     const TickSnapshot after(f);
     require(after.installed == before.installed && after.query == before.query,
             "focus republished source/contact indexes");
