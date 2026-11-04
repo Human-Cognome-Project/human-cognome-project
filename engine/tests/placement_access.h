@@ -29,6 +29,22 @@ struct PlacementAccess {
                      rows.size() * sizeof(double));
     return rows;
   }
+  static UpdateResult preflight(Harness &h, const UpdateCommand *commands,
+                                std::size_t count,
+                                const PlacementIntrinsic *inputs,
+                                std::size_t bodies,
+                                const LiveRefreshSpec &hierarchy,
+                                std::uint64_t work = UINT64_MAX) {
+    return h.stage_current_admission(h.prepared_->generation, commands, count,
+                                     inputs, bodies, hierarchy, UINT64_MAX,
+                                     UINT64_MAX, work);
+  }
+  static std::vector<double> derived(Harness &h) {
+    std::vector<double> values(h.prepared_->derived_array->get_nelement());
+    engine::readback(*h.prepared_->derived_array, values.data(),
+                     values.size() * sizeof(double));
+    return values;
+  }
   static void configure(Harness &h,
                         const std::vector<engine::RecordHandle> &handles,
                         const std::vector<placement_reference::Sphere> &spheres,
