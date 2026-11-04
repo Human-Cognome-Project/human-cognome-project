@@ -206,6 +206,8 @@ Legacy f32, rounded rebasing and operational integration remain separate.
 ## Remaining B3 work
 
 Representation exchange and complete operational command integration remain.
+The [private outgoing-state prerequisite](EXCHANGE-STATE.md) derives current
+mass-weighted centre/velocity natively; it does not yet perform an exchange.
 The first-admission path has local CPU qualification only; GPU execution has not
 been qualified by this increment.
 

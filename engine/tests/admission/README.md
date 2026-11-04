@@ -500,3 +500,39 @@ CPU results, distinct from the contributor-local evidence above.
 Only private full-precision exact rebasing is accepted here. #213 reduced-profile
 support remains provisional; legacy f32, rounded transforms, D7 exchange,
 operational controls and GPU qualification remain separate.
+
+## Private D7 outgoing-state prerequisite — 2026-11-04
+
+This continues provisionally accepted #213 at
+`65f78f5e9363d851b4ef5f350796b8e781be277d`, with main's authoritative #211/#212
+acceptance integrated. The [implementation scope](../../docs/EXCHANGE-STATE.md)
+is a native mass-weighted current centre/velocity reduction over validated body
+handles. It is scratch-only and does not perform an aggregate/parts exchange.
+
+Code/test pin: `b3626223050ea4be0d9241a679c81c7ae9f0cfb8`.
+Scoped qualification covers `exchange_state` at 52/8-bit position precision on
+CPU bulk/default with one worker and direct/no-unroll with two workers. Witnesses
+include unequal masses, aggregate/set reduction, independent nonbinary velocity
+reference, caller-order invariance, sleeping bodies/retained dirty packets,
+unrelated occupants, stale/duplicate/empty selection, exact work boundaries,
+invalid numerical inputs and retry. Snapshots, prior geometry/placement tokens,
+prepared backing and the no-recurring-C++-allocation guard check preservation.
+
+The compiler audit covers 17 kernels and 26 rejected unsafe controls per 52/8-bit
+profile in both modes, including the new resident input binding and scratch-only
+output. Prepared update is the accompanying regression. Full placement/115-suite
+regression, remaining compiler modes, PostgreSQL and GPU are not part of this
+rerun. No GPU work occurred. Shared-host timing is not performance evidence.
+
+The initial `581665e7` attempt failed C++ compilation on incompatible conditional
+IR pointer types; the common `Stmt` base fixes it. That log is retained separately
+and is not passing qualification. Subsequent documentation changes no tested code.
+Hosted validation and maintainer acceptance remain independent.
+
+All scoped checks above passed. Bundle `exchange-state-b3626223` retains commands,
+source/submodule pins, build configuration, toolchain, binary/runtime hashes,
+raw logs, emitted LLVM and frozen ABI metadata. Its `SHA256SUMS` digest is
+`8fccb05c3195d5f7f5f5067f68882a3f6010e3552c0485feb5901db8944bacae`.
+A matching archive is retained in the Windows workspace. This is contributor-local
+evidence; the raw bundle is not remotely available or independently verified
+merely by publishing its digest.
