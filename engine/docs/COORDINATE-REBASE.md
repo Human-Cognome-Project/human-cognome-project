@@ -6,10 +6,11 @@ the existing prepared execution. It does not change focal selection or initializ
 objects. The boundary is private; operational owner/browser wiring remains later.
 
 For requested translation `d`, each retained coordinate becomes `x - d` and the
-double frame reference becomes `anchor + d`. Only the installed wide profile with
-52 retained fraction bits for bodies, fields and every hierarchy node is supported
-in this increment. Legacy f32 and reduced-significand transforms return Unsupported
-before mutation. This does not complete those D6 profiles or qualify GPU execution.
+double frame reference becomes `anchor + d`. The installed wide f64 profile
+supports exact translations at each declared retained precision, from 0 through
+52 fraction bits. Legacy f32 remains Unsupported. The original full-precision
+increment is provisionally accepted in #212; reduced-significand support is its
+following reviewable increment. Neither qualifies rounded transforms or GPU execution.
 
 ## Exactness and numerical range
 
@@ -19,6 +20,16 @@ history, focal origin and fallback origin. A strict error-free TwoDiff residual
 must be zero for every subtraction. The host double reference addition uses the
 corresponding TwoSum residual. Round-trip equality alone is insufficient: it can
 miss a small translation lost against a large coordinate.
+
+Exact f64 subtraction is necessary but not sufficient for reduced profiles. The
+candidate's bit pattern must also survive its destination's fraction mask
+unchanged. Body positions use the body's declared retained bits. Installed fields,
+their previous centres and both hierarchy/history slots use the current native
+owner-node mask; a field without an owner uses the field profile. These masks are
+read through fixed native bindings, including independently configured hierarchy
+precision. Focal controls and the frame reference remain full-precision f64.
+The operation rejects discarded bits as InvalidNumerics; it never applies rounding
+or clears bits during publication to force an otherwise invalid transform to fit.
 
 The runtime enables flush-to-zero, including on CPU. For a nonzero translated
 axis, every nonzero input coordinate and translation must have magnitude at least
@@ -75,8 +86,13 @@ both packet slots and reader history, exact frame/focal translation, typed
 rejections, prior observation validity, fixed backing, no observed recurring C++
 allocation and postpublication unready failures. A translated-frame tick is
 compared with a separate unrebased execution at positive dt, with an assertion
-that a body actually moves. Reduced profiles are explicitly
-rejected. The case is also included in the placement/admission suite.
+that a body actually moves. Reduced cases independently exercise body, field and
+hierarchy precision at 8 bits, and a zero-fraction-bit profile. They accept an
+exact shift of 16 and inverse, reject an exact-f64 shift of `2^-10` whose reduced
+destination would lose bits, retain observations/history on rejection and continue
+ticking. Separate old-history witnesses make only a previous centre, backup slot
+or reader history fail that precision condition. The case is also included in the
+placement/admission suite.
 
 The emitted compiler audit checks the two new kernels' actual frozen bindings,
 writer ownership, strict arithmetic and publication guard. Unsafe missing-output,

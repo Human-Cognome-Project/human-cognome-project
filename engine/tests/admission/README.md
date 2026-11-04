@@ -421,3 +421,46 @@ exhausting the Program's default 1,024 monotonic SNode IDs in later fixtures.
 It is retained as an incomplete run. The combined test runner now explicitly
 reserves 2,048 IDs without changing production model budgets. The final moving
 continuation witness also asserts nonzero displacement at positive dt.
+
+## Reduced-significand exact rebase — 2026-11-04
+
+This continues provisionally accepted #212 at
+`78b5360211050aa02fb541cbc140eda7cf257ddf`. Its pending hosted validation and
+maintainer integration remain independent. The private D6 boundary now accepts
+0–52 retained fraction bits only when every translated f64 coordinate survives
+its destination mask unchanged. It never rounds a rebase to make it fit.
+Installed field/history coordinates use the native owner-node mask, including
+independent hierarchy precision. Body and unowned-field coordinates use their
+respective profiles. Both existing kernels bind the native mask array; the fixed
+parameter reservation increases by two, with no new numerical backing.
+
+Code/test pin: `73e22ec7e38ba62c041e90de2687f6f254f16bb7`.
+
+The scoped qualification runs the complete `coordinate_rebase` case on CPU in
+one-worker bulk/default and two-worker direct/no-unroll modes. Four reduced
+fixtures independently cover 8-bit body, 8-bit field, independently configured
+8-bit hierarchy and zero-fraction-bit profiles. Fields occupy nonidentity owner
+slots. Each checks exact shift/inverse, unchanged rejection of a subtraction
+that is exact in f64 but loses destination bits, stable backing, no observed
+recurring C++ allocation and a subsequent positive-dt tick. Separate witnesses
+make only previous centres, backup packets or reader history fail the precision
+gate. Existing full-precision preservation and failure witnesses remain in the case.
+
+The compiler audit covers 16 kernels and 24 rejected unsafe controls at both
+52/8-bit profiles in both modes. It additionally verifies the actual frozen
+native mask pointers, type, rank and extent. Prepared update and dirty hierarchy
+refresh are the accompanying regressions. Full placement/115-suite regression,
+remaining compiler modes, PostgreSQL and GPU are outside this scoped rerun.
+Shared-host timings are not performance qualification. Legacy f32 and rounded
+rebasing remain unsupported; D7 exchange and operational/browser wiring remain
+separate work.
+
+All scoped checks above passed. Bundle `reduced-rebase-73e22ec7` retains the
+qualification commands, source/submodule pins, build configuration, toolchain,
+binary/runtime hashes, raw logs, emitted LLVM and frozen ABI metadata. Its
+`SHA256SUMS` digest is
+`4530186856be84a54408d5615b5e819b50b9bc5f3650236cc987b9d34c1522b4`.
+A matching archive is retained in the Windows workspace. The raw bundle is local,
+not remotely available or independently verified merely by publishing its hash.
+Subsequent documentation changes no tested code. Hosted CI and maintainer
+acceptance remain independent.
