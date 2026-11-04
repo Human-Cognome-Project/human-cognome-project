@@ -540,7 +540,7 @@ class Harness {
   engine::CompiledKernel finalize_;
   engine::CompiledKernel inspection_;
   engine::CompiledKernel update_candidate_, update_commit_, focus_commit_;
-  engine::CompiledKernel rebase_;
+  engine::CompiledKernel rebase_, rebase_check_;
   engine::CompiledKernel geometry_collect_, geometry_source_order_,
       geometry_discover_, geometry_finalize_;
   std::array<const void *, 7> prepared_host_addresses_{};

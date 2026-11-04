@@ -1,49 +1,9 @@
-bool rebase_mode_condition(const llvm::Value *v, bool truth,
-                           const taichi::lang::Kernel &kernel,
-                           const llvm::Module &module, int mode) {
-  if (const auto *cmp = llvm::dyn_cast<llvm::ICmpInst>(v))
-    for (int side = 0; side < 2; ++side)
-      if (const auto *constant = llvm::dyn_cast<llvm::ConstantInt>(cmp->getOperand(side)))
-        if (constant->getSExtValue() == mode &&
-            tick_audit::scalar(cmp->getOperand(!side), kernel, module, 11))
-          return cmp->getPredicate() == (truth ? llvm::ICmpInst::ICMP_EQ : llvm::ICmpInst::ICMP_NE);
-  if (const auto *op = llvm::dyn_cast<llvm::BinaryOperator>(v))
-    if ((truth && op->getOpcode() == llvm::Instruction::And) ||
-        (!truth && op->getOpcode() == llvm::Instruction::Or))
-      return rebase_mode_condition(op->getOperand(0), truth, kernel, module, mode) ||
-             rebase_mode_condition(op->getOperand(1), truth, kernel, module, mode);
-  return false;
-}
-bool rebase_mode_guard(const llvm::Instruction &write, const taichi::lang::Kernel &kernel,
-                       const llvm::Module &module, int mode) {
-  llvm::DominatorTree dom(*const_cast<llvm::Function *>(write.getFunction()));
-  for (const auto &block : *write.getFunction()) {
-    if (const auto *dispatch = llvm::dyn_cast<llvm::SwitchInst>(block.getTerminator()))
-      if (tick_audit::scalar(dispatch->getCondition(), kernel, module, 11))
-        for (const auto &choice : dispatch->cases())
-          if (choice.getCaseValue()->getSExtValue() == mode) {
-            const auto *destination = choice.getCaseSuccessor();
-            bool unique = destination != dispatch->getDefaultDest();
-            for (const auto &other : dispatch->cases())
-              if (other.getCaseValue()->getSExtValue() != mode && other.getCaseSuccessor() == destination)
-                unique = false;
-            if (unique && dom.dominates(llvm::BasicBlockEdge(&block, destination), write.getParent())) return true;
-          }
-    if (const auto *branch = llvm::dyn_cast<llvm::BranchInst>(block.getTerminator()))
-      if (branch->isConditional())
-        for (int side = 0; side < 2; ++side)
-          if (dom.dominates(llvm::BasicBlockEdge(&block, branch->getSuccessor(side)), write.getParent()) &&
-              rebase_mode_condition(branch->getCondition(), side == 0, kernel, module, mode))
-            return true;
-  }
-  return false;
-}
-const std::array<std::set<int>, 15> &placement_writers() {
-  static const std::array<std::set<int>, 15> value{
+const std::array<std::set<int>, 16> &placement_writers() {
+  static const std::array<std::set<int>, 16> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5, 7}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -93,17 +53,9 @@ void placement_module_contract(Harness &h,
         // outputs. Activation call sites are independently guarded below.
         const bool model_write = pointer &&
             (arguments.data_arg(pointer) >= 0 || !roots.origins(pointer).empty());
-        if (index == 14 && model_write && arguments.data_arg(pointer) != 7 &&
-            !rebase_mode_guard(instruction, kernel, module, 2)) {
-          llvm::errs() << "rebase_unguarded,arg=" << arguments.data_arg(pointer) << ",write=" << instruction << '\n';
-          for (const auto &block : *instruction.getFunction())
-            llvm::errs() << *block.getTerminator() << '\n';
-        }
-        // Status is private scratch: LLVM may preserve its value with a store
-        // outside check mode. Every live coordinate writer still requires mode 2.
-        if (index == 14 && model_write && arguments.data_arg(pointer) != 7)
-          require(rebase_mode_guard(instruction, kernel, module, 2),
-                  "rebase publication mode guard missing");
+        if (index == 14 && model_write)
+          require(tick_audit::guarded(instruction, kernel, module, 11),
+                  "rebase publication lacks enable guard");
         if (index == 13 && pointer && !model_write)
           if (const auto *atomic = llvm::dyn_cast<llvm::AtomicRMWInst>(&instruction))
             if (atomic->getOperation() == llvm::AtomicRMWInst::Xchg)
@@ -151,7 +103,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 15; ++index) {
+    for (int index = 0; index < 16; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -216,7 +168,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         for (auto *i : erase)
           i->eraseFromParent();
       });
-      if (index == 2 || index == 12 || index == 14)
+      if (index == 2 || index == 12 || index >= 14)
         reject("contracted_interval_math", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -230,7 +182,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
           throw std::runtime_error(
               "missing placement interval math control target");
         });
-      if (index == 3 || index == 11 || index == 13)
+      if (index == 3 || index == 11 || index == 13 || index == 14)
         reject("missing_result_publication_guard", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -240,7 +192,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                   for (bool truth : {true, false})
                     if (tick_audit::implies_enabled(branch->getCondition(),
                                                     truth, kernel, clone,
-                                                    index == 3 ? 2 : index == 11 ? 12 : 4)) {
+                                                    index == 3 ? 2 : index == 11 ? 12 : index == 14 ? 11 : 4)) {
                       branch->setCondition(llvm::ConstantInt::get(
                           llvm::Type::getInt1Ty(clone.getContext()), truth));
                       return;
@@ -248,28 +200,6 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
           throw std::runtime_error(
               "missing placement result guard control target");
         });
-      if (index == 14)
-        for (int mode : {2})
-          reject("missing_commit_guard", [&](llvm::Module &clone) {
-            for (auto &fn : clone)
-              for (auto &bb : fn) {
-                if (auto *dispatch = llvm::dyn_cast<llvm::SwitchInst>(bb.getTerminator()))
-                  if (tick_audit::scalar(dispatch->getCondition(), kernel, clone, 11))
-                    for (const auto &choice : dispatch->cases())
-                      if (choice.getCaseValue()->getSExtValue() == mode) {
-                        dispatch->setCondition(llvm::ConstantInt::get(dispatch->getCondition()->getType(), mode));
-                        return;
-                      }
-                if (auto *branch = llvm::dyn_cast<llvm::BranchInst>(bb.getTerminator()))
-                  if (branch->isConditional())
-                    for (bool truth : {true, false})
-                      if (rebase_mode_condition(branch->getCondition(), truth, kernel, clone, mode)) {
-                        branch->setCondition(llvm::ConstantInt::get(llvm::Type::getInt1Ty(clone.getContext()), truth));
-                        return;
-                      }
-              }
-            throw std::runtime_error("missing rebase mode control target");
-          });
       // Legal repeated writes do not change dynamic delivery. The audit must
       // not depend on compiler-specific duplication/site totals.
       auto safe = llvm::CloneModule(module);
@@ -327,7 +257,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=15,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=16,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

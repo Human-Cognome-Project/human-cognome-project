@@ -4,6 +4,7 @@
 void Harness::prepare_rebase_execution() {
   using namespace taichi::lang;
   const auto d = PrimitiveType::f64, i = PrimitiveType::i32;
+  for (bool commit : {false, true}) {
   IRBuilder b;
   auto *body = array(b, 0, d, 2), *groups = array(b, 1, d, 2),
        *history = array(b, 2, d, 2), *focus = array(b, 3, d),
@@ -11,15 +12,18 @@ void Harness::prepare_rebase_execution() {
        *owners = array(b, 6, i), *status = array(b, 7, i);
   auto *mode = b.create_arg_load({11}, i, false, 0);
   {
-    auto enabled = b.get_if_guard(b.create_if(b.create_cmp_gt(mode, b.get_int32(0))), true);
-    {
-      auto checking = b.get_if_guard(b.create_if(b.create_cmp_eq(mode, b.get_int32(1))), true);
+    auto enabled = b.get_if_guard(b.create_if(mode), true);
+    if (!commit) {
       put(b, status, 0, b.get_int32(0));
     }
     const auto translate = [&](ArgLoadStmt *a, std::vector<Stmt *> at, int axis) {
       auto *x = read(b, a, at);
       auto *delta = b.create_arg_load({8 + axis}, d, false, 0);
       auto *y = b.create_sub(x, delta);
+      if (commit) {
+        write(b, a, at, y);
+        return;
+      }
       // Error-free TwoDiff: rounded result plus residual equals x - delta.
       // Round-trip equality alone misses a small delta lost against large x.
       auto *bv = b.create_sub(x, y);
@@ -27,17 +31,21 @@ void Harness::prepare_rebase_execution() {
       auto *br = b.create_sub(bv, delta);
       auto *ar = b.create_sub(x, av);
       auto *error = b.create_add(ar, br);
+      // The native runtime uses FTZ. Keep every nonzero input's least bit
+      // above the subnormal boundary, so a nonzero TwoDiff residual cannot
+      // flush into a false exactness certificate. Zero shift is always exact.
+      const auto residual_range = [&](Stmt *v) {
+        return b.create_logical_or(b.create_cmp_eq(v, b.get_float64(0)),
+            b.create_cmp_ge(b.create_abs(v), b.get_float64(0x1p-969)));
+      };
+      auto *range = b.create_logical_or(b.create_cmp_eq(delta, b.get_float64(0)),
+          b.create_logical_and(residual_range(x), residual_range(delta)));
       auto *valid = b.create_logical_and(detail::supported_real(b, x),
           b.create_logical_and(detail::supported_real(b, y),
-              b.create_cmp_eq(error, b.get_float64(0))));
+              b.create_logical_and(range, b.create_cmp_eq(error, b.get_float64(0)))));
       {
-        auto checking = b.get_if_guard(b.create_if(b.create_cmp_eq(mode, b.get_int32(1))), true);
         auto invalid = b.get_if_guard(b.create_if(b.create_logical_not(valid)), true);
         b.create_atomic_or(b.create_external_ptr(status, {b.get_int32(0)}), b.get_int32(1));
-      }
-      {
-        auto committing = b.get_if_guard(b.create_if(b.create_cmp_eq(mode, b.get_int32(2))), true);
-        write(b, a, at, y);
       }
     };
     {
@@ -77,16 +85,20 @@ void Harness::prepare_rebase_execution() {
   const auto matrix = engine::Param::array(d, 2), vector = engine::Param::array(d),
              ints = engine::Param::array(i), scalar = engine::Param::scalar(d),
              integer = engine::Param::scalar(i);
-  rebase_ = engine::CompiledKernel(*runtime_,
-      "prepared_rebase_" + std::to_string(prepared_->particles.bindings().presence->id),
+  (commit ? rebase_ : rebase_check_) = engine::CompiledKernel(*runtime_,
+      std::string(commit ? "prepared_rebase_commit_" : "prepared_rebase_check_") +
+          std::to_string(prepared_->particles.bindings().presence->id),
       b.extract_ir(), {matrix, matrix, matrix, vector, matrix, matrix, ints, ints,
                        scalar, scalar, scalar, integer}, engine::MathMode::Strict);
+  }
+  launch_rebase({}, -1);
   launch_rebase({}, 0);
   runtime_->synchronize();
 }
 
 void Harness::launch_rebase(const FrameAnchor &delta, int mode) {
-  auto call = rebase_.invocation(true);
+  auto &kernel = (mode == 1 || mode == -1) ? rebase_check_ : rebase_;
+  auto call = kernel.invocation(true);
   auto &ctx = call.get();
   if (!ctx.prepared) {
     live_hierarchy_->bind_input(ctx, 0, 7);
@@ -100,8 +112,8 @@ void Harness::launch_rebase(const FrameAnchor &delta, int mode) {
   }
   for (int axis = 0; axis < 3; ++axis)
     engine::argument_float(ctx, 8 + axis, delta[axis]);
-  engine::argument_int(ctx, 11, mode);
-  rebase_.launch(ctx);
+  engine::argument_int(ctx, 11, mode > 0);
+  kernel.launch(ctx);
 }
 
 UpdateResult Harness::rebase_current(std::uint64_t expected,
@@ -120,7 +132,8 @@ UpdateResult Harness::rebase_current(std::uint64_t expected,
   for (int axis = 0; axis < 3; ++axis) {
     const double a = frame_anchor_[axis], d = delta[axis], sum = a + d;
     const double v = sum - a, error = (a - (sum - v)) + (d - v);
-    if (!NumericalProfile::supported_real(d) || !NumericalProfile::supported_real(sum) || error != 0)
+    const bool range = d == 0 || ((a == 0 || std::abs(a) >= 0x1p-969) && std::abs(d) >= 0x1p-969);
+    if (!NumericalProfile::supported_real(d) || !NumericalProfile::supported_real(sum) || !range || error != 0)
       return reject(UpdateStatus::InvalidNumerics);
     anchor[axis] = sum;
     changed |= d != 0;

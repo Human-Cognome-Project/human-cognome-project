@@ -786,7 +786,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(work.status == UpdateStatus::CapacityExhausted && work.failure.budget == Budget::CascadeWork,
             "rebase work reservation ignored");
     for (double bad : {std::numeric_limits<double>::infinity(),
-                       std::numeric_limits<double>::quiet_NaN(), 0x1p-100, 0x1p100})
+                       std::numeric_limits<double>::quiet_NaN(), 0x1p-100, 0x1p-1000, 0x1p100})
       require(PlacementAccess::rebase(f.h, {bad, 0, 0}).status == UpdateStatus::InvalidNumerics,
               "inexact or nonfinite rebase accepted");
     PreparedFixtureAccess::inject_failure(f.h, 410);

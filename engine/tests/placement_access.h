@@ -105,12 +105,12 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 15>{
+    return std::array<const engine::CompiledKernel *, 16>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
-        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_};
+        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_};
   }
   static bool rebase_payload_binding(Harness &h, int argument, const void *pointer) {
     if (argument > 1 || h.path_ != HostPath::CpuDirect) return false;
