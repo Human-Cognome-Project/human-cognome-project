@@ -17,13 +17,25 @@ bool rebase_mode_condition(const llvm::Value *v, bool truth,
 bool rebase_mode_guard(const llvm::Instruction &write, const taichi::lang::Kernel &kernel,
                        const llvm::Module &module, int mode) {
   llvm::DominatorTree dom(*const_cast<llvm::Function *>(write.getFunction()));
-  for (const auto &block : *write.getFunction())
+  for (const auto &block : *write.getFunction()) {
+    if (const auto *dispatch = llvm::dyn_cast<llvm::SwitchInst>(block.getTerminator()))
+      if (tick_audit::scalar(dispatch->getCondition(), kernel, module, 11))
+        for (const auto &choice : dispatch->cases())
+          if (choice.getCaseValue()->getSExtValue() == mode) {
+            const auto *destination = choice.getCaseSuccessor();
+            bool unique = destination != dispatch->getDefaultDest();
+            for (const auto &other : dispatch->cases())
+              if (other.getCaseValue()->getSExtValue() != mode && other.getCaseSuccessor() == destination)
+                unique = false;
+            if (unique && dom.dominates(llvm::BasicBlockEdge(&block, destination), write.getParent())) return true;
+          }
     if (const auto *branch = llvm::dyn_cast<llvm::BranchInst>(block.getTerminator()))
       if (branch->isConditional())
         for (int side = 0; side < 2; ++side)
           if (dom.dominates(llvm::BasicBlockEdge(&block, branch->getSuccessor(side)), write.getParent()) &&
               rebase_mode_condition(branch->getCondition(), side == 0, kernel, module, mode))
             return true;
+  }
   return false;
 }
 const std::array<std::set<int>, 15> &placement_writers() {
@@ -81,6 +93,12 @@ void placement_module_contract(Harness &h,
         // outputs. Activation call sites are independently guarded below.
         const bool model_write = pointer &&
             (arguments.data_arg(pointer) >= 0 || !roots.origins(pointer).empty());
+        if (index == 14 && model_write && !rebase_mode_guard(instruction, kernel, module,
+                                    arguments.data_arg(pointer) == 7 ? 1 : 2)) {
+          llvm::errs() << "rebase_unguarded,arg=" << arguments.data_arg(pointer) << ",write=" << instruction << '\n';
+          for (const auto &block : *instruction.getFunction())
+            llvm::errs() << *block.getTerminator() << '\n';
+        }
         if (index == 14 && model_write)
           require(rebase_mode_guard(instruction, kernel, module,
                                     arguments.data_arg(pointer) == 7 ? 1 : 2),
@@ -233,7 +251,14 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         for (int mode : {1, 2})
           reject(mode == 1 ? "missing_check_guard" : "missing_commit_guard", [&](llvm::Module &clone) {
             for (auto &fn : clone)
-              for (auto &bb : fn)
+              for (auto &bb : fn) {
+                if (auto *dispatch = llvm::dyn_cast<llvm::SwitchInst>(bb.getTerminator()))
+                  if (tick_audit::scalar(dispatch->getCondition(), kernel, clone, 11))
+                    for (const auto &choice : dispatch->cases())
+                      if (choice.getCaseValue()->getSExtValue() == mode) {
+                        dispatch->setCondition(llvm::ConstantInt::get(dispatch->getCondition()->getType(), mode));
+                        return;
+                      }
                 if (auto *branch = llvm::dyn_cast<llvm::BranchInst>(bb.getTerminator()))
                   if (branch->isConditional())
                     for (bool truth : {true, false})
@@ -241,6 +266,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                         branch->setCondition(llvm::ConstantInt::get(llvm::Type::getInt1Ty(clone.getContext()), truth));
                         return;
                       }
+              }
             throw std::runtime_error("missing rebase mode control target");
           });
       // Legal repeated writes do not change dynamic delivery. The audit must
