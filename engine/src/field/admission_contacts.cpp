@@ -224,7 +224,8 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
       }
     }
     params.push_back(Param::scalar(i));
-    publish_ = Kernel(*h.runtime_, "admission_contacts_publish", b.extract_ir(),
+    publish_ = Kernel(*h.runtime_, "admission_contacts_publish_" +
+                       std::to_string(h.activity_->particle_activity.cells->id), b.extract_ir(),
                        params, engine::MathMode::Strict);
   }
   for (int phase = 0; phase < 5; ++phase) launch(phase, 0);

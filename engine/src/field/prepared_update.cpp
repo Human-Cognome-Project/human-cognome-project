@@ -1083,6 +1083,7 @@ UpdateResult Harness::update_prepared_impl(
         if (mode == PreparedUpdateMode::GeneratedCommit &&
             (claimed.status != engine::RecordStatus::Ok ||
              claimed.handle.context != map.context() || !claimed.handle.incarnation ||
+             claimed.kind != s.commands[c].kind ||
              claimed.handle.address != s.commands[c].address ||
              claimed.handle.record < 0 || claimed.handle.record >= (particle ? p : g) ||
              (particle ? s.particle_headers : s.field_headers)[claimed.handle.record].record >= 0))
