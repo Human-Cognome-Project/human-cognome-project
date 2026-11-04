@@ -756,7 +756,119 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void exchange_state(engine::Runtime &r, HostPath path) {
+  for (int bits : {52, 8}) {
+    const auto l = placement_limits();
+    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 3, 2}, {-4, 8, 40},
+              bits, 52, false, false, true, false, 1024, {}, &l, true);
+    f.install();
+    const auto a = f.in.particle_rows[0], b = f.in.particle_rows[1];
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, 2);
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, b.record, -2);
+    PreparedFixtureAccess::inject_value64(f.h, kPosY, a.record, 4);
+    PreparedFixtureAccess::inject_value64(f.h, kPosY, b.record, -4);
+    PreparedFixtureAccess::inject_value64(f.h, kVelZ, a.record, 8);
+    f.control->set(1, f.in.field_rows[0].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[0].record);
+    f.control->set(4);  // Keep dirty packets, put all outgoing bodies to sleep.
+    // Current resident values, including a sleeper, are the authority.
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    const auto query = place(f, {placement_definition()}, {placement_intrinsic()});
+    const TickSnapshot before(f);
+    const auto history = PlacementAccess::rebase_history(f.h);
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    std::vector<engine::RecordHandle> selected{b, a};
+    UpdateResult result;
+    no_new([&] { result = PlacementAccess::exchange_state(f.h, selected); });
+    require(result.status == UpdateStatus::Ok && before == TickSnapshot(f) &&
+                history == PlacementAccess::rebase_history(f.h) &&
+                backing.same_backing(metrics.sample()), "exchange state changed live execution");
+    const auto state = PlacementAccess::exchange_output(f.h);
+    require(state == std::array<double, 8>{5, -2, 0, -1, 0, 2, 4, 0},
+            "outgoing state did not use resident mass-weighted centre/velocity");
+    std::reverse(selected.begin(), selected.end());
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok &&
+                state == PlacementAccess::exchange_output(f.h), "caller order changed exchange reduction");
+    require(PlacementAccess::exchange_state(f.h, {a}).status == UpdateStatus::Ok &&
+                PlacementAccess::exchange_output(f.h) ==
+                    std::array<double, 8>{-4, 4, 0, 2, 0, 8, 1, 0},
+            "aggregate outgoing state differs from its current body");
+    auto stale = a;
+    ++stale.incarnation;
+    require(PlacementAccess::exchange_state(f.h, {stale}).status == UpdateStatus::Stale &&
+                PlacementAccess::exchange_state(f.h, selected, UINT64_MAX,
+                    f.h.prepared_storage().generation + 1).status == UpdateStatus::Stale &&
+                PlacementAccess::exchange_state(f.h, {}).status == UpdateStatus::InvalidInput &&
+                PlacementAccess::exchange_state(f.h, {a, a}).status == UpdateStatus::InvalidInput &&
+                PlacementAccess::exchange_state(f.h, selected, 0).status == UpdateStatus::CapacityExhausted,
+            "invalid exchange selection or work accepted");
+    for (auto poison : {std::numeric_limits<double>::quiet_NaN(), 0x1p-300, 0x1p129}) {
+      PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, poison);
+      const TickSnapshot invalid(f);
+      require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  invalid == TickSnapshot(f) && f.h.ready(), "invalid exchange velocity published");
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, 2);
+    require(before == TickSnapshot(f) && PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok,
+            "exchange retry did not retain original state");
+    f.h.inspect_prepared_geometry(geometry);
+    f.h.inspect_prepared_placement(query);
+    for (double mass : {0., -1., 0x1p-129, 0x1p129}) {
+      PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, mass);
+      const TickSnapshot invalid(f);
+      require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  invalid == TickSnapshot(f) && f.h.ready(), "invalid outgoing mass accepted");
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[2].record,
+                                         std::numeric_limits<double>::quiet_NaN());
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok &&
+                state == PlacementAccess::exchange_output(f.h), "unselected body polluted outgoing state");
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[2].record, 0);
+    require(before == TickSnapshot(f), "exchange numerical tests failed to restore live state");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 2);
+    require(PlacementAccess::exchange_state(f.h, selected).status == UpdateStatus::Ok,
+            "nonbinary weighted velocity rejected");
+    const auto fractional = PlacementAccess::exchange_output(f.h);
+    const long double velocity = (1.L * 2.L + 2.L * -2.L) / 3.L;
+    require(fractional[0] == 4 && fractional[6] == 3 &&
+                std::abs(static_cast<long double>(fractional[3]) - velocity) <
+                    4 * std::numeric_limits<double>::epsilon(),
+            "exchange applied destination precision to outgoing velocity");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 3);
+    const auto required = 64 * (l[Budget::Particles] + 1);
+    require(PlacementAccess::exchange_state(f.h, selected, required - 1).status == UpdateStatus::CapacityExhausted &&
+                PlacementAccess::exchange_state(f.h, selected, required).status == UpdateStatus::Ok,
+            "exchange work boundary differs from reservation");
+    std::cout << "exchange_state,bits=" << bits
+              << ",mass_weighted=1,current_velocity=1,order_independent=1,rejection=unchanged,backing=stable PASS\n";
+  }
+}
+
 void coordinate_rebase(engine::Runtime &r, HostPath path) {
+  const auto dump = [](const char *phase, Fixture &f) {
+    if (!std::getenv("HCP_REBASE_DIAGNOSTICS")) return;
+    f.h.inspect_prepared();
+    const auto tree = f.h.inspect_live_hierarchy();
+    const auto history = PlacementAccess::rebase_history(f.h);
+    const auto print = [&](const char *surface, const auto &values, std::size_t stride) {
+      for (std::size_t i = 0; i < values.size(); ++i)
+        if (values[i] != 0)
+          std::cerr << "rebase_state,phase=" << phase << ",capacity=" << f.h.particle_capacity()
+                    << ",surface=" << surface << ",component=" << i / stride
+                    << ",slot=" << i % stride << ",value=" << std::setprecision(17)
+                    << values[i] << '\n';
+    };
+    print("body", f.h.particles64(), f.h.particle_capacity());
+    print("field", f.h.groups64(), f.h.field_capacity());
+    print("determined", f.h.determined64(), f.h.particle_capacity());
+    print("history", history, f.h.field_capacity());
+    print("slots", tree.slots, tree.selectors.size());
+    print("previous", tree.previous, tree.selectors.size());
+    print("selectors", tree.selectors, tree.selectors.size());
+    print("flags", f.h.prepared_storage().inspection_flags, f.h.particle_capacity());
+  };
   for (int capacity : {70, 128}) {
     const auto l = placement_limits(capacity);
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
@@ -900,24 +1012,133 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     reference.control->set(2, reference.in.particle_rows[0].record);
     auto moving = stationary;
     moving.dt = .25;
-    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok &&
-                f.h.tick_prepared(f.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
-                reference.h.tick_prepared(reference.h.prepared_storage().generation, moving).status == TickStatus::Ok &&
-                PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
-            "rebase translated-frame tick failed");
+    const auto continuation_before = f.h.inspect_live_hierarchy();
+    const auto reference_before = reference.h.inspect_live_hierarchy();
+    dump("before-translated", f);
+    dump("before-reference", reference);
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok, "continuation forward rebase");
+    dump("translated-before-tick", f);
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, moving).status == TickStatus::Ok,
+            "translated continuation tick");
+    require(reference.h.tick_prepared(reference.h.prepared_storage().generation, moving).status == TickStatus::Ok,
+            "reference continuation tick");
+    dump("translated-after-tick", f);
+    dump("reference-after-tick", reference);
+    require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "continuation inverse rebase");
     f.h.inspect_prepared();
     reference.h.inspect_prepared();
     const auto continued = f.h.inspect_live_hierarchy(), expected = reference.h.inspect_live_hierarchy();
+    const auto difference = [&](const char *surface, const auto &a, const auto &b, std::size_t stride) {
+      require(a.size() == b.size(), "continuation surface extent differs");
+      for (std::size_t i = 0; i < a.size(); ++i)
+        if (a[i] != b[i])
+          std::cerr << "rebase_difference,capacity=" << capacity << ",surface=" << surface
+                    << ",component=" << i / stride << ",slot=" << i % stride
+                    << ",actual=" << std::setprecision(17) << a[i] << ",expected=" << b[i] << '\n';
+    };
+    difference("body", f.h.particles64(), reference.h.particles64(), capacity);
+    difference("field", f.h.groups64(), reference.h.groups64(), capacity);
+    difference("determined", f.h.determined64(), reference.h.determined64(), capacity);
+    difference("flags", f.h.prepared_storage().inspection_flags, reference.h.prepared_storage().inspection_flags, capacity);
+    difference("slots", continued.slots, expected.slots, continued.selectors.size());
+    difference("previous", continued.previous, expected.previous, continued.selectors.size());
+    difference("selectors", continued.selectors, expected.selectors, continued.selectors.size());
+    difference("history", PlacementAccess::rebase_history(f.h), PlacementAccess::rebase_history(reference.h), capacity);
     require(f.h.particle64(kPosX, f.in.particle_rows[0].record) !=
                 bodies[kPosX * f.h.particle_capacity() + f.in.particle_rows[0].record],
             "rebase continuation witness did not move a body");
-    require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64() &&
+    // Independent native traversals need not choose the same parent/child order.
+    // This dyadic fixture has exactly two legal parent publications, not an
+    // epsilon band. A parent that read the old moving child must remain pending.
+    const int root = 2, root_field = f.in.field_rows[root].record;
+    const auto legal_parent = [](const Packet &parent, int flags) {
+      return (parent == Packet{1, 0, 0, 2} || parent == Packet{1.0625L, 0, 0, 2}) &&
+             (flags == 1 || flags == 3) && (parent[0] != 1 || (flags & 2));
+    };
+    require(!legal_parent(Packet{1, 0, 0, 2}, 1) &&
+                !legal_parent(Packet{1.03125L, 0, 0, 2}, 3) &&
+                !legal_parent(Packet{1.0625L, 0, 0, 3}, 3),
+            "continuation oracle accepted lost work, mixed coordinates or wrong mass");
+    const auto coherent = [&](Fixture &x, const LiveHierarchyInspection &prior) {
+      poll_lifetime(x, prior);
+      const auto current = x.h.inspect_live_hierarchy();
+      const auto left = selected(current, 0), right = selected(current, 1), parent = selected(current, root);
+      require(left == Packet{-3.875L, 0, 0, 1} && right == Packet{6, 0, 0, 1},
+              "continuation leaf packet differs from exact moved bodies");
+      const int flags = x.h.prepared_storage().inspection_flags[capacity + root_field];
+      require(legal_parent(parent, flags),
+              "continuation parent packet is incoherent or lost pending child input");
+      require(x.h.group64(kCenX, root_field) == parent[0], "continuation parent mirror differs");
+      std::cout << "rebase_continuation_order,capacity=" << capacity
+                << ",parent_x=" << parent[0] << ",pending=" << bool(flags & 2) << " PASS\n";
+    };
+    coherent(f, continuation_before);
+    coherent(reference, reference_before);
+    require(f.h.particles64() == reference.h.particles64() &&
                 f.h.determined64() == reference.h.determined64() &&
-                f.h.prepared_storage().inspection_flags == reference.h.prepared_storage().inspection_flags &&
-                continued.slots == expected.slots && continued.previous == expected.previous &&
-                continued.selectors == expected.selectors &&
+                continued.previous == expected.previous && continued.selectors == expected.selectors &&
                 PlacementAccess::rebase_history(f.h) == PlacementAccess::rebase_history(reference.h),
-            "translated-frame tick differs from unrebased continuation");
+            "continuation changed exact body motion or old publication history");
+    for (std::size_t i = 0; i < f.h.groups64().size(); ++i)
+      if (i != std::size_t(kCenX * capacity + root_field))
+        require(f.h.groups64()[i] == reference.h.groups64()[i], "non-parent field payload differs");
+    for (std::size_t i = 0; i < continued.slots.size(); ++i)
+      if (i != std::size_t(4 * continued.selectors[root]) * continued.selectors.size() + root)
+        require(continued.slots[i] == expected.slots[i], "non-parent packet word differs");
+    for (std::size_t i = 0; i < f.h.prepared_storage().inspection_flags.size(); ++i)
+      if (i != std::size_t(capacity + root_field))
+        require(f.h.prepared_storage().inspection_flags[i] == reference.h.prepared_storage().inspection_flags[i],
+                "non-parent activity differs");
+    const auto complete_pending = [&](Fixture &x, double root_x) {
+      const auto prior = x.h.inspect_live_hierarchy();
+      x.h.inspect_prepared();
+      const auto physical = x.h.particles64();
+      LiveHierarchyAccess::poll(x.h, 0);
+      x.h.inspect_prepared();
+      poll_lifetime(x, prior);
+      require(x.h.particles64() == physical &&
+                  selected(x.h.inspect_live_hierarchy(), root) == Packet{root_x, 0, 0, 2} &&
+                  !(x.h.prepared_storage().inspection_flags[capacity + root_field] & 2),
+              "pending parent did not catch up without changing bodies");
+    };
+    complete_pending(f, 1.0625L);
+    complete_pending(reference, 1.0625L);
+    require(f.h.groups64() == reference.h.groups64(), "completed parent mirrors differ");
+
+    // Deterministic counterexample to cross-execution history equality. These
+    // private targeted polls force both legal orders, not a production scheduler.
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::Ok, "ordered witness rebase");
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[0].record, -3.75 - delta[0]);
+    PreparedFixtureAccess::inject_value64(reference.h, kPosX, reference.in.particle_rows[0].record, -3.75);
+    for (auto *x : {&f, &reference}) {
+      x->control->set(1, x->in.field_rows[0].record);
+      x->control->set(1, x->in.field_rows[root].record);
+    }
+    const auto targeted = [&](Fixture &x, int node) {
+      const auto prior = x.h.inspect_live_hierarchy();
+      LiveHierarchyAccess::poll(x.h, 0, node);
+      x.h.inspect_prepared();
+      poll_lifetime(x, prior);
+    };
+    targeted(f, root);
+    targeted(f, 0);
+    targeted(reference, 0);
+    targeted(reference, root);
+    require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "ordered witness inverse");
+    f.h.inspect_prepared();
+    require(selected(f.h.inspect_live_hierarchy(), root) == Packet{1.0625L, 0, 0, 2} &&
+                selected(reference.h.inspect_live_hierarchy(), root) == Packet{1.125L, 0, 0, 2} &&
+                (f.h.prepared_storage().inspection_flags[capacity + root_field] & 2) &&
+                !(reference.h.prepared_storage().inspection_flags[capacity + root_field] & 2),
+            "ordered witness did not expose distinct coherent parent publications");
+    complete_pending(f, 1.125L);
+    complete_pending(reference, 1.125L);
+    require(f.h.particles64() == reference.h.particles64() && f.h.groups64() == reference.h.groups64(),
+            "ordered continuation failed exact physical convergence");
+    std::cout << "rebase_ordered_continuation,parent_first=1.0625,child_first=1.125,"
+                 "lagging_pending=1,following_poll=exact,history_lifetime=preserved PASS\n";
     std::cout << "coordinate_rebase,capacity=" << capacity << ",translation=2^27,exact=1,history=both_slots,"
                  "rejection=unchanged,round_trip=exact,following_tick=moving,backing=stable PASS\n";
   }
@@ -934,16 +1155,71 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                 PlacementAccess::rebase(f.h, {}).status == UpdateStatus::Unready,
             "rebase postpublication failure advertised resumable execution");
   }
-  for (int reduced : {0, 1, 2}) {
+  for (int reduced : {0, 1, 2, 3}) {
     const auto l = placement_limits();
-    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 0 ? 8 : 52,
-              reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 3 ? 0 : reduced == 0 ? 8 : 52,
+              reduced == 3 ? 0 : reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l, true);
     if (reduced == 2) f.nodes[0].retained_fraction_bits = 8;
     f.install();
+    if (reduced != 0) {
+      const auto &tree = f.h.inspect_live_hierarchy();
+      for (int input : {16, 0, 13}) {
+        auto *array = LiveHierarchyAccess::input_array(f.h, input);
+        std::vector<double> original(array->get_nelement()), observed(original.size());
+        engine::readback(*array, original.data(), original.size() * sizeof(double));
+        auto prior = original;
+        const auto at = input == 16 ? 3 * f.h.field_capacity() + f.in.field_rows[0].record :
+            (input == 0 ? 4 * tree.selectors.size() : 0) + tree.order[0];
+        prior[at] = 0x1p-10;  // Exactly retained even with zero fraction bits.
+        engine::upload(*array, prior.data(), prior.size() * sizeof(double));
+        const auto observation = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+        const TickSnapshot before(f);
+        require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::InvalidNumerics &&
+                    before == TickSnapshot(f) && f.h.ready(),
+                "rebase ignored reduced precision in an old history slot");
+        engine::readback(*array, observed.data(), observed.size() * sizeof(double));
+        require(observed == prior, "reduced-history rejection changed previous coordinates");
+        f.h.inspect_prepared_geometry(observation);
+        engine::upload(*array, original.data(), original.size() * sizeof(double));
+      }
+    }
+    const auto generation = f.h.prepared_storage().generation;
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    UpdateResult moved;
+    no_new([&] { moved = PlacementAccess::rebase(f.h, {16, 0, 0}); });
+    f.h.inspect_prepared();
+    require(moved.status == UpdateStatus::Ok && moved.generation == generation + 1 &&
+                f.h.particle64(kPosX, f.in.particle_rows[0].record) == -16 &&
+                f.h.group64(kCenX, f.in.field_rows[0].record) == -16 &&
+                f.h.frame_anchor()[0] == 16 && backing.same_backing(metrics.sample()),
+            "exact reduced-profile rebase rejected or rounded");
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
     const TickSnapshot before(f);
-    require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::Unsupported &&
-                before == TickSnapshot(f) && f.h.ready(),
-            "rebase silently accepted a reduced-precision profile");
+    const auto history = PlacementAccess::rebase_history(f.h);
+    // -16 - 2^-10 is exact f64, but has nonzero discarded bits in an 8-bit
+    // (or zero-bit) destination. This distinguishes the precision gate from TwoDiff.
+    require(PlacementAccess::rebase(f.h, {0x1p-10, 0, 0}).status == UpdateStatus::InvalidNumerics &&
+                before == TickSnapshot(f) && history == PlacementAccess::rebase_history(f.h) &&
+                f.h.frame_anchor()[0] == 16 && f.h.ready(),
+            "rebase silently rounded a reduced-precision destination");
+    f.h.inspect_prepared_geometry(geometry);
+    require(PlacementAccess::rebase(f.h, {-16, 0, 0}).status == UpdateStatus::Ok,
+            "reduced-profile inverse rejected");
+    f.h.inspect_prepared();
+    require(f.h.frame_anchor() == FrameAnchor{} &&
+                f.h.particle64(kPosX, f.in.particle_rows[0].record) == 0 &&
+                f.h.group64(kCenX, f.in.field_rows[0].record) == 0,
+            "reduced-profile inverse lost coordinates");
+    Parameters64 step;
+    step.dt = .125;
+    step.gravity = step.contact_stiffness = step.reach_strength = 0;
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[0].record, 1);
+    f.control->set(2, f.in.particle_rows[0].record);
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, step).status == TickStatus::Ok,
+            "reduced rebase could not continue ticking");
+    std::cout << "coordinate_rebase_reduced,profile=" << reduced
+              << ",exact_shift=16,discarded_bit_rejection=unchanged,inverse=exact,following_tick=pass PASS\n";
   }
 }
 

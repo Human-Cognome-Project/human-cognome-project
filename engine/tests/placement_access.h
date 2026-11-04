@@ -4,6 +4,18 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult exchange_state(Harness &h, const std::vector<engine::RecordHandle> &rows,
+                                    std::uint64_t work = UINT64_MAX,
+                                    std::uint64_t generation = UINT64_MAX) {
+    return h.placement_->stage_exchange_state(
+        generation == UINT64_MAX ? h.prepared_->generation : generation,
+        rows.data(), rows.size(), work);
+  }
+  static std::array<double, 8> exchange_output(Harness &h) {
+    std::array<double, 8> values{};
+    engine::readback(*h.placement_->exchange_state_, values.data(), sizeof(values));
+    return values;
+  }
   static UpdateResult rebase(Harness &h, const FrameAnchor &delta,
                               std::uint64_t work = UINT64_MAX,
                               std::uint64_t generation = UINT64_MAX) {
@@ -105,12 +117,12 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 16>{
+    return std::array<const engine::CompiledKernel *, 17>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
-        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_};
+        &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_, &p.exchange_reduce_};
   }
   static bool rebase_payload_binding(Harness &h, int argument, const void *pointer) {
     if (argument > 1 || h.path_ != HostPath::CpuDirect) return false;
@@ -118,7 +130,7 @@ struct PlacementAccess {
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    std::array<taichi::lang::Ndarray *, 39> result{
+    std::array<taichi::lang::Ndarray *, 40> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
@@ -135,6 +147,7 @@ struct PlacementAccess {
     result[36] = history[0];
     result[37] = history[1];
     result[38] = h.prepared_->candidate_status_array.get();
+    result[39] = p.exchange_state_.get();
     return result;
   }
   static std::array<taichi::lang::Ndarray *, 2> rebase_history_arrays(Harness &);

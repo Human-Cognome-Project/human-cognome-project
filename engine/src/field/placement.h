@@ -31,6 +31,13 @@ class Placement {
       requests_, occupancy_, cells_, attempt_, published_, counts_;
   engine::CompiledKernel collect_, capture_, solve_, publish_, initialize_;
   engine::CompiledKernel bootstrap_solve_;
+  engine::CompiledKernel exchange_reduce_;
+  std::unique_ptr<taichi::lang::Ndarray> exchange_state_;
+  void build_exchange();
+  void reduce_exchange();
+  // Attempt-local D7 prerequisite, not an exchange or reusable candidate token.
+  UpdateResult stage_exchange_state(std::uint64_t, const engine::RecordHandle *,
+                                    std::size_t, std::uint64_t);
   std::unique_ptr<taichi::lang::Ndarray> bootstrap_contributions_;
   std::vector<std::uint64_t> bootstrap_values_;
   std::size_t bootstrap_edges_{};

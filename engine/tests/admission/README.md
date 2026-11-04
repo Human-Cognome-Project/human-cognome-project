@@ -422,6 +422,49 @@ It is retained as an incomplete run. The combined test runner now explicitly
 reserves 2,048 IDs without changing production model budgets. The final moving
 continuation witness also asserts nonzero displacement at positive dt.
 
+## Reduced-significand exact rebase — 2026-11-04
+
+This continues provisionally accepted #212 at
+`78b5360211050aa02fb541cbc140eda7cf257ddf`. Its pending hosted validation and
+maintainer integration remain independent. The private D6 boundary now accepts
+0–52 retained fraction bits only when every translated f64 coordinate survives
+its destination mask unchanged. It never rounds a rebase to make it fit.
+Installed field/history coordinates use the native owner-node mask, including
+independent hierarchy precision. Body and unowned-field coordinates use their
+respective profiles. Both existing kernels bind the native mask array; the fixed
+parameter reservation increases by two, with no new numerical backing.
+
+Code/test pin: `73e22ec7e38ba62c041e90de2687f6f254f16bb7`.
+
+The scoped qualification runs the complete `coordinate_rebase` case on CPU in
+one-worker bulk/default and two-worker direct/no-unroll modes. Four reduced
+fixtures independently cover 8-bit body, 8-bit field, independently configured
+8-bit hierarchy and zero-fraction-bit profiles. Fields occupy nonidentity owner
+slots. Each checks exact shift/inverse, unchanged rejection of a subtraction
+that is exact in f64 but loses destination bits, stable backing, no observed
+recurring C++ allocation and a subsequent positive-dt tick. Separate witnesses
+make only previous centres, backup packets or reader history fail the precision
+gate. Existing full-precision preservation and failure witnesses remain in the case.
+
+The compiler audit covers 16 kernels and 24 rejected unsafe controls at both
+52/8-bit profiles in both modes. It additionally verifies the actual frozen
+native mask pointers, type, rank and extent. Prepared update and dirty hierarchy
+refresh are the accompanying regressions. Full placement/115-suite regression,
+remaining compiler modes, PostgreSQL and GPU are outside this scoped rerun.
+Shared-host timings are not performance qualification. Legacy f32 and rounded
+rebasing remain unsupported; D7 exchange and operational/browser wiring remain
+separate work.
+
+All scoped checks above passed. Bundle `reduced-rebase-73e22ec7` retains the
+qualification commands, source/submodule pins, build configuration, toolchain,
+binary/runtime hashes, raw logs, emitted LLVM and frozen ABI metadata. Its
+`SHA256SUMS` digest is
+`4530186856be84a54408d5615b5e819b50b9bc5f3650236cc987b9d34c1522b4`.
+A matching archive is retained in the Windows workspace. The raw bundle is local,
+not remotely available or independently verified merely by publishing its hash.
+Subsequent documentation changes no tested code. Hosted CI and maintainer
+acceptance remain independent.
+
 ### Maintainer hosted acceptance of #211 — 2026-11-04
 
 Corrected head `153f6124193bfe027253716e0672ec41b755bc9e` is accepted in
@@ -457,3 +500,123 @@ CPU results, distinct from the contributor-local evidence above.
 Only private full-precision exact rebasing is accepted here. #213 reduced-profile
 support remains provisional; legacy f32, rounded transforms, D7 exchange,
 operational controls and GPU qualification remain separate.
+
+## Private D7 outgoing-state prerequisite — 2026-11-04
+
+This continues provisionally accepted #213 at
+`65f78f5e9363d851b4ef5f350796b8e781be277d`, with main's authoritative #211/#212
+acceptance integrated. The [implementation scope](../../docs/EXCHANGE-STATE.md)
+is a native mass-weighted current centre/velocity reduction over validated body
+handles. It is scratch-only and does not perform an aggregate/parts exchange.
+
+Code/test pin: `b3626223050ea4be0d9241a679c81c7ae9f0cfb8`.
+Scoped qualification covers `exchange_state` at 52/8-bit position precision on
+CPU bulk/default with one worker and direct/no-unroll with two workers. Witnesses
+include unequal masses, aggregate/set reduction, independent nonbinary velocity
+reference, caller-order invariance, sleeping bodies/retained dirty packets,
+unrelated occupants, stale/duplicate/empty selection, exact work boundaries,
+invalid numerical inputs and retry. Snapshots, prior geometry/placement tokens,
+prepared backing and the no-recurring-C++-allocation guard check preservation.
+
+The compiler audit covers 17 kernels and 26 rejected unsafe controls per 52/8-bit
+profile in both modes, including the new resident input binding and scratch-only
+output. Prepared update is the accompanying regression. Full placement/115-suite
+regression, remaining compiler modes, PostgreSQL and GPU are not part of this
+rerun. No GPU work occurred. Shared-host timing is not performance evidence.
+
+The initial `581665e7` attempt failed C++ compilation on incompatible conditional
+IR pointer types; the common `Stmt` base fixes it. That log is retained separately
+and is not passing qualification. Subsequent documentation changes no tested code.
+Hosted validation and maintainer acceptance remain independent.
+
+All scoped checks above passed. Bundle `exchange-state-b3626223` retains commands,
+source/submodule pins, build configuration, toolchain, binary/runtime hashes,
+raw logs, emitted LLVM and frozen ABI metadata. Its `SHA256SUMS` digest is
+`8fccb05c3195d5f7f5f5067f68882a3f6010e3552c0485feb5901db8944bacae`.
+A matching archive is retained in the Windows workspace. This is contributor-local
+evidence; the raw bundle is not remotely available or independently verified
+merely by publishing its digest.
+
+
+## PR #213 hosted continuation correction — 2026-11-04
+
+[Review 5775793038](https://github.com/Human-Cognome-Project/human-cognome-project/pull/213#pullrequestreview-5775793038)
+holds #213/#214 integration after hosted two-worker combined placement failures
+at `65f78f5e`. The compiler audits themselves passed; the existing full-precision
+moving rebase witness failed cross-execution equality before the reduced fixtures.
+
+Diagnostics retain component/slot/value differences and nonzero before/after
+body, field, history, packet, selector and activity state. Local original-witness
+runs passed all 15 combined cases in two-worker bulk/default, direct/default and
+direct/no-unroll, both at #213 diagnostic pin
+`019115ac38f6f9beb43e40a9552dba047f804519` and accepted #212 plus diagnostics at
+`650dad00fe8e440a2a27d3904f699d14759e5c41`. Standalone two-worker bulk rebase
+also passed at each pin. Thus the natural hosted timing was not reproduced
+locally; these passes do not dismiss that failure.
+
+The demonstrated test-contract defect is inherited: independent native hierarchy
+traversals need not consume the same complete sibling publication generations.
+The [corrected witness](../../docs/COORDINATE-REBASE.md#hosted-continuation-correction)
+uses exact fixture-specific parent values and requires pending work for lag.
+It retains exact body/motion, unaffected payload, prior history and selector
+checks, adds per-poll publication/old-slot lifetime checks and requires exact
+catch-up without body changes. Negative controls reject missing pending work,
+an intermediate parent coordinate and wrong mass. No epsilon, production kernel,
+precision gate or scheduling change was introduced.
+
+Explicit parent-first/child-first targeted polls reproduce differing valid
+parent values (`1.0625` versus `1.125`) on the accepted #212 engine at diagnostic
+test pin `7bac08ce219e4047410170ad5a75156cfc043494`; both converge exactly on
+the next poll with history lifetime preserved. This controlled counterexample
+is separate from the naturally scheduled runs. It demonstrates why the old
+assertion is invalid, but hosted confirmation is still needed to reconcile the
+original failure fully.
+
+Corrected #213 code/test pin: `b38ad7e5a5ce05af5fac88160a76f2e3c2ae5da2`.
+Dependent #214 merge/test pin: `41fd4df2133c6b607f0b605ee2f47a3bfc5aec22`.
+Subsequent changes are documentation only. The initial controlled-witness build
+at `312d9cda` failed because a long-double expectation was narrowed into an f64
+packet initializer; the expectation parameter now matches the packet type. That
+failed build is retained separately and is not passing evidence.
+
+All corrected scoped checks passed: #213's complete 15-case placement suite in
+two-worker bulk/default, direct/default and direct/no-unroll, plus a separate
+standalone bulk rebase. Each combined compiler audit passes 16 kernels and 24
+unsafe controls per 52/8-bit profile. #214 passes the complete 16-case combined
+suite in two-worker direct/no-unroll (17 kernels/26 controls per profile), separate
+two-worker bulk rebase and one-worker bulk exchange_state. Both capacities retain
+the forced-order counterexample and exact catch-up in the corrected rebase case.
+
+Bundle `rebase-continuation-b38ad7e5-41fd4df2` retains all original diagnostic,
+controlled-baseline and corrected raw logs, exact pins, commands, binary/runtime
+hashes, configuration and toolchain. Its `SHA256SUMS` digest is
+`044ff224916315920620264f11f280ba791688571a326c61c4d470f7c899eafd`.
+A matching archive is retained in the Windows workspace. Raw evidence remains
+machine-local and is not independently verified merely by publishing its hash.
+
+Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were not
+rerun. No GPU work occurred; shared-host timing is not performance qualification.
+The source-only test correction and local passes do not replace current-head
+hosted reconciliation or maintainer approval for either PR.
+
+## Maintainer hosted acceptance of corrected #213/#214 — 2026-11-04
+
+Accepted heads: #213 `aa50a5a79a482a89a5e6a7b62b9bdae3315fba68` and #214
+`d81dd279a5b35a70ac436cfb742fdc0af30d54ec`. All current-head checks pass.
+Independently inspected runs 41920995451 (#213) and 41920995839 (#214):
+each covers all 115 test indexes exactly once and 180 database checks with
+24 addressed reads and zero private reads. All four compiler artifacts from
+each run were downloaded and inspected, covering eight worker/source/unroll
+configurations. #213 reports 16 kernels/24 unsafe controls per profile;
+#214 reports 17 kernels/26 controls. All four extra no-unroll placement suites
+pass corrected exact legal-parent, pending-work, history-lifetime and forced-order
+catch-up witnesses. #214 also passes outgoing-state witnesses at 52/8 bits.
+
+The earlier hosted continuation failure is reconciled by the reviewed test-contract
+correction and renewed hosted coverage; its natural timing was not reproduced
+locally, and the old failed runs are not relabelled as passes. This acceptance
+covers private reduced exact rebasing and outgoing-state reduction only.
+#215 replacement staging is separately provisional. Complete D7 source/momentum
+accounting, logical alternative validation, prospective hierarchy/contact exchange,
+atomic retirement/publication, operational controls and GPU qualification remain
+outstanding. Contributor-local evidence above remains separately pinned.
