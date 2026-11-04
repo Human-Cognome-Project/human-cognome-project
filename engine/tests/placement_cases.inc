@@ -934,16 +934,49 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
                 PlacementAccess::rebase(f.h, {}).status == UpdateStatus::Unready,
             "rebase postpublication failure advertised resumable execution");
   }
-  for (int reduced : {0, 1, 2}) {
+  for (int reduced : {0, 1, 2, 3}) {
     const auto l = placement_limits();
-    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 0 ? 8 : 52,
-              reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, reduced == 3 ? 0 : reduced == 0 ? 8 : 52,
+              reduced == 3 ? 0 : reduced == 1 ? 8 : 52, false, false, true, false, 1024, {}, &l);
     if (reduced == 2) f.nodes[0].retained_fraction_bits = 8;
     f.install();
+    const auto generation = f.h.prepared_storage().generation;
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    UpdateResult moved;
+    no_new([&] { moved = PlacementAccess::rebase(f.h, {16, 0, 0}); });
+    f.h.inspect_prepared();
+    require(moved.status == UpdateStatus::Ok && moved.generation == generation + 1 &&
+                f.h.particle64(kPosX, f.in.particle_rows[0].record) == -16 &&
+                f.h.group64(kCenX, f.in.field_rows[0].record) == -16 &&
+                f.h.frame_anchor()[0] == 16 && backing.same_backing(metrics.sample()),
+            "exact reduced-profile rebase rejected or rounded");
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
     const TickSnapshot before(f);
-    require(PlacementAccess::rebase(f.h, {16, 0, 0}).status == UpdateStatus::Unsupported &&
-                before == TickSnapshot(f) && f.h.ready(),
-            "rebase silently accepted a reduced-precision profile");
+    const auto history = PlacementAccess::rebase_history(f.h);
+    // -16 - 2^-10 is exact f64, but has nonzero discarded bits in an 8-bit
+    // (or zero-bit) destination. This distinguishes the precision gate from TwoDiff.
+    require(PlacementAccess::rebase(f.h, {0x1p-10, 0, 0}).status == UpdateStatus::InvalidNumerics &&
+                before == TickSnapshot(f) && history == PlacementAccess::rebase_history(f.h) &&
+                f.h.frame_anchor()[0] == 16 && f.h.ready(),
+            "rebase silently rounded a reduced-precision destination");
+    f.h.inspect_prepared_geometry(geometry);
+    require(PlacementAccess::rebase(f.h, {-16, 0, 0}).status == UpdateStatus::Ok,
+            "reduced-profile inverse rejected");
+    f.h.inspect_prepared();
+    require(f.h.frame_anchor() == FrameAnchor{} &&
+                f.h.particle64(kPosX, f.in.particle_rows[0].record) == 0 &&
+                f.h.group64(kCenX, f.in.field_rows[0].record) == 0,
+            "reduced-profile inverse lost coordinates");
+    Parameters64 step;
+    step.dt = .125;
+    step.gravity = step.contact_stiffness = step.reach_strength = 0;
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[0].record, 1);
+    f.control->set(2, f.in.particle_rows[0].record);
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, step).status == TickStatus::Ok,
+            "reduced rebase could not continue ticking");
+    std::cout << "coordinate_rebase_reduced,profile=" << reduced
+              << ",exact_shift=16,discarded_bit_rejection=unchanged,inverse=exact,following_tick=pass PASS\n";
   }
 }
 

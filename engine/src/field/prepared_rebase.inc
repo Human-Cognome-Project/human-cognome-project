@@ -1,4 +1,4 @@
-// Private D6 boundary. Only exact full-precision translations are supported.
+// Private D6 boundary. Only exact translations in each retained f64 profile.
 // Check and publication use the same strict native arithmetic under exclusive
 // ownership; the first pass writes only the bounded status scalar.
 void Harness::prepare_rebase_execution() {
@@ -9,14 +9,16 @@ void Harness::prepare_rebase_execution() {
   auto *body = array(b, 0, d, 2), *groups = array(b, 1, d, 2),
        *history = array(b, 2, d, 2), *focus = array(b, 3, d),
        *slots = array(b, 4, d, 2), *previous = array(b, 5, d, 2),
-       *owners = array(b, 6, i), *status = array(b, 7, i);
+       *owners = array(b, 6, i), *status = array(b, 7, i),
+       *masks = array(b, 12, PrimitiveType::u64);
   auto *mode = b.create_arg_load({11}, i, false, 0);
   {
     auto enabled = b.get_if_guard(b.create_if(mode), true);
     if (!commit) {
       put(b, status, 0, b.get_int32(0));
     }
-    const auto translate = [&](ArgLoadStmt *a, std::vector<Stmt *> at, int axis) {
+    const auto translate = [&](ArgLoadStmt *a, std::vector<Stmt *> at, int axis,
+                               Stmt *mask = nullptr) {
       auto *x = read(b, a, at);
       auto *delta = b.create_arg_load({8 + axis}, d, false, 0);
       auto *y = b.create_sub(x, delta);
@@ -43,6 +45,10 @@ void Harness::prepare_rebase_execution() {
       auto *valid = b.create_logical_and(detail::supported_real(b, x),
           b.create_logical_and(detail::supported_real(b, y),
               b.create_logical_and(range, b.create_cmp_eq(error, b.get_float64(0)))));
+      if (mask) {
+        auto *bits = b.create_bit_cast(y, PrimitiveType::u64);
+        valid = b.create_logical_and(valid, b.create_cmp_eq(bits, b.create_and(bits, mask)));
+      }
       {
         auto invalid = b.get_if_guard(b.create_if(b.create_logical_not(valid)), true);
         b.create_atomic_or(b.create_external_ptr(status, {b.get_int32(0)}), b.get_int32(1));
@@ -56,7 +62,8 @@ void Harness::prepare_rebase_execution() {
       auto present = b.get_if_guard(b.create_if(
           detail::NativeSet{prepared_->particles.bindings().presence}.active(b, row)), true);
       for (int axis = 0; axis < 3; ++axis)
-        translate(body, cell(b, kPosX + axis, row), axis);
+        translate(body, cell(b, kPosX + axis, row), axis,
+            b.get_uint64(~std::uint64_t{0} << (52 - profile_.body_fraction_bits)));
     }
     {
       auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(groups_), false,
@@ -65,16 +72,24 @@ void Harness::prepare_rebase_execution() {
       auto *row = b.get_loop_index(loop);
       auto present = b.get_if_guard(b.create_if(
           detail::NativeSet{prepared_->fields.bindings().presence}.active(b, row)), true);
-      for (int axis = 0; axis < 3; ++axis) {
-        translate(groups, cell(b, kCenX + axis, row), axis);
-        translate(history, cell(b, 3 + axis, row), axis);
-      }
       auto *node = read(b, owners, {row});
-      auto owned = b.get_if_guard(b.create_if(b.create_cmp_ge(node, b.get_int32(0))), true);
+      auto *field_mask = b.create_local_var(PrimitiveType::u64);
+      b.create_local_store(field_mask,
+          b.get_uint64(~std::uint64_t{0} << (52 - profile_.field_fraction_bits)));
+      {
+        auto owned = b.get_if_guard(b.create_if(b.create_cmp_ge(node, b.get_int32(0))), true);
+        b.create_local_store(field_mask, read(b, masks, {node}));
+      }
       for (int axis = 0; axis < 3; ++axis) {
-        translate(slots, cell(b, axis, node), axis);
-        translate(slots, cell(b, 4 + axis, node), axis);
-        translate(previous, cell(b, axis, node), axis);
+        translate(groups, cell(b, kCenX + axis, row), axis, b.create_local_load(field_mask));
+        translate(history, cell(b, 3 + axis, row), axis, b.create_local_load(field_mask));
+      }
+      auto owned = b.get_if_guard(b.create_if(b.create_cmp_ge(node, b.get_int32(0))), true);
+      auto *mask = read(b, masks, {node});
+      for (int axis = 0; axis < 3; ++axis) {
+        translate(slots, cell(b, axis, node), axis, mask);
+        translate(slots, cell(b, 4 + axis, node), axis, mask);
+        translate(previous, cell(b, axis, node), axis, mask);
       }
     }
     for (int axis = 0; axis < 3; ++axis) {
@@ -89,7 +104,8 @@ void Harness::prepare_rebase_execution() {
       std::string(commit ? "prepared_rebase_commit_" : "prepared_rebase_check_") +
           std::to_string(prepared_->particles.bindings().presence->id),
       b.extract_ir(), {matrix, matrix, matrix, vector, matrix, matrix, ints, ints,
-                       scalar, scalar, scalar, integer}, engine::MathMode::Strict);
+                       scalar, scalar, scalar, integer, engine::Param::array(PrimitiveType::u64)},
+      engine::MathMode::Strict);
   }
   launch_rebase({}, -1);
   launch_rebase({}, 0);
@@ -109,6 +125,7 @@ void Harness::launch_rebase(const FrameAnchor &delta, int mode) {
     live_hierarchy_->bind_input(ctx, 5, 13);
     live_hierarchy_->bind_input(ctx, 6, 18);
     ctx.set_arg_ndarray({7}, *prepared_->candidate_status_array);
+    live_hierarchy_->bind_input(ctx, 12, 6);
   }
   for (int axis = 0; axis < 3; ++axis)
     engine::argument_float(ctx, 8 + axis, delta[axis]);
@@ -124,8 +141,7 @@ UpdateResult Harness::rebase_current(std::uint64_t expected,
   auto &s = *prepared_;
   out.generation = s.generation;
   if (expected != s.generation) return reject(UpdateStatus::Stale);
-  if (!profile_.wide() || profile_.body_fraction_bits != 52 ||
-      profile_.field_fraction_bits != 52 || !tick_execution_ || !live_hierarchy_installed())
+  if (!profile_.wide() || !tick_execution_ || !live_hierarchy_installed())
     return reject(UpdateStatus::Unsupported);
   FrameAnchor anchor;
   bool changed = false;
@@ -152,9 +168,6 @@ UpdateResult Harness::rebase_current(std::uint64_t expected,
   try {
     validate_prepared_bindings();
     live_hierarchy_->validate();
-    // Descriptor-only qualification: no numerical host copy is an authority.
-    if (!live_hierarchy_->full_precision_rebase())
-      return reject(UpdateStatus::Unsupported);
     launch_rebase(delta, 1);
     runtime_->synchronize();
     ++out.synchronizations;
