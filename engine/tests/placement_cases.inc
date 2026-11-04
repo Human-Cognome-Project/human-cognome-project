@@ -756,6 +756,135 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void coordinate_rebase(engine::Runtime &r, HostPath path) {
+  for (int capacity : {70, 128}) {
+    const auto l = placement_limits(capacity);
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
+              {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, true, true,
+              false, 1024, {}, &l, true);
+    f.install();
+    Parameters64 stationary;
+    stationary.dt = stationary.gravity = stationary.contact_stiffness = stationary.reach_strength = 0;
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
+            "rebase fixture contact installation");
+    f.control->set(0);
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[1].record, 6);
+    PreparedFixtureAccess::inject_value64(f.h, kVelX, f.in.particle_rows[0].record, .5);
+    f.control->set(1, f.in.field_rows[1].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[1].record);
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    const TickSnapshot before(f);
+    const auto generation = f.h.prepared_storage().generation;
+    const auto ticks = f.h.prepared_storage().completed_ticks;
+    const auto anchor = f.h.frame_anchor();
+    const FrameAnchor delta{134217728., -16., 8.};
+    PlacementAccess::disabled_rebase(f.h, delta);
+    require(PlacementAccess::rebase(f.h, {}, UINT64_MAX, generation + 1).status == UpdateStatus::Stale &&
+                PlacementAccess::rebase(f.h, {}).status == UpdateStatus::NoChange,
+            "rebase stale/no-op disposition");
+    const auto work = PlacementAccess::rebase(f.h, delta, 0);
+    require(work.status == UpdateStatus::CapacityExhausted && work.failure.budget == Budget::CascadeWork,
+            "rebase work reservation ignored");
+    for (double bad : {std::numeric_limits<double>::infinity(),
+                       std::numeric_limits<double>::quiet_NaN(), 0x1p-100, 0x1p100})
+      require(PlacementAccess::rebase(f.h, {bad, 0, 0}).status == UpdateStatus::InvalidNumerics,
+              "inexact or nonfinite rebase accepted");
+    PreparedFixtureAccess::inject_failure(f.h, 410);
+    require(PlacementAccess::rebase(f.h, delta).status == UpdateStatus::InvalidInput,
+            "rebase prepublication failure hook");
+    PreparedFixtureAccess::inject_failure(f.h, 0);
+    require(before == TickSnapshot(f) && anchor == f.h.frame_anchor() && f.h.ready(),
+            "rebase rejection or disabled publication changed live state");
+    f.h.inspect_prepared_geometry(geometry);
+    const auto bodies = f.h.particles64(), groups = f.h.groups64();
+    const auto history = PlacementAccess::rebase_history(f.h);
+    const auto hierarchy = f.h.inspect_live_hierarchy();
+    const auto focus = f.h.prepared_storage().inspection_focus64;
+    const auto motion = f.h.prepared_storage().motion64();
+    const auto flags = f.h.prepared_storage().inspection_flags;
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    UpdateResult result;
+    no_new([&] { result = PlacementAccess::rebase(f.h, delta); });
+    require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
+                ticks == f.h.prepared_storage().completed_ticks && backing.same_backing(metrics.sample()),
+            "rebase failed atomic generation/backing checks");
+    f.h.inspect_prepared();
+    const auto &s = f.h.prepared_storage();
+    const auto moved_history = PlacementAccess::rebase_history(f.h);
+    for (int axis = 0; axis < 3; ++axis) {
+      require(f.h.frame_anchor()[axis] == anchor[axis] + delta[axis] &&
+                  s.inspection_focus64[axis] == focus[axis] - delta[axis] &&
+                  s.inspection_focus64[8 + axis] == focus[8 + axis] - delta[axis],
+              "rebase frame/focal controls disagree");
+    }
+    for (int row = 0; row < f.h.particle_capacity(); ++row)
+      for (int col = 0; col < kParticleFieldCount; ++col) {
+        const auto at = col * f.h.particle_capacity() + row;
+        const auto offset = col < 3 && s.particle_headers[row].record >= 0 ? delta[col] : 0;
+        require(f.h.particles64()[at] == bodies[at] - offset, "rebase body payload/presence changed");
+      }
+    for (int row = 0; row < f.h.field_capacity(); ++row) {
+      const bool present = s.field_headers[row].record >= 0;
+      for (int col = 0; col < kGroupFieldCount; ++col) {
+        const auto at = col * f.h.field_capacity() + row;
+        require(f.h.groups64()[at] == groups[at] - (present && col < 3 ? delta[col] : 0),
+                "rebase field payload changed");
+      }
+      for (int col = 0; col < 6; ++col) {
+        const auto at = col * f.h.field_capacity() + row;
+        require(moved_history[at] == history[at] - (present && col >= 3 ? delta[col - 3] : 0),
+                "rebase previous centre or displacement changed incorrectly");
+      }
+    }
+    auto moved = f.h.inspect_live_hierarchy();
+    const auto stride = moved.selectors.size();
+    for (std::size_t n = 0; n < hierarchy.node_count; ++n) {
+      const int slot = hierarchy.order[n];
+      for (int col = 0; col < 8; ++col)
+        require(moved.slots[col * stride + slot] == hierarchy.slots[col * stride + slot] -
+                    (col % 4 < 3 ? delta[col % 4] : 0), "rebase lost a hierarchy packet/history slot");
+      for (int col = 0; col < 4; ++col)
+        require(moved.previous[col * stride + slot] == hierarchy.previous[col * stride + slot] -
+                    (col < 3 ? delta[col] : 0), "rebase reader history translation");
+    }
+    require(moved.selectors == hierarchy.selectors && moved.counters == hierarchy.counters &&
+                moved.visits == hierarchy.visits && s.motion64() == motion && s.inspection_flags == flags,
+            "rebase consumed pending work or changed activity/motion");
+    const TickSnapshot after(f);
+    require(after.installed == before.installed && after.query == before.query,
+            "rebase rebuilt source/contact indexes");
+    bool stale = false;
+    try { f.h.inspect_prepared_geometry(geometry); } catch (const std::logic_error &) { stale = true; }
+    require(stale, "rebase retained stale observation");
+    require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
+            "inverse exact rebase rejected");
+    f.h.inspect_prepared();
+    const auto restored = f.h.inspect_live_hierarchy();
+    require(f.h.frame_anchor() == anchor && f.h.particles64() == bodies && f.h.groups64() == groups &&
+                restored.slots == hierarchy.slots && restored.previous == hierarchy.previous &&
+                PlacementAccess::rebase_history(f.h) == history,
+            "exact rebase round trip lost physical/history state");
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
+            "rebase execution could not continue ticking");
+    std::cout << "coordinate_rebase,capacity=" << capacity << ",translation=2^27,exact=1,history=both_slots,"
+                 "rejection=unchanged,round_trip=exact,following_tick=pass,backing=stable PASS\n";
+  }
+  for (int failure : {411, 412}) {
+    const auto l = placement_limits();
+    Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false, true,
+              false, 1024, {}, &l);
+    f.install();
+    const auto generation = f.h.prepared_storage().generation;
+    PreparedFixtureAccess::inject_failure(f.h, failure);
+    bool failed = false;
+    try { PlacementAccess::rebase(f.h, {16, 0, 0}); } catch (const std::runtime_error &) { failed = true; }
+    require(failed && !f.h.ready() && f.h.prepared_storage().generation == generation &&
+                PlacementAccess::rebase(f.h, {}).status == UpdateStatus::Unready,
+            "rebase postpublication failure advertised resumable execution");
+  }
+}
+
 void live_focus(engine::Runtime &r, HostPath path) {
   for (bool radial : {false, true}) {
     const auto l = placement_limits(radial ? 128 : 70);

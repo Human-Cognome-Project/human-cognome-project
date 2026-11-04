@@ -14,6 +14,11 @@ struct PlacementAccess {
     h.launch_rebase(delta, 0);
     h.runtime_->synchronize();
   }
+  static std::vector<double> rebase_history(Harness &h) {
+    std::vector<double> out(h.activity_->group_delta->get_nelement());
+    engine::readback(*h.activity_->group_delta, out.data(), out.size() * sizeof(double));
+    return out;
+  }
   static UpdateResult focus(Harness &h, const std::vector<engine::RecordHandle> &fields,
                             std::uint64_t work = UINT64_MAX,
                             std::uint64_t generation = UINT64_MAX) {
