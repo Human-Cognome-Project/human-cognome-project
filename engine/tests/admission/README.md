@@ -182,3 +182,60 @@ Full CPU regression, remaining compiler modes, PostgreSQL and GPU were not run.
 Shared-host timings are not performance qualification. Complete D1 bootstrap,
 prospective initial focus and the operational owner/API remain outstanding;
 this contribution publishes ordinary arrivals into an already installed model.
+
+## Private D1 bootstrap and initial focus — 2026-11-04
+
+The continuation of provisionally accepted #209 implements first admission into
+an empty, never-populated prepared owner. Source, rooted hierarchy, generated
+body starts, contact view and explicit initial focus publish as one unticked
+generation. The boundary remains private; representation exchange, an enduring
+operational owner/public Add API and GPU qualification are separate work.
+
+Local CPU source pin: `d31a0f1d3e579ff57ae6f0ffa5900268d1149f9f`.
+
+All listed qualification runs passed. Bundle `admission-bootstrap-d31a0f1d`
+contains commands, source/submodule pins, configuration, toolchain, binary/runtime
+hashes, raw logs and emitted modules. Its `SHA256SUMS` digest is
+`d10bc3b797ab681811fd5eb716f4a5f251c0436b024e565781dadd66e58fe75b`.
+A matching archive is retained in the Windows workspace. The raw bundle is
+machine-local; its digest does not make it remotely accessible or independently
+verified. The subsequent documentation commit does not change tested code.
+
+The focused qualification covers the complete thirteen-case placement/admission
+suite in one-worker bulk/default mode; two-worker direct/no-unroll bootstrap and
+ordinary admission; compiler checks in both configurations at 52 and 8 body
+fraction bits; `prepared_update_test`; and `refresh_dirty`. Compiler checks audit
+thirteen kernels per precision profile, reject seventeen unsafe variants and
+accept legal repeated writes. Raw emitted LLVM and frozen ABI descriptions are
+retained. This is contributor-local evidence, not hosted acceptance.
+
+Bootstrap cases exercise three new bodies and three new fields in twelve source
+commands against ordinary Batch=2 and BootstrapCommands=16, at 70 and 128 physical
+capacities. The first selected field's canonical participant establishes zero,
+including when that occurrence comes last in ordinary canonical order. Independent
+test-only certificate checks use the changing partial focal centroid. A sole
+selected field leaves the target unchanged when unselected bodies arrive;
+reversing selection order changes the anchor. Missing, duplicate, wrong-kind,
+absent-participant and over-capacity selections reject before claims. Separate
+bootstrap command/work limits and incomplete hierarchy reject with healthy retry.
+
+Preflight leaves the empty owner unchanged. Successful admission resolves native
+field references, retains fixed backing, observes no recurring C++ allocation,
+initializes zero motion/force, advances one generation without a tick, and installs
+a contact/hierarchy view consumed by the following tick without a coverage change.
+Injected failures after native claims and after contact publication leave execution
+unready without publishing a completed generation. A populated owner cannot be
+bootstrapped again.
+
+The initial full-precision three-radius-one fixture at `a1e7c784` exhausted its
+65,536-cell search reservation before hierarchy validation; that rejected attempt
+is not passing evidence. Full-precision coverage now uses an exact-boundary
+zero-extent final occurrence, while the 8-bit profile retains three positive
+radii. A subsequent fixture at `30cd1b90` correctly failed hierarchy validation
+because its two leaves lacked a common root. The final fixture supplies that root
+and complete source coverage. Both diagnostic logs are retained separately.
+
+Full CPU regression, other compiler modes, PostgreSQL and GPU were not rerun.
+Shared-host timings are not performance qualification. The implementation and
+source-pinned evidence support provisional review only; hosted CI and maintainer
+acceptance remain independent.
