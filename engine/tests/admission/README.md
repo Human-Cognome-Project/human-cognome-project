@@ -537,3 +537,44 @@ A matching archive is retained in the Windows workspace. This is contributor-loc
 evidence; the raw bundle is not remotely available or independently verified
 merely by publishing its digest.
 
+
+## PR #213 hosted continuation correction — 2026-11-04
+
+[Review 5775793038](https://github.com/Human-Cognome-Project/human-cognome-project/pull/213#pullrequestreview-5775793038)
+holds #213/#214 integration after hosted two-worker combined placement failures
+at `65f78f5e`. The compiler audits themselves passed; the existing full-precision
+moving rebase witness failed cross-execution equality before the reduced fixtures.
+
+Diagnostics retain component/slot/value differences and nonzero before/after
+body, field, history, packet, selector and activity state. Local original-witness
+runs passed all 15 combined cases in two-worker bulk/default, direct/default and
+direct/no-unroll, both at #213 diagnostic pin
+`019115ac38f6f9beb43e40a9552dba047f804519` and accepted #212 plus diagnostics at
+`650dad00fe8e440a2a27d3904f699d14759e5c41`. Standalone two-worker bulk rebase
+also passed at each pin. Thus the natural hosted timing was not reproduced
+locally; these passes do not dismiss that failure.
+
+The demonstrated test-contract defect is inherited: independent native hierarchy
+traversals need not consume the same complete sibling publication generations.
+The [corrected witness](../../docs/COORDINATE-REBASE.md#hosted-continuation-correction)
+uses exact fixture-specific parent values and requires pending work for lag.
+It retains exact body/motion, unaffected payload, prior history and selector
+checks, adds per-poll publication/old-slot lifetime checks and requires exact
+catch-up without body changes. Negative controls reject missing pending work,
+an intermediate parent coordinate and wrong mass. No epsilon, production kernel,
+precision gate or scheduling change was introduced.
+
+Explicit parent-first/child-first targeted polls reproduce differing valid
+parent values (`1.0625` versus `1.125`) on the accepted #212 engine at diagnostic
+test pin `7bac08ce219e4047410170ad5a75156cfc043494`; both converge exactly on
+the next poll with history lifetime preserved. This controlled counterexample
+is separate from the naturally scheduled runs. It demonstrates why the old
+assertion is invalid, but hosted confirmation is still needed to reconcile the
+original failure fully.
+
+Corrected #213 code/test pin: `b38ad7e5a5ce05af5fac88160a76f2e3c2ae5da2`.
+Dependent #214 merge/test pin: `41fd4df2133c6b607f0b605ee2f47a3bfc5aec22`.
+Subsequent changes are documentation only. The initial controlled-witness build
+at `312d9cda` failed because a long-double expectation was narrowed into an f64
+packet initializer; the expectation parameter now matches the packet type. That
+failed build is retained separately and is not passing evidence.
