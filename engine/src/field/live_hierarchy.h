@@ -80,6 +80,7 @@ class LiveHierarchy {
   void finish_refresh(std::uint64_t generation);
 
  private:
+  friend class field::Harness;
   friend class TickExecution;
   friend class Placement;
   friend class AdmissionContacts;

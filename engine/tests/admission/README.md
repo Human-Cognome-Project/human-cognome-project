@@ -270,3 +270,112 @@ D1 bootstrap. Contributor-local bundles above were not independently inspected;
 the hosted evidence here is separate. This does not qualify representation
 exchange, focus replacement on an existing model, operational owner/public
 Add/browser controls or GPU execution.
+
+## Private existing-model focus selection — 2026-11-04
+
+The continuation after accepted #210 implements the selection portion of D6:
+an ordered set of current participating fields replaces the focus in the same
+installed model. Native calculation and guarded publication update the complete
+focal tuple and applicable wake bits, followed by one unticked generation.
+Coordinate rebasing, representation exchange and operational public controls
+remain separate work.
+
+Local CPU code/test source: `28f96082c252b847db6464b67677a4af699cf7ef`.
+The following documentation commit changes no tested code.
+
+All qualification runs listed below passed. Bundle `live-focus-28f96082` retains
+raw logs, commands, source/submodule pins, configuration, toolchain, binary/runtime
+hashes and emitted modules. Its `SHA256SUMS` digest is
+`ff9f10222ba34161b2ef5f194fdcaa12f3a8e4cca7a1bcddac2c69ef4f192215`.
+A matching archive is retained in the Windows workspace. This is machine-local
+evidence; its digest does not establish remote availability or independent review.
+
+Qualification covers the fourteen-case placement/admission suite with one worker
+in bulk/default mode, two-worker direct/no-unroll live focus and compiler checks,
+`prepared_update_test` and `refresh_dirty`. Both compiler configurations inspect
+14 kernels and reject 19 unsafe controls per precision profile (52 and 8 bits),
+including omitted focal output and a removed publication guard. Legal repeated
+writes remain accepted; emitted LLVM and frozen ABI descriptions are retained.
+
+Focus cases cover ordered weighted centroids, full focal tuple publication,
+positive finite participant mass, stale identities/generations, duplicates,
+Focus/References/CascadeWork limits, identical-selection NoChange and stable
+prepared backing without recurring C++ allocation. Populated disabled publication
+preserves all state. Successful selection preserves body payloads, source/contact
+indices, pending notifications, unequal dirty hierarchy packets and reader history.
+Radial-dependent origin changes wake present bodies; unrelated sleepers and unused
+rows remain unchanged. Subsequent placement uses the new focus, and the following
+tick consumes the same installed model. Observation validity and prepublication
+healthy rejection versus postpublication unready failure are checked explicitly.
+
+The first expanded run at `55b33de0` passed functional cases but failed an
+overbroad compiler guard check: it classified compiler/runtime bookkeeping stores
+as model publication. Diagnostics at `47124f3f` identify a RuntimeContext stack
+closure; a subsequent attempt also encountered runtime locking. The final checker
+matches the contact publisher's scope: external model arrays, native selection
+writes and activation must be guarded. Owned-writer checks remain active, and
+missing-guard/omitted-output unsafe controls still fail. Earlier failed logs are
+retained separately and are not passing qualification.
+
+Full CPU regression, remaining compiler configurations, PostgreSQL and GPU were
+not rerun. Shared-host timings are not performance qualification. This evidence
+supports provisional review; hosted CI and maintainer acceptance are independent.
+
+### PR #211 review correction: retained contact references
+
+[Review 5773022878](https://github.com/Human-Cognome-Project/human-cognome-project/pull/211#pullrequestreview-5773022878)
+found that focus selection charged the maximum of source/installed contacts,
+although their endpoint arrays are separately resident. The corrected demand is
+the source ledger's complete references plus proposed focus, installed hierarchy
+and twice the installed union pair count. No additional union is built by focus
+selection. Counts remain bounded by the prepared native dimension limits.
+
+The new tight-budget fixture contains one explicit source pair and one separately
+installed union pair. It first establishes the union through a stationary tick,
+then installs the hierarchy and creates dirty child history. At one reference
+below the required peak, focus selection must return typed References exhaustion
+with the exact demand and retain the state snapshot and prior geometry observation.
+At the exact limit it must publish successfully. The test reference helper now
+also counts installed union endpoints.
+
+The first attempt at `8c663874` failed its fixture prerequisite because a source
+contact alone does not install a physical union; that log is retained separately
+and is not passing evidence. The corrected fixture establishes the union through
+the normal tick path before adding hierarchy references.
+The intermediate fixture at `fe5cb0cc` then correctly rejected stale hierarchy
+source references after that tick advanced the generation. The final fixture
+binds those references to the current generation; both failed setup logs are
+retained separately.
+
+Corrected code/test pin: `df624c42aee53c17822c403fb0cee2552fd065cb`.
+The complete `live_focus` case passed on CPU in one-worker bulk/default and
+two-worker direct/no-unroll modes. Both report required=36, capacity=35 rejected
+without publication and capacity=36 successful. Native kernels are unchanged;
+the full placement/regression and compiler matrices, PostgreSQL and GPU were not
+rerun for this host accounting correction. Prior green hosted results apply to
+the prior head, not this revision. Subsequent documentation does not alter code.
+
+Bundle `focus-reference-df624c42` retains commands, raw logs, failed setup attempts,
+source/submodule pins, build configuration, toolchain and binary/runtime hashes.
+Its `SHA256SUMS` digest is
+`b10320d394488e9161969fcc7f181de19c3e47c9afca5c60b9077c94ae371d85`.
+The archive is retained in the Windows workspace. This contributor-local evidence
+is not remotely available or independently verified merely by publishing its hash.
+
+### Maintainer hosted acceptance of #211 — 2026-11-04
+
+Corrected head `153f6124193bfe027253716e0672ec41b755bc9e` is accepted in
+[review 5775143515](https://github.com/Human-Cognome-Project/human-cognome-project/pull/211#pullrequestreview-5775143515).
+All 18 hosted checks passed. Independently inspected native run 41886914617:
+regression jobs 126782664057, 126782664215, 126782664440 and 126782664008 passed
+29/29, 29/29, 29/29 and 28/28 tests respectively, collectively indexes 1–115
+exactly once. Job 126782663799 passed 180 integration checks with 24 addressed
+reads and zero private reads. All four downloaded compiler artifacts cover the
+eight worker/source/unroll configurations; placement audits pass 14 kernels and
+19 unsafe controls per precision profile. Extra no-unroll placement runs include
+the real source/installed-contact reference witness: required 36, rejected at 35,
+accepted at 36. Contributor-local evidence above remains separately pinned.
+
+This accepts private existing-model focus selection only. Exact coordinate
+rebasing is reviewed separately in #212/#213; representation exchange,
+operational owner/public controls and GPU qualification remain outstanding.

@@ -437,6 +437,10 @@ class Harness {
   void launch_geometry_finalize();
   void launch_update_candidate(bool hierarchy = false);
   void launch_update_commit(bool hierarchy = false);
+  void launch_focus_commit(bool enabled);
+  UpdateResult replace_current_focus(std::uint64_t,
+                                      const engine::RecordHandle *, std::size_t,
+                                      std::uint64_t work = UINT64_MAX);
   enum class PreparedUpdateMode {
     FixtureCommit, GeneratedPreflight, GeneratedCommit,
     BootstrapProjection, BootstrapPreflight, BootstrapCommit
@@ -531,7 +535,7 @@ class Harness {
   engine::CompiledKernel centroid_;
   engine::CompiledKernel finalize_;
   engine::CompiledKernel inspection_;
-  engine::CompiledKernel update_candidate_, update_commit_;
+  engine::CompiledKernel update_candidate_, update_commit_, focus_commit_;
   engine::CompiledKernel geometry_collect_, geometry_source_order_,
       geometry_discover_, geometry_finalize_;
   std::array<const void *, 7> prepared_host_addresses_{};

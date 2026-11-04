@@ -756,6 +756,209 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void live_focus(engine::Runtime &r, HostPath path) {
+  for (bool radial : {false, true}) {
+    const auto l = placement_limits(radial ? 128 : 70);
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0, 0}, {0, 1, 1}, {0, 0, 0}},
+              {1, 1, 1}, {1, 2, 1}, {-4, 0, 8}, 52, 52, false, false, true,
+              false, 1024, {}, &l, true);
+    f.install();
+    f.control->set(0);
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[1].record, .25);
+    f.control->set(1, f.in.field_rows[1].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[1].record);
+    PlacementAccess::radial(f.h, radial);
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    const TickSnapshot before(f);
+    const auto generation = f.h.prepared_storage().generation;
+    const auto ticks = f.h.prepared_storage().completed_ticks;
+    const std::vector<engine::RecordHandle> selected{f.in.field_rows[0]};
+    auto stale = selected;
+    ++stale[0].incarnation;
+    require(PlacementAccess::focus(f.h, stale).status == UpdateStatus::Stale &&
+                PlacementAccess::focus(f.h, selected, UINT64_MAX, generation + 1).status == UpdateStatus::Stale &&
+                PlacementAccess::focus(f.h, {}).status == UpdateStatus::InvalidInput &&
+                PlacementAccess::focus(f.h, {selected[0], selected[0]}).status == UpdateStatus::InvalidInput,
+            "invalid focus request accepted");
+    const auto work = PlacementAccess::focus(f.h, selected, 0);
+    const auto capacity = PlacementAccess::focus(f.h,
+        std::vector<engine::RecordHandle>(l[Budget::Focus] + 1, selected[0]));
+    require(work.status == UpdateStatus::CapacityExhausted && work.failure.budget == Budget::CascadeWork &&
+                capacity.status == UpdateStatus::CapacityExhausted && capacity.failure.budget == Budget::Focus,
+            "focus reservation rejection missing");
+    PreparedFixtureAccess::inject_failure(f.h, 400);
+    require(PlacementAccess::focus(f.h, selected).status == UpdateStatus::InvalidInput,
+            "focus prepublication failure hook");
+    PreparedFixtureAccess::inject_failure(f.h, 0);
+    PlacementAccess::disabled_focus_publication(f.h);
+    require(before == TickSnapshot(f) && f.h.ready(), "rejected focus changed execution");
+    for (double mass : {0., -1., std::numeric_limits<double>::quiet_NaN()}) {
+      PlacementAccess::focal_mass(f.h, selected[0].record, mass);
+      const TickSnapshot poisoned(f);
+      require(PlacementAccess::focus(f.h, selected).status == UpdateStatus::InvalidNumerics &&
+                  poisoned == TickSnapshot(f) && f.h.ready(),
+              "nonpositive/nonfinite selected mass was published");
+    }
+    PlacementAccess::focal_mass(f.h, selected[0].record, 1);
+    require(before == TickSnapshot(f), "focus negative fixture did not restore its source");
+    f.h.inspect_prepared_geometry(geometry);
+    f.h.inspect_prepared();
+    const auto particles = f.h.particles64(), groups = f.h.groups64(),
+               determined = f.h.determined64();
+    const auto universal = f.h.universal64();
+    const auto motion = f.h.prepared_storage().motion64();
+    const auto states = f.h.prepared_storage().inspection_state;
+    const auto flags = f.h.prepared_storage().inspection_flags;
+    const auto hierarchy = f.h.inspect_live_hierarchy();
+    require(hierarchy.selectors[1] != 0,
+            "focus fixture failed to establish a dirty child publication");
+    prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+    const auto backing = metrics.sample();
+    UpdateResult result;
+    no_new([&] { result = PlacementAccess::focus(f.h, selected); });
+    require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
+                f.h.prepared_storage().completed_ticks == ticks && backing.same_backing(metrics.sample()),
+            "focus publication changed ticks or prepared backing");
+    f.h.inspect_prepared();
+    const auto &s = f.h.prepared_storage();
+    const auto after_hierarchy = f.h.inspect_live_hierarchy();
+    require(f.h.particles64() == particles && f.h.groups64() == groups &&
+                f.h.determined64() == determined && f.h.universal64() == universal &&
+                s.motion64() == motion && s.inspection_state == states &&
+                hierarchy.slots == after_hierarchy.slots &&
+                hierarchy.previous == after_hierarchy.previous &&
+                hierarchy.selectors == after_hierarchy.selectors &&
+                hierarchy.visits == after_hierarchy.visits &&
+                hierarchy.counters == after_hierarchy.counters,
+            "focus change repaired or reset live numerical/history state");
+    require(s.live.focus == 1 && s.focal[0].record == selected[0].record &&
+                s.inspection_focus64[0] == -4 && s.inspection_focus64[1] == 0 &&
+                s.inspection_focus64[2] == 0, "focus origin/selection not published");
+    const auto focal_candidate = PlacementAccess::derived(f.h);
+    for (int k = 0; k < 11; ++k)
+      require(s.inspection_focus64[k] == focal_candidate[14 * f.h.field_capacity() + 1 + k],
+              "focal publication omitted part of the candidate control tuple");
+    for (int row = 0; row < f.h.particle_capacity(); ++row)
+      require(s.inspection_flags[row] ==
+                  (radial && s.particle_headers[row].record >= 0 ? 3 : flags[row]),
+              "focus wake ignored radial dependency or activated an absent body");
+    for (int row = 0; row < f.h.field_capacity(); ++row)
+      require(s.inspection_flags[f.h.particle_capacity() + row] ==
+                  flags[f.h.particle_capacity() + row], "focus consumed a pending field notification");
+    const auto next_placement = place(f, {placement_definition()},
+                                        {placement_intrinsic(0, 10, 0)});
+    require(next_placement.status == PlacementStatus::Ok &&
+                next_placement.target == std::array<double, 3>{-4, 0, 0},
+            "subsequent placement did not use the newly selected focus");
+    const TickSnapshot after(f);
+    require(after.installed == before.installed && after.query == before.query,
+            "focus republished source/contact indexes");
+    require(PlacementAccess::focus(f.h, selected).status == UpdateStatus::NoChange &&
+                after == TickSnapshot(f), "identical focus selection was not an unchanged no-op");
+    bool obsolete = false;
+    try { f.h.inspect_prepared_geometry(geometry); }
+    catch (const std::logic_error &) { obsolete = true; }
+    require(obsolete, "focus publication retained a stale geometry observation");
+    const std::vector<engine::RecordHandle> combined{f.in.field_rows[1], f.in.field_rows[0]};
+    require(PlacementAccess::focus(f.h, combined).status == UpdateStatus::Ok,
+            "ordered combined focus rejected");
+    f.h.inspect_prepared();
+    const double expected = (3 * f.h.group64(kCenX, combined[0].record) - 4) / 4;
+    require(std::abs(f.h.prepared_storage().inspection_focus64[0] - expected) < 1e-12,
+            "combined focus differs from independent weighted centroid");
+    Parameters64 parameters;
+    parameters.dt = parameters.gravity = parameters.contact_stiffness = 0;
+    parameters.reach_strength = radial;
+    const auto tick = f.h.tick_prepared(f.h.prepared_storage().generation, parameters);
+    require(tick.status == TickStatus::Ok && !tick.coverage_changed,
+            "following tick rejected retagged hierarchy or changed contact coverage");
+    if (!radial) {
+      auto limited = l;
+      const auto peak = PlacementAccess::focal_reference_peak(f.h, 1);
+      // f now selects two fields; the fresh fixture below selects one.
+      limited[Budget::References] = peak - 2;
+      Fixture pressure(r, path, {{}, {}, {0, 1}}, {{1, 0, 0}, {0, 1, 1}, {0, 0, 0}},
+                       {1, 1, 1}, {1, 2, 1}, {-4, 0, 8}, 52, 52, false, false, true,
+                       false, 1024, {}, &limited);
+      pressure.install();
+      const TickSnapshot retained(pressure);
+      const auto rejected = PlacementAccess::focus(pressure.h, {pressure.in.field_rows[0]});
+      require(rejected.status == UpdateStatus::CapacityExhausted &&
+                  rejected.failure.budget == Budget::References &&
+                  rejected.failure.required == limited[Budget::References] + 1 &&
+                  retained == TickSnapshot(pressure), "focus old-plus-new reference peak not enforced");
+    }
+    std::cout << "live_focus,radial=" << radial << ",history=preserved,source_contacts=preserved,"
+                 "ordered_centroid=pass,publication=one,no_tick=1,backing=stable,retry=pass PASS\n";
+  }
+  // The explicit ledger and installed physical union have separate endpoints,
+  // even when they describe the same pair. Exercise both retained allocations.
+  std::uint64_t contact_peak = 0;
+  for (int boundary : {0, -1, 1}) {
+    auto l = placement_limits();
+    if (boundary) l[Budget::References] = contact_peak - (boundary < 0);
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
+              {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, true, true,
+              false, 1024, {}, &l);
+    // Establish the retained union before hierarchy installation adds its own
+    // references; a later tick's multi-union peak is intentionally not this test.
+    Parameters64 stationary;
+    stationary.dt = stationary.gravity = stationary.contact_stiffness =
+        stationary.reach_strength = 0;
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, stationary).status == TickStatus::Ok,
+            "focus contact fixture could not establish installed union");
+    for (auto &ref : f.refs)
+      ref.source.generation = f.h.prepared_storage().generation;
+    f.install();
+    require(f.h.prepared_storage().live.contacts == 1 &&
+                PlacementAccess::installed_contacts(f.h) == 1,
+            "focus reference fixture lacks separately retained contact endpoints");
+    if (!boundary) {
+      contact_peak = PlacementAccess::focal_reference_peak(f.h, 1);
+      continue;
+    }
+    f.control->set(0);
+    PreparedFixtureAccess::inject_value64(f.h, kPosX, f.in.particle_rows[1].record, 5);
+    f.control->set(1, f.in.field_rows[1].record);
+    LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[1].record);
+    const auto geometry = f.h.query_prepared_geometry(f.h.prepared_storage().generation);
+    require(geometry.status == GeometryStatus::Ok, "focus contact witness observation");
+    const TickSnapshot before(f);
+    const auto generation = f.h.prepared_storage().generation;
+    const auto result = PlacementAccess::focus(f.h, {f.in.field_rows[0]});
+    if (boundary < 0) {
+      require(result.status == UpdateStatus::CapacityExhausted &&
+                  result.failure.budget == Budget::References &&
+                  result.failure.required == contact_peak &&
+                  result.failure.capacity == contact_peak - 1 &&
+                  before == TickSnapshot(f) && f.h.ready(),
+              "focus omitted separately retained source/union contact references");
+      f.h.inspect_prepared_geometry(geometry);
+    } else {
+      require(result.status == UpdateStatus::Ok && result.generation == generation + 1,
+              "focus rejected exact source/union reference limit");
+    }
+    std::cout << "live_focus_contact_references,source=1,installed=1,required="
+              << contact_peak << ",capacity=" << l[Budget::References]
+              << ",rejected=" << (boundary < 0) << " PASS\n";
+  }
+  for (int failure : {401, 402}) {
+    const auto l = placement_limits();
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 0}, {0, 1}, {0, 0}},
+              {1, 1}, {1, 1}, {-4, 4}, 52, 52, false, false, true,
+              false, 1024, {}, &l);
+    f.install();
+    const auto generation = f.h.prepared_storage().generation;
+    PreparedFixtureAccess::inject_failure(f.h, failure);
+    bool failed = false;
+    try { PlacementAccess::focus(f.h, {f.in.field_rows[0]}); }
+    catch (const std::runtime_error &) { failed = true; }
+    require(failed && !f.h.ready() && f.h.prepared_storage().generation == generation &&
+                PlacementAccess::focus(f.h, {f.in.field_rows[0]}).status == UpdateStatus::Unready,
+            "post-publication focal failure resumed or advertised a generation");
+  }
+}
+
 void admission_commit(engine::Runtime &r, HostPath path) {
   for (int capacity : {70, 128}) {
   const auto limits = placement_limits(capacity);
