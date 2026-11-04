@@ -280,6 +280,13 @@ struct TickExecution::Geometry {
 std::uint64_t TickExecution::installed_contact_count() const {
   return installed_->counts[PairCount];
 }
+Ndarray &TickExecution::admission_array(int id) const {
+  const std::array<int, 6> ids{Pairs, PairFlags, SourceMap, Offsets, Orders, Stats};
+  return *installed_->arrays[ids.at(id)];
+}
+void TickExecution::finish_admission(const std::array<std::int64_t, 16> &counts) {
+  installed_->counts = counts;
+}
 
 void TickExecution::append_layout(const BudgetDemand &l,
                                   std::vector<StorageExtent> &out) {

@@ -35,7 +35,7 @@ void AdmissionContacts::append_layout(const BudgetDemand &l,
                    std::size_t(count) * bytes});
   };
   add("admission-contact-bodies", kParticleFieldCount * p, sizeof(double));
-  add("admission-contact-indexes", 7 * p + 17 * c, sizeof(int));
+  add("admission-contact-indexes", 7 * p + 18 * c, sizeof(int));
   add("admission-contact-counters", 32, sizeof(std::int64_t));
   add("admission-contact-control", 1, sizeof(AdmissionContacts));
   add("admission-contact-array-control", ArrayCount,
@@ -61,6 +61,7 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
   add(Cursors, i, {2, p});
   add(Orders, i, {2, c});
   add(Stats, wide, {16});
+  add(OriginalMap, i, {c});
   source_.resize(2 * c);
   {
     IRBuilder b;
@@ -127,10 +128,144 @@ AdmissionContacts::AdmissionContacts(Harness &h) : h_(h) {
         Param::array(i), Param::array(f, 2), Param::array(i),
         Param::array(wide), Param::scalar(i)}, engine::MathMode::Strict);
   }
-  auto geometry = h.build_geometry_kernels(h.activity_->particle_activity);
+  auto geometry = h.build_geometry_kernels(h.activity_->particle_activity, true);
   for (int k = 1; k < 4; ++k) kernels_[k + 1] = std::move(geometry[k]);
+  {
+    IRBuilder b;
+    auto *pairs = array(b, 0, i, 2), *mapping = array(b, 1, i),
+         *original = array(b, 2, i), *destinations = array(b, 3, i),
+         *stats = array(b, 4, wide);
+    auto *mode = b.create_arg_load({5}, i, false, 0);
+    auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(c),
+                                     false, h.runtime_->cpu_threads());
+    auto guard = b.get_loop_guard(loop);
+    auto *row = b.get_loop_index(loop);
+    auto *change = b.create_if(mode);
+    {
+      auto remapping = b.get_if_guard(change, true);
+      write(b, mapping, {row}, read(b, original, {row}));
+      auto pair = b.get_if_guard(b.create_if(b.create_cmp_lt(
+          b.create_cast(row, wide), read(b, stats, {b.get_int32(3)}))), true);
+      auto *a = read(b, destinations, {read(b, pairs, {b.get_int32(0), row})});
+      auto *other = read(b, destinations, {read(b, pairs, {b.get_int32(1), row})});
+      auto *derived_only = b.create_cmp_lt(
+          read(b, pairs, {b.get_int32(3), row}), b.get_int32(0));
+      write(b, pairs, {b.get_int32(0), row},
+            b.create_select(derived_only, b.create_min(a, other), a));
+      write(b, pairs, {b.get_int32(1), row},
+            b.create_select(derived_only, b.create_max(a, other), other));
+    }
+    {
+      auto backup = b.get_if_guard(change, false);
+      write(b, original, {row}, read(b, mapping, {row}));
+    }
+    remap_ = Kernel(*h.runtime_, "admission_contacts_remap", b.extract_ir(),
+        {Param::array(i, 2), Param::array(i), Param::array(i), Param::array(i),
+         Param::array(wide), Param::scalar(i)}, engine::MathMode::Strict);
+  }
+  if (h.tick_execution_) {
+    IRBuilder b;
+    std::vector<Param> params;
+    const std::array<int, 6> ids{Pairs, Flags, SourceMap, Offsets, Orders, Stats};
+    std::array<ArgLoadStmt *, 6> from{}, to{};
+    for (int k = 0; k < 6; ++k) {
+      const auto &a = *arrays_[ids[k]];
+      const int rank = int(a.shape.size());
+      from[k] = array(b, 2 * k, a.dtype, rank);
+      to[k] = array(b, 2 * k + 1, a.dtype, rank);
+      params.push_back(Param::array(a.dtype, rank));
+      params.push_back(Param::array(a.dtype, rank));
+    }
+    // Changed union rows wake only their old/new surviving endpoints. Retired
+    // records have already been released; no awake bit can resurrect them.
+    {
+      auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(c),
+                                       false, h.runtime_->cpu_threads());
+      auto guard = b.get_loop_guard(loop);
+      auto enabled = b.get_if_guard(
+          b.create_if(b.create_arg_load({12}, i, false, 0)), true);
+      auto *row = b.get_loop_index(loop);
+      auto *has_new = b.create_cmp_lt(b.create_cast(row, wide),
+                                     read(b, from[5], {b.get_int32(3)}));
+      auto *has_old = b.create_cmp_lt(b.create_cast(row, wide),
+                                     read(b, to[5], {b.get_int32(3)}));
+      Stmt *different = b.create_cmp_ne(read(b, from[1], {row}),
+                                        read(b, to[1], {row}));
+      for (int side = 0; side < 2; ++side)
+        different = b.create_logical_or(different, b.create_cmp_ne(
+            read(b, from[0], {b.get_int32(side), row}),
+            read(b, to[0], {b.get_int32(side), row})));
+      different = b.create_logical_or(b.create_cmp_ne(has_new, has_old),
+          b.create_logical_and(b.create_logical_and(has_new, has_old), different));
+      auto changed = b.get_if_guard(b.create_if(different), true);
+      for (int which = 0; which < 2; ++which) {
+        auto present = b.get_if_guard(b.create_if(which ? has_old : has_new), true);
+        for (int side = 0; side < 2; ++side) {
+          auto *body = read(b, which ? to[0] : from[0], {b.get_int32(side), row});
+          auto live = b.get_if_guard(b.create_if(
+              NativeSet{h.prepared_->particles.bindings().presence}.active(b, body)), true);
+          h.activity_->particle_activity.activate(b, body);
+        }
+      }
+    }
+    for (int k = 0; k < 6; ++k) {
+      const auto &a = *arrays_[ids[k]];
+      const int rank = int(a.shape.size());
+      for (int field = 0; field < (rank == 1 ? 1 : a.shape[0]); ++field) {
+        auto *loop = b.create_range_for(b.get_int32(0), b.get_int32(a.shape.back()),
+                                         false, h.runtime_->cpu_threads());
+        auto guard = b.get_loop_guard(loop);
+        auto enabled = b.get_if_guard(
+            b.create_if(b.create_arg_load({12}, i, false, 0)), true);
+        auto *row = b.get_loop_index(loop);
+        const auto index = rank == 1 ? std::vector<Stmt *>{row}
+                                     : std::vector<Stmt *>{b.get_int32(field), row};
+        write(b, to[k], index, read(b, from[k], index));
+      }
+    }
+    params.push_back(Param::scalar(i));
+    publish_ = Kernel(*h.runtime_, "admission_contacts_publish", b.extract_ir(),
+                       params, engine::MathMode::Strict);
+  }
   for (int phase = 0; phase < 5; ++phase) launch(phase, 0);
+  remap(false);
+  remap(true);
+  if (h.tick_execution_) copy(false);
   h.runtime_->synchronize();
+}
+
+void AdmissionContacts::remap(bool enabled) {
+  auto call = remap_.invocation(true);
+  auto &c = call.get();
+  if (!c.prepared) {
+    c.set_arg_ndarray({0}, *arrays_[Temporary]);
+    c.set_arg_ndarray({1}, *arrays_[SourceMap]);
+    c.set_arg_ndarray({2}, *arrays_[OriginalMap]);
+    c.set_arg_ndarray({3}, *h_.prepared_->destinations_array);
+    c.set_arg_ndarray({4}, *arrays_[Stats]);
+  }
+  engine::argument_int(c, 5, enabled);
+  remap_.launch(c);
+}
+void AdmissionContacts::copy(bool enabled) {
+  auto call = publish_.invocation(true);
+  auto &c = call.get();
+  const std::array<int, 6> ids{Pairs, Flags, SourceMap, Offsets, Orders, Stats};
+  if (!c.prepared)
+    for (int k = 0; k < 6; ++k) {
+      c.set_arg_ndarray({2 * k}, *arrays_[ids[k]]);
+      c.set_arg_ndarray({2 * k + 1}, h_.tick_execution_->admission_array(k));
+    }
+  engine::argument_int(c, 12, enabled);
+  publish_.launch(c);
+}
+void AdmissionContacts::publish(UpdateResult &result) {
+  remap(true);
+  launch(4, int(counts_[2]));
+  copy(true);
+  h_.runtime_->synchronize();
+  ++result.synchronizations;
+  h_.tick_execution_->finish_admission(counts_);
 }
 
 void AdmissionContacts::launch(int phase, int sources) {
@@ -190,8 +325,8 @@ GeometryResult AdmissionContacts::validate(const PreparedCounts &candidate,
   q.pair_tests = q.present * (q.present ? q.present - 1 : 0) / 2;
   q.source_order_tests = q.source_contacts * q.source_contacts;
   // Charge fixed clearing/copy/compaction separately from pair comparisons.
-  q.required_work = 96 * std::uint64_t(std::max(h_.particles_, 1)) +
-                    64 * std::uint64_t(std::max(h_.contacts_, 1)) + 32;
+  q.required_work = 192 * std::uint64_t(std::max(h_.particles_, 1)) +
+                    128 * std::uint64_t(std::max(h_.contacts_, 1)) + 32;
   q.required_work += q.pair_tests + q.source_order_tests;
   if (q.required_work > work)
     return exhaust(Budget::GeometryWork, q.required_work, work);
@@ -227,9 +362,10 @@ GeometryResult AdmissionContacts::validate(const PreparedCounts &candidate,
   if (references > limits[Budget::References])
     return exhaust(Budget::References, references, limits[Budget::References]);
   q.union_order_tests = q.contacts * q.contacts;
-  q.required_work += q.union_order_tests;
+  q.required_work += 2 * q.union_order_tests;
   if (q.required_work > work)
     return exhaust(Budget::GeometryWork, q.required_work, work);
+  remap(false);
   launch(4, candidate.contacts);
   h_.runtime_->synchronize();
   ++q.synchronizations;
@@ -240,6 +376,8 @@ GeometryResult AdmissionContacts::validate(const PreparedCounts &candidate,
 std::size_t AdmissionContacts::binding_bytes() const {
   std::size_t bytes = 0;
   for (const auto &k : kernels_) bytes += k.prepared_bytes();
+  bytes += remap_.prepared_bytes();
+  if (h_.tick_execution_) bytes += publish_.prepared_bytes();
   return bytes;
 }
 }  // namespace field::detail

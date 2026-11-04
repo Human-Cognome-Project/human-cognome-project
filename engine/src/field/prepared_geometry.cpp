@@ -262,7 +262,7 @@ engine::CompiledKernel Harness::build_geometry_collect_kernel(
 }
 
 std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
-    detail::NativeSet particle_selection) {
+    detail::NativeSet particle_selection, bool canonical_endpoints) {
   auto &s = *prepared_;
   std::array<engine::CompiledKernel, 4> kernels;
   const auto f = real_type(), i = PrimitiveType::i32, wide = PrimitiveType::i64;
@@ -437,7 +437,9 @@ std::array<engine::CompiledKernel, 4> Harness::build_geometry_kernels(
       auto *first = read(b, temporary, at(b, 3, row));
       return b.create_select(
           b.create_cmp_ge(first, b.get_int32(0)), b.create_cast(first, wide),
-          b.create_add(b.create_cast(scount, wide), b.create_cast(row, wide)));
+          b.create_add(b.create_cast(scount, wide),
+                       canonical_endpoints ? key(b, temporary, row)
+                                           : b.create_cast(row, wide)));
     };
     {
       auto *loop = b.create_range_for(b.get_int32(0), n, false, threads);

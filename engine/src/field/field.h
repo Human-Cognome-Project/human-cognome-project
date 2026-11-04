@@ -426,7 +426,7 @@ class Harness {
       detail::NativeSet,
       detail::NativeSet);
   std::array<engine::CompiledKernel, 4> build_geometry_kernels(
-      detail::NativeSet);
+      detail::NativeSet, bool canonical_endpoints = false);
   engine::CompiledKernel build_geometry_collect_kernel(detail::NativeSet);
   void prepare_empty_execution();
   void prepare_update_execution();
@@ -437,15 +437,14 @@ class Harness {
   void launch_geometry_finalize();
   void launch_update_candidate(bool hierarchy = false);
   void launch_update_commit(bool hierarchy = false);
-  enum class PreparedUpdateMode { FixtureCommit, GeneratedPreflight };
-  // B3 intermediate boundary: private, no record claims or publication. The
-  // eventual admission transaction must add prospective contact validation.
+  enum class PreparedUpdateMode { FixtureCommit, GeneratedPreflight, GeneratedCommit };
+  // Private ordinary admission boundary; bootstrap remains a separate prerequisite.
   UpdateResult stage_current_admission(std::uint64_t,
                                         const UpdateCommand *, std::size_t,
                                         const PlacementIntrinsic *, std::size_t,
                                         const LiveRefreshSpec &,
                                         std::uint64_t, std::uint64_t,
-                                        std::uint64_t);
+                                        std::uint64_t, bool commit = false);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,

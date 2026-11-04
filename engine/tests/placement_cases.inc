@@ -512,6 +512,103 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   }
 }
 
+void admission_commit(engine::Runtime &r, HostPath path) {
+  const auto limits = placement_limits();
+  Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
+            true, false, 1024, {1}, &limits);
+  f.install();
+  Parameters64 parameters;
+  parameters.dt = parameters.gravity = parameters.contact_stiffness =
+      parameters.reach_strength = 0;
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+  const auto backing = metrics.sample();
+  for (int round = 0; round < 2; ++round) {
+    require(f.h.tick_prepared(f.h.prepared_storage().generation, parameters).status ==
+                TickStatus::Ok, "pre-admission tick failed");
+    f.h.inspect_prepared();
+    const auto survivor = f.in.particle_rows[0];
+    std::array<double, kParticleFieldCount> old{};
+    for (int k = 0; k < kParticleFieldCount; ++k)
+      old[k] = f.h.particle64(k, survivor.record);
+    RefreshRequest request(f.h);
+    std::vector<UpdateCommand> commands{placement_definition(901 + round)};
+    UpdateCommand edge;
+    edge.operation = UpdateOp::InsertParticipation;
+    edge.first = UpdateRef::pending(0);
+    edge.second = UpdateRef::existing(request.nodes[0].field);
+    edge.share = 1;
+    edge.exact_count = 1;
+    edge.ordinal = 15000 + round;
+    edge.position = f.h.prepared_storage().live.edges;
+    commands.push_back(edge);
+    request.cohorts[0].push_back({UpdateRef::pending(0), {}, 1});
+    UpdateCommand contact;
+    contact.operation = UpdateOp::InsertContact;
+    contact.first = UpdateRef::pending(0);
+    contact.second = UpdateRef::existing(survivor);
+    contact.position = f.h.prepared_storage().live.contacts;
+    contact.ordinal = 16000 + round;
+    commands.push_back(contact);
+    const auto input = placement_intrinsic();
+    const auto placement = place(f, commands, {input});
+    require(placement.status == PlacementStatus::Ok, "commit placement baseline");
+    const auto expected = f.h.inspect_prepared_placement(placement).certificates[0];
+    const auto generation = f.h.prepared_storage().generation;
+    const auto ticks = f.h.prepared_storage().completed_ticks;
+    const auto spec = request.spec();
+    const TickSnapshot before(f);
+    PreparedFixtureAccess::inject_failure(f.h, 1);
+    auto rejected = PlacementAccess::preflight(f.h, commands.data(), commands.size(),
+                                               &input, 1, spec, UINT64_MAX, true);
+    require(rejected.status == UpdateStatus::InvalidInput && before == TickSnapshot(f),
+            "ordinary admission preclaim rejection changed live state");
+    PreparedFixtureAccess::inject_failure(f.h, 0);
+    UpdateResult result;
+    no_new([&] { result = PlacementAccess::preflight(
+        f.h, commands.data(), commands.size(), &input, 1, spec, UINT64_MAX, true); });
+    require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
+                f.h.prepared_storage().completed_ticks == ticks &&
+                f.h.present_particles() == std::size_t(round + 2),
+            "ordinary admission did not publish exactly one unticked generation");
+    f.h.inspect_prepared();
+    engine::RecordHandle added;
+    for (const auto &handle : f.h.prepared_storage().particle_headers)
+      if (handle.address == 901 + round) added = handle;
+    require(added.record >= 0, "admission claim missing");
+    for (int k = 0; k < kParticleFieldCount; ++k) {
+      require(f.h.particle64(k, survivor.record) == old[k],
+              "admission changed survivor numerical state");
+      const double value = k >= kPosX && k <= kPosZ ? expected.position[k - kPosX]
+                           : k == kMass || k == kRadius ? 1 : 0;
+      require(f.h.particle64(k, added.record) == value,
+              "admission lost generated initialization");
+    }
+    const auto &source = f.h.prepared_storage().contacts[round];
+    require(source.first.record == added.record && source.second.record == survivor.record,
+            "source did not resolve actual native claims");
+    const auto geometry = PlacementAccess::contact_inspection(f.h);
+    require(geometry.pairs[round] == added.record &&
+                geometry.pairs[f.h.contact_capacity() + round] == survivor.record,
+            "contact union retained provisional endpoints");
+    std::vector<int> installed(2 * f.h.contact_capacity());
+    engine::readback(TickExecutionAccess::topology(f.h, 2), installed.data(),
+                     installed.size() * sizeof(int));
+    require(installed == geometry.pairs, "contact union was not installed");
+    bool stale = false;
+    try { f.h.inspect_prepared_placement(placement); }
+    catch (const std::logic_error &) { stale = true; }
+    require(stale, "prior placement observation survived admission generation");
+    TickResult tick;
+    no_new([&] { tick = f.h.tick_prepared(result.generation, parameters); });
+    require(tick.status == TickStatus::Ok && !tick.coverage_changed &&
+                tick.generation == result.generation && tick.completed_ticks == ticks + 1,
+            "post-admission tick did not consume installed contact generation");
+  }
+  require(backing.same_backing(metrics.sample()), "admission grew prepared backing");
+  std::cout << "admission_commit,rounds=2,survivors=exact,claims=resolved,"
+               "generation_once=1,no_tick_advance=1,following_tick=1,cpp_new=0 PASS\n";
+}
+
 void placement_generated(engine::Runtime &r, HostPath path) {
   auto limits = placement_limits();
   limits[Budget::BootstrapCommands] = limits[Budget::Batch] + 7;

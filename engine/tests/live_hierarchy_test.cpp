@@ -2777,6 +2777,8 @@ int main(int argc, char **argv) {
       run("admission_preflight", [&] { admission_preflight(r, path); });
     if (only == "placement" || only == "admission_contacts")
       run("admission_contacts", [&] { admission_contact_capacity(r, path); });
+    if (only == "placement" || only == "admission_commit")
+      run("admission_commit", [&] { admission_commit(r, path); });
     if (only == "contact_tick_modes" || only == "contact_tick") {
       run("contact_tick_modes", [&] { contact_tick_modes(r, path); });
       run("contact_tick_references", [&] { contact_tick_references(r, path); });

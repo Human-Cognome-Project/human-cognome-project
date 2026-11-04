@@ -1,8 +1,9 @@
-const std::array<std::set<int>, 10> &placement_writers() {
-  static const std::array<std::set<int>, 10> value{
+const std::array<std::set<int>, 12> &placement_writers() {
+  static const std::array<std::set<int>, 12> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
-       {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
-       {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7}}};
+       {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
+       {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -42,7 +43,7 @@ void placement_module_contract(Harness &h,
               !zero->isZero())
             pointer = atomic->getPointerOperand();
         }
-        if (pointer)
+        if (pointer && index != 11)
           require(roots.origins(pointer).empty(),
                   "placement kernel mutates committed native selection");
       }
@@ -52,6 +53,13 @@ void placement_module_contract(Harness &h,
         {{7, int(h.prepared_storage().capacity.limits()[Budget::Batch]), 2, 8,
           true}},
         true);
+  if (index == 11) {
+    const int p = std::max(h.particle_capacity(), 1),
+              c = std::max(h.contact_capacity(), 1);
+    tick_audit::copy(kernel, module,
+        {{2, c, 2, 4, false}, {1, c, 1, 4, false}, {1, c, 1, 4, false},
+         {4, p, 2, 4, false}, {2, c, 2, 4, false}, {1, 16, 1, 8, false}}, true);
+  }
 }
 void placement_compiler(engine::Runtime &r, HostPath path) {
   const auto l = placement_limits();
@@ -61,7 +69,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 10; ++index) {
+    for (int index = 0; index < 12; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -136,7 +144,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
           throw std::runtime_error(
               "missing placement interval math control target");
         });
-      if (index == 3)
+      if (index == 3 || index == 11)
         reject("missing_result_publication_guard", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -145,7 +153,8 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 if (branch->isConditional())
                   for (bool truth : {true, false})
                     if (tick_audit::implies_enabled(branch->getCondition(),
-                                                    truth, kernel, clone, 2)) {
+                                                    truth, kernel, clone,
+                                                    index == 3 ? 2 : 12)) {
                       branch->setCondition(llvm::ConstantInt::get(
                           llvm::Type::getInt1Ty(clone.getContext()), truth));
                       return;
@@ -206,10 +215,11 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         }
       }
       std::cout << "placement_compiler,index=" << index
-                << ",strict_f64=1,owned_writes=1,native_presence_read_only=1,"
+                << ",strict_f64=1,owned_writes=1,native_activity_publication="
+                << (index == 11) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=10,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=12,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

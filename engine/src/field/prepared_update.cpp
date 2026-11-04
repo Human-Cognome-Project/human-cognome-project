@@ -505,7 +505,7 @@ UpdateResult Harness::stage_current_admission(
     std::uint64_t expected, const UpdateCommand *commands, std::size_t count,
     const PlacementIntrinsic *intrinsics, std::size_t bodies,
     const LiveRefreshSpec &hierarchy, std::uint64_t placement_work,
-    std::uint64_t placement_cells, std::uint64_t hierarchy_work) {
+    std::uint64_t placement_cells, std::uint64_t hierarchy_work, bool commit) {
   UpdateResult out;
   if (!prepared_ || !ready_) {
     out.status = UpdateStatus::Unready;
@@ -516,7 +516,7 @@ UpdateResult Harness::stage_current_admission(
     out.status = UpdateStatus::Stale;
     return out;
   }
-  if (!placement_ || !live_hierarchy_installed()) {
+  if (!placement_ || !live_hierarchy_installed() || (commit && !tick_execution_)) {
     out.status = UpdateStatus::Unsupported;
     return out;
   }
@@ -538,7 +538,8 @@ UpdateResult Harness::stage_current_admission(
   // successful native producer is its only source of initialized rows.
   out = update_prepared_impl(expected, commands, count, &hierarchy,
                              hierarchy_work, nullptr,
-                             PreparedUpdateMode::GeneratedPreflight);
+                             commit ? PreparedUpdateMode::GeneratedCommit
+                                    : PreparedUpdateMode::GeneratedPreflight);
   out.upload_bytes += placed.upload_bytes;
   out.readback_bytes += placed.readback_bytes;
   out.synchronizations += placed.synchronizations;
@@ -612,7 +613,9 @@ UpdateResult Harness::update_prepared_impl(
     if (!reserve(P + G + E + C + count + 1, 16) ||
         !reserve(count, 4 * (P + G + limits[Budget::Focus] + 12)) ||
         !reserve(E + C, 4 * (count + 1)) || !reserve(G, 4 * E) ||
-        !reserve(E, 64 * logarithm)) {
+        !reserve(E, 64 * logarithm) ||
+        (mode == PreparedUpdateMode::GeneratedCommit &&
+         !reserve(P + G + count, 4))) {
       answer.failure = {Budget::CascadeWork,
                         budget == UINT64_MAX ? budget : budget + 1, budget};
       return reject(UpdateStatus::CapacityExhausted);
@@ -1035,7 +1038,7 @@ UpdateResult Harness::update_prepared_impl(
       return reject(UpdateStatus::InvalidNumerics);
     if (s.failure_point == 1)
       return reject(UpdateStatus::InvalidInput);
-    if (mode == PreparedUpdateMode::GeneratedPreflight) {
+    if (mode != PreparedUpdateMode::FixtureCommit) {
       if (!placement_->contacts_)
         return reject(UpdateStatus::Unsupported);
       const auto geometry = placement_->contacts_->validate(
@@ -1046,10 +1049,12 @@ UpdateResult Harness::update_prepared_impl(
       answer.synchronizations += geometry.synchronizations;
       answer.upload_bytes += placement_->contacts_->upload_bytes();
       answer.failure = geometry.failure;
-      return reject(geometry.status == GeometryStatus::Ok ? UpdateStatus::Ok
-                    : geometry.status == GeometryStatus::CapacityExhausted
-                        ? UpdateStatus::CapacityExhausted
-                        : UpdateStatus::InvalidNumerics);
+      if (geometry.status != GeometryStatus::Ok)
+        return reject(geometry.status == GeometryStatus::CapacityExhausted
+                          ? UpdateStatus::CapacityExhausted
+                          : UpdateStatus::InvalidNumerics);
+      if (mode == PreparedUpdateMode::GeneratedPreflight)
+        return reject(UpdateStatus::Ok);
     }
     // Claims begin mutation, even though no numerical survivor has been
     // written.
@@ -1074,9 +1079,26 @@ UpdateResult Harness::update_prepared_impl(
       for (std::size_t j = 0; j < size; ++j) {
         const int c = s.command_indexes[j];
         const auto provisional = s.resolved[c];
+        const auto &claimed = s.results[j];
+        if (mode == PreparedUpdateMode::GeneratedCommit &&
+            (claimed.status != engine::RecordStatus::Ok ||
+             claimed.handle.context != map.context() || !claimed.handle.incarnation ||
+             claimed.handle.address != s.commands[c].address ||
+             claimed.handle.record < 0 || claimed.handle.record >= (particle ? p : g) ||
+             (particle ? s.particle_headers : s.field_headers)[claimed.handle.record].record >= 0))
+          throw std::runtime_error("invalid admission native claim destination");
         s.destinations[(particle ? 0 : p) + provisional.record] =
             s.results[j].handle.record;
         s.resolved[c] = s.results[j].handle;
+      }
+      if (mode == PreparedUpdateMode::GeneratedCommit) {
+        std::fill(s.counts.begin(), s.counts.end(), 0);
+        for (int row = 0; row < (particle ? p : g); ++row) {
+          ++answer.structural_visits;
+          const int index = (particle ? 0 : p) + row;
+          if (s.validation[index] > 0 && ++s.counts[s.destinations[index]] != 1)
+            throw std::runtime_error("non-bijective admission claim destinations");
+        }
       }
     }
     if (s.failure_point == 2)
@@ -1196,6 +1218,11 @@ UpdateResult Harness::update_prepared_impl(
     if (s.failure_point == 5)
       throw std::runtime_error(
           "injected failure before generation publication");
+    if (mode == PreparedUpdateMode::GeneratedCommit) {
+      placement_->contacts_->publish(answer);
+      if (s.failure_point == 6)
+        throw std::runtime_error("injected failure after admission contact publication");
+    }
     answer.generation = ++s.generation;
     if (refresh)
       live_hierarchy_->finish_refresh(s.generation);

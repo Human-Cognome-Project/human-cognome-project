@@ -33,21 +33,23 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 10>{
+    return std::array<const engine::CompiledKernel *, 12>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
-        &p.contacts_->kernels_[4]};
+        &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_};
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    std::array<taichi::lang::Ndarray *, 25> result{
+    std::array<taichi::lang::Ndarray *, 32> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
         p.counts_.get(), h.prepared_->new_rows_array.get()};
-    for (int i = 0; i < 14; ++i)
+    for (int i = 0; i < 15; ++i)
       result[11 + i] = p.contacts_->arrays_[i].get();
+    for (int i = 0; i < 6; ++i)
+      result[26 + i] = &h.tick_execution_->admission_array(i);
     return result;
   }
   static PlacementResult stage(Harness &h, const UpdateCommand *commands,
@@ -68,10 +70,11 @@ struct PlacementAccess {
                                 const PlacementIntrinsic *inputs,
                                 std::size_t bodies,
                                 const LiveRefreshSpec &hierarchy,
-                                std::uint64_t work = UINT64_MAX) {
+                                std::uint64_t work = UINT64_MAX,
+                                bool commit = false) {
     return h.stage_current_admission(h.prepared_->generation, commands, count,
                                      inputs, bodies, hierarchy, UINT64_MAX,
-                                     UINT64_MAX, work);
+                                     UINT64_MAX, work, commit);
   }
   static std::vector<double> derived(Harness &h) {
     std::vector<double> values(h.prepared_->derived_array->get_nelement());
