@@ -4,6 +4,16 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static UpdateResult rebase(Harness &h, const FrameAnchor &delta,
+                              std::uint64_t work = UINT64_MAX,
+                              std::uint64_t generation = UINT64_MAX) {
+    return h.rebase_current(generation == UINT64_MAX ? h.prepared_->generation : generation,
+                            delta, work);
+  }
+  static void disabled_rebase(Harness &h, const FrameAnchor &delta) {
+    h.launch_rebase(delta, 0);
+    h.runtime_->synchronize();
+  }
   static UpdateResult focus(Harness &h, const std::vector<engine::RecordHandle> &fields,
                             std::uint64_t work = UINT64_MAX,
                             std::uint64_t generation = UINT64_MAX) {

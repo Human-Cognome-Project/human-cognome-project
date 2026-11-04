@@ -1462,4 +1462,5 @@ UpdateResult Harness::update_prepared_impl(
     throw;
   }
 }
+#include "field/prepared_rebase.inc"
 }  // namespace field

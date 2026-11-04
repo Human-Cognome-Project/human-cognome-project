@@ -430,6 +430,10 @@ class Harness {
   engine::CompiledKernel build_geometry_collect_kernel(detail::NativeSet);
   void prepare_empty_execution();
   void prepare_update_execution();
+  void prepare_rebase_execution();
+  void launch_rebase(const FrameAnchor &, int mode);
+  UpdateResult rebase_current(std::uint64_t, const FrameAnchor &,
+                              std::uint64_t work = UINT64_MAX);
   void prepare_geometry_execution();
   void launch_geometry_collect();
   void launch_geometry_source_order();
@@ -536,6 +540,7 @@ class Harness {
   engine::CompiledKernel finalize_;
   engine::CompiledKernel inspection_;
   engine::CompiledKernel update_candidate_, update_commit_, focus_commit_;
+  engine::CompiledKernel rebase_;
   engine::CompiledKernel geometry_collect_, geometry_source_order_,
       geometry_discover_, geometry_finalize_;
   std::array<const void *, 7> prepared_host_addresses_{};

@@ -840,6 +840,12 @@ void LiveHierarchy::retag_generation(std::uint64_t generation) {
   }
   impl_->generation = generation;
 }
+bool LiveHierarchy::full_precision_rebase() const {
+  const auto &v = impl_->inspection;
+  for (std::size_t n = 0; n < v.node_count; ++n)
+    if (v.nodes[v.order[n]].retained_fraction_bits != 52) return false;
+  return impl_->bound;
+}
 
 void LiveHierarchy::force(double gravity) {
   validate();
