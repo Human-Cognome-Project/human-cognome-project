@@ -817,6 +817,59 @@ total operational owner accounting remain outstanding. Full 115-suite regression
 remaining compiler configurations, PostgreSQL and GPU were not rerun. Shared-host
 timing is not performance evidence. Hosted CI remains authoritative for its scope.
 
+## Contributor-local private atomic exchange — 2026-11-05
+
+Tested source `9a016b5e1e6cb2117713c19eacfbdee08bd200e8`, following #218's
+[provisional review 5786373902](https://github.com/Human-Cognome-Project/human-cognome-project/pull/218#pullrequestreview-5786373902)
+at `0b0093453eaa8098582d7dc2e8a52939af058f4c`. Main's disposition `f271b4f5`
+is integrated. #217/#218 remain provisional dependencies; no duplicate hosted
+suite was requested. Later changes on this branch are documentation only.
+
+Actual native CPU, WSL Ubuntu, matching Taichi source/runtime and LLVM/Clang 15:
+
+- Build: `cmake --build engine/build --target live_hierarchy_test -j 2`.
+- Source `engine/build/engine-env.sh`; run with `nice -n 10`.
+- `live_hierarchy_test --threads 1 --case exchange_commit`: passed all eight
+  scenarios, including multibody expansion/compression, particle claim and contact
+  exhaustion, and failure after claims/numerical/contact publication or immediately
+  before logical mapping publication.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all **19 combined cases** passed. Compiler audit remains **19 kernels and 29
+  unsafe controls per 52/8-bit profile**, with emitted LLVM retained via
+  `HCP_B2_IR_DIR`. Native numerical kernels are unchanged.
+
+The two-byte letter witnesses retain independent aggregate and byte copies and
+nonidentity record/field mappings. They check sealed incoming identity/definition,
+committed-source revalidation, invalid prospective hierarchy, work reservation,
+old-plus-new claims, unchanged rejected execution/history/mappings, retry,
+transferred motion and retained target/centre/offset/momentum diagnostics,
+actual-claim occurrence mappings, unchanged survivor numerical state, one unticked
+generation, consumed-plan replay refusal, following ticks and stable native
+backing with no observed recurring C++ allocation. Late failures leave the harness
+unready and do not publish a healthy new logical mapping.
+
+Initial `c7c159a8` single-byte and `a5a0af0b` multibyte compression fixtures left
+empty retained hierarchy fields; native preflight correctly rejected them.
+`515e7e7a` retained an independent byte copy and passed the corrected scenarios.
+Final source additionally qualifies retained reports, invalid prospective hierarchy
+and the mapping-publication failure seam. These earlier logs are preserved
+separately and are not final-source evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/atomic-exchange-9a016b5e`; Windows archive
+`setup-evidence/atomic-exchange-9a016b5e.tar.gz`. SHA256SUMS digest:
+`57f2324797c83938fa138c4d0168b5897640f4a36d200031d369d313267831bc`.
+Commands, source/fork pins, settings, toolchain, binary/runtime hashes, logs and
+emitted code are retained. Raw evidence is contributor-local; the digest does not
+constitute independent inspection.
+
+[Private coordinator scope](../../docs/ATOMIC-EXCHANGE.md): existing field inventory,
+trusted prepared intrinsic/layout associations and a consumed generation-bound
+transaction. Field-family creation/retirement, enduring owner/projection lifecycle,
+complete owner resource accounting and operational controls remain separate.
+Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were not
+rerun. Shared-host timing is not performance evidence; hosted CI remains
+authoritative for the checks it can perform.
+
 
 ## Maintainer hosted acceptance — #217/#218, 2026-11-05
 
@@ -834,3 +887,17 @@ the conflict resolution changes documentation only. #219's private coordinator
 is provisionally reviewed in review 5787134942, with hosted run 42050645525 still
 pending at disposition. No duplicate native run was requested. Enduring owner,
 field-family lifecycle, total owner resources and GPU qualification remain separate.
+
+
+## Maintainer hosted acceptance — #219, 2026-11-05
+
+Reviewed head `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162` is accepted in
+[review 5790172617](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5790172617).
+All 18 hosted checks passed. Independently inspected run 42050645525 covers
+115 unique tests exactly once, eight compiler configurations (19 kernels/29
+unsafe controls per 52/8-bit profile), all four extra no-unroll atomic exchange
+matrices, and 180 database checks with zero private reads. Contributor-local
+evidence remains separately attributed. Integration preserves reviewed engine/test
+source and both acceptance histories. #221 field lifecycle is provisionally
+accepted in review 5790162176, with hosted run 42086483712 pending. Enduring owner,
+projection lifecycle, total resources and GPU qualification remain separate.

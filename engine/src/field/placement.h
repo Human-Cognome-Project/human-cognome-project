@@ -23,6 +23,7 @@ class Placement {
 
  private:
   friend class field::Harness;
+  friend class assembly::detail::ExchangeCoordinator;
   friend struct field::testing::PlacementAccess;
   explicit Placement(Harness &);
   Harness &h_;

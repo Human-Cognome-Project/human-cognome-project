@@ -25,6 +25,7 @@
 // one edge shape: proportional participation acts at the particle centre.
 //
 // Nothing here decides what the data means. It moves state through one tick.
+namespace assembly::detail { class ExchangeCoordinator; }
 namespace field {
 
 namespace detail {
@@ -389,6 +390,7 @@ class Harness {
 
  private:
   friend class detail::TickExecution;
+  friend class assembly::detail::ExchangeCoordinator;
   friend class detail::Placement;
   friend class detail::AdmissionContacts;
   friend class detail::Activity;
@@ -459,7 +461,9 @@ class Harness {
                                         std::uint64_t, bool commit = false,
                                         bool bootstrap = false,
                                         const UpdateRef *focus = nullptr,
-                                        std::size_t focus_count = 0);
+                                        std::size_t focus_count = 0,
+                                        const engine::RecordHandle *outgoing = nullptr,
+                                        std::size_t outgoing_count = 0);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,

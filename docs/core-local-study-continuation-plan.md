@@ -99,8 +99,15 @@ still completes that authority boundary. The next
 item 2's scalar exact-source/physical mass reconciliation, bounded momentum check
 and actual centre/offset report in private replacement scratch. It does not yet
 connect the logical binding view or validate incoming source contributions.
-Items 3–4 and the complete coordination of item 1 remain. Neither structural
-declarations nor successful scratch diagnostics are publication tokens.
+The following [private atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md)
+connects those checks, generates incoming logical participation from the sealed
+declaration, and uses native admission for prospective validation, peak claims and
+one unticked replacement/retirement generation. Actual claim handles populate a
+preallocated occurrence map within the same exclusive operation. Its bounded
+witnesses cover items 3–4 using existing field families. The prepared transaction
+is consumed on success; enduring owner lifecycle, field-family changes and total
+owner resource accounting remain separate. Neither structural declarations nor
+successful scratch diagnostics alone are publication tokens.
 
 Only after that boundary is reviewed should the enduring operational owner wire
 these primitives into coordinate-free letter commands. Same-execution controls,

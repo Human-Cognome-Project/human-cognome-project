@@ -3,8 +3,9 @@
 Replacement staging now reconciles physical and exact source mass, checks native
 momentum, and reports the actual generated centre and its offset from the outgoing
 target. This extends [replacement staging](EXCHANGE-PLACEMENT.md), not publication.
-The [logical binding view](EXCHANGE-BINDINGS.md) still requires coordinator wiring;
-passing scalar accounting does not authenticate incoming source participation.
+The [logical binding view](EXCHANGE-BINDINGS.md) is connected by the following
+[atomic coordinator](ATOMIC-EXCHANGE.md); passing scalar accounting alone does
+not authenticate incoming source participation.
 
 ## Exact mass domain
 
@@ -102,9 +103,11 @@ change source/history/activity/contact state, frame, generation or tick count.
 Ordinary rejection permits retry; unexpected execution failure makes the owner
 unready under the existing rule.
 
-Logical incoming command/source checks, prospective source/hierarchy/contact
-coordination, total enduring-owner resources, coherent mapping lifecycle and
-atomic replacement/retirement are still outstanding. No operational or GPU
+The following [private atomic coordinator](ATOMIC-EXCHANGE.md) supplies logical
+incoming source generation, prospective hierarchy/contact coordination and atomic
+replacement/retirement with actual-claim occurrence mappings in an existing field
+inventory. Total enduring-owner resources, sustained mapping lifecycle and
+field-family changes remain outstanding. No operational or GPU
 qualification is claimed. [Source-pinned evidence](../tests/admission/README.md)
 covers mass mismatch, missing/unsupported exact source metadata, momentum/velocity
 corruption, fractional weighted velocity, nonzero expansion offset, retry and
