@@ -3,6 +3,7 @@
 #include <limits>
 
 #include "assembly/membership_fields.h"
+#include "assembly/exchange_contract.h"
 #include "letter_projection_fixture.h"
 
 namespace {
@@ -133,6 +134,92 @@ int main() {
     check(
         membership_fields(gp).bind_structure(gp, nodes).memberships.size() == 2,
         "structural membership handoff complete");
+    // Declarations are pinned to one study/occurrence, not just a definition.
+    for (const auto entry : {max_entry, std::uint64_t(3), std::uint64_t(7), std::uint64_t(8)}) {
+      const bool aggregate = entry == max_entry || entry == 7;
+      const auto target = aggregate ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+      const OccurrenceKey owner{p.study(), {entry, {}}};
+      const auto contract = declare_letter_exchange(p, owner, target);
+      auto outgoing = contract.outgoing(), incoming = contract.incoming();
+      const auto matches = [&] {
+        return contract.matches(outgoing.data(), outgoing.size(), incoming.data(), incoming.size());
+      };
+      check(contract.owner() == owner && contract.to() == target &&
+                contract.recipe().revision == b.ref.revision && matches(),
+            "exact aggregate/byte exchange declaration");
+      std::uint64_t out_mass = 0, in_mass = 0, leaf_mass = 0;
+      for (const auto &s : outgoing) out_mass += s.mass;
+      for (const auto &s : incoming) in_mass += s.mass;
+      for (const auto &s : contract.leaves()) leaf_mass += s.count;
+      check(out_mass == contract.mass() && in_mass == out_mass && leaf_mass == out_mass,
+            "both alternatives retain exact ordered leaf mass");
+      if (entry == 8)
+        check(outgoing.size() == 2 && outgoing[0].definition == outgoing[1].definition &&
+                  !(outgoing[0].occurrence == outgoing[1].occurrence) && contract.leaves().size() == 4,
+              "repeated bytes retain distinct occurrence paths and contributions");
+      std::reverse(outgoing.begin(), outgoing.end());
+      std::reverse(incoming.begin(), incoming.end());
+      check(matches(), "adapter permutation preserves exchange identity");
+      const auto original = outgoing;
+      outgoing[0].occurrence.study = warm::new_uuid();
+      check(!matches(), "foreign study rejected");
+      outgoing = original;
+      outgoing[0].occurrence.source.entry = entry == max_entry ? 3 : max_entry;
+      check(!matches(), "another copy of the same definition is not outgoing authority");
+      outgoing = original;
+      outgoing[0].definition.revision = warm::new_uuid();
+      check(!matches(), "stale definition revision rejected");
+      outgoing = original;
+      ++outgoing[0].mass;
+      check(!matches(), "changed exact body mass rejected");
+      outgoing = original;
+      ++outgoing[0].node;
+      check(!matches(), "changed scale binding rejected");
+      outgoing = original;
+      ++outgoing[0].parents[0].contribution;
+      check(!matches(), "changed exact source contribution rejected");
+      outgoing = original;
+      ++outgoing[0].parents[0].ordinal;
+      check(!matches(), "changed parent order rejected");
+      outgoing = original;
+      outgoing[0].parents[0].stored_mass = 999;
+      check(!matches(), "changed source mass provenance rejected");
+      outgoing = original;
+      check(!contract.matches(nullptr, outgoing.size(), incoming.data(), incoming.size()) &&
+                !contract.matches(outgoing.data(), 0, incoming.data(), incoming.size()),
+            "missing outgoing binding rejected");
+      incoming[0].definition.revision = warm::new_uuid();
+      check(!matches(), "undeclared replacement rejected");
+      incoming = contract.incoming();
+      auto &parts = outgoing.size() > 1 ? outgoing : incoming;
+      if (parts.size() > 1) {
+        parts[1] = parts[0];
+        check(!matches(), "duplicate part cannot substitute for a missing part");
+      }
+      rejects([&] { declare_letter_exchange(p, owner, contract.from()); }, "same alternative rejected");
+      rejects([&] { declare_letter_exchange(p, owner, static_cast<warm::Exposure>(99)); },
+              "unknown alternative rejected");
+    }
+    rejects([&] { declare_letter_exchange(p, {warm::new_uuid(), {3, {}}}, warm::Exposure::Aggregate); },
+            "foreign declaration owner rejected");
+    rejects([&] { declare_letter_exchange(p, {p.study(), {3, {0, 0}}}, warm::Exposure::Aggregate); },
+            "byte path is not an aggregate exchange owner");
+    rejects([&] { declare_letter_exchange(p, {p.study(), {99, {}}}, warm::Exposure::Parts); },
+            "undeclared occurrence rejected");
+    rejects([&] { declare_letter_exchange(old, {old.study(), {4, {}}}, warm::Exposure::Parts); },
+            "legacy numerical recipe cannot authorize structural exchange");
+    const auto expanded_recipe = normalize_structural_letters(base,
+        {{11, f.ref(f.accented), warm::Exposure::Parts},
+         {12, f.ref(f.english), warm::Exposure::Aggregate}});
+    const auto unicode = project_letters(expanded_recipe);
+    const auto unicode_exchange = declare_letter_exchange(unicode, {unicode.study(), {11, {}}},
+                                                         warm::Exposure::Aggregate);
+    check(unicode_exchange.outgoing().size() > 2 &&
+              unicode_exchange.leaves().size() == unicode_exchange.mass(),
+          "multiscalar UTF-8 alternative retains every ordered nibble contribution");
+    check(p.parents().size() == 14 && p.recipe().selections[0].exposure == b.selections[0].exposure &&
+              p.recipe().ref.revision == b.ref.revision,
+          "declaration and rejection leave projection unchanged");
     std::cout << "PASS: " << checks << " structural recipe checks\n";
     return 0;
   } catch (const std::exception &e) {
