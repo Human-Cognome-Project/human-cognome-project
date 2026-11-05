@@ -869,3 +869,20 @@ complete owner resource accounting and operational controls remain separate.
 Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were not
 rerun. Shared-host timing is not performance evidence; hosted CI remains
 authoritative for the checks it can perform.
+
+## Maintainer hosted acceptance — #217/#218, 2026-11-05
+
+Reviewed #217 head `34e323925b6d02a1ce5b79042673dd2369ae7edc` and #218 head
+`0b0093453eaa8098582d7dc2e8a52939af058f4c` are accepted. All 18 hosted checks
+passed on each head. Independently inspected runs 42038267169 and 42042807142:
+each covers 115 unique regression tests exactly once and 180 database checks
+with zero private reads. Retained artifacts cover all eight compiler configurations
+and all four additional no-unroll placement matrices. #217 audits 18 kernels/27
+unsafe controls per 52/8-bit profile; #218 audits 19/29 and passes the native mass,
+momentum and offset witnesses. Local evidence above remains separately attributed.
+
+Integration preserves reviewed engine/test source and main's review history;
+the conflict resolution changes documentation only. #219's private coordinator
+is provisionally reviewed in review 5787134942, with hosted run 42050645525 still
+pending at disposition. No duplicate native run was requested. Enduring owner,
+field-family lifecycle, total owner resources and GPU qualification remain separate.
