@@ -66,13 +66,14 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-Private [exchange source bindings](engine/docs/EXCHANGE-BINDINGS.md) are
-provisionally accepted in #217. The current review increment adds
-[native exchange accounting](engine/docs/EXCHANGE-ACCOUNTING.md): exact scalar
-source/physical mass reconciliation, bounded momentum checks and actual centre/
-offset reporting in replacement scratch. Incoming logical source validation,
-prospective coordination and atomic exchange remain unbuilt; the operational
-owner must establish/update mappings and account for its complete resources.
+Private exchange source bindings and native accounting are provisionally accepted
+in #217/#218. The current review increment adds a
+[private atomic coordinator](engine/docs/ATOMIC-EXCHANGE.md): sealed logical
+incoming participation, native replacement staging, prospective hierarchy/contact
+checks, unticked replacement/retirement and actual-claim occurrence mappings.
+This is a consumed, generation-bound transaction using existing field families.
+Enduring owner lifecycle, field-family creation/retirement, complete owner resource
+accounting and operational controls remain following work.
 
 ## Latest model direction — 2026-10-23
 
@@ -136,7 +137,7 @@ with C2a's publication/consume contract without a same-tick global solve.
 local evidence tooling is accepted in #204. B3 combined bootstrap/admission is
 released under the accepted admission plan. Native generated-row staging is accepted in #205 and private source/hierarchy preflight in #207.
 #210 integrates the corrected #208/#209 contact and ordinary-commit stack with accepted private D1 bootstrap/initial focus.
-Private ordinary arrival and initial explicit-focus bootstrap are accepted in #210. Private focus/rebase and outgoing-state/replacement staging are accepted through #215. No operational admission API is accepted. Next implement D7 logical alternative/source and momentum validation, prospective hierarchy/contact validation and atomic retirement/publication, then enduring owners and same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
+Private ordinary arrival and initial explicit-focus bootstrap are accepted in #210. Private focus/rebase and outgoing-state/replacement staging are accepted through #215; #217/#218 provisionally accept logical source bindings and native accounting. The current private atomic exchange increment connects them for an existing field inventory. No operational admission API is accepted. Next complete field/owner lifecycle and total resource accounting, then same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
 
 The stage descriptions below preserve the scope at each acceptance; “following”
 and “not released” in those descriptions are not current holds on #194–#201.

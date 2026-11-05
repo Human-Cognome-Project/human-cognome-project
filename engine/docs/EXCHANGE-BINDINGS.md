@@ -62,11 +62,19 @@ of an operational owner.
 
 ## Limits and following work
 
-This view checks committed **exact source metadata**, not resident physical mass,
+The following [atomic coordinator](ATOMIC-EXCHANGE.md) consumes this sealed view,
+generates declared incoming participation and connects native accounting to
+prospective validation and publication. It retains actual-claim occurrence
+mappings on success; the old source view stays invalidated, not silently rebound.
+That private single-transaction integration does not provide an enduring owner.
+
+This view alone checks committed **exact source metadata**, not resident physical mass,
 velocity or native mass-ratio array contents. Native mass/momentum reconciliation
-and actual replacement centre/offset reporting remain necessary. Incoming
+and actual replacement centre/offset reporting are supplied by
+[native accounting](EXCHANGE-ACCOUNTING.md). Incoming
 commands, prospective source/hierarchy/contact state, old-plus-new claims and
-atomic unticked replacement/retirement publication are not implemented here.
+atomic unticked replacement/retirement publication belong to the coordinator,
+not this source-view class.
 The existing numerical staging and all numerical kernels are unchanged.
 An enduring owner must establish and update these bindings from its own commits;
 this class is not an operational initialization or rebind API.
