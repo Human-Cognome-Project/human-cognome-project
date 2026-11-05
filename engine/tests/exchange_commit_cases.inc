@@ -12,16 +12,18 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
     const auto recipe = assembly::normalize_structural_letters(letters.base,
         {{0, letters.ref(letters.accented), warm::Exposure::Aggregate},
          {1, letters.ref(letters.accented), warm::Exposure::Aggregate},
-         {2, letters.ref(letters.accented), warm::Exposure::Parts}});
+         {2, letters.ref(letters.accented), warm::Exposure::Parts},
+         {3, letters.ref(letters.accented), warm::Exposure::Parts}});
     const auto projection = assembly::project_letters(recipe);
     auto l = placement_limits();
-    if (scenario == -1) l[Budget::Particles] = 4;
+    if (scenario == -1) l[Budget::Particles] = 6;
     if (scenario == -2) l[Budget::Contacts] = 1;
     Fixture f(r, path, {{}, {}, {0,1}, {}, {}, {3,4}, {}, {6}, {2,5,7}},
-        {{0,0,1,0}, {0,0,1,0}, {0,0,2,0}, {0,0,0,1}, {0,0,0,1},
-         {0,0,0,2}, {4,4,0,0}, {4,4,0,0}, {4,4,2,2}},
-        {4,4,2,2}, {4,4,2,2}, scenario == -2 ? std::vector<double>{0,60,60,60}
-                                            : std::vector<double>{0,20,40,60},
+        {{0,0,1,0,1,0}, {0,0,1,0,1,0}, {0,0,2,0,2,0},
+         {0,0,0,1,0,1}, {0,0,0,1,0,1}, {0,0,0,2,0,2},
+         {4,4,0,0,0,0}, {4,4,0,0,0,0}, {4,4,2,2,2,2}},
+        {4,4,2,2,2,2}, {4,4,2,2,2,2}, scenario == -2 ? std::vector<double>{0,60,60,60,80,100}
+                                                    : std::vector<double>{0,20,40,60,80,100},
         bits,52,false,true,true,false,1024,{},&l,true);
     f.install();
     f.control->set(1, f.in.field_rows[0].record);
@@ -32,6 +34,8 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
     std::vector<assembly::detail::OccurrenceBinding> rows{
         {{projection.study(), {2,{0,0}}}, f.in.particle_rows[2]},
         {{projection.study(), {2,{0,1}}}, f.in.particle_rows[3]},
+        {{projection.study(), {3,{0,0}}}, f.in.particle_rows[4]},
+        {{projection.study(), {3,{0,1}}}, f.in.particle_rows[5]},
         {{projection.study(), {0,{}}}, f.in.particle_rows[0]},
         {{projection.study(), {1,{}}}, f.in.particle_rows[1]}};
     std::vector<assembly::detail::ExchangeFieldBinding> fields{
@@ -143,7 +147,7 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
     }
     if (scenario == -1) {
       require(result.status == UpdateStatus::CapacityExhausted &&
-                  result.failure.budget == Budget::Particles && result.failure.required == 6 &&
+                  result.failure.budget == Budget::Particles && result.failure.required == 8 &&
                   before == TickSnapshot(f) && f.h.ready(), "retirement funded replacement claim");
       continue;
     }
@@ -154,7 +158,7 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
     const auto &s = f.h.prepared_storage();
     for (const auto &body : outgoing)
       require(s.particle_headers[body.record].record < 0, "outgoing body not retired");
-    require(s.live.particles == (compression ? 3u : 5u), "wrong replacement count");
+    require(s.live.particles == (compression ? 5u : 7u), "wrong replacement count");
     f.h.inspect_prepared();
     for (const auto &mapping : Access::mappings(*coordinator)) {
       const bool replacement = std::any_of(declaration.incoming().begin(), declaration.incoming().end(),
