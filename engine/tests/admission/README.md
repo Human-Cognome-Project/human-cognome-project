@@ -719,3 +719,20 @@ contributions. That failed log is separately retained, not passing evidence.
 This is contributor-local evidence, not independently inspected merely because
 its hash is published. Committed occurrence-to-native-handle binding, source
 ledger validation, momentum/reporting and atomic exchange remain outstanding.
+
+## Hosted acceptance of structural declaration #216 — 2026-11-05
+
+Reviewed head `3e273a8a14904af171ee77bfbfe0f2e15ea22ab2`, merged as
+`639901b106fcd4319af3c411644d03e40a2ac856`; final review
+[5785904822](https://github.com/Human-Cognome-Project/human-cognome-project/pull/216#pullrequestreview-5785904822).
+All 18 checks passed. Inspected hosted run
+[42032548669](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42032548669)
+covers all 115 test indexes exactly once across 29/29/29/28-test shards,
+180 integration checks (24 addressed reads, zero private reads), and four
+compiler artifacts retaining 18 kernels/27 unsafe controls per 52/8-bit profile
+and passing extra no-unroll placement witnesses in every worker/source-path mode.
+The reviewer also directly compiled the structural test with GCC and passed
+91 checks; that focused result is separate from hosted and contributor-local evidence.
+This accepts immutable structural declarations only. #217's committed-source
+binding view remains provisionally reviewed with hosted validation pending;
+native conservation and complete atomic exchange remain outstanding.
