@@ -65,11 +65,13 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-Private [exchange source bindings](engine/docs/EXCHANGE-BINDINGS.md) are the next
-review increment on provisional #216: trusted prepared occurrence maps resolve to
-committed full handles and exact outgoing source rows, with generation-bound
-read-only revalidation. Native conservation, prospective coordination and atomic
-exchange remain unbuilt; the operational owner must establish/update mappings.
+Private [exchange source bindings](engine/docs/EXCHANGE-BINDINGS.md) are
+provisionally accepted in #217. The current review increment adds
+[native exchange accounting](engine/docs/EXCHANGE-ACCOUNTING.md): exact scalar
+source/physical mass reconciliation, bounded momentum checks and actual centre/
+offset reporting in replacement scratch. Incoming logical source validation,
+prospective coordination and atomic exchange remain unbuilt; the operational
+owner must establish/update mappings and account for its complete resources.
 
 ## Latest model direction — 2026-10-23
 

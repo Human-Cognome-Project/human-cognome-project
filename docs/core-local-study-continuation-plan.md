@@ -94,8 +94,13 @@ and source descriptors. The following private [source-binding view](../engine/do
 checks trusted prepared identity mappings against committed full handles and exact
 outgoing participation at one generation. It does not establish mappings from
 live admission results or update them at publication; owner/coordinator wiring
-still completes that authority boundary. Items 2–4 remain unchanged. Neither
-structural declarations nor successful binding diagnostics are publication tokens.
+still completes that authority boundary. The next
+[native accounting increment](../engine/docs/EXCHANGE-ACCOUNTING.md) implements
+item 2's scalar exact-source/physical mass reconciliation, bounded momentum check
+and actual centre/offset report in private replacement scratch. It does not yet
+connect the logical binding view or validate incoming source contributions.
+Items 3–4 and the complete coordination of item 1 remain. Neither structural
+declarations nor successful scratch diagnostics are publication tokens.
 
 Only after that boundary is reviewed should the enduring operational owner wire
 these primitives into coordinate-free letter commands. Same-execution controls,

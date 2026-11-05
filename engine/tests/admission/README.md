@@ -777,3 +777,42 @@ The reviewer also directly compiled the structural test with GCC and passed
 This accepts immutable structural declarations only. #217's committed-source
 binding view remains provisionally reviewed with hosted validation pending;
 native conservation and complete atomic exchange remain outstanding.
+
+## Contributor-local exchange accounting — 2026-11-05
+
+Tested source `bdccf872b65d458ab1a6014dc1e4a5c2490369ff`, actual native CPU in
+WSL Ubuntu with matching Taichi fork and LLVM/Clang 15. This follows #217's
+provisional source review 5785905901; #216 is fully accepted above. Later changes
+on this branch are documentation only.
+
+Build: `cmake --build engine/build --target live_hierarchy_test -j 2`; source
+`engine/build/engine-env.sh`, run with `nice -n 10`:
+
+- `live_hierarchy_test --threads 1 --case exchange_placement`: passed 52/8-bit
+  compression/expansion accounting, mass/source rejection, missing/unsupported
+  exact metadata, native velocity and momentum corruption, fractional weighted
+  velocity, actual centre/nonzero offset, retry and unchanged state/backing.
+- `live_hierarchy_test --threads 1 --case placement_compiler`: bulk/default
+  audit passed 19 kernels and 29 unsafe controls per 52/8-bit profile.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all 18 combined cases passed, including the same 19-kernel/29-control audits.
+
+Both audit modes retain emitted LLVM via `HCP_B2_IR_DIR`. The initial source
+`a5af9d07` test fixture declared exact masses 1,1,1 for physical masses 1,3,2;
+the new native check correctly rejected it. The corrected metadata and additional
+corruption witnesses are in the tested source. Its failed log is retained
+separately and is not passing evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/exchange-accounting-bdccf872`; Windows
+archive `setup-evidence/exchange-accounting-bdccf872.tar.gz`. SHA256SUMS digest:
+`2e09b6665cebbfd2ccf7abd52422c2e207a3596ceb83c7f2488dee2750167a18`.
+Commands, source/fork pins, build settings, toolchain, binary/runtime hashes,
+logs and emitted code are retained. Raw evidence is contributor-local; publishing
+its digest does not constitute independent inspection.
+
+[Accounting scope and arithmetic bounds](../../docs/EXCHANGE-ACCOUNTING.md) cover
+private scalar reconciliation and diagnostics only. Logical incoming source
+validation, prospective hierarchy/contact integration, atomic publication and
+total operational owner accounting remain outstanding. Full 115-suite regression,
+remaining compiler configurations, PostgreSQL and GPU were not rerun. Shared-host
+timing is not performance evidence. Hosted CI remains authoritative for its scope.
