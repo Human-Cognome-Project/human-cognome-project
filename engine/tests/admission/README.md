@@ -684,3 +684,38 @@ case failures. Contributor-local evidence above remains separately pinned.
 This accepts private scratch replacement staging only. Complete logical/source,
 momentum, hierarchy/contact and atomic retirement/publication coordination is
 the next D7 work; public operations and GPU qualification remain separate.
+
+## Logical exchange declaration — 2026-11-05
+
+The [prepared declaration](../../docs/EXCHANGE-CONTRACT.md) was tested at
+`a26dafd7eb0abbca4582c829a1181f3967f1590b`, based on merged main `e25c91cd`.
+Later changes are documentation only. WSL Ubuntu/Clang 15 host structural tests:
+
+- `structural_recipe_test`: 91 checks, including exchange directions, exact
+  occurrence/definition/source descriptors, duplicate copies and contributions,
+  invalid inputs, comparison work boundary and unchanged projection.
+- `letter_projection_test`: 53 checks.
+- `membership_fields_test`: 25 checks.
+- `letter_projection_native_test`: existing native-layout projection regression.
+
+All four suites passed. Build commands use `cmake --build engine/build --target
+structural_recipe_test letter_projection_test membership_fields_test -j 2`, then
+the `letter_projection_native_test` target. Verbose CTest selections are
+`^(structural_recipe_test|letter_projection_test|membership_fields_test)$` and
+`^letter_projection_native_test$`. This is host metadata/layout validation; no
+Taichi numerical kernel, database or GPU was run, and the full numerical matrix
+was not repeated for this structural-only change.
+
+Raw bundle: `/root/hcp-workspace/evidence/exchange-contract-a26dafd7`, with
+workspace archive `setup-evidence/exchange-contract-a26dafd7.tar.gz`.
+Its manifest digest is
+`3d520a4062c9a3f405a563a8099f0d838a96e43cafa4e2afaee470e4283ab457`.
+The bundle retains commands, source/submodule pin, build settings, toolchain,
+binary hashes and verbose results. The initial `0dd2a068` test expectation
+incorrectly counted the repeated-letter-plus-combining-accent fixture as two
+bytes; it contains four. The corrected assertion retains all eight nibble
+contributions. That failed log is separately retained, not passing evidence.
+
+This is contributor-local evidence, not independently inspected merely because
+its hash is published. Committed occurrence-to-native-handle binding, source
+ledger validation, momentum/reporting and atomic exchange remain outstanding.

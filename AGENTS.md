@@ -63,6 +63,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
+The next review increment adds a prepared [logical exchange declaration](engine/docs/EXCHANGE-CONTRACT.md)
+from validated v2 letter projections, with exact occurrence/alternative descriptors
+and bounded source-metadata matching. It does not yet bind committed native
+handles or complete the D7 coordinator; those remain active work.
+
 ## Latest model direction — 2026-10-23
 
 The directions below have bounded CPU implementations through #201. Read
