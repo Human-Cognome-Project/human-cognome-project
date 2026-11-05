@@ -10,7 +10,8 @@ replace their detailed acceptance tests.
 Baseline checked **2026-11-05**: accepted private engine work through #219, reviewed source
 `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
 #220's viewport security fix is also merged. #221 field lifecycle is provisionally
-accepted, with hosted validation and final integration pending at this check.
+accepted; #222's private persistent exchange owner is also provisionally accepted.
+Hosted validation and final integration remain pending at this check.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -33,9 +34,12 @@ For work that depends on it, use its reviewed stack and inspect subsequent chang
 The maintainer owns its final integration. #123/#111 remain held and draft #75
 deferred; none is a prerequisite for the separately accepted core path.
 
-The current unaccepted contribution adds a [persistent private exchange owner](../../engine/docs/EXCHANGE-OWNER.md)
+#222 provisionally accepts a [persistent private exchange owner](../../engine/docs/EXCHANGE-OWNER.md)
 with stable identity and live projection publication across repeated exchanges.
-It borrows the execution and still allocates host preparation metadata.
+The current unaccepted increment reuses two reserved projection views, reports
+their retained capacity charge and adds multi-occurrence coverage. The owner still
+borrows its execution; other preparation metadata and total resource accounting
+remain separate work.
 The next contributing-agent task is **reusable preparation, complete owner resource
 accounting and integration of the remaining operations**. Reuse accepted
 private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.

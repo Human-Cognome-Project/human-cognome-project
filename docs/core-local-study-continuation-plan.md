@@ -79,11 +79,15 @@ and final integration are pending at this check. Continue its reviewed stack whe
 needed, without modifying or duplicating its running suite merely to proceed.
 The maintainer owns final integration and acceptance-note reconciliation.
 
-The current contribution implements a private [persistent exchange owner](../engine/docs/EXCHANGE-OWNER.md):
+#222 provisionally accepts the private [persistent exchange owner](../engine/docs/EXCHANGE-OWNER.md)
+at `c8461b52101c658839d1a79badba0f9f9fdde60c` in
+[review 5790946060](https://github.com/Human-Cognome-Project/human-cognome-project/pull/222#pullrequestreview-5790946060):
 same-study projection exposure, occurrence/field maps and reports publish together
-across repeated exchanges. It is not yet accepted and does not complete slice C.
-Preparation still allocates host metadata; the harness is borrowed, and unrelated
-generation-changing operations make this owner stale.
+across repeated exchanges. Hosted run 42094921159 and parent integration remain
+pending; this does not complete slice C. The current unaccepted contribution
+reserves two reusable projection views, reports their retained capacity charge and
+adds repeated multi-occurrence transitions. Other host preparation still allocates;
+the harness is borrowed, and unrelated generation changes make this owner stale.
 
 Remaining work is **slice C: reusable preparation, complete owner resource accounting and operation integration**:
 
@@ -106,7 +110,8 @@ The accepted [declaration](../engine/docs/EXCHANGE-CONTRACT.md),
 [atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md) are the existing primitives.
 Do not reimplement their completed D7 checks. #221 adds field lifecycle but does
 not itself create an enduring owner or qualify complete owner resources. The
-current owner contribution adds the repeated-exchange projection lifecycle only.
+owner increment adds the repeated-exchange projection lifecycle. Projection reuse
+and its capacity census do not account for all remaining owner resources.
 
 The contracts below retain required behavior for each slice; imperative wording
 in an accepted slice does not reopen its completed implementation. Local evidence

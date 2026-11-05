@@ -188,8 +188,9 @@ qualification ladder.
 Start a new instance with the [onboarding/spec brief](../docs/onboarding/AGENT-START.md).
 The accepted CPU baseline is through #219 as checked 2026-11-05: private
 ordinary/bootstrap admission, focus/exact rebase and atomic exchange. #221 field
-lifecycle is provisionally accepted; the current unaccepted contribution adds a
-[persistent private exchange owner](docs/EXCHANGE-OWNER.md). Reusable preparation,
+lifecycle and #222's [persistent private exchange owner](docs/EXCHANGE-OWNER.md)
+are provisionally accepted. The current contribution adds reserved projection reuse
+and its capacity census. Reusable transaction preparation,
 complete owner resources, remaining-operation integration, public controls and
 GPU qualification remain separate. Earlier stage
 descriptions below retain their bounded acceptance scope, not a second work queue.

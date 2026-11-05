@@ -1003,3 +1003,69 @@ remaining-operation integration and controls remain subsequent work. Unrelated
 generation changes make the owner stale. Full 115-suite regression, remaining
 compiler modes, PostgreSQL and GPU were not rerun. Shared-host timing is not
 performance evidence; hosted CI remains authoritative for its scope.
+
+## Local reusable-projection qualification — 2026-11-05
+
+Tested code: `3ba9dd84a99c6d30dd67627dd4ef5fabe83cbeb1`, matching Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, LLVM/Clang 15, actual native CPU
+in WSL Ubuntu. This contribution is stacked on provisionally accepted #222 head
+`c8461b52101c658839d1a79badba0f9f9fdde60c`, following
+[review 5790946060](https://github.com/Human-Cognome-Project/human-cognome-project/pull/222#pullrequestreview-5790946060).
+#221 remains its parent dependency; their hosted validation/final integration are
+pending at this check. No parent branch or running hosted suite was modified.
+
+Build `live_hierarchy_test`, `letter_projection_test`, `membership_fields_test`
+and `structural_recipe_test` with `cmake --build engine/build --target ... -j 2`;
+source `engine/build/engine-env.sh`. Recorded commands use `nice -n 10`:
+
+- Bulk/default one worker: `live_hierarchy_test --threads 1 --case exchange_owner`
+  and `--case exchange_owner_multiple` passed. Each runs 32 exchanges and following
+  ticks; the single-occurrence witness also checks late unready publication failure.
+- Direct/no-unroll two workers: `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`
+  passed all **22 combined cases**. Audits remain **19 kernels/29 unsafe controls
+  per 52/8-bit profile**; final-source emitted LLVM is retained via `HCP_B2_IR_DIR`.
+- CTest passed all three projection, membership and structural-recipe tests.
+
+First and repeated projection staging use the two views reserved at adoption,
+without observed C++ `new`. Active and spare parent objects retain their nested
+UUID, address and occurrence-path storage. Both view addresses and total projection
+capacity charges remain stable through exchanges and rejection/retry. The new
+four-copy witness edits two occurrences in succession while checking previously
+edited and untouched copies, survivor numerical state and full native handles,
+shared fields/focus and exact contribution inventory. Permanent copies keep both
+field alternatives live; the original single-copy witness still exercises field
+creation/retirement. Successful execution, ordinary rejection and ticks also pass
+the C++ allocation guards, with stable native backing. Other preparation and
+exception construction remain excluded.
+
+| Fixture | Retained views | Constructed parent rows, active + spare | Capacity charge |
+|---|---:|---:|---:|
+| One logical occurrence | 2 | 10 | 54,556 bytes |
+| Four logical occurrences | 2 | 40 | 86,264 bytes |
+
+These charges cover both projection objects and their owned vector/text capacities,
+including unused vector slots and nested object addresses. Inline strings are
+conservatively charged again; this is not heap/RSS/driver measurement or a setup
+peak. Tests verify overflow leaves the report unchanged and growing only one
+object-address reservation changes the charge by exactly its added element capacity.
+
+Initial `65d4d682` passed both focused owner sequences and the value tests, but
+inspection found that its census omitted object-address vectors. Its combined run
+was stopped. Final source adds these buffers and the targeted capacity-delta test.
+Earlier logs and incomplete totals are retained separately and are not final-source
+complete accounting or combined passing evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/reusable-projection-3ba9dd84`; Windows
+archive `setup-evidence/reusable-projection-3ba9dd84.tar.gz`. SHA256SUMS digest:
+`1a21329a9648440b84fd0d456a6767e592065e3d71896b214fd6d8a06228ba81`.
+Commands, source/fork pins, toolchain/settings, binary/runtime hashes, logs and
+emitted code are retained. This is contributor-local evidence; publishing its
+digest is not independent inspection of the raw bundle.
+
+[Scope](../../docs/EXCHANGE-OWNER.md): reusable projection staging and its retained
+capacity census only. Declaration/binding/coordinator/map/hierarchy preparation
+still allocates. Complete owner resources and lifetime/peak accounting, reusable
+transaction preparation, remaining operations and controls remain subsequent work.
+Full 115-suite regression, other compiler modes, PostgreSQL and GPU were not rerun.
+Shared-host timing is not performance evidence; hosted CI remains authoritative
+for its scope.
