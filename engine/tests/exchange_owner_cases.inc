@@ -29,6 +29,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  taichi::lang::SNode projection_root(0,taichi::lang::SNodeType::root);
+  const std::vector<assembly::StudyNode> projection_nodes{{&projection_root,-1,assembly::ScaleRole::Root}};
   const auto &s = f.h.prepared_storage();
   prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
   const auto backing = metrics.sample();
@@ -159,6 +161,10 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                 current.recipe().selections[0].exposure == warm::Exposure::Aggregate &&
                 current.exposure(0) == target, "owner changed identity/recipe or lost live exposure");
     require(current.occurrences().size() == initial.occurrences().size(), "owner lost alternative inventory");
+    const auto structural = current.bind_structure(projection_nodes);
+    require(structural.selections.size() == 1 && structural.selections[0].exposure ==
+                (compression ? assembly::Exposure::Aggregate : assembly::Exposure::Parts),
+            "structural handoff retained initial exposure");
     std::size_t active = 0;
     for (std::size_t i = 0; i < current.occurrences().size(); ++i) {
       const auto &o = current.occurrences()[i];
@@ -179,7 +185,10 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       require(same_handle(v.handle,s.field_headers[v.handle.record]), "owner field handle is stale");
     for (const auto &v : Access::mappings(*owner))
       require(same_handle(v.handle,s.particle_headers[v.handle.record]), "owner occurrence handle is stale");
-    require(same_handle(Access::fields(*owner).back().handle,fields.back().handle), "owner lost retained focus");
+    const auto focal = std::find_if(Access::fields(*owner).begin(),Access::fields(*owner).end(),
+        [&](const auto &v) { return v.field.kind == GroupKind::Membership && v.field.object == group.object; });
+    require(focal != Access::fields(*owner).end() && same_handle(focal->handle,fields.back().handle),
+            "owner lost retained focus");
     require(Access::outgoing_report(*owner) == Plan::outgoing_report(Access::plan(*owner)) &&
                 Access::balance_report(*owner) == Plan::balance_report(Access::plan(*owner)),
             "owner report does not match committed exchange");
