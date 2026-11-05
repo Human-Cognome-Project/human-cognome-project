@@ -768,8 +768,8 @@ void exchange_bindings(engine::Runtime &r, HostPath path) {
        {2, letters.ref(letters.english), warm::Exposure::Parts}});
   const auto projection = assembly::project_letters(recipe);
   const auto l = placement_limits();
-  Fixture f(r, path, {{}, {}, {}, {}, {}, {}},
-      {{2,2,0}, {2,2,0}, {0,0,2}, {0,0,1}, {0,0,1}, {2,2,2}},
+  Fixture f(r, path, {{}, {}, {0,1}, {}, {3}, {2,4}},
+      {{0,0,1}, {0,0,1}, {0,0,2}, {2,2,0}, {2,2,0}, {2,2,2}},
       {2,2,2}, {2,2,2}, {0,20,40}, 52,52,false,false,true,false,1024,{},&l,true);
   f.install();
   f.control->set(1, f.in.field_rows[0].record);
@@ -782,11 +782,11 @@ void exchange_bindings(engine::Runtime &r, HostPath path) {
       {{projection.study(), {0,{}}}, f.in.particle_rows[0]},
       {{projection.study(), {1,{}}}, f.in.particle_rows[1]}};
   std::vector<assembly::detail::ExchangeFieldBinding> fields{
-      {{assembly::GroupKind::SiblingDefinition, letters.english}, f.in.field_rows[0]},
-      {{assembly::GroupKind::ParentValue, byte.object}, f.in.field_rows[1]},
+      {{assembly::GroupKind::SiblingDefinition, letters.english}, f.in.field_rows[3]},
+      {{assembly::GroupKind::ParentValue, byte.object}, f.in.field_rows[4]},
       {{assembly::GroupKind::SiblingDefinition, byte.object}, f.in.field_rows[2]},
-      {{assembly::GroupKind::ParentValue, byte_tool.parents[0].target.object}, f.in.field_rows[3]},
-      {{assembly::GroupKind::ParentValue, byte_tool.parents[1].target.object}, f.in.field_rows[4]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[0].target.object}, f.in.field_rows[0]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[1].target.object}, f.in.field_rows[1]},
       {{assembly::GroupKind::Membership, group.object}, f.in.field_rows[5]}};
   const auto expand = assembly::declare_letter_exchange(projection,
       {projection.study(), {0,{}}}, warm::Exposure::Parts);
@@ -819,8 +819,14 @@ void exchange_bindings(engine::Runtime &r, HostPath path) {
     require(rejected, "invalid owner binding accepted");
   };
   auto bad = rows;
-  ++bad[1].handle.incarnation;
-  rejects(bad, fields);
+  for (int component = 0; component < 4; ++component) {
+    bad = rows;
+    if (component == 0) ++bad[1].handle.incarnation;
+    if (component == 1) ++bad[1].handle.context;
+    if (component == 2) ++bad[1].handle.address;
+    if (component == 3) bad[1].handle.record = f.in.particle_rows[1].record;
+    rejects(bad, fields);
+  }
   bad = rows;
   bad[1].handle = bad[2].handle;
   rejects(bad, fields);
@@ -853,21 +859,41 @@ void exchange_bindings(engine::Runtime &r, HostPath path) {
   ++s.generation;
   require(Access::validate(*bound).status == UpdateStatus::Stale, "changed source generation accepted");
   --s.generation;
-  const auto edge = s.edges[0];
-  const auto count = s.source_counts[0];
-  ++s.source_counts[0];
+  const std::size_t selected_edge = 3, other_edge = 4;
+  require(s.edges[selected_edge].first.record == record &&
+              s.edges[other_edge].first.record == f.in.particle_rows[1].record,
+          "source fault injection must select outgoing and unrelated rows");
+  const auto edge = s.edges[selected_edge];
+  const auto count = s.source_counts[selected_edge];
+  ++s.source_counts[selected_edge];
   require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed exact participation accepted");
-  s.source_counts[0] = count;
-  ++s.edges[0].ordinal;
+  s.source_counts[selected_edge] = count;
+  ++s.edges[selected_edge].ordinal;
   require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed source order accepted");
-  s.edges[0] = edge;
-  const auto unrelated = s.edges[1];
-  s.edges[1].first = f.in.particle_rows[0];
+  s.edges[selected_edge] = edge;
+  s.edges[selected_edge].share = 0.25f;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed share metadata accepted");
+  s.edges[selected_edge] = edge;
+  ++s.edges[selected_edge].second.incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "stale participation endpoint accepted");
+  s.edges[selected_edge] = edge;
+  ++s.field_headers[f.in.field_rows[0].record].incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "reused field record accepted");
+  --s.field_headers[f.in.field_rows[0].record].incarnation;
+  const auto unrelated = s.edges[other_edge];
+  s.edges[other_edge].first = f.in.particle_rows[0];
   require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "extra outgoing edge accepted");
-  s.edges[1] = unrelated;
+  s.edges[other_edge] = unrelated;
   require(Access::validate(*bound).status == UpdateStatus::Ok && before == TickSnapshot(f) &&
               history == PlacementAccess::rebase_history(f.h) && backing.same_backing(metrics.sample()),
           "bound source validation changed execution or failed retry");
+  PreparedFixtureAccess::inject_failure(f.h, 300);
+  bool failed = false;
+  try { place(f, {placement_definition()}, {placement_intrinsic()}); }
+  catch (const std::runtime_error &) { failed = true; }
+  require(failed && !f.h.ready() && Access::validate(*bound).status == UpdateStatus::Unready,
+          "unready execution accepted by binding validator");
+  rejects(rows, fields);
   std::cout << "exchange_bindings,expansion=1,compression=1,copies=distinct,membership=exact,"
                "full_handles=1,stale_rejected=1,reuse=32,cpp_new=0,unchanged=1 PASS\n";
 }
