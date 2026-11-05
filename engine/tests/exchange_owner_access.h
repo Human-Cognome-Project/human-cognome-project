@@ -11,6 +11,11 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::ExchangeIncoming> &incoming,
       const std::vector<detail::ExchangeNewField> &fields) { o.prepare(key,target,incoming,fields); }
   static const auto &projection(const detail::ExchangeOwner &o) { return *o.projection_; }
+  static const auto &spare_projection(const detail::ExchangeOwner &o) { return *o.prospective_; }
+  static auto storage(const detail::ExchangeOwner &o) { return o.projection_storage(); }
+  static void stage_projection(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {
+    o.prepare_projection(key,target);
+  }
   static const auto &mappings(const detail::ExchangeOwner &o) { return o.occurrences_; }
   static const auto &fields(const detail::ExchangeOwner &o) { return o.fields_; }
   static const auto &plan(const detail::ExchangeOwner &o) { return *o.plan_; }

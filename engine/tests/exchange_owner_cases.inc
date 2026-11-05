@@ -29,6 +29,15 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  const auto reserved = Access::storage(*owner);
+  assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
+  bool charge_rejected = false;
+  try { overflow.add({1,0,0,0}); } catch (const warm::Error &) { charge_rejected = true; }
+  require(charge_rejected && overflow.object_bytes == UINT64_MAX && !overflow.vector_bytes && !overflow.text_bytes,
+          "projection charge overflow published a partial report");
+  require(reserved.object_bytes == 2 * sizeof(assembly::LetterProjection) && reserved.parent_slots == 10 &&
+              reserved.vector_bytes && reserved.text_bytes, "projection storage omitted retained surfaces");
+  const auto *first_view = &Access::projection(*owner), *second_view = &Access::spare_projection(*owner);
   taichi::lang::SNode projection_root(0,taichi::lang::SNodeType::root);
   const std::vector<assembly::StudyNode> projection_nodes{{&projection_root,-1,assembly::ScaleRole::Root}};
   const auto &s = f.h.prepared_storage();
@@ -76,6 +85,9 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     try { Access::prepare(*owner,key,previous->exposure(0),incoming,additions); }
     catch (const warm::Error &) { rejected = true; }
     require(rejected && unchanged() && !Access::pending(*owner), "failed preparation changed committed owner");
+    no_new([&] { Access::stage_projection(*owner,key,target); });
+    require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
+            "projection reservation grew during preparation");
     Access::prepare(*owner,key,target,incoming,additions);
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.
@@ -156,6 +168,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                 s.completed_ticks == ticks && Access::generation(*owner) == result.generation &&
                 !Access::pending(*owner), "owner did not publish one complete unticked exchange");
     const auto &current = Access::projection(*owner);
+    require(&current == (round % 2 ? first_view : second_view), "owner replaced a reserved projection view");
     require(current.study() == initial.study() && current.recipe().ref.selection == recipe.ref.selection &&
                 current.recipe().ref.revision == recipe.ref.revision &&
                 current.recipe().selections[0].exposure == warm::Exposure::Aggregate &&
@@ -202,5 +215,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   std::cout << "exchange_owner,rounds=32,identity=stable,recipe=immutable,exposure=live,"
                "mappings=atomic,reports=atomic,reject_retry=1,late_unready=1,"
-               "following_ticks=32,backing=stable,execute_cpp_new=0 PASS\n";
+               "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,execute_cpp_new=0 PASS\n";
+  std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
+            << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
+            << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';
 }

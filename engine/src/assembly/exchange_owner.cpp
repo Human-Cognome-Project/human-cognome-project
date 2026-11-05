@@ -21,6 +21,19 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     ExchangeBindings check(h_, *projection_, declare_letter_exchange(*projection_,
         {projection_->study(), {selection.entry,{}}}, target), occurrences_, fields_);
   }
+  prospective_ = std::make_unique<LetterProjection>(*projection_);
+  projection_->reserve_exposure();
+  prospective_->reserve_exposure();
+}
+
+void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target) {
+  projection_->prepare_exposure(*prospective_,owner,target);
+}
+
+ProjectionStorage ExchangeOwner::projection_storage() const {
+  auto result = projection_->storage();
+  result.add(prospective_->storage());
+  return result;
 }
 
 void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
@@ -28,15 +41,13 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
   // Preparation may allocate/free host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   plan_.reset();
-  prospective_.reset();
   completed_ = false;
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto declaration = declare_letter_exchange(*projection_, owner, target);
-  auto next = std::make_unique<LetterProjection>(projection_->prepare_exposure(owner, target));
+  prepare_projection(owner,target);
   auto bound = std::unique_ptr<ExchangeBindings>(new ExchangeBindings(
       h_, *projection_, std::move(declaration), occurrences_, fields_));
   auto plan = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(std::move(bound), incoming, fields));
-  prospective_ = std::move(next);
   plan_ = std::move(plan);
 }
 

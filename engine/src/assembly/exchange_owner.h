@@ -14,6 +14,8 @@ class ExchangeOwner {
   void prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &);
   void seal(const field::LiveRefreshSpec &);
+  void prepare_projection(const OccurrenceKey &, warm::Exposure);
+  ProjectionStorage projection_storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
   std::unique_ptr<LetterProjection> projection_, prospective_;

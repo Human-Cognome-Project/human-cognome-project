@@ -71,6 +71,14 @@ struct ParentContribution {
   std::uint64_t count{0};
 };
 
+// Retained host capacity charge, not allocator/RSS/driver accounting. Text
+// capacity includes its terminator and conservatively counts inline strings.
+struct ProjectionStorage {
+  std::uint64_t object_bytes{}, vector_bytes{}, text_bytes{}, parent_slots{};
+  std::uint64_t charged_bytes() const;
+  void add(const ProjectionStorage &);
+};
+
 class LetterProjection {
  public:
   const warm::Uuid &study() const { return study_; }
@@ -94,12 +102,17 @@ class LetterProjection {
   LetterProjection() = default;
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
-  LetterProjection prepare_exposure(const OccurrenceKey &, warm::Exposure) const;
+  void reserve_exposure();
+  void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure) const;
+  ProjectionStorage storage() const;
   warm::Uuid study_;
   warm::Bundle recipe_;
   std::vector<warm::Exposure> exposures_;
   std::vector<ProjectedOccurrence> occurrences_;
   std::vector<ParentContribution> parents_;
+  // Every inactive contribution keeps its nested strings/path alive here.
+  std::vector<ParentContribution> spare_parents_;
+  bool exposure_reserved_{};
   StudyInput input_;
   StructuralStudyInput structural_input_;
 };
