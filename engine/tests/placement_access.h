@@ -13,6 +13,11 @@ struct PlacementAccess {
     h.placement_->balance_exchange(bodies);
     h.runtime_->synchronize();
   }
+  static void poison_exchange_momentum(Harness &h, double value) {
+    auto report = exchange_balance(h);
+    report[0] = value;
+    engine::upload(*h.placement_->exchange_balance_, report.data(), sizeof(report));
+  }
   static void poison_exchange_start(Harness &h, int component, int command, double value) {
     auto rows = generated(h);
     rows[component * h.prepared_->capacity.command_capacity() + command] = value;

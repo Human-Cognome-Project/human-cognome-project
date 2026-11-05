@@ -901,7 +901,7 @@ void exchange_bindings(engine::Runtime &r, HostPath path) {
 void exchange_placement(engine::Runtime &r, HostPath path) {
   for (int bits : {52, 8}) {
     const auto limits = placement_limits();
-    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 3, 2}, {-4, 8, 40},
+    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 3, 2}, {1, 3, 2}, {-4, 8, 40},
               bits, 52, false, false, true, false, 1024, {1, 1, 1}, &limits, true);
     f.install();
     const auto a = f.in.particle_rows[0], b = f.in.particle_rows[1];
@@ -997,6 +997,13 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     wrong_mass_commands[0].exact_mass.reset();
     require(PlacementAccess::exchange(f.h, wrong_mass_commands, wrong_mass_inputs, outgoing).status ==
                 PlacementStatus::InvalidInput, "unknown incoming source mass accepted");
+    auto &exact_sources = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage()).source_masses;
+    for (const auto invalid_source : {UINT64_C(0), (UINT64_C(1) << 53) + 1}) {
+      exact_sources[a.record] = invalid_source;
+      require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::Unsupported,
+              "unsupported exact source mass accepted");
+    }
+    exact_sources[a.record] = 1;
     auto stale = outgoing;
     ++stale[0].incarnation;
     auto mismatched = commands;
@@ -1052,6 +1059,11 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     require(PlacementAccess::exchange_balance(f.h)[22] != 0, "wrong native replacement motion accepted");
     require(PlacementAccess::exchange(f.h, commands, inputs, aggregate).status == PlacementStatus::Ok,
             "accounting failure contaminated retry");
+    PlacementAccess::poison_exchange_momentum(f.h, 99);
+    PlacementAccess::check_exchange_balance(f.h, 2);
+    require(PlacementAccess::exchange_balance(f.h)[22] != 0, "momentum discrepancy outside bound accepted");
+    require(PlacementAccess::exchange(f.h, commands, inputs, aggregate).status == PlacementStatus::Ok,
+            "momentum discrepancy contaminated retry");
     PreparedFixtureAccess::inject_value64(f.h, kPosX, b.record, -4);
     commands = make_commands(1, 1);
     commands[0].exact_mass = 2;
