@@ -756,6 +756,122 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void exchange_bindings(engine::Runtime &r, HostPath path) {
+  using Access = assembly::testing::ExchangeBindingAccess;
+  letter_fixture::Fixture letters;
+  const auto group = letters.add(letter_fixture::object("02.00.00.00.00"), "group", 0);
+  letters.base.tools.at(letters.tools.at(letters.english)).member_of = {group};
+  letters.base.focal_fields = {{warm::FieldKind::Membership, group.object}};
+  const auto recipe = assembly::normalize_structural_letters(letters.base,
+      {{0, letters.ref(letters.english), warm::Exposure::Aggregate},
+       {1, letters.ref(letters.english), warm::Exposure::Aggregate},
+       {2, letters.ref(letters.english), warm::Exposure::Parts}});
+  const auto projection = assembly::project_letters(recipe);
+  const auto l = placement_limits();
+  Fixture f(r, path, {{}, {}, {}, {}, {}, {}},
+      {{2,2,0}, {2,2,0}, {0,0,2}, {0,0,1}, {0,0,1}, {2,2,2}},
+      {2,2,2}, {2,2,2}, {0,20,40}, 52,52,false,false,true,false,1024,{},&l,true);
+  f.install();
+  f.control->set(1, f.in.field_rows[0].record);
+  LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[0].record);
+  f.control->set(4);
+  const auto byte = letters.base.tools.at(letters.tools.at(letters.english)).parents[0].target;
+  const auto &byte_tool = letters.base.tools.at(letters.tools.at(byte.object));
+  std::vector<assembly::detail::OccurrenceBinding> rows{
+      {{projection.study(), {2,{0,0}}}, f.in.particle_rows[2]},
+      {{projection.study(), {0,{}}}, f.in.particle_rows[0]},
+      {{projection.study(), {1,{}}}, f.in.particle_rows[1]}};
+  std::vector<assembly::detail::ExchangeFieldBinding> fields{
+      {{assembly::GroupKind::SiblingDefinition, letters.english}, f.in.field_rows[0]},
+      {{assembly::GroupKind::ParentValue, byte.object}, f.in.field_rows[1]},
+      {{assembly::GroupKind::SiblingDefinition, byte.object}, f.in.field_rows[2]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[0].target.object}, f.in.field_rows[3]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[1].target.object}, f.in.field_rows[4]},
+      {{assembly::GroupKind::Membership, group.object}, f.in.field_rows[5]}};
+  const auto expand = assembly::declare_letter_exchange(projection,
+      {projection.study(), {0,{}}}, warm::Exposure::Parts);
+  const auto compress = assembly::declare_letter_exchange(projection,
+      {projection.study(), {2,{}}}, warm::Exposure::Aggregate);
+  auto bound = Access::prepare(f.h, projection, expand, rows, fields);
+  auto reverse = Access::prepare(f.h, projection, compress, rows, fields);
+  require(Access::outgoing(*bound)[0].record == f.in.particle_rows[0].record &&
+              Access::outgoing(*reverse)[0].record == f.in.particle_rows[2].record,
+          "logical occurrence did not resolve to its own full handle");
+  const auto before = TickSnapshot(f);
+  const auto history = PlacementAccess::rebase_history(f.h);
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+  const auto backing = metrics.sample();
+  for (int repeat = 0; repeat < 32; ++repeat) {
+    UpdateResult a, b;
+    no_new([&] { a = Access::validate(*bound); b = Access::validate(*reverse); });
+    require(a.status == UpdateStatus::Ok && b.status == UpdateStatus::Ok &&
+                !a.upload_bytes && !a.readback_bytes && !a.synchronizations,
+            "valid bound source rejected or touched numerical execution");
+  }
+  const auto generation = f.h.prepared_storage().generation;
+  require(Access::validate(*bound, generation + 1).status == UpdateStatus::Stale &&
+              Access::validate(*bound, generation, Access::work(*bound) - 1).status == UpdateStatus::CapacityExhausted,
+          "binding generation/work boundary ignored");
+  const auto rejects = [&](auto bad_rows, auto bad_fields) {
+    bool rejected = false;
+    try { Access::prepare(f.h, projection, expand, std::move(bad_rows), std::move(bad_fields)); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected, "invalid owner binding accepted");
+  };
+  auto bad = rows;
+  ++bad[1].handle.incarnation;
+  rejects(bad, fields);
+  bad = rows;
+  bad[1].handle = bad[2].handle;
+  rejects(bad, fields);
+  bad = rows;
+  bad[1].occurrence.study = warm::new_uuid();
+  rejects(bad, fields);
+  bad = rows;
+  bad[0].occurrence.source.path.clear(); // Inactive aggregate alternative.
+  rejects(bad, fields);
+  bad = rows;
+  bad.pop_back();
+  rejects(bad, fields);
+  auto bad_fields = fields;
+  bad_fields[1].handle = bad_fields[0].handle;
+  rejects(rows, bad_fields);
+  bad_fields = fields;
+  bad_fields.pop_back(); // Inherited membership is required source state too.
+  rejects(rows, bad_fields);
+  // Deliberate committed-ledger fault injection; validator must only observe.
+  auto &s = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage());
+  const auto record = f.in.particle_rows[0].record;
+  const auto saved_mass = s.source_masses[record];
+  ++s.source_masses[record];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput &&
+              s.source_masses[record] == saved_mass + 1, "changed exact mass accepted or restored");
+  s.source_masses[record] = saved_mass;
+  ++s.particle_headers[record].incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "reused physical row accepted");
+  --s.particle_headers[record].incarnation;
+  ++s.generation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "changed source generation accepted");
+  --s.generation;
+  const auto edge = s.edges[0];
+  const auto count = s.source_counts[0];
+  ++s.source_counts[0];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed exact participation accepted");
+  s.source_counts[0] = count;
+  ++s.edges[0].ordinal;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed source order accepted");
+  s.edges[0] = edge;
+  const auto unrelated = s.edges[1];
+  s.edges[1].first = f.in.particle_rows[0];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "extra outgoing edge accepted");
+  s.edges[1] = unrelated;
+  require(Access::validate(*bound).status == UpdateStatus::Ok && before == TickSnapshot(f) &&
+              history == PlacementAccess::rebase_history(f.h) && backing.same_backing(metrics.sample()),
+          "bound source validation changed execution or failed retry");
+  std::cout << "exchange_bindings,expansion=1,compression=1,copies=distinct,membership=exact,"
+               "full_handles=1,stale_rejected=1,reuse=32,cpp_new=0,unchanged=1 PASS\n";
+}
+
 void exchange_placement(engine::Runtime &r, HostPath path) {
   for (int bits : {52, 8}) {
     const auto limits = placement_limits();
