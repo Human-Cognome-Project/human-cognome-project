@@ -64,10 +64,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-The next review increment adds a prepared [logical exchange declaration](engine/docs/EXCHANGE-CONTRACT.md)
-from validated v2 letter projections, with exact occurrence/alternative descriptors
-and bounded source-metadata matching. It does not yet bind committed native
-handles or complete the D7 coordinator; those remain active work.
+Private [exchange source bindings](engine/docs/EXCHANGE-BINDINGS.md) are the next
+review increment on provisional #216: trusted prepared occurrence maps resolve to
+committed full handles and exact outgoing source rows, with generation-bound
+read-only revalidation. Native conservation, prospective coordination and atomic
+exchange remain unbuilt; the operational owner must establish/update mappings.
 
 ## Latest model direction — 2026-10-23
 

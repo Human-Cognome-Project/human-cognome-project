@@ -37,6 +37,11 @@ ordinary native transaction's allocation-free path.
 
 ## Remaining authority boundary
 
+The following private [committed-source binding view](EXCHANGE-BINDINGS.md) checks
+owner-supplied full handles and exact outgoing participation at a pinned generation.
+Its initial identity mapping is trusted owner state; arbitrary request mappings
+remain insufficient authority. It does not yet publish or coordinate exchange.
+
 A successful descriptor comparison is **not live exchange authority**. A caller
 can supply structurally correct descriptors without owning the corresponding
 physical records. The next coordinator increment must bind these keys to the

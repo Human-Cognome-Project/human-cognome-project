@@ -90,9 +90,12 @@ Implement the remaining private D7 exchange coordinator in focused increments:
 
 A first review increment prepares [logical exchange declarations](../engine/docs/EXCHANGE-CONTRACT.md)
 from existing validated v2 projections. It preserves exact alternative/occurrence
-and source descriptors, but does not complete item 1: committed owner-to-native
-handle binding and current source validation still precede placement. Items 2–4
-remain unchanged. This structural declaration is not a live publication token.
+and source descriptors. The following private [source-binding view](../engine/docs/EXCHANGE-BINDINGS.md)
+checks trusted prepared identity mappings against committed full handles and exact
+outgoing participation at one generation. It does not establish mappings from
+live admission results or update them at publication; owner/coordinator wiring
+still completes that authority boundary. Items 2–4 remain unchanged. Neither
+structural declarations nor successful binding diagnostics are publication tokens.
 
 Only after that boundary is reviewed should the enduring operational owner wire
 these primitives into coordinate-free letter commands. Same-execution controls,

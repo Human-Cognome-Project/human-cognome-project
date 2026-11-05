@@ -719,3 +719,44 @@ contributions. That failed log is separately retained, not passing evidence.
 This is contributor-local evidence, not independently inspected merely because
 its hash is published. Committed occurrence-to-native-handle binding, source
 ledger validation, momentum/reporting and atomic exchange remain outstanding.
+
+## Private committed-source binding view — 2026-11-05
+
+The [binding prerequisite](../../docs/EXCHANGE-BINDINGS.md) follows provisionally
+accepted #216 without changing native numerical kernels. Test/source pin:
+`a574ec7d660dfdf5ba69a63500f862ffed2f762b`, modified Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`. Subsequent changes are documentation
+only. WSL Ubuntu/Clang 15 runs reported the actual CPU backend.
+
+Passed:
+
+- `live_hierarchy_test --threads 1 --case exchange_bindings` (bulk/default).
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case exchange_bindings`.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all 18 combined cases. The existing compiler audit remains 18 kernels and 27
+  unsafe controls per 52/8-bit profile, with emitted LLVM retained.
+
+The binding witness checks both directions, separate copies, nonidentity records
+and fields, inherited membership counts, all full-handle components, generation
+and work limits, changed mass/count/share/order/endpoints, extra incident source,
+retry and unready-owner refusal. Thirty-two read-only validations observe no
+recurring C++ allocation, no synchronization/transfers and unchanged execution,
+history and prepared backing. Preparation allocates separate host binding
+metadata; this does not qualify the enduring owner's total resource budget.
+
+Build: `cmake --build engine/build --target live_hierarchy_test -j 2`. Runs source
+`engine/build/engine-env.sh`, use `nice -n 10`, and retain combined emitted code
+with `HCP_B2_IR_DIR`. Raw bundle:
+`/root/hcp-workspace/evidence/exchange-bindings-a574ec7d`, matching Windows archive
+`setup-evidence/exchange-bindings-a574ec7d.tar.gz`. Manifest digest:
+`0c8471aadb50637bb8a562f76c3776943ff24a21d163b69bdb23938eb49eccd5`.
+Commands, pins, binary/runtime hashes, build settings, toolchain and logs are
+retained. The initial `e101daf3` fixture attempted multiple hierarchy roots and
+failed setup; the corrected single-root fixture preserves the same exact logical
+source rows. That failed log is separate, not passing evidence.
+
+Raw evidence remains contributor-local, not independently verified by publishing
+its digest. Full 115-suite regression, other compiler modes, PostgreSQL and GPU
+were not rerun. Shared-host timing is not performance evidence. This private
+generation-bound check assumes trusted initial owner mappings; it is not an
+operational binding API, numerical conservation check or atomic exchange.
