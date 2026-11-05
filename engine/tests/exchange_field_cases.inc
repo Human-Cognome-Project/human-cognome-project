@@ -23,7 +23,9 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
     keys.push_back({GroupKind::SiblingDefinition, letters.accented});
     keys.push_back({GroupKind::Membership, group.object});
     auto limits = placement_limits();
-    if (scenario == 2) limits[Budget::Fields] = 7; // Final seven fits; peak nine does not.
+    if (scenario == 2) { // Final seven fits; peak nine does not.
+      limits[Budget::Fields] = limits[Budget::Focus] = 7;
+    }
     const std::vector<int> old_ids = compression ? std::vector<int>{0,1,2,3,4,5,8}
                                                 : std::vector<int>{6,7,8};
     const std::vector<int> next_ids = compression ? std::vector<int>{6,7,8}
@@ -122,6 +124,24 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
     const auto generation = s.generation, ticks = s.completed_ticks;
     const auto before = TickSnapshot(f);
     const auto history = PlacementAccess::rebase_history(f.h);
+    const auto same_handle = [](auto a, auto b) {
+      return a.context == b.context && a.address == b.address && a.record == b.record &&
+             a.incarnation == b.incarnation;
+    };
+    const auto unchanged_owner = [&](const auto &c) {
+      const auto &current_fields = Access::fields(c);
+      const auto &current_rows = Access::mappings(c);
+      if (Access::generation(c) != generation || current_fields.size() != fields.size() ||
+          current_rows.size() != rows.size()) return false;
+      for (std::size_t i = 0; i < fields.size(); ++i)
+        if (current_fields[i].field.kind != fields[i].field.kind ||
+            !(current_fields[i].field.object == fields[i].field.object) ||
+            !same_handle(current_fields[i].handle, fields[i].handle)) return false;
+      for (std::size_t i = 0; i < rows.size(); ++i)
+        if (!(current_rows[i].occurrence == rows[i].occurrence) ||
+            !same_handle(current_rows[i].handle, rows[i].handle)) return false;
+      return true;
+    };
     prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
     const auto backing = metrics.sample();
     const auto run = [&] {
@@ -129,19 +149,30 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
       no_new([&] { result = Access::execute(*coordinator, generation); });
       return result;
     };
+    if (scenario == 0) {
+      auto aliased = additions;
+      aliased[1].address = aliased[0].address;
+      auto bad = prepare(aliased);
+      Access::seal(*bad, {nodes.data(),nodes.size(),children.data(),children.size(),
+                          contributions.data(),contributions.size()});
+      UpdateResult rejected;
+      no_new([&] { rejected = Access::execute(*bad, generation); });
+      require(rejected.status == UpdateStatus::InvalidInput && before == TickSnapshot(f) &&
+                  unchanged_owner(*bad), "aliased field claims changed execution or mappings");
+    }
     if (scenario == 4) {
       PreparedFixtureAccess::inject_failure(f.h, 7);
       bool failed = false;
       try { run(); } catch (const std::runtime_error &) { failed = true; }
-      require(failed && !f.h.ready() && Access::generation(*coordinator) == generation &&
-                  Access::fields(*coordinator).size() == fields.size(),
+      require(failed && !f.h.ready() && unchanged_owner(*coordinator),
               "late field mapping failure left healthy partial owner");
       continue;
     }
     if (scenario < 2) {
       PreparedFixtureAccess::inject_failure(f.h, 1);
       require(run().status == UpdateStatus::InvalidInput && before == TickSnapshot(f) &&
-                  history == PlacementAccess::rebase_history(f.h), "field lifecycle rejection mutated execution");
+                  history == PlacementAccess::rebase_history(f.h) && unchanged_owner(*coordinator),
+              "field lifecycle rejection mutated execution");
       PreparedFixtureAccess::inject_failure(f.h, 0);
     }
     const auto result = run();
@@ -151,6 +182,7 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
       require(result.status == (scenario == 2 ? UpdateStatus::CapacityExhausted : UpdateStatus::InvalidInput) &&
                   before == TickSnapshot(f) && history == PlacementAccess::rebase_history(f.h) && f.h.ready(),
               "field peak or focal retirement rejection mutated execution");
+      require(unchanged_owner(*coordinator), "rejected field plan published owner mappings");
       if (scenario == 2) require(result.failure.budget == Budget::Fields && result.failure.required == 9,
                                  "retired field capacity funded new claims");
       continue;
