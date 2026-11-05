@@ -88,6 +88,12 @@ Implement the remaining private D7 exchange coordinator in focused increments:
    retry and postpublication failure. Use the accepted D7 contract rather than
    introducing new placement or rounding policy.
 
+A first review increment prepares [logical exchange declarations](../engine/docs/EXCHANGE-CONTRACT.md)
+from existing validated v2 projections. It preserves exact alternative/occurrence
+and source descriptors, but does not complete item 1: committed owner-to-native
+handle binding and current source validation still precede placement. Items 2–4
+remain unchanged. This structural declaration is not a live publication token.
+
 Only after that boundary is reviewed should the enduring operational owner wire
 these primitives into coordinate-free letter commands. Same-execution controls,
 actual local GPU qualification and Docker release remain later slices. Local
