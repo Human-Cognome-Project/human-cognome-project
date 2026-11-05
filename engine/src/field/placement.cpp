@@ -144,6 +144,7 @@ Placement::Placement(Harness &h) : h_(h) {
   build();
   build_exchange();
   reduce_exchange();
+  target_exchange();
   collect();
   capture();
   solve(0, INT64_MAX, 0, c);
@@ -293,7 +294,8 @@ void Placement::build() {
     IRBuilder b;
     auto *positions = b.create_ndarray_arg_load({0}, PrimitiveType::f64, 2, 0),
          *inputs = b.create_ndarray_arg_load({1}, PrimitiveType::f64, 2, 0),
-         *starts = b.create_ndarray_arg_load({2}, PrimitiveType::f64, 2, 0);
+         *starts = b.create_ndarray_arg_load({2}, PrimitiveType::f64, 2, 0),
+         *exchange = b.create_ndarray_arg_load({4}, PrimitiveType::f64, 1, 0);
     auto *number = b.create_arg_load({3}, PrimitiveType::i32, false, 0);
     const int capacity = std::max<std::uint64_t>(
         h_.prepared_->capacity.command_capacity(), 1);
@@ -326,23 +328,31 @@ void Placement::build() {
             b.create_external_ptr(starts, {b.get_int32(mapping.first), command}),
             b.create_global_load(b.create_external_ptr(inputs,
                 {b.get_int32(mapping.second), rank})));
+      auto transfer = b.get_if_guard(b.create_if(
+          b.create_arg_load({5}, PrimitiveType::i32, false, 0)), true);
+      for (int k = 0; k < 3; ++k)
+        b.create_global_store(b.create_external_ptr(starts, {b.get_int32(kVelX + k), command}),
+            b.create_global_load(b.create_external_ptr(exchange, {b.get_int32(3 + k)})));
     }
     initialize_ = engine::CompiledKernel(
         r, "placement_initialize_b" + std::to_string(capacity), b.extract_ir(),
         {Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::f64, 2),
-         Param::array(PrimitiveType::f64, 2), Param::scalar(PrimitiveType::i32)},
+         Param::array(PrimitiveType::f64, 2), Param::scalar(PrimitiveType::i32),
+         Param::array(PrimitiveType::f64), Param::scalar(PrimitiveType::i32)},
         engine::MathMode::Strict);
   }
 }
-void Placement::initialize(int bodies) {
+void Placement::initialize(int bodies, bool exchange) {
   auto call = initialize_.invocation(true);
   auto &c = call.get();
   if (!c.prepared) {
     c.set_arg_ndarray({0}, *attempt_);
     c.set_arg_ndarray({1}, *requests_);
     c.set_arg_ndarray({2}, *h_.prepared_->new_rows_array);
+    c.set_arg_ndarray({4}, *exchange_state_);
   }
   engine::argument_int(c, 3, bodies);
+  engine::argument_int(c, 5, exchange);
   initialize_.launch(c);
 }
 void Placement::collect() {
@@ -420,7 +430,7 @@ void Placement::publish(bool enabled) {
 std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
          solve_.prepared_bytes() + publish_.prepared_bytes() +
-         initialize_.prepared_bytes() + exchange_reduce_.prepared_bytes() +
+         initialize_.prepared_bytes() + exchange_reduce_.prepared_bytes() + exchange_target_.prepared_bytes() +
          (bootstrap_contributions_ ? bootstrap_solve_.prepared_bytes() : 0) +
          (contacts_ ? contacts_->binding_bytes() : 0);
 }
@@ -454,7 +464,8 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                                    std::uint64_t work,
                                    std::uint64_t cells,
                                    bool publication, bool bootstrap,
-                                   const UpdateRef *focus, std::size_t focus_count) {
+                                   const UpdateRef *focus, std::size_t focus_count,
+                                   const engine::RecordHandle *outgoing, std::size_t outgoing_count) {
   auto &h = h_;
   auto &s = *h.prepared_;
   const auto &l = s.capacity.limits();
@@ -464,6 +475,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   q.generation = s.generation;
   q.completed_ticks = s.completed_ticks;
   q.frame_anchor = h.frame_anchor_;
+  const bool exchange = outgoing || outgoing_count;
   const auto fail = [&](Budget b, std::uint64_t needed,
                         std::uint64_t capacity) {
     q.status = PlacementStatus::CapacityExhausted;
@@ -499,6 +511,8 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   q.status = PlacementStatus::InvalidInput;
   if (!body_count || !commands || !inputs || body_count > command_count)
     return q;
+  if (exchange && (publication || bootstrap || !outgoing || !outgoing_count))
+    return q;
   if (bootstrap && focus_count > l[Budget::Focus])
     return fail(Budget::Focus, focus_count, l[Budget::Focus]);
   if (bootstrap && (!bootstrap_contributions_ || publication ||
@@ -532,6 +546,11 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     prefix = sat_add(prefix, sat_add(sat_mul(12, b), sat_mul(8, body_count)));
     q.source_work_bound = prefix;
   }
+  if (exchange) {
+    prefix = sat_add(prefix, sat_add(sat_mul(64, p + 1),
+        sat_add(command_count, sat_add(sat_mul(8, body_count), 64))));
+    q.source_work_bound = prefix;
+  }
   if (prefix > work)
     return fail(Budget::PlacementWork, prefix, work);
   std::size_t definitions = 0;
@@ -557,6 +576,30 @@ PlacementResult Placement::attempt(std::uint64_t expected,
             [](const auto &a, const auto &b) { return a.order < b.order; });
   try {
     h.validate_prepared_bindings();
+    if (exchange) {
+      const auto state = stage_exchange_state(expected, outgoing, outgoing_count, work);
+      q.upload_bytes += state.upload_bytes;
+      q.readback_bytes += state.readback_bytes;
+      q.synchronizations += state.synchronizations;
+      if (state.status != UpdateStatus::Ok) {
+        q.status = translate(state.status);
+        q.failure = state.failure;
+        return q;
+      }
+      // The reduction's mask must match exactly the retirement set used below
+      // by source projection and prospective occupancy. No unrelated exclusion.
+      std::size_t retired = 0;
+      for (std::size_t i = 0; i < command_count; ++i)
+        if (commands[i].operation == UpdateOp::RetireParticle) {
+          const auto &ref = commands[i].first;
+          const auto row = ref.handle.record;
+          if (ref.command >= 0 || row < 0 || row >= h.particles_ || !keep_values_[row])
+            return q;
+          keep_values_[row] = 0;
+          ++retired;
+        }
+      if (retired != outgoing_count) return q;
+    }
     std::fill(s.new_row_values.doubles().begin(),
               s.new_row_values.doubles().end(), 0);
     const auto stride = std::max<std::uint64_t>(b, 1);
@@ -636,7 +679,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                    keep_values_.size() * sizeof(int));
     engine::upload(*requests_, request_values_.data(),
                    request_values_.size() * sizeof(double));
-    q.upload_bytes = keep_values_.size() * sizeof(int) +
+    q.upload_bytes += keep_values_.size() * sizeof(int) +
                      request_values_.size() * sizeof(double);
     if (bootstrap) {
       engine::upload(*bootstrap_contributions_, bootstrap_values_.data(),
@@ -644,6 +687,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
       q.upload_bytes += bootstrap_values_.size() * sizeof(std::uint64_t);
     }
     collect();
+    if (exchange) target_exchange();
     h.runtime_->synchronize();
     ++q.synchronizations;
     engine::readback(*stats_, geometry_counts_.data(),
@@ -653,11 +697,11 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     q.present = geometry_counts_[0];
     std::copy_n(focal_values_.begin(), 3, q.target.begin());
     if (geometry_counts_[5] || q.present != s.live.particles ||
-        geometry_counts_[6] == int(GeometryFocus::Invalid)) {
+        (!exchange && geometry_counts_[6] == int(GeometryFocus::Invalid))) {
       q.status = PlacementStatus::InvalidNumerics;
       return q;
     }
-    if (geometry_counts_[6] == int(GeometryFocus::MissingSelection)) {
+    if (!exchange && geometry_counts_[6] == int(GeometryFocus::MissingSelection)) {
       q.status = PlacementStatus::InvalidInput;
       return q;
     }
@@ -704,7 +748,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     if (s.failure_point == 300)
       throw std::runtime_error("injected placement candidate failure");
     if (!publication) {
-      initialize(int(body_count));
+      initialize(int(body_count), exchange);
       h.runtime_->synchronize();
       ++q.synchronizations;
       q.placements = body_count;

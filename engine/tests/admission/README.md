@@ -599,6 +599,53 @@ rerun. No GPU work occurred; shared-host timing is not performance qualification
 The source-only test correction and local passes do not replace current-head
 hosted reconciliation or maintainer approval for either PR.
 
+## Private replacement staging — 2026-11-04
+
+The [replacement staging prerequisite](../../docs/EXCHANGE-PLACEMENT.md) follows
+the source-reviewed provisional #213/#214 corrections. Test/source pin:
+`dc620b5fde3007f80cd58b1bb68679e94621b109`, modified Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`. Subsequent changes are documentation
+only. Local WSL Ubuntu/LLVM 15 execution reported the actual CPU backend.
+
+Passed:
+
+- `live_hierarchy_test --threads 1 --case exchange_placement`: 52/8-bit
+  compression, expansion, independent nearest-free certificates, sleeping
+  occupants, native velocity, rejection/retry, ordinary reuse, unchanged state
+  and old-plus-new claim overflow.
+- `live_hierarchy_test --threads 1 --case placement_compiler`: 18 kernels and
+  27 unsafe controls per 52/8-bit profile, with retained emitted LLVM.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all 17 combined cases, including the same compiler audit, ordinary generated
+  rows, source/contact preflight, admission/publication failure, bootstrap,
+  corrected rebase, outgoing state, replacement staging, live focus and contact
+  remapping. Zero case failures.
+
+The matching native build used `cmake --build engine/build --target
+live_hierarchy_test -j 2`; runs sourced `engine/build/engine-env.sh` and used
+`nice -n 10`. `HCP_B2_IR_DIR` retained compiler modules in each host mode.
+The bundle includes exact commands, source/submodule pins, configuration,
+toolchain, binary/runtime hashes, raw logs and emitted code:
+`/root/hcp-workspace/evidence/exchange-placement-dc620b5f`, with matching Windows
+workspace archive `setup-evidence/exchange-placement-dc620b5f.tar.gz`.
+Its `SHA256SUMS` digest is
+`c7f24d8d50499ab9b86f6b63cf149d3d2fee97bd8ede217da531456cf2792eb1`.
+This is contributor-local evidence, not remotely available or independently
+verified merely by publishing its hash.
+
+The earlier `b2c3a771` initial replacement case passed. At `56c763a1`, the expanded
+placement/motion checks passed but the peak-capacity fixture failed construction:
+its field limit was below its retained focus reservation. The correction reduces
+only particle capacity. The superseded combined run was explicitly stopped;
+its partial log and the fixture failure are retained separately, not counted as
+passing evidence. Production code did not change for this fixture correction.
+
+Full 115-suite regression, other compiler configurations, PostgreSQL and GPU were
+not rerun. Shared-host timing is not performance evidence. These checks qualify
+private scratch staging only, not logical occurrence/source conservation or
+atomic exchange publication. Hosted reconciliation of the provisional dependency
+stack and review of this increment remain separate acceptance gates.
+
 ## Maintainer hosted acceptance of corrected #213/#214 — 2026-11-04
 
 Accepted heads: #213 `aa50a5a79a482a89a5e6a7b62b9bdae3315fba68` and #214
@@ -620,3 +667,20 @@ covers private reduced exact rebasing and outgoing-state reduction only.
 accounting, logical alternative validation, prospective hierarchy/contact exchange,
 atomic retirement/publication, operational controls and GPU qualification remain
 outstanding. Contributor-local evidence above remains separately pinned.
+
+## Maintainer hosted acceptance of #215 — 2026-11-05
+
+Reviewed head `616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af` is accepted in
+[review 5785165393](https://github.com/Human-Cognome-Project/human-cognome-project/pull/215#pullrequestreview-5785165393).
+All 18 checks pass. Independently inspected run 41928920745: regression jobs
+126923592010, 126923592158, 126923592173 and 126923592137 pass 29+29+29+28
+tests, covering indexes 1–115 exactly once. Database job 126923592030 passes
+180 checks with 24 addressed reads and zero private reads. Downloaded compiler
+artifacts 13373251068, 13372263149, 13371699265 and 13371299838 cover all eight
+configurations, with 18 kernels/27 unsafe controls per profile. All four extra
+no-unroll placement logs pass replacement witnesses at 52/8 bits and report zero
+case failures. Contributor-local evidence above remains separately pinned.
+
+This accepts private scratch replacement staging only. Complete logical/source,
+momentum, hierarchy/contact and atomic retirement/publication coordination is
+the next D7 work; public operations and GPU qualification remain separate.

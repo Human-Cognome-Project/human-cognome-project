@@ -7,8 +7,8 @@ replace their detailed acceptance tests.
 
 ## Establish the actual starting point
 
-Baseline checked **2026-11-01**: main
-`939632dedb9df0234d7e828e5c0555313ee14cec`, merge of #201.
+Baseline checked **2026-11-05**: accepted through #215, reviewed source
+`616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af`, integrated into current main.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -25,15 +25,21 @@ the handoff, not a permanent instruction to stay on an old commit.
    Environment recovery does not require a new physics implementation, database
    population or an accepted-baseline CI rerun.
 
-At this handoff, [#202](https://github.com/Human-Cognome-Project/human-cognome-project/pull/202)
-is an **open draft** for B2 certified native nearest-free candidate placement,
-head `1214e9a0265eb693e4d605add7c496f16e124d36`. Its author reports focused
-qualification and outstanding full CPU/compiler/PostgreSQL evidence. Those are
-contributor claims, not maintainer acceptance or independently verified hosted
-results. The next contributing-agent action is to inspect and continue that
-branch's remaining qualification; maintainer review follows the actual ready
-source and evidence. Do not implement B2 again on a separate branch or assume
-the draft supplies B3. Recheck its live disposition before acting.
+The active review queue is cleared through #215. Start new work from current
+main; do not continue an obsolete stacked branch. #123 and #111 retain their
+existing holds, and draft #75 remains deferred; none gates this core work.
+
+The next contributing-agent task is the **private D7 exchange coordinator**.
+Reuse accepted [outgoing-state reduction](../../engine/docs/EXCHANGE-STATE.md)
+and [replacement staging](../../engine/docs/EXCHANGE-PLACEMENT.md). Validate the
+logical occurrence and declared alternative, exact source/mass contributions and
+momentum accounting; retain target versus actual replacement centre/offset.
+Compose prospective hierarchy/contact validation with atomic retirement and
+replacement publication. Preserve survivors, dirty history, pending work and
+old-plus-new capacity; rejection must leave the old execution usable. The
+[continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
+records the handoff and acceptance requirements. Deliver reviewable slices with
+source-pinned local evidence; hosted CPU and actual GPU evidence remain distinct.
 
 ## Authority and reading order
 
@@ -62,8 +68,8 @@ derivations, not authorization to replace the accepted model. See the
 | Prepared native execution | Mapping, backing and coherent structural edits (#164/#166/#169). Fixture support is not operational admission. |
 | C3-1 / C3-2 | Fixed installed CPU hierarchy (#195), accepted wide motion and scoped local CUDA corrections (#196), combined CPU source/hierarchy refresh (#198). New-body starts remain private fixtures. |
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
-| B2 | Existing draft #202; certified nearest-free candidate placement awaits qualification/review. Not accepted by this documentation change. |
-| B3 | Combined bootstrap/admission remains pending after B2. A placement query alone cannot publish a structural admission. |
+| B2 | Certified nearest-free placement accepted in #203, superseding #202. |
+| B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Complete D7 exchange and operational admission remain outstanding. |
 | C / D | Enduring prepared owner, occurrence bindings and live operations; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 

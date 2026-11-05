@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-11-01. This organizes the
+Status: maintainer implementation sequencing, updated 2026-11-05. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
@@ -13,8 +13,9 @@ suites in 3355.27 seconds, both extra four-mode no-unroll matrices, compiler
 collection/audit, 180 PostgreSQL-to-active checks and actual CPU-only backend
 verification; all nine checks passed. Its [retained evidence](../engine/tests/live_hierarchy/refresh-v1/README.md)
 keeps the earlier initialization failure and job-budget cancellation. Slice A
-is complete for CPU structural refresh. CPU B1 is accepted in #201; B2/B3
-remain the active portion of B. No manual
+is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
+focus/rebase and D7 staging are accepted through #215. Complete exchange and
+operational integration remain active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -52,7 +53,7 @@ conversion path must remain separately described.
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
-| B | Native admission and candidate contact/tick transaction | CPU B1 accepted in #200/#201; B2 in draft #202, B3 pending. Source work and CPU acceptance can run remotely. |
+| B | Native admission and candidate contact/tick transaction | B1/B2 and private ordinary/bootstrap admission accepted through #210; private focus/rebase and D7 staging through #215. Complete D7 coordination remains. |
 | C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
@@ -61,6 +62,37 @@ conversion path must remain separately described.
 Each slice has a focused PR and retained source-pinned evidence. Do not fold
 Docker, a new GUI, new data population or a new numerical policy into A.
 No routine permission step is added to the accepted implementation scope.
+
+## Next agent task — 2026-11-05
+
+Start from current main with #215 accepted at reviewed source
+`616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af`. Hosted run 41928920745 passed
+115 tests, all eight compiler configurations and 180 integration checks with zero
+private reads; detailed pins are in [admission evidence](../engine/tests/admission/README.md).
+The corrected #213/#214 stack is accepted; no continuation-test fix is pending.
+
+Implement the remaining private D7 exchange coordinator in focused increments:
+
+1. Bind the outgoing set and declared replacement to one logical occurrence and
+   supported alternative. Validate exact source/mass contribution mapping before
+   claims; arbitrary selected bodies are not a logical exchange authority.
+2. Reuse native outgoing-state reduction and certified replacement staging.
+   Validate momentum within reviewed floating bounds, and report the outgoing
+   target, actual replacement centre and initialization offset separately.
+3. Prepare source, hierarchy, contact and ownership changes together, including
+   old-plus-new claim/reference/work peaks. Publish replacement and retirement
+   as one unticked generation. Ordinary rejection preserves the old execution;
+   unexpected failure after publication begins makes it unready.
+4. Qualify compression/expansion, unrelated copies/sleepers, nonidentity mappings,
+   survivor/dirty-history/pending-work preservation, capacity/contact rejection,
+   retry and postpublication failure. Use the accepted D7 contract rather than
+   introducing new placement or rounding policy.
+
+Only after that boundary is reviewed should the enduring operational owner wire
+these primitives into coordinate-free letter commands. Same-execution controls,
+actual local GPU qualification and Docker release remain later slices. Local
+CPU evidence permits provisional continuation; do not rerun an accepted baseline
+or launch duplicate hosted suites just to start the next task.
 
 ## A. Coherent source/hierarchy refresh
 

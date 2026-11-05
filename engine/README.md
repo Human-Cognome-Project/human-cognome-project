@@ -186,8 +186,10 @@ qualification ladder.
 ## Current status
 
 Start a new instance with the [onboarding/spec brief](../docs/onboarding/AGENT-START.md).
-The accepted baseline is through #201. B2 placement is in draft #202 as checked
-2026-11-01; inspect that contribution before duplicating it. Earlier stage
+The accepted CPU baseline is through #215 as checked 2026-11-05: private
+ordinary/bootstrap admission, focus/exact rebase and native replacement staging.
+Complete D7 exchange coordination is next; operational owner/public controls and
+GPU qualification remain separate. Earlier stage
 descriptions below retain their bounded acceptance scope, not a second work queue.
 
 The [native precision prerequisites](docs/NATIVE-PRECISION.md) implement #176's
@@ -264,10 +266,11 @@ passes 109 suites, all eight B1 modes and 180 integration checks; hosted validat
 extra modes, 180 integration checks and backend verification (all eight checks). Fixture inputs
 remain private; certified placement, operational admission and owners are separate.
 
-The opt-in [B2 certified placement candidate](docs/CERTIFIED-PLACEMENT.md) is in
-review under #199/#201. It reserves native interval-search storage, reports a
+The opt-in [B2 certified placement candidate](docs/CERTIFIED-PLACEMENT.md) is
+accepted in #203 under #199/#201. It reserves native interval-search storage, reports a
 global lower/feasible upper distance certificate and checks actual published
-coordinates. It claims no occurrence; B3 bootstrap/admission remains separate.
+coordinates. The candidate query claims no occurrence; accepted private publication and
+remaining D7 coordinator scope are documented in [native admission](docs/NATIVE-ADMISSION.md).
 
 See [AGENTS current state](../AGENTS.md#current-state) for accepted, active and
 held work. [Prepared execution](docs/PREPARED-EXECUTION.md) records the bounded
