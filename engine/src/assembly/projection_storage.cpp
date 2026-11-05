@@ -18,7 +18,7 @@ struct Census {
     add(result.text_bytes,1);
   }
   void uuid(const warm::Uuid &u) { text(u.str()); }
-  void object(const warm::ObjectKey &o) { uuid(o.scope); }
+  void object(const warm::ObjectKey &o) { uuid(o.scope); buffer(o.address); }
   void tool_ref(const warm::ToolRef &t) { object(t.object); uuid(t.revision); }
   void id(const warm::OccurrenceId &i) { buffer(i.path); }
   void key(const OccurrenceKey &k) { uuid(k.study); id(k.source); }

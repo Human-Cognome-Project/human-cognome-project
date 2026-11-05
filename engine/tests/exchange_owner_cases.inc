@@ -28,6 +28,21 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   std::vector<assembly::detail::OccurrenceBinding> rows{{key, f.in.particle_rows[0]}};
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
+  {
+    auto probe = Access::adopt(f.h,initial,rows,fields);
+    const auto before_charge = Access::storage(*probe);
+    // Test-only capacity probe: preserve every immutable address value while
+    // adding unused reservation in one recipe copy. No native state is changed.
+    auto &address = const_cast<warm::Bundle &>(Access::projection(*probe).recipe()).tools[0].ref.object.address;
+    const auto old_capacity = address.capacity();
+    address.reserve(old_capacity+17);
+    const auto after_charge = Access::storage(*probe);
+    require(after_charge.charged_bytes() - before_charge.charged_bytes() ==
+                (address.capacity()-old_capacity)*sizeof(codec::AddressElement) &&
+                after_charge.text_bytes == before_charge.text_bytes &&
+                after_charge.object_bytes == before_charge.object_bytes,
+            "projection census omitted nested object-address capacity");
+  }
   auto owner = Access::adopt(f.h, initial, rows, fields);
   const auto reserved = Access::storage(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
