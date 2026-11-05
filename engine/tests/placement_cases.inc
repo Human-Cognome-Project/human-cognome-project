@@ -976,7 +976,27 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
       for (int k = 0; k < 3; ++k)
         require(rows[(kVelX + k) * stride] == velocity[k], "replacement velocity lost f64 detail");
       certify(result, inputs, {{{40, 0, 0}, 1}});
+      const auto balance = PlacementAccess::exchange_balance(f.h);
+      require(balance[6] == 4 && balance[7] == 5 && balance[10] == 0 && balance[22] == 0,
+              "native mass/centre accounting differs from compression");
+      for (int k = 0; k < 3; ++k)
+        require(balance[k] == 4 * velocity[k] && balance[13 + k] == balance[k] &&
+                    balance[16 + k] == 0 && balance[19 + k] > 0,
+                "native momentum accounting differs from outgoing state");
     }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 2);
+    require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::InvalidNumerics,
+            "physical mass inconsistent with exact source accepted");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    auto wrong_mass_commands = commands;
+    auto wrong_mass_inputs = inputs;
+    wrong_mass_commands[0].exact_mass = 3;
+    wrong_mass_inputs[0].mass = 3;
+    require(PlacementAccess::exchange(f.h, wrong_mass_commands, wrong_mass_inputs, outgoing).status ==
+                PlacementStatus::InvalidNumerics, "unequal replacement total mass accepted");
+    wrong_mass_commands[0].exact_mass.reset();
+    require(PlacementAccess::exchange(f.h, wrong_mass_commands, wrong_mass_inputs, outgoing).status ==
+                PlacementStatus::InvalidInput, "unknown incoming source mass accepted");
     auto stale = outgoing;
     ++stale[0].incarnation;
     auto mismatched = commands;
@@ -998,6 +1018,8 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, velocity[0]);
     // Expansion excludes the outgoing sphere but keeps the sleeping survivor.
     PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 2);
+    auto &source_masses = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage()).source_masses;
+    source_masses[a.record] = 2;
     commands = make_commands(1, 2);
     inputs = {placement_intrinsic(0, 20, 0.25), placement_intrinsic(1, 10, 0.5)};
     const std::vector<engine::RecordHandle> aggregate{a};
@@ -1016,6 +1038,20 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     }
     require(separation >= 0.75 * 0.75, "replacement batch overlaps itself");
     certify(result, inputs, {{{8, 0, 0}, 1}, {{40, 0, 0}, 1}});
+    const auto expansion = PlacementAccess::exchange_balance(f.h);
+    double offset_squared = 0;
+    for (int k = 0; k < 3; ++k) {
+      const auto centre = (rows[(kPosX + k) * stride] + rows[(kPosX + k) * stride + 1]) / 2;
+      require(expansion[7 + k] == centre && expansion[10 + k] == centre - result.target[k],
+              "target and actual replacement centre were conflated");
+      offset_squared += expansion[10 + k] * expansion[10 + k];
+    }
+    require(expansion[22] == 0 && offset_squared > 0, "expansion lacks nonzero initialization offset");
+    PlacementAccess::poison_exchange_start(f.h, kVelX, 0, 99);
+    PlacementAccess::check_exchange_balance(f.h, 2);
+    require(PlacementAccess::exchange_balance(f.h)[22] != 0, "wrong native replacement motion accepted");
+    require(PlacementAccess::exchange(f.h, commands, inputs, aggregate).status == PlacementStatus::Ok,
+            "accounting failure contaminated retry");
     PreparedFixtureAccess::inject_value64(f.h, kPosX, b.record, -4);
     commands = make_commands(1, 1);
     commands[0].exact_mass = 2;
@@ -1027,6 +1063,35 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     certify(result, inputs, {{{-4, 0, 0}, 1}, {{40, 0, 0}, 1}});
     PreparedFixtureAccess::inject_value64(f.h, kPosX, b.record, 8);
     PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    source_masses[a.record] = 1;
+    // Unequal masses and fractional velocity exercise native weighted transfer
+    // independently of the integer/dyadic compression expectations above.
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 2);
+    source_masses[b.record] = 2;
+    const std::array<double, 3> va{0.125, -0.375, 0.625}, vb{-0.5, 0.875, -1.125};
+    for (int k = 0; k < 3; ++k) {
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, a.record, va[k]);
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, b.record, vb[k]);
+    }
+    commands = make_commands(2, 1);
+    commands[0].exact_mass = 3;
+    inputs = {placement_intrinsic(0, 10, 0.5)};
+    inputs[0].mass = 3;
+    require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::Ok,
+            "fractional weighted exchange rejected");
+    const auto fractional = PlacementAccess::exchange_balance(f.h);
+    const auto fractional_rows = PlacementAccess::generated(f.h);
+    for (int k = 0; k < 3; ++k) {
+      const long double momentum = static_cast<long double>(va[k]) + 2.L * vb[k];
+      require(fractional[k] == momentum &&
+                  std::abs(static_cast<long double>(fractional[13 + k]) - momentum) <= fractional[19 + k] &&
+                  fractional_rows[(kVelX + k) * stride] == static_cast<double>(momentum / 3.L),
+              "fractional momentum differs from independent reference or was precision-filtered");
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, a.record, velocity[k]);
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, b.record, velocity[k]);
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 3);
+    source_masses[b.record] = 3;
     // Ordinary arrivals must clear the exchange mode and retain focus targeting.
     const auto ordinary = placement_definition(990);
     const auto intrinsic = placement_intrinsic();
@@ -1040,7 +1105,7 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
                 backing.same_backing(metrics.sample()), "private replacement staging changed live state/backing");
     f.h.inspect_prepared_placement(query);
     std::cout << "exchange_placement,bits=" << bits
-              << ",compression=1,expansion=1,native_motion=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
+              << ",compression=1,expansion=1,native_motion=1,mass_reconciled=1,momentum_checked=1,offset_reported=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
   }
   auto limits = placement_limits();
   limits[Budget::Particles] = 3;

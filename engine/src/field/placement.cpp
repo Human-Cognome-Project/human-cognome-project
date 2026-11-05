@@ -94,6 +94,9 @@ void Placement::append_layout(const BudgetDemand &l,
   add("placement-fixed-owner-control", 1, sizeof(Placement));
   add("exchange-state", 8, sizeof(double));
   add("exchange-state-control", 1, sizeof(Ndarray) + 4 * sizeof(int));
+  add("exchange-balance", 32, sizeof(double));
+  add("exchange-source-masses", p, sizeof(std::uint64_t));
+  add("exchange-accounting-control", 2, sizeof(Ndarray) + 4 * sizeof(int));
   if (l[Budget::BootstrapCommands]) {
     add("bootstrap-focal-contributions", 6 * std::max<std::uint64_t>(
         l[Budget::Participation], 1), sizeof(std::uint64_t));
@@ -128,6 +131,8 @@ Placement::Placement(Harness &h) : h_(h) {
   published_ = allocate(r, d, {7, b});
   counts_ = allocate(r, PrimitiveType::u64, {16});
   exchange_state_ = allocate(r, d, {8});
+  exchange_balance_ = allocate(r, d, {32});
+  exchange_masses_ = allocate(r, PrimitiveType::u64, {p});
   if (h.prepared_->capacity.limits()[Budget::BootstrapCommands]) {
     const int e = std::max(h.edges_, 1);
     bootstrap_contributions_ = allocate(r, PrimitiveType::u64, {3, e});
@@ -143,6 +148,7 @@ Placement::Placement(Harness &h) : h_(h) {
   inspection_.proposal.reserve(b);
   build();
   build_exchange();
+  build_exchange_balance();
   reduce_exchange();
   target_exchange();
   collect();
@@ -152,6 +158,7 @@ Placement::Placement(Harness &h) : h_(h) {
     solve(0, INT64_MAX, 0, c, true);
   publish(false);
   initialize(0);
+  balance_exchange(0);
   if (h.prepared_->capacity.limits()[Budget::LiveResponses])
     contacts_ = std::make_unique<AdmissionContacts>(h);
   r.synchronize();
@@ -431,6 +438,7 @@ std::size_t Placement::binding_bytes() const {
   return collect_.prepared_bytes() + capture_.prepared_bytes() +
          solve_.prepared_bytes() + publish_.prepared_bytes() +
          initialize_.prepared_bytes() + exchange_reduce_.prepared_bytes() + exchange_target_.prepared_bytes() +
+         exchange_balance_kernel_.prepared_bytes() +
          (bootstrap_contributions_ ? bootstrap_solve_.prepared_bytes() : 0) +
          (contacts_ ? contacts_->binding_bytes() : 0);
 }
@@ -548,12 +556,13 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   }
   if (exchange) {
     prefix = sat_add(prefix, sat_add(sat_mul(64, p + 1),
-        sat_add(command_count, sat_add(sat_mul(8, body_count), 64))));
+        sat_add(command_count, sat_add(sat_mul(64, body_count), 128))));
     q.source_work_bound = prefix;
   }
   if (prefix > work)
     return fail(Budget::PlacementWork, prefix, work);
   std::size_t definitions = 0;
+  std::uint64_t incoming_mass = 0;
   for (std::size_t i = 0; i < command_count; ++i)
     if (commands[i].operation == UpdateOp::DefineParticle)
       ++definitions;
@@ -567,6 +576,13 @@ PlacementResult Placement::attempt(std::uint64_t expected,
         !in.geometry.revision || !NumericalProfile::supported_real(in.mass) ||
         !(in.mass > 0) || !radius_supported(in.radius))
       return q;
+    if (exchange) {
+      const auto &mass = commands[in.command].exact_mass;
+      if (!mass || !*mass || *mass > (UINT64_C(1) << 53) ||
+          incoming_mass > (UINT64_C(1) << 53) - *mass || in.mass != double(*mass))
+        return q;
+      incoming_mass += *mass;
+    }
     for (std::size_t j = 0; j < i; ++j)
       if (inputs[j].command == in.command || inputs[j].order == in.order)
         return q;
@@ -577,7 +593,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   try {
     h.validate_prepared_bindings();
     if (exchange) {
-      const auto state = stage_exchange_state(expected, outgoing, outgoing_count, work);
+      const auto state = stage_exchange_state(expected, outgoing, outgoing_count, work, true);
       q.upload_bytes += state.upload_bytes;
       q.readback_bytes += state.readback_bytes;
       q.synchronizations += state.synchronizations;
@@ -749,8 +765,18 @@ PlacementResult Placement::attempt(std::uint64_t expected,
       throw std::runtime_error("injected placement candidate failure");
     if (!publication) {
       initialize(int(body_count), exchange);
+      if (exchange) balance_exchange(int(body_count));
       h.runtime_->synchronize();
       ++q.synchronizations;
+      if (exchange) {
+        std::array<double, 32> diagnostic{};
+        engine::readback(*exchange_balance_, diagnostic.data(), sizeof(diagnostic));
+        q.readback_bytes += sizeof(diagnostic);
+        if (diagnostic[22] != 0) {
+          q.status = PlacementStatus::InvalidNumerics;
+          return q;
+        }
+      }
       q.placements = body_count;
       return q;
     }
