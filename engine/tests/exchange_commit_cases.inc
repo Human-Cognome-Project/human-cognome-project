@@ -2,7 +2,7 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
   using Bind = assembly::testing::ExchangeBindingAccess;
   using Access = assembly::testing::ExchangeCoordinatorAccess;
   // Both directions, peak exhaustion, and failures across the mutation boundary.
-  for (int scenario : {0, 1, -1, -2, 2, 3, 6}) {
+  for (int scenario : {0, 1, -1, -2, 2, 3, 6, 7}) {
     const bool compression = scenario == 1;
     const int bits = compression ? 8 : 52;
     letter_fixture::Fixture letters;
@@ -104,6 +104,17 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
       no_new([&] { result = Access::execute(*coordinator, generation, work, UINT64_MAX, hierarchy); });
       return result;
     };
+    if (scenario == 0) {
+      auto invalid = prepare(incoming);
+      auto bad_request = request;
+      bad_request.cohorts.back().pop_back();
+      Access::seal(*invalid, bad_request.spec());
+      UpdateResult bad;
+      no_new([&] { bad = Access::execute(*invalid, generation); });
+      require(bad.status != UpdateStatus::Ok && before == TickSnapshot(f) &&
+                  history == PlacementAccess::rebase_history(f.h) && f.h.ready(),
+              "invalid prospective hierarchy changed live exchange state");
+    }
     if (scenario < 2) {
       auto &source = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage());
       ++source.source_masses[outgoing[0].record];
@@ -160,6 +171,14 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
       require(s.particle_headers[body.record].record < 0, "outgoing body not retired");
     require(s.live.particles == (compression ? 5u : 7u), "wrong replacement count");
     f.h.inspect_prepared();
+    const auto &report = Access::balance_report(*coordinator);
+    const auto &target = Access::outgoing_report(*coordinator);
+    require(report[22] == 0 && report[6] == 4 && target[6] == 4 &&
+                target[0] == (compression ? 50 : 0), "exchange lost its committed diagnostic report");
+    for (int k = 0; k < 3; ++k)
+      require(report[10 + k] == report[7 + k] - target[k] &&
+                  std::abs(report[16 + k]) <= report[19 + k],
+              "committed centre/offset/momentum report inconsistent");
     for (const auto &mapping : Access::mappings(*coordinator)) {
       const bool replacement = std::any_of(declaration.incoming().begin(), declaration.incoming().end(),
           [&](const auto &source) { return mapping.occurrence == source.occurrence; });

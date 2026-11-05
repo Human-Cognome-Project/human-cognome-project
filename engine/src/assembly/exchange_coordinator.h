@@ -34,6 +34,9 @@ class ExchangeCoordinator {
   std::size_t survivors_{};
   std::uint64_t mapping_generation_{}, work_{};
   bool sealed_{}, consumed_{};
+  // Descriptive report of the successful transaction, never numerical input.
+  std::array<double, 8> outgoing_report_{};
+  std::array<double, 32> balance_report_{};
 };
 }  // namespace detail
 }  // namespace assembly

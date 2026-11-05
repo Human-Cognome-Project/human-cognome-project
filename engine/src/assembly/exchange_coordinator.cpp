@@ -1,4 +1,6 @@
 #include "assembly/exchange_coordinator.h"
+#include "field/placement.h"
+#include "engine/transfer.h"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -20,6 +22,8 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
        "stale exchange preparation");
   const auto &sources = b.contract_.incoming();
   need(incoming.size() == sources.size(), "incomplete incoming alternative");
+  need(sources.size() <= s.capacity.limits()[field::Budget::Batch] &&
+       b.contract_.mass() <= (UINT64_C(1) << 53), "unsupported exchange declaration size or mass");
   mapping_generation_ = b.generation_;
   for (const auto &o : b.occurrences_)
     if (!b.outgoing_rows_[o.handle.record]) next_.push_back(o);
@@ -141,13 +145,22 @@ field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,
         true, false, nullptr, 0, b.outgoing_.data(), b.outgoing_.size());
     result.structural_visits += work_;
     if (result.status != field::UpdateStatus::Ok) return result;
+    std::array<double, 8> outgoing;
+    std::array<double, 32> balance;
+    engine::readback(*h.placement_->exchange_state_, outgoing.data(), sizeof(outgoing));
+    engine::readback(*h.placement_->exchange_balance_, balance.data(), sizeof(balance));
+    result.readback_bytes += sizeof(outgoing) + sizeof(balance);
     // Native claims, numerical/source/hierarchy/contact publication and retirement
     // succeeded. The sealed command indices resolve the actual native handles.
     // Only fixed-size assignments/swaps remain under the same exclusive boundary.
     const auto &s = h.prepared_storage();
+    if (s.failure_point == 7)
+      throw std::runtime_error("injected failure before exchange mapping publication");
     for (std::size_t i = 0; i < intrinsics_.size(); ++i)
       next_[survivors_ + i].handle = s.resolved[i];
     b.occurrences_.swap(next_);
+    outgoing_report_ = outgoing;
+    balance_report_ = balance;
     mapping_generation_ = result.generation;
     consumed_ = true;
     return result;

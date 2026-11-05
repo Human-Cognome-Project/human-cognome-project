@@ -11,6 +11,8 @@ struct ExchangeCoordinatorAccess {
   static const auto &mappings(const detail::ExchangeCoordinator &c) { return c.bound_->occurrences_; }
   static auto generation(const detail::ExchangeCoordinator &c) { return c.mapping_generation_; }
   static auto work(const detail::ExchangeCoordinator &c) { return c.work_; }
+  static const auto &outgoing_report(const detail::ExchangeCoordinator &c) { return c.outgoing_report_; }
+  static const auto &balance_report(const detail::ExchangeCoordinator &c) { return c.balance_report_; }
   static void seal(detail::ExchangeCoordinator &c, const field::LiveRefreshSpec &spec) {
     c.prepare_hierarchy(spec);
   }
