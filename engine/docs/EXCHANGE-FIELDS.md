@@ -74,6 +74,7 @@ backing, no observed recurring C++ allocation and a following tick. Existing
 alive and that body/source/contact behavior is preserved.
 
 [Local evidence](../tests/admission/README.md) records tested source and modes.
-This does not update projection exposure for subsequent operations, establish a
-reusable operational owner, account for all owner resources, add browser controls
-or qualify GPU execution.
+The separate [private exchange owner](EXCHANGE-OWNER.md) updates projection
+exposure across subsequent exchanges. This field transaction alone does not
+establish a reusable operational owner, account for all owner resources, add
+browser controls or qualify GPU execution.

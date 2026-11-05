@@ -951,3 +951,55 @@ evidence remains separately attributed. Integration preserves reviewed engine/te
 source and both acceptance histories. #221 field lifecycle is provisionally
 accepted in review 5790162176, with hosted run 42086483712 pending. Enduring owner,
 projection lifecycle, total resources and GPU qualification remain separate.
+
+## Local persistent exchange-owner qualification — 2026-11-05
+
+Tested code: `51de69c116b190b451330d2af439234ec8edeaca`, with matching Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57` and LLVM/Clang 15. This contribution
+depends on provisionally accepted #221; accepted #219/#220 and refreshed main
+guidance are integrated by normal merge `89b28986`. It is not final acceptance.
+
+Actual native CPU in WSL Ubuntu, with `engine/build/engine-env.sh` sourced:
+
+- Build `live_hierarchy_test` with `cmake --build engine/build --target live_hierarchy_test -j 2`.
+- `nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_owner`:
+  32 alternating exchanges and following ticks passed, then the injected late
+  owner-publication failure correctly left execution unready.
+- `nice -n 10 engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all **21 combined cases** passed, including the same repeated-owner sequence.
+  Compiler audits remain **19 kernels/29 unsafe controls per 52/8-bit profile**;
+  emitted LLVM is retained via `HCP_B2_IR_DIR`.
+- Rebuilt and passed `letter_projection_test`, `membership_fields_test` and
+  `structural_recipe_test` through CTest. No numerical kernel was added or changed.
+
+The new witness retains one study UUID, pinned immutable recipe and occurrence
+keys through 32 changes of live exposure. It checks active/structural projection,
+exact parent and inherited membership contributions, actual occurrence/field
+handles, retained focal membership, coherent maps/reports, consumed-plan rejection,
+unchanged stale/work/ordinary rejection and retry, and late unready behavior.
+Native backing remains stable. C++ `new` guards cover successful execution,
+ordinary rejection and ticks, excluding preparation and exception construction.
+The repeated-owner fixture has one logical occurrence; existing `exchange_commit`
+separately exercises preservation of independent copies.
+
+Initial `999c072f` built successfully but its focused test incorrectly assumed
+retained membership was the last field-map entry. Final source locates it by
+logical identity and also checks current structural-handoff exposure. The failed
+focused log and deliberately stopped initial combined run are retained separately;
+neither is passing final-source evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/exchange-owner-51de69c1`; Windows archive
+`setup-evidence/exchange-owner-51de69c1.tar.gz`. SHA256SUMS digest:
+`a20339045e490902109e71eeb5302c8f5cc7ca6bc51249b781b258e0fe26f7da`.
+Commands, source/fork pins, toolchain/settings, binary/runtime hashes, logs and
+emitted code are retained. Publishing a digest does not constitute independent
+inspection of this contributor-local evidence.
+
+The [private owner](../../docs/EXCHANGE-OWNER.md) borrows its harness and uses trusted
+initial mappings/layout associations. Host preparation still allocates/copies
+projection, command, map and hierarchy data; these surfaces are outside the native
+scratch manifest. Reusable allocation-free preparation, complete owner resources,
+remaining-operation integration and controls remain subsequent work. Unrelated
+generation changes make the owner stale. Full 115-suite regression, remaining
+compiler modes, PostgreSQL and GPU were not rerun. Shared-host timing is not
+performance evidence; hosted CI remains authoritative for its scope.

@@ -79,7 +79,13 @@ and final integration are pending at this check. Continue its reviewed stack whe
 needed, without modifying or duplicating its running suite merely to proceed.
 The maintainer owns final integration and acceptance-note reconciliation.
 
-The next work is **slice C: enduring owner/projection lifecycle and resource accounting**:
+The current contribution implements a private [persistent exchange owner](../engine/docs/EXCHANGE-OWNER.md):
+same-study projection exposure, occurrence/field maps and reports publish together
+across repeated exchanges. It is not yet accepted and does not complete slice C.
+Preparation still allocates host metadata; the harness is borrowed, and unrelated
+generation-changing operations make this owner stale.
+
+Remaining work is **slice C: reusable preparation, complete owner resource accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings
@@ -99,8 +105,8 @@ The accepted [declaration](../engine/docs/EXCHANGE-CONTRACT.md),
 [native accounting](../engine/docs/EXCHANGE-ACCOUNTING.md) and
 [atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md) are the existing primitives.
 Do not reimplement their completed D7 checks. #221 adds field lifecycle but does
-not create an enduring owner, update projection exposure across later operations,
-or qualify complete owner resources.
+not itself create an enduring owner or qualify complete owner resources. The
+current owner contribution adds the repeated-exchange projection lifecycle only.
 
 The contracts below retain required behavior for each slice; imperative wording
 in an accepted slice does not reopen its completed implementation. Local evidence

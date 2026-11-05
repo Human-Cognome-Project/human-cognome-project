@@ -33,8 +33,11 @@ For work that depends on it, use its reviewed stack and inspect subsequent chang
 The maintainer owns its final integration. #123/#111 remain held and draft #75
 deferred; none is a prerequisite for the separately accepted core path.
 
-The next contributing-agent task is **enduring owner/projection lifecycle,
-reusable preparation and complete owner resource accounting**. Reuse accepted
+The current unaccepted contribution adds a [persistent private exchange owner](../../engine/docs/EXCHANGE-OWNER.md)
+with stable identity and live projection publication across repeated exchanges.
+It borrows the execution and still allocates host preparation metadata.
+The next contributing-agent task is **reusable preparation, complete owner resource
+accounting and integration of the remaining operations**. Reuse accepted
 private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
 Publish owner identities and projection exposure coherently with successful native
 operations; rejected edits preserve the old usable execution. Account for all

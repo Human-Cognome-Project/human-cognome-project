@@ -81,10 +81,10 @@ or recovery claim for partially published execution.
 
 Success consumes the prepared transaction; replay rejects as stale. The former
 generation-bound source view is not silently rebound. The committed occurrence
-and field maps are retained for the future owner's next preparation. Sustained
-preparation,
-projection exposure updates, mapping lifecycle across unrelated operations and
-recovery/restart belong to the enduring owner.
+and field maps are retained for the owner's next preparation. The private
+[exchange owner](EXCHANGE-OWNER.md) now retains identity and updates projection
+exposure across successive exchanges. Allocation-free reusable preparation,
+mapping lifecycle across unrelated operations and recovery/restart remain separate.
 
 ## Resources and qualification
 
@@ -110,5 +110,5 @@ must all leave execution unready. Earlier empty-field compression fixtures were
 correctly rejected and their failed logs are separate from passing evidence.
 
 See [source-pinned local evidence](../tests/admission/README.md). CPU execution does
-not qualify GPU behavior. Full operational controls, enduring owner lifecycle,
+not qualify GPU behavior. Full operational controls, the remaining owner lifecycle,
 total owner resource accounting and the integrated local study remain separate work.
