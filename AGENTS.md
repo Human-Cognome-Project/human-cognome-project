@@ -1,8 +1,9 @@
 # Agent guidance
 
 Start a fresh environment with the [agent onboarding/spec brief](docs/onboarding/AGENT-START.md).
-The [dated acceptance history](docs/history/acceptance-through-201.md) preserves
-prior reviews and source pins; it is not the current task queue.
+The [acceptance snapshot](docs/history/agent-acceptance-2026-11-05.md) and
+[earlier history](docs/history/acceptance-through-201.md) preserve prior reviews
+and source pins; they are not the current task queue.
 
 Read this file in full before coding or reviewing. Start from current `main`
 unless a task names another integration branch. Component instructions still apply.
@@ -11,13 +12,13 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-11-05**, accepted CPU implementation through #218 (`0b0093453eaa8098582d7dc2e8a52939af058f4c`), including #217. #219's private atomic exchange is provisionally accepted pending hosted validation. Next: enduring owner/field lifecycle and complete resource accounting, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-11-05**, accepted CPU implementation through #219 (`2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`). #221's field lifecycle is provisionally accepted pending hosted validation. Next: enduring owner/projection lifecycle, reusable preparation and complete owner resource accounting, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
 reader/history lifetimes, combined integration and coupled recovery. Its C3-1
 fixed-tree implementation is accepted in #195; C3-2 coherent refresh is accepted
-in #198. B1 contact-safe ticks are accepted in #201; native admission follows.
+in #198. B1 contact-safe ticks are accepted in #201; private admission/bootstrap and atomic exchange are accepted through #210/#219.
 
 The [accepted C3-1 implementation](engine/docs/LIVE-HIERARCHY.md) now supplies
 that opt-in fixed-tree CPU path. Its executable acceptance now follows the
@@ -32,48 +33,35 @@ them and this summary is drift to investigate, not permission to silently pick
 one. Check [open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls)
 and latest maintainer dispositions before implementing. Update this section when
 a merge or review changes Built/Held/Active status; other entry points link here.
+Keep this table and the immediate task current rather than adding another milestone
+row for every PR. Put detailed run/commit evidence in the owning acceptance record.
+When the next task changes, reconcile the onboarding brief and continuation task
+in the same documentation change. Preserve provisional versus merged acceptance.
 
-| State | Scope, limits and owning evidence |
+| State | Current scope and authoritative evidence |
 |---|---|
-| Retained cold data | Full valid-scalar [UTF-8 snapshot](data/postgres/snapshots/2026-10-03-encoding-tables/MANIFEST.md); [paired letter exports](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md) from #136 retain 2,772 Linguistics tokens and 2,741 additive core child links. Population is separate from installation into user stores and from held #111. [Writer contract](docs/letter-population-writer.md). |
-| Built bounded A–D path | Native PostgreSQL [warm tools](kernels/database/warm/README.md), [letter/byte projection](engine/docs/LETTER-PROJECTION.md), [membership fields](engine/docs/MEMBERSHIP-FIELDS.md) and [active workbench](engine/docs/ACTIVE-WORKBENCH.md), accepted through #141/#143/#146/#149 under the now-completed #139. Supplied-state fixtures and controlled restart are built; production engine-owned placement/live insertion are not. |
-| Built field mechanics | [Object support](engine/docs/OBJECT-SUPPORT-RESULTS.md), [effective-motion evidence](engine/docs/EFFECTIVE-MOTION.md) and [type-phase evidence](engine/tests/type_phase/acceptance.json), through #150/#153. Whole-particle response, variable-radius contact, local coordinates and native binary activity have bounded CPU evidence. #91 retains formula/resolution/readback follow-ups. |
-| Built prepared backing | #161 native storage investigation, #164 [record mapping](engine/docs/RECORD-MAPPING.md), and #166 [combined backing/bindings](engine/docs/PREPARED-EXECUTION.md) are merged. #166 passed all eight hosted checks, including 37 CPU suites. Empty prepared storage, first nonempty fixtures and 32 ticks retain measured backing with zero observed recurring C++ allocations. This is not general live insertion or complete host/driver allocation accounting. |
-| Built bounded updates | #169 implements the accepted [#167 coherent-update plan](docs/prepared-coherent-update-plan.md): [implementation and evidence](engine/docs/PREPARED-UPDATES.md) cover repeated structural commits, independent occurrences, survivor/history preservation, wake effects and rejection/failure rules. All eight hosted checks and 43 CPU suites passed on the reviewed source. This remains a numerical-fixture foundation. |
-| Built combined hierarchy refresh | #198's [C3-2 implementation](engine/docs/LIVE-REFRESH.md) commits one prospective source/hierarchy generation, preserving survivor state, dirty history and pending work. All nine hosted checks passed, including 101 CPU suites, both extra no-unroll matrices and 180 integration checks. New-body starts remain private fixtures; #201 adds contact-safe CPU ticks, while operational admission remains pending. |
-| Accepted B1 selection gate | #200's [native workspace](engine/docs/NATIVE-SELECTION.md) qualifies scratch selections with the actual C3 builders under accepted #199. [CPU evidence](engine/tests/native_selection/v1/README.md) is source-pinned. At that merge the complete tick API remained unbuilt; #201 now supplies the accepted CPU tick API. Admission remains separate. |
-| Accepted CPU B1 implementation | #201 adds the opt-in [contact-safe tick](engine/docs/CONTACT-SAFE-TICKS.md) using prepared fixture inputs. [Local CPU qualification](engine/tests/contact_ticks/v1/README.md) passes 109 suites and all eight modes; hosted validation independently passes 109 suites and all eight checks. #203 now supplies certified placement candidates; admission and enduring owners remain unbuilt. |
-| Accepted B2 candidates | #203 accepts certified nearest-free placement candidates and `BootstrapCommands` backing, superseding #202. Reviewed head `175a45ce6652a2eca1efbca79a63de664215f5aa`: all eight hosted checks passed; inspected [native job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41501975395/job/125471482842) passed 115/115 CPU suites and 180 integration checks with zero private reads. This does not implement B3 single-publication admission or qualify GPU execution. |
-| Built local CI tooling | #204 adds [local CPU profiles and isolated PostgreSQL validation](engine/docs/LOCAL-CI.md), with explicit matching Taichi source/build/runtime paths. Reviewed head `64ed09d0a51ddfc7d2843cb6280ffd04db990ab8`: all eight hosted checks passed; inspected [native job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41550647756/job/125637096481) passed 115/115 CPU suites and 180 integration checks with zero private reads. The focused reused-cache/quick results at `d4adfd70` remain [contributor-local evidence](engine/tests/local_ci/README.md); raw local bundles were not independently inspected. |
-| Accepted B3 staging prerequisite | #205 accepts private native generated-row staging at `a8a14fdee36ca6b70b08d4c9f1d274c4b16493ac`; [evidence](engine/tests/admission/README.md). All eight hosted checks passed, including 115 CPU tests and 180 integration checks. No record claims or operational admission API are implemented. |
-| Accepted B3 source/hierarchy preflight | #207 at `ecd1d6aed6007d6859c4e451d233feccf1627610` merged as `c51cab73ef21752bfa9d849a08b941846881aaeb`. All 18 hosted checks passed; inspected [run 41827027659](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41827027659) covers all 115 test indexes exactly once and 180 integration checks with zero private reads. Private generated starts feed prospective source/hierarchy validation; no claims/publication or operational admission API. |
-| Hosted CI rollout | #206 accepts [compiler-object reuse and complete parallel CPU validation](engine/docs/HOSTED-CI.md) at `9f78602f96859d461370213ae7770372278e617b`. All 18 checks passed; 115 unique tests, all compiler modes and 180 integration checks were retained. Initial cold run: 44m41s, 0/260 compiler-cache hits. Integrated main run [41720357523](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41720357523) passed in 51m21s, preserving full coverage; its cold cache (0 hits, 260 misses) was successfully published. Rollout complete; no warm-cache speedup is claimed. |
-| Accepted private native admission and D1 bootstrap | #210 at `e359b6e31eb38a3f69512c7ac69f25eb7186c36f` integrates #208/#209 with the kernel-identity correction; merged as `3f042d706e73e42f5e312a1362a73043ef504b4e`. All 18 hosted checks passed. Inspected [run 41851862998](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41851862998): 115 tests exactly once, all eight compiler configurations (13 kernels, 17 unsafe controls per profile), and 180 integration checks with zero private reads. Private ordinary arrival and initial explicit-focus bootstrap publish one unticked generation; [scope/evidence](engine/tests/admission/README.md). Representation exchange, existing-model focus replacement, operational owner/public controls and GPU qualification remain outstanding. |
-| Accepted private live focus | #211 corrected head `153f6124193bfe027253716e0672ec41b755bc9e` is accepted in [review 5775143515](https://github.com/Human-Cognome-Project/human-cognome-project/pull/211#pullrequestreview-5775143515). All 18 hosted checks passed; inspected run 41886914617 covers 115 unique tests exactly once, all eight compiler configurations (14 kernels/19 unsafe controls per profile), and 180 database checks with 24 addressed reads and zero private reads. The source/installed-contact reference correction is exercised in hosted no-unroll placement witnesses. Private existing-model focus only; rebase, D7 exchange, operational controls and GPU remain separately scoped. |
-| Accepted private exact rebase | #212 head `78b5360211050aa02fb541cbc140eda7cf257ddf` is accepted in [review 5775169104](https://github.com/Human-Cognome-Project/human-cognome-project/pull/212#pullrequestreview-5775169104). All 18 hosted checks passed. Inspected run 41894881085: 115 tests exactly once, all eight compiler configurations (16 kernels/24 unsafe controls per profile), and 180 integration checks with zero private reads. Hosted extra no-unroll witnesses preserve both history slots and motion across exact 2^27 translations/inverses. Scope is private exact f64/52-bit rebase; reduced profiles follow in #213. Legacy f32, rounded rebase, D7 exchange, operational controls and GPU qualification remain separate. |
-| Accepted reduced exact rebase | #213 corrected head `aa50a5a79a482a89a5e6a7b62b9bdae3315fba68` is accepted after run 41920995451 passed all 18 checks. Inspected 115 tests exactly once, all eight compiler configurations (16 kernels/24 unsafe controls per profile), and 180 integration checks with zero private reads. Corrected exact legal-parent/pending/history/catch-up witnesses pass in all extra no-unroll modes. Earlier failed runs remain historical evidence; no production math/scheduling change. Private exact f64 transforms at 0–52 retained fraction bits only. |
-| Accepted private D7 outgoing state | #214 head `d81dd279a5b35a70ac436cfb742fdc0af30d54ec` is accepted. Both existing hosted suites are green; independently inspected run 41920995839 covers 115 tests exactly once, all eight compiler configurations (17 kernels/26 unsafe controls per profile), corrected rebase and outgoing-state witnesses, and 180 integration checks with zero private reads. Native current mass/centre/velocity reduction writes only scratch. Logical membership, replacement placement, conservation and atomic retirement/publication remain coordinator work; no operational or GPU acceptance. |
-| Accepted private replacement staging | #215 at `616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af` is accepted in [review 5785165393](https://github.com/Human-Cognome-Project/human-cognome-project/pull/215#pullrequestreview-5785165393). All 18 checks passed; inspected run 41928920745 covers 115 unique tests exactly once, eight compiler configurations (18 kernels/27 unsafe controls per profile), and 180 integration checks with zero private reads. Native outgoing centre/velocity, retirement matching, retained occupancy and certified placement populate scratch only. Complete conservation and atomic exchange remain coordinator work. |
-| Accepted structural exchange contract | #216 head `3e273a8a14904af171ee77bfbfe0f2e15ea22ab2` is accepted in [review 5785904822](https://github.com/Human-Cognome-Project/human-cognome-project/pull/216#pullrequestreview-5785904822), merged as `639901b106fcd4319af3c411644d03e40a2ac856`. All 18 hosted checks passed; inspected run 42032548669 covers 115 tests exactly once, compiler evidence with 18 kernels/27 unsafe controls per 52/8-bit profile, all four extra no-unroll placement matrices and 180 database checks with zero private reads. Reviewer direct GCC structural test passed 91 checks. This is a logical declaration prerequisite, not live exchange authority. |
-| Accepted exchange source bindings | #217 head `34e323925b6d02a1ce5b79042673dd2369ae7edc` is source-reviewed without blockers in [review 5785905901](https://github.com/Human-Cognome-Project/human-cognome-project/pull/217#pullrequestreview-5785905901). Contributor-local CPU evidence is separately pinned at `a574ec7d660dfdf5ba69a63500f862ffed2f762b`; raw bundle and native execution were not independently inspected/run by the reviewer. All 18 hosted checks passed. Independently inspected run 42038267169: 115 tests exactly once, eight compiler configurations (18 kernels/27 unsafe controls per profile), four extra no-unroll placement matrices and 180 database checks with zero private reads. Scoped continuation is permitted: trusted committed occurrence mappings and read-only source validation only. Native conservation/placement-offset reporting, prospective validation, atomic exchange, mapping lifecycle and total owner resource accounting remain next. |
-| Accepted native exchange accounting | #218 head `0b0093453eaa8098582d7dc2e8a52939af058f4c` is source-reviewed without blockers in [review 5786373902](https://github.com/Human-Cognome-Project/human-cognome-project/pull/218#pullrequestreview-5786373902). Code/test pin `bdccf872b65d458ab1a6014dc1e4a5c2490369ff`; contributor-local CPU evidence remains separate from reviewer execution and hosted evidence. All 18 hosted checks passed. Independently inspected run 42042807142: 115 tests exactly once, eight compiler configurations (19 kernels/29 unsafe controls per profile), all four extra no-unroll placement matrices and 180 database checks with zero private reads. Integrated with #217; local evidence remains separate. Private scratch reconciles exact integer mass through 2^53, checks momentum within documented floating bounds and reports actual centre/target offset. Scoped continuation may connect trusted source bindings, incoming participation and prospective validation to atomic exchange; operational/GPU acceptance is not implied. |
-| Provisionally accepted private atomic exchange | #219 head `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162` is source-reviewed without blockers in [review 5787134942](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5787134942). Contributor-local test pin `9a016b5e1e6cb2117713c19eacfbdee08bd200e8` remains separately attributed; raw local evidence/native execution were not independently inspected/run. Hosted run 42050645525 remains pending. Sealed incoming participation, native accounting/placement, prospective validation and unticked replacement/retirement publish actual-claim occurrence mappings within one exclusive operation. Agent may continue owner/projection and field-family lifecycle, total owner resource accounting and same-execution controls. No operational/GPU acceptance. |
-| Active follow-up | #162's bounded storage/update foundation is complete and closed; #156 owns remaining implementation and integrated CPU acceptance. The [#170 plan](docs/core-operation-readiness-plan.md), D1–D7 and the contact publication contract are accepted. [Segment 1](kernels/database/warm/STRUCTURAL-RECIPES.md) merged in #171: coordinate-free v2 values/storage/projection and retained-v1 compatibility; all nine hosted checks passed, including 44 native CPU suites. #175 supplies accepted [native geometry preflight](engine/docs/PREPARED-GEOMETRY.md), a partial Segment 2 query with all eight hosted checks and 52 CPU suites passing. #201's CPU candidate ticks are accepted. #203 supplies certified placement candidates and reserved bootstrap backing. Private ordinary and initial bootstrap publication are accepted in #210; representation exchange, enduring owner lifecycle and the integrated CPU exit remain outstanding. General LoD selection remains deferred. |
-| Built optional tooling | #155 completed #151's [read-only viewport](tools/viewport/README.md); #158/#159 added capture controls, actual-backend checks and folder watching. #157 separated database names from snapshot names. Viewer/capture fixtures do not prove natural clustering or settling; the viewer is removable. |
-| Local qualification | The release intent is the [bounded Docker/letter study](docs/onboarding/AGENT-START.md#intended-local-study-and-release). Full operational GPU qualification remains distinct; see the [accepted plan](docs/core-operation-readiness-plan.md). #145 owns actual GPU execution, allocation/transfer and pinning qualification. Earlier bounded CPU prerequisites are satisfied. [Bounded local observations](engine/docs/CUDA-LOCAL-VALIDATION.md) are not blanket GPU qualification; ordinary host vectors are not pinned. Native browser folder-picker interaction remains a local verification item. |
-| Held | #123 general view/identity proposal and #111 command atomicity/restart work have unresolved findings. Neither is an implementation contract or a gate on separately accepted bounded work. |
-| Deferred | #75 historical read-only monitor; reconcile its all-edge baseline with current reporting before revival. It is not a viewport/GPU prerequisite. General analyst, dynamic view selection/recomposition and process-failure hosting remain unbuilt. |
+| Accepted data and preparation | Retained [letter/core snapshots](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md), native [warm tools](kernels/database/warm/README.md), coordinate-free [v2 recipes](kernels/database/warm/STRUCTURAL-RECIPES.md), [projection](engine/docs/LETTER-PROJECTION.md) and prepared native backing/updates. Preserve existing stores; population and operational ownership are separate. |
+| Accepted CPU numerical path | Cumulative publication, [accepted motion](engine/docs/ACCEPTED-MOTION.md), [installed hierarchy](engine/docs/LIVE-HIERARCHY.md), coherent [refresh](engine/docs/LIVE-REFRESH.md) and [contact-safe ticks](engine/docs/CONTACT-SAFE-TICKS.md), accepted through #198/#201. Scope-specific GPU evidence does not qualify the complete path. |
+| Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
+| Latest accepted engine evidence | #219 reviewed head `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e2c5507acac6fc348ddb36772eeebfc05b`; [final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5790172617). All 18 hosted checks passed: 115 unique tests, eight compiler configurations, four extra no-unroll exchange matrices, 180 database checks and zero private reads. [Admission evidence](engine/tests/admission/README.md) retains source pins and separately attributed local results. |
+| Provisionally accepted, not merged | #221 head `98c58b8fd5028341049abaa573b75240d05ba667`: [field creation/retirement review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/221#pullrequestreview-5790162176). Contributor-local pin `d7676dea8d03a7a90f37ff97c578eb04143da102` reports five lifecycle scenarios and 20 combined placement cases; raw local execution was not independently inspected/run. Hosted run 42086483712 is pending at this check. Do not duplicate this work or describe it as accepted on main. |
+| Next implementation | Enduring owner/projection lifecycle, reusable preparation and complete owner resource accounting, followed by same-execution controls. Continue from the reviewed stack when needed; final #221 integration and acceptance-note reconciliation belong to the maintainer. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
+| Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
+| Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst reasoning, dynamic LoD selection and process-failure hosting remain unbuilt. |
+
+Detailed milestone pins and their historical limits are preserved in the
+[2026-11-05 acceptance snapshot](docs/history/agent-acceptance-2026-11-05.md)
+and [earlier history](docs/history/acceptance-through-201.md).
+Do not copy historical “next” instructions back into this table.
 
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-Private exchange source bindings and native accounting are accepted in #217/#218.
-#219's private atomic coordinator is provisionally accepted; final integration
-awaits its hosted suite. The current [field lifecycle increment](engine/docs/EXCHANGE-FIELDS.md)
-adds declared missing fields, retires unused outgoing fields and publishes both
-field and occurrence mappings, preserving shared/focal fields and peak claims.
-Enduring owner/projection lifecycle, complete owner resource accounting and
-same-execution controls remain following work under the accepted continuation plan.
+Private source bindings, native accounting and atomic exchange are accepted through #219.
+#221 adds provisionally accepted field creation/retirement; its hosted gate is pending.
+Continue enduring owner/projection lifecycle, reusable preparation, complete owner
+resource accounting and same-execution controls. Do not duplicate the reviewed work.
 
 ## Latest model direction — 2026-10-23
 
@@ -112,7 +100,7 @@ is not a required per-tick scheduler; one-tick lag remains a trial assumption.
 ## Latest cumulative-publication direction — 2026-10-26
 
 The [cumulative significand clarification](docs/precision-exposure-and-concept-catalogue.md#cumulative-significand-clarification--2026-10-26)
-governs the following integration plan under #172/#177. Accumulate the tick's
+governs the accepted numerical path under #172/#177. Accumulate the tick's
 applicable contributions at calculation precision before the destination's
 significand filter, compare the net with its stored position, and base
 movement-triggered activity on that cumulative published change. Preserve
@@ -124,7 +112,7 @@ Overshoot braking and radial damping are unchanged.
 
 This supersedes the provisional any-untrimmed-attempt activity policy. The
 [C2b-1 correction](engine/docs/CUMULATIVE-PUBLICATION.md) is accepted in #192;
-C1 descriptions and evidence below remain records of their pinned behavior.
+C1 descriptions and archived evidence remain records of their pinned behavior.
 C1 already combines centroid
 inputs before publication; audit the actual gating seam rather than assuming
 each member is independently trimmed by that reduction. Require cumulative
@@ -133,77 +121,13 @@ with C2a's publication/consume contract without a same-tick global solve.
 
 ## Active and deferred work
 
-**Immediate work:** B2 placement is accepted in #203, superseding #202, and
-local evidence tooling is accepted in #204. B3 combined bootstrap/admission is
-released under the accepted admission plan. Native generated-row staging is accepted in #205 and private source/hierarchy preflight in #207.
-#210 integrates the corrected #208/#209 contact and ordinary-commit stack with accepted private D1 bootstrap/initial focus.
-Private ordinary arrival and initial explicit-focus bootstrap are accepted in #210. Private focus/rebase and outgoing-state/replacement staging are accepted through #215; #217/#218 accept logical source bindings and native accounting. #219 provisionally accepts private atomic exchange; the current increment extends its field lifecycle. No operational admission API is accepted. Next complete enduring owner/projection lifecycle and total resource accounting, then same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
+**Immediate work:** use the current-state table above. Private admission, focus,
+exact rebase and the existing-field atomic exchange are accepted through #219.
+#221 supplies provisionally accepted field lifecycle; the agent may continue
+owner/projection lifecycle and complete resource accounting while its hosted gate
+runs. Do not restart D7 source binding, conservation or atomic publication.
+Operational controls follow the [continuation plan](docs/core-local-study-continuation-plan.md).
 
-The stage descriptions below preserve the scope at each acceptance; “following”
-and “not released” in those descriptions are not current holds on #194–#201.
-Use the current-state table and continuation for today's implementation queue.
-
-- #176 accepts the [native precision prerequisite plan](docs/native-precision-truncation-plan.md):
-  qualify f64 transport and an experimental significand-clearing primitive,
-  then audit the later live conversion. Production rounding remains open.
-  #172 and #177 govern the eventual precision/LoD-centroid integration;
-  accepting this plan does not implement that integration.
-  The [first native implementation](engine/docs/NATIVE-PRECISION.md) was accepted
-  in #178: f64 packed transport, experimental bit clearing and a source state
-  audit; all eight hosted checks and 54 CPU suites passed. It leaves live tick behavior unchanged and explicitly rejects
-  narrowing values in the fork's unsupported FTZ subnormal/underflow range.
-- The [upward centroid integration plan](docs/upward-centroid-integration-plan.md)
-  is accepted in #180 under #172/#177. The [candidate-only implementation](engine/docs/CENTROID-CASCADE.md)
-  is accepted in #182: current backend f64 hierarchy evaluation, with all eight
-  hosted checks and 62 CPU suites passing. This explicit query adds no internal
-  distance multiplier and is not a mandatory per-tick solve. Live precision,
-  forces, wakes and settling-cycle integration remain outstanding.
-- The [weighted comparison accounting plan](docs/weighted-centroid-accounting-plan.md)
-  is accepted in #183 under #177/#172. [Segment A](engine/docs/SOURCE-COUNTS.md)
-  is accepted in #184: retain exact source counts through prepared commits,
-  without changing legacy physics; all eight hosted checks and 66 native CPU suites passed on its
-  [pinned source](engine/tests/source_counts/README.md). Segment B's source-compatible fractional/
-  overlapping [candidate implementation](engine/docs/WEIGHTED-CENTROID-CASCADE.md)
-  is accepted in #185. All eight hosted checks passed; the inspected native log
-  confirms 74/74 CPU suites on reviewed `dce69ad`. Its
-  [contributor evidence](engine/tests/weighted_cascade/README.md) remains separately
-  source-pinned. It retains the original whole-body API and changes no live mechanics.
-- The [live numerical profile plan](docs/live-numerical-profile-plan.md) is
-  accepted in #186 under #172/#177: a coherent f64 trial profile, separate physical/history
-  state and discarded positional detail, with the existing single-level native
-  phases. The [C1 implementation](engine/docs/LIVE-NUMERICAL-PROFILE.md) is accepted in
-  #187 with [source-pinned CPU evidence](engine/tests/numerical_profile/README.md).
-  All nine hosted checks passed on reviewed `fd3c520`; the inspected native log
-  confirms 82/82 CPU suites in 685.51 seconds. Contributor evidence is separately pinned.
-  Default legacy arithmetic remains unchanged; trial f64 covers live state,
-  repair, geometry, optional queries and typed readback. Its provisional persistent
-  sub-grid activity is historical evidence; the C2b-1 correction below is accepted in #192.
-  Live hierarchy consume/publication cuts and inherited response remain a
-  following bounded contract, with #181's settling-across-ticks direction intact.
-- The [live hierarchy handoff plan](docs/live-hierarchy-handoff-plan.md)
-  follows #187 under #177/#172. It is **accepted in #188**, releasing C2a's native
-  same-type collision/publication investigation and probe only. Its
-  [diagnostic implementation and findings](engine/docs/NATIVE-HANDOFF.md) are accepted in #189 with [CPU evidence](engine/tests/native_handoff/README.md): unsafe-order
-  controls and a CPU-qualified native protocol with one activity set and two
-  numerical publication slots. Production runtime and fork are unchanged. No hierarchy installation or
-  inherited-response implementation is released. Comparison identity, a proven
-  native handoff, explicit response ownership and coupled settling/recovery
-  remain the following integration contract.
-  The accepted #191 [cumulative publication/activity plan](docs/cumulative-publication-integration-plan.md)
-  combines these findings with #190: first correct existing single-level trial
-  activity and final-speed publication, then qualify real weighted multilevel
-  arithmetic in a separate native probe. Neither slice installs production
-  hierarchy or inherited response. The [C2b-1 implementation](engine/docs/CUMULATIVE-PUBLICATION.md)
-  and [source-pinned CPU evidence](engine/tests/cumulative_publication/README.md)
-  are accepted in #192: contributor regression passed 88/88 suites in 892.49 seconds
-  on `8db7289`. Hosted acceptance is recorded in the [acceptance history](docs/history/acceptance-through-201.md). The
-  [C2b-2 implementation](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) and
-  [CPU evidence](engine/tests/weighted_handoff/README.md) are accepted in #193:
-  weighted published-child arithmetic, per-path compiler audit, packet samples,
-  native convergence/recovery and prepared reuse. Contributor evidence is 92/92
-  CPU suites in 930.44 seconds on `bb5ba2e`, with 29,184 held-input transitions
-  resolving in 1–5 polls. Production hierarchy, response
-  ownership and coupled physical settling remain the following contract.
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
   defer required preservation of existing live state during insertion.
@@ -223,7 +147,9 @@ Use the current-state table and continuation for today's implementation queue.
 ## Required placement and allocation behavior
 
 These requirements supersede caller-placement and fixed/equal-count assumptions
-in accepted A–D work as well as proposals. They are **not all implemented**.
+in accepted A–D work as well as proposals. Private CPU primitives implement the
+bounded placement/publication path; enduring owner integration, full resource
+accounting and integrated hardware qualification remain outstanding.
 The [#156 plan](docs/pooled-space-live-insertion-plan.md) owns the correction;
 the [#163 plan](docs/prepared-capacity-foundation-plan.md) and
 [#165 section](docs/prepared-execution-backing-plan.md) own bounded preparation.
@@ -278,9 +204,9 @@ A changed centroid alone does not wake every dependent: test the combined
 positional effect; a woken particle evaluates every connected field. Combine
 centroid would-move flags with any-active and place each flagged centroid once,
 including sleeping members. Preserve carried motion and changed-input invalidation.
-For the new precision path, reconcile carried rounding-residue requirements
-through #172; the historical contract below is evidence of built behavior, not
-a veto on the new direction. Keep pre-integration contact forces and sleeping-target checks on both index sides
+For the accepted wide path, discard unpublished positional tails and retain
+velocity according to the accepted #196 displacement/dt rule; do not restore
+historical rounding-residue carry. Keep pre-integration contact forces and sleeping-target checks on both index sides
 and across pointer blocks. Separate numerical force work from gate/adjacency and
 native metadata costs. No arbitrary epsilon or zero-speed sleep rule is implied.
 The [active field model](engine/docs/ACTIVE-FIELD-MODEL.md) owns exact predicates.

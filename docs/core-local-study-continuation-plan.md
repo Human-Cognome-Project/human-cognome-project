@@ -14,8 +14,8 @@ collection/audit, 180 PostgreSQL-to-active checks and actual CPU-only backend
 verification; all nine checks passed. Its [retained evidence](../engine/tests/live_hierarchy/refresh-v1/README.md)
 keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
-focus/rebase and D7 staging are accepted through #215. Complete exchange and
-operational integration remain active. No manual
+focus/rebase and existing-field D7 atomic exchange are accepted through #219.
+#221 field lifecycle is provisional; enduring owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -53,7 +53,7 @@ conversion path must remain separately described.
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
-| B | Native admission and candidate contact/tick transaction | B1/B2 and private ordinary/bootstrap admission accepted through #210; private focus/rebase and D7 staging through #215. Complete D7 coordination remains. |
+| B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is provisional in #221; final hosted integration remains pending. |
 | C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
@@ -65,59 +65,47 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Start from current main with #215 accepted at reviewed source
-`616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af`. Hosted run 41928920745 passed
-115 tests, all eight compiler configurations and 180 integration checks with zero
-private reads; detailed pins are in [admission evidence](../engine/tests/admission/README.md).
-The corrected #213/#214 stack is accepted; no continuation-test fix is pending.
+Use [AGENTS current state](../AGENTS.md#current-state) and latest PR dispositions
+for the starting ref. Private atomic exchange is accepted through #219 at reviewed
+source `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
+Hosted run 42050645525 passed 115 unique tests, all eight compiler configurations,
+four extra no-unroll exchange matrices and 180 database checks with zero private
+reads. [Admission evidence](../engine/tests/admission/README.md) retains detailed
+pins and separately attributed local results.
 
-Implement the remaining private D7 exchange coordinator in focused increments:
+#221 already implements private field creation/retirement and is provisionally
+accepted at `98c58b8fd5028341049abaa573b75240d05ba667`; hosted run 42086483712
+and final integration are pending at this check. Continue its reviewed stack when
+needed, without modifying or duplicating its running suite merely to proceed.
+The maintainer owns final integration and acceptance-note reconciliation.
 
-1. Bind the outgoing set and declared replacement to one logical occurrence and
-   supported alternative. Validate exact source/mass contribution mapping before
-   claims; arbitrary selected bodies are not a logical exchange authority.
-2. Reuse native outgoing-state reduction and certified replacement staging.
-   Validate momentum within reviewed floating bounds, and report the outgoing
-   target, actual replacement centre and initialization offset separately.
-3. Prepare source, hierarchy, contact and ownership changes together, including
-   old-plus-new claim/reference/work peaks. Publish replacement and retirement
-   as one unticked generation. Ordinary rejection preserves the old execution;
-   unexpected failure after publication begins makes it unready.
-4. Qualify compression/expansion, unrelated copies/sleepers, nonidentity mappings,
-   survivor/dirty-history/pending-work preservation, capacity/contact rejection,
-   retry and postpublication failure. Use the accepted D7 contract rather than
-   introducing new placement or rounding policy.
+The next work is **slice C: enduring owner/projection lifecycle and resource accounting**:
 
-A first review increment prepares [logical exchange declarations](../engine/docs/EXCHANGE-CONTRACT.md)
-from existing validated v2 projections. It preserves exact alternative/occurrence
-and source descriptors. The following private [source-binding view](../engine/docs/EXCHANGE-BINDINGS.md)
-checks trusted prepared identity mappings against committed full handles and exact
-outgoing participation at one generation. It does not establish mappings from
-live admission results or update them at publication; owner/coordinator wiring
-still completes that authority boundary. The next
-[native accounting increment](../engine/docs/EXCHANGE-ACCOUNTING.md) implements
-item 2's scalar exact-source/physical mass reconciliation, bounded momentum check
-and actual centre/offset report in private replacement scratch. It does not yet
-connect the logical binding view or validate incoming source contributions.
-The following [private atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md)
-connects those checks, generates incoming logical participation from the sealed
-declaration, and uses native admission for prospective validation, peak claims and
-one unticked replacement/retirement generation. Actual claim handles populate a
-preallocated occurrence map within the same exclusive operation. Its bounded
-witnesses cover items 3–4 using existing field families. The following
-[field lifecycle increment](../engine/docs/EXCHANGE-FIELDS.md) creates missing
-declared fields, retires unused outgoing fields and publishes actual-claim field
-mappings with occurrence mappings. Shared fields survive and focal retirement
-rejects without an explicit focus change. The prepared transaction is consumed
-on success; enduring owner/projection lifecycle and total owner resource
-accounting remain separate. Neither structural declarations nor
-successful scratch diagnostics alone are publication tokens.
+1. Maintain one prepared execution with trusted logical occurrence/field bindings
+   derived from actual admission claims. Publish projection exposure and mappings
+   coherently after successful native edits; rejected edits retain the old owner.
+2. Make preparation reusable across admission, explicit exchange, removal/reuse,
+   focus/rebase and controlled restart under D1–D7. Preserve survivors, dirty
+   history, pending work and generation semantics.
+3. Account for complete owner resources, including host commands, alternate maps,
+   projection data and hierarchy preparation alongside native storage. Private
+   transaction vectors outside the scratch manifest are not complete accounting.
+4. Qualify repeated operations and rejection/retry on the same execution, then wire
+   same-execution controls in slice D. Do not use legacy FixedStudy reconstruction
+   as operational Add.
 
-Only after that boundary is reviewed should the enduring operational owner wire
-these primitives into coordinate-free letter commands. Same-execution controls,
-actual local GPU qualification and Docker release remain later slices. Local
-CPU evidence permits provisional continuation; do not rerun an accepted baseline
-or launch duplicate hosted suites just to start the next task.
+The accepted [declaration](../engine/docs/EXCHANGE-CONTRACT.md),
+[source binding](../engine/docs/EXCHANGE-BINDINGS.md),
+[native accounting](../engine/docs/EXCHANGE-ACCOUNTING.md) and
+[atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md) are the existing primitives.
+Do not reimplement their completed D7 checks. #221 adds field lifecycle but does
+not create an enduring owner, update projection exposure across later operations,
+or qualify complete owner resources.
+
+The contracts below retain required behavior for each slice; imperative wording
+in an accepted slice does not reopen its completed implementation. Local evidence
+permits scoped provisional continuation; hosted findings must be reconciled before
+final acceptance. Actual GPU qualification and Docker release remain later work.
 
 ## A. Coherent source/hierarchy refresh
 

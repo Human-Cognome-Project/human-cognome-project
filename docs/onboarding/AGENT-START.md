@@ -7,8 +7,10 @@ replace their detailed acceptance tests.
 
 ## Establish the actual starting point
 
-Baseline checked **2026-11-05**: accepted through #215, reviewed source
-`616bcbcd3ae2ed6fe91cb739774d98cf0cd8f3af`, integrated into current main.
+Baseline checked **2026-11-05**: accepted private engine work through #219, reviewed source
+`2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
+#220's viewport security fix is also merged. #221 field lifecycle is provisionally
+accepted, with hosted validation and final integration pending at this check.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -25,21 +27,21 @@ the handoff, not a permanent instruction to stay on an old commit.
    Environment recovery does not require a new physics implementation, database
    population or an accepted-baseline CI rerun.
 
-The active review queue is cleared through #215. Start new work from current
-main; do not continue an obsolete stacked branch. #123 and #111 retain their
-existing holds, and draft #75 remains deferred; none gates this core work.
+The current queue and task ownership live in [AGENTS](../../AGENTS.md#current-state).
+#221 already supplies field creation/retirement work; do not implement it again.
+For work that depends on it, use its reviewed stack and inspect subsequent changes.
+The maintainer owns its final integration. #123/#111 remain held and draft #75
+deferred; none is a prerequisite for the separately accepted core path.
 
-The next contributing-agent task is the **private D7 exchange coordinator**.
-Reuse accepted [outgoing-state reduction](../../engine/docs/EXCHANGE-STATE.md)
-and [replacement staging](../../engine/docs/EXCHANGE-PLACEMENT.md). Validate the
-logical occurrence and declared alternative, exact source/mass contributions and
-momentum accounting; retain target versus actual replacement centre/offset.
-Compose prospective hierarchy/contact validation with atomic retirement and
-replacement publication. Preserve survivors, dirty history, pending work and
-old-plus-new capacity; rejection must leave the old execution usable. The
-[continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
-records the handoff and acceptance requirements. Deliver reviewable slices with
-source-pinned local evidence; hosted CPU and actual GPU evidence remain distinct.
+The next contributing-agent task is **enduring owner/projection lifecycle,
+reusable preparation and complete owner resource accounting**. Reuse accepted
+private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
+Publish owner identities and projection exposure coherently with successful native
+operations; rejected edits preserve the old usable execution. Account for all
+owner preparation surfaces, not just the native scratch manifest. Same-execution
+controls follow. The [continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
+defines this sequence; deliver reviewable slices with source-pinned local evidence.
+Hosted CPU and actual GPU evidence remain distinct.
 
 ## Authority and reading order
 
@@ -69,7 +71,7 @@ derivations, not authorization to replace the accepted model. See the
 | C3-1 / C3-2 | Fixed installed CPU hierarchy (#195), accepted wide motion and scoped local CUDA corrections (#196), combined CPU source/hierarchy refresh (#198). New-body starts remain private fixtures. |
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
 | B2 | Certified nearest-free placement accepted in #203, superseding #202. |
-| B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Complete D7 exchange and operational admission remain outstanding. |
+| B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is provisional in #221. Enduring operational admission remains outstanding. |
 | C / D | Enduring prepared owner, occurrence bindings and live operations; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 

@@ -870,6 +870,7 @@ Full 115-suite regression, remaining compiler modes, PostgreSQL and GPU were not
 rerun. Shared-host timing is not performance evidence; hosted CI remains
 authoritative for the checks it can perform.
 
+
 ## Maintainer hosted acceptance — #217/#218, 2026-11-05
 
 Reviewed #217 head `34e323925b6d02a1ce5b79042673dd2369ae7edc` and #218 head
@@ -937,3 +938,16 @@ hierarchy. Enduring owner/projection lifecycle, complete owner resource accounti
 and operational controls remain separate. Full 115-suite regression, remaining
 compiler modes, PostgreSQL and GPU were not rerun. Shared-host timing is not
 performance evidence. Hosted CI remains authoritative for its scope.
+
+## Maintainer hosted acceptance — #219, 2026-11-05
+
+Reviewed head `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162` is accepted in
+[review 5790172617](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5790172617).
+All 18 hosted checks passed. Independently inspected run 42050645525 covers
+115 unique tests exactly once, eight compiler configurations (19 kernels/29
+unsafe controls per 52/8-bit profile), all four extra no-unroll atomic exchange
+matrices, and 180 database checks with zero private reads. Contributor-local
+evidence remains separately attributed. Integration preserves reviewed engine/test
+source and both acceptance histories. #221 field lifecycle is provisionally
+accepted in review 5790162176, with hosted run 42086483712 pending. Enduring owner,
+projection lifecycle, total resources and GPU qualification remain separate.
