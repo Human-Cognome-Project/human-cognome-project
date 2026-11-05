@@ -107,6 +107,11 @@ void ExchangeCoordinator::prepare_hierarchy(const field::LiveRefreshSpec &spec) 
   need(!sealed_ && !consumed_, "exchange hierarchy already sealed");
   need(spec.nodes && spec.node_count && (!spec.child_count || spec.children) &&
        (!spec.contribution_count || spec.contributions), "incomplete prospective hierarchy");
+  const auto &limits = bound_->h_.prepared_storage().capacity.limits();
+  need(spec.node_count <= limits[field::Budget::CascadeNodes] &&
+       spec.child_count <= limits[field::Budget::CascadeLinks] &&
+       spec.contribution_count <= limits[field::Budget::CascadeReferences],
+       "exchange hierarchy preparation exceeds capacity");
   nodes_.assign(spec.nodes, spec.nodes + spec.node_count);
   if (spec.child_count) children_.assign(spec.children, spec.children + spec.child_count);
   if (spec.contribution_count)
