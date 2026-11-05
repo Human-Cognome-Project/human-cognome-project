@@ -338,7 +338,7 @@ Taichi GPU execution/pinning work under #145. Fields/edges, activity overlays,
 time scrubbing, dynamic LoD and engine controls remain outside this tool.
 Engine operation and tests do not require the page or the optional target.
 
-Three.js 0.180.0/OrbitControls and Ajv 8.17.1 are bundled by esbuild 0.25.10 from
+Three.js 0.180.0/OrbitControls and Ajv 8.18.0 are bundled by esbuild 0.25.10 from
 the locked npm inputs. Their MIT licenses are retained in `vendor/` alongside
 the generated bundle's license notices. C++ uses the vendored
 [nlohmann/json v3.12.0 single header](https://github.com/nlohmann/json/releases/tag/v3.12.0),
