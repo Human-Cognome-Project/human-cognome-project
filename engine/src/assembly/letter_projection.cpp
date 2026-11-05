@@ -245,6 +245,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
   LetterProjection out;
   out.study_ = warm::new_uuid();
   out.recipe_ = b;
+  for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);
   std::map<warm::OccurrenceId, warm::StructuralOccurrence> ordered;
   std::map<warm::OccurrenceId, const warm::Occurrence *> legacy;
@@ -344,6 +345,39 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.input_.contacts = out.structural_input_.contacts;
   }
   return out;
+}
+
+warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
+  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
+    if (recipe_.selections[i].entry == entry) return exposures_[i];
+  throw warm::Error("unknown projected selection");
+}
+
+LetterProjection LetterProjection::prepare_exposure(const OccurrenceKey &owner,
+                                                     warm::Exposure target) const {
+  need(recipe_.recipe_version == 2 && owner.study == study_ && owner.source.path.empty(),
+       "exposure change requires this structural study's aggregate owner");
+  need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
+       exposure(owner.source.entry) != target, "exposure change requires the other alternative");
+  auto next = *this;
+  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
+    if (recipe_.selections[i].entry == owner.source.entry) {
+      next.exposures_[i] = target;
+      next.structural_input_.selections[i].exposure = target == warm::Exposure::Aggregate
+          ? Exposure::Aggregate : Exposure::Parts;
+    }
+  for (auto &o : next.occurrences_)
+    if (o.key.source.entry == owner.source.entry)
+      o.active = o.key.source.path.empty() == (target == warm::Exposure::Aggregate);
+  next.parents_.clear();
+  for (const auto &o : next.occurrences_) if (o.active) {
+    const auto tool = std::find_if(next.recipe_.tools.begin(), next.recipe_.tools.end(),
+        [&](const auto &t) { return t.ref == o.definition; });
+    need(tool != next.recipe_.tools.end(), "missing immutable projected definition");
+    for (const auto &p : tool->parents)
+      next.parents_.push_back({o.key, {GroupKind::ParentValue, p.target.object}, p.ordinal, p.contribution});
+  }
+  return next;
 }
 
 StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {

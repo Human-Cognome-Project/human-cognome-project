@@ -22,6 +22,7 @@
 #include "prepared_fixture.h"
 #include "exchange_binding_access.h"
 #include "exchange_coordinator_access.h"
+#include "exchange_owner_access.h"
 #include "letter_projection_fixture.h"
 #include "prepared_metrics.h"
 #include "field/live_hierarchy.h"
@@ -2664,6 +2665,7 @@ void capture_current(engine::Runtime &r,
 #include "placement_cases.inc"
 #include "exchange_commit_cases.inc"
 #include "exchange_field_cases.inc"
+#include "exchange_owner_cases.inc"
 #include "placement_audit.inc"
 }  // namespace
 int main(int argc, char **argv) {
@@ -2806,6 +2808,8 @@ int main(int argc, char **argv) {
       run("exchange_commit", [&] { exchange_commit(r, path); });
     if (only == "placement" || only == "exchange_fields")
       run("exchange_fields", [&] { exchange_fields(r, path); });
+    if (only == "placement" || only == "exchange_owner")
+      run("exchange_owner", [&] { exchange_owner(r, path); });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")

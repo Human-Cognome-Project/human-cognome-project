@@ -6,6 +6,7 @@
 #include "warm/values.h"
 
 namespace assembly {
+namespace detail { class ExchangeOwner; }
 
 struct InitialState {
   warm::Point position, velocity;
@@ -74,6 +75,8 @@ class LetterProjection {
  public:
   const warm::Uuid &study() const { return study_; }
   const warm::Bundle &recipe() const { return recipe_; }
+  // Current owner-local exposure; recipe() remains the immutable initial recipe.
+  warm::Exposure exposure(std::uint64_t entry) const;
   const std::vector<ProjectedOccurrence> &occurrences() const {
     return occurrences_;
   }
@@ -90,8 +93,11 @@ class LetterProjection {
  private:
   LetterProjection() = default;
   friend LetterProjection project_letters(const warm::Bundle &);
+  friend class detail::ExchangeOwner;
+  LetterProjection prepare_exposure(const OccurrenceKey &, warm::Exposure) const;
   warm::Uuid study_;
   warm::Bundle recipe_;
+  std::vector<warm::Exposure> exposures_;
   std::vector<ProjectedOccurrence> occurrences_;
   std::vector<ParentContribution> parents_;
   StudyInput input_;

@@ -23,6 +23,7 @@ struct ExchangeNewField {
 class ExchangeCoordinator {
  private:
   friend struct assembly::testing::ExchangeCoordinatorAccess;
+  friend class ExchangeOwner;
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});

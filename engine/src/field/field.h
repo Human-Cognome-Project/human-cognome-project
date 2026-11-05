@@ -25,7 +25,7 @@
 // one edge shape: proportional participation acts at the particle centre.
 //
 // Nothing here decides what the data means. It moves state through one tick.
-namespace assembly::detail { class ExchangeCoordinator; }
+namespace assembly::detail { class ExchangeCoordinator; class ExchangeOwner; }
 namespace field {
 
 namespace detail {
@@ -391,6 +391,7 @@ class Harness {
  private:
   friend class detail::TickExecution;
   friend class assembly::detail::ExchangeCoordinator;
+  friend class assembly::detail::ExchangeOwner;
   friend class detail::Placement;
   friend class detail::AdmissionContacts;
   friend class detail::Activity;

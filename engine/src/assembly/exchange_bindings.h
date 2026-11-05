@@ -8,6 +8,7 @@ namespace assembly {
 namespace testing { struct ExchangeBindingAccess; struct ExchangeCoordinatorAccess; }
 namespace detail {
 class ExchangeCoordinator;
+class ExchangeOwner;
 struct OccurrenceBinding {
   OccurrenceKey occurrence;
   engine::RecordHandle handle;
@@ -22,6 +23,7 @@ struct ExchangeFieldBinding {
 class ExchangeBindings {
  private:
   friend class ExchangeCoordinator;
+  friend class ExchangeOwner;
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
