@@ -69,9 +69,11 @@ a merge or review changes Built/Held/Active status; other entry points link here
 
 Private exchange source bindings and native accounting are accepted in #217/#218.
 #219's private atomic coordinator is provisionally accepted; final integration
-awaits its hosted suite. Continue enduring owner/projection and field-family
-lifecycle, complete owner resource accounting and same-execution controls under
-the accepted continuation plan. Do not duplicate the reviewed exchange work.
+awaits its hosted suite. The current [field lifecycle increment](engine/docs/EXCHANGE-FIELDS.md)
+adds declared missing fields, retires unused outgoing fields and publishes both
+field and occurrence mappings, preserving shared/focal fields and peak claims.
+Enduring owner/projection lifecycle, complete owner resource accounting and
+same-execution controls remain following work under the accepted continuation plan.
 
 ## Latest model direction — 2026-10-23
 
@@ -135,7 +137,7 @@ with C2a's publication/consume contract without a same-tick global solve.
 local evidence tooling is accepted in #204. B3 combined bootstrap/admission is
 released under the accepted admission plan. Native generated-row staging is accepted in #205 and private source/hierarchy preflight in #207.
 #210 integrates the corrected #208/#209 contact and ordinary-commit stack with accepted private D1 bootstrap/initial focus.
-Private ordinary arrival and initial explicit-focus bootstrap are accepted in #210. Private focus/rebase and outgoing-state/replacement staging are accepted through #215; #217/#218 provisionally accept logical source bindings and native accounting. The current private atomic exchange increment connects them for an existing field inventory. No operational admission API is accepted. Next complete field/owner lifecycle and total resource accounting, then same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
+Private ordinary arrival and initial explicit-focus bootstrap are accepted in #210. Private focus/rebase and outgoing-state/replacement staging are accepted through #215; #217/#218 accept logical source bindings and native accounting. #219 provisionally accepts private atomic exchange; the current increment extends its field lifecycle. No operational admission API is accepted. Next complete enduring owner/projection lifecycle and total resource accounting, then same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
 
 The stage descriptions below preserve the scope at each acceptance; “following”
 and “not released” in those descriptions are not current holds on #194–#201.

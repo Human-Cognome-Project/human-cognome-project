@@ -886,3 +886,54 @@ the conflict resolution changes documentation only. #219's private coordinator
 is provisionally reviewed in review 5787134942, with hosted run 42050645525 still
 pending at disposition. No duplicate native run was requested. Enduring owner,
 field-family lifecycle, total owner resources and GPU qualification remain separate.
+
+## Contributor-local exchange field lifecycle — 2026-11-05
+
+Tested source `d7676dea8d03a7a90f37ff97c578eb04143da102`, following #219's
+[provisional review 5787134942](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5787134942)
+at `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`. Main's accepted #217/#218
+integration `372d47f5` is merged, retaining both evidence histories. #219 remains
+the provisional dependency; its reviewed branch and running CI were not changed.
+Later changes on this branch are documentation only.
+
+Actual native CPU in WSL Ubuntu, matching Taichi source/runtime and LLVM/Clang 15:
+
+- Build: `cmake --build engine/build --target live_hierarchy_test -j 2`.
+- Source `engine/build/engine-env.sh`; run with `nice -n 10`.
+- `live_hierarchy_test --threads 1 --case exchange_fields`: all five scenarios
+  passed: expansion, compression, old-plus-new field capacity, focal retirement
+  rejection and late mapping-publication failure.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all **20 combined cases** passed. Compiler audit remains **19 kernels and 29
+  unsafe controls per 52/8-bit profile**; emitted LLVM retained via `HCP_B2_IR_DIR`.
+  Native numerical kernels and prepared numerical arrays are unchanged.
+
+The field witnesses start with only one alternative of a two-byte letter present.
+Expansion creates six fields and retires two; compression creates two and retires
+six. The membership/focal field survives with its original full handle. Tests
+check missing/duplicate/extra logical fields, aliased native addresses, actual-claim
+field mappings, no outgoing record reuse, full occurrence/field mapping preservation
+on rejection/failure, unchanged execution/history and retry, one unticked generation,
+stable native backing, no observed recurring C++ allocation and a following tick.
+Final seven-field demand still requires nine simultaneous claims. Retiring a focal
+field rejects without implicit focus changes. Existing atomic exchange witnesses
+also pass with fields shared by independent copies.
+
+Initial `cd5a4e49` passed creation/retirement in both directions, then its capacity
+fixture setup correctly rejected Fields=7 with Focus=70. Final source sets Focus=7
+and adds complete mapping/address-alias checks. The earlier log is preserved
+separately and is not final-source passing evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/exchange-fields-d7676dea`; Windows archive
+`setup-evidence/exchange-fields-d7676dea.tar.gz`. SHA256SUMS digest:
+`e88e03c6754e312c5a54a19ddb11e9c974f548b09111574322f4c9a457d47932`.
+Commands, source/fork pins, build settings, toolchain, binary/runtime hashes, logs
+and emitted code are retained. This is contributor-local evidence; publishing the
+digest does not constitute independent inspection.
+
+[Field lifecycle scope](../../docs/EXCHANGE-FIELDS.md) remains a consumed private
+plan with trusted initial identity/layout bindings and an owner-supplied prospective
+hierarchy. Enduring owner/projection lifecycle, complete owner resource accounting
+and operational controls remain separate. Full 115-suite regression, remaining
+compiler modes, PostgreSQL and GPU were not rerun. Shared-host timing is not
+performance evidence. Hosted CI remains authoritative for its scope.

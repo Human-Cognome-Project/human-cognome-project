@@ -27,18 +27,20 @@ other commands in declaration order, fixing the pending-handle indices.
 
 The plan retires exactly the sealed outgoing handles, removes their captured
 source rows and removes source contacts incident on them. Unrelated source rows,
-contacts and occurrence mappings are retained. All incoming fields must already
-have trusted committed mappings. This increment neither creates nor retires field
-families, changes focus, nor invents a hierarchy. The owner supplies a prospective
-hierarchy using existing fields and the generated command indices; preparation
+contacts and occurrence mappings are retained. #219 initially required an existing
+field inventory. The following [field lifecycle increment](EXCHANGE-FIELDS.md)
+adds missing declared fields and retires unused outgoing fields, with a complete
+trusted field map. It does not change focus or invent a hierarchy. The owner supplies a prospective
+hierarchy using retained fields and generated body/field command indices; preparation
 copies and seals it within the configured node/link/reference limits. Native
 preflight subsequently validates its complete prospective source coverage.
 
 In particular, compressing the last participant out of a retained field does not
-make an empty hierarchy node valid. Such a plan rejects. Field-family lifecycle
-and the associated focus/hierarchy policies remain follow-on owner integration.
-The witnesses retain independent aggregate and byte copies so both tested
-directions preserve a valid prepared field inventory.
+make an empty hierarchy node valid. Such a plan rejects. The field lifecycle path
+must omit retired nodes and include new pending field owners in the prospective
+hierarchy; focal retirement still rejects without an explicit focus operation.
+The original atomic witnesses retain independent copies; the field lifecycle
+witnesses separately qualify exchange without them.
 
 ## Exclusive transaction
 
@@ -58,8 +60,9 @@ calls the existing private admission boundary in exchange mode. That boundary:
 
 After that transaction succeeds, the coordinator reads the eight-double outgoing
 and 32-double balance reports, then fills its preallocated incoming mapping entries
-from the actual resolved native claims. A vector swap publishes the complete new
-occurrence map, followed by its generation and descriptive reports. Surviving
+from the actual resolved native claims. The field lifecycle extension resolves
+new field handles in the same way. Vector swaps publish both complete maps,
+followed by their generation and descriptive reports. Surviving
 logical identities and full handles remain unchanged. No fallible preparation or
 allocation follows these fixed-size assignments. All steps remain inside the same
 exclusive operation; no caller can observe a healthy intermediate generation.
@@ -78,16 +81,18 @@ or recovery claim for partially published execution.
 
 Success consumes the prepared transaction; replay rejects as stale. The former
 generation-bound source view is not silently rebound. The committed occurrence
-map is retained for the future owner's next preparation. Sustained preparation,
+and field maps are retained for the future owner's next preparation. Sustained
+preparation,
 projection exposure updates, mapping lifecycle across unrelated operations and
 recovery/restart belong to the enduring owner.
 
 ## Resources and qualification
 
-Host preparation owns bounded command/intrinsic arrays, an alternate occurrence
-map, copied hierarchy arrays and fixed diagnostic reports. Runtime checks allocate
+Host preparation owns bounded command/intrinsic arrays, alternate occurrence and
+field maps with field command indices, copied hierarchy arrays and fixed diagnostic
+reports. Runtime checks allocate
 no new vectors. Coordinator reservation is the source-view reservation plus
-`16*(next_occurrences+1)` structural units, deducted from PlacementWork before
+`16*(next_occurrences+next_fields+1)` structural units, deducted from PlacementWork before
 placement. Existing source/hierarchy/contact work and peak checks still apply.
 These host preparation objects remain outside the harness scratch manifest;
 complete enduring-owner resource accounting is not qualified here. Existing native
@@ -105,5 +110,5 @@ must all leave execution unready. Earlier empty-field compression fixtures were
 correctly rejected and their failed logs are separate from passing evidence.
 
 See [source-pinned local evidence](../tests/admission/README.md). CPU execution does
-not qualify GPU behavior. Full operational controls, field-family lifecycle and
-the integrated local study remain separate work.
+not qualify GPU behavior. Full operational controls, enduring owner lifecycle,
+total owner resource accounting and the integrated local study remain separate work.
