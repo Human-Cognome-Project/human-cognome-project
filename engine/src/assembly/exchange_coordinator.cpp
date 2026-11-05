@@ -14,17 +14,24 @@ bool same(const FieldKey &a, const FieldKey &b) {
 }
 
 ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
-    const std::vector<ExchangeIncoming> &incoming) : bound_(std::move(bound)) {
+    const std::vector<ExchangeIncoming> &incoming,
+    const std::vector<ExchangeNewField> &new_fields) : bound_(std::move(bound)) {
   need(bool(bound_), "missing trusted exchange bindings");
   auto &b = *bound_;
   const auto &s = b.h_.prepared_storage();
   need(b.validate(b.generation_, UINT64_MAX).status == field::UpdateStatus::Ok,
        "stale exchange preparation");
+  need(b.fields_.size() == s.live.fields,
+       "exchange field lifecycle requires a complete trusted field inventory");
   const auto &sources = b.contract_.incoming();
   need(incoming.size() == sources.size(), "incomplete incoming alternative");
   need(sources.size() <= s.capacity.limits()[field::Budget::Batch] &&
        b.contract_.mass() <= (UINT64_C(1) << 53), "unsupported exchange declaration size or mass");
   mapping_generation_ = b.generation_;
+  need(new_fields.size() <= s.capacity.limits()[field::Budget::Fields],
+       "exchange field preparation exceeds capacity");
+  next_fields_ = b.fields_;
+  field_commands_.assign(next_fields_.size(), -1);
   for (const auto &o : b.occurrences_)
     if (!b.outgoing_rows_[o.handle.record]) next_.push_back(o);
   survivors_ = next_.size();
@@ -50,6 +57,18 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
                            input->radius, input->geometry});
     commands_.push_back(command);
     next_.push_back({source.occurrence, {}});
+  }
+  for (const auto &f : new_fields) {
+    need(f.kind > 0 && f.kind <= 255 && f.address >= 0,
+         "invalid incoming field binding");
+    for (const auto &prior : next_fields_)
+      need(!same(prior.field, f.field), "duplicate or already committed exchange field");
+    field::UpdateCommand c;
+    c.operation = field::UpdateOp::DefineField;
+    c.kind = f.kind; c.address = f.address;
+    field_commands_.push_back(int(commands_.size()));
+    next_fields_.push_back({f.field, {}});
+    commands_.push_back(c);
   }
   for (const auto &handle : b.outgoing_) {
     field::UpdateCommand c;
@@ -84,14 +103,16 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
   for (std::size_t i = 0; i < sources.size(); ++i) {
     const auto &source = sources[i];
     const auto add = [&](const FieldKey &key, std::uint64_t count, std::uint64_t ordinal) {
-      const auto f = std::find_if(b.fields_.begin(), b.fields_.end(),
+      const auto f = std::find_if(next_fields_.begin(), next_fields_.end(),
           [&](const auto &v) { return same(key, v.field); });
-      need(f != b.fields_.end(), "incoming exchange field is not prepared");
+      need(f != next_fields_.end(), "incoming exchange field is not prepared");
       need(count && count <= source.mass, "invalid incoming exact participation");
       field::UpdateCommand c;
       c.operation = field::UpdateOp::InsertParticipation;
       c.first = field::UpdateRef::pending(int(i));
-      c.second = field::UpdateRef::existing(f->handle);
+      const int command = field_commands_[f - next_fields_.begin()];
+      c.second = command < 0 ? field::UpdateRef::existing(f->handle)
+                             : field::UpdateRef::pending(command);
       c.exact_count = count; c.share = float(double(count) / double(source.mass));
       c.position = position++; c.ordinal = ordinal;
       commands_.push_back(c);
@@ -101,10 +122,38 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
       add({GroupKind::ParentValue, parent.target.object}, parent.contribution, parent.ordinal);
     for (const auto &membership : memberships) add(membership, source.mass, 0);
   }
+  // Only touched outgoing fields may disappear. Retained source participation,
+  // including another occurrence's use, prevents retirement. Focus protection is
+  // enforced by ordinary native source preflight, with no implicit focus change.
+  for (std::size_t i = 0; i < next_fields_.size();) {
+    const auto &f = next_fields_[i];
+    const int command = field_commands_[i];
+    bool used = false, touched = false;
+    if (command < 0) {
+      for (std::size_t row = 0; row < s.live.edges; ++row)
+        if (s.edges[row].second.record == f.handle.record) {
+          touched |= b.edge_rows_[row];
+          used |= !b.edge_rows_[row];
+        }
+    }
+    for (const auto &c : commands_) if (c.operation == field::UpdateOp::InsertParticipation)
+      used |= command < 0 ? c.second.command < 0 && c.second.handle.record == f.handle.record
+                          : c.second.command == command;
+    need(command < 0 || used, "undeclared extra incoming field");
+    if (touched && !used) {
+      field::UpdateCommand c;
+      c.operation = field::UpdateOp::RetireField;
+      c.first = field::UpdateRef::existing(f.handle);
+      commands_.push_back(c);
+      next_fields_.erase(next_fields_.begin() + i);
+      field_commands_.erase(field_commands_.begin() + i);
+    } else ++i;
+  }
   need(commands_.size() <= s.capacity.limits()[field::Budget::Batch], "exchange command backing exhausted");
-  need(next_.size() <= (UINT64_MAX - 16) / 16 && b.work_ <= UINT64_MAX - 16 * (next_.size() + 1),
+  const auto entries = next_.size() + next_fields_.size();
+  need(entries <= (UINT64_MAX - 16) / 16 && b.work_ <= UINT64_MAX - 16 * (entries + 1),
        "exchange coordinator work overflow");
-  work_ = b.work_ + 16 * (next_.size() + 1);
+  work_ = b.work_ + 16 * (entries + 1);
 }
 
 void ExchangeCoordinator::prepare_hierarchy(const field::LiveRefreshSpec &spec) {
@@ -158,7 +207,10 @@ field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,
       throw std::runtime_error("injected failure before exchange mapping publication");
     for (std::size_t i = 0; i < intrinsics_.size(); ++i)
       next_[survivors_ + i].handle = s.resolved[i];
+    for (std::size_t i = 0; i < next_fields_.size(); ++i)
+      if (field_commands_[i] >= 0) next_fields_[i].handle = s.resolved[field_commands_[i]];
     b.occurrences_.swap(next_);
+    b.fields_.swap(next_fields_);
     outgoing_report_ = outgoing;
     balance_report_ = balance;
     mapping_generation_ = result.generation;

@@ -2663,6 +2663,7 @@ void capture_current(engine::Runtime &r,
 #include "contact_tick_cases.inc"
 #include "placement_cases.inc"
 #include "exchange_commit_cases.inc"
+#include "exchange_field_cases.inc"
 #include "placement_audit.inc"
 }  // namespace
 int main(int argc, char **argv) {
@@ -2803,6 +2804,8 @@ int main(int argc, char **argv) {
       run("exchange_bindings", [&] { exchange_bindings(r, path); });
     if (only == "placement" || only == "exchange_commit")
       run("exchange_commit", [&] { exchange_commit(r, path); });
+    if (only == "placement" || only == "exchange_fields")
+      run("exchange_fields", [&] { exchange_fields(r, path); });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")
