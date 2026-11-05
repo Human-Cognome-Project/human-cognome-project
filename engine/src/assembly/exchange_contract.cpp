@@ -21,7 +21,7 @@ bool same(const ExchangeSource &a, const ExchangeSource &b) {
 }
 bool bijection(const std::vector<ExchangeSource> &expected,
                const ExchangeSource *actual, std::size_t count) {
-  if (!actual || count != expected.size()) return false;
+  if (expected.empty() || !actual || count != expected.size()) return false;
   for (const auto &source : expected) {
     std::size_t matches = 0;
     for (std::size_t i = 0; i < count; ++i) matches += same(source, actual[i]);
@@ -32,8 +32,10 @@ bool bijection(const std::vector<ExchangeSource> &expected,
 }  // namespace
 
 bool LetterExchangeContract::matches(const ExchangeSource *outgoing, std::size_t out,
-                                    const ExchangeSource *incoming, std::size_t in) const {
-  return bijection(outgoing_, outgoing, out) && bijection(incoming_, incoming, in);
+                                    const ExchangeSource *incoming, std::size_t in,
+                                    std::uint64_t work) const {
+  return work >= match_work_ && bijection(outgoing_, outgoing, out) &&
+         bijection(incoming_, incoming, in);
 }
 
 LetterExchangeContract declare_letter_exchange(const LetterProjection &projection,
@@ -89,6 +91,15 @@ LetterExchangeContract declare_letter_exchange(const LetterProjection &projectio
     result.outgoing_ = std::move(parts);
     result.incoming_ = std::move(aggregate);
   }
+  // Conservative structural comparison units, reserved before inspecting caller
+  // arrays. Includes repeated matching keys with different parent descriptors.
+  for (const auto *side : {&result.outgoing_, &result.incoming_})
+    for (const auto &s : *side) {
+      const auto per_match = 8 + 4 * std::uint64_t(s.parents.size());
+      need(side->size() <= (UINT64_MAX - result.match_work_) / per_match,
+           "exchange comparison work overflow");
+      result.match_work_ += side->size() * per_match;
+    }
   return result;
 }
 }  // namespace assembly

@@ -29,9 +29,11 @@ class LetterExchangeContract {
   const std::vector<ExchangeSource> &outgoing() const { return outgoing_; }
   const std::vector<ExchangeSource> &incoming() const { return incoming_; }
   const std::vector<ExchangeLeaf> &leaves() const { return leaves_; }
+  std::uint64_t match_work() const { return match_work_; }
   // Exact bijections, independent of adapter row order. No allocation/mutation.
   bool matches(const ExchangeSource *outgoing, std::size_t outgoing_count,
-               const ExchangeSource *incoming, std::size_t incoming_count) const;
+               const ExchangeSource *incoming, std::size_t incoming_count,
+               std::uint64_t work) const;
 
  private:
   LetterExchangeContract() = default;
@@ -40,7 +42,7 @@ class LetterExchangeContract {
   OccurrenceKey owner_;
   warm::BundleRef recipe_;
   warm::Exposure from_{}, to_{};
-  std::uint64_t mass_{};
+  std::uint64_t mass_{}, match_work_{};
   std::vector<ExchangeSource> outgoing_, incoming_;
   std::vector<ExchangeLeaf> leaves_;
 };
