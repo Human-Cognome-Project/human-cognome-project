@@ -670,7 +670,8 @@ UpdateResult Harness::stage_current_admission(
     const PlacementIntrinsic *intrinsics, std::size_t bodies,
     const LiveRefreshSpec &hierarchy, std::uint64_t placement_work,
     std::uint64_t placement_cells, std::uint64_t hierarchy_work, bool commit,
-    bool bootstrap, const UpdateRef *focus, std::size_t focus_count) {
+    bool bootstrap, const UpdateRef *focus, std::size_t focus_count,
+    const engine::RecordHandle *outgoing, std::size_t outgoing_count) {
   UpdateResult out;
   if (!prepared_ || !ready_) {
     out.status = UpdateStatus::Unready;
@@ -692,7 +693,12 @@ UpdateResult Harness::stage_current_admission(
     out.status = UpdateStatus::InvalidInput;
     return out;
   }
-  const auto placed = placement_->stage(expected, commands, count, intrinsics,
+  if ((outgoing || outgoing_count) && (bootstrap || !outgoing || !outgoing_count))
+    return out;
+  const auto placed = outgoing
+      ? placement_->stage_exchange(expected, commands, count, intrinsics, bodies,
+                                    outgoing, outgoing_count, placement_work, placement_cells)
+      : placement_->stage(expected, commands, count, intrinsics,
                                          bodies, placement_work, placement_cells,
                                          bootstrap, focus, focus_count);
   out.failure = placed.failure;

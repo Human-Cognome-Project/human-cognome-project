@@ -47,7 +47,8 @@ target_link_libraries(study_assembly PUBLIC field_core)
 target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
 add_library(active_workbench STATIC src/assembly/active_workbench.cpp)
-add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp)
+add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp
+    src/assembly/exchange_coordinator.cpp)
 target_link_libraries(exchange_coordination PUBLIC field_core membership_fields)
 target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)

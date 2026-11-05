@@ -5,7 +5,7 @@
 #include "field/prepared_storage.h"
 
 namespace assembly {
-namespace testing { struct ExchangeBindingAccess; }
+namespace testing { struct ExchangeBindingAccess; struct ExchangeCoordinatorAccess; }
 namespace detail {
 class ExchangeCoordinator;
 struct OccurrenceBinding {
@@ -23,6 +23,7 @@ class ExchangeBindings {
  private:
   friend class ExchangeCoordinator;
   friend struct assembly::testing::ExchangeBindingAccess;
+  friend struct assembly::testing::ExchangeCoordinatorAccess;
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
