@@ -48,19 +48,19 @@ The old-plus-new particle/reference peaks are unchanged: retirement cannot fund
 replacement claims, even if the final representation fits. Prepared accounting
 adds one two-argument target-copy kernel and two initializer arguments, with no
 new numerical array. Preparation compiles, binds and warms both paths. The
-placement prefix additionally reserves `64*(P+1) + commands + 8*bodies + 64`
+placement prefix additionally reserves `64*(P+1) + commands + 64*bodies + 128`
 work for reduction, retirement matching and native transfer. Selection and all
 placement/initialization backing are reused.
 
-This seam does not validate that selected bodies are one logical letter
-occurrence, that replacements are its declared alternative, or that intrinsic
-mass/source contributions conserve the outgoing total. Velocity transfer alone
-is not completed momentum-conserving exchange. Nearest-free placement also does
-not promise an unchanged replacement combined centre. The coordinator must record
-target, actual combined centre and initialization offset separately, validate
-conservation within reviewed floating bounds and publish retirement only with
-the accepted replacement source/hierarchy/contact state. No public control or
-database/recipe start path is added here.
+The following [native accounting increment](EXCHANGE-ACCOUNTING.md) adds prepared
+report/source-mass arrays and a balance kernel. It reconciles scalar physical and
+exact source masses within its supported integer domain, checks momentum within
+explicit floating bounds, and reports actual centre and offset separately from
+the target. This does not validate logical occurrence/alternative identity or
+incoming source contribution mapping. Nearest-free placement does not promise an
+unchanged combined centre. The coordinator must still publish retirement only
+with the accepted replacement source/hierarchy/contact state. No public control
+or database/recipe start path is added here.
 
 ## Executable scope
 
@@ -75,7 +75,7 @@ A final-fit/peak-overflow case retains the old-plus-new particle claim requireme
 
 The emitted-code audit includes the target-copy kernel, native outgoing bindings
 for target/velocity consumption, strict arithmetic and owned scratch writers.
-Its output-omission controls cover all 18 kernels; the existing arithmetic and
+Its output-omission controls now cover all 19 kernels; the existing arithmetic and
 publication controls remain. [Local evidence](../tests/admission/README.md)
 records source pins and actual modes. No GPU execution or complete D7 exchange
 is qualified by these CPU checks.

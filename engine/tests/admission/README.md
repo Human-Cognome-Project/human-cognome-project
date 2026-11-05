@@ -720,6 +720,47 @@ This is contributor-local evidence, not independently inspected merely because
 its hash is published. Committed occurrence-to-native-handle binding, source
 ledger validation, momentum/reporting and atomic exchange remain outstanding.
 
+## Private committed-source binding view — 2026-11-05
+
+The [binding prerequisite](../../docs/EXCHANGE-BINDINGS.md) follows provisionally
+accepted #216 without changing native numerical kernels. Test/source pin:
+`a574ec7d660dfdf5ba69a63500f862ffed2f762b`, modified Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`. Subsequent changes are documentation
+only. WSL Ubuntu/Clang 15 runs reported the actual CPU backend.
+
+Passed:
+
+- `live_hierarchy_test --threads 1 --case exchange_bindings` (bulk/default).
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case exchange_bindings`.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all 18 combined cases. The existing compiler audit remains 18 kernels and 27
+  unsafe controls per 52/8-bit profile, with emitted LLVM retained.
+
+The binding witness checks both directions, separate copies, nonidentity records
+and fields, inherited membership counts, all full-handle components, generation
+and work limits, changed mass/count/share/order/endpoints, extra incident source,
+retry and unready-owner refusal. Thirty-two read-only validations observe no
+recurring C++ allocation, no synchronization/transfers and unchanged execution,
+history and prepared backing. Preparation allocates separate host binding
+metadata; this does not qualify the enduring owner's total resource budget.
+
+Build: `cmake --build engine/build --target live_hierarchy_test -j 2`. Runs source
+`engine/build/engine-env.sh`, use `nice -n 10`, and retain combined emitted code
+with `HCP_B2_IR_DIR`. Raw bundle:
+`/root/hcp-workspace/evidence/exchange-bindings-a574ec7d`, matching Windows archive
+`setup-evidence/exchange-bindings-a574ec7d.tar.gz`. Manifest digest:
+`0c8471aadb50637bb8a562f76c3776943ff24a21d163b69bdb23938eb49eccd5`.
+Commands, pins, binary/runtime hashes, build settings, toolchain and logs are
+retained. The initial `e101daf3` fixture attempted multiple hierarchy roots and
+failed setup; the corrected single-root fixture preserves the same exact logical
+source rows. That failed log is separate, not passing evidence.
+
+Raw evidence remains contributor-local, not independently verified by publishing
+its digest. Full 115-suite regression, other compiler modes, PostgreSQL and GPU
+were not rerun. Shared-host timing is not performance evidence. This private
+generation-bound check assumes trusted initial owner mappings; it is not an
+operational binding API, numerical conservation check or atomic exchange.
+
 ## Hosted acceptance of structural declaration #216 — 2026-11-05
 
 Reviewed head `3e273a8a14904af171ee77bfbfe0f2e15ea22ab2`, merged as
@@ -736,3 +777,60 @@ The reviewer also directly compiled the structural test with GCC and passed
 This accepts immutable structural declarations only. #217's committed-source
 binding view remains provisionally reviewed with hosted validation pending;
 native conservation and complete atomic exchange remain outstanding.
+
+## Contributor-local exchange accounting — 2026-11-05
+
+Tested source `bdccf872b65d458ab1a6014dc1e4a5c2490369ff`, actual native CPU in
+WSL Ubuntu with matching Taichi fork and LLVM/Clang 15. This follows #217's
+provisional source review 5785905901; #216 is fully accepted above. Later changes
+on this branch are documentation only.
+
+Build: `cmake --build engine/build --target live_hierarchy_test -j 2`; source
+`engine/build/engine-env.sh`, run with `nice -n 10`:
+
+- `live_hierarchy_test --threads 1 --case exchange_placement`: passed 52/8-bit
+  compression/expansion accounting, mass/source rejection, missing/unsupported
+  exact metadata, native velocity and momentum corruption, fractional weighted
+  velocity, actual centre/nonzero offset, retry and unchanged state/backing.
+- `live_hierarchy_test --threads 1 --case placement_compiler`: bulk/default
+  audit passed 19 kernels and 29 unsafe controls per 52/8-bit profile.
+- `live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement`:
+  all 18 combined cases passed, including the same 19-kernel/29-control audits.
+
+Both audit modes retain emitted LLVM via `HCP_B2_IR_DIR`. The initial source
+`a5af9d07` test fixture declared exact masses 1,1,1 for physical masses 1,3,2;
+the new native check correctly rejected it. The corrected metadata and additional
+corruption witnesses are in the tested source. Its failed log is retained
+separately and is not passing evidence.
+
+Raw bundle `/root/hcp-workspace/evidence/exchange-accounting-bdccf872`; Windows
+archive `setup-evidence/exchange-accounting-bdccf872.tar.gz`. SHA256SUMS digest:
+`2e09b6665cebbfd2ccf7abd52422c2e207a3596ceb83c7f2488dee2750167a18`.
+Commands, source/fork pins, build settings, toolchain, binary/runtime hashes,
+logs and emitted code are retained. Raw evidence is contributor-local; publishing
+its digest does not constitute independent inspection.
+
+[Accounting scope and arithmetic bounds](../../docs/EXCHANGE-ACCOUNTING.md) cover
+private scalar reconciliation and diagnostics only. Logical incoming source
+validation, prospective hierarchy/contact integration, atomic publication and
+total operational owner accounting remain outstanding. Full 115-suite regression,
+remaining compiler configurations, PostgreSQL and GPU were not rerun. Shared-host
+timing is not performance evidence. Hosted CI remains authoritative for its scope.
+
+
+## Maintainer hosted acceptance — #217/#218, 2026-11-05
+
+Reviewed #217 head `34e323925b6d02a1ce5b79042673dd2369ae7edc` and #218 head
+`0b0093453eaa8098582d7dc2e8a52939af058f4c` are accepted. All 18 hosted checks
+passed on each head. Independently inspected runs 42038267169 and 42042807142:
+each covers 115 unique regression tests exactly once and 180 database checks
+with zero private reads. Retained artifacts cover all eight compiler configurations
+and all four additional no-unroll placement matrices. #217 audits 18 kernels/27
+unsafe controls per 52/8-bit profile; #218 audits 19/29 and passes the native mass,
+momentum and offset witnesses. Local evidence above remains separately attributed.
+
+Integration preserves reviewed engine/test source and main's review history;
+the conflict resolution changes documentation only. #219's private coordinator
+is provisionally reviewed in review 5787134942, with hosted run 42050645525 still
+pending at disposition. No duplicate native run was requested. Enduring owner,
+field-family lifecycle, total owner resources and GPU qualification remain separate.

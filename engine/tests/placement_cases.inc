@@ -756,10 +756,152 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   }
 }
 
+void exchange_bindings(engine::Runtime &r, HostPath path) {
+  using Access = assembly::testing::ExchangeBindingAccess;
+  letter_fixture::Fixture letters;
+  const auto group = letters.add(letter_fixture::object("02.00.00.00.00"), "group", 0);
+  letters.base.tools.at(letters.tools.at(letters.english)).member_of = {group};
+  letters.base.focal_fields = {{warm::FieldKind::Membership, group.object}};
+  const auto recipe = assembly::normalize_structural_letters(letters.base,
+      {{0, letters.ref(letters.english), warm::Exposure::Aggregate},
+       {1, letters.ref(letters.english), warm::Exposure::Aggregate},
+       {2, letters.ref(letters.english), warm::Exposure::Parts}});
+  const auto projection = assembly::project_letters(recipe);
+  const auto l = placement_limits();
+  Fixture f(r, path, {{}, {}, {0,1}, {}, {3}, {2,4}},
+      {{0,0,1}, {0,0,1}, {0,0,2}, {2,2,0}, {2,2,0}, {2,2,2}},
+      {2,2,2}, {2,2,2}, {0,20,40}, 52,52,false,false,true,false,1024,{},&l,true);
+  f.install();
+  f.control->set(1, f.in.field_rows[0].record);
+  LiveHierarchyAccess::poll(f.h, 0, f.in.field_rows[0].record);
+  f.control->set(4);
+  const auto byte = letters.base.tools.at(letters.tools.at(letters.english)).parents[0].target;
+  const auto &byte_tool = letters.base.tools.at(letters.tools.at(byte.object));
+  std::vector<assembly::detail::OccurrenceBinding> rows{
+      {{projection.study(), {2,{0,0}}}, f.in.particle_rows[2]},
+      {{projection.study(), {0,{}}}, f.in.particle_rows[0]},
+      {{projection.study(), {1,{}}}, f.in.particle_rows[1]}};
+  std::vector<assembly::detail::ExchangeFieldBinding> fields{
+      {{assembly::GroupKind::SiblingDefinition, letters.english}, f.in.field_rows[3]},
+      {{assembly::GroupKind::ParentValue, byte.object}, f.in.field_rows[4]},
+      {{assembly::GroupKind::SiblingDefinition, byte.object}, f.in.field_rows[2]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[0].target.object}, f.in.field_rows[0]},
+      {{assembly::GroupKind::ParentValue, byte_tool.parents[1].target.object}, f.in.field_rows[1]},
+      {{assembly::GroupKind::Membership, group.object}, f.in.field_rows[5]}};
+  const auto expand = assembly::declare_letter_exchange(projection,
+      {projection.study(), {0,{}}}, warm::Exposure::Parts);
+  const auto compress = assembly::declare_letter_exchange(projection,
+      {projection.study(), {2,{}}}, warm::Exposure::Aggregate);
+  auto bound = Access::prepare(f.h, projection, expand, rows, fields);
+  auto reverse = Access::prepare(f.h, projection, compress, rows, fields);
+  require(Access::outgoing(*bound)[0].record == f.in.particle_rows[0].record &&
+              Access::outgoing(*reverse)[0].record == f.in.particle_rows[2].record,
+          "logical occurrence did not resolve to its own full handle");
+  const auto before = TickSnapshot(f);
+  const auto history = PlacementAccess::rebase_history(f.h);
+  prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(f.h));
+  const auto backing = metrics.sample();
+  for (int repeat = 0; repeat < 32; ++repeat) {
+    UpdateResult a, b;
+    no_new([&] { a = Access::validate(*bound); b = Access::validate(*reverse); });
+    require(a.status == UpdateStatus::Ok && b.status == UpdateStatus::Ok &&
+                !a.upload_bytes && !a.readback_bytes && !a.synchronizations,
+            "valid bound source rejected or touched numerical execution");
+  }
+  const auto generation = f.h.prepared_storage().generation;
+  require(Access::validate(*bound, generation + 1).status == UpdateStatus::Stale &&
+              Access::validate(*bound, generation, Access::work(*bound) - 1).status == UpdateStatus::CapacityExhausted,
+          "binding generation/work boundary ignored");
+  const auto rejects = [&](auto bad_rows, auto bad_fields) {
+    bool rejected = false;
+    try { Access::prepare(f.h, projection, expand, std::move(bad_rows), std::move(bad_fields)); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected, "invalid owner binding accepted");
+  };
+  auto bad = rows;
+  for (int component = 0; component < 4; ++component) {
+    bad = rows;
+    if (component == 0) ++bad[1].handle.incarnation;
+    if (component == 1) ++bad[1].handle.context;
+    if (component == 2) ++bad[1].handle.address;
+    if (component == 3) bad[1].handle.record = f.in.particle_rows[1].record;
+    rejects(bad, fields);
+  }
+  bad = rows;
+  bad[1].handle = bad[2].handle;
+  rejects(bad, fields);
+  bad = rows;
+  bad[1].occurrence.study = warm::new_uuid();
+  rejects(bad, fields);
+  bad = rows;
+  bad[0].occurrence.source.path.clear(); // Inactive aggregate alternative.
+  rejects(bad, fields);
+  bad = rows;
+  bad.pop_back();
+  rejects(bad, fields);
+  auto bad_fields = fields;
+  bad_fields[1].handle = bad_fields[0].handle;
+  rejects(rows, bad_fields);
+  bad_fields = fields;
+  bad_fields.pop_back(); // Inherited membership is required source state too.
+  rejects(rows, bad_fields);
+  // Deliberate committed-ledger fault injection; validator must only observe.
+  auto &s = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage());
+  const auto record = f.in.particle_rows[0].record;
+  const auto saved_mass = s.source_masses[record];
+  ++s.source_masses[record];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput &&
+              s.source_masses[record] == saved_mass + 1, "changed exact mass accepted or restored");
+  s.source_masses[record] = saved_mass;
+  ++s.particle_headers[record].incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "reused physical row accepted");
+  --s.particle_headers[record].incarnation;
+  ++s.generation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "changed source generation accepted");
+  --s.generation;
+  const std::size_t selected_edge = 3, other_edge = 4;
+  require(s.edges[selected_edge].first.record == record &&
+              s.edges[other_edge].first.record == f.in.particle_rows[1].record,
+          "source fault injection must select outgoing and unrelated rows");
+  const auto edge = s.edges[selected_edge];
+  const auto count = s.source_counts[selected_edge];
+  ++s.source_counts[selected_edge];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed exact participation accepted");
+  s.source_counts[selected_edge] = count;
+  ++s.edges[selected_edge].ordinal;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed source order accepted");
+  s.edges[selected_edge] = edge;
+  s.edges[selected_edge].share = 0.25f;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "changed share metadata accepted");
+  s.edges[selected_edge] = edge;
+  ++s.edges[selected_edge].second.incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "stale participation endpoint accepted");
+  s.edges[selected_edge] = edge;
+  ++s.field_headers[f.in.field_rows[0].record].incarnation;
+  require(Access::validate(*bound).status == UpdateStatus::Stale, "reused field record accepted");
+  --s.field_headers[f.in.field_rows[0].record].incarnation;
+  const auto unrelated = s.edges[other_edge];
+  s.edges[other_edge].first = f.in.particle_rows[0];
+  require(Access::validate(*bound).status == UpdateStatus::InvalidInput, "extra outgoing edge accepted");
+  s.edges[other_edge] = unrelated;
+  require(Access::validate(*bound).status == UpdateStatus::Ok && before == TickSnapshot(f) &&
+              history == PlacementAccess::rebase_history(f.h) && backing.same_backing(metrics.sample()),
+          "bound source validation changed execution or failed retry");
+  PreparedFixtureAccess::inject_failure(f.h, 300);
+  bool failed = false;
+  try { place(f, {placement_definition()}, {placement_intrinsic()}); }
+  catch (const std::runtime_error &) { failed = true; }
+  require(failed && !f.h.ready() && Access::validate(*bound).status == UpdateStatus::Unready,
+          "unready execution accepted by binding validator");
+  rejects(rows, fields);
+  std::cout << "exchange_bindings,expansion=1,compression=1,copies=distinct,membership=exact,"
+               "full_handles=1,stale_rejected=1,reuse=32,cpp_new=0,unchanged=1 PASS\n";
+}
+
 void exchange_placement(engine::Runtime &r, HostPath path) {
   for (int bits : {52, 8}) {
     const auto limits = placement_limits();
-    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 1, 1}, {1, 3, 2}, {-4, 8, 40},
+    Fixture f(r, path, {{}}, {{1, 1, 1}}, {1, 3, 2}, {1, 3, 2}, {-4, 8, 40},
               bits, 52, false, false, true, false, 1024, {1, 1, 1}, &limits, true);
     f.install();
     const auto a = f.in.particle_rows[0], b = f.in.particle_rows[1];
@@ -834,7 +976,34 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
       for (int k = 0; k < 3; ++k)
         require(rows[(kVelX + k) * stride] == velocity[k], "replacement velocity lost f64 detail");
       certify(result, inputs, {{{40, 0, 0}, 1}});
+      const auto balance = PlacementAccess::exchange_balance(f.h);
+      require(balance[6] == 4 && balance[7] == 5 && balance[10] == 0 && balance[22] == 0,
+              "native mass/centre accounting differs from compression");
+      for (int k = 0; k < 3; ++k)
+        require(balance[k] == 4 * velocity[k] && balance[13 + k] == balance[k] &&
+                    balance[16 + k] == 0 && balance[19 + k] > 0,
+                "native momentum accounting differs from outgoing state");
     }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 2);
+    require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::InvalidNumerics,
+            "physical mass inconsistent with exact source accepted");
+    PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    auto wrong_mass_commands = commands;
+    auto wrong_mass_inputs = inputs;
+    wrong_mass_commands[0].exact_mass = 3;
+    wrong_mass_inputs[0].mass = 3;
+    require(PlacementAccess::exchange(f.h, wrong_mass_commands, wrong_mass_inputs, outgoing).status ==
+                PlacementStatus::InvalidNumerics, "unequal replacement total mass accepted");
+    wrong_mass_commands[0].exact_mass.reset();
+    require(PlacementAccess::exchange(f.h, wrong_mass_commands, wrong_mass_inputs, outgoing).status ==
+                PlacementStatus::InvalidInput, "unknown incoming source mass accepted");
+    auto &exact_sources = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage()).source_masses;
+    for (const auto invalid_source : {UINT64_C(0), (UINT64_C(1) << 53) + 1}) {
+      exact_sources[a.record] = invalid_source;
+      require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::Unsupported,
+              "unsupported exact source mass accepted");
+    }
+    exact_sources[a.record] = 1;
     auto stale = outgoing;
     ++stale[0].incarnation;
     auto mismatched = commands;
@@ -856,6 +1025,8 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     PreparedFixtureAccess::inject_value64(f.h, kVelX, a.record, velocity[0]);
     // Expansion excludes the outgoing sphere but keeps the sleeping survivor.
     PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 2);
+    auto &source_masses = const_cast<field::detail::PreparedStorage &>(f.h.prepared_storage()).source_masses;
+    source_masses[a.record] = 2;
     commands = make_commands(1, 2);
     inputs = {placement_intrinsic(0, 20, 0.25), placement_intrinsic(1, 10, 0.5)};
     const std::vector<engine::RecordHandle> aggregate{a};
@@ -874,6 +1045,25 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     }
     require(separation >= 0.75 * 0.75, "replacement batch overlaps itself");
     certify(result, inputs, {{{8, 0, 0}, 1}, {{40, 0, 0}, 1}});
+    const auto expansion = PlacementAccess::exchange_balance(f.h);
+    double offset_squared = 0;
+    for (int k = 0; k < 3; ++k) {
+      const auto centre = (rows[(kPosX + k) * stride] + rows[(kPosX + k) * stride + 1]) / 2;
+      require(expansion[7 + k] == centre && expansion[10 + k] == centre - result.target[k],
+              "target and actual replacement centre were conflated");
+      offset_squared += expansion[10 + k] * expansion[10 + k];
+    }
+    require(expansion[22] == 0 && offset_squared > 0, "expansion lacks nonzero initialization offset");
+    PlacementAccess::poison_exchange_start(f.h, kVelX, 0, 99);
+    PlacementAccess::check_exchange_balance(f.h, 2);
+    require(PlacementAccess::exchange_balance(f.h)[22] != 0, "wrong native replacement motion accepted");
+    require(PlacementAccess::exchange(f.h, commands, inputs, aggregate).status == PlacementStatus::Ok,
+            "accounting failure contaminated retry");
+    PlacementAccess::poison_exchange_momentum(f.h, 99);
+    PlacementAccess::check_exchange_balance(f.h, 2);
+    require(PlacementAccess::exchange_balance(f.h)[22] != 0, "momentum discrepancy outside bound accepted");
+    require(PlacementAccess::exchange(f.h, commands, inputs, aggregate).status == PlacementStatus::Ok,
+            "momentum discrepancy contaminated retry");
     PreparedFixtureAccess::inject_value64(f.h, kPosX, b.record, -4);
     commands = make_commands(1, 1);
     commands[0].exact_mass = 2;
@@ -885,6 +1075,35 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
     certify(result, inputs, {{{-4, 0, 0}, 1}, {{40, 0, 0}, 1}});
     PreparedFixtureAccess::inject_value64(f.h, kPosX, b.record, 8);
     PreparedFixtureAccess::inject_value64(f.h, kMass, a.record, 1);
+    source_masses[a.record] = 1;
+    // Unequal masses and fractional velocity exercise native weighted transfer
+    // independently of the integer/dyadic compression expectations above.
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 2);
+    source_masses[b.record] = 2;
+    const std::array<double, 3> va{0.125, -0.375, 0.625}, vb{-0.5, 0.875, -1.125};
+    for (int k = 0; k < 3; ++k) {
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, a.record, va[k]);
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, b.record, vb[k]);
+    }
+    commands = make_commands(2, 1);
+    commands[0].exact_mass = 3;
+    inputs = {placement_intrinsic(0, 10, 0.5)};
+    inputs[0].mass = 3;
+    require(PlacementAccess::exchange(f.h, commands, inputs, outgoing).status == PlacementStatus::Ok,
+            "fractional weighted exchange rejected");
+    const auto fractional = PlacementAccess::exchange_balance(f.h);
+    const auto fractional_rows = PlacementAccess::generated(f.h);
+    for (int k = 0; k < 3; ++k) {
+      const long double momentum = static_cast<long double>(va[k]) + 2.L * vb[k];
+      require(fractional[k] == momentum &&
+                  std::abs(static_cast<long double>(fractional[13 + k]) - momentum) <= fractional[19 + k] &&
+                  fractional_rows[(kVelX + k) * stride] == static_cast<double>(momentum / 3.L),
+              "fractional momentum differs from independent reference or was precision-filtered");
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, a.record, velocity[k]);
+      PreparedFixtureAccess::inject_value64(f.h, kVelX + k, b.record, velocity[k]);
+    }
+    PreparedFixtureAccess::inject_value64(f.h, kMass, b.record, 3);
+    source_masses[b.record] = 3;
     // Ordinary arrivals must clear the exchange mode and retain focus targeting.
     const auto ordinary = placement_definition(990);
     const auto intrinsic = placement_intrinsic();
@@ -898,7 +1117,7 @@ void exchange_placement(engine::Runtime &r, HostPath path) {
                 backing.same_backing(metrics.sample()), "private replacement staging changed live state/backing");
     f.h.inspect_prepared_placement(query);
     std::cout << "exchange_placement,bits=" << bits
-              << ",compression=1,expansion=1,native_motion=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
+              << ",compression=1,expansion=1,native_motion=1,mass_reconciled=1,momentum_checked=1,offset_reported=1,retirement_match=1,ordinary_reuse=1,unchanged=1 PASS\n";
   }
   auto limits = placement_limits();
   limits[Budget::Particles] = 3;

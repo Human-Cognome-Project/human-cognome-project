@@ -41,8 +41,9 @@ interval certificate. With `n` selected bodies and unit roundoff `u=2^-53`, the
 usual sequential-sum bound `gamma_n=n*u/(1-n*u)` applies to absolute weighted
 sum error against the sum of absolute products, with multiplication and final
 division rounding in addition. Cancellation does not promise a small relative
-error. Final replacement mass/momentum tolerances remain the coordinator's
-responsibility; this prerequisite does not qualify completed momentum transfer.
+error. The following [native accounting increment](EXCHANGE-ACCOUNTING.md)
+supplies replacement mass/momentum checks in a narrower exact-source domain.
+This standalone diagnostic does not qualify completed momentum transfer.
 
 ## Lifetime, work and preservation
 
@@ -53,6 +54,10 @@ the output/control backing and four prepared arguments. Work reservation is
 `64*(P+1)` for host validation/mask handling and the bounded native reduction.
 It is charged against PlacementWork before scanning or uploading selection.
 No recurring allocation, record claims or reference peak is introduced.
+The later accounting increment adds three reducer arguments, a source-mass
+upload when reconciliation is enabled, and raw/absolute momentum report outputs.
+Its prepared resource additions are documented separately; the eight-double
+state layout and standalone diagnostic's numerical domain remain unchanged.
 
 Only scratch is written. Source state, current and historical numerical values,
 activity, contacts, generation, ticks, frame reference and completed reports are

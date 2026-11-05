@@ -20,6 +20,8 @@
 #endif
 #include "allocation_observation.h"
 #include "prepared_fixture.h"
+#include "exchange_binding_access.h"
+#include "letter_projection_fixture.h"
 #include "prepared_metrics.h"
 #include "field/live_hierarchy.h"
 #include "field/cascade_source.h"
@@ -2795,6 +2797,8 @@ int main(int argc, char **argv) {
       run("exchange_state", [&] { exchange_state(r, path); });
     if (only == "placement" || only == "exchange_placement")
       run("exchange_placement", [&] { exchange_placement(r, path); });
+    if (only == "placement" || only == "exchange_bindings")
+      run("exchange_bindings", [&] { exchange_bindings(r, path); });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")

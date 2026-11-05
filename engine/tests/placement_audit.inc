@@ -1,9 +1,9 @@
-const std::array<std::set<int>, 18> &placement_writers() {
-  static const std::array<std::set<int>, 18> value{
+const std::array<std::set<int>, 19> &placement_writers() {
+  static const std::array<std::set<int>, 19> value{
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2}, {1}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2, 4}, {1}, {3}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -103,7 +103,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
     const auto kernels = PlacementAccess::kernels(f.h);
     const auto surfaces = PlacementAccess::surfaces(f.h);
     int controls = 0;
-    for (int index = 0; index < 18; ++index) {
+    for (int index = 0; index < 19; ++index) {
       const auto &compiled = *kernels[index];
       const auto &kernel =
           engine::testing::CompiledKernelAccess::kernel(compiled);
@@ -124,6 +124,10 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 "replacement staging lacks native outgoing-state binding");
       }
       if (index == 16) {
+        require(ctx.array_ptrs.at({5, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
+                    reinterpret_cast<void *>(surfaces[41]->get_device_allocation_ptr_as_int()) &&
+                    ctx.array_bindings[5].type == taichi::lang::PrimitiveType::u64,
+                "exchange source masses lack exact native binding");
         const auto pointer = ctx.array_ptrs.at({0, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY});
         require((PlacementAccess::rebase_payload_binding(f.h, 0, pointer) ||
                     pointer == reinterpret_cast<void *>(surfaces[33]->get_device_allocation_ptr_as_int())) &&
@@ -134,6 +138,11 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                         reinterpret_cast<void *>(surfaces[3]->get_device_allocation_ptr_as_int()),
                 "exchange reduction lacks resident body and selection bindings");
       }
+      if (index == 18)
+        for (const auto &binding : std::array<std::pair<int, int>, 4>{{{0, 10}, {1, 4}, {2, 39}, {3, 40}}})
+          require(ctx.array_ptrs.at({binding.first, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
+                      reinterpret_cast<void *>(surfaces[binding.second]->get_device_allocation_ptr_as_int()),
+                  "exchange accounting lacks native scratch bindings");
       if (index == 14 || index == 15) {
         const auto *masks = LiveHierarchyAccess::input_array(f.h, 6);
         require(ctx.array_ptrs.at({12, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
@@ -196,7 +205,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         for (auto *i : erase)
           i->eraseFromParent();
       });
-      if (index == 2 || index == 12 || (index >= 14 && index <= 16))
+      if (index == 2 || index == 12 || (index >= 14 && index <= 16) || index == 18)
         reject("contracted_interval_math", [&](llvm::Module &clone) {
           for (auto &fn : clone)
             for (auto &bb : fn)
@@ -285,7 +294,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                 << (index == 11 || index == 13) << ","
                    "legal_duplicate=accepted PASS\n";
     }
-    std::cout << "placement_compiler,modules=18,unsafe_controls=" << controls
+    std::cout << "placement_compiler,modules=19,unsafe_controls=" << controls
               << ",actual_frozen_bindings=1 PASS\n";
   }
 }

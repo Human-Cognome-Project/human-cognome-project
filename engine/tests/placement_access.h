@@ -4,6 +4,25 @@
 
 namespace field::testing {
 struct PlacementAccess {
+  static std::array<double, 32> exchange_balance(Harness &h) {
+    std::array<double, 32> out{};
+    engine::readback(*h.placement_->exchange_balance_, out.data(), sizeof(out));
+    return out;
+  }
+  static void check_exchange_balance(Harness &h, int bodies) {
+    h.placement_->balance_exchange(bodies);
+    h.runtime_->synchronize();
+  }
+  static void poison_exchange_momentum(Harness &h, double value) {
+    auto report = exchange_balance(h);
+    report[0] = value;
+    engine::upload(*h.placement_->exchange_balance_, report.data(), sizeof(report));
+  }
+  static void poison_exchange_start(Harness &h, int component, int command, double value) {
+    auto rows = generated(h);
+    rows[component * h.prepared_->capacity.command_capacity() + command] = value;
+    engine::upload(*h.prepared_->new_rows_array, rows.data(), rows.size() * sizeof(double));
+  }
   static PlacementResult exchange(Harness &h, const std::vector<UpdateCommand> &commands,
       const std::vector<PlacementIntrinsic> &inputs,
       const std::vector<engine::RecordHandle> &outgoing, std::uint64_t work = UINT64_MAX) {
@@ -123,13 +142,13 @@ struct PlacementAccess {
   }
   static auto kernels(Harness &h) {
     auto &p = *h.placement_;
-    return std::array<const engine::CompiledKernel *, 18>{
+    return std::array<const engine::CompiledKernel *, 19>{
         &p.collect_, &p.capture_, &p.solve_, &p.publish_, &p.initialize_,
         &p.contacts_->kernels_[0], &p.contacts_->kernels_[1],
         &p.contacts_->kernels_[2], &p.contacts_->kernels_[3],
         &p.contacts_->kernels_[4], &p.contacts_->remap_, &p.contacts_->publish_,
         &p.bootstrap_solve_, &h.focus_commit_, &h.rebase_, &h.rebase_check_, &p.exchange_reduce_,
-        &p.exchange_target_};
+        &p.exchange_target_, &p.exchange_balance_kernel_};
   }
   static bool rebase_payload_binding(Harness &h, int argument, const void *pointer) {
     if (argument > 1 || h.path_ != HostPath::CpuDirect) return false;
@@ -137,7 +156,7 @@ struct PlacementAccess {
   }
   static auto surfaces(Harness &h) {
     auto &p = *h.placement_;
-    std::array<taichi::lang::Ndarray *, 40> result{
+    std::array<taichi::lang::Ndarray *, 42> result{
         p.rows_.get(),  p.stats_.get(),    p.focal_.get(),
         p.keep_.get(),  p.requests_.get(), p.occupancy_.get(),
         p.cells_.get(), p.attempt_.get(),  p.published_.get(),
@@ -155,6 +174,8 @@ struct PlacementAccess {
     result[37] = history[1];
     result[38] = h.prepared_->candidate_status_array.get();
     result[39] = p.exchange_state_.get();
+    result[40] = p.exchange_balance_.get();
+    result[41] = p.exchange_masses_.get();
     return result;
   }
   static std::array<taichi::lang::Ndarray *, 2> rebase_history_arrays(Harness &);
