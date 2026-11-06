@@ -74,19 +74,27 @@ reads. [Admission evidence](../engine/tests/admission/README.md) retains detaile
 pins and separately attributed local results.
 
 #221 already implements private field creation/retirement and is provisionally
-accepted at `98c58b8fd5028341049abaa573b75240d05ba667`; hosted run 42086483712
-and final integration are pending at this check. Continue its reviewed stack when
-needed, without modifying or duplicating its running suite merely to proceed.
+accepted at `98c58b8fd5028341049abaa573b75240d05ba667`; the latest maintainer review
+records hosted run 42086483712 as green. Final integration remains pending. Continue
+the reviewed stack without changing or rerunning parent branches merely to proceed.
 The maintainer owns final integration and acceptance-note reconciliation.
 
 #222 provisionally accepts the private [persistent exchange owner](../engine/docs/EXCHANGE-OWNER.md)
 at `c8461b52101c658839d1a79badba0f9f9fdde60c` in
 [review 5790946060](https://github.com/Human-Cognome-Project/human-cognome-project/pull/222#pullrequestreview-5790946060):
 same-study projection exposure, occurrence/field maps and reports publish together
-across repeated exchanges. Hosted run 42094921159 and parent integration remain
-pending; this does not complete slice C. The current unaccepted contribution
-reserves two reusable projection views, reports their retained capacity charge and
-adds repeated multi-occurrence transitions. Other host preparation still allocates;
+across repeated exchanges. Hosted run 42094921159 was cancelled at the job limit
+after a long package installation; this is incomplete evidence, not a pass or an
+assertion failure. Parent integration remains maintainer work.
+
+#223 provisionally accepts reusable projection views, retained-capacity accounting
+and repeated multi-occurrence transitions at `2ad8151f` in
+[review 5793702801](https://github.com/Human-Cognome-Project/human-cognome-project/pull/223#pullrequestreview-5793702801).
+Its hosted run 42122775107 timed out the expanded `placement_2_bulk` matrix after
+both owner witnesses passed. The requested correction gives the same four placement
+CTest registrations 2400 seconds, without removing cases or changing configurations
+or test indexes. Final acceptance requires the corrected hosted gate. This does
+not complete slice C. Other host preparation still allocates;
 the harness is borrowed, and unrelated generation changes make this owner stale.
 
 Remaining work is **slice C: reusable preparation, complete owner resource accounting and operation integration**:

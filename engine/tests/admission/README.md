@@ -1069,3 +1069,57 @@ transaction preparation, remaining operations and controls remain subsequent wor
 Full 115-suite regression, other compiler modes, PostgreSQL and GPU were not rerun.
 Shared-host timing is not performance evidence; hosted CI remains authoritative
 for its scope.
+
+## PR #223 hosted timeout correction
+
+[Review 5793702801](https://github.com/Human-Cognome-Project/human-cognome-project/pull/223#pullrequestreview-5793702801)
+provisionally accepts reviewed head `2ad8151f` with no blocking implementation
+finding. Hosted run 42122775107 is not passing: job 127581880062 timed out
+`placement_2_bulk` at 1200.23 seconds and finished 28/29 registered tests.
+Direct inspection of that job log confirms 21 of 22 placement cases passed,
+including both owner witnesses, with no case-failure lines before the final
+admission-contact remap case was killed. The other three regression shards, four
+compiler jobs, build, projection values and database job were green per the review;
+that does not override the failed aggregate gate.
+
+Correction `f080e8894f9bb501913d7aa29bee4c02ba50c171` changes only the four
+`placement_{1,2}_{bulk,direct}` CTest limits from 1200 to **2400 seconds**. All
+115 registered test names, commands, indexes and other properties remain identical.
+Every existing placement case and compiler/backend configuration is retained;
+there is no test split or shard-index change. Hosted job limits remain unchanged.
+
+Affected-gate validation on actual local CPU, using the existing matching
+Taichi/LLVM15 build:
+
+- Compared before/after CTest JSON inventories: exactly four placement timeouts
+  changed; all names, commands, remaining properties and non-placement timeouts
+  are unchanged. The inventory still contains 115 tests.
+- `bash engine/scripts/check_hosted_cpu_ci.sh` passed its real shard partition,
+  failure propagation, inventory and bundle-provenance checks.
+- `ctest --test-dir engine/build -j 1 -R '^placement_2_bulk$' --no-tests=error --output-on-failure`
+  passed in **734.49 seconds**, all **22 internal cases** and both
+  **19-kernel/29-control** compiler-audit profiles included. The registered CTest
+  timeout was used, with no command-line timeout override.
+- Executable SHA-256 matches both its pre-configuration hash and the previously
+  qualified `3ba9dd84` feature binary. No engine implementation was rebuilt or changed.
+
+The local orchestration initially stopped because `jq` was absent, before starting
+any native test. Installed `jq` 1.7.1 and resumed against the preserved inventories.
+This was a resolved local dependency, not an assertion failure or approval block.
+
+Raw evidence `/root/hcp-workspace/evidence/placement-budget-f080e889`; Windows
+archive `setup-evidence/placement-budget-f080e889.tar.gz`. SHA256SUMS digest:
+`903ba64ffabfd53b71a80061fb9431769cfca381cfc882263d61a279ff68d978`.
+It retains source/fork pins, before/after inventories and hashes, CI-contract output,
+CTest/JUnit/full test logs, command scripts and a labelled hosted-log excerpt.
+The final documentation commit also corrects a CMake comment; executable settings
+are the tested settings. These are contributor-local results, not independent
+inspection or a corrected hosted pass. Other tests/modes, PostgreSQL and GPU were
+not rerun; prior feature evidence and emitted LLVM remain separately pinned.
+Local elapsed time is not a hosted performance prediction.
+
+Dependency reconciliation from the review: #221 run 42086483712 is green; #222 run
+42094921159 was **cancelled**, not pending or passing, after approximately 51 minutes
+of package installation and the 90-minute job limit. Its aggregate gate failed.
+No parent rerun or branch change was requested. Final parent integration and final
+#223 acceptance require maintainer reconciliation and the corrected hosted gate.

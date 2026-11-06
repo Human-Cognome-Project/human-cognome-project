@@ -11,7 +11,9 @@ Baseline checked **2026-11-05**: accepted private engine work through #219, revi
 `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
 #220's viewport security fix is also merged. #221 field lifecycle is provisionally
 accepted; #222's private persistent exchange owner is also provisionally accepted.
-Hosted validation and final integration remain pending at this check.
+#221's hosted run is green; #222's was cancelled and remains incomplete evidence.
+#223 projection reuse is provisionally accepted but requires its corrected placement
+test budget to pass the hosted gate. Final integration remains maintainer work.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -36,8 +38,9 @@ deferred; none is a prerequisite for the separately accepted core path.
 
 #222 provisionally accepts a [persistent private exchange owner](../../engine/docs/EXCHANGE-OWNER.md)
 with stable identity and live projection publication across repeated exchanges.
-The current unaccepted increment reuses two reserved projection views, reports
-their retained capacity charge and adds multi-occurrence coverage. The owner still
+#223 provisionally accepts reuse of two reserved projection views, their retained
+capacity charge and multi-occurrence coverage. Its placement-test timeout correction
+is still subject to hosted validation. The owner still
 borrows its execution; other preparation metadata and total resource accounting
 remain separate work.
 The next contributing-agent task is **reusable preparation, complete owner resource
