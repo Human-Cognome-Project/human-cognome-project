@@ -116,7 +116,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     Access::prepare(*owner,key,target,incoming,additions);
     if (round == 0) {
       auto foreign = key, unknown = key, nested = key;
-      foreign.study += "-foreign";
+      foreign.study = warm::new_uuid();
       unknown.source.entry = UINT64_MAX;
       nested.source.path.push_back(0);
       for (const auto &invalid_key : {foreign,unknown,nested}) {
