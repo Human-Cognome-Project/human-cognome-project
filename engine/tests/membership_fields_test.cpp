@@ -192,6 +192,7 @@ void graph_failures() {
 
 void retained_alternatives() {
   membership_fixture::Fixture f;
+  f.base.focal_fields = {{warm::FieldKind::Membership,f.en}};
   auto recipe = normalize_structural_letters(f.base,
       {{0,f.ref(f.english),warm::Exposure::Aggregate},
        {1,f.ref(f.english),warm::Exposure::Parts},
