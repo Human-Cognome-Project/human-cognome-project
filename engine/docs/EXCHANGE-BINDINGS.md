@@ -55,8 +55,19 @@ moves its supplied declaration into owned immutable storage; the persistent
 exchange owner shares an adoption-retained declaration instead. Neither path
 borrows a temporary declaration or changes its descriptors at publication. Live
 binding validation remains generation-bound even though immutable declarations
-can be selected for later operations. Binding maps and membership
-enumeration still allocate during preparation.
+can be selected for later operations. Nested binding maps still allocate during
+staging; source capture is a separate phase after those maps are assigned.
+
+The owner also shares one immutable membership catalogue, derived at adoption
+from actual pinned upward memberships for every aggregate and byte alternative.
+It retains exact occurrence keys, field/group revisions and whole-source counts;
+paths deduplicate per occurrence, never across copies. The catalogue is checked
+against the projection study and recipe pin. Capture selects only the declared
+outgoing occurrences and verifies their current native source rows. Coordinator
+generation selects only incoming occurrences, preserving trusted field order.
+Catalogue presence never makes an inactive alternative live. Its ordinary
+`bind`/`bind_structure` methods reject catalogue objects; public `membership_fields`
+continues to produce only live participation.
 
 The conservative validation reservation is
 `16 * (bound_occurrences + bound_fields + captured_edges + live_edges + 1)`
@@ -77,7 +88,17 @@ valid retry reuses its backing. Generation checks still reject a completed view
 after native source publication. This is explicit reconstruction from the owner's
 committed maps, not automatic rebinding after an unrelated operation.
 
-Nested identity maps and membership traversal still allocate during preparation.
+Map staging invalidates before copying maps and sharing declaration/catalogue
+ownership. Capture independently invalidates before clearing/refilling the reserved
+buffers and uses references to immutable object keys, avoiding temporary key copies.
+Successful capture performs no C++ allocation from its first call. Membership
+graph traversal is no longer repeated on the persistent-owner preparation path.
+The standalone value-taking binding adapter still constructs its own catalogue.
+
+Nested identity maps still allocate during staging. Catalogue construction,
+including graph maps/sets, occurs at adoption and has its own retained and transient
+cost. Catalogue rows, nested keys/pins and shared ownership remain outside the
+projection census; no complete owner memory-budget or preparation-work claim follows.
 All these surfaces remain coordinator metadata outside the harness scratch manifest;
 integration into an enduring owner's total resource accounting remains pending.
 The backing-reuse tests qualify validation, not the complete allocation budget
@@ -87,7 +108,9 @@ Owner tests retain the binding identity and the three ordinary vector addresses/
 capacities, plus both `vector<bool>` mask capacities, across first/repeated edits
 and four-copy alternation. A private test adapter forces an invalid field handle
 after mass capture, checks invalidity and unchanged committed owner, then retries.
-These are buffer-reuse checks, **not** an allocation-free whole-binding guard or
+Private adapters stage the same production maps/metadata separately and guard
+the first and repeated successful source-capture calls against C++ allocation.
+These are source-capture checks, **not** an allocation-free whole-binding guard or
 measurement of packed-mask addresses, allocator overhead, peak memory or cleanup.
 
 ## Limits and following work

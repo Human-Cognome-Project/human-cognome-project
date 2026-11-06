@@ -47,10 +47,13 @@ Hosted CPU and actual GPU evidence remain distinct.
 backing with first-call sealing guards and partial-preparation rejection/retry;
 its hosted gate and final merge remain pending. #225 provisionally accepts retained
 immutable exchange declarations for allocation-free selection/sharing on that stack.
-The next contribution retains the binding and reserves source-capture buffers;
+#226 provisionally accepts the retained binding and reserved source-capture buffers;
 incomplete recapture remains invalid and successful retry reuses the backing.
-Membership/nested-map preparation still allocates; complete owner accounting and
-other-operation integration remain open. Preserve both provisional dependencies.
+Its review records #225's hosted run, including database, as green; #224's cancelled
+run remains historical incomplete evidence. The next stacked contribution retains
+an all-alternative membership catalogue and makes fresh source capture allocation-free
+after map staging. Nested maps still allocate; complete owner accounting and
+other-operation integration remain open. Preserve all provisional dependencies.
 
 ## Authority and reading order
 

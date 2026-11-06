@@ -1303,3 +1303,63 @@ reports build/projection, all four regression and all four compiler jobs success
 the aggregate gate failed because database did not pass. #225 native run
 42239847643 remains in progress. Both smoke runs passed. No parent rerun was started
 and no dependency branch or CI budget was changed by this contribution.
+# Contributor-local membership reuse and source capture — 2026-11-06
+
+Tested source `2fef2829e7b6a1fe2259e93883c0fa7119a81f40`, stacked on provisionally
+accepted #226 head `67eb5f1ff1f17f3b8b123bc3cd3d616f5f2ba9f5` and its #225/#224
+dependencies, under [review 5802947489](https://github.com/Human-Cognome-Project/human-cognome-project/pull/226#pullrequestreview-5802947489).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. Built `live_hierarchy_test` and
+`membership_fields_test` with two build workers. After sourcing
+`engine/build/engine-env.sh`, ran:
+
+```sh
+ctest --test-dir engine/build --output-on-failure -R '^membership_fields_test$'
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+The native executables ran at `nice -n 10`. All 61 membership value checks passed,
+including 32 exposure combinations comparing an immutable all-alternative catalogue
+with fresh live derivation. Cases include repeated copies, language-context
+separation with shared byte definitions, shared ancestor paths, multibyte/repeated
+characters, exact source paths, group pins and counts. Ordinary live binding of a
+catalogue rejects. Existing public live-membership and graph rejection checks pass.
+
+Both bulk/default one-worker owner sequences passed, with 32 exchanges and following
+ticks each. All 22 combined direct/no-unroll two-worker placement cases passed.
+Both 52/8-bit compiler audits passed, with 19 kernels and 29 unsafe controls each.
+Private adapters stage the production maps/metadata separately, then guard first
+and repeated successful source-capture calls against C++ allocation. Owner and
+binding retain the same catalogue; existing binding/projection/coordinator backing,
+partial-failure/retry, shared-field/survivor, native publication and tick checks remain.
+Nested map staging and caller preparation are outside the capture allocation guard.
+
+Initial `435bdfe8` omitted explicit focus in the new structural value fixture.
+`68ce6b79` added focus but changed selection flags without regenerating matching
+structural floors. Both attempts failed value tests before native owner tests began.
+Final `2fef2829` normalizes each independent comparison view with explicit focus;
+production implementation is unchanged across these test corrections. Both failed
+logs are retained separately from final-source evidence.
+
+Local bundle `exchange-memberships-2fef2829` contains source/submodule pins,
+toolchain/configuration, binary hashes, complete value/native logs and emitted LLVM.
+`SHA256SUMS` digest:
+`bc84f7cc82708684c428e3ce06f78be70a0a302d573588440f61eb14977e3b88`.
+Raw contents remain local; this is contributor-executed evidence, not independently
+inspected maintainer evidence or a performance qualification. Full 115-test baseline,
+other compiler configurations, database and GPU suites were not rerun. No GPU used.
+
+Catalogue construction and graph temporaries now occur at adoption. Catalogue rows,
+nested keys/pins and shared ownership remain outside the projection census. Nested
+maps still allocate; allocation-free whole-owner preparation, complete peak/lifetime
+and work accounting, remaining operations and controls remain open.
+
+Parent status: review 5802947489 records #225 run 42239847643, including database,
+as successful, validating the combined #224/#225 code. #224 run 42232659936 remains
+cancelled/incomplete historical evidence; it is not relabelled passing. #226 run
+42245987431 is still in progress and smoke passed. All three parents remain
+unmerged at publication; no duplicate parent run was started.

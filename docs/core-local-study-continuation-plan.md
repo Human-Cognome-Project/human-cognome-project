@@ -85,9 +85,13 @@ stack while hosted validation completes, without a duplicate baseline run.
 #225 provisionally accepts retention of both immutable declarations per selected
 occurrence and sharing the selected declaration with current bindings. First/repeated selection
 is guarded against C++ allocation; descriptors are checked against fresh derivation.
-The next stacked increment retains one binding and reserves its mass, outgoing,
-edge and mask buffers, freshly recapturing current source with explicit invalidity
-until validation succeeds. Membership and nested identity-map reuse remain open.
+#226 provisionally accepts retention of one binding and reservation of its mass,
+outgoing, edge and mask buffers, freshly recapturing current source with explicit invalidity
+until validation succeeds. Its review records #225's hosted run as successful,
+including database, qualifying the combined #224/#225 code without relabelling
+#224's cancelled run as passing. The next stacked increment retains memberships
+for all alternatives at adoption and guards fresh source capture against C++
+allocation after current map staging. Nested identity-map reuse remains open.
 These increments do not complete the resource or remaining-operation rows below.
 The harness remains borrowed and unrelated generation changes make the owner stale.
 The capacity census does not qualify full owner peak/lifetime resources.

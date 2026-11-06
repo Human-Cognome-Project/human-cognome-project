@@ -56,6 +56,15 @@ are still validated afresh; a retained declaration is not live execution authori
 There is no mutable declaration alias on this path. Reference-counted ownership
 keeps it alive through binding teardown; all harness/owner calls remain exclusive.
 
+The same lifetime holds a membership catalogue for all declared alternatives.
+It follows only pinned upward memberships of the owning letter, preserving each
+occurrence's identity, inherited group revisions and exact source mass. Binding
+capture filters outgoing occurrences; command generation filters incoming ones
+in the existing trusted field order. No inactive catalogue row is materialized as
+live participation. The catalogue rejects ordinary live binding, and the public
+membership function still enumerates only active occurrences. Study and recipe
+pins are checked before source capture.
+
 Execution reserves 64 PlacementWork units for owner publication before delegating
 the remaining work to the existing coordinator. The native transaction still
 validates old-plus-new claims, conservation, placement, source, contacts and
@@ -131,10 +140,12 @@ table capacity and reference-count control blocks remain resident until their la
 owner/binding reference is released. These surfaces are **also excluded** from
 `projection_storage()`. Adoption copies the reverse alternative and still has
 setup transients; no complete peak/lifetime or byte-budget claim follows.
-Membership enumeration, nested occurrence/field map assignment and other temporary
-binding preparation values still allocate. The new binding buffers are also outside
-the projection charge; no total binding-byte census has been added. Caller inputs
-also allocate. Setup transients, native storage
+Membership traversal now occurs at adoption and the catalogue is shared across
+preparations. After nested occurrence/field maps are staged, fresh source capture
+uses reserved buffers and borrowed key references without C++ allocation. Nested
+map staging and caller preparation still allocate. The catalogue, its nested rows/
+pins and ownership control block, and the binding buffers are all outside
+the projection charge; no total binding-byte census has been added. Setup transients, native storage
 and lifetime/cleanup measurement also remain outside the projection charge.
 Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
 remain unqualified. No new native numerical kernel or backing array is introduced.
@@ -151,7 +162,7 @@ parent/membership inventory and unchanged rejection/retry. The two permanent
 copies keep both field alternatives in use; the original single-occurrence test
 continues to exercise field creation and retirement.
 
-C++ `new` guards cover the first and repeated declaration-selection and projection-staging calls as well
+C++ `new` guards cover the first and repeated source-capture, declaration-selection and projection-staging calls as well
 as hierarchy sealing from its first call, successful execution, ordinary rejection
 and ticks. Tests retain the coordinator address and all five buffer addresses and
 capacities across repeated edits. A malformed incoming intrinsic forces failure
@@ -168,6 +179,12 @@ leaves and comparison work) against fresh derivation in both directions, and ver
 that the actual binding holds the selected object rather than a copy. Invalid-key
 preparation cancels pending intent without changing the committed owner and permits
 a valid retry. Mixed initial aggregate/parts exposure is covered by the four-copy case.
+
+The membership value test compares a retained all-alternative catalogue with fresh
+live derivation across 32 exposure combinations, repeated copies, different language
+contexts sharing byte definitions, multi-byte/repeated characters and shared ancestor
+paths. It checks exact source paths, pins and counts while retaining catalogue
+backing, and rejects use of that catalogue as an ordinary live binding.
 
 [Local evidence](../tests/admission/README.md) records source and configurations.
 This CPU scope does not qualify GPU behavior, all operation rows, full owner
