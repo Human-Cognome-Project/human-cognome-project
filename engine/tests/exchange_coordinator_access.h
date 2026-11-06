@@ -2,6 +2,7 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }
   static auto backing(const detail::ExchangeCoordinator &c) {
     return std::array<std::pair<const void *, std::size_t>,5>{{
       {c.commands_.data(),c.commands_.capacity()},

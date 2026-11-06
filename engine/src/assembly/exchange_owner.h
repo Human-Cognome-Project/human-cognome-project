@@ -15,6 +15,7 @@ class ExchangeOwner {
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &);
   void seal(const field::LiveRefreshSpec &);
   void prepare_projection(const OccurrenceKey &, warm::Exposure);
+  std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;
   ProjectionStorage projection_storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
@@ -22,6 +23,7 @@ class ExchangeOwner {
   std::vector<OccurrenceBinding> occurrences_;
   std::vector<ExchangeFieldBinding> fields_;
   std::unique_ptr<ExchangeCoordinator> plan_;
+  std::vector<std::shared_ptr<const LetterExchangeContract>> declarations_;
   std::uint64_t generation_{};
   std::array<double,8> outgoing_report_{};
   std::array<double,32> balance_report_{};

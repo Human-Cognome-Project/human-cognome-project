@@ -25,13 +25,21 @@ bool same(const FieldKey &a, const FieldKey &b) {
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     LetterExchangeContract contract, std::vector<OccurrenceBinding> occurrences,
     std::vector<ExchangeFieldBinding> fields)
+    : ExchangeBindings(h, projection,
+        std::make_shared<const LetterExchangeContract>(std::move(contract)),
+        std::move(occurrences), std::move(fields)) {}
+
+ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
+    std::shared_ptr<const LetterExchangeContract> contract, std::vector<OccurrenceBinding> occurrences,
+    std::vector<ExchangeFieldBinding> fields)
     : h_(h), contract_(std::move(contract)), occurrences_(std::move(occurrences)),
       fields_(std::move(fields)) {
   const auto &s = h_.prepared_storage();
   need(h_.ready(), "cannot bind an unready exchange owner");
-  need(contract_.owner().study == projection.study() &&
-       contract_.recipe().selection == projection.recipe().ref.selection &&
-       contract_.recipe().revision == projection.recipe().ref.revision,
+  need(bool(contract_), "missing exchange declaration");
+  need(contract_->owner().study == projection.study() &&
+       contract_->recipe().selection == projection.recipe().ref.selection &&
+       contract_->recipe().revision == projection.recipe().ref.revision,
        "exchange contract belongs to another projection");
   need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
@@ -62,7 +70,7 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
   std::vector<bool> used(s.live.edges, false);
   outgoing_rows_.assign(s.particle_headers.size(), false);
   const auto memberships = membership_fields(projection);
-  for (const auto &source : contract_.outgoing()) {
+  for (const auto &source : contract_->outgoing()) {
     const auto binding = std::find_if(occurrences_.begin(), occurrences_.end(),
         [&](const auto &v) { return v.occurrence == source.occurrence; });
     need(binding != occurrences_.end(), "outgoing alternative is not currently exposed");

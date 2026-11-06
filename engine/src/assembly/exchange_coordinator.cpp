@@ -55,10 +55,10 @@ void ExchangeCoordinator::prepare(std::unique_ptr<ExchangeBindings> bound,
        "stale exchange preparation");
   need(b.fields_.size() == s.live.fields,
        "exchange field lifecycle requires a complete trusted field inventory");
-  const auto &sources = b.contract_.incoming();
+  const auto &sources = b.contract_->incoming();
   need(incoming.size() == sources.size(), "incomplete incoming alternative");
   need(sources.size() <= s.capacity.limits()[field::Budget::Batch] &&
-       b.contract_.mass() <= (UINT64_C(1) << 53), "unsupported exchange declaration size or mass");
+       b.contract_->mass() <= (UINT64_C(1) << 53), "unsupported exchange declaration size or mass");
   mapping_generation_ = b.generation_;
   need(new_fields.size() <= s.capacity.limits()[field::Budget::Fields],
        "exchange field preparation exceeds capacity");

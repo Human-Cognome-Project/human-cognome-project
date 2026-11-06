@@ -18,8 +18,15 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   for (const auto &selection : projection_->recipe().selections) {
     const auto target = projection_->exposure(selection.entry) == warm::Exposure::Aggregate
         ? warm::Exposure::Parts : warm::Exposure::Aggregate;
-    ExchangeBindings check(h_, *projection_, declare_letter_exchange(*projection_,
-        {projection_->study(), {selection.entry,{}}}, target), occurrences_, fields_);
+    auto forward = declare_letter_exchange(*projection_,
+        {projection_->study(), {selection.entry,{}}}, target);
+    auto reverse = forward;
+    std::swap(reverse.from_, reverse.to_);
+    reverse.outgoing_.swap(reverse.incoming_);
+    auto retained = std::make_shared<const LetterExchangeContract>(std::move(forward));
+    ExchangeBindings check(h_, *projection_, retained, occurrences_, fields_);
+    declarations_.push_back(std::move(retained));
+    declarations_.push_back(std::make_shared<const LetterExchangeContract>(std::move(reverse)));
   }
   prospective_ = std::make_unique<LetterProjection>(*projection_);
   projection_->reserve_exposure();
@@ -30,6 +37,17 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
 
 void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target) {
   projection_->prepare_exposure(*prospective_,owner,target);
+}
+
+std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
+    const OccurrenceKey &owner, warm::Exposure target) const {
+  for (const auto &entry : declarations_)
+    if (entry->owner() == owner && entry->to() == target) {
+      need(entry->from() == projection_->exposure(owner.source.entry),
+           "exchange requires the other declared alternative");
+      return entry;
+    }
+  throw warm::Error("exchange occurrence or alternative is not declared by this owner");
 }
 
 ProjectionStorage ExchangeOwner::projection_storage() const {
@@ -44,10 +62,10 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
-  auto declaration = declare_letter_exchange(*projection_, owner, target);
+  auto selected = declaration(owner, target);
   prepare_projection(owner,target);
   auto bound = std::unique_ptr<ExchangeBindings>(new ExchangeBindings(
-      h_, *projection_, std::move(declaration), occurrences_, fields_));
+      h_, *projection_, std::move(selected), occurrences_, fields_));
   plan_->prepare(std::move(bound), incoming, fields);
   completed_ = false;
 }

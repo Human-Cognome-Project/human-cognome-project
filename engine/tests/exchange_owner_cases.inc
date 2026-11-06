@@ -44,6 +44,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  const auto declarations = Access::declarations(*owner);
+  require(declarations.size() == 2, "owner did not retain both exchange declarations");
   const auto *reserved_plan = &Access::plan(*owner);
   const auto plan_backing = Plan::backing(*reserved_plan);
   require(!Access::pending(*owner), "new owner exposes an unprepared plan");
@@ -91,6 +93,11 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       return true;
     };
     const auto declaration = assembly::declare_letter_exchange(*previous,key,target);
+    std::shared_ptr<const assembly::LetterExchangeContract> selected;
+    no_new([&] { selected = Access::declaration(*owner,key,target); });
+    require(selected.get() == declarations[compression ? 1 : 0].get() &&
+                Access::equivalent(*selected,declaration),
+            "retained declaration differs from freshly derived alternatives");
     std::vector<assembly::detail::ExchangeIncoming> incoming;
     for (const auto &source : declaration.incoming())
       incoming.push_back({source.occurrence, source.definition, source.node, 1,
@@ -107,6 +114,25 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
     Access::prepare(*owner,key,target,incoming,additions);
+    if (round == 0) {
+      auto foreign = key, unknown = key, nested = key;
+      foreign.study += "-foreign";
+      unknown.source.entry = UINT64_MAX;
+      nested.source.path.push_back(0);
+      for (const auto &invalid_key : {foreign,unknown,nested}) {
+        rejected = false;
+        try { Access::prepare(*owner,invalid_key,target,incoming,additions); }
+        catch (const warm::Error &) { rejected = true; }
+        require(rejected && !Access::pending(*owner) && unchanged(),
+                "retained declaration accepted a foreign, unknown or nested owner");
+        Access::prepare(*owner,key,target,incoming,additions);
+      }
+      rejected = false;
+      try { Access::prepare(*owner,key,static_cast<warm::Exposure>(99),incoming,additions); }
+      catch (const warm::Error &) { rejected = true; }
+      require(rejected && !Access::pending(*owner) && unchanged(), "invalid retained alternative accepted");
+      Access::prepare(*owner,key,target,incoming,additions);
+    }
     // Fail after binding creation and partial command construction, then retry.
     // This must also invalidate a previously prepared, unconsumed transaction.
     auto invalid = incoming;
@@ -121,6 +147,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     Access::prepare(*owner,key,target,incoming,additions);
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "transaction preparation replaced reserved backing");
+    require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.
     const auto &coordinator = Access::plan(*owner);
@@ -252,7 +279,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   std::cout << "exchange_owner,rounds=32,identity=stable,recipe=immutable,exposure=live,"
                "mappings=atomic,reports=atomic,reject_retry=1,late_unready=1,"
                "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,"
-               "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,execute_cpp_new=0 PASS\n";
+               "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
+               "declaration_select_cpp_new=0,declarations=retained,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

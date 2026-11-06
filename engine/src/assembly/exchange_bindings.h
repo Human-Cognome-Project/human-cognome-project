@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assembly/exchange_contract.h"
+#include <memory>
 #include "field/field.h"
 #include "field/prepared_storage.h"
 
@@ -28,6 +29,9 @@ class ExchangeBindings {
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
+  ExchangeBindings(field::Harness &, const LetterProjection &,
+                   std::shared_ptr<const LetterExchangeContract>,
+                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   struct Edge {
     std::size_t row;
@@ -35,7 +39,7 @@ class ExchangeBindings {
     std::uint64_t count;
   };
   field::Harness &h_;
-  LetterExchangeContract contract_;
+  std::shared_ptr<const LetterExchangeContract> contract_;
   std::vector<OccurrenceBinding> occurrences_;
   std::vector<ExchangeFieldBinding> fields_;
   std::vector<std::uint64_t> masses_;

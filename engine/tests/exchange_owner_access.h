@@ -2,6 +2,23 @@
 #include "assembly/exchange_owner.h"
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
+    if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
+        a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||
+        a.mass() != b.mass() || a.match_work() != b.match_work() || a.leaves().size() != b.leaves().size() ||
+        !a.matches(b.outgoing().data(),b.outgoing().size(),b.incoming().data(),b.incoming().size(),UINT64_MAX))
+      return false;
+    for (std::size_t i = 0; i < a.leaves().size(); ++i) {
+      const auto &x = a.leaves()[i], &y = b.leaves()[i];
+      if (x.character != y.character || x.byte != y.byte || x.nibble != y.nibble ||
+          !(x.definition == y.definition) || x.count != y.count) return false;
+    }
+    return true;
+  }
+  static const auto &declarations(const detail::ExchangeOwner &o) { return o.declarations_; }
+  static auto declaration(const detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {
+    return o.declaration(key,target);
+  }
   static auto adopt(field::Harness &h, LetterProjection p,
       std::vector<detail::OccurrenceBinding> rows, std::vector<detail::ExchangeFieldBinding> fields) {
     return std::unique_ptr<detail::ExchangeOwner>(
