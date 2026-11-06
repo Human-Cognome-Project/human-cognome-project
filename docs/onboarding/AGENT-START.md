@@ -7,10 +7,11 @@ replace their detailed acceptance tests.
 
 ## Establish the actual starting point
 
-Baseline checked **2026-11-05**: accepted private engine work through #219, reviewed source
-`2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
-#220's viewport security fix is also merged. #221 field lifecycle is provisionally
-accepted, with hosted validation and final integration pending at this check.
+Baseline checked **2026-11-06**: accepted integrated private CPU work through #223,
+reviewed source `2286950ae07180c5a23b6d0de38792f064a570f5`. #221 field lifecycle,
+#222 persistent exchange owner and #223 reusable projections/capacity census are
+integrated on main. Corrected hosted run 42134552198 and smoke passed; the earlier
+timeout blocker is cleared. #220's viewport security fix remains integrated.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -28,13 +29,12 @@ the handoff, not a permanent instruction to stay on an old commit.
    population or an accepted-baseline CI rerun.
 
 The current queue and task ownership live in [AGENTS](../../AGENTS.md#current-state).
-#221 already supplies field creation/retirement work; do not implement it again.
-For work that depends on it, use its reviewed stack and inspect subsequent changes.
-The maintainer owns its final integration. #123/#111 remain held and draft #75
-deferred; none is a prerequisite for the separately accepted core path.
-
-The next contributing-agent task is **enduring owner/projection lifecycle,
-reusable preparation and complete owner resource accounting**. Reuse accepted
+Start from current main. Field creation/retirement, the persistent private exchange
+owner and reserved projection reuse are accepted; do not implement them again.
+#123/#111 remain held and draft #75 deferred. The owner still borrows its execution;
+other preparation metadata and complete resource accounting remain separate work.
+The next contributing-agent task is **reusable preparation, complete owner resource
+accounting and integration of the remaining operations**. Reuse accepted
 private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
 Publish owner identities and projection exposure coherently with successful native
 operations; rejected edits preserve the old usable execution. Account for all
@@ -71,8 +71,8 @@ derivations, not authorization to replace the accepted model. See the
 | C3-1 / C3-2 | Fixed installed CPU hierarchy (#195), accepted wide motion and scoped local CUDA corrections (#196), combined CPU source/hierarchy refresh (#198). New-body starts remain private fixtures. |
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
 | B2 | Certified nearest-free placement accepted in #203, superseding #202. |
-| B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is provisional in #221. Enduring operational admission remains outstanding. |
-| C / D | Enduring prepared owner, occurrence bindings and live operations; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
+| B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is accepted in #221. Enduring operational admission remains outstanding. |
+| C / D | Private persistent exchange owner and reserved projection reuse accepted through #223. Complete reusable transaction preparation, total owner resources and remaining-operation integration; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 
 #201's accepted hosted [run 41220868948, job 124594948773](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41220868948/job/124594948773)

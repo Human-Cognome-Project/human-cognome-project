@@ -48,11 +48,11 @@ LetterExchangeContract declare_letter_exchange(const LetterProjection &projectio
       [&](const auto &s) { return s.entry == owner.source.entry; });
   need(selection != recipe.selections.end(), "exchange occurrence is not declared");
   need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
-       target != selection->exposure, "exchange requires the other declared alternative");
+       target != projection.exposure(owner.source.entry), "exchange requires the other declared alternative");
   LetterExchangeContract result;
   result.owner_ = owner;
   result.recipe_ = recipe.ref;
-  result.from_ = selection->exposure;
+  result.from_ = projection.exposure(owner.source.entry);
   result.to_ = target;
   const auto source = [&](const warm::OccurrenceId &id) {
     const auto occurrence = std::find_if(projection.occurrences().begin(), projection.occurrences().end(),

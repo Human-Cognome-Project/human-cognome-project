@@ -52,6 +52,30 @@ failure does not cancel other evidence-producing jobs. Test invocations remain
 serial inside each runner; two-worker tests do not compete with other tests on
 that runner. No existing mode or assertion is removed to reduce elapsed time.
 
+The four `placement_{1,2}_{bulk,direct}` CTest registrations have a bounded
+**2400-second** timeout. The combined matrix has grown to 22 placement, admission,
+exchange, owner, focus and failure cases. In #223's hosted run 42122775107,
+`placement_2_bulk` passed both owner witnesses before its previous 1200-second
+limit killed the remaining matrix at 1200.23 seconds; the shard finished 28/29.
+Direct inspection of job 127581880062 confirms 21 of 22 case-result PASS lines
+and no case-failure lines before the final admission-contact remap case timed out.
+[Review 5793702801](https://github.com/Human-Cognome-Project/human-cognome-project/pull/223#pullrequestreview-5793702801)
+requires enough bounded time to finish the unchanged coverage. The 40-minute
+budget gives headroom over that observed limit without removing cases, splitting
+test indexes or changing worker/path/compiler configurations. Other CTest limits,
+the 90-minute consumer-job limits and the all-jobs acceptance gate are unchanged.
+This does not cure unrelated package-installation delays: #222's cancelled run
+42094921159 remains incomplete evidence, while the review records #221's run
+42086483712 as green. Parent integration/status reconciliation belongs to the
+maintainer; no parent reruns are implied by this adjustment.
+
+The corrected #223 head `2286950ae07180c5a23b6d0de38792f064a570f5` passed
+run 42134552198. All 115 tests passed, including all four placement registrations;
+`placement_2_bulk` completed in 1150.36 seconds. All compiler and database jobs
+and the aggregate gate passed. This clears the integrated stack's timeout blocker;
+the earlier failed/cancelled runs remain historical evidence. See
+[final acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--221223-2026-11-06).
+
 ## Validation and expected benefit
 
 `bash engine/scripts/check_hosted_cpu_ci.sh` exercises real CTest partitioning

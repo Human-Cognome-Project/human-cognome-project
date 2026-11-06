@@ -186,9 +186,12 @@ qualification ladder.
 ## Current status
 
 Start a new instance with the [onboarding/spec brief](../docs/onboarding/AGENT-START.md).
-The accepted CPU baseline is through #215 as checked 2026-11-05: private
-ordinary/bootstrap admission, focus/exact rebase and native replacement staging.
-Complete D7 exchange coordination is next; operational owner/public controls and
+The accepted CPU baseline is through #223 as checked 2026-11-06, including private
+admission, focus/rebase, atomic exchange, field lifecycle, persistent exchange owner
+and reserved projection reuse/capacity census. Corrected hosted run 42134552198
+and smoke passed; see [acceptance evidence](tests/admission/README.md#maintainer-integrated-acceptance--221223-2026-11-06).
+Reusable transaction preparation,
+complete owner resources, remaining-operation integration, public controls and
 GPU qualification remain separate. Earlier stage
 descriptions below retain their bounded acceptance scope, not a second work queue.
 

@@ -245,6 +245,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
   LetterProjection out;
   out.study_ = warm::new_uuid();
   out.recipe_ = b;
+  for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);
   std::map<warm::OccurrenceId, warm::StructuralOccurrence> ordered;
   std::map<warm::OccurrenceId, const warm::Occurrence *> legacy;
@@ -344,6 +345,77 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.input_.contacts = out.structural_input_.contacts;
   }
   return out;
+}
+
+warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
+  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
+    if (recipe_.selections[i].entry == entry) return exposures_[i];
+  throw warm::Error("unknown projected selection");
+}
+
+void LetterProjection::reserve_exposure() {
+  need(recipe_.recipe_version == 2, "projection is not structural");
+  std::size_t count = 0;
+  for (const auto &o : occurrences_) {
+    const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
+        [&](const auto &v) { return v.ref == o.definition; });
+    need(t != recipe_.tools.end() && t->parents.size() <= SIZE_MAX - count,
+         "projection parent reservation overflow");
+    count += t->parents.size();
+  }
+  parents_.reserve(count);
+  spare_parents_.reserve(count);
+  for (const auto &o : occurrences_) if (!exposure_reserved_ && !o.active) {
+    const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
+        [&](const auto &v) { return v.ref == o.definition; });
+    for (const auto &p : t->parents)
+      spare_parents_.push_back({o.key,{GroupKind::ParentValue,p.target.object},p.ordinal,p.contribution});
+  }
+  exposure_reserved_ = true;
+}
+
+void LetterProjection::prepare_exposure(LetterProjection &next, const OccurrenceKey &owner,
+                                        warm::Exposure target) const {
+  need(recipe_.recipe_version == 2 && owner.study == study_ && owner.source.path.empty(),
+       "exposure change requires this structural study's aggregate owner");
+  need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
+       exposure(owner.source.entry) != target, "exposure change requires the other alternative");
+  need(&next != this && next.exposure_reserved_ && next.study_ == study_ &&
+       next.recipe_.ref.selection == recipe_.ref.selection && next.recipe_.ref.revision == recipe_.ref.revision &&
+       next.occurrences_.size() == occurrences_.size(), "foreign or unreserved projection buffer");
+  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
+    {
+      const auto value = recipe_.selections[i].entry == owner.source.entry ? target : exposures_[i];
+      next.exposures_[i] = value;
+      next.structural_input_.selections[i].exposure = value == warm::Exposure::Aggregate
+          ? Exposure::Aggregate : Exposure::Parts;
+    }
+  for (std::size_t i = 0; i < occurrences_.size(); ++i) {
+    auto &o = next.occurrences_[i];
+    o.active = o.key.source.entry == owner.source.entry
+        ? o.key.source.path.empty() == (target == warm::Exposure::Aggregate) : occurrences_[i].active;
+  }
+  // Move the reserved contribution objects, including their nested allocations.
+  // Never destroy/recreate path or UUID storage when changing active cardinality.
+  for (auto &p : next.spare_parents_) next.parents_.push_back(std::move(p));
+  next.spare_parents_.clear();
+  std::size_t active = 0;
+  for (const auto &o : next.occurrences_) if (o.active) {
+    const auto tool = std::find_if(next.recipe_.tools.begin(), next.recipe_.tools.end(),
+        [&](const auto &t) { return t.ref == o.definition; });
+    need(tool != next.recipe_.tools.end(), "missing immutable projected definition");
+    for (const auto &p : tool->parents) {
+      const auto found = std::find_if(next.parents_.begin()+active,next.parents_.end(),[&](const auto &v) {
+        return v.occurrence == o.key && v.ordinal == p.ordinal && v.field.object == p.target.object;
+      });
+      need(found != next.parents_.end(), "reserved projection contribution missing");
+      std::iter_swap(next.parents_.begin()+active,found);
+      ++active;
+    }
+  }
+  for (std::size_t i = active; i < next.parents_.size(); ++i)
+    next.spare_parents_.push_back(std::move(next.parents_[i]));
+  next.parents_.resize(active);
 }
 
 StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {

@@ -12,7 +12,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-11-05**, accepted CPU implementation through #219 (`2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`). #221's field lifecycle is provisionally accepted pending hosted validation. Next: enduring owner/projection lifecycle, reusable preparation and complete owner resource accounting, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-11-06**, accepted integrated CPU implementation through #223 (`2286950ae07180c5a23b6d0de38792f064a570f5`), including #221 field lifecycle and #222 persistent exchange owner. Corrected hosted run 42134552198 is green; the timeout blocker is cleared. Next: reusable transaction preparation, complete owner resource accounting and remaining-operation integration, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
@@ -43,9 +43,9 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted data and preparation | Retained [letter/core snapshots](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md), native [warm tools](kernels/database/warm/README.md), coordinate-free [v2 recipes](kernels/database/warm/STRUCTURAL-RECIPES.md), [projection](engine/docs/LETTER-PROJECTION.md) and prepared native backing/updates. Preserve existing stores; population and operational ownership are separate. |
 | Accepted CPU numerical path | Cumulative publication, [accepted motion](engine/docs/ACCEPTED-MOTION.md), [installed hierarchy](engine/docs/LIVE-HIERARCHY.md), coherent [refresh](engine/docs/LIVE-REFRESH.md) and [contact-safe ticks](engine/docs/CONTACT-SAFE-TICKS.md), accepted through #198/#201. Scope-specific GPU evidence does not qualify the complete path. |
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
-| Latest accepted engine evidence | #219 reviewed head `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e2c5507acac6fc348ddb36772eeebfc05b`; [final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/219#pullrequestreview-5790172617). All 18 hosted checks passed: 115 unique tests, eight compiler configurations, four extra no-unroll exchange matrices, 180 database checks and zero private reads. [Admission evidence](engine/tests/admission/README.md) retains source pins and separately attributed local results. |
-| Provisionally accepted, not merged | #221 head `98c58b8fd5028341049abaa573b75240d05ba667`: [field creation/retirement review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/221#pullrequestreview-5790162176). Contributor-local pin `d7676dea8d03a7a90f37ff97c578eb04143da102` reports five lifecycle scenarios and 20 combined placement cases; raw local execution was not independently inspected/run. Hosted run 42086483712 is pending at this check. Do not duplicate this work or describe it as accepted on main. |
-| Next implementation | Enduring owner/projection lifecycle, reusable preparation and complete owner resource accounting, followed by same-execution controls. Continue from the reviewed stack when needed; final #221 integration and acceptance-note reconciliation belong to the maintainer. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Latest accepted engine evidence | #223 integrated head `2286950ae07180c5a23b6d0de38792f064a570f5`: [run 42134552198](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42134552198) and smoke passed. Inspected regression logs cover 115 unique tests exactly once; all compiler jobs passed; database log records 180 checks and zero private reads. [Admission evidence](engine/tests/admission/README.md#maintainer-integrated-acceptance--221223-2026-11-06) preserves the failed/cancelled history and scope. |
+| Accepted exchange owner | #221 field creation/retirement, #222 persistent study identity and live projection publication, and #223 reserved projection reuse with retained-capacity census are integrated. The borrowed harness and trusted initial mappings remain explicit; complete owner resources and other-operation integration remain open. | 
+| Next implementation | Start from current main. Reusable transaction preparation, complete owner peak/lifetime resources and remaining-operation integration, then same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
 | Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
 | Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst reasoning, dynamic LoD selection and process-failure hosting remain unbuilt. |
@@ -58,10 +58,10 @@ Do not copy historical “next” instructions back into this table.
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-Private source bindings, native accounting and atomic exchange are accepted through #219.
-#221 adds provisionally accepted field creation/retirement; its hosted gate is pending.
-Continue enduring owner/projection lifecycle, reusable preparation, complete owner
-resource accounting and same-execution controls. Do not duplicate the reviewed work.
+Private source bindings, atomic exchange, field lifecycle, persistent exchange owner
+and reserved projection reuse are accepted through #223. Continue reusable transaction
+preparation, complete owner resource accounting and remaining-operation integration,
+then same-execution controls. Do not duplicate the accepted work.
 
 ## Latest model direction — 2026-10-23
 
@@ -121,12 +121,11 @@ with C2a's publication/consume contract without a same-tick global solve.
 
 ## Active and deferred work
 
-**Immediate work:** use the current-state table above. Private admission, focus,
-exact rebase and the existing-field atomic exchange are accepted through #219.
-#221 supplies provisionally accepted field lifecycle; the agent may continue
-owner/projection lifecycle and complete resource accounting while its hosted gate
-runs. Do not restart D7 source binding, conservation or atomic publication.
-Operational controls follow the [continuation plan](docs/core-local-study-continuation-plan.md).
+**Immediate work:** continue from current main through accepted #223. Reuse the
+field lifecycle, persistent exchange owner and reserved projections. Complete
+transaction preparation reuse, owner peak/lifetime accounting and integration of
+admission/removal/focus/rebase/restart, then same-execution controls under the
+[continuation plan](docs/core-local-study-continuation-plan.md).
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

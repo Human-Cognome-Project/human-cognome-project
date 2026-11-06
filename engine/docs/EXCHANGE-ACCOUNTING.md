@@ -105,9 +105,10 @@ unready under the existing rule.
 
 The following [private atomic coordinator](ATOMIC-EXCHANGE.md) supplies logical
 incoming source generation, prospective hierarchy/contact coordination and atomic
-replacement/retirement with actual-claim occurrence mappings in an existing field
-inventory. Total enduring-owner resources, sustained mapping lifecycle and
-field-family changes remain outstanding. No operational or GPU
+replacement/retirement with actual-claim occurrence mappings. The following
+[field lifecycle increment](EXCHANGE-FIELDS.md) extends that transaction to declared
+new fields and unused outgoing fields. Total enduring-owner resources and
+sustained projection/mapping lifecycle remain outstanding. No operational or GPU
 qualification is claimed. [Source-pinned evidence](../tests/admission/README.md)
 covers mass mismatch, missing/unsupported exact source metadata, momentum/velocity
 corruption, fractional weighted velocity, nonzero expansion offset, retry and

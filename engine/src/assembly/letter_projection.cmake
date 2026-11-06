@@ -1,7 +1,8 @@
 include(${CMAKE_CURRENT_LIST_DIR}/../../../kernels/database/warm/values.cmake)
 if(NOT TARGET letter_projection)
   add_library(letter_projection STATIC ${CMAKE_CURRENT_LIST_DIR}/letter_projection.cpp
-      ${CMAKE_CURRENT_LIST_DIR}/exchange_contract.cpp)
+      ${CMAKE_CURRENT_LIST_DIR}/exchange_contract.cpp
+      ${CMAKE_CURRENT_LIST_DIR}/projection_storage.cpp)
   target_include_directories(letter_projection PUBLIC ${CMAKE_CURRENT_LIST_DIR}/..)
   target_link_libraries(letter_projection PUBLIC warm_values)
   target_compile_options(letter_projection PRIVATE -Wall -Wextra -Wpedantic)

@@ -48,7 +48,7 @@ target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-paramete
 
 add_library(active_workbench STATIC src/assembly/active_workbench.cpp)
 add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp
-    src/assembly/exchange_coordinator.cpp)
+    src/assembly/exchange_coordinator.cpp src/assembly/exchange_owner.cpp)
 target_link_libraries(exchange_coordination PUBLIC field_core membership_fields)
 target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)
@@ -199,8 +199,12 @@ foreach(threads 1 2)
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case contact_tick)
     add_test(NAME placement_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case placement)
+    # The combined placement/admission/exchange/owner matrix now has 22 cases.
+    # Hosted placement_2_bulk passed both owner witnesses before the old 20-minute
+    # limit killed the final matrix case. Keep every mode/case intact
+    # with a bounded 40-minute per-test budget; the hosted job limit stays separate.
     set_tests_properties(placement_${threads}_${path} PROPERTIES
-        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 1200)
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 2400)
     set_tests_properties(contact_tick_${threads}_${path} PROPERTIES
         ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 1200)
     set_tests_properties(native_selection_${threads}_${path} PROPERTIES

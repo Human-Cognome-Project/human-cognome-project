@@ -3,12 +3,16 @@
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
   static auto prepare(std::unique_ptr<detail::ExchangeBindings> b,
-                      const std::vector<detail::ExchangeIncoming> &incoming) {
+                      const std::vector<detail::ExchangeIncoming> &incoming,
+                      const std::vector<detail::ExchangeNewField> &fields = {}) {
     return std::unique_ptr<detail::ExchangeCoordinator>(
-        new detail::ExchangeCoordinator(std::move(b), incoming));
+        new detail::ExchangeCoordinator(std::move(b), incoming, fields));
   }
   static const auto &commands(const detail::ExchangeCoordinator &c) { return c.commands_; }
   static const auto &mappings(const detail::ExchangeCoordinator &c) { return c.bound_->occurrences_; }
+  static const auto &fields(const detail::ExchangeCoordinator &c) { return c.bound_->fields_; }
+  static const auto &planned_fields(const detail::ExchangeCoordinator &c) { return c.next_fields_; }
+  static const auto &field_commands(const detail::ExchangeCoordinator &c) { return c.field_commands_; }
   static auto generation(const detail::ExchangeCoordinator &c) { return c.mapping_generation_; }
   static auto work(const detail::ExchangeCoordinator &c) { return c.work_; }
   static const auto &outgoing_report(const detail::ExchangeCoordinator &c) { return c.outgoing_report_; }

@@ -13,14 +13,20 @@ struct ExchangeIncoming {
   double radius{};
   field::PlacementGeometry geometry;
 };
+struct ExchangeNewField {
+  FieldKey field;
+  int kind{1}, address{-1};
+};
 
 // One prepared, generation-bound transaction. A successful transaction consumes
 // it and publishes the new complete occurrence map. Rejection permits retry.
 class ExchangeCoordinator {
  private:
   friend struct assembly::testing::ExchangeCoordinatorAccess;
+  friend class ExchangeOwner;
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
-                      const std::vector<ExchangeIncoming> &);
+                      const std::vector<ExchangeIncoming> &,
+                      const std::vector<ExchangeNewField> & = {});
   void prepare_hierarchy(const field::LiveRefreshSpec &);
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
@@ -28,6 +34,9 @@ class ExchangeCoordinator {
   std::vector<field::UpdateCommand> commands_;
   std::vector<field::PlacementIntrinsic> intrinsics_;
   std::vector<OccurrenceBinding> next_;
+  std::vector<ExchangeFieldBinding> next_fields_;
+  // -1 for retained fields; otherwise the sealed DefineField command index.
+  std::vector<int> field_commands_;
   std::vector<field::LiveRefreshNode> nodes_;
   std::vector<int> children_;
   std::vector<field::LiveRefreshContribution> contributions_;

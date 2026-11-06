@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-11-05. This organizes the
+Status: maintainer implementation sequencing, updated 2026-11-06. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
@@ -15,7 +15,8 @@ verification; all nine checks passed. Its [retained evidence](../engine/tests/li
 keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
-#221 field lifecycle is provisional; enduring owner integration remains active. No manual
+Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
+through #223; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -53,8 +54,8 @@ conversion path must remain separately described.
 | Slice | Deliverable | Dependency and execution |
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
-| B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is provisional in #221; final hosted integration remains pending. |
-| C | Enduring operational owner and letter commands | Integrate A/B with coordinate-free recipes and exact occurrence bindings. |
+| B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
+| C | Enduring operational owner and letter commands | Private exchange owner/projection reuse accepted through #223. Complete transaction reuse, total owner resources and remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -65,21 +66,23 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Use [AGENTS current state](../AGENTS.md#current-state) and latest PR dispositions
-for the starting ref. Private atomic exchange is accepted through #219 at reviewed
-source `2b0d002ea85a3c0388cc4cc28a6e60ea39f24162`, integrated at `7f8b57e`.
-Hosted run 42050645525 passed 115 unique tests, all eight compiler configurations,
-four extra no-unroll exchange matrices and 180 database checks with zero private
-reads. [Admission evidence](../engine/tests/admission/README.md) retains detailed
-pins and separately attributed local results.
+Updated **2026-11-06**. Start from current main, with integrated source
+`2286950ae07180c5a23b6d0de38792f064a570f5` accepted through #223.
+#221 field lifecycle, #222 persistent exchange owner and #223 reserved projections
+are complete within their bounded private CPU scope. Corrected hosted run
+42134552198 passed all 115 tests exactly once, all compiler jobs and 180 database
+checks with zero private reads. Smoke passed. The earlier #223 timeout is cleared;
+#222's cancelled run remains historical incomplete evidence, superseded for the
+integrated behavior by this successful descendant validation.
+[Acceptance evidence](../engine/tests/admission/README.md#maintainer-integrated-acceptance--221223-2026-11-06)
+retains source pins and distinct local/hosted results. Do not rerun the accepted
+baseline merely to continue.
 
-#221 already implements private field creation/retirement and is provisionally
-accepted at `98c58b8fd5028341049abaa573b75240d05ba667`; hosted run 42086483712
-and final integration are pending at this check. Continue its reviewed stack when
-needed, without modifying or duplicating its running suite merely to proceed.
-The maintainer owns final integration and acceptance-note reconciliation.
+Projection staging reuses reserved views, but other preparation still allocates.
+The harness remains borrowed and unrelated generation changes make the owner stale.
+The capacity census does not qualify full owner peak/lifetime resources.
 
-The next work is **slice C: enduring owner/projection lifecycle and resource accounting**:
+Remaining work is **slice C: reusable preparation, complete owner resource accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings
@@ -99,8 +102,9 @@ The accepted [declaration](../engine/docs/EXCHANGE-CONTRACT.md),
 [native accounting](../engine/docs/EXCHANGE-ACCOUNTING.md) and
 [atomic coordinator](../engine/docs/ATOMIC-EXCHANGE.md) are the existing primitives.
 Do not reimplement their completed D7 checks. #221 adds field lifecycle but does
-not create an enduring owner, update projection exposure across later operations,
-or qualify complete owner resources.
+not itself create an enduring owner or qualify complete owner resources. The
+owner increment adds the repeated-exchange projection lifecycle. Projection reuse
+and its capacity census do not account for all remaining owner resources.
 
 The contracts below retain required behavior for each slice; imperative wording
 in an accepted slice does not reopen its completed implementation. Local evidence
