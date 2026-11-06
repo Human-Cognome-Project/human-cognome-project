@@ -251,7 +251,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   std::cout << "exchange_owner,rounds=32,identity=stable,recipe=immutable,exposure=live,"
                "mappings=atomic,reports=atomic,reject_retry=1,late_unready=1,"
-               "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,execute_cpp_new=0 PASS\n";
+               "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,"
+               "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

@@ -86,7 +86,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             commands[i].second.handle.record == request.nodes[node].field.record)
           cohort.push_back({commands[i].first,{},int(i)});
     }
-    no_new([&] { Access::seal(*owner,request.spec()); });
+    const auto spec = request.spec(); // Caller construction is outside owner sealing.
+    no_new([&] { Access::seal(*owner,spec); });
     require(Plan::backing(*reserved_plan) == plan_backing,
             "multi-occurrence sealing replaced transaction backing");
     const auto before = TickSnapshot(f);
@@ -144,7 +145,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-occurrence tick failed or retained storage grew");
   }
   std::cout << "exchange_owner_multiple,occurrences=4,rounds=32,edited=2,survivors=preserved,"
-               "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,backing=stable PASS\n";
+               "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,"
+               "coordinator_backing=stable,hierarchy_seal_cpp_new=0,backing=stable PASS\n";
   std::cout << "projection_storage_multiple,parent_slots=" << reserved.parent_slots
             << ",charge=" << reserved.charged_bytes() << '\n';
 }
