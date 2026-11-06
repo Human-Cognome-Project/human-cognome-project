@@ -39,6 +39,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
   auto owner = Access::adopt(f.h,initial,rows,fields);
+  const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
   require(declarations.size() == 8, "owner did not retain both alternatives for every copy");
   const auto *reserved_plan = &Access::plan(*owner);
@@ -73,10 +74,15 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
     require(&Access::projection(*owner) == before_view &&
                 Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "multi-occurrence projection preparation published or grew storage");
-    Access::prepare(*owner,key,target,incoming,{});
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
+    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner));
+    no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
+            "multi-occurrence source capture failed");
+    Access::prepare(*owner,key,target,incoming,{});
     require(Plan::declaration(Access::plan(*owner)) == selected.get() &&
+                Plan::memberships(Access::plan(*owner)) == memberships.get() &&
                 Access::equivalent(*selected,declaration) &&
                 std::find(declarations.begin(),declarations.end(),selected) != declarations.end(),
             "multi-occurrence binding did not reuse its exact retained declaration");
@@ -160,7 +166,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   std::cout << "exchange_owner_multiple,occurrences=4,rounds=32,edited=2,survivors=preserved,"
                "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,"
-               "declaration_select_cpp_new=0,declarations=retained,binding_backing=stable,backing=stable PASS\n";
+               "declaration_select_cpp_new=0,declarations=retained,binding_backing=stable,"
+               "membership_catalogue=retained,source_capture_cpp_new=0,backing=stable PASS\n";
   std::cout << "projection_storage_multiple,parent_slots=" << reserved.parent_slots
             << ",charge=" << reserved.charged_bytes() << '\n';
 }

@@ -12,8 +12,14 @@ void need(bool condition, const char *message) {
 }  // namespace
 
 MembershipFields membership_fields(const LetterProjection &projection) {
+  return MembershipFields::collect(projection, false);
+}
+
+MembershipFields MembershipFields::collect(const LetterProjection &projection, bool alternatives) {
   MembershipFields out;
   out.study_ = projection.study();
+  out.recipe_ = projection.recipe().ref;
+  out.alternatives_ = alternatives;
   std::map<warm::ObjectKey, const warm::Tool *> tools;
   for (const auto &t : projection.recipe().tools)
     tools.emplace(t.ref.object, &t);
@@ -46,7 +52,7 @@ MembershipFields membership_fields(const LetterProjection &projection) {
   for (const auto &o : projection.occurrences())
     if (o.key.source.path.empty()) owners.emplace(o.key.source.entry, &o);
   for (const auto &o : projection.occurrences()) {
-    if (!o.active) continue;
+    if (!alternatives && !o.active) continue;
     const auto it = owners.find(o.key.source.entry);
     need(it != owners.end(), "membership: missing owning letter occurrence");
     const auto &owner = *it->second;
@@ -69,6 +75,7 @@ MembershipFields membership_fields(const LetterProjection &projection) {
 
 StudyInput MembershipFields::bind(const LetterProjection &projection,
                                   const std::vector<StudyNode> &nodes) const {
+  need(!alternatives_, "membership: alternative catalogue is not a live participation set");
   need(study_ == projection.study(),
        "membership: fields belong to another study");
   auto input = projection.bind(nodes);
@@ -80,6 +87,7 @@ StudyInput MembershipFields::bind(const LetterProjection &projection,
 StructuralStudyInput MembershipFields::bind_structure(
     const LetterProjection &projection,
     const std::vector<StudyNode> &nodes) const {
+  need(!alternatives_, "membership: alternative catalogue is not a live participation set");
   need(study_ == projection.study(),
        "membership: fields belong to another study");
   auto input = projection.bind_structure(nodes);

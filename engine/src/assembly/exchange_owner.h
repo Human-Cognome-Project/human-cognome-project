@@ -24,6 +24,7 @@ class ExchangeOwner {
   std::vector<ExchangeFieldBinding> fields_;
   std::unique_ptr<ExchangeCoordinator> plan_;
   std::vector<std::shared_ptr<const LetterExchangeContract>> declarations_;
+  std::shared_ptr<const MembershipFields> memberships_;
   std::uint64_t generation_{};
   std::array<double,8> outgoing_report_{};
   std::array<double,32> balance_report_{};

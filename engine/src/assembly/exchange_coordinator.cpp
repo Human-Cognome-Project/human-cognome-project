@@ -122,20 +122,15 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
       append(c);
     }
   }
-  // Every byte inherits the owning letter's membership set. Binding preparation
-  // already checked its exact committed rows; enumerate distinct logical fields.
-  std::vector<FieldKey> memberships;
-  for (const auto &f : b.fields_) if (f.field.kind == GroupKind::Membership)
-    for (const auto &edge : b.edges_)
-      if (edge.header.second.record == f.handle.record) {
-        memberships.push_back(f.field); break;
-      }
+  // Memberships retain exact occurrence identity across both alternatives.
+  // Only incoming rows are emitted; inactive catalogue rows are never live edges.
   std::size_t position = s.live.edges - b.edges_.size();
   for (std::size_t i = 0; i < sources.size(); ++i) {
     const auto &source = sources[i];
-    const auto add = [&](const FieldKey &key, std::uint64_t count, std::uint64_t ordinal) {
+    const auto add = [&](GroupKind kind, const warm::ObjectKey &object,
+                         std::uint64_t count, std::uint64_t ordinal) {
       const auto f = std::find_if(next_fields_.begin(), next_fields_.end(),
-          [&](const auto &v) { return same(key, v.field); });
+          [&](const auto &v) { return v.field.kind == kind && v.field.object == object; });
       need(f != next_fields_.end(), "incoming exchange field is not prepared");
       need(count && count <= source.mass, "invalid incoming exact participation");
       field::UpdateCommand c;
@@ -148,10 +143,14 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
       c.position = position++; c.ordinal = ordinal;
       append(c);
     };
-    add({GroupKind::SiblingDefinition, source.definition.object}, source.mass, 0);
+    add(GroupKind::SiblingDefinition, source.definition.object, source.mass, 0);
     for (const auto &parent : source.parents)
-      add({GroupKind::ParentValue, parent.target.object}, parent.contribution, parent.ordinal);
-    for (const auto &membership : memberships) add(membership, source.mass, 0);
+      add(GroupKind::ParentValue, parent.target.object, parent.contribution, parent.ordinal);
+    // Preserve the trusted committed field order used before catalogue reuse.
+    for (const auto &field : b.fields_) if (field.field.kind == GroupKind::Membership)
+      for (const auto &membership : b.memberships_->contributions())
+        if (membership.occurrence == source.occurrence && same(membership.field,field.field))
+          add(membership.field.kind, membership.field.object, membership.count, 0);
   }
   // Only touched outgoing fields may disappear. Retained source participation,
   // including another occurrence's use, prevents retirement. Focus protection is

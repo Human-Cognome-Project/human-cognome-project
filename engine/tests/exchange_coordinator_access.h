@@ -2,6 +2,15 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static const auto *memberships(const detail::ExchangeCoordinator &c) { return c.bound_->memberships_.get(); }
+  static void stage_binding(detail::ExchangeCoordinator &c,
+      std::shared_ptr<const LetterExchangeContract> declaration,
+      std::shared_ptr<const MembershipFields> memberships,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields) {
+    c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields);
+  }
+  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) { c.bound_->capture(p); }
   static const auto *binding(const detail::ExchangeCoordinator &c) { return c.bound_.get(); }
   static auto binding_backing(const detail::ExchangeCoordinator &c) {
     const auto &b = *c.bound_;
@@ -17,7 +26,7 @@ struct ExchangeCoordinatorAccess {
       std::shared_ptr<const LetterExchangeContract> declaration,
       const std::vector<detail::OccurrenceBinding> &rows,
       const std::vector<detail::ExchangeFieldBinding> &fields) {
-    c.bound_->prepare(p,std::move(declaration),rows,fields);
+    c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields);
   }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }
   static auto backing(const detail::ExchangeCoordinator &c) {

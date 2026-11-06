@@ -44,6 +44,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
   require(declarations.size() == 2, "owner did not retain both exchange declarations");
   const auto *reserved_plan = &Access::plan(*owner);
@@ -102,6 +103,12 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(selected.get() == declarations[compression ? 1 : 0].get() &&
                 Access::equivalent(*selected,declaration),
             "retained declaration differs from freshly derived alternatives");
+    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields);
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
+            "map staging exposed an uncaptured binding");
+    no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok && unchanged(),
+            "allocation-free source capture failed or published owner data");
     std::vector<assembly::detail::ExchangeIncoming> incoming;
     for (const auto &source : declaration.incoming())
       incoming.push_back({source.occurrence, source.definition, source.node, 1,
@@ -152,6 +159,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "transaction preparation replaced reserved backing");
     require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
+    require(Plan::memberships(*reserved_plan) == memberships.get(), "binding replaced membership catalogue");
     // Force capture failure after masses were collected, without changing live
     // source data. The partially overwritten reusable view must be invalid.
     auto invalid_fields = old_fields;
@@ -299,7 +307,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
                "declaration_select_cpp_new=0,declarations=retained,"
-               "binding_backing=stable,partial_binding_retry=1,execute_cpp_new=0 PASS\n";
+               "binding_backing=stable,partial_binding_retry=1,"
+               "membership_catalogue=retained,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

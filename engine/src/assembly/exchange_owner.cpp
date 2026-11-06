@@ -13,6 +13,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
+  memberships_ = std::make_shared<const MembershipFields>(MembershipFields::collect(*projection_,true));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
   for (const auto &selection : projection_->recipe().selections) {
@@ -24,7 +25,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
     auto retained = std::make_shared<const LetterExchangeContract>(std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, occurrences_, fields_);
+    ExchangeBindings check(h_, *projection_, retained, memberships_, occurrences_, fields_);
     declarations_.push_back(std::move(retained));
     declarations_.push_back(std::make_shared<const LetterExchangeContract>(std::move(reverse)));
   }
@@ -64,7 +65,7 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto selected = declaration(owner, target);
   prepare_projection(owner,target);
-  plan_->bound_->prepare(*projection_, std::move(selected), occurrences_, fields_);
+  plan_->bound_->prepare(*projection_, std::move(selected), memberships_, occurrences_, fields_);
   plan_->prepare(incoming, fields);
   completed_ = false;
 }

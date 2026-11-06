@@ -3,6 +3,8 @@
 #include "assembly/letter_projection.h"
 
 namespace assembly {
+namespace detail { class ExchangeOwner; class ExchangeBindings; }
+namespace testing { struct MembershipFieldsAccess; }
 struct MembershipContribution {
   OccurrenceKey occurrence;
   FieldKey field;
@@ -29,7 +31,13 @@ class MembershipFields {
  private:
   MembershipFields() = default;
   friend MembershipFields membership_fields(const LetterProjection &);
+  friend class detail::ExchangeOwner;
+  friend class detail::ExchangeBindings;
+  friend struct testing::MembershipFieldsAccess;
+  static MembershipFields collect(const LetterProjection &, bool alternatives);
   warm::Uuid study_;
+  warm::BundleRef recipe_;
+  bool alternatives_{};
   std::vector<MembershipContribution> contributions_;
 };
 

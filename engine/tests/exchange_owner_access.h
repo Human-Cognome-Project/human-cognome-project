@@ -2,6 +2,7 @@
 #include "assembly/exchange_owner.h"
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
   static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
         a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||
