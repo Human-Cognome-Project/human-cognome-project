@@ -25,9 +25,10 @@ come from the immutable recipe. No new projection UUID is minted between exchang
 
 ## Preparation and publication
 
-Adoption reserves two projection views. Preparation updates the spare view and
-constructs a fresh generation-bound [coordinator](ATOMIC-EXCHANGE.md), using the
-owner's current complete maps. Each view retains every possible parent contribution
+Adoption reserves two projection views and one reusable
+[coordinator](ATOMIC-EXCHANGE.md). Preparation updates the spare view and
+rebuilds the coordinator's generation-bound intent using the owner's current
+complete maps. Each view retains every possible parent contribution
 across the pinned alternatives, partitioned between active and spare vectors.
 Changing exposure moves these existing objects, including their nested strings and
 paths, rather than destroying and recreating them. Active rows retain canonical
@@ -82,12 +83,30 @@ nested storage is counted only for constructed rows. Aggregate overflow rejects
 without publishing a partial report. The census and projection staging do not
 enforce a complete owner memory budget or reserve preparation-work units.
 
-Binding, declaration, command, mapping and hierarchy preparation still allocate
-and release the preceding transaction. Those surfaces, caller inputs, setup
-transients, native storage and lifetime/cleanup measurement are not included in
-the projection charge. Allocation-free **whole-owner** preparation and complete
-peak/lifetime accounting remain unqualified. No new native numerical kernel or
-backing array is introduced.
+The coordinator reserves command and intrinsic vectors to `Batch`, and hierarchy
+node/child/contribution vectors to `CascadeNodes`, `CascadeLinks` and
+`CascadeReferences`, respectively, at adoption. It retains these five buffers
+until teardown, including across failed preparations. Every command append checks
+the batch limit before writing; an over-budget plan cannot grow command backing
+before rejection. Hierarchy sealing checks all three limits before copying and
+uses the reserved buffers from its first call. Each preparation clears all five
+logical lengths, including empty hierarchy tables, and invalidates previous
+pending intent before any fallible work. Only a fully prepared plan becomes
+pending again. The stable coordinator address is not a persistent transaction
+identity: its views describe the most recently prepared intent and are replaced
+on preparation. Successful native publication still uses the existing swaps.
+
+This moves these allocations to adoption rather than eliminating their cost.
+Their reserved payload is the sum of each vector's capacity times its element
+size; it is **not included** in `projection_storage()`. Commands and hierarchy
+remain bounded by the borrowed harness's capacity; this is not a separate total
+owner byte-budget admission gate. The coordinator object and old bindings can
+remain resident after invalid preparation until replacement or owner teardown.
+Declaration/binding construction, membership enumeration, nested occurrence/field
+map storage and caller inputs still allocate. Setup transients, native storage
+and lifetime/cleanup measurement also remain outside the projection charge.
+Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
+remain unqualified. No new native numerical kernel or backing array is introduced.
 
 `exchange_owner`, also included in the combined placement matrix, alternates 32
 exchanges of one two-byte letter on one execution, with a tick after each. It checks
@@ -102,7 +121,11 @@ copies keep both field alternatives in use; the original single-occurrence test
 continues to exercise field creation and retirement.
 
 C++ `new` guards now cover the first and repeated projection-staging calls as well
-as successful execution, ordinary rejection and ticks. Both view addresses and
+as hierarchy sealing from its first call, successful execution, ordinary rejection
+and ticks. Tests retain the coordinator address and all five buffer addresses and
+capacities across repeated edits. A malformed incoming intrinsic forces failure
+after binding creation/partial plan construction, invalidates preceding pending
+intent, preserves the committed owner and permits a valid retry. Both view addresses and
 the combined projection charge remain stable; tests include active cardinality
 changes, overflow rejection, and an isolated address-reservation increase with an
 exact expected charge delta. Other host preparation and exception construction

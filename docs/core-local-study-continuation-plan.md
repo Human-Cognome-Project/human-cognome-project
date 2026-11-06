@@ -79,6 +79,11 @@ retains source pins and distinct local/hosted results. Do not rerun the accepted
 baseline merely to continue.
 
 Projection staging reuses reserved views, but other preparation still allocates.
+The next bounded contribution retains one coordinator and reserves its command,
+intrinsic and hierarchy buffers at adoption. Its first/repeated hierarchy sealing
+and failed-preparation retry witnesses are separate from whole-owner reuse.
+Declaration, binding and nested identity-map reuse remain open; this contribution
+does not complete the resource or remaining-operation rows below.
 The harness remains borrowed and unrelated generation changes make the owner stale.
 The capacity census does not qualify full owner peak/lifetime resources.
 

@@ -1155,3 +1155,50 @@ Reusable declaration/binding/coordinator/map/hierarchy preparation, complete
 peak/lifetime resources, admission/removal/focus/rebase/restart owner integration
 and same-execution controls remain open. Actual GPU qualification remains separate.
 Continue from current main; no baseline rerun is required.
+# Contributor-local coordinator backing reuse — 2026-11-06
+
+Tested source `43ae245cfebe7301fac1a9e8a9a165122afdf16a`, based on accepted
+main `e69adbaa`. Final contribution documentation is separate from this source
+pin. Taichi remains `5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual CPU, native Clang/LLVM 15, WSL Ubuntu. Commands after sourcing
+`engine/build/engine-env.sh`:
+
+```sh
+cmake --build engine/build --target live_hierarchy_test -j 2
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both one-worker bulk/default owner cases passed, each exercising 32 successful
+exchanges and following ticks. The two-worker direct/no-unroll combined matrix
+passed all 22 cases. Both 52/8-bit placement compiler audits passed: 19 kernels,
+29 unsafe controls each. Runtime logs identify the CPU backend. Executables were
+run at `nice -n 10`; this is functional evidence, not a performance comparison.
+
+The owner tests check one persistent coordinator and stable addresses/capacities
+for command, intrinsic and all three hierarchy buffers across repeated edits.
+First and repeated hierarchy sealing run under the C++ allocation guard. Partial
+preparation failure invalidates earlier pending intent, preserves committed
+projection/maps/reports and permits valid preparation/retry. Existing field
+creation/retirement, shared-field survival, native publication, rejected execution,
+late-unready and tick checks remain active. Caller hierarchy construction is
+outside that guard, as are declaration/binding/nested-map preparation.
+
+Initial source `b94fd650` passed the single-owner witness but its multi-owner
+guard also covered allocating caller `RefreshRequest::spec()` construction.
+The final source moves that construction outside owner sealing; the owner guard
+remains in place from its first call. The initial failed log is retained and is
+not final-source passing evidence.
+
+Retained local bundle: `exchange-preparation-43ae245c`, including source/submodule
+pins, toolchain/configuration, binary hashes, logs, emitted LLVM and prior attempt.
+`SHA256SUMS` digest:
+`b59c6f52d66e6d754e716596aae7ea2b250387d2701cf6daf7b564482483e181`.
+The archive is local; the hash does not make its raw contents remotely available.
+These are contributor-executed results, not independent maintainer or hosted
+validation. Full 115-test baseline, other compiler configurations, database and
+GPU suites were not rerun. Whole-owner allocation-free preparation, complete
+peak/lifetime accounting and other-operation integration remain open. The
+projection census does not include the newly retained coordinator buffers.

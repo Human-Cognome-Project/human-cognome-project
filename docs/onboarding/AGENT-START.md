@@ -43,6 +43,11 @@ controls follow. The [continuation plan](../core-local-study-continuation-plan.m
 defines this sequence; deliver reviewable slices with source-pinned local evidence.
 Hosted CPU and actual GPU evidence remain distinct.
 
+The current contribution adds persistent coordinator command/intrinsic/hierarchy
+backing with first-call sealing guards and partial-preparation rejection/retry.
+It awaits review; declarations, bindings and nested maps still allocate, and
+complete owner accounting and other-operation integration remain open.
+
 ## Authority and reading order
 
 | Question | Governing source |
