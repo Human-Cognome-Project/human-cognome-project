@@ -193,12 +193,13 @@ void graph_failures() {
 void retained_alternatives() {
   membership_fixture::Fixture f;
   f.base.focal_fields = {{warm::FieldKind::Membership,f.en}};
-  auto recipe = normalize_structural_letters(f.base,
+  std::vector<StructuralLetterRequest> requests =
       {{0,f.ref(f.english),warm::Exposure::Aggregate},
        {1,f.ref(f.english),warm::Exposure::Parts},
        {2,f.ref(f.french),warm::Exposure::Parts},
        {3,f.ref(f.repeated),warm::Exposure::Aggregate},
-       {4,f.ref(f.accented),warm::Exposure::Parts}});
+       {4,f.ref(f.accented),warm::Exposure::Parts}};
+  const auto recipe = normalize_structural_letters(f.base,requests);
   const auto initial = project_letters(recipe);
   const auto catalogue = assembly::testing::MembershipFieldsAccess::catalogue(initial);
   const auto *backing = catalogue.contributions().data();
@@ -209,9 +210,10 @@ void retained_alternatives() {
   // Fresh projections mint their own study UUIDs. Compare source paths and all
   // pinned descriptors while checking each view's study separately.
   for (unsigned mask = 0; mask < 32; ++mask) {
-    for (std::size_t i = 0; i < recipe.selections.size(); ++i)
-      recipe.selections[i].exposure = mask & (1u << i) ? warm::Exposure::Parts : warm::Exposure::Aggregate;
-    const auto current = project_letters(recipe);
+    for (std::size_t i = 0; i < requests.size(); ++i)
+      requests[i].exposure = mask & (1u << i) ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+    // Normalization also assigns the matching structural floor for each view.
+    const auto current = project_letters(normalize_structural_letters(f.base,requests));
     const auto live = membership_fields(current);
     bool exact = true;
     for (const auto &m : live.contributions()) {
