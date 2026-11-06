@@ -79,11 +79,14 @@ retains source pins and distinct local/hosted results. Do not rerun the accepted
 baseline merely to continue.
 
 Projection staging reuses reserved views, but other preparation still allocates.
-The next bounded contribution retains one coordinator and reserves its command,
-intrinsic and hierarchy buffers at adoption. Its first/repeated hierarchy sealing
-and failed-preparation retry witnesses are separate from whole-owner reuse.
-Declaration, binding and nested identity-map reuse remain open; this contribution
-does not complete the resource or remaining-operation rows below.
+#224 provisionally accepts one retained coordinator and adoption-reserved command,
+intrinsic and hierarchy buffers; review 5801533371 permits a clearly identified
+stack while hosted validation completes, without a duplicate baseline run.
+The follow-up retains both immutable declarations per selected occurrence and
+shares the selected declaration with current bindings. First/repeated selection
+is guarded against C++ allocation; descriptors are checked against fresh derivation.
+Binding, membership and nested identity-map reuse remain open. Neither increment
+completes the resource or remaining-operation rows below.
 The harness remains borrowed and unrelated generation changes make the owner stale.
 The capacity census does not qualify full owner peak/lifetime resources.
 

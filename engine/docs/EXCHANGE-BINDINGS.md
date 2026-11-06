@@ -50,6 +50,14 @@ The diagnostic `UpdateResult` is not a reusable authorization token: only an
 immediate coordinator operation under exclusive ownership may consume success.
 The prepared harness must outlive the view.
 
+The declaration has shared const ownership. The standalone preparation adapter
+moves its supplied declaration into owned immutable storage; the persistent
+exchange owner shares an adoption-retained declaration instead. Neither path
+borrows a temporary declaration or changes its descriptors at publication. Live
+binding validation remains generation-bound even though immutable declarations
+can be selected for later operations. Binding maps, masks and membership
+enumeration still allocate during preparation.
+
 The conservative validation reservation is
 `16 * (bound_occurrences + bound_fields + captured_edges + live_edges + 1)`
 structural units, capped by the prepared `PlacementWork` limit before scanning.

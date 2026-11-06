@@ -1202,3 +1202,52 @@ validation. Full 115-test baseline, other compiler configurations, database and
 GPU suites were not rerun. Whole-owner allocation-free preparation, complete
 peak/lifetime accounting and other-operation integration remain open. The
 projection census does not include the newly retained coordinator buffers.
+# Contributor-local retained exchange declarations — 2026-11-06
+
+Tested source `25187e911bdb2590a787f7a47b5b2d9096771d25`, stacked on provisionally
+accepted #224 head `4d0a6efdfaed99a1c7b6765c3dbefa1728f5cce1` under
+[review 5801533371](https://github.com/Human-Cognome-Project/human-cognome-project/pull/224#pullrequestreview-5801533371).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. After sourcing
+`engine/build/engine-env.sh`, built `live_hierarchy_test` with two build workers
+and ran at `nice -n 10`:
+
+```sh
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both bulk/default one-worker cases passed with 32 exchanges and following ticks
+each. All 22 direct/no-unroll two-worker combined placement cases passed. Both
+52/8-bit compiler audits passed, with 19 kernels and 29 unsafe controls each.
+These results qualify the changed path, not the entire 115-test baseline.
+
+The tests retain the original two/eight declaration identities, compare both
+directions against fresh derivation (full source descriptors, ordered leaves,
+exact mass, exposure and comparison work), guard successful selection against
+C++ allocation, and verify that the binding holds the same declaration object.
+The four-copy case includes mixed initial exposure and alternating edits while
+preserving other occurrences/shared fields. Foreign/unknown/nested owner keys,
+current exposure and invalid target requests reject; pending intent is invalidated,
+committed state remains unchanged and valid retry succeeds. Previous projection,
+coordinator backing, sealing, native publication, rejection and tick guards remain.
+
+Initial `4973768b` failed test compilation because the foreign-study witness used
+a string operation on the UUID value type. `25187e91` uses `warm::new_uuid()`;
+no native test ran from the failed build. Its build log remains in the bundle.
+
+Local bundle `exchange-declarations-25187e91` retains source/submodule pins,
+toolchain/configuration, binary hashes, logs and emitted LLVM. `SHA256SUMS` digest:
+`eaf53effaa7bada9d5c993b2a24151514c4f0267ac5a297baf044ecac6d269cc`.
+This is contributor-executed local evidence, not independent maintainer or hosted
+execution. The raw bundle remains local; its digest is provenance only.
+
+Full 115-test baseline, other compiler configurations, database and GPU suites
+were not rerun. Binding/membership/nested-map preparation still allocates. Retained
+declaration descriptors/table/control blocks are excluded from the projection
+census; complete owner peak/lifetime resources, other operations and controls
+remain open. Parent #224's native run 42232659936 is still in progress; its smoke
+run passed. No duplicate parent run was requested or started.

@@ -40,6 +40,22 @@ by trusted preparation. Preparation and hierarchy sealing do not publish any liv
 projection or mapping. A new preparation discards previous pending intent; a
 preparation exception preserves committed identity, mappings and last report.
 
+Adoption also retains two immutable exchange declarations per selected occurrence,
+one for each direction. Both come from the validated structural recipe: the reverse
+swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact
+mass, ordered leaf inventory and symmetric comparison-work bound. Each declaration
+keeps the full study/occurrence key, pinned recipe and definition revisions. Copies
+of the same letter have distinct declarations; no live identity is deduplicated.
+
+Preparation selects by exact owner key and target and verifies the declared source
+exposure against the current projection. Foreign studies, unknown entries, nested
+occurrences, invalid targets and requests for the current exposure reject before
+binding construction. The binding shares the selected const declaration without
+copying its nested descriptors. Readiness/generation and current source participation
+are still validated afresh; a retained declaration is not live execution authority.
+There is no mutable declaration alias on this path. Reference-counted ownership
+keeps it alive through binding teardown; all harness/owner calls remain exclusive.
+
 Execution reserves 64 PlacementWork units for owner publication before delegating
 the remaining work to the existing coordinator. The native transaction still
 validates old-plus-new claims, conservation, placement, source, contacts and
@@ -102,8 +118,14 @@ size; it is **not included** in `projection_storage()`. Commands and hierarchy
 remain bounded by the borrowed harness's capacity; this is not a separate total
 owner byte-budget admission gate. The coordinator object and old bindings can
 remain resident after invalid preparation until replacement or owner teardown.
-Declaration/binding construction, membership enumeration, nested occurrence/field
-map storage and caller inputs still allocate. Setup transients, native storage
+Declaration construction now occurs at adoption; successful selection and sharing
+perform no C++ allocation. Two declarations per selection, their nested descriptors,
+table capacity and reference-count control blocks remain resident until their last
+owner/binding reference is released. These surfaces are **also excluded** from
+`projection_storage()`. Adoption copies the reverse alternative and still has
+setup transients; no complete peak/lifetime or byte-budget claim follows.
+Binding construction, membership enumeration, nested occurrence/field map storage
+and caller inputs still allocate. Setup transients, native storage
 and lifetime/cleanup measurement also remain outside the projection charge.
 Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
 remain unqualified. No new native numerical kernel or backing array is introduced.
@@ -120,7 +142,7 @@ parent/membership inventory and unchanged rejection/retry. The two permanent
 copies keep both field alternatives in use; the original single-occurrence test
 continues to exercise field creation and retirement.
 
-C++ `new` guards now cover the first and repeated projection-staging calls as well
+C++ `new` guards cover the first and repeated declaration-selection and projection-staging calls as well
 as hierarchy sealing from its first call, successful execution, ordinary rejection
 and ticks. Tests retain the coordinator address and all five buffer addresses and
 capacities across repeated edits. A malformed incoming intrinsic forces failure
@@ -130,6 +152,13 @@ the combined projection charge remain stable; tests include active cardinality
 changes, overflow rejection, and an isolated address-reservation increase with an
 exact expected charge delta. Other host preparation and exception construction
 remain excluded. Native backing is observed separately.
+
+Declaration tests retain all two/eight original declaration identities across the
+single/four-occurrence sequences, compare selected descriptors (including ordered
+leaves and comparison work) against fresh derivation in both directions, and verify
+that the actual binding holds the selected object rather than a copy. Invalid-key
+preparation cancels pending intent without changing the committed owner and permits
+a valid retry. Mixed initial aggregate/parts exposure is covered by the four-copy case.
 
 [Local evidence](../tests/admission/README.md) records source and configurations.
 This CPU scope does not qualify GPU behavior, all operation rows, full owner
