@@ -24,6 +24,8 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   prospective_ = std::make_unique<LetterProjection>(*projection_);
   projection_->reserve_exposure();
   prospective_->reserve_exposure();
+  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_));
+  completed_ = true;
 }
 
 void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target) {
@@ -40,15 +42,14 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
     const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields) {
   // Preparation may allocate/free host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
-  plan_.reset();
-  completed_ = false;
+  completed_ = true;
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto declaration = declare_letter_exchange(*projection_, owner, target);
   prepare_projection(owner,target);
   auto bound = std::unique_ptr<ExchangeBindings>(new ExchangeBindings(
       h_, *projection_, std::move(declaration), occurrences_, fields_));
-  auto plan = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(std::move(bound), incoming, fields));
-  plan_ = std::move(plan);
+  plan_->prepare(std::move(bound), incoming, fields);
+  completed_ = false;
 }
 
 void ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy) {

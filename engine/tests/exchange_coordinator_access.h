@@ -2,6 +2,14 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static auto backing(const detail::ExchangeCoordinator &c) {
+    return std::array<std::pair<const void *, std::size_t>,5>{{
+      {c.commands_.data(),c.commands_.capacity()},
+      {c.intrinsics_.data(),c.intrinsics_.capacity()},
+      {c.nodes_.data(),c.nodes_.capacity()},
+      {c.children_.data(),c.children_.capacity()},
+      {c.contributions_.data(),c.contributions_.capacity()}}};
+  }
   static auto prepare(std::unique_ptr<detail::ExchangeBindings> b,
                       const std::vector<detail::ExchangeIncoming> &incoming,
                       const std::vector<detail::ExchangeNewField> &fields = {}) {

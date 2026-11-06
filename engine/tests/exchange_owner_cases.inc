@@ -44,6 +44,9 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  const auto *reserved_plan = &Access::plan(*owner);
+  const auto plan_backing = Plan::backing(*reserved_plan);
+  require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
   bool charge_rejected = false;
@@ -104,6 +107,20 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
     Access::prepare(*owner,key,target,incoming,additions);
+    // Fail after binding creation and partial command construction, then retry.
+    // This must also invalidate a previously prepared, unconsumed transaction.
+    auto invalid = incoming;
+    invalid.back().radius = -1;
+    rejected = false;
+    try { Access::prepare(*owner,key,target,invalid,additions); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected && !Access::pending(*owner) && unchanged(),
+            "partial preparation retained pending intent or changed owner");
+    require(Access::execute(*owner,generation).status == UpdateStatus::InvalidInput,
+            "failed preparation allowed execution of old intent");
+    Access::prepare(*owner,key,target,incoming,additions);
+    require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
+            "transaction preparation replaced reserved backing");
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.
     const auto &coordinator = Access::plan(*owner);
@@ -153,8 +170,12 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       node.cohort_count = contributions.size() - node.cohort_begin;
       nodes.push_back(node);
     }
-    Access::seal(*owner,{nodes.data(),nodes.size(),children.data(),children.size(),
-                         contributions.data(),contributions.size()});
+    no_new([&] {
+      Access::seal(*owner,{nodes.data(),nodes.size(),children.data(),children.size(),
+                           contributions.data(),contributions.size()});
+    });
+    require(Plan::backing(*reserved_plan) == plan_backing,
+            "hierarchy sealing replaced reserved backing");
     require(unchanged(), "hierarchy sealing published exposure early");
     const auto before = TickSnapshot(f);
     const auto run = [&](std::uint64_t expected, std::uint64_t work = UINT64_MAX) {

@@ -13,12 +13,44 @@ bool same(const FieldKey &a, const FieldKey &b) {
 }
 }
 
+ExchangeCoordinator::ExchangeCoordinator(const field::Harness &h) {
+  reserve(h);
+}
+
+void ExchangeCoordinator::reserve(const field::Harness &h) {
+  const auto &limits = h.prepared_storage().capacity.limits();
+  commands_.reserve(limits[field::Budget::Batch]);
+  intrinsics_.reserve(limits[field::Budget::Batch]);
+  nodes_.reserve(limits[field::Budget::CascadeNodes]);
+  children_.reserve(limits[field::Budget::CascadeLinks]);
+  contributions_.reserve(limits[field::Budget::CascadeReferences]);
+}
+
 ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
     const std::vector<ExchangeIncoming> &incoming,
-    const std::vector<ExchangeNewField> &new_fields) : bound_(std::move(bound)) {
+    const std::vector<ExchangeNewField> &new_fields) {
+  need(bool(bound), "missing trusted exchange bindings");
+  reserve(bound->h_);
+  prepare(std::move(bound), incoming, new_fields);
+}
+
+void ExchangeCoordinator::prepare(std::unique_ptr<ExchangeBindings> bound,
+    const std::vector<ExchangeIncoming> &incoming,
+    const std::vector<ExchangeNewField> &new_fields) {
+  sealed_ = false;
+  consumed_ = true; // A failed preparation must never expose a partial plan.
+  commands_.clear(); intrinsics_.clear();
+  next_.clear(); next_fields_.clear(); field_commands_.clear();
+  nodes_.clear(); children_.clear(); contributions_.clear();
+  bound_ = std::move(bound);
   need(bool(bound_), "missing trusted exchange bindings");
   auto &b = *bound_;
   const auto &s = b.h_.prepared_storage();
+  const auto append = [&](const field::UpdateCommand &command) {
+    need(commands_.size() < s.capacity.limits()[field::Budget::Batch],
+         "exchange command backing exhausted");
+    commands_.push_back(command);
+  };
   need(b.validate(b.generation_, UINT64_MAX).status == field::UpdateStatus::Ok,
        "stale exchange preparation");
   need(b.fields_.size() == s.live.fields,
@@ -55,7 +87,7 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
     command.exact_mass = source.mass;
     intrinsics_.push_back({commands_.size(), commands_.size(), double(source.mass),
                            input->radius, input->geometry});
-    commands_.push_back(command);
+    append(command);
     next_.push_back({source.occurrence, {}});
   }
   for (const auto &f : new_fields) {
@@ -68,19 +100,19 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
     c.kind = f.kind; c.address = f.address;
     field_commands_.push_back(int(commands_.size()));
     next_fields_.push_back({f.field, {}});
-    commands_.push_back(c);
+    append(c);
   }
   for (const auto &handle : b.outgoing_) {
     field::UpdateCommand c;
     c.operation = field::UpdateOp::RetireParticle;
     c.first = field::UpdateRef::existing(handle);
-    commands_.push_back(c);
+    append(c);
   }
   for (const auto &edge : b.edges_) {
     field::UpdateCommand c;
     c.operation = field::UpdateOp::RemoveParticipation;
     c.row = edge.row; c.generation = b.generation_;
-    commands_.push_back(c);
+    append(c);
   }
   for (std::size_t row = 0; row < s.live.contacts; ++row) {
     const auto &contact = s.contacts[row];
@@ -88,7 +120,7 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
       field::UpdateCommand c;
       c.operation = field::UpdateOp::RemoveContact;
       c.row = row; c.generation = b.generation_;
-      commands_.push_back(c);
+      append(c);
     }
   }
   // Every byte inherits the owning letter's membership set. Binding preparation
@@ -115,7 +147,7 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
                              : field::UpdateRef::pending(command);
       c.exact_count = count; c.share = float(double(count) / double(source.mass));
       c.position = position++; c.ordinal = ordinal;
-      commands_.push_back(c);
+      append(c);
     };
     add({GroupKind::SiblingDefinition, source.definition.object}, source.mass, 0);
     for (const auto &parent : source.parents)
@@ -144,7 +176,7 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
       field::UpdateCommand c;
       c.operation = field::UpdateOp::RetireField;
       c.first = field::UpdateRef::existing(f.handle);
-      commands_.push_back(c);
+      append(c);
       next_fields_.erase(next_fields_.begin() + i);
       field_commands_.erase(field_commands_.begin() + i);
     } else ++i;
@@ -154,6 +186,7 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
   need(entries <= (UINT64_MAX - 16) / 16 && b.work_ <= UINT64_MAX - 16 * (entries + 1),
        "exchange coordinator work overflow");
   work_ = b.work_ + 16 * (entries + 1);
+  consumed_ = false;
 }
 
 void ExchangeCoordinator::prepare_hierarchy(const field::LiveRefreshSpec &spec) {
