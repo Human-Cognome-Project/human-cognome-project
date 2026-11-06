@@ -64,9 +64,8 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto selected = declaration(owner, target);
   prepare_projection(owner,target);
-  auto bound = std::unique_ptr<ExchangeBindings>(new ExchangeBindings(
-      h_, *projection_, std::move(selected), occurrences_, fields_));
-  plan_->prepare(std::move(bound), incoming, fields);
+  plan_->bound_->prepare(*projection_, std::move(selected), occurrences_, fields_);
+  plan_->prepare(incoming, fields);
   completed_ = false;
 }
 

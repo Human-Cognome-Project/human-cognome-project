@@ -27,6 +27,9 @@ class ExchangeBindings {
   friend class ExchangeOwner;
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
+  explicit ExchangeBindings(field::Harness &);
+  void prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
+               const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
   ExchangeBindings(field::Harness &, const LetterProjection &,
@@ -48,6 +51,7 @@ class ExchangeBindings {
   std::vector<bool> outgoing_rows_, edge_rows_;
   std::uint64_t generation_{}, work_{};
   std::size_t source_edges_{};
+  bool valid_{};
 };
 }  // namespace detail
 }  // namespace assembly

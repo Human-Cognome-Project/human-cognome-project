@@ -13,7 +13,8 @@ bool same(const FieldKey &a, const FieldKey &b) {
 }
 }
 
-ExchangeCoordinator::ExchangeCoordinator(const field::Harness &h) {
+ExchangeCoordinator::ExchangeCoordinator(field::Harness &h)
+    : bound_(new ExchangeBindings(h)) {
   reserve(h);
 }
 
@@ -28,21 +29,19 @@ void ExchangeCoordinator::reserve(const field::Harness &h) {
 
 ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
     const std::vector<ExchangeIncoming> &incoming,
-    const std::vector<ExchangeNewField> &new_fields) {
-  need(bool(bound), "missing trusted exchange bindings");
-  reserve(bound->h_);
-  prepare(std::move(bound), incoming, new_fields);
+    const std::vector<ExchangeNewField> &new_fields) : bound_(std::move(bound)) {
+  need(bool(bound_), "missing trusted exchange bindings");
+  reserve(bound_->h_);
+  prepare(incoming, new_fields);
 }
 
-void ExchangeCoordinator::prepare(std::unique_ptr<ExchangeBindings> bound,
-    const std::vector<ExchangeIncoming> &incoming,
+void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     const std::vector<ExchangeNewField> &new_fields) {
   sealed_ = false;
   consumed_ = true; // A failed preparation must never expose a partial plan.
   commands_.clear(); intrinsics_.clear();
   next_.clear(); next_fields_.clear(); field_commands_.clear();
   nodes_.clear(); children_.clear(); contributions_.clear();
-  bound_ = std::move(bound);
   need(bool(bound_), "missing trusted exchange bindings");
   auto &b = *bound_;
   const auto &s = b.h_.prepared_storage();

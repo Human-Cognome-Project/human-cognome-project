@@ -43,6 +43,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   require(declarations.size() == 8, "owner did not retain both alternatives for every copy");
   const auto *reserved_plan = &Access::plan(*owner);
   const auto plan_backing = Plan::backing(*reserved_plan);
+  const auto *reserved_binding = Plan::binding(*reserved_plan);
+  const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
@@ -80,6 +82,9 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-occurrence binding did not reuse its exact retained declaration");
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "multi-occurrence preparation replaced transaction backing");
+    require(Plan::binding(*reserved_plan) == reserved_binding &&
+                Plan::binding_backing(*reserved_plan) == binding_backing,
+            "multi-occurrence preparation replaced binding capture backing");
     const auto &commands = Plan::commands(Access::plan(*owner));
     RefreshRequest request(f.h);
     for (std::size_t node = 0; node < request.nodes.size(); ++node) {
@@ -155,7 +160,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   std::cout << "exchange_owner_multiple,occurrences=4,rounds=32,edited=2,survivors=preserved,"
                "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,"
-               "declaration_select_cpp_new=0,declarations=retained,backing=stable PASS\n";
+               "declaration_select_cpp_new=0,declarations=retained,binding_backing=stable,backing=stable PASS\n";
   std::cout << "projection_storage_multiple,parent_slots=" << reserved.parent_slots
             << ",charge=" << reserved.charged_bytes() << '\n';
 }

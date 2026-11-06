@@ -24,10 +24,9 @@ class ExchangeCoordinator {
  private:
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   friend class ExchangeOwner;
-  explicit ExchangeCoordinator(const field::Harness &);
+  explicit ExchangeCoordinator(field::Harness &);
   void reserve(const field::Harness &);
-  void prepare(std::unique_ptr<ExchangeBindings>,
-               const std::vector<ExchangeIncoming> &,
+  void prepare(const std::vector<ExchangeIncoming> &,
                const std::vector<ExchangeNewField> &);
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,

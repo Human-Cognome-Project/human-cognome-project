@@ -48,6 +48,10 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   require(declarations.size() == 2, "owner did not retain both exchange declarations");
   const auto *reserved_plan = &Access::plan(*owner);
   const auto plan_backing = Plan::backing(*reserved_plan);
+  const auto *reserved_binding = Plan::binding(*reserved_plan);
+  const auto binding_backing = Plan::binding_backing(*reserved_plan);
+  require(Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+          "adoption exposes an uncaptured binding");
   require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
@@ -148,6 +152,20 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "transaction preparation replaced reserved backing");
     require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
+    // Force capture failure after masses were collected, without changing live
+    // source data. The partially overwritten reusable view must be invalid.
+    auto invalid_fields = old_fields;
+    invalid_fields.back().handle.incarnation = 0;
+    rejected = false;
+    try { Plan::rebind(Access::plan(*owner),*previous,selected,old_rows,invalid_fields); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
+            "partial binding capture retained authority or changed committed owner");
+    Access::prepare(*owner,key,target,incoming,additions);
+    require(Plan::binding(*reserved_plan) == reserved_binding &&
+                Plan::binding_backing(*reserved_plan) == binding_backing &&
+                Plan::binding_status(*reserved_plan) == UpdateStatus::Ok,
+            "binding retry replaced reserved capture backing or remained invalid");
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.
     const auto &coordinator = Access::plan(*owner);
@@ -280,7 +298,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                "mappings=atomic,reports=atomic,reject_retry=1,late_unready=1,"
                "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
-               "declaration_select_cpp_new=0,declarations=retained,execute_cpp_new=0 PASS\n";
+               "declaration_select_cpp_new=0,declarations=retained,"
+               "binding_backing=stable,partial_binding_retry=1,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

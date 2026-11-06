@@ -36,6 +36,7 @@ struct ExchangeOwnerAccess {
   static const auto &mappings(const detail::ExchangeOwner &o) { return o.occurrences_; }
   static const auto &fields(const detail::ExchangeOwner &o) { return o.fields_; }
   static const auto &plan(const detail::ExchangeOwner &o) { return *o.plan_; }
+  static auto &plan(detail::ExchangeOwner &o) { return *o.plan_; }
   static bool pending(const detail::ExchangeOwner &o) { return o.plan_ && !o.completed_; }
   static auto generation(const detail::ExchangeOwner &o) { return o.generation_; }
   static const auto &outgoing_report(const detail::ExchangeOwner &o) { return o.outgoing_report_; }

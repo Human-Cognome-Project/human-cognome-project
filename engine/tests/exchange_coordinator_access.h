@@ -2,6 +2,23 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static const auto *binding(const detail::ExchangeCoordinator &c) { return c.bound_.get(); }
+  static auto binding_backing(const detail::ExchangeCoordinator &c) {
+    const auto &b = *c.bound_;
+    return std::array<std::pair<const void *,std::size_t>,5>{{
+      {b.masses_.data(),b.masses_.capacity()}, {b.outgoing_.data(),b.outgoing_.capacity()},
+      {b.edges_.data(),b.edges_.capacity()}, {nullptr,b.outgoing_rows_.capacity()},
+      {nullptr,b.edge_rows_.capacity()}}};
+  }
+  static auto binding_status(const detail::ExchangeCoordinator &c) {
+    return c.bound_->validate(c.bound_->h_.prepared_storage().generation,UINT64_MAX).status;
+  }
+  static void rebind(detail::ExchangeCoordinator &c, const LetterProjection &p,
+      std::shared_ptr<const LetterExchangeContract> declaration,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields) {
+    c.bound_->prepare(p,std::move(declaration),rows,fields);
+  }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }
   static auto backing(const detail::ExchangeCoordinator &c) {
     return std::array<std::pair<const void *, std::size_t>,5>{{
