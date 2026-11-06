@@ -50,7 +50,7 @@ of the same letter have distinct declarations; no live identity is deduplicated.
 Preparation selects by exact owner key and target and verifies the declared source
 exposure against the current projection. Foreign studies, unknown entries, nested
 occurrences, invalid targets and requests for the current exposure reject before
-binding construction. The binding shares the selected const declaration without
+binding recapture. The binding shares the selected const declaration without
 copying its nested descriptors. Readiness/generation and current source participation
 are still validated afresh; a retained declaration is not live execution authority.
 There is no mutable declaration alias on this path. Reference-counted ownership
@@ -112,20 +112,29 @@ pending again. The stable coordinator address is not a persistent transaction
 identity: its views describe the most recently prepared intent and are replaced
 on preparation. Successful native publication still uses the existing swaps.
 
+The coordinator also retains one [binding](EXCHANGE-BINDINGS.md) and its reserved
+mass, outgoing-handle, source-edge and two mask vectors. Preparation assigns the
+current complete maps and captures source data afresh into those buffers. The
+binding is invalidated before fallible work and becomes valid only after full
+capture and validation. A failed capture never leaves a partially refreshed view
+usable; successful owner/native publication continues through the same swaps.
+
 This moves these allocations to adoption rather than eliminating their cost.
 Their reserved payload is the sum of each vector's capacity times its element
 size; it is **not included** in `projection_storage()`. Commands and hierarchy
 remain bounded by the borrowed harness's capacity; this is not a separate total
-owner byte-budget admission gate. The coordinator object and old bindings can
-remain resident after invalid preparation until replacement or owner teardown.
+owner byte-budget admission gate. Coordinator and binding objects remain resident
+until teardown; invalid preparation may leave unusable partial metadata resident.
 Declaration construction now occurs at adoption; successful selection and sharing
 perform no C++ allocation. Two declarations per selection, their nested descriptors,
 table capacity and reference-count control blocks remain resident until their last
 owner/binding reference is released. These surfaces are **also excluded** from
 `projection_storage()`. Adoption copies the reverse alternative and still has
 setup transients; no complete peak/lifetime or byte-budget claim follows.
-Binding construction, membership enumeration, nested occurrence/field map storage
-and caller inputs still allocate. Setup transients, native storage
+Membership enumeration, nested occurrence/field map assignment and other temporary
+binding preparation values still allocate. The new binding buffers are also outside
+the projection charge; no total binding-byte census has been added. Caller inputs
+also allocate. Setup transients, native storage
 and lifetime/cleanup measurement also remain outside the projection charge.
 Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
 remain unqualified. No new native numerical kernel or backing array is introduced.
@@ -146,7 +155,7 @@ C++ `new` guards cover the first and repeated declaration-selection and projecti
 as hierarchy sealing from its first call, successful execution, ordinary rejection
 and ticks. Tests retain the coordinator address and all five buffer addresses and
 capacities across repeated edits. A malformed incoming intrinsic forces failure
-after binding creation/partial plan construction, invalidates preceding pending
+after binding recapture/partial plan construction, invalidates preceding pending
 intent, preserves the committed owner and permits a valid retry. Both view addresses and
 the combined projection charge remain stable; tests include active cardinality
 changes, overflow rejection, and an isolated address-reservation increase with an

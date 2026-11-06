@@ -55,18 +55,40 @@ moves its supplied declaration into owned immutable storage; the persistent
 exchange owner shares an adoption-retained declaration instead. Neither path
 borrows a temporary declaration or changes its descriptors at publication. Live
 binding validation remains generation-bound even though immutable declarations
-can be selected for later operations. Binding maps, masks and membership
+can be selected for later operations. Binding maps and membership
 enumeration still allocate during preparation.
 
 The conservative validation reservation is
 `16 * (bound_occurrences + bound_fields + captured_edges + live_edges + 1)`
 structural units, capped by the prepared `PlacementWork` limit before scanning.
-Preparation rejects overflow. Host vectors for identity maps, source rows and
-record/edge masks are allocated during preparation, not during validation. They
-are coordinator metadata outside the harness's existing scratch manifest;
+Preparation rejects overflow. The persistent owner now reserves one binding
+object at adoption: mass/outgoing-handle vectors to `Particles`, captured edges
+and their used-row mask to `Participation`, and the outgoing-record mask to the
+prepared particle-header span. Recapture clears logical data and repopulates it
+from the current projection/maps and native source. The used-row mask is filled
+in place rather than replaced with a freshly allocated temporary. Reservations
+are checked before appending; captured edges cannot exceed the distinct used
+live rows. Unused capacity does not constitute live source data.
+
+The binding starts invalid and becomes invalid before any fallible recapture,
+including map assignment. Only complete capture plus final validation marks it
+valid. A partially overwritten view cannot validate or authorize execution;
+valid retry reuses its backing. Generation checks still reject a completed view
+after native source publication. This is explicit reconstruction from the owner's
+committed maps, not automatic rebinding after an unrelated operation.
+
+Nested identity maps and membership traversal still allocate during preparation.
+All these surfaces remain coordinator metadata outside the harness scratch manifest;
 integration into an enduring owner's total resource accounting remains pending.
 The backing-reuse tests qualify validation, not the complete allocation budget
 of an operational owner.
+
+Owner tests retain the binding identity and the three ordinary vector addresses/
+capacities, plus both `vector<bool>` mask capacities, across first/repeated edits
+and four-copy alternation. A private test adapter forces an invalid field handle
+after mass capture, checks invalidity and unchanged committed owner, then retries.
+These are buffer-reuse checks, **not** an allocation-free whole-binding guard or
+measurement of packed-mask addresses, allocator overhead, peak memory or cleanup.
 
 ## Limits and following work
 

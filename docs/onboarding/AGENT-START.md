@@ -45,10 +45,12 @@ Hosted CPU and actual GPU evidence remain distinct.
 
 #224 provisionally accepts persistent coordinator command/intrinsic/hierarchy
 backing with first-call sealing guards and partial-preparation rejection/retry;
-its hosted gate and final merge remain pending. The stacked follow-up retains
-both immutable exchange declarations per occurrence for allocation-free selection
-and sharing. Binding, membership and nested-map preparation still allocate;
-complete owner accounting and other-operation integration remain open.
+its hosted gate and final merge remain pending. #225 provisionally accepts retained
+immutable exchange declarations for allocation-free selection/sharing on that stack.
+The next contribution retains the binding and reserves source-capture buffers;
+incomplete recapture remains invalid and successful retry reuses the backing.
+Membership/nested-map preparation still allocates; complete owner accounting and
+other-operation integration remain open. Preserve both provisional dependencies.
 
 ## Authority and reading order
 

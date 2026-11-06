@@ -1251,3 +1251,55 @@ declaration descriptors/table/control blocks are excluded from the projection
 census; complete owner peak/lifetime resources, other operations and controls
 remain open. Parent #224's native run 42232659936 is still in progress; its smoke
 run passed. No duplicate parent run was requested or started.
+# Contributor-local binding capture reuse — 2026-11-06
+
+Tested source `340cf999c74fe6bc57219222f3c566a34c7a5a62`, stacked on provisionally
+accepted #225 head `9bb9ab71185881aa7f8c31b1056fb7443e8edcf5` and #224 head
+`4d0a6efdfaed99a1c7b6765c3dbefa1728f5cce1`, under
+[review 5802233579](https://github.com/Human-Cognome-Project/human-cognome-project/pull/225#pullrequestreview-5802233579).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. Built `live_hierarchy_test` with
+two build workers; after sourcing `engine/build/engine-env.sh`, ran at `nice -n 10`:
+
+```sh
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both bulk/default one-worker sequences passed, with 32 exchanges and following
+ticks each. All 22 combined direct/no-unroll two-worker cases passed. Both 52/8-bit
+compiler audits passed, with 19 kernels and 29 unsafe controls each.
+
+The tests preserve the original binding identity and three ordinary vector
+addresses/capacities plus both packed-mask capacities across first/repeated edits,
+including alternating edits across four copies. The newly adopted binding is
+invalid until capture. A private test adapter introduces an invalid field handle
+after mass capture, checks that validation rejects the partial view and that the
+committed owner remains unchanged, then performs a successful retry with the same
+backing. Existing source-binding negative cases, publication, field lifecycle,
+survivor/retry, declaration, coordinator/projection and tick checks remain active.
+
+Local bundle `exchange-bindings-340cf999` retains source/submodule pins, toolchain,
+configuration, binary hashes, logs and emitted LLVM. `SHA256SUMS` digest:
+`f5c26fd0beb8d733b9c11af8e077388932d5c24a1c1c78be988aa9fe2d040d87`.
+This is contributor-executed local evidence; raw contents remain local and are
+not independently inspected maintainer evidence. No performance claim follows.
+These are buffer-reuse checks, not allocation-free whole-binding preparation or
+measurement of packed-mask addresses. Membership, nested maps and temporary
+binding values still allocate. Complete owner peak/lifetime accounting, remaining
+operations and controls remain open. Full 115-test baseline, other compiler
+configurations, database and GPU suites were not rerun. No GPU was used.
+
+Parent-status reconciliation at publication: #224 run 42232659936 is cancelled,
+not pending. Job [127963277696](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42232659936/job/127963277696)
+was cancelled during dependency installation; inspected logs show stalled/retried
+Ubuntu toolchain downloads from 14:59 to 15:30 UTC, with a configured 30-minute
+database job budget. Restore and integration steps were skipped, so this is
+incomplete database evidence, not an assertion failure or a pass. The job summary
+reports build/projection, all four regression and all four compiler jobs successful;
+the aggregate gate failed because database did not pass. #225 native run
+42239847643 remains in progress. Both smoke runs passed. No parent rerun was started
+and no dependency branch or CI budget was changed by this contribution.

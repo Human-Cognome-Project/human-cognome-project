@@ -82,11 +82,13 @@ Projection staging reuses reserved views, but other preparation still allocates.
 #224 provisionally accepts one retained coordinator and adoption-reserved command,
 intrinsic and hierarchy buffers; review 5801533371 permits a clearly identified
 stack while hosted validation completes, without a duplicate baseline run.
-The follow-up retains both immutable declarations per selected occurrence and
-shares the selected declaration with current bindings. First/repeated selection
+#225 provisionally accepts retention of both immutable declarations per selected
+occurrence and sharing the selected declaration with current bindings. First/repeated selection
 is guarded against C++ allocation; descriptors are checked against fresh derivation.
-Binding, membership and nested identity-map reuse remain open. Neither increment
-completes the resource or remaining-operation rows below.
+The next stacked increment retains one binding and reserves its mass, outgoing,
+edge and mask buffers, freshly recapturing current source with explicit invalidity
+until validation succeeds. Membership and nested identity-map reuse remain open.
+These increments do not complete the resource or remaining-operation rows below.
 The harness remains borrowed and unrelated generation changes make the owner stale.
 The capacity census does not qualify full owner peak/lifetime resources.
 
