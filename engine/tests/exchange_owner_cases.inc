@@ -28,6 +28,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   std::vector<assembly::detail::OccurrenceBinding> rows{{key, f.in.particle_rows[0]}};
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
+  owner_lifetime(f,initial,rows,fields);
   {
     auto probe = Access::adopt(f.h,initial,rows,fields);
     const auto before_charge = Access::storage(*probe);

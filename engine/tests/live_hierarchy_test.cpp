@@ -18,6 +18,7 @@
 #include "snapshot.h"
 #include "capture_options.h"
 #endif
+#define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include "prepared_fixture.h"
 #include "exchange_binding_access.h"
@@ -2665,6 +2666,7 @@ void capture_current(engine::Runtime &r,
 #include "placement_cases.inc"
 #include "exchange_commit_cases.inc"
 #include "exchange_field_cases.inc"
+#include "owner_lifetime.inc"
 #include "exchange_owner_cases.inc"
 #include "exchange_owner_multiple.inc"
 #include "placement_audit.inc"

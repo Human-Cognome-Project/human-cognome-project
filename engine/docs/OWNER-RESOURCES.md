@@ -1,8 +1,9 @@
 # Private exchange-owner resource inventory
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-#228/#230 dependency. It accompanies the retained-capacity census; it does not
-claim complete peak measurement, a byte-budget admission gate, preparation-work
+#228/#230/#231 dependency. It accompanies the retained-capacity census and scoped
+adoption lifetime witnesses; it does not claim complete machine peak measurement,
+a byte-budget admission gate, preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
 before complete owner-resource acceptance. The harness remains borrowed and the
 single readiness/generation/publication authority is unchanged.
@@ -112,7 +113,46 @@ baseline. Separate owner-attributable allocations from pre-existing caller and
 borrowed harness resources, while also reporting simultaneous combined occupancy
 where a machine budget requires it. Record requested allocation bytes separately
 from allocator/residency measurements; neither follows from capacity arithmetic.
-No fail-allocation or reclamation witness is claimed by this census slice.
+The census alone supplies no fail-allocation or reclamation witness. The following
+separate test-only contribution now measures a bounded adoption scope.
+
+### Adoption allocation/failure witnesses (contribution awaiting review)
+
+`owner_lifetime.inc` brackets the entire `ExchangeOwnerAccess::adopt` call,
+including by-value input copies, owner allocation, constructor temporaries,
+shared allocations and nested backing. Caller originals and the already-installed
+harness predate the scope. The existing one- and four-occurrence owner fixtures
+each measure successful adoption's requested C++ allocation bytes still live at
+return and maximum simultaneously live requested bytes during adoption. These
+are distinct from the conservative retained-capacity charge, reported alongside
+them without asserting equality.
+
+The test then destroys the owner while retaining one declaration and catalogue
+alias. It checks that tracked storage remains until those aliases are released,
+and that live tracked blocks/bytes return to zero after the last release. It
+injects `std::bad_alloc` at every allocation ordinal in the successful adoption
+trace, requiring the failure to be reached and all preceding allocations reclaimed.
+Every failed attempt preserves readiness, generation and tick count; a final
+successful adoption/reclamation and exact native snapshot comparison verify retry
+and unchanged borrowed execution. The existing 32-exchange/tick sequence follows.
+
+The observer is test-only and opt-in for `live_hierarchy_test`. A fixed 65,536-slot
+thread-local table tracks pointer/request-size pairs without allocating itself;
+overflow fails closed. Deleted entries preserve probe chains. Scalar, array,
+aligned and sized-delete forms pass through the existing allocation interception.
+Controls independently check exact requested-byte totals, untracked pre-existing
+deallocation and an injected failure. Reporting occurs after observation ends.
+
+This is a current-thread C++ `new`/`delete` witness: adoption is synchronous and
+performs no native launch. It includes allocations used by this standard library's
+shared control blocks, without separating their layout-dependent overhead from
+pointees. It excludes arbitrary `malloc`, runtime/driver allocation, other threads,
+stack/exception-runtime storage, allocator metadata, page residency and RSS. It
+does not measure concurrent callers, native setup, GPU cleanup or process peak.
+Zero tracked allocations establishes reclamation within this scope, not a general
+leak-proof guarantee. Exhausting one deterministic successful trace is not an
+exhaustive test of all recipe graphs or all error paths. Byte/preparation-work
+budget enforcement and broader resource qualification remain required.
 
 ## Work inventory and remaining budget gate
 
