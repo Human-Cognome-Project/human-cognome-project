@@ -25,9 +25,10 @@ come from the immutable recipe. No new projection UUID is minted between exchang
 
 ## Preparation and publication
 
-Adoption reserves two projection views. Preparation updates the spare view and
-constructs a fresh generation-bound [coordinator](ATOMIC-EXCHANGE.md), using the
-owner's current complete maps. Each view retains every possible parent contribution
+Adoption reserves two projection views and one reusable
+[coordinator](ATOMIC-EXCHANGE.md). Preparation updates the spare view and
+rebuilds the coordinator's generation-bound intent using the owner's current
+complete maps. Each view retains every possible parent contribution
 across the pinned alternatives, partitioned between active and spare vectors.
 Changing exposure moves these existing objects, including their nested strings and
 paths, rather than destroying and recreating them. Active rows retain canonical
@@ -38,6 +39,31 @@ Incoming layout/geometry bindings and the prospective hierarchy are still suppli
 by trusted preparation. Preparation and hierarchy sealing do not publish any live
 projection or mapping. A new preparation discards previous pending intent; a
 preparation exception preserves committed identity, mappings and last report.
+
+Adoption also retains two immutable exchange declarations per selected occurrence,
+one for each direction. Both come from the validated structural recipe: the reverse
+swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact
+mass, ordered leaf inventory and symmetric comparison-work bound. Each declaration
+keeps the full study/occurrence key, pinned recipe and definition revisions. Copies
+of the same letter have distinct declarations; no live identity is deduplicated.
+
+Preparation selects by exact owner key and target and verifies the declared source
+exposure against the current projection. Foreign studies, unknown entries, nested
+occurrences, invalid targets and requests for the current exposure reject before
+binding recapture. The binding shares the selected const declaration without
+copying its nested descriptors. Readiness/generation and current source participation
+are still validated afresh; a retained declaration is not live execution authority.
+There is no mutable declaration alias on this path. Reference-counted ownership
+keeps it alive through binding teardown; all harness/owner calls remain exclusive.
+
+The same lifetime holds a membership catalogue for all declared alternatives.
+It follows only pinned upward memberships of the owning letter, preserving each
+occurrence's identity, inherited group revisions and exact source mass. Binding
+capture filters outgoing occurrences; command generation filters incoming ones
+in the existing trusted field order. No inactive catalogue row is materialized as
+live participation. The catalogue rejects ordinary live binding, and the public
+membership function still enumerates only active occurrences. Study and recipe
+pins are checked before source capture.
 
 Execution reserves 64 PlacementWork units for owner publication before delegating
 the remaining work to the existing coordinator. The native transaction still
@@ -82,12 +108,47 @@ nested storage is counted only for constructed rows. Aggregate overflow rejects
 without publishing a partial report. The census and projection staging do not
 enforce a complete owner memory budget or reserve preparation-work units.
 
-Binding, declaration, command, mapping and hierarchy preparation still allocate
-and release the preceding transaction. Those surfaces, caller inputs, setup
-transients, native storage and lifetime/cleanup measurement are not included in
-the projection charge. Allocation-free **whole-owner** preparation and complete
-peak/lifetime accounting remain unqualified. No new native numerical kernel or
-backing array is introduced.
+The coordinator reserves command and intrinsic vectors to `Batch`, and hierarchy
+node/child/contribution vectors to `CascadeNodes`, `CascadeLinks` and
+`CascadeReferences`, respectively, at adoption. It retains these five buffers
+until teardown, including across failed preparations. Every command append checks
+the batch limit before writing; an over-budget plan cannot grow command backing
+before rejection. Hierarchy sealing checks all three limits before copying and
+uses the reserved buffers from its first call. Each preparation clears all five
+logical lengths, including empty hierarchy tables, and invalidates previous
+pending intent before any fallible work. Only a fully prepared plan becomes
+pending again. The stable coordinator address is not a persistent transaction
+identity: its views describe the most recently prepared intent and are replaced
+on preparation. Successful native publication still uses the existing swaps.
+
+The coordinator also retains one [binding](EXCHANGE-BINDINGS.md) and its reserved
+mass, outgoing-handle, source-edge and two mask vectors. Preparation assigns the
+current complete maps and captures source data afresh into those buffers. The
+binding is invalidated before fallible work and becomes valid only after full
+capture and validation. A failed capture never leaves a partially refreshed view
+usable; successful owner/native publication continues through the same swaps.
+
+This moves these allocations to adoption rather than eliminating their cost.
+Their reserved payload is the sum of each vector's capacity times its element
+size; it is **not included** in `projection_storage()`. Commands and hierarchy
+remain bounded by the borrowed harness's capacity; this is not a separate total
+owner byte-budget admission gate. Coordinator and binding objects remain resident
+until teardown; invalid preparation may leave unusable partial metadata resident.
+Declaration construction now occurs at adoption; successful selection and sharing
+perform no C++ allocation. Two declarations per selection, their nested descriptors,
+table capacity and reference-count control blocks remain resident until their last
+owner/binding reference is released. These surfaces are **also excluded** from
+`projection_storage()`. Adoption copies the reverse alternative and still has
+setup transients; no complete peak/lifetime or byte-budget claim follows.
+Membership traversal now occurs at adoption and the catalogue is shared across
+preparations. After nested occurrence/field maps are staged, fresh source capture
+uses reserved buffers and borrowed key references without C++ allocation. Nested
+map staging and caller preparation still allocate. The catalogue, its nested rows/
+pins and ownership control block, and the binding buffers are all outside
+the projection charge; no total binding-byte census has been added. Setup transients, native storage
+and lifetime/cleanup measurement also remain outside the projection charge.
+Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
+remain unqualified. No new native numerical kernel or backing array is introduced.
 
 `exchange_owner`, also included in the combined placement matrix, alternates 32
 exchanges of one two-byte letter on one execution, with a tick after each. It checks
@@ -101,12 +162,29 @@ parent/membership inventory and unchanged rejection/retry. The two permanent
 copies keep both field alternatives in use; the original single-occurrence test
 continues to exercise field creation and retirement.
 
-C++ `new` guards now cover the first and repeated projection-staging calls as well
-as successful execution, ordinary rejection and ticks. Both view addresses and
+C++ `new` guards cover the first and repeated source-capture, declaration-selection and projection-staging calls as well
+as hierarchy sealing from its first call, successful execution, ordinary rejection
+and ticks. Tests retain the coordinator address and all five buffer addresses and
+capacities across repeated edits. A malformed incoming intrinsic forces failure
+after binding recapture/partial plan construction, invalidates preceding pending
+intent, preserves the committed owner and permits a valid retry. Both view addresses and
 the combined projection charge remain stable; tests include active cardinality
 changes, overflow rejection, and an isolated address-reservation increase with an
 exact expected charge delta. Other host preparation and exception construction
 remain excluded. Native backing is observed separately.
+
+Declaration tests retain all two/eight original declaration identities across the
+single/four-occurrence sequences, compare selected descriptors (including ordered
+leaves and comparison work) against fresh derivation in both directions, and verify
+that the actual binding holds the selected object rather than a copy. Invalid-key
+preparation cancels pending intent without changing the committed owner and permits
+a valid retry. Mixed initial aggregate/parts exposure is covered by the four-copy case.
+
+The membership value test compares a retained all-alternative catalogue with fresh
+live derivation across 32 exposure combinations, repeated copies, different language
+contexts sharing byte definitions, multi-byte/repeated characters and shared ancestor
+paths. It checks exact source paths, pins and counts while retaining catalogue
+backing, and rejects use of that catalogue as an ordinary live binding.
 
 [Local evidence](../tests/admission/README.md) records source and configurations.
 This CPU scope does not qualify GPU behavior, all operation rows, full owner

@@ -5,6 +5,12 @@
 #include "harness.h"
 #include "membership_fixture.h"
 
+namespace assembly::testing {
+struct MembershipFieldsAccess {
+  static auto catalogue(const LetterProjection &p) { return MembershipFields::collect(p,true); }
+};
+}
+
 namespace {
 using namespace membership_fixture;
 int checks = 0;
@@ -183,6 +189,52 @@ void graph_failures() {
           "duplicate direct source row rejected; multiple valid paths remain "
           "supported");
 }
+
+void retained_alternatives() {
+  membership_fixture::Fixture f;
+  f.base.focal_fields = {{warm::FieldKind::Membership,f.en}};
+  std::vector<StructuralLetterRequest> requests =
+      {{0,f.ref(f.english),warm::Exposure::Aggregate},
+       {1,f.ref(f.english),warm::Exposure::Parts},
+       {2,f.ref(f.french),warm::Exposure::Parts},
+       {3,f.ref(f.repeated),warm::Exposure::Aggregate},
+       {4,f.ref(f.accented),warm::Exposure::Parts}};
+  const auto recipe = normalize_structural_letters(f.base,requests);
+  const auto initial = project_letters(recipe);
+  const auto catalogue = assembly::testing::MembershipFieldsAccess::catalogue(initial);
+  const auto *backing = catalogue.contributions().data();
+  const auto count = catalogue.contributions().size();
+  check(std::all_of(catalogue.contributions().begin(),catalogue.contributions().end(),
+                   [&](const auto &m) { return m.occurrence.study == initial.study(); }),
+        "catalogue retains its own complete study identity");
+  // Fresh projections mint their own study UUIDs. Compare source paths and all
+  // pinned descriptors while checking each view's study separately.
+  for (unsigned mask = 0; mask < 32; ++mask) {
+    for (std::size_t i = 0; i < requests.size(); ++i)
+      requests[i].exposure = mask & (1u << i) ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+    // Normalization also assigns the matching structural floor for each view.
+    const auto current = project_letters(normalize_structural_letters(f.base,requests));
+    const auto live = membership_fields(current);
+    bool exact = true;
+    for (const auto &m : live.contributions()) {
+      exact &= m.occurrence.study == current.study();
+      exact &= std::count_if(catalogue.contributions().begin(),catalogue.contributions().end(),
+          [&](const auto &c) { return c.occurrence.source == m.occurrence.source &&
+            c.field.kind == m.field.kind && c.field.object == m.field.object &&
+            c.target == m.target && c.count == m.count; }) == 1;
+    }
+    std::size_t active = 0;
+    for (const auto &m : catalogue.contributions())
+      active += std::any_of(current.occurrences().begin(),current.occurrences().end(),
+          [&](const auto &o) { return o.active && o.key.source == m.occurrence.source; });
+    check(exact && active == live.contributions().size(),
+          "catalogue matches fresh memberships across exposure, repeated copies, diamonds and language contexts");
+  }
+  check(catalogue.contributions().data() == backing && catalogue.contributions().size() == count,
+        "all exposure combinations preserve the retained catalogue");
+  rejects([&] { catalogue.bind(initial,{}); }, "alternative catalogue cannot bind as live legacy participation");
+  rejects([&] { catalogue.bind_structure(initial,{}); }, "alternative catalogue cannot bind as live structural participation");
+}
 }  // namespace
 
 int main() {
@@ -190,6 +242,7 @@ int main() {
     paths_and_contexts();
     mass_and_repetition();
     graph_failures();
+    retained_alternatives();
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
   }

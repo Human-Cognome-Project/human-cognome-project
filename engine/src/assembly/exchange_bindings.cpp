@@ -22,19 +22,71 @@ bool same(const FieldKey &a, const FieldKey &b) {
 }
 }  // namespace
 
+ExchangeBindings::ExchangeBindings(field::Harness &h) : h_(h) {
+  const auto &s = h.prepared_storage();
+  const auto &limits = s.capacity.limits();
+  masses_.reserve(limits[field::Budget::Particles]);
+  outgoing_.reserve(limits[field::Budget::Particles]);
+  edges_.reserve(limits[field::Budget::Participation]);
+  outgoing_rows_.reserve(s.particle_headers.size());
+  edge_rows_.reserve(limits[field::Budget::Participation]);
+}
+
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     LetterExchangeContract contract, std::vector<OccurrenceBinding> occurrences,
     std::vector<ExchangeFieldBinding> fields)
-    : h_(h), contract_(std::move(contract)), occurrences_(std::move(occurrences)),
-      fields_(std::move(fields)) {
+    : ExchangeBindings(h, projection,
+        std::make_shared<const LetterExchangeContract>(std::move(contract)),
+        std::make_shared<const MembershipFields>(MembershipFields::collect(projection,true)),
+        std::move(occurrences), std::move(fields)) {}
+
+ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
+    std::shared_ptr<const LetterExchangeContract> contract,
+    std::shared_ptr<const MembershipFields> memberships, std::vector<OccurrenceBinding> occurrences,
+    std::vector<ExchangeFieldBinding> fields)
+    : ExchangeBindings(h) {
+  prepare(projection, std::move(contract), std::move(memberships), occurrences, fields);
+}
+
+void ExchangeBindings::prepare(const LetterProjection &projection,
+    std::shared_ptr<const LetterExchangeContract> contract,
+    std::shared_ptr<const MembershipFields> memberships,
+    const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields) {
+  stage(std::move(contract),std::move(memberships),occurrences,fields);
+  capture(projection);
+}
+
+void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,
+    std::shared_ptr<const MembershipFields> memberships,
+    const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields) {
+  valid_ = false;
+  contract_ = std::move(contract);
+  memberships_ = std::move(memberships);
+  occurrences_ = occurrences;
+  fields_ = fields;
+}
+
+void ExchangeBindings::capture(const LetterProjection &projection) {
+  valid_ = false;
+  masses_.clear(); outgoing_.clear(); edges_.clear();
   const auto &s = h_.prepared_storage();
   need(h_.ready(), "cannot bind an unready exchange owner");
-  need(contract_.owner().study == projection.study() &&
-       contract_.recipe().selection == projection.recipe().ref.selection &&
-       contract_.recipe().revision == projection.recipe().ref.revision,
+  need(bool(contract_), "missing exchange declaration");
+  need(memberships_ && memberships_->alternatives_ && memberships_->study_ == projection.study() &&
+       memberships_->recipe_.selection == projection.recipe().ref.selection &&
+       memberships_->recipe_.revision == projection.recipe().ref.revision,
+       "exchange membership catalogue belongs to another projection");
+  need(contract_->owner().study == projection.study() &&
+       contract_->recipe().selection == projection.recipe().ref.selection &&
+       contract_->recipe().revision == projection.recipe().ref.revision,
        "exchange contract belongs to another projection");
   need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
+  need(occurrences_.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
+       s.live.edges <= edge_rows_.capacity() && s.particle_headers.size() <= outgoing_rows_.capacity(),
+       "exchange binding reservation exceeded");
   std::size_t active = 0;
   for (const auto &o : projection.occurrences()) active += o.active;
   need(active == occurrences_.size(), "exchange owner exposure is incomplete");
@@ -59,47 +111,49 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
       need(!same(fields_[i].field, fields_[j].field) && !same(fields_[i].handle, fields_[j].handle),
            "aliased exchange field binding");
   }
-  std::vector<bool> used(s.live.edges, false);
+  edge_rows_.assign(s.live.edges, false);
   outgoing_rows_.assign(s.particle_headers.size(), false);
-  const auto memberships = membership_fields(projection);
-  for (const auto &source : contract_.outgoing()) {
+  for (const auto &source : contract_->outgoing()) {
     const auto binding = std::find_if(occurrences_.begin(), occurrences_.end(),
         [&](const auto &v) { return v.occurrence == source.occurrence; });
     need(binding != occurrences_.end(), "outgoing alternative is not currently exposed");
+    need(outgoing_.size() < outgoing_.capacity(), "exchange outgoing reservation exceeded");
     outgoing_.push_back(binding->handle);
     outgoing_rows_[binding->handle.record] = true;
-    const auto add = [&](const FieldKey &key, std::uint64_t count) {
+    const auto add = [&](GroupKind kind, const warm::ObjectKey &object, std::uint64_t count) {
       const auto field = std::find_if(fields_.begin(), fields_.end(),
-          [&](const auto &v) { return same(v.field, key); });
+          [&](const auto &v) { return v.field.kind == kind && v.field.object == object; });
       need(field != fields_.end(), "missing declared exchange field binding");
       std::size_t row = 0;
       for (; row < s.live.edges; ++row)
-        if (!used[row] && same(s.edges[row].first, binding->handle) &&
+        if (!edge_rows_[row] && same(s.edges[row].first, binding->handle) &&
             same(s.edges[row].second, field->handle) && s.source_counts[row] == count) break;
       need(row < s.live.edges, "missing exact committed exchange participation");
       need(std::isfinite(s.edges[row].share) && s.edges[row].share > 0,
            "invalid committed exchange share");
-      used[row] = true;
+      edge_rows_[row] = true;
       edges_.push_back({row, s.edges[row], count});
     };
-    add({GroupKind::SiblingDefinition, source.definition.object}, source.mass);
+    add(GroupKind::SiblingDefinition, source.definition.object, source.mass);
     for (const auto &parent : source.parents)
-      add({GroupKind::ParentValue, parent.target.object}, parent.contribution);
-    for (const auto &membership : memberships.contributions())
-      if (membership.occurrence == source.occurrence) add(membership.field, membership.count);
+      add(GroupKind::ParentValue, parent.target.object, parent.contribution);
+    for (const auto &membership : memberships_->contributions())
+      if (membership.occurrence == source.occurrence)
+        add(membership.field.kind, membership.field.object, membership.count);
   }
   need(!outgoing_.empty(), "empty outgoing alternative");
   for (std::size_t row = 0; row < s.live.edges; ++row)
     for (const auto &body : outgoing_)
-      need(!same(s.edges[row].first, body) || used[row], "undeclared outgoing participation");
+      need(!same(s.edges[row].first, body) || edge_rows_[row], "undeclared outgoing participation");
   generation_ = s.generation;
   source_edges_ = s.live.edges;
-  edge_rows_ = std::move(used);
   // Bounded read-only validation; reserve before scanning live source metadata.
   const auto terms = occurrences_.size() + fields_.size() + edges_.size() + source_edges_ + 1;
   need(terms <= UINT64_MAX / 16, "exchange binding work overflow");
   work_ = 16 * terms;
-  need(validate(generation_, work_).status == field::UpdateStatus::Ok,
+  valid_ = true;
+  valid_ = validate(generation_, work_).status == field::UpdateStatus::Ok;
+  need(valid_,
        "exchange binding changed during preparation");
 }
 
@@ -108,6 +162,7 @@ field::UpdateResult ExchangeBindings::validate(std::uint64_t expected, std::uint
   const auto &s = h_.prepared_storage();
   out.generation = s.generation;
   if (!h_.ready()) { out.status = field::UpdateStatus::Unready; return out; }
+  if (!valid_) return out;
   if (expected != generation_ || s.generation != generation_) {
     out.status = field::UpdateStatus::Stale; return out;
   }

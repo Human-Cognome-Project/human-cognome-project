@@ -1155,3 +1155,261 @@ Reusable declaration/binding/coordinator/map/hierarchy preparation, complete
 peak/lifetime resources, admission/removal/focus/rebase/restart owner integration
 and same-execution controls remain open. Actual GPU qualification remains separate.
 Continue from current main; no baseline rerun is required.
+# Contributor-local coordinator backing reuse — 2026-11-06
+
+Tested source `43ae245cfebe7301fac1a9e8a9a165122afdf16a`, based on accepted
+main `e69adbaa`. Final contribution documentation is separate from this source
+pin. Taichi remains `5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual CPU, native Clang/LLVM 15, WSL Ubuntu. Commands after sourcing
+`engine/build/engine-env.sh`:
+
+```sh
+cmake --build engine/build --target live_hierarchy_test -j 2
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both one-worker bulk/default owner cases passed, each exercising 32 successful
+exchanges and following ticks. The two-worker direct/no-unroll combined matrix
+passed all 22 cases. Both 52/8-bit placement compiler audits passed: 19 kernels,
+29 unsafe controls each. Runtime logs identify the CPU backend. Executables were
+run at `nice -n 10`; this is functional evidence, not a performance comparison.
+
+The owner tests check one persistent coordinator and stable addresses/capacities
+for command, intrinsic and all three hierarchy buffers across repeated edits.
+First and repeated hierarchy sealing run under the C++ allocation guard. Partial
+preparation failure invalidates earlier pending intent, preserves committed
+projection/maps/reports and permits valid preparation/retry. Existing field
+creation/retirement, shared-field survival, native publication, rejected execution,
+late-unready and tick checks remain active. Caller hierarchy construction is
+outside that guard, as are declaration/binding/nested-map preparation.
+
+Initial source `b94fd650` passed the single-owner witness but its multi-owner
+guard also covered allocating caller `RefreshRequest::spec()` construction.
+The final source moves that construction outside owner sealing; the owner guard
+remains in place from its first call. The initial failed log is retained and is
+not final-source passing evidence.
+
+Retained local bundle: `exchange-preparation-43ae245c`, including source/submodule
+pins, toolchain/configuration, binary hashes, logs, emitted LLVM and prior attempt.
+`SHA256SUMS` digest:
+`b59c6f52d66e6d754e716596aae7ea2b250387d2701cf6daf7b564482483e181`.
+The archive is local; the hash does not make its raw contents remotely available.
+These are contributor-executed results, not independent maintainer or hosted
+validation. Full 115-test baseline, other compiler configurations, database and
+GPU suites were not rerun. Whole-owner allocation-free preparation, complete
+peak/lifetime accounting and other-operation integration remain open. The
+projection census does not include the newly retained coordinator buffers.
+# Contributor-local retained exchange declarations — 2026-11-06
+
+Tested source `25187e911bdb2590a787f7a47b5b2d9096771d25`, stacked on provisionally
+accepted #224 head `4d0a6efdfaed99a1c7b6765c3dbefa1728f5cce1` under
+[review 5801533371](https://github.com/Human-Cognome-Project/human-cognome-project/pull/224#pullrequestreview-5801533371).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. After sourcing
+`engine/build/engine-env.sh`, built `live_hierarchy_test` with two build workers
+and ran at `nice -n 10`:
+
+```sh
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both bulk/default one-worker cases passed with 32 exchanges and following ticks
+each. All 22 direct/no-unroll two-worker combined placement cases passed. Both
+52/8-bit compiler audits passed, with 19 kernels and 29 unsafe controls each.
+These results qualify the changed path, not the entire 115-test baseline.
+
+The tests retain the original two/eight declaration identities, compare both
+directions against fresh derivation (full source descriptors, ordered leaves,
+exact mass, exposure and comparison work), guard successful selection against
+C++ allocation, and verify that the binding holds the same declaration object.
+The four-copy case includes mixed initial exposure and alternating edits while
+preserving other occurrences/shared fields. Foreign/unknown/nested owner keys,
+current exposure and invalid target requests reject; pending intent is invalidated,
+committed state remains unchanged and valid retry succeeds. Previous projection,
+coordinator backing, sealing, native publication, rejection and tick guards remain.
+
+Initial `4973768b` failed test compilation because the foreign-study witness used
+a string operation on the UUID value type. `25187e91` uses `warm::new_uuid()`;
+no native test ran from the failed build. Its build log remains in the bundle.
+
+Local bundle `exchange-declarations-25187e91` retains source/submodule pins,
+toolchain/configuration, binary hashes, logs and emitted LLVM. `SHA256SUMS` digest:
+`eaf53effaa7bada9d5c993b2a24151514c4f0267ac5a297baf044ecac6d269cc`.
+This is contributor-executed local evidence, not independent maintainer or hosted
+execution. The raw bundle remains local; its digest is provenance only.
+
+Full 115-test baseline, other compiler configurations, database and GPU suites
+were not rerun. Binding/membership/nested-map preparation still allocates. Retained
+declaration descriptors/table/control blocks are excluded from the projection
+census; complete owner peak/lifetime resources, other operations and controls
+remain open. Parent #224's native run 42232659936 is still in progress; its smoke
+run passed. No duplicate parent run was requested or started.
+# Contributor-local binding capture reuse — 2026-11-06
+
+Tested source `340cf999c74fe6bc57219222f3c566a34c7a5a62`, stacked on provisionally
+accepted #225 head `9bb9ab71185881aa7f8c31b1056fb7443e8edcf5` and #224 head
+`4d0a6efdfaed99a1c7b6765c3dbefa1728f5cce1`, under
+[review 5802233579](https://github.com/Human-Cognome-Project/human-cognome-project/pull/225#pullrequestreview-5802233579).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. Built `live_hierarchy_test` with
+two build workers; after sourcing `engine/build/engine-env.sh`, ran at `nice -n 10`:
+
+```sh
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+Both bulk/default one-worker sequences passed, with 32 exchanges and following
+ticks each. All 22 combined direct/no-unroll two-worker cases passed. Both 52/8-bit
+compiler audits passed, with 19 kernels and 29 unsafe controls each.
+
+The tests preserve the original binding identity and three ordinary vector
+addresses/capacities plus both packed-mask capacities across first/repeated edits,
+including alternating edits across four copies. The newly adopted binding is
+invalid until capture. A private test adapter introduces an invalid field handle
+after mass capture, checks that validation rejects the partial view and that the
+committed owner remains unchanged, then performs a successful retry with the same
+backing. Existing source-binding negative cases, publication, field lifecycle,
+survivor/retry, declaration, coordinator/projection and tick checks remain active.
+
+Local bundle `exchange-bindings-340cf999` retains source/submodule pins, toolchain,
+configuration, binary hashes, logs and emitted LLVM. `SHA256SUMS` digest:
+`f5c26fd0beb8d733b9c11af8e077388932d5c24a1c1c78be988aa9fe2d040d87`.
+This is contributor-executed local evidence; raw contents remain local and are
+not independently inspected maintainer evidence. No performance claim follows.
+These are buffer-reuse checks, not allocation-free whole-binding preparation or
+measurement of packed-mask addresses. Membership, nested maps and temporary
+binding values still allocate. Complete owner peak/lifetime accounting, remaining
+operations and controls remain open. Full 115-test baseline, other compiler
+configurations, database and GPU suites were not rerun. No GPU was used.
+
+Parent-status reconciliation at publication: #224 run 42232659936 is cancelled,
+not pending. Job [127963277696](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42232659936/job/127963277696)
+was cancelled during dependency installation; inspected logs show stalled/retried
+Ubuntu toolchain downloads from 14:59 to 15:30 UTC, with a configured 30-minute
+database job budget. Restore and integration steps were skipped, so this is
+incomplete database evidence, not an assertion failure or a pass. The job summary
+reports build/projection, all four regression and all four compiler jobs successful;
+the aggregate gate failed because database did not pass. #225 native run
+42239847643 remains in progress. Both smoke runs passed. No parent rerun was started
+and no dependency branch or CI budget was changed by this contribution.
+# Contributor-local membership reuse and source capture — 2026-11-06
+
+Tested source `2fef2829e7b6a1fe2259e93883c0fa7119a81f40`, stacked on provisionally
+accepted #226 head `67eb5f1ff1f17f3b8b123bc3cd3d616f5f2ba9f5` and its #225/#224
+dependencies, under [review 5802947489](https://github.com/Human-Cognome-Project/human-cognome-project/pull/226#pullrequestreview-5802947489).
+Final contribution documentation is separate. Taichi remains
+`5ba579a8a11255b7a258cde93801070956d81d57`.
+
+Actual native CPU, Clang/LLVM 15, WSL Ubuntu. Built `live_hierarchy_test` and
+`membership_fields_test` with two build workers. After sourcing
+`engine/build/engine-env.sh`, ran:
+
+```sh
+ctest --test-dir engine/build --output-on-failure -R '^membership_fields_test$'
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+HCP_B2_IR_DIR=<retained-llvm-directory> engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+The native executables ran at `nice -n 10`. All 61 membership value checks passed,
+including 32 exposure combinations comparing an immutable all-alternative catalogue
+with fresh live derivation. Cases include repeated copies, language-context
+separation with shared byte definitions, shared ancestor paths, multibyte/repeated
+characters, exact source paths, group pins and counts. Ordinary live binding of a
+catalogue rejects. Existing public live-membership and graph rejection checks pass.
+
+Both bulk/default one-worker owner sequences passed, with 32 exchanges and following
+ticks each. All 22 combined direct/no-unroll two-worker placement cases passed.
+Both 52/8-bit compiler audits passed, with 19 kernels and 29 unsafe controls each.
+Private adapters stage the production maps/metadata separately, then guard first
+and repeated successful source-capture calls against C++ allocation. Owner and
+binding retain the same catalogue; existing binding/projection/coordinator backing,
+partial-failure/retry, shared-field/survivor, native publication and tick checks remain.
+Nested map staging and caller preparation are outside the capture allocation guard.
+
+Initial `435bdfe8` omitted explicit focus in the new structural value fixture.
+`68ce6b79` added focus but changed selection flags without regenerating matching
+structural floors. Both attempts failed value tests before native owner tests began.
+Final `2fef2829` normalizes each independent comparison view with explicit focus;
+production implementation is unchanged across these test corrections. Both failed
+logs are retained separately from final-source evidence.
+
+Local bundle `exchange-memberships-2fef2829` contains source/submodule pins,
+toolchain/configuration, binary hashes, complete value/native logs and emitted LLVM.
+`SHA256SUMS` digest:
+`bc84f7cc82708684c428e3ce06f78be70a0a302d573588440f61eb14977e3b88`.
+Raw contents remain local; this is contributor-executed evidence, not independently
+inspected maintainer evidence or a performance qualification. Full 115-test baseline,
+other compiler configurations, database and GPU suites were not rerun. No GPU used.
+
+Catalogue construction and graph temporaries now occur at adoption. Catalogue rows,
+nested keys/pins and shared ownership remain outside the projection census. Nested
+maps still allocate; allocation-free whole-owner preparation, complete peak/lifetime
+and work accounting, remaining operations and controls remain open.
+
+Parent status: review 5802947489 records #225 run 42239847643, including database,
+as successful, validating the combined #224/#225 code. #224 run 42232659936 remains
+cancelled/incomplete historical evidence; it is not relabelled passing. #226 run
+42245987431 is still in progress and smoke passed. All three parents remain
+unmerged at publication; no duplicate parent run was started.
+
+<a id="maintainer-integrated-acceptance--224227-2026-11-07"></a>
+## Maintainer integrated acceptance — #224–#227, 2026-11-07
+
+Accepted stack heads: #224 `4d0a6efdfaed99a1c7b6765c3dbefa1728f5cce1`,
+#225 `9bb9ab71185881aa7f8c31b1056fb7443e8edcf5`,
+#226 `67eb5f1ff1f17f3b8b123bc3cd3d616f5f2ba9f5`, and
+#227 `b9ea490f86333ba1bd572abd74a202fe19c7534a`.
+The final head descends from integrated main `e69adbaa7d4afbfbff17035167588492a169da51`.
+#227 tested local source `2fef2829e7b6a1fe2259e93883c0fa7119a81f40`
+differs from its reviewed head only in six documentation files.
+
+[Native run 42252528197](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42252528197)
+and [smoke 42252525837](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42252525837) passed at the final head.
+All 12 native jobs report success. Maintainer-inspected regression logs
+128015190991, 128015190953, 128015191278 and 128015190994 cover all
+115 test numbers exactly once. All four compiler jobs passed.
+[Database job 128015191019](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42252528197/job/128015191019)
+records 180 warm-to-active integration checks, addressed_reads=24 and private_reads=0.
+#226 [native run 42245987431](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42245987431) also completed successfully;
+#225 [native run 42239847643](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42239847643) was already verified successful.
+
+#224 [run 42232659936](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42232659936) remains cancelled/incomplete.
+[Database job 127963277696](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42232659936/job/127963277696)
+stalled during Ubuntu LLVM dependency downloads and exhausted its 30-minute budget
+before database restore/tests. Other native test jobs and smoke passed, but its
+aggregate gate did not. Successful descendant runs validate the combined source;
+they do not retroactively turn this cancelled attempt into a pass. No duplicate
+baseline or parent rerun was requested.
+
+Source review accepts retained coordinator buffers (#224), immutable declarations
+(#225), reusable binding/source buffers with invalid-before-capture semantics (#226),
+and adoption-retained membership alternatives plus source capture reuse (#227).
+The catalogue preserves exact occurrence identity, pinned targets and contribution
+counts; only selected outgoing/incoming occurrences participate. Alternative
+catalogues reject both public live binding methods. Native handle, source mass,
+participation and generation checks remain fresh. First/repeated no-allocation
+guards apply to the scoped capture phase after map staging, not entire preparation.
+The 32-combination value fixture and repeated exchange/rejection/retry tests remain
+part of the reviewed source. Contributor-local bundle hashes and initial fixture
+failures above are preserved as contributor evidence, not independently executed
+maintainer tests.
+
+Integration preserves all stack ancestry and changes only current-status and
+acceptance documentation beyond the tested head. Next: nested map staging reuse,
+complete owner peak/lifetime/work accounting, admission/removal/focus/rebase/restart
+integration, then same-execution controls. Catalogue construction temporaries,
+nested keys/pins, coordinator maps and caller preparation remain outside the scoped
+projection census. The harness is borrowed; no full resource, performance, public
+operation or GPU qualification follows from this acceptance.

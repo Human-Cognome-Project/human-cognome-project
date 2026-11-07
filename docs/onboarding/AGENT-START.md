@@ -7,11 +7,9 @@ replace their detailed acceptance tests.
 
 ## Establish the actual starting point
 
-Baseline checked **2026-11-06**: accepted integrated private CPU work through #223,
-reviewed source `2286950ae07180c5a23b6d0de38792f064a570f5`. #221 field lifecycle,
-#222 persistent exchange owner and #223 reusable projections/capacity census are
-integrated on main. Corrected hosted run 42134552198 and smoke passed; the earlier
-timeout blocker is cleared. #220's viewport security fix remains integrated.
+Baseline checked **2026-11-07**: accepted integrated private CPU work through #227,
+reviewed head `b9ea490f86333ba1bd572abd74a202fe19c7534a`. Native run 42252528197
+and smoke 42252525837 passed. #220's viewport security fix remains integrated.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -33,7 +31,7 @@ Start from current main. Field creation/retirement, the persistent private excha
 owner and reserved projection reuse are accepted; do not implement them again.
 #123/#111 remain held and draft #75 deferred. The owner still borrows its execution;
 other preparation metadata and complete resource accounting remain separate work.
-The next contributing-agent task is **reusable preparation, complete owner resource
+The next contributing-agent task is **nested map staging reuse, complete owner peak/lifetime/work
 accounting and integration of the remaining operations**. Reuse accepted
 private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
 Publish owner identities and projection exposure coherently with successful native
@@ -42,6 +40,12 @@ owner preparation surfaces, not just the native scratch manifest. Same-execution
 controls follow. The [continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
 defines this sequence; deliver reviewable slices with source-pinned local evidence.
 Hosted CPU and actual GPU evidence remain distinct.
+
+Integrated preparation reuse includes #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging.
+#224's cancelled native run remains incomplete historical evidence; successful
+#225, #226 and #227 descendant runs validate the combined source. See
+[acceptance evidence](../../engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07).
+Nested maps still allocate; complete owner accounting and other operations remain open.
 
 ## Authority and reading order
 
@@ -72,7 +76,7 @@ derivations, not authorization to replace the accepted model. See the
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
 | B2 | Certified nearest-free placement accepted in #203, superseding #202. |
 | B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is accepted in #221. Enduring operational admission remains outstanding. |
-| C / D | Private persistent exchange owner and reserved projection reuse accepted through #223. Complete reusable transaction preparation, total owner resources and remaining-operation integration; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
+| C / D | Private persistent exchange owner and scoped preparation reuse accepted through #227. Complete nested map staging reuse, total owner resources and remaining-operation integration; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 
 #201's accepted hosted [run 41220868948, job 124594948773](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41220868948/job/124594948773)

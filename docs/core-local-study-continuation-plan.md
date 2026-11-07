@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-11-06. This organizes the
+Status: maintainer implementation sequencing, updated 2026-11-07. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #223; broader owner integration remains active. No manual
+through #227 with scoped preparation reuse; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner/projection reuse accepted through #223. Complete transaction reuse, total owner resources and remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped preparation reuse accepted through #227. Complete nested map staging reuse, total owner resources and remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,23 +66,24 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-06**. Start from current main, with integrated source
-`2286950ae07180c5a23b6d0de38792f064a570f5` accepted through #223.
-#221 field lifecycle, #222 persistent exchange owner and #223 reserved projections
-are complete within their bounded private CPU scope. Corrected hosted run
-42134552198 passed all 115 tests exactly once, all compiler jobs and 180 database
-checks with zero private reads. Smoke passed. The earlier #223 timeout is cleared;
-#222's cancelled run remains historical incomplete evidence, superseded for the
-integrated behavior by this successful descendant validation.
-[Acceptance evidence](../engine/tests/admission/README.md#maintainer-integrated-acceptance--221223-2026-11-06)
-retains source pins and distinct local/hosted results. Do not rerun the accepted
-baseline merely to continue.
+Updated **2026-11-07**. Start from current main, with reviewed head
+`b9ea490f86333ba1bd572abd74a202fe19c7534a` accepted through #227.
+Native run 42252528197 and smoke 42252525837 passed: inspected logs show 115 unique
+regression tests exactly once and 180 database checks with zero private reads;
+all compiler jobs passed. #225 and #226 native runs also passed. #224's cancelled
+run remains incomplete historical evidence, qualified by successful descendant runs.
+[Acceptance evidence](../engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07)
+retains source pins, cancellation details and distinct contributor/hosted results.
+Do not rerun the accepted baseline merely to continue.
 
-Projection staging reuses reserved views, but other preparation still allocates.
-The harness remains borrowed and unrelated generation changes make the owner stale.
-The capacity census does not qualify full owner peak/lifetime resources.
+Accepted reuse now covers #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging.
+The next concrete work is nested identity-map staging reuse. Catalogue construction
+and graph temporaries move to adoption; retained catalogue ownership, nested keys/pins,
+coordinator maps and caller preparation are not covered by the projection census.
+Complete owner peak/lifetime/work accounting remains open. The harness remains borrowed
+and unrelated generation changes make the owner stale.
 
-Remaining work is **slice C: reusable preparation, complete owner resource accounting and operation integration**:
+Remaining work is **slice C: nested map staging reuse, complete owner resource/work accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings

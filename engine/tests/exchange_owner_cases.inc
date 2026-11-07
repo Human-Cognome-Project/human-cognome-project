@@ -44,6 +44,16 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  const auto memberships = Access::memberships(*owner);
+  const auto declarations = Access::declarations(*owner);
+  require(declarations.size() == 2, "owner did not retain both exchange declarations");
+  const auto *reserved_plan = &Access::plan(*owner);
+  const auto plan_backing = Plan::backing(*reserved_plan);
+  const auto *reserved_binding = Plan::binding(*reserved_plan);
+  const auto binding_backing = Plan::binding_backing(*reserved_plan);
+  require(Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+          "adoption exposes an uncaptured binding");
+  require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
   bool charge_rejected = false;
@@ -88,6 +98,17 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       return true;
     };
     const auto declaration = assembly::declare_letter_exchange(*previous,key,target);
+    std::shared_ptr<const assembly::LetterExchangeContract> selected;
+    no_new([&] { selected = Access::declaration(*owner,key,target); });
+    require(selected.get() == declarations[compression ? 1 : 0].get() &&
+                Access::equivalent(*selected,declaration),
+            "retained declaration differs from freshly derived alternatives");
+    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields);
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
+            "map staging exposed an uncaptured binding");
+    no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok && unchanged(),
+            "allocation-free source capture failed or published owner data");
     std::vector<assembly::detail::ExchangeIncoming> incoming;
     for (const auto &source : declaration.incoming())
       incoming.push_back({source.occurrence, source.definition, source.node, 1,
@@ -104,6 +125,55 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
     Access::prepare(*owner,key,target,incoming,additions);
+    if (round == 0) {
+      auto foreign = key, unknown = key, nested = key;
+      foreign.study = warm::new_uuid();
+      unknown.source.entry = UINT64_MAX;
+      nested.source.path.push_back(0);
+      for (const auto &invalid_key : {foreign,unknown,nested}) {
+        rejected = false;
+        try { Access::prepare(*owner,invalid_key,target,incoming,additions); }
+        catch (const warm::Error &) { rejected = true; }
+        require(rejected && !Access::pending(*owner) && unchanged(),
+                "retained declaration accepted a foreign, unknown or nested owner");
+        Access::prepare(*owner,key,target,incoming,additions);
+      }
+      rejected = false;
+      try { Access::prepare(*owner,key,static_cast<warm::Exposure>(99),incoming,additions); }
+      catch (const warm::Error &) { rejected = true; }
+      require(rejected && !Access::pending(*owner) && unchanged(), "invalid retained alternative accepted");
+      Access::prepare(*owner,key,target,incoming,additions);
+    }
+    // Fail after binding creation and partial command construction, then retry.
+    // This must also invalidate a previously prepared, unconsumed transaction.
+    auto invalid = incoming;
+    invalid.back().radius = -1;
+    rejected = false;
+    try { Access::prepare(*owner,key,target,invalid,additions); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected && !Access::pending(*owner) && unchanged(),
+            "partial preparation retained pending intent or changed owner");
+    require(Access::execute(*owner,generation).status == UpdateStatus::InvalidInput,
+            "failed preparation allowed execution of old intent");
+    Access::prepare(*owner,key,target,incoming,additions);
+    require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
+            "transaction preparation replaced reserved backing");
+    require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
+    require(Plan::memberships(*reserved_plan) == memberships.get(), "binding replaced membership catalogue");
+    // Force capture failure after masses were collected, without changing live
+    // source data. The partially overwritten reusable view must be invalid.
+    auto invalid_fields = old_fields;
+    invalid_fields.back().handle.incarnation = 0;
+    rejected = false;
+    try { Plan::rebind(Access::plan(*owner),*previous,selected,old_rows,invalid_fields); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
+            "partial binding capture retained authority or changed committed owner");
+    Access::prepare(*owner,key,target,incoming,additions);
+    require(Plan::binding(*reserved_plan) == reserved_binding &&
+                Plan::binding_backing(*reserved_plan) == binding_backing &&
+                Plan::binding_status(*reserved_plan) == UpdateStatus::Ok,
+            "binding retry replaced reserved capture backing or remained invalid");
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.
     const auto &coordinator = Access::plan(*owner);
@@ -153,8 +223,12 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       node.cohort_count = contributions.size() - node.cohort_begin;
       nodes.push_back(node);
     }
-    Access::seal(*owner,{nodes.data(),nodes.size(),children.data(),children.size(),
-                         contributions.data(),contributions.size()});
+    no_new([&] {
+      Access::seal(*owner,{nodes.data(),nodes.size(),children.data(),children.size(),
+                           contributions.data(),contributions.size()});
+    });
+    require(Plan::backing(*reserved_plan) == plan_backing,
+            "hierarchy sealing replaced reserved backing");
     require(unchanged(), "hierarchy sealing published exposure early");
     const auto before = TickSnapshot(f);
     const auto run = [&](std::uint64_t expected, std::uint64_t work = UINT64_MAX) {
@@ -230,7 +304,11 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   std::cout << "exchange_owner,rounds=32,identity=stable,recipe=immutable,exposure=live,"
                "mappings=atomic,reports=atomic,reject_retry=1,late_unready=1,"
-               "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,execute_cpp_new=0 PASS\n";
+               "following_ticks=32,backing=stable,projection_prepare_cpp_new=0,"
+               "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
+               "declaration_select_cpp_new=0,declarations=retained,"
+               "binding_backing=stable,partial_binding_retry=1,"
+               "membership_catalogue=retained,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

@@ -3,6 +3,7 @@
 #include "assembly/letter_projection.h"
 
 namespace assembly {
+namespace detail { class ExchangeOwner; }
 // Structural source descriptors only. No positions, velocities or native slots.
 struct ExchangeSource {
   OccurrenceKey occurrence;
@@ -36,6 +37,7 @@ class LetterExchangeContract {
                std::uint64_t work) const;
 
  private:
+  friend class detail::ExchangeOwner;
   LetterExchangeContract() = default;
   friend LetterExchangeContract declare_letter_exchange(
       const LetterProjection &, const OccurrenceKey &, warm::Exposure);

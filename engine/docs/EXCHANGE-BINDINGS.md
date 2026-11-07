@@ -50,15 +50,68 @@ The diagnostic `UpdateResult` is not a reusable authorization token: only an
 immediate coordinator operation under exclusive ownership may consume success.
 The prepared harness must outlive the view.
 
+The declaration has shared const ownership. The standalone preparation adapter
+moves its supplied declaration into owned immutable storage; the persistent
+exchange owner shares an adoption-retained declaration instead. Neither path
+borrows a temporary declaration or changes its descriptors at publication. Live
+binding validation remains generation-bound even though immutable declarations
+can be selected for later operations. Nested binding maps still allocate during
+staging; source capture is a separate phase after those maps are assigned.
+
+The owner also shares one immutable membership catalogue, derived at adoption
+from actual pinned upward memberships for every aggregate and byte alternative.
+It retains exact occurrence keys, field/group revisions and whole-source counts;
+paths deduplicate per occurrence, never across copies. The catalogue is checked
+against the projection study and recipe pin. Capture selects only the declared
+outgoing occurrences and verifies their current native source rows. Coordinator
+generation selects only incoming occurrences, preserving trusted field order.
+Catalogue presence never makes an inactive alternative live. Its ordinary
+`bind`/`bind_structure` methods reject catalogue objects; public `membership_fields`
+continues to produce only live participation.
+
 The conservative validation reservation is
 `16 * (bound_occurrences + bound_fields + captured_edges + live_edges + 1)`
 structural units, capped by the prepared `PlacementWork` limit before scanning.
-Preparation rejects overflow. Host vectors for identity maps, source rows and
-record/edge masks are allocated during preparation, not during validation. They
-are coordinator metadata outside the harness's existing scratch manifest;
+Preparation rejects overflow. The persistent owner now reserves one binding
+object at adoption: mass/outgoing-handle vectors to `Particles`, captured edges
+and their used-row mask to `Participation`, and the outgoing-record mask to the
+prepared particle-header span. Recapture clears logical data and repopulates it
+from the current projection/maps and native source. The used-row mask is filled
+in place rather than replaced with a freshly allocated temporary. Reservations
+are checked before appending; captured edges cannot exceed the distinct used
+live rows. Unused capacity does not constitute live source data.
+
+The binding starts invalid and becomes invalid before any fallible recapture,
+including map assignment. Only complete capture plus final validation marks it
+valid. A partially overwritten view cannot validate or authorize execution;
+valid retry reuses its backing. Generation checks still reject a completed view
+after native source publication. This is explicit reconstruction from the owner's
+committed maps, not automatic rebinding after an unrelated operation.
+
+Map staging invalidates before copying maps and sharing declaration/catalogue
+ownership. Capture independently invalidates before clearing/refilling the reserved
+buffers and uses references to immutable object keys, avoiding temporary key copies.
+Successful capture performs no C++ allocation from its first call. Membership
+graph traversal is no longer repeated on the persistent-owner preparation path.
+The standalone value-taking binding adapter still constructs its own catalogue.
+
+Nested identity maps still allocate during staging. Catalogue construction,
+including graph maps/sets, occurs at adoption and has its own retained and transient
+cost. Catalogue rows, nested keys/pins and shared ownership remain outside the
+projection census; no complete owner memory-budget or preparation-work claim follows.
+All these surfaces remain coordinator metadata outside the harness scratch manifest;
 integration into an enduring owner's total resource accounting remains pending.
 The backing-reuse tests qualify validation, not the complete allocation budget
 of an operational owner.
+
+Owner tests retain the binding identity and the three ordinary vector addresses/
+capacities, plus both `vector<bool>` mask capacities, across first/repeated edits
+and four-copy alternation. A private test adapter forces an invalid field handle
+after mass capture, checks invalidity and unchanged committed owner, then retries.
+Private adapters stage the same production maps/metadata separately and guard
+the first and repeated successful source-capture calls against C++ allocation.
+These are source-capture checks, **not** an allocation-free whole-binding guard or
+measurement of packed-mask addresses, allocator overhead, peak memory or cleanup.
 
 ## Limits and following work
 
