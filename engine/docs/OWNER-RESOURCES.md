@@ -1,7 +1,7 @@
 # Private exchange-owner resource inventory
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-#228/#230/#231 dependency. It accompanies the retained-capacity census and scoped
+#228/#230/#231/#232 dependency. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a byte-budget admission gate, preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -116,7 +116,7 @@ from allocator/residency measurements; neither follows from capacity arithmetic.
 The census alone supplies no fail-allocation or reclamation witness. The following
 separate test-only contribution now measures a bounded adoption scope.
 
-### Adoption allocation/failure witnesses (contribution awaiting review)
+### Adoption allocation/failure witnesses (provisionally accepted #232)
 
 `owner_lifetime.inc` brackets the entire `ExchangeOwnerAccess::adopt` call,
 including by-value input copies, owner allocation, constructor temporaries,
@@ -156,6 +156,47 @@ budget enforcement and broader resource qualification remain required.
 
 ## Work inventory and remaining budget gate
 
+### Hierarchy sealing gate (contribution awaiting review)
+
+Owner and coordinator sealing now require an explicit `HierarchySealBudget`.
+There is no production default or unlimited overload. Existing test facades
+request the exact calculated charge to retain their original fixture behavior.
+`hierarchy_charge` inspects counts and reserved capacities only, in constant
+metadata work; it never reads a caller table or allocates. Checked products and
+sums return `Overflow` with an empty charge if any result cannot be represented.
+
+The per-call byte allowance covers the simultaneous **caller input spans plus
+retained destination capacities** for nodes, child indices and contributions.
+Caller spans use count times element size; destination buffers use their actual
+reserved capacity times element size, including unused slots. They are reported
+separately and conservatively added even if a trusted caller aliases storage.
+This gate does not authorize or undo the destination allocation at adoption.
+It authorizes copying into that existing storage while those input spans coexist.
+
+Copy work is one unit per input payload byte. This is a structural copy-work
+charge, not measured CPU instructions, elapsed time, a hierarchy-validation work
+budget or native execution's existing `hierarchy_work` allowance. The small,
+constant admission calculation is outside the payload-copy charge. Source
+tables are copied only after both allowances pass and the existing pointer/count
+and native-capacity checks pass. `ByteExhausted`, `WorkExhausted` and `Overflow`
+return without allocating, copying, sealing, consuming the pending operation or
+changing owner/native state. A valid request can retry with exact allowances.
+Existing malformed-input exceptions and exclusive-access requirements remain.
+
+The one-occurrence sequence checks these outcomes in every exchange direction,
+including deliberately unreadable source pointers on under-budget calls,
+one-unit-short allowances, overflow without a partial report, unchanged backing
+and native snapshots, and exact-budget retry. Both existing owner sequences and
+standalone coordinator fixtures use the same production gate.
+
+This is the first bounded preparation-budget operation, not a combined owner
+budget. It explicitly excludes caller allocation slack/other inputs, fixed object
+headers, all other owner components, adoption transients/control-block overhead,
+borrowed native storage and runtime/driver resources. Native limits continue to
+govern native work; these surfaces must be reconciled by a future combined policy
+without counting the destination buffers twice. Adoption-byte limits and the
+remaining preparation scans/key copies still require gates before their work.
+
 Current execution charges are deliberately narrower than complete preparation:
 
 | Phase | Existing behavior / outstanding charge |
@@ -165,7 +206,7 @@ Current execution charges are deliberately narrower than complete preparation:
 | Binding capture | Scans projection/tools, checks duplicate maps, resolves outgoing sources/fields, matches source edges and catalogue rows; nested searches and key lengths matter |
 | Binding validation | Existing `16 * (occurrences + fields + captured_edges + live_edges + 1)` charge covers its bounded read-only execution validation; it is not a charge for all prior capture work |
 | Coordinator preparation | Matches incoming descriptors, builds commands/maps, scans contacts, membership rows, field usage and retirements; no full preparation-work allowance |
-| Hierarchy sealing | Checks capacities before copying nodes/children/contributions; caller hierarchy construction and sealing copy work remain separate |
+| Hierarchy sealing | Explicit input-span plus destination-capacity byte allowance and payload-byte copy-work gate before reading/copying; caller construction, constant admission bookkeeping and native hierarchy validation remain separate |
 | Execution/publication | Coordinator reserves binding work plus `16 * (next_occurrences + next_fields + 1)`; owner reserves 64 further PlacementWork units; native placement/cell/hierarchy gates remain unchanged |
 | Census | Visits both recursive projections, all constructed map slots, declarations and catalogue rows; its metadata walk is inspection work, not included in the execution charge |
 

@@ -1557,3 +1557,41 @@ compiler-audit matrix, database, GPU or performance rerun is claimed. Parent #23
 smoke 42378741344 passed and native 42378741420 remained in progress at the check;
 no duplicate parent baseline was started. Complete byte/preparation-work budget
 enforcement and broader resource qualification remain next.
+
+## Explicit hierarchy-sealing budgets — 2026-11-07
+
+Tested source 6689c292dd3b3f40ddbe986a2e83b2ee2d75d74a, on provisional
+#228/#230/#231/#232 dependencies. Native Clang/LLVM15 CPU build passed;
+Taichi pin 5ba579a8a11255b7a258cde93801070956d81d57.
+
+All sixteen focused runs passed: exchange_owner, exchange_owner_multiple,
+exchange_commit and exchange_fields, each with --backend cpu --threads 1|2,
+bulk/default or --direct --compiler-no-unroll. New owner checks cover separate
+one-unit byte/work shortages before unreadable caller pointers are accessed,
+overflow with an empty report, unchanged pending/native/backing state and retry
+with exact allowances. Existing owner allocation-failure/reclamation,
+32-exchange/tick, numerical and standalone field-lifecycle witnesses passed.
+
+The byte charge covers caller table spans plus reserved destination capacities.
+Copy work counts input payload bytes. Neither is a whole-owner/process budget;
+adoption allocations, other preparation work, caller slack and native/driver
+resources remain outside this gate. See [resource scope](../../docs/OWNER-RESOURCES.md#hierarchy-sealing-gate-contribution-awaiting-review).
+Native hierarchy validation/work limits remain unchanged.
+
+Raw local evidence hierarchy-budget-6689c292 includes build, commands, all
+sixteen logs, configuration, toolchain and binary identities. SHA256SUMS verified;
+its SHA-256 is:
+
+    8d775f769d35ff9ead6662bd9f2afe5ddf68e88c9e5c13eb9d0cf2e8399113fe
+
+A shared Taichi cache-lock warning occurred after the one-worker bulk commit
+suite passed; that process exited successfully and the runner completed all
+remaining cases. The warning remains in the raw logs. No timing claim follows
+from these concurrent processes on a shared host.
+
+Final head changes documentation only beyond tested code. Raw logs remain
+contributor-local, not independently inspected maintainer evidence. No full
+115-test baseline, complete compiler-audit matrix, database, GPU or performance
+rerun is claimed. Parent #232 smoke passed and native remained running at the
+last check; no duplicate baseline was started. Complete combined byte and
+remaining preparation-work enforcement remain next.

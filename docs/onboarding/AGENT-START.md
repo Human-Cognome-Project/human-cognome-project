@@ -62,11 +62,17 @@ Provisionally accepted #231 adds a combined retained-capacity census and
 does not yet enforce a total byte/work budget or measure setup peak and cleanup.
 Those remaining resource gates precede further operation integration.
 
-The next test-only contribution measures scoped adoption C++ allocation peaks,
+Provisionally accepted #232 measures scoped adoption C++ allocation peaks,
 exhausts allocation-failure ordinals and checks reclamation after final shared
 alias release. It explicitly depends on #228/#230/#231. It does not measure RSS,
 allocator/driver overhead or GPU resources; complete byte/preparation-work budget
 enforcement remains next. See the resource inventory for witness boundaries.
+
+The next contribution adds a bounded hierarchy-sealing gate on explicit
+#228/#230/#231/#232 dependencies. It limits input-span plus retained-destination
+payload bytes and copy work before reading tables, with unchanged rejection/retry.
+This is one operation gate; adoption-byte limits, other preparation scans and
+combined caller/native resource policy remain outstanding.
 
 ## Authority and reading order
 
