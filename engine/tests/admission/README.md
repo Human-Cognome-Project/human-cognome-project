@@ -1413,3 +1413,68 @@ integration, then same-execution controls. Catalogue construction temporaries,
 nested keys/pins, coordinator maps and caller preparation remain outside the scoped
 projection census. The harness is borrowed; no full resource, performance, public
 operation or GPU qualification follows from this acceptance.
+
+## Contributor-local nested map reuse — 2026-11-07
+
+Tested source: `73e41847d91c3df1a17cd85bae896dff2e70e266`, based on accepted
+main `8f88635b5e9b2f84e603abe1e7890b0d601bea95`. The submitted head adds only
+status/scope/evidence documentation. Actual CPU, WSL Ubuntu, native Clang/LLVM 15;
+Taichi pin `5ba579a8a11255b7a258cde93801070956d81d57`. No GPU was used.
+
+Commands (from the Linux checkout, after sourcing `engine/build/engine-env.sh`):
+
+```sh
+cmake --build engine/build --target live_hierarchy_test membership_fields_test -j 2
+ctest --test-dir engine/build --output-on-failure -R '^membership_fields_test$'
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_commit
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_fields
+HCP_B2_IR_DIR=/root/hcp-workspace/logs/exchange-maps-ir nice -n 10 \
+  engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+All passed: 61 membership value checks; both bulk/default one-worker owner sequences
+with 32 exchanges/ticks each; focused commit and field lifecycle suites; and all
+22 combined direct/no-unroll two-worker cases. Both 52/8-bit compiler audits passed,
+with 19 kernels and 29 unsafe controls each. The capacity-focused pair ran in an
+independent process concurrently with the main qualifier after its build completed;
+these are functional checks, with no timing/performance interpretation.
+
+First and repeated successful owner preparation, including valid retries, are
+covered by C++ `new` guards. Separate map-staging/capture, hierarchy sealing,
+execution and tick guards remain. The complete pool of six outer map buffers and
+all constructed path/address buffers retains its addresses/capacities across field
+retirement and publication swaps. Tests cover erasure order, full slots, oversized
+keys, checked reservation overflow, copied empty-slot capacity and retry. An
+oversized field key cancels pending intent without changing committed owner state
+or backing. Existing independent-copy, shared-field, survivor, source-validation,
+ordinary-rejection and late-unready witnesses remain unchanged.
+
+The initial `68698240` owner and four-copy sequences passed; its combined run was
+stopped intentionally while adding reservation-copy corrections/backing witnesses.
+`2ce859f9` built and passed values; its owner run was stopped when trusted initial
+field-key bounds were added. Neither interrupted suite is counted as completed.
+`044883ab` passed values and focused owners but failed combined `exchange_commit`
+and `exchange_fields`: host candidate maps were incorrectly bounded by native live
+capacity, preventing native peak-exhaustion witnesses from reaching preflight.
+That combined run was stopped after the failures were confirmed. The final code
+reserves checked `Particles + Batch` and `Fields + min(Fields, Batch)` candidate
+metadata in all three stores, preserving the unchanged native `CapacityExhausted`
+results and live claim limits. No expected result was weakened. Failed/interrupted
+logs are retained separately from the complete final-source run.
+
+Local bundle `exchange-maps-73e41847` contains source/submodule pins, configuration,
+toolchain and binary hashes, complete logs, commands and final emitted LLVM.
+`SHA256SUMS` digest:
+`74e6134fa48c973f57620eb0a7c79f870e5cd66f57d2226a334c1d3260b93084`.
+Raw contents remain local contributor evidence, not independently inspected
+maintainer evidence. Full 115-test baseline, other compiler configurations,
+database and GPU suites were not rerun. Hosted checks remain authoritative.
+
+Adoption, standalone adapter construction, caller inputs/hierarchy and exception
+construction may allocate. Constructed spare map slots, UUID/path/address storage
+and field-command capacity are outside `projection_storage()`. Complete owner
+peak/lifetime/work accounting and byte-budget enforcement remain next, followed by
+remaining-operation integration and same-execution controls. This is nested-map
+reuse qualification, not complete owner resource, performance or GPU acceptance.
