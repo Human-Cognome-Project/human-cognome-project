@@ -4,6 +4,18 @@
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
 namespace detail {
+// Host retained-capacity charge. Shared pointees are counted once; allocator
+// control blocks, setup peak and borrowed execution are separate surfaces.
+struct OwnerStorage {
+  ProjectionStorage owner, projections, maps, binding, coordinator, declarations, memberships;
+  std::uint64_t shared_allocations{};
+  ProjectionStorage total() const {
+    auto out = owner;
+    for (const auto *part : {&projections, &maps, &binding, &coordinator,
+                            &declarations, &memberships}) out.add(*part);
+    return out;
+  }
+};
 // Private owner of logical exposure and committed mappings on one borrowed
 // prepared execution. The harness outlives this owner; all calls are exclusive.
 class ExchangeOwner {
@@ -17,6 +29,7 @@ class ExchangeOwner {
   void prepare_projection(const OccurrenceKey &, warm::Exposure);
   std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;
   ProjectionStorage projection_storage() const;
+  OwnerStorage storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
   std::unique_ptr<LetterProjection> projection_, prospective_;

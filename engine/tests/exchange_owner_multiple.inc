@@ -47,6 +47,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   const auto *reserved_binding = Plan::binding(*reserved_plan);
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
+  const auto resources = Access::resources(*owner);
+  require(resources.shared_allocations == 9, "shared declarations/catalogue counted per alias");
   const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
@@ -55,6 +57,10 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
     return a.context == b.context && a.address == b.address && a.record == b.record && a.incarnation == b.incarnation;
   };
   for (int round = 0; round < 32; ++round) {
+    no_new([&] {
+      require(Access::resources(*owner).total().charged_bytes() == resources.total().charged_bytes(),
+              "multiple owner retained capacity changed across publication");
+    });
     const std::uint64_t entry = round % 2 ? 2 : 0;
     const auto *before_view = &Access::projection(*owner);
     const auto target = before_view->exposure(entry) == warm::Exposure::Aggregate
