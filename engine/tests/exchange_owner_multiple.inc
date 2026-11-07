@@ -47,6 +47,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   const auto *reserved_binding = Plan::binding(*reserved_plan);
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
+  const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
   const auto backing = metrics.sample();
@@ -121,6 +122,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
     require(result.status == UpdateStatus::Ok && result.generation == generation+1 &&
                 f.h.prepared_storage().completed_ticks == ticks, "multi-occurrence exchange failed");
     const auto &current = Access::projection(*owner);
+    require(Access::map_backing(*owner) == map_backing,
+            "multiple exchange map publication changed reserved nested backing");
     require(current.study() == initial.study() && current.exposure(entry) == target &&
                 current.exposure(1) == warm::Exposure::Aggregate && current.exposure(3) == warm::Exposure::Parts,
             "multi-occurrence owner changed independent exposure");

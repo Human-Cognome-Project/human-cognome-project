@@ -44,6 +44,35 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  {
+    // Bounded map behavior independent of native claims. Clearing/erasing keeps
+    // nested capacity; oversized keys and full stores reject without appending.
+    assembly::detail::ExchangeMap<assembly::detail::OccurrenceBinding> map;
+    map.reserve(2,2);
+    auto nested = key;
+    nested.source.path = {3,5};
+    no_new([&] {
+      map.push_key(key,rows[0].handle);
+      map.push_key(nested,rows[0].handle);
+      map.erase(map.begin());
+      map.push_key(key,rows[0].handle);
+    });
+    require(map.size() == 2 && map[0].occurrence == nested && map[1].occurrence == key,
+            "map erasure changed logical order");
+    bool rejected = false;
+    try { map.push_key(key,rows[0].handle); } catch (const warm::Error &) { rejected = true; }
+    require(rejected && map.size() == 2, "full identity map appended a row");
+    map.clear();
+    nested.source.path.resize(3);
+    rejected = false;
+    try { map.push_key(nested,rows[0].handle); } catch (const warm::Error &) { rejected = true; }
+    require(rejected && map.size() == 0, "oversized identity grew map backing");
+    auto copy = map;
+    nested.source.path.resize(2);
+    no_new([&] { copy.push_key(nested,rows[0].handle); map = copy; });
+    require(map.size() == 1 && map[0].occurrence == nested,
+            "copied empty map lost nested reservation or retry identity");
+  }
   const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
   require(declarations.size() == 2, "owner did not retain both exchange declarations");
@@ -55,6 +84,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
           "adoption exposes an uncaptured binding");
   require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
+  const auto map_backing = Access::map_backing(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
   bool charge_rejected = false;
   try { overflow.add({1,0,0,0}); } catch (const warm::Error &) { charge_rejected = true; }
@@ -72,8 +102,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     return a.context == b.context && a.address == b.address && a.record == b.record &&
            a.incarnation == b.incarnation;
   };
-  // Repeat host preparation between operations; only execution/ticks are covered
-  // by no_new. Total owner host allocation/reuse is deliberately not qualified.
+  // Caller construction remains outside the guard. Successful owner preparation
+  // (including its first call and retries), sealing, execution and ticks are guarded.
   for (int round = 0; round <= 32; ++round) {
     const bool compression = round % 2;
     const auto target = compression ? warm::Exposure::Aggregate : warm::Exposure::Parts;
@@ -126,6 +156,15 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection reservation grew during preparation");
     no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     if (round == 0) {
+      auto oversized = additions;
+      oversized.back().field.object.address.resize(128);
+      rejected = false;
+      try { Access::prepare(*owner,key,target,incoming,oversized); }
+      catch (const warm::Error &) { rejected = true; }
+      require(rejected && unchanged() && !Access::pending(*owner) &&
+                  Access::map_backing(*owner) == map_backing,
+              "oversized field staging grew backing or published partial owner");
+      no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
       auto foreign = key, unknown = key, nested = key;
       foreign.study = warm::new_uuid();
       unknown.source.entry = UINT64_MAX;
@@ -257,6 +296,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                 s.completed_ticks == ticks && Access::generation(*owner) == result.generation &&
                 !Access::pending(*owner), "owner did not publish one complete unticked exchange");
     const auto &current = Access::projection(*owner);
+    require(Access::map_backing(*owner) == map_backing,
+            "exchange map publication changed reserved nested backing");
     require(&current == (round % 2 ? first_view : second_view), "owner replaced a reserved projection view");
     require(current.study() == initial.study() && current.recipe().ref.selection == recipe.ref.selection &&
                 current.recipe().ref.revision == recipe.ref.revision &&

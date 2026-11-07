@@ -2,6 +2,20 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static auto map_backing(const detail::ExchangeCoordinator &c) {
+    std::vector<std::pair<const void *,std::size_t>> result;
+    const auto append = [&](const auto &map) {
+      const auto &slots = map.storage();
+      result.push_back({slots.data(),slots.capacity()*sizeof(slots[0])});
+      for (const auto &row : slots) {
+        const auto &key = detail::key_buffer(row);
+        result.push_back({key.data(),key.capacity()*sizeof(key[0])});
+      }
+    };
+    append(c.bound_->occurrences_); append(c.bound_->fields_);
+    append(c.next_); append(c.next_fields_);
+    return result;
+  }
   static const auto *memberships(const detail::ExchangeCoordinator &c) { return c.bound_->memberships_.get(); }
   static void stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
