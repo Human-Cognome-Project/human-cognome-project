@@ -103,7 +103,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(selected.get() == declarations[compression ? 1 : 0].get() &&
                 Access::equivalent(*selected,declaration),
             "retained declaration differs from freshly derived alternatives");
-    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields);
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
             "map staging exposed an uncaptured binding");
     no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
@@ -124,7 +124,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     no_new([&] { Access::stage_projection(*owner,key,target); });
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     if (round == 0) {
       auto foreign = key, unknown = key, nested = key;
       foreign.study = warm::new_uuid();
@@ -136,13 +136,13 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
         catch (const warm::Error &) { rejected = true; }
         require(rejected && !Access::pending(*owner) && unchanged(),
                 "retained declaration accepted a foreign, unknown or nested owner");
-        Access::prepare(*owner,key,target,incoming,additions);
+        no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
       }
       rejected = false;
       try { Access::prepare(*owner,key,static_cast<warm::Exposure>(99),incoming,additions); }
       catch (const warm::Error &) { rejected = true; }
       require(rejected && !Access::pending(*owner) && unchanged(), "invalid retained alternative accepted");
-      Access::prepare(*owner,key,target,incoming,additions);
+      no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     }
     // Fail after binding creation and partial command construction, then retry.
     // This must also invalidate a previously prepared, unconsumed transaction.
@@ -155,7 +155,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "partial preparation retained pending intent or changed owner");
     require(Access::execute(*owner,generation).status == UpdateStatus::InvalidInput,
             "failed preparation allowed execution of old intent");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "transaction preparation replaced reserved backing");
     require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
@@ -169,7 +169,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     catch (const warm::Error &) { rejected = true; }
     require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
             "partial binding capture retained authority or changed committed owner");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     require(Plan::binding(*reserved_plan) == reserved_binding &&
                 Plan::binding_backing(*reserved_plan) == binding_backing &&
                 Plan::binding_status(*reserved_plan) == UpdateStatus::Ok,
@@ -308,7 +308,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
                "declaration_select_cpp_new=0,declarations=retained,"
                "binding_backing=stable,partial_binding_retry=1,"
-               "membership_catalogue=retained,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
+               "membership_catalogue=retained,owner_prepare_cpp_new=0,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

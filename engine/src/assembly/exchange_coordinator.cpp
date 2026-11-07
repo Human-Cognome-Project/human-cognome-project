@@ -25,6 +25,7 @@ void ExchangeCoordinator::reserve(const field::Harness &h) {
   nodes_.reserve(limits[field::Budget::CascadeNodes]);
   children_.reserve(limits[field::Budget::CascadeLinks]);
   contributions_.reserve(limits[field::Budget::CascadeReferences]);
+  field_commands_.reserve(limits[field::Budget::Fields]);
 }
 
 ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
@@ -32,6 +33,10 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
     const std::vector<ExchangeNewField> &new_fields) : bound_(std::move(bound)) {
   need(bool(bound_), "missing trusted exchange bindings");
   reserve(bound_->h_);
+  auto rows = bound_->occurrences_;
+  auto fields = bound_->fields_;
+  next_.swap(rows);
+  next_fields_.swap(fields);
   prepare(incoming, new_fields);
 }
 
@@ -87,7 +92,7 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     intrinsics_.push_back({commands_.size(), commands_.size(), double(source.mass),
                            input->radius, input->geometry});
     append(command);
-    next_.push_back({source.occurrence, {}});
+    next_.push_key(source.occurrence, engine::RecordHandle{});
   }
   for (const auto &f : new_fields) {
     need(f.kind > 0 && f.kind <= 255 && f.address >= 0,
@@ -98,7 +103,7 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     c.operation = field::UpdateOp::DefineField;
     c.kind = f.kind; c.address = f.address;
     field_commands_.push_back(int(commands_.size()));
-    next_fields_.push_back({f.field, {}});
+    next_fields_.push_key(f.field, engine::RecordHandle{});
     append(c);
   }
   for (const auto &handle : b.outgoing_) {

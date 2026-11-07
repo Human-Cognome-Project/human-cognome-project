@@ -6,8 +6,8 @@ struct ExchangeCoordinatorAccess {
   static void stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
       std::shared_ptr<const MembershipFields> memberships,
-      const std::vector<detail::OccurrenceBinding> &rows,
-      const std::vector<detail::ExchangeFieldBinding> &fields) {
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
     c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields);
   }
   static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) { c.bound_->capture(p); }
@@ -24,8 +24,8 @@ struct ExchangeCoordinatorAccess {
   }
   static void rebind(detail::ExchangeCoordinator &c, const LetterProjection &p,
       std::shared_ptr<const LetterExchangeContract> declaration,
-      const std::vector<detail::OccurrenceBinding> &rows,
-      const std::vector<detail::ExchangeFieldBinding> &fields) {
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
     c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields);
   }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }

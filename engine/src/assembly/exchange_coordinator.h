@@ -37,8 +37,8 @@ class ExchangeCoordinator {
   std::unique_ptr<ExchangeBindings> bound_;
   std::vector<field::UpdateCommand> commands_;
   std::vector<field::PlacementIntrinsic> intrinsics_;
-  std::vector<OccurrenceBinding> next_;
-  std::vector<ExchangeFieldBinding> next_fields_;
+  ExchangeMap<OccurrenceBinding> next_;
+  ExchangeMap<ExchangeFieldBinding> next_fields_;
   // -1 for retained fields; otherwise the sealed DefineField command index.
   std::vector<int> field_commands_;
   std::vector<field::LiveRefreshNode> nodes_;

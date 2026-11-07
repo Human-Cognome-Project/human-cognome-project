@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assembly/exchange_contract.h"
+#include "assembly/exchange_map.h"
 #include "assembly/membership_fields.h"
 #include <memory>
 #include "field/field.h"
@@ -19,6 +20,22 @@ struct ExchangeFieldBinding {
   FieldKey field;
   engine::RecordHandle handle;
 };
+inline auto &key_buffer(OccurrenceBinding &v) { return v.occurrence.source.path; }
+inline const auto &key_buffer(const OccurrenceBinding &v) { return v.occurrence.source.path; }
+inline auto &key_buffer(ExchangeFieldBinding &v) { return v.field.object.address; }
+inline const auto &key_buffer(const ExchangeFieldBinding &v) { return v.field.object.address; }
+inline void set_key(OccurrenceBinding &v, const OccurrenceKey &k) { v.occurrence = k; }
+inline void set_key(ExchangeFieldBinding &v, const FieldKey &k) { v.field = k; }
+// Setup-only reservation from the pinned universe, including inactive alternatives.
+inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particles,
+    std::size_t fields, ExchangeMap<OccurrenceBinding> &rows,
+    ExchangeMap<ExchangeFieldBinding> &groups) {
+  std::size_t path = 0, address = 0;
+  for (const auto &o : p.occurrences()) path = std::max(path,o.key.source.path.size());
+  for (const auto &t : p.recipe().tools) address = std::max(address,t.ref.object.address.size());
+  rows.reserve(particles,path);
+  groups.reserve(fields,address);
+}
 // Private preparation boundary. Initial identity bindings must come from the
 // trusted owner's committed admission results, never an exchange request.
 // Harness lifetime and exclusive ownership encompass this generation-bound view.
@@ -31,9 +48,9 @@ class ExchangeBindings {
   explicit ExchangeBindings(field::Harness &);
   void prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
                std::shared_ptr<const MembershipFields>,
-               const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
+               const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
   void stage(std::shared_ptr<const LetterExchangeContract>, std::shared_ptr<const MembershipFields>,
-             const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
+             const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
   void capture(const LetterProjection &);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
@@ -50,8 +67,8 @@ class ExchangeBindings {
   field::Harness &h_;
   std::shared_ptr<const LetterExchangeContract> contract_;
   std::shared_ptr<const MembershipFields> memberships_;
-  std::vector<OccurrenceBinding> occurrences_;
-  std::vector<ExchangeFieldBinding> fields_;
+  ExchangeMap<OccurrenceBinding> occurrences_;
+  ExchangeMap<ExchangeFieldBinding> fields_;
   std::vector<std::uint64_t> masses_;
   std::vector<engine::RecordHandle> outgoing_;
   std::vector<Edge> edges_;

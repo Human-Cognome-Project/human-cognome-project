@@ -25,7 +25,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
     auto retained = std::make_shared<const LetterExchangeContract>(std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, occurrences_, fields_);
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields);
     declarations_.push_back(std::move(retained));
     declarations_.push_back(std::make_shared<const LetterExchangeContract>(std::move(reverse)));
   }
@@ -33,6 +33,10 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   projection_->reserve_exposure();
   prospective_->reserve_exposure();
   plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_));
+  const auto &limits = h_.prepared_storage().capacity.limits();
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],occurrences_,fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->bound_->occurrences_,plan_->bound_->fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->next_,plan_->next_fields_);
   completed_ = true;
 }
 
@@ -59,7 +63,7 @@ ProjectionStorage ExchangeOwner::projection_storage() const {
 
 void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
     const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields) {
-  // Preparation may allocate/free host metadata. Failure discards pending intent,
+  // Preparation reuses reserved host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");

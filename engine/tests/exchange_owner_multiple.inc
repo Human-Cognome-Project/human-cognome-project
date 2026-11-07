@@ -76,11 +76,11 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-occurrence projection preparation published or grew storage");
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner));
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner)); });
     no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
-    Access::prepare(*owner,key,target,incoming,{});
+    no_new([&] { Access::prepare(*owner,key,target,incoming,{}); });
     require(Plan::declaration(Access::plan(*owner)) == selected.get() &&
                 Plan::memberships(Access::plan(*owner)) == memberships.get() &&
                 Access::equivalent(*selected,declaration) &&
@@ -167,7 +167,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
                "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,"
                "declaration_select_cpp_new=0,declarations=retained,binding_backing=stable,"
-               "membership_catalogue=retained,source_capture_cpp_new=0,backing=stable PASS\n";
+               "membership_catalogue=retained,owner_prepare_cpp_new=0,source_capture_cpp_new=0,backing=stable PASS\n";
   std::cout << "projection_storage_multiple,parent_slots=" << reserved.parent_slots
             << ",charge=" << reserved.charged_bytes() << '\n';
 }

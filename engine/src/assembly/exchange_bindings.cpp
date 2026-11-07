@@ -45,22 +45,24 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
     std::shared_ptr<const MembershipFields> memberships, std::vector<OccurrenceBinding> occurrences,
     std::vector<ExchangeFieldBinding> fields)
     : ExchangeBindings(h) {
+  const auto &limits = h.prepared_storage().capacity.limits();
+  reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],occurrences_,fields_);
   prepare(projection, std::move(contract), std::move(memberships), occurrences, fields);
 }
 
 void ExchangeBindings::prepare(const LetterProjection &projection,
     std::shared_ptr<const LetterExchangeContract> contract,
     std::shared_ptr<const MembershipFields> memberships,
-    const std::vector<OccurrenceBinding> &occurrences,
-    const std::vector<ExchangeFieldBinding> &fields) {
+    const ExchangeMap<OccurrenceBinding> &occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &fields) {
   stage(std::move(contract),std::move(memberships),occurrences,fields);
   capture(projection);
 }
 
 void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,
     std::shared_ptr<const MembershipFields> memberships,
-    const std::vector<OccurrenceBinding> &occurrences,
-    const std::vector<ExchangeFieldBinding> &fields) {
+    const ExchangeMap<OccurrenceBinding> &occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &fields) {
   valid_ = false;
   contract_ = std::move(contract);
   memberships_ = std::move(memberships);
