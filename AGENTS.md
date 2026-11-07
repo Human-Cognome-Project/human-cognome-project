@@ -12,7 +12,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-11-07**, accepted integrated CPU implementation through #227 (reviewed head `b9ea490f86333ba1bd572abd74a202fe19c7534a`). Native run 42252528197 and smoke passed. Nested map reuse is contributed for review. Next: complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-11-07**, accepted integrated CPU implementation through #227 (reviewed head `b9ea490f86333ba1bd572abd74a202fe19c7534a`). Native run 42252528197 and smoke passed. Nested map reuse is provisionally accepted in #228; hosted native and smoke CI passed. Next: complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
@@ -45,8 +45,9 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | #227 head `b9ea490f86333ba1bd572abd74a202fe19c7534a`: [native run 42252528197](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42252528197) and smoke 42252525837 passed. Inspected regression logs cover 115 unique tests exactly once; all compiler jobs passed; database records 180 checks, addressed_reads=24 and private_reads=0. [Admission evidence](engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07) preserves distinct local/hosted evidence and cancelled #224 history. |
 | Accepted exchange owner | Field lifecycle, persistent study identity and reserved projections through #223, plus #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging, are integrated. The harness remains borrowed; nested maps, total owner resources and other operations remain open. |
-| Next implementation | Nested map reuse is awaiting review. Next after that slice: complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
-| Contribution awaiting review | Retained nested occurrence/field maps across staging, retirement and publication, with first/repeated successful owner preparation guarded against C++ `new`. See [owner boundary](engine/docs/EXCHANGE-OWNER.md). Complete owner peak/lifetime/work accounting and remaining-operation integration remain next after this reuse slice; no total byte-budget or GPU claim. |
+| Next implementation | Nested map reuse is provisionally accepted in #228. Next: complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Provisionally accepted map reuse | #228 head `4596c3535bba92efa533616f074d702ede85939c`: [review 5812062437](https://github.com/Human-Cognome-Project/human-cognome-project/pull/228#pullrequestreview-5812062437) permits continuation. Retained nested maps and allocation-guarded successful preparation are scoped evidence, not complete resource accounting. Native run 42370220296 and smoke 42370220331 passed. #228 remains provisionally accepted/unmerged pending maintainer disposition. |
+| Separate factoring contribution | First mechanical slice of [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229): numerical-kernel construction moves to its own compilation unit, preserving the private method, expressions and ownership. Explicitly depends on #228; review pending. Complete owner accounting remains next, and broader factoring follows its resource/lifetime inventory. |
 | Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
 | Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst reasoning, dynamic LoD selection and process-failure hosting remain unbuilt. |
@@ -60,7 +61,7 @@ Do not copy historical “next” instructions back into this table.
 <a id="active-and-deferred-work--2026-10-20"></a>
 
 Private source bindings, atomic exchange, field lifecycle, persistent exchange owner
-and scoped preparation reuse are accepted through #227. Nested map reuse is contributed for review. Continue with complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. Do not duplicate the accepted work.
+and scoped preparation reuse are accepted through #227. Nested map reuse is provisionally accepted in #228; hosted native and smoke CI passed. Continue with complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. Do not duplicate the accepted work.
 
 ## Latest model direction — 2026-10-23
 
@@ -121,7 +122,7 @@ with C2a's publication/consume contract without a same-tick global solve.
 ## Active and deferred work
 
 **Immediate work:** continue from current main through accepted #227. Complete
-owner peak/lifetime/work accounting and remaining-operation integration after the pending nested-map reuse slice, then same-execution controls. Reuse the accepted private owner and
+owner peak/lifetime/work accounting and remaining-operation integration on the provisional #228 dependency, then same-execution controls. Reuse the accepted private owner and
 preparation components under the [continuation plan](docs/core-local-study-continuation-plan.md).
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
