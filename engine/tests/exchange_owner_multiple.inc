@@ -38,6 +38,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   fields.push_back({{GroupKind::ParentValue,character.object},f.in.field_rows[6]});
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
+  owner_lifetime(f,initial,rows,fields);
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
