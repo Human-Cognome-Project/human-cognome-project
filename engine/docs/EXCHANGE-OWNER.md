@@ -89,7 +89,23 @@ same owner is subsequent work.
 
 ## Resource boundary and evidence
 
-### Retained nested maps (contribution awaiting review)
+### Combined retained-capacity report (contribution awaiting review)
+
+`ExchangeOwner::storage()` now reports both projections, all six nested map stores,
+binding and coordinator objects/buffers, both declarations per selection, and the
+all-alternative membership catalogue. Shared pointees are counted once; control
+block identities are reported separately from their unmeasured byte overhead.
+The checked total uses the existing conservative capacity convention, including
+constructed inactive map slots and the field-command vector. Reporting does not
+allocate. This is a retained payload-capacity charge, not a complete memory budget.
+
+The [owner resource inventory](OWNER-RESOURCES.md) specifies every charged family,
+ownership/cleanup paths, adoption overlaps, borrowed native/caller surfaces and
+the work still outside execution's existing allowances. Setup peak measurement,
+failure/reclamation witnesses and complete byte/work budget enforcement remain
+next. The projection-only figures below retain their original limited scope.
+
+### Retained nested maps (provisionally accepted #228)
 
 The owner, binding and coordinator each retain an occurrence map and a field map.
 Each `ExchangeMap` separates the active length from constructed reserved slots.
@@ -190,7 +206,8 @@ preparations. After nested occurrence/field maps are staged, fresh source captur
 uses reserved buffers and borrowed key references without C++ allocation. Nested
 map staging now reuses retained slots; caller preparation still allocates. The
 catalogue, its nested rows/pins and ownership control block, and the binding buffers
-are all outside the projection charge; no total binding-byte census has been added.
+are all outside the projection charge. The combined report now counts retained
+payload capacity; control-block bytes remain outside that charge.
 Setup transients, native storage and lifetime/cleanup measurement also remain outside
 the projection charge.
 Successful private owner preparation is guarded against C++ `new` in the tested
