@@ -29,6 +29,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
+    src/field/numerical_kernels.cpp
     src/field/native_selection.cpp
   src/field/tick_execution.cpp
     src/field/placement.cpp
