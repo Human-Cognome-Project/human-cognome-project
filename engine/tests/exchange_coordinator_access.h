@@ -2,6 +2,7 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
   static auto &field_command_buffer(detail::ExchangeCoordinator &c) { return c.field_commands_; }
   static auto map_backing(const detail::ExchangeCoordinator &c) {
     std::vector<std::pair<const void *,std::size_t>> result;

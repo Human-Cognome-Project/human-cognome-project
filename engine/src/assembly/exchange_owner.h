@@ -4,6 +4,12 @@
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
 namespace detail {
+enum class PreparationPhase { Capture, Commands, Complete };
+struct OwnerPreparationResult {
+  PreparationStatus status{PreparationStatus::Ok};
+  PreparationPhase phase{PreparationPhase::Capture};
+  PreparationResult capture, commands;
+};
 // Host retained-capacity charge. Shared pointees are counted once; allocator
 // control blocks, setup peak and borrowed execution are separate surfaces.
 struct OwnerStorage {
@@ -23,9 +29,9 @@ class ExchangeOwner {
   friend struct assembly::testing::ExchangeOwnerAccess;
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
                 std::vector<ExchangeFieldBinding>);
-  CaptureResult prepare(const OccurrenceKey &, warm::Exposure,
+  OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
-               std::uint64_t capture_work);
+               std::uint64_t capture_work, std::uint64_t command_work);
   HierarchySealResult seal(const field::LiveRefreshSpec &, HierarchySealBudget);
   void prepare_projection(const OccurrenceKey &, warm::Exposure);
   std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;

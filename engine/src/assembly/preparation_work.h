@@ -24,6 +24,7 @@ class PreparationWork {
   template<class T> bool equal(const T &a, const T &b) {
     charge(1); payload(a); payload(b); return a == b;
   }
+  template<class T> void copy_key(const T &key) { charge(1); payload(key); }
   PreparationResult result() const { return {PreparationStatus::Ok,used_,0}; }
  private:
   void payload(const warm::Uuid &u) { charge(u.str().size()); }

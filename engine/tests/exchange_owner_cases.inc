@@ -26,6 +26,13 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       {{0, letters.ref(letters.accented), warm::Exposure::Aggregate}});
   const auto initial = assembly::project_letters(recipe);
   const assembly::OccurrenceKey key{initial.study(), {0,{}}};
+  {
+    assembly::detail::PreparationWork copy(UINT64_MAX);
+    auto nested = key; nested.source.path = {3,5};
+    copy.copy_key(nested);
+    require(copy.result().charged == 1+nested.study.str().size()+2*sizeof(std::uint32_t),
+            "command key-copy charge omitted nested payload");
+  }
   const auto character = letters.base.tools.at(letters.tools.at(letters.accented)).parents[0].target;
   const auto &character_tool = letters.base.tools.at(letters.tools.at(character.object));
   std::vector<assembly::FieldKey> keys;
@@ -249,6 +256,50 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       const auto retry = Access::prepare(*owner,key,target,incoming,additions,captured.charged);
       require(retry.status == assembly::detail::CaptureStatus::Ok && retry.charged == captured.charged,
               "exact capture-work retry failed");
+    });
+    assembly::detail::OwnerPreparationResult prepared;
+    no_new([&] { prepared = Access::prepare(*owner,key,target,incoming,additions,captured.charged,UINT64_MAX); });
+    require(prepared.phase == assembly::detail::PreparationPhase::Complete && prepared.commands.charged &&
+                prepared.capture.charged == captured.charged,
+            "owner omitted separate capture/command charges");
+    no_new([&] {
+      using namespace assembly::detail;
+      for (auto limit : {UINT64_C(0),prepared.commands.charged-1}) {
+        const auto stopped = Access::prepare(*owner,key,target,incoming,additions,captured.charged,limit);
+        require(stopped.status == PreparationStatus::WorkExhausted && stopped.phase == PreparationPhase::Commands &&
+                    stopped.capture.status == PreparationStatus::Ok && stopped.capture.charged == captured.charged &&
+                    stopped.commands.charged <= limit && stopped.commands.next_required > limit &&
+                    !Access::pending(*owner) && Plan::consumed(*reserved_plan) && !Plan::sealed(*reserved_plan),
+                "command exhaustion exposed partial intent or lost phase accounting");
+      }
+    });
+    if (round == 0) {
+      std::uint64_t allowance = 0, boundaries = 0;
+      no_new([&] {
+        while (allowance < prepared.commands.charged) {
+          const auto stopped = Access::prepare(*owner,key,target,incoming,additions,captured.charged,allowance);
+          require(stopped.status == assembly::detail::PreparationStatus::WorkExhausted &&
+                      stopped.phase == assembly::detail::PreparationPhase::Commands &&
+                      stopped.commands.charged <= allowance && stopped.commands.next_required > allowance &&
+                      stopped.commands.next_required <= prepared.commands.charged &&
+                      Plan::consumed(*reserved_plan) && !Access::pending(*owner),
+                  "command boundary sweep failed progress or exposed candidate");
+          allowance = stopped.commands.next_required; ++boundaries;
+        }
+      });
+      require(boundaries > 10, "command boundary sweep missed construction work");
+      std::cout << "command_work,boundaries=" << boundaries << ",exact_allowance=" << allowance << " PASS\n";
+    }
+    require(unchanged() && capture_snapshot == TickSnapshot(f) &&
+                Access::map_backing(*owner) == map_backing && Plan::backing(*reserved_plan) == plan_backing,
+            "command work rejection changed committed/native state or backing");
+    no_new([&] {
+      const auto retry = Access::prepare(*owner,key,target,incoming,additions,
+                                        prepared.capture.charged,prepared.commands.charged);
+      require(retry.status == assembly::detail::PreparationStatus::Ok &&
+                  retry.phase == assembly::detail::PreparationPhase::Complete &&
+                  retry.commands.charged == prepared.commands.charged,
+              "exact command-work retry failed");
     });
     if (round == 0) {
       auto oversized = additions;

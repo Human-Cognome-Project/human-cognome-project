@@ -8,9 +8,6 @@
 namespace assembly::detail {
 namespace {
 void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
-bool same(const FieldKey &a, const FieldKey &b) {
-  return a.kind == b.kind && a.object == b.object;
-}
 }
 
 ExchangeCoordinator::ExchangeCoordinator(field::Harness &h)
@@ -38,13 +35,18 @@ ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound
   auto fields = bound_->fields_;
   next_.swap(rows);
   next_fields_.swap(fields);
-  prepare(incoming, new_fields);
+  // Standalone setup remains separately scoped from operational preparation.
+  need(prepare(incoming, new_fields,UINT64_MAX).status == PreparationStatus::Ok,
+       "setup command work overflow");
 }
 
-void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
-    const std::vector<ExchangeNewField> &new_fields) {
+PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
+    const std::vector<ExchangeNewField> &new_fields, std::uint64_t allowance) {
   sealed_ = false;
   consumed_ = true; // A failed preparation must never expose a partial plan.
+  PreparationWork meter(allowance);
+  try {
+  meter.charge(1); // Fixed admission before clearing candidate logical lengths.
   commands_.clear(); intrinsics_.clear();
   next_.clear(); next_fields_.clear(); field_commands_.clear();
   nodes_.clear(); children_.clear(); contributions_.clear();
@@ -54,8 +56,9 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
   const auto append = [&](const field::UpdateCommand &command) {
     need(commands_.size() < s.capacity.limits()[field::Budget::Batch],
          "exchange command backing exhausted");
-    commands_.push_back(command);
+    meter.charge(sizeof(command)); commands_.push_back(command);
   };
+  meter.charge(b.work_);
   need(b.validate(b.generation_, UINT64_MAX).status == field::UpdateStatus::Ok,
        "stale exchange preparation");
   need(b.fields_.size() == s.live.fields,
@@ -67,19 +70,29 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
   mapping_generation_ = b.generation_;
   need(new_fields.size() <= s.capacity.limits()[field::Budget::Fields],
        "exchange field preparation exceeds capacity");
-  next_fields_ = b.fields_;
+  for (const auto &f : b.fields_) {
+    meter.charge(sizeof(ExchangeFieldBinding)); meter.copy_key(f.field.object);
+    next_fields_.push_back(f);
+  }
+  meter.elements(next_fields_.size(),sizeof(int));
   field_commands_.assign(next_fields_.size(), -1);
-  for (const auto &o : b.occurrences_)
-    if (!b.outgoing_rows_[o.handle.record]) next_.push_back(o);
+  for (const auto &o : b.occurrences_) {
+    meter.charge(1);
+    if (!b.outgoing_rows_[o.handle.record]) {
+      meter.charge(sizeof(OccurrenceBinding)); meter.copy_key(o.occurrence);
+      next_.push_back(o);
+    }
+  }
   survivors_ = next_.size();
   // Definitions always precede the other commands, in declaration order. No
   // numerical start or velocity can enter this structural plan.
   for (const auto &source : sources) {
+    meter.charge(1);
     const ExchangeIncoming *input = nullptr;
-    for (const auto &v : incoming) if (v.occurrence == source.occurrence) {
+    for (const auto &v : incoming) if (meter.equal(v.occurrence,source.occurrence)) {
       need(!input, "duplicate incoming occurrence"); input = &v;
     }
-    need(input && input->definition == source.definition && input->node == source.node,
+    need(input && meter.equal(input->definition,source.definition) && input->node == source.node,
          "incoming definition or alternative differs from declaration");
     need(source.mass && source.mass <= (UINT64_C(1) << 53) && input->kind > 0 &&
          input->kind <= 255 && input->address >= 0 && std::isfinite(input->radius) &&
@@ -90,36 +103,47 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     command.address = input->address;
     command.kind = input->kind;
     command.exact_mass = source.mass;
+    meter.charge(sizeof(field::PlacementIntrinsic));
     intrinsics_.push_back({commands_.size(), commands_.size(), double(source.mass),
                            input->radius, input->geometry});
     append(command);
+    meter.charge(sizeof(OccurrenceBinding)); meter.copy_key(source.occurrence);
     next_.push_key(source.occurrence, engine::RecordHandle{});
   }
   for (const auto &f : new_fields) {
+    meter.charge(1);
     need(f.kind > 0 && f.kind <= 255 && f.address >= 0,
          "invalid incoming field binding");
-    for (const auto &prior : next_fields_)
-      need(!same(prior.field, f.field), "duplicate or already committed exchange field");
+    for (const auto &prior : next_fields_) {
+      meter.charge(1);
+      need(!(prior.field.kind == f.field.kind && meter.equal(prior.field.object,f.field.object)),
+           "duplicate or already committed exchange field");
+    }
     field::UpdateCommand c;
     c.operation = field::UpdateOp::DefineField;
     c.kind = f.kind; c.address = f.address;
+    meter.charge(sizeof(ExchangeFieldBinding)); meter.copy_key(f.field.object);
     next_fields_.push_key(f.field, engine::RecordHandle{});
+    meter.charge(sizeof(int));
     field_commands_.push_back(int(commands_.size()));
     append(c);
   }
   for (const auto &handle : b.outgoing_) {
+    meter.charge(1);
     field::UpdateCommand c;
     c.operation = field::UpdateOp::RetireParticle;
     c.first = field::UpdateRef::existing(handle);
     append(c);
   }
   for (const auto &edge : b.edges_) {
+    meter.charge(1);
     field::UpdateCommand c;
     c.operation = field::UpdateOp::RemoveParticipation;
     c.row = edge.row; c.generation = b.generation_;
     append(c);
   }
   for (std::size_t row = 0; row < s.live.contacts; ++row) {
+    meter.charge(1);
     const auto &contact = s.contacts[row];
     if (b.outgoing_rows_[contact.first.record] || b.outgoing_rows_[contact.second.record]) {
       field::UpdateCommand c;
@@ -132,11 +156,13 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
   // Only incoming rows are emitted; inactive catalogue rows are never live edges.
   std::size_t position = s.live.edges - b.edges_.size();
   for (std::size_t i = 0; i < sources.size(); ++i) {
+    meter.charge(1);
     const auto &source = sources[i];
     const auto add = [&](GroupKind kind, const warm::ObjectKey &object,
                          std::uint64_t count, std::uint64_t ordinal) {
+      meter.charge(1);
       const auto f = std::find_if(next_fields_.begin(), next_fields_.end(),
-          [&](const auto &v) { return v.field.kind == kind && v.field.object == object; });
+          [&](const auto &v) { meter.charge(1); return v.field.kind == kind && meter.equal(v.field.object,object); });
       need(f != next_fields_.end(), "incoming exchange field is not prepared");
       need(count && count <= source.mass, "invalid incoming exact participation");
       field::UpdateCommand c;
@@ -150,37 +176,50 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
       append(c);
     };
     add(GroupKind::SiblingDefinition, source.definition.object, source.mass, 0);
-    for (const auto &parent : source.parents)
+    for (const auto &parent : source.parents) {
+      meter.charge(1);
       add(GroupKind::ParentValue, parent.target.object, parent.contribution, parent.ordinal);
+    }
     // Preserve the trusted committed field order used before catalogue reuse.
-    for (const auto &field : b.fields_) if (field.field.kind == GroupKind::Membership)
+    for (const auto &field : b.fields_) {
+      meter.charge(1);
+      if (field.field.kind == GroupKind::Membership)
       for (const auto &membership : b.memberships_->contributions())
-        if (membership.occurrence == source.occurrence && same(membership.field,field.field))
+        if (meter.equal(membership.occurrence,source.occurrence) &&
+            membership.field.kind == field.field.kind && meter.equal(membership.field.object,field.field.object))
           add(membership.field.kind, membership.field.object, membership.count, 0);
+    }
   }
   // Only touched outgoing fields may disappear. Retained source participation,
   // including another occurrence's use, prevents retirement. Focus protection is
   // enforced by ordinary native source preflight, with no implicit focus change.
   for (std::size_t i = 0; i < next_fields_.size();) {
+    meter.charge(1);
     const auto &f = next_fields_[i];
     const int command = field_commands_[i];
     bool used = false, touched = false;
     if (command < 0) {
-      for (std::size_t row = 0; row < s.live.edges; ++row)
+      for (std::size_t row = 0; row < s.live.edges; ++row) {
+        meter.charge(1);
         if (s.edges[row].second.record == f.handle.record) {
           touched |= b.edge_rows_[row];
           used |= !b.edge_rows_[row];
         }
+      }
     }
-    for (const auto &c : commands_) if (c.operation == field::UpdateOp::InsertParticipation)
+    for (const auto &c : commands_) {
+      meter.charge(1);
+      if (c.operation == field::UpdateOp::InsertParticipation)
       used |= command < 0 ? c.second.command < 0 && c.second.handle.record == f.handle.record
                           : c.second.command == command;
+    }
     need(command < 0 || used, "undeclared extra incoming field");
     if (touched && !used) {
       field::UpdateCommand c;
       c.operation = field::UpdateOp::RetireField;
       c.first = field::UpdateRef::existing(f.handle);
       append(c);
+      meter.elements(next_fields_.size()-i,sizeof(ExchangeFieldBinding)+sizeof(int));
       next_fields_.erase(next_fields_.begin() + i);
       field_commands_.erase(field_commands_.begin() + i);
     } else ++i;
@@ -191,6 +230,12 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
        "exchange coordinator work overflow");
   work_ = b.work_ + 16 * (entries + 1);
   consumed_ = false;
+  return meter.result();
+  } catch (const PreparationStop &stop) {
+    // Partial candidate metadata remains reserved, but cannot seal or execute.
+    consumed_ = true; sealed_ = false;
+    return stop.result;
+  }
 }
 
 HierarchySealResult ExchangeCoordinator::hierarchy_charge(const field::LiveRefreshSpec &spec) const {
