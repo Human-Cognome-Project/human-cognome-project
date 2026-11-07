@@ -25,7 +25,13 @@ struct ExchangeCoordinatorAccess {
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
     c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields);
   }
-  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) { c.bound_->capture(p); }
+  static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p, std::uint64_t work) {
+    return c.bound_->capture(p,work);
+  }
+  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) {
+    if (capture(c,p,UINT64_MAX).status != detail::CaptureStatus::Ok)
+      throw warm::Error("test capture work overflow");
+  }
   static const auto *binding(const detail::ExchangeCoordinator &c) { return c.bound_.get(); }
   static auto binding_backing(const detail::ExchangeCoordinator &c) {
     const auto &b = *c.bound_;
@@ -41,7 +47,8 @@ struct ExchangeCoordinatorAccess {
       std::shared_ptr<const LetterExchangeContract> declaration,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
-    c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields);
+    if (c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields,UINT64_MAX).status !=
+        detail::CaptureStatus::Ok) throw warm::Error("test rebind work overflow");
   }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }
   static auto backing(const detail::ExchangeCoordinator &c) {
