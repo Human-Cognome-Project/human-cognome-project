@@ -31,7 +31,7 @@ Start from current main. Field creation/retirement, the persistent private excha
 owner and reserved projection reuse are accepted; do not implement them again.
 #123/#111 remain held and draft #75 deferred. The owner still borrows its execution;
 other preparation metadata and complete resource accounting remain separate work.
-The next contributing-agent task is **nested map staging reuse, complete owner peak/lifetime/work
+Nested map staging reuse is contributed for review. The next task after that slice is **complete owner peak/lifetime/work
 accounting and integration of the remaining operations**. Reuse accepted
 private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
 Publish owner identities and projection exposure coherently with successful native
@@ -45,7 +45,10 @@ Integrated preparation reuse includes #224 retained coordinator command/intrinsi
 #224's cancelled native run remains incomplete historical evidence; successful
 #225, #226 and #227 descendant runs validate the combined source. See
 [acceptance evidence](../../engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07).
-Nested maps still allocate; complete owner accounting and other operations remain open.
+Contribution awaiting review: nested maps now retain slots and key backing through
+staging, retirement and publication. First/repeated successful owner preparation
+is guarded against C++ `new`. Complete owner peak/lifetime/work accounting and
+other operations remain next after this slice. Accepted status remains through #227.
 
 ## Authority and reading order
 
@@ -76,7 +79,7 @@ derivations, not authorization to replace the accepted model. See the
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
 | B2 | Certified nearest-free placement accepted in #203, superseding #202. |
 | B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is accepted in #221. Enduring operational admission remains outstanding. |
-| C / D | Private persistent exchange owner and scoped preparation reuse accepted through #227. Complete nested map staging reuse, total owner resources and remaining-operation integration; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
+| C / D | Private persistent exchange owner and scoped preparation reuse accepted through #227. Nested map reuse is awaiting review; complete total owner resources and remaining-operation integration next; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 
 #201's accepted hosted [run 41220868948, job 124594948773](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41220868948/job/124594948773)

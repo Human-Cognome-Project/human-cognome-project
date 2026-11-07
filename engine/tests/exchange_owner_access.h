@@ -1,7 +1,24 @@
 #pragma once
 #include "assembly/exchange_owner.h"
+#include "exchange_coordinator_access.h"
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static auto map_backing(const detail::ExchangeOwner &o) {
+    auto result = ExchangeCoordinatorAccess::map_backing(*o.plan_);
+    const auto append = [&](const auto &map) {
+      const auto &slots = map.storage();
+      result.push_back({slots.data(),slots.capacity()*sizeof(slots[0])});
+      for (const auto &row : slots) {
+        const auto &key = detail::key_buffer(row);
+        result.push_back({key.data(),key.capacity()*sizeof(key[0])});
+      }
+    };
+    append(o.occurrences_); append(o.fields_);
+    std::sort(result.begin(),result.end(),[](const auto &a, const auto &b) {
+      return std::less<const void *>{}(a.first,b.first);
+    });
+    return result;
+  }
   static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
   static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||

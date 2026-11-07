@@ -20,8 +20,8 @@ class ExchangeOwner {
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
   std::unique_ptr<LetterProjection> projection_, prospective_;
-  std::vector<OccurrenceBinding> occurrences_;
-  std::vector<ExchangeFieldBinding> fields_;
+  ExchangeMap<OccurrenceBinding> occurrences_;
+  ExchangeMap<ExchangeFieldBinding> fields_;
   std::unique_ptr<ExchangeCoordinator> plan_;
   std::vector<std::shared_ptr<const LetterExchangeContract>> declarations_;
   std::shared_ptr<const MembershipFields> memberships_;

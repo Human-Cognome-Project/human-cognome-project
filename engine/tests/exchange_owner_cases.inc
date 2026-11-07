@@ -44,6 +44,39 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "projection census omitted nested object-address capacity");
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
+  {
+    // Bounded map behavior independent of native claims. Clearing/erasing keeps
+    // nested capacity; oversized keys and full stores reject without appending.
+    assembly::detail::ExchangeMap<assembly::detail::OccurrenceBinding> map;
+    map.reserve(2,2);
+    auto nested = key;
+    nested.source.path = {3,5};
+    no_new([&] {
+      map.push_key(key,rows[0].handle);
+      map.push_key(nested,rows[0].handle);
+      map.erase(map.begin());
+      map.push_key(key,rows[0].handle);
+    });
+    require(map.size() == 2 && map[0].occurrence == nested && map[1].occurrence == key,
+            "map erasure changed logical order");
+    bool rejected = false;
+    try { map.push_key(key,rows[0].handle); } catch (const warm::Error &) { rejected = true; }
+    require(rejected && map.size() == 2, "full identity map appended a row");
+    rejected = false;
+    try { assembly::detail::exchange_map_capacity(SIZE_MAX,1); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected, "candidate map reservation overflow accepted");
+    map.clear();
+    nested.source.path.resize(3);
+    rejected = false;
+    try { map.push_key(nested,rows[0].handle); } catch (const warm::Error &) { rejected = true; }
+    require(rejected && map.size() == 0, "oversized identity grew map backing");
+    auto copy = map;
+    nested.source.path.resize(2);
+    no_new([&] { copy.push_key(nested,rows[0].handle); map = copy; });
+    require(map.size() == 1 && map[0].occurrence == nested,
+            "copied empty map lost nested reservation or retry identity");
+  }
   const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
   require(declarations.size() == 2, "owner did not retain both exchange declarations");
@@ -55,6 +88,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
           "adoption exposes an uncaptured binding");
   require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
+  const auto map_backing = Access::map_backing(*owner);
   assembly::ProjectionStorage overflow{UINT64_MAX,0,0,0};
   bool charge_rejected = false;
   try { overflow.add({1,0,0,0}); } catch (const warm::Error &) { charge_rejected = true; }
@@ -72,8 +106,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     return a.context == b.context && a.address == b.address && a.record == b.record &&
            a.incarnation == b.incarnation;
   };
-  // Repeat host preparation between operations; only execution/ticks are covered
-  // by no_new. Total owner host allocation/reuse is deliberately not qualified.
+  // Caller construction remains outside the guard. Successful owner preparation
+  // (including its first call and retries), sealing, execution and ticks are guarded.
   for (int round = 0; round <= 32; ++round) {
     const bool compression = round % 2;
     const auto target = compression ? warm::Exposure::Aggregate : warm::Exposure::Parts;
@@ -103,7 +137,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(selected.get() == declarations[compression ? 1 : 0].get() &&
                 Access::equivalent(*selected,declaration),
             "retained declaration differs from freshly derived alternatives");
-    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields);
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
             "map staging exposed an uncaptured binding");
     no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
@@ -124,8 +158,17 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     no_new([&] { Access::stage_projection(*owner,key,target); });
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     if (round == 0) {
+      auto oversized = additions;
+      oversized.back().field.object.address.resize(128);
+      rejected = false;
+      try { Access::prepare(*owner,key,target,incoming,oversized); }
+      catch (const warm::Error &) { rejected = true; }
+      require(rejected && unchanged() && !Access::pending(*owner) &&
+                  Access::map_backing(*owner) == map_backing,
+              "oversized field staging grew backing or published partial owner");
+      no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
       auto foreign = key, unknown = key, nested = key;
       foreign.study = warm::new_uuid();
       unknown.source.entry = UINT64_MAX;
@@ -136,13 +179,13 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
         catch (const warm::Error &) { rejected = true; }
         require(rejected && !Access::pending(*owner) && unchanged(),
                 "retained declaration accepted a foreign, unknown or nested owner");
-        Access::prepare(*owner,key,target,incoming,additions);
+        no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
       }
       rejected = false;
       try { Access::prepare(*owner,key,static_cast<warm::Exposure>(99),incoming,additions); }
       catch (const warm::Error &) { rejected = true; }
       require(rejected && !Access::pending(*owner) && unchanged(), "invalid retained alternative accepted");
-      Access::prepare(*owner,key,target,incoming,additions);
+      no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     }
     // Fail after binding creation and partial command construction, then retry.
     // This must also invalidate a previously prepared, unconsumed transaction.
@@ -155,7 +198,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
             "partial preparation retained pending intent or changed owner");
     require(Access::execute(*owner,generation).status == UpdateStatus::InvalidInput,
             "failed preparation allowed execution of old intent");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,
             "transaction preparation replaced reserved backing");
     require(Plan::declaration(*reserved_plan) == selected.get(), "binding copied retained declaration");
@@ -169,7 +212,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     catch (const warm::Error &) { rejected = true; }
     require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
             "partial binding capture retained authority or changed committed owner");
-    Access::prepare(*owner,key,target,incoming,additions);
+    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     require(Plan::binding(*reserved_plan) == reserved_binding &&
                 Plan::binding_backing(*reserved_plan) == binding_backing &&
                 Plan::binding_status(*reserved_plan) == UpdateStatus::Ok,
@@ -257,6 +300,8 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                 s.completed_ticks == ticks && Access::generation(*owner) == result.generation &&
                 !Access::pending(*owner), "owner did not publish one complete unticked exchange");
     const auto &current = Access::projection(*owner);
+    require(Access::map_backing(*owner) == map_backing,
+            "exchange map publication changed reserved nested backing");
     require(&current == (round % 2 ? first_view : second_view), "owner replaced a reserved projection view");
     require(current.study() == initial.study() && current.recipe().ref.selection == recipe.ref.selection &&
                 current.recipe().ref.revision == recipe.ref.revision &&
@@ -308,7 +353,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,partial_prepare_retry=1,"
                "declaration_select_cpp_new=0,declarations=retained,"
                "binding_backing=stable,partial_binding_retry=1,"
-               "membership_catalogue=retained,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
+               "membership_catalogue=retained,owner_prepare_cpp_new=0,source_capture_cpp_new=0,execute_cpp_new=0 PASS\n";
   std::cout << "projection_storage,views=2,parent_slots=" << reserved.parent_slots
             << ",objects=" << reserved.object_bytes << ",vectors=" << reserved.vector_bytes
             << ",text_capacity=" << reserved.text_bytes << ",charge=" << reserved.charged_bytes() << '\n';

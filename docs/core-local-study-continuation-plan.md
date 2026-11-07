@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped preparation reuse accepted through #227. Complete nested map staging reuse, total owner resources and remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped preparation reuse accepted through #227. Nested map reuse is awaiting review; complete total owner resources and remaining-operation integration next. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -77,13 +77,18 @@ retains source pins, cancellation details and distinct contributor/hosted result
 Do not rerun the accepted baseline merely to continue.
 
 Accepted reuse now covers #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging.
-The next concrete work is nested identity-map staging reuse. Catalogue construction
+Nested identity-map staging reuse is contributed for review; complete owner accounting is next. Catalogue construction
 and graph temporaries move to adoption; retained catalogue ownership, nested keys/pins,
 coordinator maps and caller preparation are not covered by the projection census.
 Complete owner peak/lifetime/work accounting remains open. The harness remains borrowed
 and unrelated generation changes make the owner stale.
 
-Remaining work is **slice C: nested map staging reuse, complete owner resource/work accounting and operation integration**:
+A contributor slice awaiting review retains nested map slots and key backing across
+staging, retirement and publication, guarding first/repeated successful owner
+preparation against C++ `new`. Its bounded reuse evidence does not complete the
+owner resource budget or other operations. Accepted scope remains through #227.
+
+After review of the pending map reuse slice, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings

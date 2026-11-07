@@ -47,6 +47,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   const auto *reserved_binding = Plan::binding(*reserved_plan);
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
+  const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
   const auto backing = metrics.sample();
@@ -76,11 +77,11 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-occurrence projection preparation published or grew storage");
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner));
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner)); });
     no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
-    Access::prepare(*owner,key,target,incoming,{});
+    no_new([&] { Access::prepare(*owner,key,target,incoming,{}); });
     require(Plan::declaration(Access::plan(*owner)) == selected.get() &&
                 Plan::memberships(Access::plan(*owner)) == memberships.get() &&
                 Access::equivalent(*selected,declaration) &&
@@ -121,6 +122,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
     require(result.status == UpdateStatus::Ok && result.generation == generation+1 &&
                 f.h.prepared_storage().completed_ticks == ticks, "multi-occurrence exchange failed");
     const auto &current = Access::projection(*owner);
+    require(Access::map_backing(*owner) == map_backing,
+            "multiple exchange map publication changed reserved nested backing");
     require(current.study() == initial.study() && current.exposure(entry) == target &&
                 current.exposure(1) == warm::Exposure::Aggregate && current.exposure(3) == warm::Exposure::Parts,
             "multi-occurrence owner changed independent exposure");
@@ -167,7 +170,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
                "shared_fields=preserved,retry=1,projection_prepare_cpp_new=0,"
                "coordinator_backing=stable,hierarchy_seal_cpp_new=0,"
                "declaration_select_cpp_new=0,declarations=retained,binding_backing=stable,"
-               "membership_catalogue=retained,source_capture_cpp_new=0,backing=stable PASS\n";
+               "membership_catalogue=retained,owner_prepare_cpp_new=0,source_capture_cpp_new=0,backing=stable PASS\n";
   std::cout << "projection_storage_multiple,parent_slots=" << reserved.parent_slots
             << ",charge=" << reserved.charged_bytes() << '\n';
 }
