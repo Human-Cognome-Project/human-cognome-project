@@ -1639,3 +1639,45 @@ is claimed. Parent #233 smoke passed and native remained running at the last
 check; no duplicate baseline was started. Complete adoption-byte/setup-work,
 remaining preparation gates and combined caller/borrowed resource policy remain
 outstanding before full owner-resource qualification.
+
+## Separate command-construction work gate — 2026-11-07
+
+Tested source 749b769dbded7f98d0b93f16625357c377d21cf4, on provisional
+#228/#230/#231/#232/#233/#234 dependencies. The shared preparation-meter extraction
+is a separate mechanical commit before command enforcement. Native Clang/LLVM15
+CPU build passed; Taichi pin 5ba579a8a11255b7a258cde93801070956d81d57.
+
+All twenty focused runs passed: exchange_owner, exchange_owner_multiple,
+exchange_bindings, exchange_commit and exchange_fields × --threads 1|2 ×
+bulk/default or --direct --compiler-no-unroll, all with --backend cpu.
+The first exchange checked 645 successive command-charge boundaries and an exact
+12,015-unit command allowance in all four configurations, separately from capture.
+Zero/late-short allowances, phase results, consumed/unsealed partial candidates,
+unchanged owner/native/backing state and exact two-allowance retry passed.
+An independent nested key-copy charge check and existing capture overflow,
+allocation-failure/lifetime, 32-exchange/tick and numerical witnesses also passed.
+
+These are structural work charges, including ABI object sizes and variable key
+payload, not instructions/time or memory reservations. Standalone coordinator
+setup explicitly uses maximum allowance pending setup admission. Preceding
+declaration/projection/map staging, adoption-byte/setup-work and the combined
+caller/borrowed resource policy remain outstanding. Phase Complete means capture
+and command preparation, not hierarchy sealing or native publication. Internal
+stop-token exception-runtime costs remain outside C++ new observation.
+See [resource scope](../../docs/OWNER-RESOURCES.md#command-construction-work-gate-contribution-awaiting-review).
+
+Source-pinned evidence command-budget-749b769d retains build, commands, twenty
+logs, toolchain/configuration and binary identities locally. SHA256SUMS verified;
+its SHA-256 is:
+
+    2dcd73e91ed5855eda6d4bc6a706ceaa924dfa6c64be856cc9bf91e2336b6c62
+
+Shared Taichi cache-lock warnings remain in the raw logs, including after the
+passing two-worker direct commit suite. All processes exited successfully. No
+performance claim follows from concurrent shared-host execution.
+
+Final head changes documentation only after tested code. Raw evidence remains
+contributor-local. No full 115-test baseline, complete compiler-audit matrix,
+database or GPU rerun is claimed. Parent #234 smoke passed and native remained
+running at the last check; no duplicate baseline was started. Full owner-resource
+qualification, remaining operations and broader #229 factoring remain open.

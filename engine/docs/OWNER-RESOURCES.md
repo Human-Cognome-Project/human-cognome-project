@@ -1,7 +1,7 @@
 # Private exchange-owner resource inventory
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-#228/#230/#231/#232/#233 dependency. It accompanies the retained-capacity census and scoped
+#228/#230/#231/#232/#233/#234 dependency. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a byte-budget admission gate, preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -199,17 +199,21 @@ govern native work; these surfaces must be reconciled by a future combined polic
 without counting the destination buffers twice. Adoption-byte limits and the
 remaining preparation scans/key copies still require gates before their work.
 
-### Source-capture work gate (contribution awaiting review)
+<a id="source-capture-work-gate-contribution-awaiting-review"></a>
+
+### Source-capture work gate (provisionally accepted #234)
 
 `ExchangeOwner::prepare`, binding preparation and source capture require an
 explicit capture-work allowance. This allowance covers capture only, after
 declaration selection, projection staging and identity-map staging. Those earlier
-steps and later coordinator command construction still need their own gates.
+steps still need their own gates. The following command gate supplies the later
+coordinator allowance separately.
 Adoption/standalone binding construction explicitly uses the maximum capture
 allowance because setup-work admission is not yet implemented; this is not a
 claim that adoption is bounded. Test facades retain convenience allowances.
 
-`CaptureWork` charges incrementally before the associated operation:
+`CaptureWork` (an alias of the shared `PreparationWork`) charges incrementally
+before the associated operation:
 
 | Surface | Structural work units |
 |---|---|
@@ -245,6 +249,53 @@ checking invalid partial binding/pending state, progress and unchanged committed
 native state. Arithmetic witnesses cover product/sum overflow. All source-matching
 predicates and native numerical oracles retain their previous meaning.
 
+### Command-construction work gate (contribution awaiting review)
+
+Owner preparation now requires separate capture and command-work allowances.
+`OwnerPreparationResult` identifies `Capture`, `Commands` or `Complete` and
+retains each phase's charge/result separately. `Complete` means these two preparation phases completed, not
+native publication or a sealed hierarchy; explicit hierarchy sealing remains
+required. When capture stops, command work
+has not started; its zero result must be interpreted with the phase, not as a
+successful command plan. When command work stops, capture may still describe
+valid committed-source metadata, but the coordinator is consumed/unsealed and
+the owner has no pending operation. A successful retry rebuilds the candidate;
+no partial commands, mappings or hierarchy can be published.
+
+The existing checked structural meter is shared in `preparation_work.h` in a
+separate mechanical commit. Capture aliases preserve its prior behavior. Command
+construction charges before the following work:
+
+| Surface | Structural work units |
+|---|---|
+| Admission and bound-source revalidation | One fixed unit, then the existing complete binding-validation charge before its scan |
+| Field/occurrence map copies and incoming keys | Binding object size plus one key-copy dispatch and nested UUID/path/address payload bytes before each copy |
+| Field-command indices | `sizeof(int)` per assigned/appended element |
+| Descriptor matches and field/key searches | Row dispatch plus conservative operand payload charges through the shared equality meter |
+| Command and intrinsic append | `sizeof(UpdateCommand)` / `sizeof(PlacementIntrinsic)` before each append; fixed value construction is part of the enclosing row's structural work |
+| Outgoing bodies/edges, contacts, parents, membership fields/rows, field-use and command scans | One per scalar row visit, plus variable-length comparison work when needed |
+| Field retirement | Retained-slot rotation and parallel index shift charged for the suffix length times binding-object-plus-index size before either erase; nested buffers move with slots rather than copying payload |
+
+The meter catches exhaustion/overflow at command construction, retaining only
+unusable partial candidate metadata. Zero allowance invalidates gates before
+source validation or logical buffer clearing. Existing capacity/invalid-input
+errors retain their meaning; native execution/publication and numerical predicates
+are unchanged. Internal stop-token exception-runtime costs remain outside C++
+`new` observation, as for capture. Standalone coordinator construction explicitly
+uses the maximum command allowance pending its separate setup-work gate. Test
+facades provide convenience allowances; the production owner API has no defaults.
+
+Tests check distinct phase results, zero/late-short allowance, every successive
+first-exchange charge boundary, unchanged committed/native state and backing,
+consumed/unsealed candidate state, and exact two-allowance retry. An independent
+key-copy witness checks nested path payload charging. Existing capture overflow,
+lifetime, repeated-exchange and numerical oracles remain active.
+
+This gates command construction, not declaration selection, projection exposure
+staging, initial binding-map staging or adoption. Work-unit charges can depend
+on ABI object sizes and comparison paths and are not CPU instruction/time claims.
+They are not memory reservations or additions to the retained-capacity census.
+
 ### Combining resource domains remains outstanding
 
 The retained owner census is counted once in any future combined memory policy.
@@ -254,8 +305,9 @@ actual simultaneous setup temporaries are additional domains; caller capacity
 slack, shared control-block/allocator overhead and borrowed harness/native/driver
 resources need explicit, independently sourced dispositions. Current gate totals
 cannot be labeled a complete machine budget by summing them. Capture work is not
-a byte charge and does not add another copy of retained storage. Neither gate
-changes the authoritative readiness/generation/publication boundary.
+a byte charge and does not add another copy of retained storage. Command work
+likewise records construction work, not extra retained memory. These gates do not
+change the authoritative readiness/generation/publication boundary.
 
 Current execution charges are deliberately narrower than complete preparation:
 
@@ -265,7 +317,7 @@ Current execution charges are deliberately narrower than complete preparation:
 | Projection staging | Resynchronizes exposure/active flags and partitions retained parent rows; no full preparation-work allowance |
 | Binding capture | Incremental structural-work gate before scans, key comparisons, masks and final validation; stage-map copying and surrounding preparation remain separate |
 | Binding validation | Existing `16 * (occurrences + fields + captured_edges + live_edges + 1)` charge covers its bounded read-only execution validation; it is not a charge for all prior capture work |
-| Coordinator preparation | Matches incoming descriptors, builds commands/maps, scans contacts, membership rows, field usage and retirements; no full preparation-work allowance |
+| Coordinator preparation | Separate incremental command-work gate covers revalidation, descriptor/key comparisons, command/map copies, contacts, membership, field usage and retirements; setup and preceding staging remain outside it |
 | Hierarchy sealing | Explicit input-span plus destination-capacity byte allowance and payload-byte copy-work gate before reading/copying; caller construction, constant admission bookkeeping and native hierarchy validation remain separate |
 | Execution/publication | Coordinator reserves binding work plus `16 * (next_occurrences + next_fields + 1)`; owner reserves 64 further PlacementWork units; native placement/cell/hierarchy gates remain unchanged |
 | Census | Visits both recursive projections, all constructed map slots, declarations and catalogue rows; its metadata walk is inspection work, not included in the execution charge |

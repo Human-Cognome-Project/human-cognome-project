@@ -70,9 +70,17 @@ Capture charges structural row work, variable-length identity comparisons, mask
 fills and final validation before performing them. Exhaustion/overflow returns
 with an invalid binding and no pending owner operation; partial candidate buffers
 are overwritten by retry. Committed identity, reports and native state are unchanged.
-This does not yet gate declaration selection, projection/map staging or later
-command construction. See [capture-work scope](OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review),
+This does not yet gate declaration selection or projection/map staging. Later
+command construction now has its own allowance. See [capture-work scope](OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review),
 including setup's separate allowance and exception-runtime accounting limits.
+
+Preparation returns separate capture/command results and a phase identifying
+where it stopped, or `Complete`. Command-work exhaustion leaves the coordinator
+consumed/unsealed and the owner non-pending, even though captured source metadata
+may be valid. The candidate's partial commands/maps are overwritten on retry;
+committed owner/native state is unchanged. Command searches, copies, source
+revalidation and field-retirement moves are charged before their work. See
+[command-work scope](OWNER-RESOURCES.md#command-construction-work-gate-contribution-awaiting-review).
 
 The same lifetime holds a membership catalogue for all declared alternatives.
 It follows only pinned upward memberships of the owning letter, preserving each
