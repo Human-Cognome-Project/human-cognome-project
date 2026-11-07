@@ -3,6 +3,13 @@
 #include "exchange_coordinator_access.h"
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
+  static auto &inactive_path(detail::ExchangeOwner &o) {
+    return o.occurrences_[o.occurrences_.storage().size()-1].occurrence.source.path;
+  }
+  static auto &field_command_buffer(detail::ExchangeOwner &o) {
+    return ExchangeCoordinatorAccess::field_command_buffer(*o.plan_);
+  }
   static auto map_backing(const detail::ExchangeOwner &o) {
     auto result = ExchangeCoordinatorAccess::map_backing(*o.plan_);
     const auto append = [&](const auto &map) {

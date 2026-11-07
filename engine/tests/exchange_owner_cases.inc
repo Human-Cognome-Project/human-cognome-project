@@ -45,6 +45,40 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   auto owner = Access::adopt(f.h, initial, rows, fields);
   {
+    auto probe = Access::adopt(f.h,initial,rows,fields);
+    auto before = Access::resources(*probe);
+    auto &path = Access::inactive_path(*probe);
+    const auto capacity = path.capacity();
+    path.reserve(capacity+17);
+    auto after = Access::resources(*probe);
+    require(after.total().charged_bytes()-before.total().charged_bytes() ==
+                (path.capacity()-capacity)*sizeof(std::uint32_t) &&
+                after.maps.vector_bytes-before.maps.vector_bytes ==
+                (path.capacity()-capacity)*sizeof(std::uint32_t),
+            "owner census omitted inactive nested map capacity");
+    before = after;
+    auto &commands = Access::field_command_buffer(*probe);
+    const auto command_capacity = commands.capacity();
+    commands.reserve(command_capacity+17);
+    after = Access::resources(*probe);
+    require(after.total().charged_bytes()-before.total().charged_bytes() ==
+                (commands.capacity()-command_capacity)*sizeof(int),
+            "owner census omitted field-command capacity");
+    auto overflow = after;
+    overflow.owner.object_bytes = UINT64_MAX;
+    bool rejected = false;
+    try { overflow.total(); } catch (const warm::Error &) { rejected = true; }
+    require(rejected && overflow.owner.object_bytes == UINT64_MAX,
+            "owner aggregate overflow accepted or mutated report");
+  }
+  assembly::detail::OwnerStorage resources;
+  no_new([&] { resources = Access::resources(*owner); });
+  require(resources.shared_allocations == 3 && resources.maps.vector_bytes &&
+              resources.binding.vector_bytes && resources.coordinator.vector_bytes &&
+              resources.declarations.vector_bytes && resources.memberships.vector_bytes &&
+              resources.total().charged_bytes() > Access::storage(*owner).charged_bytes(),
+          "owner census omitted retained component families");
+  {
     // Bounded map behavior independent of native claims. Clearing/erasing keeps
     // nested capacity; oversized keys and full stores reject without appending.
     assembly::detail::ExchangeMap<assembly::detail::OccurrenceBinding> map;
@@ -302,6 +336,10 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     const auto &current = Access::projection(*owner);
     require(Access::map_backing(*owner) == map_backing,
             "exchange map publication changed reserved nested backing");
+    no_new([&] {
+      require(Access::resources(*owner).total().charged_bytes() == resources.total().charged_bytes(),
+              "owner capacity charge changed across preparation/publication");
+    });
     require(&current == (round % 2 ? first_view : second_view), "owner replaced a reserved projection view");
     require(current.study() == initial.study() && current.recipe().ref.selection == recipe.ref.selection &&
                 current.recipe().ref.revision == recipe.ref.revision &&

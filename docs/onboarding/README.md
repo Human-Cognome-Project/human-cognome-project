@@ -4,8 +4,10 @@
 
 HCP models explicit objects and their relationships using field mechanics.
 The engine calculates their relative motion; storage supplies reusable
-definitions, and a harness controls execution. Analyst reasoning remains future
-work. Read [current state](../../AGENTS.md#current-state) for what is built,
+definitions, and a harness controls execution. Analyst functions are conceptually
+designed within the overall architecture; their implementation structure must be
+engineered and calibrated using engine results on real data structures. See the
+[analyst design/engineering distinction](../../engine/ARCHITECTURE.md#analyst-design-and-engineering-status). Read [current state](../../AGENTS.md#current-state) for what is built,
 accepted, held or still proposed.
 
 ## Objects, occurrences and fields

@@ -50,11 +50,17 @@ staging, retirement and publication. First/repeated successful owner preparation
 is guarded against C++ `new`. Complete owner peak/lifetime/work accounting and
 other operations remain next after this slice. Accepted status remains through #227.
 
-The first mechanical #229 factoring slice is submitted separately on #228:
+The first mechanical #229 factoring slice is provisionally accepted in #230 on #228:
 `Harness::build_numerical_kernels` moves to `numerical_kernels.cpp` without
 expression, API or ownership changes. See [architecture](../../engine/ARCHITECTURE.md).
 Complete owner resource/lifetime/work accounting remains next; use that inventory
 to guide further cohesive extractions. Hosted native #228 run 42370220296 and smoke passed; merge/disposition remains separate.
+
+The next contribution adds a combined retained-capacity census and
+[owner resource inventory](../../engine/docs/OWNER-RESOURCES.md) on the explicit
+#228/#230 dependency. It includes inactive map slots and shared data once; it
+does not yet enforce a total byte/work budget or measure setup peak and cleanup.
+Those remaining resource gates precede further operation integration.
 
 ## Authority and reading order
 
@@ -100,6 +106,12 @@ is separately pinned; its runtime is not the hosted runtime. The
 work and #145 hardware qualification. A bounded slice does not close them.
 Held #123 (general identity), #111 (command atomicity/restart) and deferred #75
 (old monitor) are not prerequisites for separately accepted work.
+
+Analyst functions are conceptually designed within the overall architecture.
+Their concrete implementation structure and calibration depend on engine results
+on real data structures. The deferred work is engineering and calibration, not
+invention of the overall architecture. See the
+[architecture clarification](../../engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
 
 ## Non-negotiable implementation specification
 

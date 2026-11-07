@@ -1478,3 +1478,40 @@ and field-command capacity are outside `projection_storage()`. Complete owner
 peak/lifetime/work accounting and byte-budget enforcement remain next, followed by
 remaining-operation integration and same-execution controls. This is nested-map
 reuse qualification, not complete owner resource, performance or GPU acceptance.
+
+## Combined owner retained-capacity census — 2026-11-07
+
+Contribution on explicit provisional #228/#230 dependencies. Tested code:
+9bff8d55c454223b21f3eb02e05b9c017bbcea5b. Main documentation clarification
+7f938878c8178e27b582069847c84d713c18de95 is retained by the separate integration
+merge, including analyst conceptual design and post-PoC documentation factoring.
+
+Native Clang/LLVM 15 CPU build of live_hierarchy_test passed. Taichi pin:
+5ba579a8a11255b7a258cde93801070956d81d57. The focused commands were
+live_hierarchy_test --backend cpu --threads 1|2 --case exchange_owner
+and --case exchange_owner_multiple, with the default bulk path and with
+--direct --compiler-no-unroll. All eight runs passed, case_failures=0.
+
+Both sequences exercise 32 exchanges/ticks. Added checks cover allocation-free
+combined reporting, all retained component families, inactive nested-map and
+field-command capacity deltas, aggregate overflow rejection, shared allocation
+counts and stable totals across publication. Existing numerical, survivor,
+rejection/retry and late-failure witnesses remain unchanged.
+
+The report counts retained payload capacity. It does not measure setup peak,
+allocator/control-block bytes or reclamation, and does not enforce a complete
+byte/preparation-work budget. The [resource inventory](../../docs/OWNER-RESOURCES.md)
+records those remaining gates, borrowed surfaces and constructor/cleanup paths.
+
+Source-pinned logs, build output, commands, configuration and binary/toolchain
+identities are retained locally as owner-storage-9bff8d55. SHA256SUMS verified;
+its SHA-256 is:
+
+    d36466089ecb2f0bc333b6aca1f4d65cdce5267108a49d75dc956f7d4a8faf19
+
+The final head adds documentation only after tested code. Raw evidence remains
+contributor-local; its hash does not make it remotely available. No full regression,
+compiler-audit matrix, database, GPU or performance rerun is claimed for this
+inspection-only change. #230's full baseline evidence retains its own source pin;
+hosted native run 42377616217 was still running and smoke 42377616279 passed at
+this check. No duplicate baseline run was started.
