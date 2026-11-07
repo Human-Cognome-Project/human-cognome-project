@@ -68,8 +68,14 @@ struct ExchangeCoordinatorAccess {
   static const auto &outgoing_report(const detail::ExchangeCoordinator &c) { return c.outgoing_report_; }
   static const auto &balance_report(const detail::ExchangeCoordinator &c) { return c.balance_report_; }
   static void seal(detail::ExchangeCoordinator &c, const field::LiveRefreshSpec &spec) {
-    c.prepare_hierarchy(spec);
+    const auto charge = c.hierarchy_charge(spec);
+    if (c.prepare_hierarchy(spec,{charge.required_bytes,charge.required_work}).status !=
+        detail::HierarchySealStatus::Ok) throw warm::Error("test hierarchy sealing rejected");
   }
+  static auto hierarchy_charge(const detail::ExchangeCoordinator &c, const field::LiveRefreshSpec &s) {
+    return c.hierarchy_charge(s);
+  }
+  static bool sealed(const detail::ExchangeCoordinator &c) { return c.sealed_; }
   static auto execute(detail::ExchangeCoordinator &c, std::uint64_t generation,
       std::uint64_t work = UINT64_MAX, std::uint64_t cells = UINT64_MAX,
       std::uint64_t hierarchy_work = UINT64_MAX) {

@@ -96,12 +96,17 @@ The first #229 extraction is provisionally accepted in #230. Provisionally accep
 This covers retained payload families, not setup peak, allocator/control-block
 bytes, cleanup measurement or complete byte/work budget enforcement. Complete
 those gates next; use the inventory to guide subsequent responsibility factoring.
-The next test-only contribution measures adoption's scoped C++ requested-byte
+Provisionally accepted #232 measures adoption's scoped C++ requested-byte
 peak and tests allocation-failure unwind and final-alias reclamation. This does
 not establish machine peak or complete resource qualification. Byte and
 preparation-work budget enforcement remain next.
 
-On the explicit provisional #228/#230/#231 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
+The next contribution gates hierarchy-sealing input/destination payload bytes
+and copy work before table access, preserving rejection/retry. This is one
+bounded preparation operation, not complete owner budgeting. Adoption and other
+preparation gates plus combined borrowed/caller policy remain outstanding.
+
+On the explicit provisional #228/#230/#231/#232 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings

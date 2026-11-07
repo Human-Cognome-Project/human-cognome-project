@@ -25,7 +25,7 @@ class ExchangeOwner {
                 std::vector<ExchangeFieldBinding>);
   void prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &);
-  void seal(const field::LiveRefreshSpec &);
+  HierarchySealResult seal(const field::LiveRefreshSpec &, HierarchySealBudget);
   void prepare_projection(const OccurrenceKey &, warm::Exposure);
   std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;
   ProjectionStorage projection_storage() const;

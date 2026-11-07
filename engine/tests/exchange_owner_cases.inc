@@ -301,9 +301,39 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
       node.cohort_count = contributions.size() - node.cohort_begin;
       nodes.push_back(node);
     }
+    const field::LiveRefreshSpec hierarchy{nodes.data(),nodes.size(),children.data(),children.size(),
+                                          contributions.data(),contributions.size()};
+    const auto charge = Plan::hierarchy_charge(*reserved_plan,hierarchy);
+    const auto input_bytes = nodes.size()*sizeof(field::LiveRefreshNode) +
+        children.size()*sizeof(int) + contributions.size()*sizeof(field::LiveRefreshContribution);
+    require(charge.input_bytes == input_bytes && charge.required_work == input_bytes &&
+                charge.required_bytes == charge.retained_bytes+input_bytes && charge.retained_bytes,
+            "hierarchy sealing omitted caller/destination payload charge");
+    const auto unsealed_native = TickSnapshot(f);
     no_new([&] {
-      Access::seal(*owner,{nodes.data(),nodes.size(),children.data(),children.size(),
-                           contributions.data(),contributions.size()});
+      using Status = assembly::detail::HierarchySealStatus;
+      auto unreadable = hierarchy;
+      unreadable.nodes = reinterpret_cast<const field::LiveRefreshNode *>(std::uintptr_t(1));
+      require(Access::seal(*owner,unreadable,{charge.required_bytes-1,charge.required_work}).status ==
+                  Status::ByteExhausted,
+              "hierarchy byte shortage read caller payload or was accepted");
+      require(Access::seal(*owner,unreadable,{charge.required_bytes,charge.required_work-1}).status ==
+                  Status::WorkExhausted,
+              "hierarchy work shortage read caller payload or was accepted");
+      auto oversized = hierarchy;
+      oversized.node_count = SIZE_MAX;
+      const auto overflow = Access::seal(*owner,oversized,{UINT64_MAX,UINT64_MAX});
+      require(overflow.status == Status::Overflow && !overflow.required_bytes && !overflow.input_bytes &&
+                  !Plan::sealed(*reserved_plan) && Access::pending(*owner),
+              "hierarchy overflow published partial charge or consumed intent");
+    });
+    require(unchanged() && unsealed_native == TickSnapshot(f) &&
+                Plan::backing(*reserved_plan) == plan_backing,
+            "hierarchy budget rejection changed owner/native state or backing");
+    no_new([&] {
+      require(Access::seal(*owner,hierarchy,{charge.required_bytes,charge.required_work}).status ==
+                  assembly::detail::HierarchySealStatus::Ok,
+              "exact hierarchy budget retry failed");
     });
     require(Plan::backing(*reserved_plan) == plan_backing,
             "hierarchy sealing replaced reserved backing");

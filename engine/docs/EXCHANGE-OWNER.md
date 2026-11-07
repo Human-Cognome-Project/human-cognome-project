@@ -40,6 +40,15 @@ by trusted preparation. Preparation and hierarchy sealing do not publish any liv
 projection or mapping. A new preparation discards previous pending intent; a
 preparation exception preserves committed identity, mappings and last report.
 
+Hierarchy sealing now takes explicit per-call payload-byte and copy-work
+allowances. The checked byte charge combines the caller's three table spans with
+the three retained destination capacities; copy work is one unit per payload
+byte. Exhaustion or arithmetic overflow returns before source table access,
+leaving the unsealed pending operation available for retry. Existing native
+capacity and malformed-input checks still apply before copying. This is a
+bounded sealing gate, not a total owner memory/preparation-work policy; see
+[the precise budget scope](OWNER-RESOURCES.md#hierarchy-sealing-gate-contribution-awaiting-review).
+
 Adoption also retains two immutable exchange declarations per selected occurrence,
 one for each direction. Both come from the validated structural recipe: the reverse
 swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact

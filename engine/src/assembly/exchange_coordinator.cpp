@@ -193,8 +193,33 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
   consumed_ = false;
 }
 
-void ExchangeCoordinator::prepare_hierarchy(const field::LiveRefreshSpec &spec) {
+HierarchySealResult ExchangeCoordinator::hierarchy_charge(const field::LiveRefreshSpec &spec) const {
+  HierarchySealResult out;
+  if (!seal_add(out.input_bytes,spec.node_count,sizeof(field::LiveRefreshNode)) ||
+      !seal_add(out.input_bytes,spec.child_count,sizeof(int)) ||
+      !seal_add(out.input_bytes,spec.contribution_count,sizeof(field::LiveRefreshContribution)) ||
+      !seal_add(out.retained_bytes,nodes_.capacity(),sizeof(field::LiveRefreshNode)) ||
+      !seal_add(out.retained_bytes,children_.capacity(),sizeof(int)) ||
+      !seal_add(out.retained_bytes,contributions_.capacity(),sizeof(field::LiveRefreshContribution)))
+    return {}; // No partial charge escapes on overflow.
+  out.required_bytes = out.retained_bytes;
+  if (!seal_add(out.required_bytes,out.input_bytes,1)) return {};
+  out.required_work = out.input_bytes; // One copy-work unit per payload byte.
+  out.status = HierarchySealStatus::Ok;
+  return out;
+}
+
+HierarchySealResult ExchangeCoordinator::prepare_hierarchy(
+    const field::LiveRefreshSpec &spec, HierarchySealBudget budget) {
   need(!sealed_ && !consumed_, "exchange hierarchy already sealed");
+  auto charge = hierarchy_charge(spec);
+  if (charge.status != HierarchySealStatus::Ok) return charge;
+  if (budget.bytes < charge.required_bytes) {
+    charge.status = HierarchySealStatus::ByteExhausted; return charge;
+  }
+  if (budget.copy_work < charge.required_work) {
+    charge.status = HierarchySealStatus::WorkExhausted; return charge;
+  }
   need(spec.nodes && spec.node_count && (!spec.child_count || spec.children) &&
        (!spec.contribution_count || spec.contributions), "incomplete prospective hierarchy");
   const auto &limits = bound_->h_.prepared_storage().capacity.limits();
@@ -207,6 +232,7 @@ void ExchangeCoordinator::prepare_hierarchy(const field::LiveRefreshSpec &spec) 
   if (spec.contribution_count)
     contributions_.assign(spec.contributions, spec.contributions + spec.contribution_count);
   sealed_ = true;
+  return charge;
 }
 
 field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,

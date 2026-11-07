@@ -1,5 +1,6 @@
 #pragma once
 #include "assembly/exchange_bindings.h"
+#include "assembly/hierarchy_seal_budget.h"
 
 namespace assembly {
 namespace testing { struct ExchangeCoordinatorAccess; }
@@ -31,7 +32,8 @@ class ExchangeCoordinator {
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});
-  void prepare_hierarchy(const field::LiveRefreshSpec &);
+  HierarchySealResult hierarchy_charge(const field::LiveRefreshSpec &) const;
+  HierarchySealResult prepare_hierarchy(const field::LiveRefreshSpec &, HierarchySealBudget);
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
   std::unique_ptr<ExchangeBindings> bound_;
