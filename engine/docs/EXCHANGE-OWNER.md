@@ -65,6 +65,15 @@ are still validated afresh; a retained declaration is not live execution authori
 There is no mutable declaration alias on this path. Reference-counted ownership
 keeps it alive through binding teardown; all harness/owner calls remain exclusive.
 
+Owner preparation now requires an explicit allowance for binding source capture.
+Capture charges structural row work, variable-length identity comparisons, mask
+fills and final validation before performing them. Exhaustion/overflow returns
+with an invalid binding and no pending owner operation; partial candidate buffers
+are overwritten by retry. Committed identity, reports and native state are unchanged.
+This does not yet gate declaration selection, projection/map staging or later
+command construction. See [capture-work scope](OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review),
+including setup's separate allowance and exception-runtime accounting limits.
+
 The same lifetime holds a membership catalogue for all declared alternatives.
 It follows only pinned upward memberships of the owning letter, preserving each
 occurrence's identity, inherited group revisions and exact source mass. Binding

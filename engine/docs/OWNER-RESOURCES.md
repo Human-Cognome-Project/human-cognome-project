@@ -1,7 +1,7 @@
 # Private exchange-owner resource inventory
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-#228/#230/#231/#232 dependency. It accompanies the retained-capacity census and scoped
+#228/#230/#231/#232/#233 dependency. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a byte-budget admission gate, preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -156,7 +156,9 @@ budget enforcement and broader resource qualification remain required.
 
 ## Work inventory and remaining budget gate
 
-### Hierarchy sealing gate (contribution awaiting review)
+<a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
+
+### Hierarchy sealing gate (provisionally accepted #233)
 
 Owner and coordinator sealing now require an explicit `HierarchySealBudget`.
 There is no production default or unlimited overload. Existing test facades
@@ -197,13 +199,71 @@ govern native work; these surfaces must be reconciled by a future combined polic
 without counting the destination buffers twice. Adoption-byte limits and the
 remaining preparation scans/key copies still require gates before their work.
 
+### Source-capture work gate (contribution awaiting review)
+
+`ExchangeOwner::prepare`, binding preparation and source capture require an
+explicit capture-work allowance. This allowance covers capture only, after
+declaration selection, projection staging and identity-map staging. Those earlier
+steps and later coordinator command construction still need their own gates.
+Adoption/standalone binding construction explicitly uses the maximum capture
+allowance because setup-work admission is not yet implemented; this is not a
+claim that adoption is bounded. Test facades retain convenience allowances.
+
+`CaptureWork` charges incrementally before the associated operation:
+
+| Surface | Structural work units |
+|---|---|
+| Fixed capture admission | One; zero allowance stops before clearing capture buffers or scanning source payload |
+| Occurrence/field/source/parent rows, scalar edge matches and duplicate-field candidates | One per visited row/candidate; fixed scalar checks and assignments are included in their enclosing row |
+| Identity comparisons in projection/tool searches, duplicate occurrences, source/field resolution and catalogue filtering | One dispatch unit plus both operands' UUID text lengths and nested path/address byte lengths, charged before equality reads payload |
+| Captured mass/edge append | One each, before append |
+| Mask initialization | One per logical mask element, reserved before either assignment |
+| Final source validation | The existing full binding validation work charge, reserved before that scan |
+
+Charges are conservative structural units, not CPU instructions or elapsed time.
+Fixed container/key-length metadata inspection and meter bookkeeping are not a
+separate measured workload. A multi-part comparison may prepay some units before
+another component exhausts the allowance; `charged` means reserved units, not
+completed useful work. Checked addition/multiplication returns `Overflow` without
+wrapping. `WorkExhausted` reports charged units and `next_required`, the minimum
+cumulative allowance for the next denied charge, not a prediction of the full
+operation's eventual total.
+
+An internal trivial unwind token stops nested searches and is caught at capture.
+The result is returned to the owner, whose pending gate was already invalidated.
+Capture remains invalid, even if some reserved buffers now contain partial data;
+committed owner maps/projection/reports and native state remain unchanged. A new
+prepare overwrites those buffers and retries. This preserves existing validation
+exceptions for invalid input. The tests observe no C++ `new` during exhaustion,
+but exception-runtime allocation/stack handling is outside that observation and
+must be accounted for by a future combined memory policy.
+
+The single-occurrence sequence checks zero allowance, one-unit-short late
+exhaustion and exact successful-charge retry in both directions. Its first
+exchange traverses every successive charge boundary using `next_required`,
+checking invalid partial binding/pending state, progress and unchanged committed
+native state. Arithmetic witnesses cover product/sum overflow. All source-matching
+predicates and native numerical oracles retain their previous meaning.
+
+### Combining resource domains remains outstanding
+
+The retained owner census is counted once in any future combined memory policy.
+Hierarchy sealing's destination capacity is already in that census, so its
+per-call combined charge must not simply be added again. Caller input spans and
+actual simultaneous setup temporaries are additional domains; caller capacity
+slack, shared control-block/allocator overhead and borrowed harness/native/driver
+resources need explicit, independently sourced dispositions. Current gate totals
+cannot be labeled a complete machine budget by summing them. Capture work is not
+a byte charge and does not add another copy of retained storage. Neither gate
+changes the authoritative readiness/generation/publication boundary.
+
 Current execution charges are deliberately narrower than complete preparation:
 
 | Phase | Existing behavior / outstanding charge |
 |---|---|
 | Declaration selection | Linear scan over retained alternatives, exact key comparison; no preparation-work allowance |
 | Projection staging | Resynchronizes exposure/active flags and partitions retained parent rows; no full preparation-work allowance |
-| Binding capture | Scans projection/tools, checks duplicate maps, resolves outgoing sources/fields, matches source edges and catalogue rows; nested searches and key lengths matter |
+| Binding capture | Incremental structural-work gate before scans, key comparisons, masks and final validation; stage-map copying and surrounding preparation remain separate |
 | Binding validation | Existing `16 * (occurrences + fields + captured_edges + live_edges + 1)` charge covers its bounded read-only execution validation; it is not a charge for all prior capture work |
 | Coordinator preparation | Matches incoming descriptors, builds commands/maps, scans contacts, membership rows, field usage and retirements; no full preparation-work allowance |
 | Hierarchy sealing | Explicit input-span plus destination-capacity byte allowance and payload-byte copy-work gate before reading/copying; caller construction, constant admission bookkeeping and native hierarchy validation remain separate |
