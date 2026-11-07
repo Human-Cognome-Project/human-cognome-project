@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assembly/exchange_contract.h"
+#include "assembly/capture_work.h"
 #include "assembly/exchange_map.h"
 #include "assembly/membership_fields.h"
 #include <memory>
@@ -56,12 +57,13 @@ class ExchangeBindings {
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   explicit ExchangeBindings(field::Harness &);
-  void prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
+  CaptureResult prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
                std::shared_ptr<const MembershipFields>,
-               const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
+               const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
+               std::uint64_t capture_work);
   void stage(std::shared_ptr<const LetterExchangeContract>, std::shared_ptr<const MembershipFields>,
              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
-  void capture(const LetterProjection &);
+  CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
   ExchangeBindings(field::Harness &, const LetterProjection &,

@@ -51,7 +51,15 @@ struct ExchangeOwnerAccess {
   }
   static void prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
       const std::vector<detail::ExchangeIncoming> &incoming,
-      const std::vector<detail::ExchangeNewField> &fields) { o.prepare(key,target,incoming,fields); }
+      const std::vector<detail::ExchangeNewField> &fields) {
+    if (o.prepare(key,target,incoming,fields,UINT64_MAX).status != detail::CaptureStatus::Ok)
+      throw warm::Error("test owner capture work overflow");
+  }
+  static auto prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
+      const std::vector<detail::ExchangeIncoming> &incoming,
+      const std::vector<detail::ExchangeNewField> &fields, std::uint64_t capture_work) {
+    return o.prepare(key,target,incoming,fields,capture_work);
+  }
   static const auto &projection(const detail::ExchangeOwner &o) { return *o.projection_; }
   static const auto &spare_projection(const detail::ExchangeOwner &o) { return *o.prospective_; }
   static auto storage(const detail::ExchangeOwner &o) { return o.projection_storage(); }

@@ -101,12 +101,18 @@ peak and tests allocation-failure unwind and final-alias reclamation. This does
 not establish machine peak or complete resource qualification. Byte and
 preparation-work budget enforcement remain next.
 
-The next contribution gates hierarchy-sealing input/destination payload bytes
+Provisionally accepted #233 gates hierarchy-sealing input/destination payload bytes
 and copy work before table access, preserving rejection/retry. This is one
 bounded preparation operation, not complete owner budgeting. Adoption and other
 preparation gates plus combined borrowed/caller policy remain outstanding.
 
-On the explicit provisional #228/#230/#231/#232 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
+The next contribution gates source-capture structural work incrementally before
+scans, variable-length comparisons, masks and final validation. Exhaustion leaves
+partial capture invalid and preserves committed state for retry. This does not
+gate earlier declaration/projection/map staging or later command construction;
+adoption-byte/setup-work and combined resource policy remain outstanding.
+
+On the explicit provisional #228/#230/#231/#232/#233 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings

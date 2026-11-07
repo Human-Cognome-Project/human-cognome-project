@@ -1595,3 +1595,47 @@ contributor-local, not independently inspected maintainer evidence. No full
 rerun is claimed. Parent #232 smoke passed and native remained running at the
 last check; no duplicate baseline was started. Complete combined byte and
 remaining preparation-work enforcement remain next.
+
+## Incremental source-capture work gate — 2026-11-07
+
+Tested source eff2bb538901858817a45d2b7b87d4746362a7e1 on provisional #228/#230/#231/#232/#233.
+Native Clang/LLVM15 CPU build passed; Taichi pin
+5ba579a8a11255b7a258cde93801070956d81d57. All twenty focused runs passed:
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit,
+exchange_fields × --threads 1|2 × bulk/default or --direct --compiler-no-unroll,
+all with --backend cpu.
+
+The first single-occurrence exchange traversed 235 successive capture charge
+boundaries, reaching the exact 5,087-unit successful allowance in all four
+configurations. Each exhausted attempt retained invalid binding/pending state
+and made forward progress through next_required. Zero allowance, one-unit-short
+late exhaustion and exact-charge retry were also checked across both directions,
+with unchanged committed/native state and backing. Product/sum overflow witnesses
+passed. Existing allocation-failure/reclamation, 32-exchange/tick, source validation,
+commit/field-capacity and numerical witnesses passed without oracle changes.
+
+Work is defined structural units, including upper-bound variable key bytes and
+the existing final validation charge, not instructions or timing. This gate
+covers capture only, after declaration/projection/map staging and before command
+construction. Adoption/standalone construction explicitly retains the maximum
+capture allowance pending separate setup-work admission. The internal stop token
+is caught at capture; no C++ new was observed in tested exhaustion paths, but
+exception-runtime allocation is outside that witness. See
+[resource scope](../../docs/OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review)
+and the separate combined-domain/double-counting discussion.
+
+Evidence capture-budget-eff2bb53 retains build, commands, twenty logs, toolchain,
+configuration and binary identities locally. SHA256SUMS verified; its SHA-256:
+
+    bc77c79ca282e4ae815c5c9fd83af9949ac764c122173bafb4e85e404ee072ba
+
+Shared Taichi cache-lock warnings after passing one-worker bulk commit/field
+suites remain in the raw logs; all processes exited successfully. No performance
+claim follows from concurrent checks on the shared host. Final head differs from
+tested code only in documentation. Raw evidence remains contributor-local.
+
+No full 115-test baseline, complete compiler-audit matrix, database or GPU rerun
+is claimed. Parent #233 smoke passed and native remained running at the last
+check; no duplicate baseline was started. Complete adoption-byte/setup-work,
+remaining preparation gates and combined caller/borrowed resource policy remain
+outstanding before full owner-resource qualification.

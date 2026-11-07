@@ -61,17 +61,21 @@ ProjectionStorage ExchangeOwner::projection_storage() const {
   return result;
 }
 
-void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
-    const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields) {
+CaptureResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
+    const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields,
+    std::uint64_t capture_work) {
   // Preparation reuses reserved host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto selected = declaration(owner, target);
   prepare_projection(owner,target);
-  plan_->bound_->prepare(*projection_, std::move(selected), memberships_, occurrences_, fields_);
+  const auto captured = plan_->bound_->prepare(*projection_, std::move(selected), memberships_,
+                                              occurrences_, fields_,capture_work);
+  if (captured.status != CaptureStatus::Ok) return captured;
   plan_->prepare(incoming, fields);
   completed_ = false;
+  return captured;
 }
 
 HierarchySealResult ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy,

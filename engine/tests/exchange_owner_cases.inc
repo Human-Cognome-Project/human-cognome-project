@@ -2,6 +2,22 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
+  {
+    using namespace assembly::detail;
+    CaptureWork sum(UINT64_MAX);
+    sum.charge(UINT64_MAX);
+    bool rejected = false;
+    try { sum.charge(1); } catch (const CaptureStop &stop) {
+      rejected = stop.result.status == CaptureStatus::Overflow && !stop.result.next_required;
+    }
+    require(rejected && sum.result().charged == UINT64_MAX, "capture sum overflow changed charge");
+    CaptureWork product(UINT64_MAX);
+    rejected = false;
+    try { product.elements(UINT64_MAX,2); } catch (const CaptureStop &stop) {
+      rejected = stop.result.status == CaptureStatus::Overflow && !stop.result.charged;
+    }
+    require(rejected && !product.result().charged, "capture product overflow changed charge");
+  }
   letter_fixture::Fixture letters;
   const auto group = letters.add(letter_fixture::object("02.00.00.00.00"), "group", 0);
   letters.base.tools.at(letters.tools.at(letters.accented)).member_of = {group};
@@ -193,7 +209,47 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     no_new([&] { Access::stage_projection(*owner,key,target); });
     require(Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),
             "projection reservation grew during preparation");
-    no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
+    assembly::detail::CaptureResult captured;
+    no_new([&] { captured = Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX); });
+    require(captured.status == assembly::detail::CaptureStatus::Ok && captured.charged,
+            "successful owner capture omitted its work charge");
+    const auto capture_snapshot = TickSnapshot(f);
+    no_new([&] {
+      using Status = assembly::detail::CaptureStatus;
+      const auto empty = Access::prepare(*owner,key,target,incoming,additions,0);
+      require(empty.status == Status::WorkExhausted && !empty.charged && empty.next_required == 1,
+              "zero capture allowance performed source work");
+      const auto short_work = Access::prepare(*owner,key,target,incoming,additions,captured.charged-1);
+      require(short_work.status == Status::WorkExhausted && short_work.charged < captured.charged &&
+                  short_work.next_required == captured.charged && !Access::pending(*owner) &&
+                  Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+              "capture exhaustion exposed partial intent or failed its late boundary");
+    });
+    require(unchanged() && capture_snapshot == TickSnapshot(f) &&
+                Access::map_backing(*owner) == map_backing && Plan::binding_backing(*reserved_plan) == binding_backing,
+            "capture work rejection changed committed state or backing");
+    if (round == 0) {
+      std::uint64_t allowance = 0, boundaries = 0;
+      no_new([&] {
+        while (allowance < captured.charged) {
+          const auto stopped = Access::prepare(*owner,key,target,incoming,additions,allowance);
+          require(stopped.status == assembly::detail::CaptureStatus::WorkExhausted &&
+                      stopped.charged <= allowance && stopped.next_required > allowance &&
+                      stopped.next_required <= captured.charged && !Access::pending(*owner) &&
+                      Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+                  "capture charge-boundary sweep exposed partial intent or lost progress");
+          allowance = stopped.next_required; ++boundaries;
+        }
+      });
+      require(boundaries > 10 && unchanged() && capture_snapshot == TickSnapshot(f),
+              "capture boundary sweep changed committed state");
+      std::cout << "capture_work,boundaries=" << boundaries << ",exact_allowance=" << allowance << " PASS\n";
+    }
+    no_new([&] {
+      const auto retry = Access::prepare(*owner,key,target,incoming,additions,captured.charged);
+      require(retry.status == assembly::detail::CaptureStatus::Ok && retry.charged == captured.charged,
+              "exact capture-work retry failed");
+    });
     if (round == 0) {
       auto oversized = additions;
       oversized.back().field.object.address.resize(128);

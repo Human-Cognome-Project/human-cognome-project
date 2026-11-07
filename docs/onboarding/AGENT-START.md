@@ -68,11 +68,18 @@ alias release. It explicitly depends on #228/#230/#231. It does not measure RSS,
 allocator/driver overhead or GPU resources; complete byte/preparation-work budget
 enforcement remains next. See the resource inventory for witness boundaries.
 
-The next contribution adds a bounded hierarchy-sealing gate on explicit
+Provisionally accepted #233 adds a bounded hierarchy-sealing gate on explicit
 #228/#230/#231/#232 dependencies. It limits input-span plus retained-destination
 payload bytes and copy work before reading tables, with unchanged rejection/retry.
 This is one operation gate; adoption-byte limits, other preparation scans and
 combined caller/native resource policy remain outstanding.
+
+The next contribution requires a source-capture work allowance, charged before
+scans, identity comparisons, mask fills and final validation. Capture exhaustion
+invalidates partial intent while preserving committed state and allowing retry.
+It covers capture only: declaration/projection/map staging, command construction
+and adoption still need gates. Continue on explicit #228/#230/#231/#232/#233
+dependencies; do not add per-operation retained buffers twice in a combined budget.
 
 ## Authority and reading order
 
