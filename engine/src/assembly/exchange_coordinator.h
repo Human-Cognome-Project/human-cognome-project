@@ -27,8 +27,8 @@ class ExchangeCoordinator {
   friend class ExchangeOwner;
   explicit ExchangeCoordinator(field::Harness &);
   void reserve(const field::Harness &);
-  void prepare(const std::vector<ExchangeIncoming> &,
-               const std::vector<ExchangeNewField> &);
+  PreparationResult prepare(const std::vector<ExchangeIncoming> &,
+               const std::vector<ExchangeNewField> &, std::uint64_t command_work);
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});

@@ -61,9 +61,9 @@ ProjectionStorage ExchangeOwner::projection_storage() const {
   return result;
 }
 
-CaptureResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
+OwnerPreparationResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
     const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields,
-    std::uint64_t capture_work) {
+    std::uint64_t capture_work, std::uint64_t command_work) {
   // Preparation reuses reserved host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
@@ -72,10 +72,13 @@ CaptureResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure 
   prepare_projection(owner,target);
   const auto captured = plan_->bound_->prepare(*projection_, std::move(selected), memberships_,
                                               occurrences_, fields_,capture_work);
-  if (captured.status != CaptureStatus::Ok) return captured;
-  plan_->prepare(incoming, fields);
+  if (captured.status != CaptureStatus::Ok)
+    return {captured.status,PreparationPhase::Capture,captured,{}};
+  const auto commands = plan_->prepare(incoming, fields,command_work);
+  if (commands.status != PreparationStatus::Ok)
+    return {commands.status,PreparationPhase::Commands,captured,commands};
   completed_ = false;
-  return captured;
+  return {PreparationStatus::Ok,PreparationPhase::Complete,captured,commands};
 }
 
 HierarchySealResult ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy,

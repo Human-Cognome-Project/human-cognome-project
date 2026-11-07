@@ -74,12 +74,19 @@ payload bytes and copy work before reading tables, with unchanged rejection/retr
 This is one operation gate; adoption-byte limits, other preparation scans and
 combined caller/native resource policy remain outstanding.
 
-The next contribution requires a source-capture work allowance, charged before
+Provisionally accepted #234 requires a source-capture work allowance, charged before
 scans, identity comparisons, mask fills and final validation. Capture exhaustion
 invalidates partial intent while preserving committed state and allowing retry.
 It covers capture only: declaration/projection/map staging, command construction
 and adoption still need gates. Continue on explicit #228/#230/#231/#232/#233
 dependencies; do not add per-operation retained buffers twice in a combined budget.
+
+The next contribution gates coordinator command construction with a separate
+allowance and reports capture/command phase charges independently. Exhaustion
+leaves the candidate consumed/unsealed, preserves committed state and permits
+retry. Continue on explicit #228/#230/#231/#232/#233/#234 dependencies. Adoption
+and preceding declaration/projection/map staging gates plus combined resource
+policy remain outstanding; this is not complete owner-resource qualification.
 
 ## Authority and reading order
 
