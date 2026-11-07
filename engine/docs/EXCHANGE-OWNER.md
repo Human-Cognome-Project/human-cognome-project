@@ -89,7 +89,7 @@ same owner is subsequent work.
 
 ## Resource boundary and evidence
 
-### Combined retained-capacity report (contribution awaiting review)
+### Combined retained-capacity report (provisionally accepted #231)
 
 `ExchangeOwner::storage()` now reports both projections, all six nested map stores,
 binding and coordinator objects/buffers, both declarations per selection, and the
@@ -103,7 +103,10 @@ The [owner resource inventory](OWNER-RESOURCES.md) specifies every charged famil
 ownership/cleanup paths, adoption overlaps, borrowed native/caller surfaces and
 the work still outside execution's existing allowances. Setup peak measurement,
 failure/reclamation witnesses and complete byte/work budget enforcement remain
-next. The projection-only figures below retain their original limited scope.
+next. A separate test-only contribution supplies scoped adoption allocation-peak,
+every-allocation failure and final-alias reclamation witnesses; their exact
+coverage and exclusions are in that inventory. These do not establish a total
+byte/work gate. The projection-only figures below retain their original scope.
 
 ### Retained nested maps (provisionally accepted #228)
 

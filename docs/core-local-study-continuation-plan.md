@@ -91,13 +91,17 @@ staging, retirement and publication, guarding first/repeated successful owner
 preparation against C++ `new`. Its bounded reuse evidence does not complete the
 owner resource budget or other operations. Accepted scope remains through #227.
 
-The first #229 extraction is provisionally accepted in #230. The next contribution
-adds a combined retained-capacity census and [resource/lifetime/work inventory](../engine/docs/OWNER-RESOURCES.md).
+The first #229 extraction is provisionally accepted in #230. Provisionally accepted
+#231 adds a combined retained-capacity census and [resource/lifetime/work inventory](../engine/docs/OWNER-RESOURCES.md).
 This covers retained payload families, not setup peak, allocator/control-block
 bytes, cleanup measurement or complete byte/work budget enforcement. Complete
 those gates next; use the inventory to guide subsequent responsibility factoring.
+The next test-only contribution measures adoption's scoped C++ requested-byte
+peak and tests allocation-failure unwind and final-alias reclamation. This does
+not establish machine peak or complete resource qualification. Byte and
+preparation-work budget enforcement remain next.
 
-On the explicit provisional #228/#230 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
+On the explicit provisional #228/#230/#231 dependency, remaining work is **slice C: complete owner resource/work accounting and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings
    derived from actual admission claims. Publish projection exposure and mappings

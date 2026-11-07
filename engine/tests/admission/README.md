@@ -1515,3 +1515,45 @@ compiler-audit matrix, database, GPU or performance rerun is claimed for this
 inspection-only change. #230's full baseline evidence retains its own source pin;
 hosted native run 42377616217 was still running and smoke 42377616279 passed at
 this check. No duplicate baseline run was started.
+
+## Owner adoption peak and failure reclamation — 2026-11-07
+
+Test-only continuation on provisional #228/#230/#231. Tested source:
+ad7f8552baa20fbc2ba15ef70a36a116514be3bd. Native Clang/LLVM 15 CPU;
+Taichi 5ba579a8a11255b7a258cde93801070956d81d57. Production source unchanged.
+
+The focused live_hierarchy_test build and all eight runs passed:
+--backend cpu --threads 1|2 --case exchange_owner|exchange_owner_multiple,
+using bulk/default and --direct --compiler-no-unroll. Each fixture's successful
+adoption trace was followed by a failing attempt at every allocation ordinal,
+full tracked reclamation after each failure, a successful retry and exact native
+snapshot comparison. Existing 32-exchange/tick sequences and oracles passed.
+
+| Fixture | Allocation/failure sites per run | Retained requested bytes | Peak requested bytes | Retained capacity charge | Maximum failed-attempt peak |
+|---|---:|---:|---:|---:|---:|
+| One occurrence | 4,192 | 276,329 | 276,874 | 277,017 | 276,859 |
+| Four occurrences | 7,856 | 331,491 | 333,533 | 332,083 | 333,518 |
+
+All four configurations produced those figures. Zero tracked blocks/bytes
+remained after final alias release, each failure unwind and the successful retry.
+Observer controls checked exact bytes, scalar/array/aligned/sized-delete paths,
+pre-existing deallocation exclusion and injected failure.
+
+These are current-thread requested C++ allocation bytes around adoption, including
+by-value argument copies and the standard library's shared allocations. They are
+not allocator metadata, stack, RSS, driver/GPU or combined process peaks. The
+capacity charge can be above or below the observed peak; neither substitutes for
+the other. Detailed scope and outstanding budget enforcement are in
+[OWNER-RESOURCES.md](../../docs/OWNER-RESOURCES.md).
+
+Raw local evidence: owner-lifetime-ad7f8552, including build, commands, all logs,
+configuration, toolchain and binary identities. SHA256SUMS verified; its SHA-256:
+
+    6976596b8186d62447e2b7826ffd1f805e4ae59d404706616bbb41fbfe41724f
+
+Final head differs from tested code only in documentation. Raw evidence remains
+contributor-local, not independently hosted review evidence. No full regression,
+compiler-audit matrix, database, GPU or performance rerun is claimed. Parent #231
+smoke 42378741344 passed and native 42378741420 remained in progress at the check;
+no duplicate parent baseline was started. Complete byte/preparation-work budget
+enforcement and broader resource qualification remain next.

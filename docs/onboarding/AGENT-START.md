@@ -56,11 +56,17 @@ expression, API or ownership changes. See [architecture](../../engine/ARCHITECTU
 Complete owner resource/lifetime/work accounting remains next; use that inventory
 to guide further cohesive extractions. Hosted native #228 run 42370220296 and smoke passed; merge/disposition remains separate.
 
-The next contribution adds a combined retained-capacity census and
+Provisionally accepted #231 adds a combined retained-capacity census and
 [owner resource inventory](../../engine/docs/OWNER-RESOURCES.md) on the explicit
 #228/#230 dependency. It includes inactive map slots and shared data once; it
 does not yet enforce a total byte/work budget or measure setup peak and cleanup.
 Those remaining resource gates precede further operation integration.
+
+The next test-only contribution measures scoped adoption C++ allocation peaks,
+exhausts allocation-failure ordinals and checks reclamation after final shared
+alias release. It explicitly depends on #228/#230/#231. It does not measure RSS,
+allocator/driver overhead or GPU resources; complete byte/preparation-work budget
+enforcement remains next. See the resource inventory for witness boundaries.
 
 ## Authority and reading order
 
