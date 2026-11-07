@@ -12,7 +12,10 @@ template<class T> class ExchangeMap {
  public:
   ExchangeMap() = default;
   ExchangeMap(const std::vector<T> &rows) : slots_(rows), size_(rows.size()) {}
-  ExchangeMap(const ExchangeMap &) = default;
+  ExchangeMap(const ExchangeMap &other) : slots_(other.slots_), size_(other.size_) {
+    for (std::size_t i = 0; i < slots_.size(); ++i)
+      nested(slots_[i]).reserve(nested(other.slots_[i]).capacity());
+  }
   ExchangeMap &operator=(const ExchangeMap &other) {
     if (this != &other) {
       if (other.size() > slots_.size()) throw warm::Error("exchange map capacity exhausted");

@@ -102,8 +102,8 @@ void ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     field::UpdateCommand c;
     c.operation = field::UpdateOp::DefineField;
     c.kind = f.kind; c.address = f.address;
-    field_commands_.push_back(int(commands_.size()));
     next_fields_.push_key(f.field, engine::RecordHandle{});
+    field_commands_.push_back(int(commands_.size()));
     append(c);
   }
   for (const auto &handle : b.outgoing_) {

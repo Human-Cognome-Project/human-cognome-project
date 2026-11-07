@@ -9,7 +9,7 @@ void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields)
     : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
-      occurrences_(std::move(rows)), fields_(std::move(fields)), generation_(h.prepared_storage().generation) {
+      occurrences_(rows), fields_(fields), generation_(h.prepared_storage().generation) {
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
