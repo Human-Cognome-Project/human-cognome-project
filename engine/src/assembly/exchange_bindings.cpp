@@ -46,7 +46,8 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
     std::vector<ExchangeFieldBinding> fields)
     : ExchangeBindings(h) {
   const auto &limits = h.prepared_storage().capacity.limits();
-  reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],occurrences_,fields_);
+  const ExchangeMap<ExchangeFieldBinding> trusted(fields);
+  reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],occurrences_,fields_,&trusted);
   prepare(projection, std::move(contract), std::move(memberships), occurrences, fields);
 }
 

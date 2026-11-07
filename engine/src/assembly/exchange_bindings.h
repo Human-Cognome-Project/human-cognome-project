@@ -29,10 +29,14 @@ inline void set_key(ExchangeFieldBinding &v, const FieldKey &k) { v.field = k; }
 // Setup-only reservation from the pinned universe, including inactive alternatives.
 inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particles,
     std::size_t fields, ExchangeMap<OccurrenceBinding> &rows,
-    ExchangeMap<ExchangeFieldBinding> &groups) {
+    ExchangeMap<ExchangeFieldBinding> &groups,
+    const ExchangeMap<ExchangeFieldBinding> *trusted = nullptr) {
   std::size_t path = 0, address = 0;
   for (const auto &o : p.occurrences()) path = std::max(path,o.key.source.path.size());
   for (const auto &t : p.recipe().tools) address = std::max(address,t.ref.object.address.size());
+  for (const auto &g : groups) address = std::max(address,g.field.object.address.size());
+  if (trusted) for (const auto &g : *trusted)
+    address = std::max(address,g.field.object.address.size());
   rows.reserve(particles,path);
   groups.reserve(fields,address);
 }

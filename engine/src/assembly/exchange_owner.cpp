@@ -35,8 +35,8 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_));
   const auto &limits = h_.prepared_storage().capacity.limits();
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],occurrences_,fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->bound_->occurrences_,plan_->bound_->fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->next_,plan_->next_fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],plan_->next_,plan_->next_fields_,&fields_);
   completed_ = true;
 }
 
