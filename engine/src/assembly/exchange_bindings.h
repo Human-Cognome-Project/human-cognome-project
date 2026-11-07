@@ -27,8 +27,12 @@ inline const auto &key_buffer(const ExchangeFieldBinding &v) { return v.field.ob
 inline void set_key(OccurrenceBinding &v, const OccurrenceKey &k) { v.occurrence = k; }
 inline void set_key(ExchangeFieldBinding &v, const FieldKey &k) { v.field = k; }
 // Setup-only reservation from the pinned universe, including inactive alternatives.
+inline std::size_t exchange_map_capacity(std::size_t live, std::size_t extra) {
+  if (extra > SIZE_MAX-live) throw warm::Error("exchange map reservation overflow");
+  return live+extra;
+}
 inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particles,
-    std::size_t fields, ExchangeMap<OccurrenceBinding> &rows,
+    std::size_t fields, std::size_t batch, ExchangeMap<OccurrenceBinding> &rows,
     ExchangeMap<ExchangeFieldBinding> &groups,
     const ExchangeMap<ExchangeFieldBinding> *trusted = nullptr) {
   std::size_t path = 0, address = 0;
@@ -37,8 +41,10 @@ inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particl
   for (const auto &g : groups) address = std::max(address,g.field.object.address.size());
   if (trusted) for (const auto &g : *trusted)
     address = std::max(address,g.field.object.address.size());
-  rows.reserve(particles,path);
-  groups.reserve(fields,address);
+  // Candidate maps must describe over-capacity requests so ordinary native
+  // preflight can return CapacityExhausted without changing committed state.
+  rows.reserve(exchange_map_capacity(particles,batch),path);
+  groups.reserve(exchange_map_capacity(fields,std::min(fields,batch)),address);
 }
 // Private preparation boundary. Initial identity bindings must come from the
 // trusted owner's committed admission results, never an exchange request.

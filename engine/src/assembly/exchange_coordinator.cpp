@@ -25,7 +25,8 @@ void ExchangeCoordinator::reserve(const field::Harness &h) {
   nodes_.reserve(limits[field::Budget::CascadeNodes]);
   children_.reserve(limits[field::Budget::CascadeLinks]);
   contributions_.reserve(limits[field::Budget::CascadeReferences]);
-  field_commands_.reserve(limits[field::Budget::Fields]);
+  field_commands_.reserve(exchange_map_capacity(limits[field::Budget::Fields],
+      std::min(limits[field::Budget::Fields],limits[field::Budget::Batch])));
 }
 
 ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
