@@ -66,7 +66,13 @@ struct ExchangeOwnerAccess {
   static auto generation(const detail::ExchangeOwner &o) { return o.generation_; }
   static const auto &outgoing_report(const detail::ExchangeOwner &o) { return o.outgoing_report_; }
   static const auto &balance_report(const detail::ExchangeOwner &o) { return o.balance_report_; }
-  static void seal(detail::ExchangeOwner &o, const field::LiveRefreshSpec &spec) { o.seal(spec); }
+  static auto seal(detail::ExchangeOwner &o, const field::LiveRefreshSpec &spec,
+      detail::HierarchySealBudget budget) { return o.seal(spec,budget); }
+  static void seal(detail::ExchangeOwner &o, const field::LiveRefreshSpec &spec) {
+    const auto charge = ExchangeCoordinatorAccess::hierarchy_charge(*o.plan_,spec);
+    if (o.seal(spec,{charge.required_bytes,charge.required_work}).status != detail::HierarchySealStatus::Ok)
+      throw warm::Error("test owner hierarchy sealing rejected");
+  }
   static auto execute(detail::ExchangeOwner &o, std::uint64_t generation,
       std::uint64_t work = UINT64_MAX) { return o.execute(generation,work,UINT64_MAX,UINT64_MAX); }
 };

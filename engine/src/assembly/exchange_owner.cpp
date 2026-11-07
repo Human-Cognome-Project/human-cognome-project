@@ -74,9 +74,10 @@ void ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
   completed_ = false;
 }
 
-void ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy) {
+HierarchySealResult ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy,
+    HierarchySealBudget budget) {
   need(bool(plan_) && !completed_, "owner has no pending exchange");
-  plan_->prepare_hierarchy(hierarchy);
+  return plan_->prepare_hierarchy(hierarchy,budget);
 }
 
 field::UpdateResult ExchangeOwner::execute(std::uint64_t expected, std::uint64_t work,
