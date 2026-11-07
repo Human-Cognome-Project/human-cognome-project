@@ -21,8 +21,10 @@ reconciliation.
    `src/assembly/` now provides the bounded fixed-study preparation/publication
    part, as a separate `study_assembly` target linking `field_core`. It does
    not supply general recomposition or the future analyst control surface.
-5. **Analyst functions** — future work. No analyst reasoning implementation
-   exists yet.
+5. **Analyst functions** — conceptually designed within the overall architecture.
+   Concrete implementation structure, engineering and calibration are deferred
+   until they can be grounded in engine results on real data structures; this
+   does not defer the overall analyst architecture. See the clarification below.
 
 **Pre-D clarification (Patrick, 2026-10-16):** warm is the shared tool/part box;
 hot is the analyst-owned host workbench where objects and relationships are
@@ -51,6 +53,22 @@ frontend/build/test material; HCP bypasses that abstraction operationally.
 Project Python is authorized only for bulk database population during
 bootstrap, including preparation and validation of those batches. Offline
 operation alone does not authorize Python components.
+
+## Analyst design and engineering status
+
+Patrick clarified on **2026-11-07** that analyst functions are conceptually
+designed. They are part of the overall HCP architecture, not an unspecified
+layer to invent after the engine is finished. Their concrete implementation
+structure must be engineered and calibrated using engine results on real data
+structures. This dependency defers implementation structure and calibration,
+not the overall architecture or conceptual functions.
+
+Maintain the distinction between conceptual design, engineered implementation
+and empirical qualification. Existing instructions against speculative analyst
+behaviour prohibit substituting invented behaviour or prematurely implementing
+uncalibrated mechanisms; they do not mean the conceptual architecture is absent.
+The engine PoC supplies evidence for that engineering rather than claiming
+implemented analyst reasoning.
 
 ## Naming note: field::Harness
 

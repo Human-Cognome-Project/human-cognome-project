@@ -48,7 +48,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Next implementation | Start from current main. Complete nested map staging reuse, complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
 | Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
-| Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst reasoning, dynamic LoD selection and process-failure hosting remain unbuilt. |
+| Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst functions are conceptually designed within the overall architecture; their implementation structure and calibration await engine results on real data structures. Dynamic LoD selection and process-failure hosting remain unbuilt. |
 
 Detailed milestone pins and their historical limits are preserved in the
 [2026-11-05 acceptance snapshot](docs/history/agent-acceptance-2026-11-05.md)
@@ -240,7 +240,7 @@ internal subdivision, delegation, lifetime and expansion blocks remain deferred.
 - The canonical engine path is native **C++**. Taichi's Python frontend is upstream/vendor tooling, not the HCP runtime surface.
 - Project Python is authorized only for bulk database population scripts during bootstrap. Their source preparation and validation stay within that population workflow. Offline operation alone does not authorize Python. Do not implement reusable selection/assembly components, physics, database/WAL kernels, endpoint/network infrastructure, or analyst behavior in Python.
 - The **engine harness is the control interface for the physics engine**. It is not the DB manager, WAL manager, messaging system, topology system or thread manager.
-- **Analyst functions do not exist yet.** Do not invent an analyst architecture or implement speculative analyst behaviour.
+- **Analyst functions are conceptually designed within the overall architecture.** Their concrete implementation structure must be engineered and calibrated against engine results on real data structures. That engineering is deferred; the overall architecture is not. Preserve the conceptual design rather than treating the analyst as an architectural blank slate or claiming its functions are already implemented. See [architecture clarification](engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
 - Warm is the shared tool/part box; hot is the analyst-owned host assembly workbench; GPU memory is the execution surface. Private/local inputs enter only through the analyst-owned active input boundary. The cache manager must not access private DB codes/data, including for content inspection or filtering.
 - Database/cache/record/WAL kernels exist to support the future analyst and keep its working surfaces current.
 - Kernel components communicate through active inbox/outbox endpoints and should remain location-blind: local versus remote placement is a topology/bridge concern.
@@ -254,7 +254,7 @@ internal subdivision, delegation, lifetime and expansion blocks remain deferred.
 - Do not substitute a shared core character for a language-letter endpoint: the linguistic endpoint has its own identity and ordered core parents.
 - Do not materialize reverse DB child-reference listings as live particles. They support navigation/assembly; ordered parent occurrences and separately prepared fields determine live participation.
 - Do not extend Python beyond early bulk database bootstrap population and its preparation/validation. Offline operation alone is no exception; operational selection and assembly are native.
-- Do not invent analyst behaviour or treat held #123 proposals as an accepted contract.
+- Do not substitute invented analyst behaviour for the conceptual design or bypass engineering/calibration against engine results. Held #123 proposals remain outside accepted implementation contracts.
 - Do not restore universal fixed diameter, beads-on-string geometry, positional parent offsets or rotation.
 - Do not reset/drop persistent databases as routine validation.
 

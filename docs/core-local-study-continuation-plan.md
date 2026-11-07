@@ -273,7 +273,23 @@ separate PR.
 
 The bounded mini-release gate is reproducible letter physics and observable
 active execution with an honest supported-operation/backend list. It does not
-require all deferred analyst/LoD research or automatically close #156/#145.
+require completion of analyst implementation/calibration or all deferred LoD work,
+nor automatically close #156/#145. Analyst functions are conceptually designed;
+their implementation structure must be engineered and calibrated against engine
+results on real data structures, as clarified in
+[architecture](../engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
 Any unsupported #156 operation remains explicitly tracked. Do not publish a
 release merely because this plan exists.
 
+
+## Documentation factoring after the engine PoC
+
+Reviewed 2026-11-07: defer broad AGENTS.md restructuring until after the engine
+PoC release; correct misleading guidance as it is found. Keep the current queue,
+authority/reading order and repository-wide invariants in AGENTS.md. Consolidate
+detailed numerical, placement and model requirements into their owning contracts,
+with explicit required-reading links for affected work. Preserve dated decisions,
+acceptance evidence and existing link anchors; historical records explain the
+development journey and are not disposable onboarding material. Verify that the
+shortened entry point still leads new contributors to every applicable constraint.
+This documentation work does not block the PoC or replace engine qualification.

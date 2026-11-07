@@ -92,6 +92,12 @@ work and #145 hardware qualification. A bounded slice does not close them.
 Held #123 (general identity), #111 (command atomicity/restart) and deferred #75
 (old monitor) are not prerequisites for separately accepted work.
 
+Analyst functions are conceptually designed within the overall architecture.
+Their concrete implementation structure and calibration depend on engine results
+on real data structures. The deferred work is engineering and calibration, not
+invention of the overall architecture. See the
+[architecture clarification](../../engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
+
 ## Non-negotiable implementation specification
 
 - **One physical model:** native C++ over the curated Taichi fork. Reuse shared
