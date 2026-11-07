@@ -62,6 +62,10 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     bool rejected = false;
     try { map.push_key(key,rows[0].handle); } catch (const warm::Error &) { rejected = true; }
     require(rejected && map.size() == 2, "full identity map appended a row");
+    rejected = false;
+    try { assembly::detail::exchange_map_capacity(SIZE_MAX,1); }
+    catch (const warm::Error &) { rejected = true; }
+    require(rejected, "candidate map reservation overflow accepted");
     map.clear();
     nested.source.path.resize(3);
     rejected = false;
