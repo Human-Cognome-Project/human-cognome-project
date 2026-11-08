@@ -80,7 +80,7 @@ sealing byte/copy-work gate, source-capture work and command-construction work.
 Capture and command results retain separate charges; Complete is preparation,
 not hierarchy sealing or native publication. These do not complete resource qualification.
 
-**Next coding-agent task:** declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting.
+**Next coding-agent task:** continue on provisionally accepted #237 with adoption input admission, subsequent adoption-byte/setup-work limits and combined caller/borrowed resource accounting.
 Gate work/allocation before it occurs and preserve ordinary rejection/retry. Keep
 caller spans, retained owner capacity, actual setup overlap, allocator/control-block
 costs and borrowed native resources distinct; do not add retained hierarchy buffers
@@ -90,11 +90,13 @@ lifetimes; its initial kernel extraction is complete. Layered onboarding is now 
 see the [onboarding plan](onboarding/ONBOARDING-PLAN.md).
 
 
-Active contribution (2026-11-08, awaiting review): declaration/projection/map
-staging now has a separate structural-work allowance with safe partial-pool retry.
-See [resource inventory](../engine/docs/OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review) for boundaries and limits. After review, continue
-adoption-byte/setup-work gates and combined caller/borrowed resource accounting,
-then remaining-operation integration. Accepted baseline remains #235.
+Staging gates at #237 head `84a7f9c10af98a88c5db5aa4cfb4334654111efc` are
+[provisionally accepted](https://github.com/Human-Cognome-Project/human-cognome-project/pull/237#pullrequestreview-5818063830).
+Continue on that explicit dependency without duplicating its hosted run. The
+accepted integrated code baseline remains #235 until final acceptance/merge.
+The active input-snapshot gate is narrower than complete adoption: subsequent
+constructor allocations, graph construction and combined borrowed resources remain
+open. See [resource scope](../engine/docs/OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).
 
 Remaining work is **slice C: finish resource gates and operation integration**:
 

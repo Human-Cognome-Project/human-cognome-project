@@ -288,3 +288,10 @@ parent-pool transfers are prepaid so exhaustion cannot strand moved-from rows;
 retry rebuilds partial metadata without publishing it. See the
 [charge boundaries and limits](OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review).
 Adoption and combined memory policy remain separate outstanding work.
+
+Adoption now enters through a const-reference factory with explicit input byte,
+inspection-work and copy-work allowances before owner allocation or argument
+copies. Budget rejection returns no owner; exact input admission permits the
+existing constructor and its unwind behavior. This gates only caller/input-snapshot
+payload, not later constructor allocations or complete setup work. See
+[input admission scope](OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).

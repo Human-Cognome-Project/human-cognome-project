@@ -157,6 +157,62 @@ leak-proof guarantee. Exhausting one deterministic successful trace is not an
 exhaustive test of all recipe graphs or all error paths. Byte/preparation-work
 budget enforcement and broader resource qualification remain required.
 
+### Adoption input snapshot admission (contribution awaiting review)
+
+A private `ExchangeOwner::adopt` factory now accepts projection/row/field inputs
+by const reference plus explicit `AdoptionInputBudget` byte, inspection-work and
+copy-work allowances. It runs admission before `new ExchangeOwner` and before
+any by-value input argument copies. Budget rejection returns no owner and an
+`AdoptionInputResult`; it neither allocates C++ objects nor changes caller/native
+state. Invalid constructor inputs and allocation failures still throw and unwind.
+`Complete` means **input admission completed**, not construction or native readiness.
+
+This is deliberately the first input boundary of adoption, not a complete
+constructor-byte or setup-work gate. The byte charge combines:
+
+- Caller inputs: the recursive projection capacity census plus both caller binding
+  vector headers/capacities and constructed rows' nested UUID/path/address capacity.
+- Input snapshots: the same object/header structure and **logical sizes** of copied
+  vectors, nested keys and strings. Text includes its terminator and conservatively
+  counts inline text again, as in the existing projection census.
+
+Caller capacity slack contributes only to the first domain. The factory's three
+by-value constructor parameters are the snapshot domain; later moves do not justify
+charging those snapshots again as independent retained capacity in a combined policy.
+This is a conservative **payload charge**, not requested allocator bytes, a bound
+on implementation-dependent copied-container capacity, RSS or machine peak.
+The owner object itself, heap projection object, owner map copies, catalogue,
+declarations, temporary validation, spare projection and all reservations made
+inside the constructor are outside this gate and still need pre-allocation limits.
+Borrowed harness/runtime, caller inputs outside these three arguments, allocator
+metadata/control blocks, stack and exception-runtime overhead also remain separate.
+Do not add this combined input charge to the final retained census as if they were
+disjoint simultaneous allocations.
+
+Inspection makes two allocation-free walks, capacity then logical-size, over the
+same projection traversal. Each vector charges one header plus one unit per logical
+row before visiting nested row metadata; scalar vectors are conservatively charged
+by count even when only their size is needed. Each text header charges one before
+reading size/capacity. Fixed admission/root/map headers charge one each. Character
+contents and scalar payloads are not read. Existing unmetered retained census
+behavior is preserved. Checked products/sums fail without wrapping; an interrupted
+inspection returns only its work result, with no partial byte report.
+
+After inspection, bytes gate first, then snapshot-copy work (one unit per snapshot
+payload byte) is prepaid as a complete block before any allocation/copy. Results
+identify Inspection, Copy or Complete and retain separate inspection/copy charges.
+Byte exhaustion reports the full required charge and no copy work; copy exhaustion
+likewise leaves all inputs untouched. Fixed arithmetic/meter bookkeeping is not
+instruction/time measurement. A test convenience overload explicitly supplies
+maximum allowances; the private production factory has no defaults.
+
+Single/four-occurrence tests exhaust every inspection-charge boundary at the actual
+factory under the no-C++-new guard; they also check zero/short bytes and copy work,
+exact successful adoption and unchanged native state. Independent deltas distinguish
+outer/nested caller capacity from populated path and recipe-text snapshot sizes.
+Overflow controls preserve accumulators; the existing constructor allocation-failure,
+peak, alias-lifetime/reclamation and repeated exchange/tick tests remain active.
+Exception-runtime costs remain outside the allocation witness.
 ## Work inventory and remaining budget gate
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
@@ -301,7 +357,9 @@ staging, initial binding-map staging or adoption. Work-unit charges can depend
 on ABI object sizes and comparison paths and are not CPU instruction/time claims.
 They are not memory reservations or additions to the retained-capacity census.
 
-### Owner staging work gate (contribution awaiting review)
+<a id="owner-staging-work-gate-contribution-awaiting-review"></a>
+
+### Owner staging work gate (provisionally accepted #237)
 
 The private owner now takes three explicit work allowances: staging, capture and
 commands. `OwnerPreparationResult` adds `Staging` and a separate `staging` result.

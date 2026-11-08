@@ -1763,3 +1763,58 @@ Main advanced during validation with documentation-only onboarding #236 at
 c36901c289bba4b1545c537631c0c9a6e2904686. The contribution merges that history and
 moves its status into CURRENT-STATE; engine source/tests still match the tested
 code above. No duplicate native run was started for documentation integration.
+
+## Adoption input snapshot admission — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review on provisionally accepted #237 head
+`84a7f9c10af98a88c5db5aa4cfb4334654111efc`. The
+[#237 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/237#pullrequestreview-5818063830)
+permits this continuation; native run 42484820959 remains pending at the recorded
+check, smoke 42484821017 passed. No duplicate parent baseline was started. The
+CURRENT-STATE opening summary, immediate task and next row are reconciled to that
+disposition; integrated accepted code remains #235 until final acceptance/merge.
+
+Tested code: `ebe0644aad7d2344594128f15949fe243a41c88e`. Later commits are documentation
+only. The const-reference adoption factory admits caller/input-snapshot payload,
+inspection work and copy work before owner allocation or by-value argument copies.
+This is the input boundary only: later constructor allocations/setup and actual
+allocator/native peak remain ungated by this allowance. Complete means admission,
+not construction. See [scope and exclusions](../../docs/OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).
+
+The CPU-only Clang/LLVM 15 build uses Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, CUDA_VISIBLE_DEVICES=-1, on the shared
+personal host. The focused run comprises 53 projection checks plus twenty native
+case runs: exchange_owner, exchange_owner_multiple, exchange_bindings,
+exchange_commit and exchange_fields × workers 1/2 × bulk/default or
+--direct --compiler-no-unroll. Final aggregate result and manifest follow below.
+
+| Fixture | Inspection boundaries | Inspection work | Caller capacity charge | Snapshot payload/copy-work charge | Combined input bytes |
+|---|---:|---:|---:|---:|---:|
+| One selection | 1,161 | 1,905 | 27,367 | 25,890 | 53,257 |
+| Four selections | 1,713 | 2,923 | 45,015 | 39,651 | 84,666 |
+
+All four CPU configurations reproduce these input charges. Every inspection
+boundary rejects through the actual factory under the no-C++-new guard. Zero/short
+byte and copy allowances reject before allocation; exact allowances permit fresh
+adoption with unchanged native state. Capacity-only outer/nested changes affect
+caller charge, populated path and recipe-text changes affect snapshot size, and
+checked arithmetic preserves accumulators on overflow. Inspection failure exposes
+no partial byte report. The existing full allocation-failure traces remain 4,192
+and 7,856 sites; final-alias reclamation returns to zero tracked blocks. Those
+traces measure requested C++ allocation bytes separately from the input payload
+charge and are not constrained by it.
+
+Raw evidence stays local in adoption-input-ebe0644a (build, commands, projection
+and native logs, toolchain/configuration and binary hashes). No full 115-test
+baseline, complete compiler audit, database or GPU rerun is claimed. Source pins
+and a local manifest identify contributor evidence, not independently hosted
+results. Subsequent constructor-byte/setup-work gates, combined caller/borrowed
+resources, exception-runtime/allocator overhead and remaining operations stay open.
+
+Result: all twenty focused native runs and all 53 projection checks passed;
+all processes exited zero. SHA256SUMS verified; its SHA-256 is:
+
+    804a37628d0b2e54de00d9bfe4e6bf9f13e0d55c9f5f7360ca2f8ebc2a9ab886
+
+The contributor-local archive is setup-evidence/adoption-input-ebe0644a.tar.gz.
+The final source delta from the tested pin contains documentation only.
