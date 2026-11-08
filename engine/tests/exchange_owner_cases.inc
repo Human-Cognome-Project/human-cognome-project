@@ -221,6 +221,51 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     require(captured.status == assembly::detail::CaptureStatus::Ok && captured.charged,
             "successful owner capture omitted its work charge");
     const auto capture_snapshot = TickSnapshot(f);
+    // Normalize the spare pool before each boundary witness. Work depends on
+    // retained scratch order; a failed attempt may leave a valid partial partition.
+    assembly::detail::OwnerPreparationResult staging_probe;
+    no_new([&] { staging_probe = Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX,UINT64_MAX,UINT64_MAX); });
+    const auto staging_charge = staging_probe.staging.charged;
+    require(staging_probe.phase == assembly::detail::PreparationPhase::Complete && staging_charge,
+            "owner omitted staging phase charge");
+    std::uint64_t staging_boundaries = 0;
+    no_new([&] {
+      using namespace assembly::detail;
+      std::uint64_t allowance = 0;
+      while (allowance < staging_charge) {
+        const auto stopped = Access::prepare(*owner,key,target,incoming,additions,allowance,UINT64_MAX,UINT64_MAX);
+        require(stopped.status == PreparationStatus::WorkExhausted && stopped.phase == PreparationPhase::Staging &&
+                    stopped.staging.charged <= allowance && stopped.staging.next_required > allowance &&
+                    stopped.staging.next_required <= staging_charge && !stopped.capture.charged &&
+                    !stopped.commands.charged && !Access::pending(*owner) &&
+                    Plan::consumed(*reserved_plan) && !Plan::sealed(*reserved_plan) &&
+                    Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+                "staging boundary exposed partial intent or charged a later phase");
+        if (!allowance) require(!stopped.staging.charged && stopped.staging.next_required == 1,
+                                "zero staging allowance performed payload work");
+        const auto retry = Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX,UINT64_MAX,UINT64_MAX);
+        require(retry.status == PreparationStatus::Ok && retry.capture.charged == staging_probe.capture.charged &&
+                    retry.commands.charged == staging_probe.commands.charged && unchanged(),
+                "partial staging pool failed recovery or changed committed state");
+        allowance = round < 2 ? stopped.staging.next_required : staging_charge;
+        ++staging_boundaries;
+      }
+      const auto short_work = Access::prepare(*owner,key,target,incoming,additions,staging_charge-1,UINT64_MAX,UINT64_MAX);
+      require(short_work.status == PreparationStatus::WorkExhausted && short_work.phase == PreparationPhase::Staging &&
+                  short_work.staging.next_required == staging_charge, "late staging boundary failed");
+      const auto exact = Access::prepare(*owner,key,target,incoming,additions,staging_charge,UINT64_MAX,UINT64_MAX);
+      require(exact.status == PreparationStatus::Ok && exact.staging.charged == staging_charge,
+              "exact staging allowance retry failed");
+    });
+    require(capture_snapshot == TickSnapshot(f) && unchanged() &&
+                Access::storage(*owner).charged_bytes() == reserved.charged_bytes() &&
+                Access::map_backing(*owner) == map_backing && Plan::binding_backing(*reserved_plan) == binding_backing,
+            "staging rejection or recovery changed committed/native state or backing");
+    if (round < 2) {
+      require(staging_boundaries > 10, "staging sweep missed preparation work");
+      std::cout << "staging_work,direction=" << (compression ? "aggregate" : "parts")
+                << ",boundaries=" << staging_boundaries << ",exact_allowance=" << staging_charge << " PASS\n";
+    }
     no_new([&] {
       using Status = assembly::detail::CaptureStatus;
       const auto empty = Access::prepare(*owner,key,target,incoming,additions,0);

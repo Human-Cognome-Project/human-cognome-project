@@ -40,15 +40,22 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   completed_ = true;
 }
 
-void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target) {
-  projection_->prepare_exposure(*prospective_,owner,target);
+void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target, PreparationWork &meter) {
+  projection_->prepare_exposure(*prospective_,owner,target,meter);
 }
 
 std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
-    const OccurrenceKey &owner, warm::Exposure target) const {
+    const OccurrenceKey &owner, warm::Exposure target, PreparationWork &meter) const {
   for (const auto &entry : declarations_)
-    if (entry->owner() == owner && entry->to() == target) {
-      need(entry->from() == projection_->exposure(owner.source.entry),
+    if (meter.equal(entry->owner(),owner) && entry->to() == target) {
+      bool current = false;
+      for (std::size_t i = 0; i < projection_->recipe_.selections.size(); ++i) {
+        meter.charge(1);
+        if (projection_->recipe_.selections[i].entry == owner.source.entry) {
+          current = entry->from() == projection_->exposures_[i]; break;
+        }
+      }
+      need(current,
            "exchange requires the other declared alternative");
       return entry;
     }
@@ -63,22 +70,32 @@ ProjectionStorage ExchangeOwner::projection_storage() const {
 
 OwnerPreparationResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
     const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields,
-    std::uint64_t capture_work, std::uint64_t command_work) {
+    std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work) {
   // Preparation reuses reserved host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
+  plan_->consumed_ = true;
+  plan_->sealed_ = false;
+  plan_->bound_->valid_ = false;
+  PreparationWork meter(staging_work);
+  try {
+  meter.charge(1);
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
-  auto selected = declaration(owner, target);
-  prepare_projection(owner,target);
-  const auto captured = plan_->bound_->prepare(*projection_, std::move(selected), memberships_,
-                                              occurrences_, fields_,capture_work);
+  auto selected = declaration(owner, target,meter);
+  prepare_projection(owner,target,meter);
+  plan_->bound_->stage(std::move(selected),memberships_,occurrences_,fields_,meter);
+  const auto staged = meter.result();
+  const auto captured = plan_->bound_->capture(*projection_,capture_work);
   if (captured.status != CaptureStatus::Ok)
-    return {captured.status,PreparationPhase::Capture,captured,{}};
+    return {captured.status,PreparationPhase::Capture,staged,captured,{}};
   const auto commands = plan_->prepare(incoming, fields,command_work);
   if (commands.status != PreparationStatus::Ok)
-    return {commands.status,PreparationPhase::Commands,captured,commands};
+    return {commands.status,PreparationPhase::Commands,staged,captured,commands};
   completed_ = false;
-  return {PreparationStatus::Ok,PreparationPhase::Complete,captured,commands};
+  return {PreparationStatus::Ok,PreparationPhase::Complete,staged,captured,commands};
+  } catch (const PreparationStop &stop) {
+    return {stop.result.status,PreparationPhase::Staging,stop.result,{},{}};
+  }
 }
 
 HierarchySealResult ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy,

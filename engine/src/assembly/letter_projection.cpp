@@ -1,4 +1,5 @@
 #include "assembly/letter_projection.h"
+#include "assembly/preparation_work.h"
 
 #include <algorithm>
 #include <limits>
@@ -375,44 +376,60 @@ void LetterProjection::reserve_exposure() {
 }
 
 void LetterProjection::prepare_exposure(LetterProjection &next, const OccurrenceKey &owner,
-                                        warm::Exposure target) const {
-  need(recipe_.recipe_version == 2 && owner.study == study_ && owner.source.path.empty(),
+                                        warm::Exposure target, detail::PreparationWork &meter) const {
+  meter.charge(1);
+  need(recipe_.recipe_version == 2 && meter.equal(owner.study,study_) && owner.source.path.empty(),
        "exposure change requires this structural study's aggregate owner");
+  bool other = false;
+  for (std::size_t i = 0; i < recipe_.selections.size(); ++i) {
+    meter.charge(1);
+    if (recipe_.selections[i].entry == owner.source.entry) { other = exposures_[i] != target; break; }
+  }
   need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
-       exposure(owner.source.entry) != target, "exposure change requires the other alternative");
-  need(&next != this && next.exposure_reserved_ && next.study_ == study_ &&
-       next.recipe_.ref.selection == recipe_.ref.selection && next.recipe_.ref.revision == recipe_.ref.revision &&
+       other, "exposure change requires the other alternative");
+  need(&next != this && next.exposure_reserved_ && meter.equal(next.study_,study_) &&
+       meter.equal(next.recipe_.ref.selection,recipe_.ref.selection) && meter.equal(next.recipe_.ref.revision,recipe_.ref.revision) &&
        next.occurrences_.size() == occurrences_.size(), "foreign or unreserved projection buffer");
   for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
     {
+      meter.charge(1);
       const auto value = recipe_.selections[i].entry == owner.source.entry ? target : exposures_[i];
       next.exposures_[i] = value;
       next.structural_input_.selections[i].exposure = value == warm::Exposure::Aggregate
           ? Exposure::Aggregate : Exposure::Parts;
     }
   for (std::size_t i = 0; i < occurrences_.size(); ++i) {
+    meter.charge(1);
     auto &o = next.occurrences_[i];
     o.active = o.key.source.entry == owner.source.entry
         ? o.key.source.path.empty() == (target == warm::Exposure::Aggregate) : occurrences_[i].active;
   }
   // Move the reserved contribution objects, including their nested allocations.
   // Never destroy/recreate path or UUID storage when changing active cardinality.
+  // Prepay the whole transfer: stopping between move and clear would leave
+  // moved-from contribution objects in the pool and break the next retry.
+  meter.elements(next.spare_parents_.size(),2*sizeof(ParentContribution));
   for (auto &p : next.spare_parents_) next.parents_.push_back(std::move(p));
   next.spare_parents_.clear();
   std::size_t active = 0;
-  for (const auto &o : next.occurrences_) if (o.active) {
+  for (const auto &o : next.occurrences_) {
+    meter.charge(1);
+    if (!o.active) continue;
     const auto tool = std::find_if(next.recipe_.tools.begin(), next.recipe_.tools.end(),
-        [&](const auto &t) { return t.ref == o.definition; });
+        [&](const auto &t) { return meter.equal(t.ref,o.definition); });
     need(tool != next.recipe_.tools.end(), "missing immutable projected definition");
     for (const auto &p : tool->parents) {
+      meter.charge(1);
       const auto found = std::find_if(next.parents_.begin()+active,next.parents_.end(),[&](const auto &v) {
-        return v.occurrence == o.key && v.ordinal == p.ordinal && v.field.object == p.target.object;
+        return meter.equal(v.occurrence,o.key) && v.ordinal == p.ordinal && meter.equal(v.field.object,p.target.object);
       });
       need(found != next.parents_.end(), "reserved projection contribution missing");
+      meter.elements(3,sizeof(ParentContribution));
       std::iter_swap(next.parents_.begin()+active,found);
       ++active;
     }
   }
+  meter.elements(next.parents_.size()-active,2*sizeof(ParentContribution));
   for (std::size_t i = active; i < next.parents_.size(); ++i)
     next.spare_parents_.push_back(std::move(next.parents_[i]));
   next.parents_.resize(active);

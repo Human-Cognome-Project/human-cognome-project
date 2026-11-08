@@ -89,6 +89,26 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
     no_new([&] { Access::prepare(*owner,key,target,incoming,{}); });
+    const auto staging_snapshot = TickSnapshot(f);
+    no_new([&] {
+      using namespace assembly::detail;
+      const auto full = Access::prepare(*owner,key,target,incoming,{},UINT64_MAX,UINT64_MAX,UINT64_MAX);
+      require(full.status == PreparationStatus::Ok && full.staging.charged, "multi-owner staging charge missing");
+      for (auto allowance : {UINT64_C(0),full.staging.charged-1}) {
+        const auto stopped = Access::prepare(*owner,key,target,incoming,{},allowance,UINT64_MAX,UINT64_MAX);
+        require(stopped.status == PreparationStatus::WorkExhausted && stopped.phase == PreparationPhase::Staging &&
+                    !stopped.capture.charged && !stopped.commands.charged && !Access::pending(*owner) &&
+                    Plan::consumed(*reserved_plan) && !Plan::sealed(*reserved_plan),
+                "multi-owner staging exhaustion retained authority");
+      }
+      const auto retry = Access::prepare(*owner,key,target,incoming,{},full.staging.charged,UINT64_MAX,UINT64_MAX);
+      require(retry.status == PreparationStatus::Ok && retry.staging.charged == full.staging.charged,
+              "multi-owner exact staging retry failed");
+    });
+    require(staging_snapshot == TickSnapshot(f) && &Access::projection(*owner) == before_view &&
+                Access::generation(*owner) == generation && Access::outgoing_report(*owner) == old_outgoing &&
+                Access::balance_report(*owner) == old_balance,
+            "multi-owner staging rejection changed completed state");
     require(Plan::declaration(Access::plan(*owner)) == selected.get() &&
                 Plan::memberships(Access::plan(*owner)) == memberships.get() &&
                 Access::equivalent(*selected,declaration) &&
