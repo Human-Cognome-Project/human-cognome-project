@@ -1758,3 +1758,8 @@ its SHA-256 is:
 
 The local archive is setup-evidence/staging-budget-b6321a4a.tar.gz. Raw files stay
 local; the committed digest identifies them and does not imply remote availability.
+
+Main advanced during validation with documentation-only onboarding #236 at
+c36901c289bba4b1545c537631c0c9a6e2904686. The contribution merges that history and
+moves its status into CURRENT-STATE; engine source/tests still match the tested
+code above. No duplicate native run was started for documentation integration.

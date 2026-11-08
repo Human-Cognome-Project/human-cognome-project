@@ -86,8 +86,8 @@ caller spans, retained owner capacity, actual setup overlap, allocator/control-b
 costs and borrowed native resources distinct; do not add retained hierarchy buffers
 twice. Use [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md) as the detailed inventory.
 The harness remains borrowed. #229 stays open for further factoring based on those
-lifetimes; its initial kernel extraction is complete. Broad AGENTS restructuring
-remains deferred until after the engine PoC.
+lifetimes; its initial kernel extraction is complete. Layered onboarding is now authorized as a separate documentation effort;
+see the [onboarding plan](onboarding/ONBOARDING-PLAN.md).
 
 
 Active contribution (2026-11-08, awaiting review): declaration/projection/map
@@ -296,6 +296,13 @@ release merely because this plan exists.
 
 
 ## Documentation factoring after the engine PoC
+
+**Superseded sequencing, 2026-11-08:** Patrick authorized layered onboarding while
+the coding agent continues. The [onboarding plan](onboarding/ONBOARDING-PLAN.md)
+moves status and detailed contracts into focused files, keeps universal rules in
+root AGENTS and preserves existing anchors and history. This changes documentation
+sequencing, not the engine task or qualification. The earlier decision follows
+as historical context.
 
 Reviewed 2026-11-07: defer broad AGENTS.md restructuring until after the engine
 PoC release; correct misleading guidance as it is found. Keep the current queue,

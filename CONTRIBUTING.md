@@ -1,15 +1,14 @@
 # Contributing to the Human Cognome Project
 
-**New coding environment or agent:** start with the [fresh-instance onboarding/spec brief](docs/onboarding/AGENT-START.md).
+**Choose your path:** [bounded work, understanding, review or history](docs/onboarding/README.md).
 
 HCP accepts code, research, testing, documentation and architecture critique. The structural migration is complete; current guidance reflects the recovered native C++ engine, curated Taichi fork and separated kernel/network architecture.
 
 ## Start here
 
-Begin with [orientation](docs/onboarding/README.md), then follow its
-[reading paths](docs/onboarding/README.md#reading-paths), including the Covenant
-and Charter. Check [current state](AGENTS.md#current-state) before selecting work.
-Agents read AGENTS.md in full.
+Choose the [reading path](docs/onboarding/README.md#reading-paths) for your purpose.
+Contributors read the short [AGENTS](AGENTS.md), [work discipline](docs/onboarding/WORK-DISCIPLINE.md), Covenant and Charter, then the contracts applicable to their task.
+Check [current state](docs/onboarding/CURRENT-STATE.md) before selecting outstanding work.
 
 ## Current architecture
 
@@ -25,13 +24,13 @@ engine harness
 future analyst functions
 ```
 
-The harness is the physics engine's control surface. Analyst functions are future work and have not yet been designed.
+The harness is the physics engine's control surface. Analyst functions are conceptually designed within the overall architecture; implementation structure and calibration await engine results on real data structures.
 
 Database/cache/record/WAL kernels are separate autonomous components whose system role is to support the future analyst and keep its working surfaces current. Inbox/outbox endpoints and scheduling form common kernel-network infrastructure; configuration/topology, serialization bridges and thread management are later implementation work.
 
 ## Where work is currently useful
 
-Use [AGENTS current state](AGENTS.md#current-state) and
+Use [current state](docs/onboarding/CURRENT-STATE.md) and
 [active and deferred work](AGENTS.md#active-and-deferred-work) to choose work.
 This page does not maintain a second priority queue. Follow the owning issue's
 accepted plan and latest review disposition before implementing or writing data.
@@ -41,7 +40,7 @@ change runtime contracts.
 ## Reading evidence and status
 
 Code and executable evidence establish what is built; accepted decisions govern
-intent. AGENTS is the maintained summary. If these disagree, identify and reconcile
+intent. [CURRENT-STATE](docs/onboarding/CURRENT-STATE.md) is the maintained summary. If these disagree, identify and reconcile
 the discrepancy rather than treating a summary as proof or an old fixture as the
 production contract.
 
@@ -61,7 +60,7 @@ A held proposal is not an implementation contract. Record remaining work by its
 owning issue rather than burying it in acceptance prose.
 
 When a merge or review changes Built/Held/Active status, update
-[AGENTS current state](AGENTS.md#current-state) and remove conflicting status
+[current state](docs/onboarding/CURRENT-STATE.md) and remove conflicting status
 claims from entry points. Keep detailed measurements and source pins with the
 component evidence. Onboarding links to those records rather than copying them.
 If a build target/path changes, update the [first-run check](docs/onboarding/FIRST-RUN.md)
@@ -105,7 +104,7 @@ Small self-contained fixes need not acquire a new umbrella issue.
 - **Separate structure from behaviour.** Prefer pure moves first, then refactor in a later commit with tests.
 - **Tests on behavioural changes.** Native engine changes should retain CPU/backend equivalence and model-anchored regression checks where applicable. C++ kernel modules should remain independently testable where their existing contracts require it.
 - **Location blindness.** Kernel logic should not branch on whether a counterpart is local or remote; that belongs to topology/bridge infrastructure.
-- **No speculative analyst implementation.** Interfaces may expose future analyst-facing seams, but the analyst layer itself is not yet defined.
+- **No speculative analyst implementation.** Preserve the conceptual analyst architecture; engineer and calibrate its implementation against engine results on real data structures. Do not invent replacement behavior from an onboarding summary.
 - **Compiled implementation path.** HCP engine/data/network components are C++. Project Python is authorized only for bulk database population during bootstrap, including preparation and validation of those batches. Offline operation alone is not an exception.
 - **Database safety.** Existing disposable test-database conventions must stay explicit. Do not run reset/drop operations against persistent project data.
 - **Secrets stay out of Git.** Snapshot manifests may describe provenance/version context but not credentials or private data.
