@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #235 on 2026-11-08; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--228235-2026-11-08)
+Accepted through #238 on 2026-11-08; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--237238-2026-11-08)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235 stack. It accompanies the retained-capacity census and scoped
+integrated #228/#230–#235/#237/#238 stack. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -157,6 +157,64 @@ leak-proof guarantee. Exhausting one deterministic successful trace is not an
 exhaustive test of all recipe graphs or all error paths. Byte/preparation-work
 budget enforcement and broader resource qualification remain required.
 
+<a id="adoption-input-snapshot-admission-contribution-awaiting-review"></a>
+
+### Adoption input snapshot admission (accepted #238)
+
+A private `ExchangeOwner::adopt` factory now accepts projection/row/field inputs
+by const reference plus explicit `AdoptionInputBudget` byte, inspection-work and
+copy-work allowances. It runs admission before `new ExchangeOwner` and before
+any by-value input argument copies. Budget rejection returns no owner and an
+`AdoptionInputResult`; it neither allocates C++ objects nor changes caller/native
+state. Invalid constructor inputs and allocation failures still throw and unwind.
+`Complete` means **input admission completed**, not construction or native readiness.
+
+This is deliberately the first input boundary of adoption, not a complete
+constructor-byte or setup-work gate. The byte charge combines:
+
+- Caller inputs: the recursive projection capacity census plus both caller binding
+  vector headers/capacities and constructed rows' nested UUID/path/address capacity.
+- Input snapshots: the same object/header structure and **logical sizes** of copied
+  vectors, nested keys and strings. Text includes its terminator and conservatively
+  counts inline text again, as in the existing projection census.
+
+Caller capacity slack contributes only to the first domain. The factory's three
+by-value constructor parameters are the snapshot domain; later moves do not justify
+charging those snapshots again as independent retained capacity in a combined policy.
+This is a conservative **payload charge**, not requested allocator bytes, a bound
+on implementation-dependent copied-container capacity, RSS or machine peak.
+The owner object itself, heap projection object, owner map copies, catalogue,
+declarations, temporary validation, spare projection and all reservations made
+inside the constructor are outside this gate and still need pre-allocation limits.
+Borrowed harness/runtime, caller inputs outside these three arguments, allocator
+metadata/control blocks, stack and exception-runtime overhead also remain separate.
+Do not add this combined input charge to the final retained census as if they were
+disjoint simultaneous allocations.
+
+Inspection makes two allocation-free walks, capacity then logical-size, over the
+same projection traversal. Each vector charges one header plus one unit per logical
+row before visiting nested row metadata; scalar vectors are conservatively charged
+by count even when only their size is needed. Each text header charges one before
+reading size/capacity. Fixed admission/root/map headers charge one each. Character
+contents and scalar payloads are not read. Existing unmetered retained census
+behavior is preserved. Checked products/sums fail without wrapping; an interrupted
+inspection returns only its work result, with no partial byte report.
+
+After inspection, bytes gate first, then snapshot-copy work (one unit per snapshot
+payload byte) is prepaid as a complete block before any allocation/copy. Results
+identify Inspection, Copy or Complete and retain separate inspection/copy charges.
+Byte exhaustion reports the full required charge and no copy work; copy exhaustion
+likewise leaves all inputs untouched. Fixed arithmetic/meter bookkeeping is not
+instruction/time measurement. A test convenience overload explicitly supplies
+maximum allowances; the private production factory has no defaults.
+
+Single/four-occurrence tests exhaust every inspection-charge boundary at the actual
+factory under the no-C++-new guard; they also check zero/short bytes and copy work,
+exact successful adoption and unchanged native state. Independent deltas distinguish
+outer/nested caller capacity from populated path and recipe-text snapshot sizes.
+Overflow controls preserve accumulators; the existing constructor allocation-failure,
+peak, alias-lifetime/reclamation and repeated exchange/tick tests remain active.
+Exception-runtime costs remain outside the allocation witness.
 ## Work inventory and remaining budget gate
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
@@ -209,7 +267,7 @@ remaining preparation scans/key copies still require gates before their work.
 `ExchangeOwner::prepare`, binding preparation and source capture require an
 explicit capture-work allowance. This allowance covers capture only, after
 declaration selection, projection staging and identity-map staging. Those earlier
-steps still need their own gates. The following command gate supplies the later
+steps now have the separate staging gate described below. The following command gate supplies the later
 coordinator allowance separately.
 Adoption/standalone binding construction explicitly uses the maximum capture
 allowance because setup-work admission is not yet implemented; this is not a
@@ -256,8 +314,8 @@ predicates and native numerical oracles retain their previous meaning.
 
 ### Command-construction work gate (accepted #235)
 
-Owner preparation now requires separate capture and command-work allowances.
-`OwnerPreparationResult` identifies `Capture`, `Commands` or `Complete` and
+The accepted #235 contribution introduced separate capture and command-work allowances.
+At that source, `OwnerPreparationResult` identifies `Capture`, `Commands` or `Complete` and
 retains each phase's charge/result separately. `Complete` means these two preparation phases completed, not
 native publication or a sealed hierarchy; explicit hierarchy sealing remains
 required. When capture stops, command work
@@ -301,6 +359,49 @@ staging, initial binding-map staging or adoption. Work-unit charges can depend
 on ABI object sizes and comparison paths and are not CPU instruction/time claims.
 They are not memory reservations or additions to the retained-capacity census.
 
+<a id="owner-staging-work-gate-contribution-awaiting-review"></a>
+
+### Owner staging work gate (accepted #237)
+
+The private owner now takes three explicit work allowances: staging, capture and
+commands. `OwnerPreparationResult` adds `Staging` and a separate `staging` result.
+Stopping there leaves capture and command charges zero; interpret those unused
+results with the phase. `Complete` still means preparation only, before sealing
+and publication. The pending, consumed, sealed and binding-valid gates are
+invalidated before the first charge, including when replacing a pending plan.
+
+| Surface | Structural work units |
+|---|---|
+| Owner and projection admission, binding staging | One each, before validation or payload changes |
+| Declaration lookup | Shared-meter key comparison, then one per selection visited to check current exposure |
+| Projection compatibility | Shared-meter UUID/pin comparisons; one per current-exposure lookup row |
+| Exposure/active flags and occurrence traversal | One per visited row before reading/updating scalar fields |
+| Tool/parent matching | Shared-meter identity comparisons, plus one per immutable parent row |
+| Parent swap | Three `sizeof(ParentContribution)` units before swapping retained objects |
+| Parent-pool transfer | Two `sizeof(ParentContribution)` units per transferred row, prepaid for the entire move-and-clear/resize block |
+| Initial binding maps | Binding object size plus key-copy dispatch and UUID/path/address payload before each row copy |
+
+Parent-pool transfers are indivisible with respect to work exhaustion. Stopping
+between a move and removal of the moved-from row would break retry. Charges for
+the entire block precede its first move; reserved capacity and nonallocating moves
+preserve the existing pool invariant. Exhaustion elsewhere may leave partial
+flags, a valid partial parent partition or partial binding maps. Retry overwrites
+flags, reunites both parent pools and rebuilds maps. Committed state and native
+execution remain untouched. Work depends on retained scratch order and active
+pool sizes; `next_required` describes this attempt's next charge, not a guaranteed
+whole-operation allowance for a later attempt. Exact-allowance tests use the same
+normalized scratch starting state and additionally recover after every stop.
+
+Tests sweep every charge boundary in both single-occurrence directions, recovering
+successfully after each rejection. Zero/late-short/exact allowances also cover
+repeated single/four-occurrence edits, unchanged completed state and retained
+backing, and no observed C++ `new`. Existing numerical and lifetime witnesses stay
+active. As with capture/commands, exception-runtime costs are outside that witness.
+
+Standalone/adoption binding preparation explicitly uses maximum staging work
+pending setup admission. This gate is structural work, not a memory reservation,
+allocator limit or timing claim. Adoption-byte/setup-work gates, caller construction,
+combined caller/borrowed resources and remaining-operation integration are still open.
 ### Combining resource domains remains outstanding
 
 The retained owner census is counted once in any future combined memory policy.
@@ -318,9 +419,9 @@ Current execution charges are deliberately narrower than complete preparation:
 
 | Phase | Existing behavior / outstanding charge |
 |---|---|
-| Declaration selection | Linear scan over retained alternatives, exact key comparison; no preparation-work allowance |
-| Projection staging | Resynchronizes exposure/active flags and partitions retained parent rows; no full preparation-work allowance |
-| Binding capture | Incremental structural-work gate before scans, key comparisons, masks and final validation; stage-map copying and surrounding preparation remain separate |
+| Declaration selection | Staging gate charges retained alternative key comparisons and current exposure lookup |
+| Projection staging | Staging gate charges flag scans, key searches, swaps and complete parent-pool transfers before work |
+| Binding capture | Incremental structural-work gate before scans, key comparisons, masks and final validation; stage-map copying uses the preceding staging allowance |
 | Binding validation | Existing `16 * (occurrences + fields + captured_edges + live_edges + 1)` charge covers its bounded read-only execution validation; it is not a charge for all prior capture work |
 | Coordinator preparation | Separate incremental command-work gate covers revalidation, descriptor/key comparisons, command/map copies, contacts, membership, field usage and retirements; setup and preceding staging remain outside it |
 | Hierarchy sealing | Explicit input-span plus destination-capacity byte allowance and payload-byte copy-work gate before reading/copying; caller construction, constant admission bookkeeping and native hierarchy validation remain separate |

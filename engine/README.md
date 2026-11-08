@@ -186,11 +186,12 @@ qualification ladder.
 ## Current status
 
 Start a new instance with the [onboarding/spec brief](../docs/onboarding/AGENT-START.md).
-The accepted CPU baseline is through #235 as checked 2026-11-08, including private
+The accepted CPU baseline is through #238 as checked 2026-11-08, including private
 exchange ownership, nested-map reuse, scoped retained-capacity/lifetime evidence
-and hierarchy-sealing/capture/command preparation gates. Native run 42388030237
-and smoke passed; see [acceptance evidence](tests/admission/README.md#maintainer-integrated-acceptance--228235-2026-11-08).
-Declaration/projection/map staging gates, adoption-byte/setup-work limits and
+and hierarchy-sealing/capture/command/staging preparation gates, plus adoption
+input-snapshot admission. Native run 42486720445
+and smoke passed; see [acceptance evidence](tests/admission/README.md#maintainer-integrated-acceptance--237238-2026-11-08).
+Subsequent constructor-byte/setup-work limits and
 combined resources remain open before remaining-operation integration and controls.
 GPU qualification remains separate. Earlier stage
 descriptions below retain their bounded acceptance scope, not a second work queue.

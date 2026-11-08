@@ -62,7 +62,7 @@ class ExchangeBindings {
                const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
                std::uint64_t capture_work);
   void stage(std::shared_ptr<const LetterExchangeContract>, std::shared_ptr<const MembershipFields>,
-             const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
+             const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
   CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);

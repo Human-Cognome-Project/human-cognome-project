@@ -55,19 +55,28 @@ CaptureResult ExchangeBindings::prepare(const LetterProjection &projection,
     std::shared_ptr<const MembershipFields> memberships,
     const ExchangeMap<OccurrenceBinding> &occurrences,
     const ExchangeMap<ExchangeFieldBinding> &fields, std::uint64_t capture_work) {
-  stage(std::move(contract),std::move(memberships),occurrences,fields);
+  PreparationWork setup(UINT64_MAX); // Standalone/adoption setup gate remains separate.
+  stage(std::move(contract),std::move(memberships),occurrences,fields,setup);
   return capture(projection,capture_work);
 }
 
 void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,
     std::shared_ptr<const MembershipFields> memberships,
     const ExchangeMap<OccurrenceBinding> &occurrences,
-    const ExchangeMap<ExchangeFieldBinding> &fields) {
+    const ExchangeMap<ExchangeFieldBinding> &fields, PreparationWork &meter) {
   valid_ = false;
+  meter.charge(1);
   contract_ = std::move(contract);
   memberships_ = std::move(memberships);
-  occurrences_ = occurrences;
-  fields_ = fields;
+  occurrences_.clear(); fields_.clear();
+  for (const auto &row : occurrences) {
+    meter.charge(sizeof(OccurrenceBinding)); meter.copy_key(row.occurrence);
+    occurrences_.push_back(row);
+  }
+  for (const auto &row : fields) {
+    meter.charge(sizeof(ExchangeFieldBinding)); meter.copy_key(row.field.object);
+    fields_.push_back(row);
+  }
 }
 
 CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std::uint64_t allowance) {

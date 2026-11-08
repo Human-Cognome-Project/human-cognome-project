@@ -24,7 +24,8 @@ struct ExchangeCoordinatorAccess {
       std::shared_ptr<const MembershipFields> memberships,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
-    c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields);
+    detail::PreparationWork meter(UINT64_MAX);
+    c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields,meter);
   }
   static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p, std::uint64_t work) {
     return c.bound_->capture(p,work);

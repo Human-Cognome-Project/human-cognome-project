@@ -1716,3 +1716,122 @@ These are bounded CPU contributions. Retained capacity is not RSS or complete al
 The next coding agent starts from current main with declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource policy and accounting. Charge before the guarded work/allocation, preserve ordinary rejection and exact retry, and count retained destinations once. Then continue admission/removal/focus/rebase/restart integration and same-execution controls. No full owner-resource, public-operation or integrated GPU qualification follows from this acceptance.
 
 Keep #229 open for further factoring guided by the resource/lifetime inventory. Broad AGENTS restructuring remains deferred until after the engine PoC. Analyst functions remain conceptually designed in the overall architecture; their implementation structure and calibration await engine results on real data structures.
+
+## Owner staging work allowance — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review, based on integrated main b37c73ec. Tested code:
+`b6321a4a5ffd6890192e38cba902d4ac91a8606d`; final documentation is separate.
+The private owner adds staging work before capture and command construction,
+covering retained declaration lookup, exposure/projection staging and initial
+binding-map copies. Phase results distinguish all three allowances. Whole
+parent-pool transfers are prepaid; rejected partial partitions remain retryable.
+
+The focused native CPU matrix uses the unchanged Taichi pin
+`5ba579a8a11255b7a258cde93801070956d81d57`, Clang/LLVM 15 and the CPU-only build,
+with CUDA_VISIBLE_DEVICES=-1 on the shared personal host. Five cases run at
+one/two workers using bulk/default and direct/compiler-no-unroll paths:
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit,
+and exchange_fields. Final result and manifest digest are recorded below.
+
+Both single-occurrence directions traverse every normalized staging charge
+boundary: parts 246 boundaries / 7,848 units; aggregate 225 / 8,284 in all four
+configurations. Every rejected attempt is followed by successful recovery.
+Zero, late-short and exact allowances also cover repeated single/four-occurrence
+edits; completed owner/native state and reserved backing remain unchanged.
+Existing capture/command boundaries, numerical, lifetime/allocation-failure and
+32-exchange/tick witnesses remain active. Work is structural and ABI/path-dependent,
+not time or memory. The next-charge hint is attempt-local; successful recovery
+can normalize the retained scratch order before an exact-charge replay.
+
+Raw evidence is contributor-local in staging-budget-b6321a4a (build, commands,
+case logs, toolchain, configuration and binary hashes). No full 115-test baseline,
+complete compiler audit, database or GPU rerun is claimed. Hosted checks remain
+authoritative for their scope. Adoption-byte/setup-work limits and combined
+caller/borrowed accounting remain open, including exception-runtime costs outside
+C++ new observation. This contribution does not qualify complete owner resources,
+remaining operations or public controls.
+
+Result: all 20 focused runs passed; all processes exited zero. SHA256SUMS verified;
+its SHA-256 is:
+
+    0ad3fb2fd10ae095974ad206eb478305a7f901e34d7a7a1dd094d4bc04677807
+
+The local archive is setup-evidence/staging-budget-b6321a4a.tar.gz. Raw files stay
+local; the committed digest identifies them and does not imply remote availability.
+
+Main advanced during validation with documentation-only onboarding #236 at
+c36901c289bba4b1545c537631c0c9a6e2904686. The contribution merges that history and
+moves its status into CURRENT-STATE; engine source/tests still match the tested
+code above. No duplicate native run was started for documentation integration.
+
+## Adoption input snapshot admission — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review on provisionally accepted #237 head
+`84a7f9c10af98a88c5db5aa4cfb4334654111efc`. The
+[#237 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/237#pullrequestreview-5818063830)
+permits this continuation; native run 42484820959 remains pending at the recorded
+check, smoke 42484821017 passed. No duplicate parent baseline was started. The
+CURRENT-STATE opening summary, immediate task and next row are reconciled to that
+disposition; integrated accepted code remains #235 until final acceptance/merge.
+
+Tested code: `ebe0644aad7d2344594128f15949fe243a41c88e`. Later commits are documentation
+only. The const-reference adoption factory admits caller/input-snapshot payload,
+inspection work and copy work before owner allocation or by-value argument copies.
+This is the input boundary only: later constructor allocations/setup and actual
+allocator/native peak remain ungated by this allowance. Complete means admission,
+not construction. See [scope and exclusions](../../docs/OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).
+
+The CPU-only Clang/LLVM 15 build uses Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, CUDA_VISIBLE_DEVICES=-1, on the shared
+personal host. The focused run comprises 53 projection checks plus twenty native
+case runs: exchange_owner, exchange_owner_multiple, exchange_bindings,
+exchange_commit and exchange_fields × workers 1/2 × bulk/default or
+--direct --compiler-no-unroll. Final aggregate result and manifest follow below.
+
+| Fixture | Inspection boundaries | Inspection work | Caller capacity charge | Snapshot payload/copy-work charge | Combined input bytes |
+|---|---:|---:|---:|---:|---:|
+| One selection | 1,161 | 1,905 | 27,367 | 25,890 | 53,257 |
+| Four selections | 1,713 | 2,923 | 45,015 | 39,651 | 84,666 |
+
+All four CPU configurations reproduce these input charges. Every inspection
+boundary rejects through the actual factory under the no-C++-new guard. Zero/short
+byte and copy allowances reject before allocation; exact allowances permit fresh
+adoption with unchanged native state. Capacity-only outer/nested changes affect
+caller charge, populated path and recipe-text changes affect snapshot size, and
+checked arithmetic preserves accumulators on overflow. Inspection failure exposes
+no partial byte report. The existing full allocation-failure traces remain 4,192
+and 7,856 sites; final-alias reclamation returns to zero tracked blocks. Those
+traces measure requested C++ allocation bytes separately from the input payload
+charge and are not constrained by it.
+
+Raw evidence stays local in adoption-input-ebe0644a (build, commands, projection
+and native logs, toolchain/configuration and binary hashes). No full 115-test
+baseline, complete compiler audit, database or GPU rerun is claimed. Source pins
+and a local manifest identify contributor evidence, not independently hosted
+results. Subsequent constructor-byte/setup-work gates, combined caller/borrowed
+resources, exception-runtime/allocator overhead and remaining operations stay open.
+
+Result: all twenty focused native runs and all 53 projection checks passed;
+all processes exited zero. SHA256SUMS verified; its SHA-256 is:
+
+    804a37628d0b2e54de00d9bfe4e6bf9f13e0d55c9f5f7360ca2f8ebc2a9ab886
+
+The contributor-local archive is setup-evidence/adoption-input-ebe0644a.tar.gz.
+The final source delta from the tested pin contains documentation only.
+
+<a id="maintainer-integrated-acceptance--237238-2026-11-08"></a>
+
+## Maintainer integrated acceptance — #237/#238 (2026-11-08)
+
+#237 staging work and #238 adoption input-snapshot admission are accepted and integrated with their original ancestry. Their prior provisional and contributor records above retain their original dates and scope.
+
+| PR | Reviewed source | Native run (passed) | Smoke run (passed) |
+|---|---|---|---|
+| #237 | `84a7f9c10af98a88c5db5aa4cfb4334654111efc` | 42484820959 | 42484821017 |
+| #238 | `5366dc6b275b15d14e5d112325845529c51a490e` | 42486720445 | 42486720490 |
+
+[Review #238](https://github.com/Human-Cognome-Project/human-cognome-project/pull/238#pullrequestreview-5818542620) records acceptance. The delta from contributor-tested `ebe0644aad7d2344594128f15949fe243a41c88e` to reviewed #238 contains only five Markdown files. Integration adds documentation reconciliation only beyond that reviewed source; no duplicate baseline CI is requested.
+
+All 12 jobs in [native run 42486720445](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42486720445) succeeded. Independently inspected regression logs 128751381895, 128751381972, 128751381922 and 128751381937 cover all 115 numbered tests exactly once (29/29/29/28). Database log 128751381866 records 180 warm-to-active integration checks and `addressed_reads=24 private_reads=0`. Compiler success is confirmed by hosted job status; contributor-local raw bundles were not inspected and the local matrix was not rerun by the maintainer.
+
+The input factory admits caller capacity plus logical snapshot payload and inspection/copy work before owner allocation/argument copying. This is not an allocator-capacity or complete constructor/setup bound. Subsequent constructor-byte/setup-work gates and combined caller/borrowed accounting remain next, with unwind/retry and single counting of moved snapshots/retained destinations. Remaining operations and #229 factoring stay open; GPU qualification is separate.

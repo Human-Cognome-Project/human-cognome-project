@@ -25,11 +25,110 @@ void allocation_lifetime_controls() {
           "allocation lifetime observer failed injected-failure control");
 }
 
+void owner_input_admission(Fixture &f, const assembly::LetterProjection &projection,
+    const std::vector<assembly::detail::OccurrenceBinding> &rows,
+    const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  const TickSnapshot before(f);
+  AdoptionInputResult full;
+  no_new([&] { full = Access::input_admission(projection,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX}); });
+  require(full.status == AdoptionInputStatus::Ok && full.phase == AdoptionInputPhase::Complete &&
+              full.caller_bytes >= full.snapshot_bytes && full.snapshot_bytes &&
+              full.required_bytes == full.caller_bytes+full.snapshot_bytes &&
+              full.copy.charged == full.snapshot_bytes && full.inspection.charged,
+          "adoption input charge omitted source/snapshot or work");
+  std::uint64_t boundaries = 0;
+  no_new([&] {
+    std::uint64_t allowance = 0;
+    while (allowance < full.inspection.charged) {
+      AdoptionInputResult result;
+      auto rejected = Access::adopt(f.h,projection,rows,fields,{UINT64_MAX,allowance,UINT64_MAX},result);
+      require(!rejected && result.status == AdoptionInputStatus::WorkExhausted &&
+                  result.phase == AdoptionInputPhase::Inspection && result.inspection.charged <= allowance &&
+                  result.inspection.next_required > allowance && result.inspection.next_required <= full.inspection.charged &&
+                  !result.caller_bytes && !result.snapshot_bytes && !result.required_bytes && !result.copy.charged,
+              "adoption inspection exhaustion allocated or published a partial charge");
+      allowance = result.inspection.next_required; ++boundaries;
+    }
+    for (auto limit : {UINT64_C(0),full.required_bytes-1}) {
+      AdoptionInputResult result;
+      auto rejected = Access::adopt(f.h,projection,rows,fields,{limit,full.inspection.charged,UINT64_MAX},result);
+      require(!rejected && result.status == AdoptionInputStatus::ByteExhausted &&
+                  result.phase == AdoptionInputPhase::Copy && result.required_bytes == full.required_bytes &&
+                  !result.copy.charged, "adoption byte exhaustion copied inputs or allocated owner");
+    }
+    for (auto limit : {UINT64_C(0),full.copy.charged-1}) {
+      AdoptionInputResult result;
+      auto rejected = Access::adopt(f.h,projection,rows,fields,{full.required_bytes,full.inspection.charged,limit},result);
+      require(!rejected && result.status == AdoptionInputStatus::WorkExhausted &&
+                  result.phase == AdoptionInputPhase::Copy && !result.copy.charged &&
+                  result.copy.next_required == full.copy.charged,
+              "adoption copy exhaustion allocated before admission");
+    }
+    PreparationWork meter(UINT64_MAX);
+    auto total = UINT64_MAX;
+    bool overflow = false;
+    try { input_add(total,1,meter); } catch (const PreparationStop &stop) {
+      overflow = stop.result.status == PreparationStatus::Overflow;
+    }
+    require(overflow && total == UINT64_MAX, "input byte sum overflow changed its accumulator");
+    total = 0; overflow = false;
+    try { input_elements(total,UINT64_MAX,2,meter); } catch (const PreparationStop &stop) {
+      overflow = stop.result.status == PreparationStatus::Overflow;
+    }
+    require(overflow && !total, "input byte product overflow changed its accumulator");
+  });
+  // Capacity-only changes are caller occupancy, never copied logical payload.
+  auto spare_rows = rows;
+  const auto row_charge = Access::input_admission(projection,spare_rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  const auto old_capacity = spare_rows.capacity();
+  spare_rows.reserve(old_capacity+17);
+  const auto slack = Access::input_admission(projection,spare_rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  require(slack.caller_bytes-row_charge.caller_bytes ==
+              (spare_rows.capacity()-old_capacity)*sizeof(OccurrenceBinding) &&
+              slack.snapshot_bytes == row_charge.snapshot_bytes && slack.copy.charged == row_charge.copy.charged,
+          "input gate omitted caller slack or copied unused rows");
+  auto nested = rows;
+  const auto nested_before = Access::input_admission(projection,nested,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  const auto path_capacity = nested.front().occurrence.source.path.capacity();
+  nested.front().occurrence.source.path.reserve(path_capacity+19);
+  const auto nested_after = Access::input_admission(projection,nested,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  require(nested_after.caller_bytes-nested_before.caller_bytes ==
+              (nested.front().occurrence.source.path.capacity()-path_capacity)*sizeof(std::uint32_t) &&
+              nested_after.snapshot_bytes == nested_before.snapshot_bytes,
+          "input gate omitted nested caller slack");
+  nested.front().occurrence.source.path.push_back(3);
+  const auto populated = Access::input_admission(projection,nested,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  require(populated.caller_bytes == nested_after.caller_bytes &&
+              populated.snapshot_bytes-nested_after.snapshot_bytes == sizeof(std::uint32_t),
+          "input snapshot charge omitted populated nested path");
+  auto text_projection = projection;
+  auto &text = const_cast<warm::Bundle &>(text_projection.recipe()).tools.front().recipe;
+  const auto text_before = Access::input_admission(text_projection,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  const auto text_capacity = text.capacity();
+  text.append(33,'x');
+  const auto text_after = Access::input_admission(text_projection,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+  require(text_after.snapshot_bytes-text_before.snapshot_bytes == 33 &&
+              text_after.caller_bytes-text_before.caller_bytes == text.capacity()-text_capacity,
+          "input snapshot charge omitted recipe text or confused size with capacity");
+  AdoptionInputResult result;
+  auto retry = Access::adopt(f.h,projection,rows,fields,
+      {full.required_bytes,full.inspection.charged,full.copy.charged},result);
+  require(retry && result.status == AdoptionInputStatus::Ok && !Access::pending(*retry) &&
+              before == TickSnapshot(f), "exact adoption input retry failed or changed native state");
+  std::cout << "adoption_input,selections=" << projection.recipe().selections.size()
+            << ",inspection_boundaries=" << boundaries << ",inspection_work=" << full.inspection.charged
+            << ",caller_bytes=" << full.caller_bytes << ",snapshot_bytes=" << full.snapshot_bytes
+            << ",required_bytes=" << full.required_bytes << " PASS\n";
+}
+
 void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   namespace A = allocation_lifetime;
+  owner_input_admission(f,projection,rows,fields);
   allocation_lifetime_controls();
   const TickSnapshot before(f);
   const auto generation = f.h.prepared_storage().generation;

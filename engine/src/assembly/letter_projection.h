@@ -6,7 +6,7 @@
 #include "warm/values.h"
 
 namespace assembly {
-namespace detail { class ExchangeOwner; }
+namespace detail { class ExchangeOwner; class PreparationWork; }
 
 struct InitialState {
   warm::Point position, velocity;
@@ -103,8 +103,10 @@ class LetterProjection {
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
   void reserve_exposure();
-  void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure) const;
+  void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
+                        detail::PreparationWork &) const;
   ProjectionStorage storage() const;
+  ProjectionStorage storage(detail::PreparationWork *, bool logical) const;
   warm::Uuid study_;
   warm::Bundle recipe_;
   std::vector<warm::Exposure> exposures_;

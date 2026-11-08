@@ -42,23 +42,37 @@ struct ExchangeOwnerAccess {
   }
   static const auto &declarations(const detail::ExchangeOwner &o) { return o.declarations_; }
   static auto declaration(const detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {
-    return o.declaration(key,target);
+    detail::PreparationWork meter(UINT64_MAX); return o.declaration(key,target,meter);
   }
-  static auto adopt(field::Harness &h, LetterProjection p,
-      std::vector<detail::OccurrenceBinding> rows, std::vector<detail::ExchangeFieldBinding> fields) {
-    return std::unique_ptr<detail::ExchangeOwner>(
-        new detail::ExchangeOwner(h, std::move(p), std::move(rows), std::move(fields)));
+  static auto input_admission(const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields, detail::AdoptionInputBudget budget) {
+    return detail::ExchangeOwner::input_admission(p,rows,fields,budget);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields,
+      detail::AdoptionInputBudget budget, detail::AdoptionInputResult &result) {
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields) {
+    detail::AdoptionInputResult result;
+    auto owner = adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},result);
+    if (!owner) throw warm::Error("test owner input admission failed");
+    return owner;
   }
   static void prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
       const std::vector<detail::ExchangeIncoming> &incoming,
       const std::vector<detail::ExchangeNewField> &fields) {
-    if (o.prepare(key,target,incoming,fields,UINT64_MAX,UINT64_MAX).status != detail::CaptureStatus::Ok)
+    if (o.prepare(key,target,incoming,fields,UINT64_MAX,UINT64_MAX,UINT64_MAX).status != detail::CaptureStatus::Ok)
       throw warm::Error("test owner capture work overflow");
   }
   static auto prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
       const std::vector<detail::ExchangeIncoming> &incoming,
       const std::vector<detail::ExchangeNewField> &fields, std::uint64_t capture_work) {
-    const auto result = o.prepare(key,target,incoming,fields,capture_work,UINT64_MAX);
+    const auto result = o.prepare(key,target,incoming,fields,UINT64_MAX,capture_work,UINT64_MAX);
     if (result.phase == detail::PreparationPhase::Commands) throw warm::Error("test command work overflow");
     return result.capture;
   }
@@ -66,13 +80,19 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::ExchangeIncoming> &incoming,
       const std::vector<detail::ExchangeNewField> &fields,
       std::uint64_t capture_work, std::uint64_t command_work) {
-    return o.prepare(key,target,incoming,fields,capture_work,command_work);
+    return o.prepare(key,target,incoming,fields,UINT64_MAX,capture_work,command_work);
+  }
+  static auto prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
+      const std::vector<detail::ExchangeIncoming> &incoming,
+      const std::vector<detail::ExchangeNewField> &fields,
+      std::uint64_t staging, std::uint64_t capture, std::uint64_t commands) {
+    return o.prepare(key,target,incoming,fields,staging,capture,commands);
   }
   static const auto &projection(const detail::ExchangeOwner &o) { return *o.projection_; }
   static const auto &spare_projection(const detail::ExchangeOwner &o) { return *o.prospective_; }
   static auto storage(const detail::ExchangeOwner &o) { return o.projection_storage(); }
   static void stage_projection(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {
-    o.prepare_projection(key,target);
+    detail::PreparationWork meter(UINT64_MAX); o.prepare_projection(key,target,meter);
   }
   static const auto &mappings(const detail::ExchangeOwner &o) { return o.occurrences_; }
   static const auto &fields(const detail::ExchangeOwner &o) { return o.fields_; }

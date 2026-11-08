@@ -1,14 +1,15 @@
 #pragma once
 #include "assembly/exchange_coordinator.h"
+#include "assembly/adoption_input.h"
 
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
 namespace detail {
-enum class PreparationPhase { Capture, Commands, Complete };
+enum class PreparationPhase { Staging, Capture, Commands, Complete };
 struct OwnerPreparationResult {
   PreparationStatus status{PreparationStatus::Ok};
-  PreparationPhase phase{PreparationPhase::Capture};
-  PreparationResult capture, commands;
+  PreparationPhase phase{PreparationPhase::Staging};
+  PreparationResult staging, capture, commands;
 };
 // Host retained-capacity charge. Shared pointees are counted once; allocator
 // control blocks, setup peak and borrowed execution are separate surfaces.
@@ -27,14 +28,20 @@ struct OwnerStorage {
 class ExchangeOwner {
  private:
   friend struct assembly::testing::ExchangeOwnerAccess;
+  static AdoptionInputResult input_admission(const LetterProjection &,
+      const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
+      AdoptionInputBudget);
+  static std::unique_ptr<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
+      const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
+      AdoptionInputBudget, AdoptionInputResult &);
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
                 std::vector<ExchangeFieldBinding>);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
-               std::uint64_t capture_work, std::uint64_t command_work);
+               std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work);
   HierarchySealResult seal(const field::LiveRefreshSpec &, HierarchySealBudget);
-  void prepare_projection(const OccurrenceKey &, warm::Exposure);
-  std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;
+  void prepare_projection(const OccurrenceKey &, warm::Exposure, PreparationWork &);
+  std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure, PreparationWork &) const;
   ProjectionStorage projection_storage() const;
   OwnerStorage storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);

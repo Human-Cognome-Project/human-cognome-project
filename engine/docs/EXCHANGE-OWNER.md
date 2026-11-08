@@ -70,11 +70,11 @@ Capture charges structural row work, variable-length identity comparisons, mask
 fills and final validation before performing them. Exhaustion/overflow returns
 with an invalid binding and no pending owner operation; partial candidate buffers
 are overwritten by retry. Committed identity, reports and native state are unchanged.
-This does not yet gate declaration selection or projection/map staging. Later
+The separate staging gate now covers declaration selection and projection/map staging. Later
 command construction now has its own allowance. See [capture-work scope](OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review),
 including setup's separate allowance and exception-runtime accounting limits.
 
-Preparation returns separate capture/command results and a phase identifying
+Preparation returns separate staging/capture/command results and a phase identifying
 where it stopped, or `Complete`. Command-work exhaustion leaves the coordinator
 consumed/unsealed and the owner non-pending, even though captured source metadata
 may be valid. The candidate's partial commands/maps are overwritten on retry;
@@ -280,3 +280,18 @@ backing, and rejects use of that catalogue as an ordinary live binding.
 [Local evidence](../tests/admission/README.md) records source and configurations.
 This CPU scope does not qualify GPU behavior, all operation rows, full owner
 resources, browser control or the integrated local study.
+
+The staging-work contribution adds an explicit allowance before capture and command
+construction, with a separate result and stopping phase. It gates declaration
+selection, projection flag/parent-pool updates and initial binding maps. Complete
+parent-pool transfers are prepaid so exhaustion cannot strand moved-from rows;
+retry rebuilds partial metadata without publishing it. See the
+[charge boundaries and limits](OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review).
+Adoption and combined memory policy remain separate outstanding work.
+
+Adoption now enters through a const-reference factory with explicit input byte,
+inspection-work and copy-work allowances before owner allocation or argument
+copies. Budget rejection returns no owner; exact input admission permits the
+existing constructor and its unwind behavior. This gates only caller/input-snapshot
+payload, not later constructor allocations or complete setup work. See
+[input admission scope](OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).

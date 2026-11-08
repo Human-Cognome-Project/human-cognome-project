@@ -6,6 +6,65 @@ namespace assembly::detail {
 namespace {
 void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
 }
+AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &projection,
+    const std::vector<OccurrenceBinding> &rows, const std::vector<ExchangeFieldBinding> &fields,
+    AdoptionInputBudget budget) {
+  AdoptionInputResult result;
+  PreparationWork inspection(budget.inspection_work), copy(budget.copy_work);
+  try {
+    inspection.charge(1);
+    const auto map = [&](const auto &values, bool logical, const auto &uuid) {
+      inspection.charge(1); inspection.elements(values.size(),1);
+      std::uint64_t bytes = sizeof(values);
+      input_elements(bytes,logical ? values.size() : values.capacity(),sizeof(values[0]),inspection);
+      for (const auto &row : values) {
+        inspection.charge(1);
+        const auto &text = uuid(row).str();
+        input_add(bytes,logical ? text.size() : text.capacity(),inspection);
+        input_add(bytes,1,inspection);
+        inspection.charge(1);
+        const auto &key = key_buffer(row);
+        input_elements(bytes,logical ? key.size() : key.capacity(),sizeof(key[0]),inspection);
+      }
+      return bytes;
+    };
+    const auto occurrence_uuid = [](const auto &row) -> const auto & { return row.occurrence.study; };
+    const auto field_uuid = [](const auto &row) -> const auto & { return row.field.object.scope; };
+    auto caller = projection.storage(&inspection,false).charged_bytes();
+    input_add(caller,map(rows,false,occurrence_uuid),inspection);
+    input_add(caller,map(fields,false,field_uuid),inspection);
+    auto snapshot = projection.storage(&inspection,true).charged_bytes();
+    input_add(snapshot,map(rows,true,occurrence_uuid),inspection);
+    input_add(snapshot,map(fields,true,field_uuid),inspection);
+    auto total = caller; input_add(total,snapshot,inspection);
+    result.inspection = inspection.result();
+    result.caller_bytes = caller; result.snapshot_bytes = snapshot; result.required_bytes = total;
+    result.phase = AdoptionInputPhase::Copy;
+    if (total > budget.bytes) { result.status = AdoptionInputStatus::ByteExhausted; return result; }
+    copy.charge(snapshot);
+    result.copy = copy.result();
+    result.phase = AdoptionInputPhase::Complete;
+    return result;
+  } catch (const PreparationStop &stop) {
+    result.status = stop.result.status == PreparationStatus::Overflow
+        ? AdoptionInputStatus::Overflow : AdoptionInputStatus::WorkExhausted;
+    if (result.phase == AdoptionInputPhase::Inspection) result.inspection = stop.result;
+    else result.copy = stop.result;
+    return result;
+  }
+}
+
+std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
+    const LetterProjection &projection, const std::vector<OccurrenceBinding> &rows,
+    const std::vector<ExchangeFieldBinding> &fields, AdoptionInputBudget budget,
+    AdoptionInputResult &result) {
+  // References cross this gate. No by-value argument copy or owner allocation
+  // may precede it. Later constructor setup remains a separately scoped domain.
+  result = input_admission(projection,rows,fields,budget);
+  if (result.status != AdoptionInputStatus::Ok) return {};
+  return std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields));
+}
+
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields)
     : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
@@ -40,15 +99,22 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
   completed_ = true;
 }
 
-void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target) {
-  projection_->prepare_exposure(*prospective_,owner,target);
+void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposure target, PreparationWork &meter) {
+  projection_->prepare_exposure(*prospective_,owner,target,meter);
 }
 
 std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
-    const OccurrenceKey &owner, warm::Exposure target) const {
+    const OccurrenceKey &owner, warm::Exposure target, PreparationWork &meter) const {
   for (const auto &entry : declarations_)
-    if (entry->owner() == owner && entry->to() == target) {
-      need(entry->from() == projection_->exposure(owner.source.entry),
+    if (meter.equal(entry->owner(),owner) && entry->to() == target) {
+      bool current = false;
+      for (std::size_t i = 0; i < projection_->recipe_.selections.size(); ++i) {
+        meter.charge(1);
+        if (projection_->recipe_.selections[i].entry == owner.source.entry) {
+          current = entry->from() == projection_->exposures_[i]; break;
+        }
+      }
+      need(current,
            "exchange requires the other declared alternative");
       return entry;
     }
@@ -63,22 +129,32 @@ ProjectionStorage ExchangeOwner::projection_storage() const {
 
 OwnerPreparationResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::Exposure target,
     const std::vector<ExchangeIncoming> &incoming, const std::vector<ExchangeNewField> &fields,
-    std::uint64_t capture_work, std::uint64_t command_work) {
+    std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work) {
   // Preparation reuses reserved host metadata. Failure discards pending intent,
   // never the committed projection, mappings or last completed report.
   completed_ = true;
+  plan_->consumed_ = true;
+  plan_->sealed_ = false;
+  plan_->bound_->valid_ = false;
+  PreparationWork meter(staging_work);
+  try {
+  meter.charge(1);
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
-  auto selected = declaration(owner, target);
-  prepare_projection(owner,target);
-  const auto captured = plan_->bound_->prepare(*projection_, std::move(selected), memberships_,
-                                              occurrences_, fields_,capture_work);
+  auto selected = declaration(owner, target,meter);
+  prepare_projection(owner,target,meter);
+  plan_->bound_->stage(std::move(selected),memberships_,occurrences_,fields_,meter);
+  const auto staged = meter.result();
+  const auto captured = plan_->bound_->capture(*projection_,capture_work);
   if (captured.status != CaptureStatus::Ok)
-    return {captured.status,PreparationPhase::Capture,captured,{}};
+    return {captured.status,PreparationPhase::Capture,staged,captured,{}};
   const auto commands = plan_->prepare(incoming, fields,command_work);
   if (commands.status != PreparationStatus::Ok)
-    return {commands.status,PreparationPhase::Commands,captured,commands};
+    return {commands.status,PreparationPhase::Commands,staged,captured,commands};
   completed_ = false;
-  return {PreparationStatus::Ok,PreparationPhase::Complete,captured,commands};
+  return {PreparationStatus::Ok,PreparationPhase::Complete,staged,captured,commands};
+  } catch (const PreparationStop &stop) {
+    return {stop.result.status,PreparationPhase::Staging,stop.result,{},{}};
+  }
 }
 
 HierarchySealResult ExchangeOwner::seal(const field::LiveRefreshSpec &hierarchy,
