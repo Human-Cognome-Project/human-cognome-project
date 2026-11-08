@@ -370,7 +370,8 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
     require(full.status == ReservationStatus::Ok && full.live_bytes && full.peak_bytes >= full.live_bytes &&
                 full.charged_work > full.live_bytes &&
                 full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
-                    storage.declarations.vector_bytes+storage.declarations.object_bytes+storage.memberships.object_bytes,
+                    Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
+                    storage.declarations.object_bytes+storage.memberships.object_bytes,
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
