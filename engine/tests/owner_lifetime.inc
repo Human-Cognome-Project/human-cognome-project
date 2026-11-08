@@ -425,7 +425,26 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
   try {
     auto owner = Access::adopt(f.h,projection,rows,fields);
     retained = A::counts;
-    capacity_charge = Access::resources(*owner).total().charged_bytes();
+    const auto census = Access::resources(*owner);
+    capacity_charge = census.total().charged_bytes();
+    // On this qualified standard library allocate_shared colocates each object
+    // and control block. Find its whole actual new request independently of the
+    // reservation allocator; do not guess control-block layout or use nested census.
+    const auto containing_request = [](const void *object) {
+      const auto address = reinterpret_cast<std::uintptr_t>(object);
+      for (const auto &entry : A::table) {
+        const auto base = reinterpret_cast<std::uintptr_t>(entry.pointer);
+        if (entry.pointer && address >= base && address-base < entry.bytes) return entry.bytes;
+      }
+      throw std::runtime_error("shared pointee missing from independent allocation observer");
+    };
+    std::uint64_t shared_bytes = containing_request(Access::memberships(*owner).get());
+    for (const auto &p : Access::declarations(*owner)) shared_bytes += containing_request(p.get());
+    const auto table_bytes = Access::declarations(*owner).capacity()*
+        sizeof(std::shared_ptr<const assembly::LetterExchangeContract>);
+    require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes,
+            "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
     auto declaration = Access::declarations(*owner).front();
