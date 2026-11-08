@@ -80,7 +80,9 @@ payload and inspection/copy work before owner allocation or by-value input copie
 This input gate does not bound subsequent constructor allocations/setup or actual
 allocator/native peak. Complete means input admission, not construction.
 
-**Active contribution:** a shared allocator domain now admits actual binding/coordinator buffer requests, including temporary bindings, before allocation; review is pending. See [scope and exclusions](../engine/docs/OWNER-RESOURCES.md#bindingcoordinator-allocation-domain-contribution-awaiting-review).
+The binding/coordinator allocator domain at #239 head `df3625fffbf37118a40d5c702005f834a626f3a5` is [provisionally accepted](https://github.com/Human-Cognome-Project/human-cognome-project/pull/239#pullrequestreview-5818720258). Continue on this dependency without duplicating its hosted run; integrated acceptance remains through #238.
+
+**Active contribution:** map outer stores and explicit setup copies now join that domain. Nested string/path/address allocations remain outside it. See [scope and exclusions](../engine/docs/OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).
 
 **Next coding-agent task:** remaining constructor-byte/setup-work limits and
 combined caller/borrowed resource accounting. Gate before allocation/work, preserve

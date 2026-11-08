@@ -1891,3 +1891,65 @@ SHA256SUMS verified; its SHA-256 is:
 Contributor-local archive: setup-evidence/adoption-reservation-09858db0.tar.gz.
 The final delta from tested code changes documentation only. Raw evidence remains
 local; this manifest does not make it remotely available or replace hosted CI.
+
+## Map outer-store allocation domain — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review on provisionally accepted #239 at
+`df3625fffbf37118a40d5c702005f834a626f3a5`. The
+[#239 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/239#pullrequestreview-5818720258)
+found no blockers and permits this continuation. At the recorded check smoke
+42499395649 passed and native 42499395644 remained in progress; no duplicate
+parent baseline was started. Integrated acceptance remains through #238.
+CURRENT-STATE and the continuation entry reflect this provisional dependency.
+
+Tested source: `66ec7c761bcf9155b921319a17468b5c48e851ed`. Final changes after this
+pin are documentation only. All six retained map outer vectors and initial owner
+map copies now attach to the reservation domain, together with every temporary
+validation map and its explicit trusted/staging copies. Nested allocated UUID,
+path and address payload is excluded; fixed nested object headers are inside the
+outer slot size. Plain copied snapshots detach from the source owner's domain,
+while setup-owned copies explicitly select one. See [scope and lifetime](../../docs/OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15, Taichi 5ba579a8a11255b7a258cde93801070956d81d57,
+CUDA_VISIBLE_DEVICES=-1, shared personal host. The focused matrix is
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit and
+exchange_fields × workers 1/2 × bulk/default or --direct --compiler-no-unroll.
+The final aggregate result and verified manifest are recorded below.
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Domain live/peak bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 20 | 29 | 172,368 / 172,368 | 241,256 |
+| Four selections | 20 | 59 | 172,368 / 172,368 | 453,816 |
+
+All four configurations reproduce these charges. Every rejected constructor
+reclaims domain and observer-tracked allocations; exact allowances retry with an
+unchanged native snapshot. Controls reject before outer allocation/nested-row
+construction, preserve existing backing and logical rows on growth denial, verify
+outer bytes separately from larger outer-plus-nested observed bytes, check bounded
+copies and detached snapshots after source-domain destruction, retain destination
+allocators on assignment and propagate them with swapped backing. The retained
+domain total equals six outer map capacities plus binding/coordinator buffers,
+without counting nested payload or the census twice.
+
+The full allocation-failure traces remain 4,193/7,857 sites, with final-alias
+reclamation and existing repeated exchange/tick/numerical witnesses. The additional
+allocator pointers add 48 observed retained bytes; whole-adoption observed requested
+peaks are 277,082 / 333,741 bytes and remain distinct from this selected-domain peak.
+Cumulative work includes released setup copies and growth blocks; it is not peak
+memory or allocator CPU time.
+
+Evidence remains contributor-local in map-store-domain-66ec7c76 (build, commands,
+twenty case logs, configuration/toolchain and binary hashes). No full 115-test
+baseline, complete compiler audit, database or GPU run is claimed. Remaining
+nested-key, projection, catalogue/declaration, object/control-block and graph
+allocation/work limits, allocator/exception-runtime overhead and combined borrowed
+native accounting remain open, ahead of remaining-operation integration.
+
+Result: all 20 focused native runs passed; every process exited zero. SHA256SUMS
+verified; its SHA-256 is:
+
+    6a6aba0e91a30353b81b94be3deb3931a98e77cd44abae82458be03be8ea2306
+
+Contributor-local archive: setup-evidence/map-store-domain-66ec7c76.tar.gz.
+The final delta from tested code changes documentation only. The local manifest
+identifies retained evidence and does not imply remote availability or hosted success.
