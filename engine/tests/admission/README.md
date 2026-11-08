@@ -1970,3 +1970,77 @@ The selected binding/coordinator buffer domain (#239) and map outer-store extens
 All 12 jobs in [native run 42503182912](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42503182912) passed. Independently inspected regression logs 128801943220, 128801943268, 128801943218 and 128801943214 cover all 115 tests exactly once (29/29/29/28). Database log 128801943213 records 180 checks and `addressed_reads=24 private_reads=0`. Compiler success is verified by hosted status. Contributor-local raw bundles were not inspected or rerun by the maintainer.
 
 Accepted scope includes actual requests for selected buffers, all six map outer stores and explicit setup copies, old/new growth overlap, domain lifetime through unwind and allocator-aware copy/assignment/swap behavior. Independent snapshots detach from the owner's domain. Separately allocated nested keys, projection, catalogue/declaration, object/control-block and graph-temporary resources remain next, followed by combined caller/borrowed accounting and remaining-operation integration. Do not double-count slot headers, moved snapshots or the domain report alongside retained capacity. No complete-constructor, machine-memory, GPU or performance qualification follows. #229 remains open.
+
+## Shared owner allocation domain — contributor CPU evidence (2026-11-08)
+
+Contribution from merged main `56a195f4b5a5276c3e31a6b8d7b159c4d9d69767`,
+following accepted #239/#240 and the [maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/240#pullrequestreview-5819269075).
+No accepted baseline was rerun. This contribution adds actual allocation limits
+for the declaration pointer table and shared declaration/catalogue object and
+control-block requests. The allocator holds the domain through final strong/weak
+release; standalone table snapshots detach their backing allocation domain.
+Nested payload, preceding graph/construction work and remaining unique objects
+are outside this increment. See [exact scope](../../docs/OWNER-RESOURCES.md#shared-object-allocation-domain-contribution-awaiting-review).
+
+Final tested source: `c6f9dd993653ec246b5d7266600e5c262393b4ff`.
+Documentation changes after that pin do not alter executable source. CPU-only
+Clang/LLVM 15 with Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+CUDA_VISIBLE_DEVICES=-1, shared personal host. The focused matrix is
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit and
+exchange_fields × workers 1/2 × bulk/default or --direct --compiler-no-unroll.
+
+The initial `91c698e1` run stopped all four configurations at a new owner
+assertion: it incorrectly included nested declaration vector capacity in the
+selected outer-table/shared-object sum. Shared/weak lifetime controls had passed.
+`9492e975` corrects that test boundary; `c6f9dd99` adds an exact reconciliation
+against independently observed allocation blocks containing each shared pointee.
+The failed logs/manifest are preserved in shared-owner-domain-91c698e1; their
+manifest SHA-256 is 1b11eb18b2ed11d5a8e3375c965caf0e6ef45590e5f5036e439746cf931e84c9.
+The intermediate corrected source was built; the final source includes the
+independent observer assertion and is the qualification pin.
+
+Controls compare an aligned shared object's complete request against the separate
+allocation observer, reject before construction, retain charge through weak
+references, release the domain without a cycle, preserve prepaid work on a throwing
+constructor, retry exactly, and detach copied table backing. The owner witness
+retains declaration/catalogue aliases after owner destruction, then retains a weak
+catalogue after pointee destruction and verifies final charge release. Actual
+retained selected bytes are reconciled exactly with independently observed shared
+requests plus table/map/buffer capacity, without adding nested census payload.
+The observer reconciliation qualifies this standard library's colocated shared
+allocation layout; production admission uses each actual rebound allocation type.
+
+All four configurations passed both owner fixtures with the same charges:
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Domain live/peak bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 22 | 34 | 173,072 / 173,072 | 241,976 |
+| Four selections | 25 | 72 | 174,704 / 174,704 | 456,264 |
+
+Every budget rejection reclaims all observed allocations, keeps native state
+unchanged and permits exact fresh retry. Full allocation-failure traces cover
+4,193 / 7,857 sites, with zero remaining blocks. Whole-adoption retained requested
+bytes are 276,625 / 331,883; observed peaks are 277,170 / 333,925. These are separate
+from selected domain bytes and the conservative retained-capacity census
+(277,249 / 332,315), and must not be added together. Allocation work includes
+released temporary buffers and old table blocks; it is not simultaneous peak or
+allocator CPU time. New shared allocator/domain references add 88 / 184 observed
+retained bytes compared with #240, without adding allocation sites.
+
+All 20 focused native runs passed; all processes exited zero. The run retained
+one non-fatal offline-cache lock warning after a passing exchange-commit case;
+no cache cleanup or test restart was needed. The final SHA256SUMS verified, with
+SHA-256:
+
+    607a2589a4bd4d98cdfb615faa4ff41e91c382133048d41a1184c07a94a42d24
+
+Contributor-local evidence: shared-owner-domain-c6f9dd99 (build, exact commands,
+twenty logs, source/configuration/toolchain and binary hashes). Archive:
+setup-evidence/shared-owner-domain-c6f9dd99.tar.gz. The initial failed archive is
+setup-evidence/shared-owner-domain-91c698e1-failed.tar.gz. Raw bundles remain local;
+their hashes identify evidence, not remote availability or hosted acceptance.
+
+No full 115-test baseline, full compiler audit, database or GPU run is claimed.
+Nested payload, projection and other unique objects, graph temporaries, complete
+setup-work limits, allocator/domain overhead and combined caller/borrowed resources
+remain open before remaining-operation integration. #229 remains open.

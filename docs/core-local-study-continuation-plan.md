@@ -81,6 +81,8 @@ copies and explicit temporary validation/staging maps. Detached caller snapshots
 do not borrow the owner's domain. Growth admits old/new overlap and constructor
 unwind reclaims attached allocations.
 
+**Active contribution:** shared declaration/catalogue object and control-block requests plus declaration-table backing, with domain lifetime through final weak release. Nested payload and preceding graph/construction work are excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#shared-object-allocation-domain-contribution-awaiting-review). Integrated acceptance remains through #240.
+
 **Next coding-agent task:** remaining nested UUID/path/address payload, projection,
 catalogue/declaration, object/control-block and graph-temporary allocation/setup
 limits, then combined caller/borrowed resource accounting. Gate before allocation

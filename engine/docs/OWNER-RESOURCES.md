@@ -106,7 +106,7 @@ simultaneous allocations during the following phases in `exchange_owner.cpp`:
    and new allocations simultaneously; final `capacity()` omits the old blocks.
 6. The persistent coordinator/binding allocate their buffers. Reservation of all
    three occurrence/field map pairs grows outer and nested backing. Declaration
-   table growth and all `make_shared` control blocks are additional setup costs.
+   table growth and shared object/control blocks are additional setup costs.
 7. Constructor parameters and last temporaries release before adoption returns.
    The final report covers surviving owner payload capacity, not this peak.
 
@@ -327,7 +327,63 @@ swaps. The one/four-owner byte/work boundary sweeps now cover these requests tog
 with the accepted buffer domain, followed by exact retry, full failure/reclamation
 witnesses and repeated exchanges. Underlying allocator/exception overhead, nested
 payload, projection, catalogue/declaration, object/control-block and graph-temporary
-limits plus borrowed-resource accounting remain open.
+limits plus borrowed-resource accounting remained open at the #240 boundary.
+
+### Shared object allocation domain (contribution awaiting review)
+
+The declaration pointer table and `allocate_shared` requests for the two immutable
+declarations per selection and the membership catalogue now use the owner's
+reservation domain. The table charges its actual backing capacity, including
+old/new overlap while growing. Standard-library allocator rebinding supplies the
+actual shared allocation size, including the object, control block and any padding
+inside that request. No guessed control-block size or second `sizeof(pointee)`
+charge is added. Underlying heap metadata/alignment overhead remains excluded.
+
+`SharedReservationAllocator` owns a shared reference to the domain. The owner and
+factory also hold it; there is no domain-to-pointee ownership edge or cycle. This
+keeps accounting valid when declaration/catalogue aliases outlive the owner, and
+when weak references retain their control-block allocation after object destruction.
+The charge is released on allocator deallocation, not merely on last strong
+reference release. The allocator copy used for that deallocation keeps the domain
+alive through the update. Raw allocators for owner-local maps/buffers retain their
+existing member-order/unwind lifetime rule.
+Reference release remains within the existing exclusive synchronous access
+contract; shared ownership does not make the domain's counters thread-safe.
+
+The declaration table's ordinary copy constructor selects a detached allocator.
+Its independent backing is outside the source owner's quota, while copied shared
+pointers still keep the original shared allocation and domain alive. Assignment
+retains the destination allocator; move assignment and swap propagate it with the
+backing. Owner preparation continues to reuse its retained table and shared data.
+
+The domain itself is now created with `make_shared`; its object and own control
+block remain fixed overhead outside its quota. The retained census includes its
+object and embedded smart pointers, but still excludes control-block byte sizes.
+`shared_allocations` continues to count only declaration/catalogue allocations,
+not this accounting-support allocation. The actual domain report overlaps with
+already-counted table capacity and pointee objects: do not add it to the census.
+
+This bounds allocation requests, not the preceding `MembershipFields::collect`,
+declaration construction/copies or their nested vectors/UUID/path/address payload.
+Those arguments can allocate before `allocate_shared` is called. Projection and
+other unique objects, graph temporaries, full setup work, domain overhead and
+combined caller/borrowed accounting remain open. This is not complete catalogue,
+declaration, constructor or machine-resource qualification.
+
+Tests compare an aligned shared object/control-block request with the independent
+allocation observer, retain its charge through strong and weak aliases, and check
+domain release without a cycle. Zero allowance rejects before construction;
+constructor failure releases bytes without refunding request work; exact fresh
+allowances retry. Detached table copies and rejected growth preserve their data.
+Owner tests retain actual declaration/catalogue aliases and a weak catalogue after
+owner destruction, verify staged charge release, sweep constructor byte/work
+boundaries, and retain full allocation-failure and repeated-operation witnesses.
+On the qualified standard library, the independent observer also locates the
+actual allocation containing each shared pointee and reconciles the exact sum
+with table/map/buffer capacities against retained domain bytes. That witness
+checks the observed colocated object/control-block layout; the production
+allocator instead admits every request using the library's actual rebound type.
+
 ## Work inventory and remaining budget gate
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
