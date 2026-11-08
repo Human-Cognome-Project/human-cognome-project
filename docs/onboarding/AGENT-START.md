@@ -45,6 +45,13 @@ and [resource inventory](../../engine/docs/OWNER-RESOURCES.md) define the remain
 #229 remains open for further factoring guided by that inventory. #111/#123 remain
 held and draft #75 deferred. Actual GPU qualification remains separate.
 
+
+Active contribution (2026-11-08, awaiting review): declaration/projection/map
+staging now has a separate structural-work allowance with safe partial-pool retry.
+See [resource inventory](../../engine/docs/OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review) for boundaries and limits. After review, continue
+adoption-byte/setup-work gates and combined caller/borrowed resource accounting,
+then remaining-operation integration. Accepted baseline remains #235.
+
 ## Authority and reading order
 
 | Question | Governing source |

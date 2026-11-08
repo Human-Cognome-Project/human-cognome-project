@@ -1716,3 +1716,45 @@ These are bounded CPU contributions. Retained capacity is not RSS or complete al
 The next coding agent starts from current main with declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource policy and accounting. Charge before the guarded work/allocation, preserve ordinary rejection and exact retry, and count retained destinations once. Then continue admission/removal/focus/rebase/restart integration and same-execution controls. No full owner-resource, public-operation or integrated GPU qualification follows from this acceptance.
 
 Keep #229 open for further factoring guided by the resource/lifetime inventory. Broad AGENTS restructuring remains deferred until after the engine PoC. Analyst functions remain conceptually designed in the overall architecture; their implementation structure and calibration await engine results on real data structures.
+
+## Owner staging work allowance — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review, based on integrated main b37c73ec. Tested code:
+`b6321a4a5ffd6890192e38cba902d4ac91a8606d`; final documentation is separate.
+The private owner adds staging work before capture and command construction,
+covering retained declaration lookup, exposure/projection staging and initial
+binding-map copies. Phase results distinguish all three allowances. Whole
+parent-pool transfers are prepaid; rejected partial partitions remain retryable.
+
+The focused native CPU matrix uses the unchanged Taichi pin
+`5ba579a8a11255b7a258cde93801070956d81d57`, Clang/LLVM 15 and the CPU-only build,
+with CUDA_VISIBLE_DEVICES=-1 on the shared personal host. Five cases run at
+one/two workers using bulk/default and direct/compiler-no-unroll paths:
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit,
+and exchange_fields. Final result and manifest digest are recorded below.
+
+Both single-occurrence directions traverse every normalized staging charge
+boundary: parts 246 boundaries / 7,848 units; aggregate 225 / 8,284 in all four
+configurations. Every rejected attempt is followed by successful recovery.
+Zero, late-short and exact allowances also cover repeated single/four-occurrence
+edits; completed owner/native state and reserved backing remain unchanged.
+Existing capture/command boundaries, numerical, lifetime/allocation-failure and
+32-exchange/tick witnesses remain active. Work is structural and ABI/path-dependent,
+not time or memory. The next-charge hint is attempt-local; successful recovery
+can normalize the retained scratch order before an exact-charge replay.
+
+Raw evidence is contributor-local in staging-budget-b6321a4a (build, commands,
+case logs, toolchain, configuration and binary hashes). No full 115-test baseline,
+complete compiler audit, database or GPU rerun is claimed. Hosted checks remain
+authoritative for their scope. Adoption-byte/setup-work limits and combined
+caller/borrowed accounting remain open, including exception-runtime costs outside
+C++ new observation. This contribution does not qualify complete owner resources,
+remaining operations or public controls.
+
+Result: all 20 focused runs passed; all processes exited zero. SHA256SUMS verified;
+its SHA-256 is:
+
+    0ad3fb2fd10ae095974ad206eb478305a7f901e34d7a7a1dd094d4bc04677807
+
+The local archive is setup-evidence/staging-budget-b6321a4a.tar.gz. Raw files stay
+local; the committed digest identifies them and does not imply remote availability.

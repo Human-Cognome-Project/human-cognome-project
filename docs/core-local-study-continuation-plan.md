@@ -89,6 +89,13 @@ The harness remains borrowed. #229 stays open for further factoring based on tho
 lifetimes; its initial kernel extraction is complete. Broad AGENTS restructuring
 remains deferred until after the engine PoC.
 
+
+Active contribution (2026-11-08, awaiting review): declaration/projection/map
+staging now has a separate structural-work allowance with safe partial-pool retry.
+See [resource inventory](../engine/docs/OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review) for boundaries and limits. After review, continue
+adoption-byte/setup-work gates and combined caller/borrowed resource accounting,
+then remaining-operation integration. Accepted baseline remains #235.
+
 Remaining work is **slice C: finish resource gates and operation integration**:
 
 1. Maintain one prepared execution with trusted logical occurrence/field bindings

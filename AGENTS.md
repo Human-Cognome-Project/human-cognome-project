@@ -45,7 +45,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | #235 head `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8`: [native run 42388030237](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42388030237) and smoke 42388030193 passed. Inspected logs cover 115 unique regression tests exactly once and 180 database checks, addressed_reads=24/private_reads=0; all compiler jobs passed. [Acceptance record](engine/tests/admission/README.md#maintainer-integrated-acceptance--228235-2026-11-08) retains all stack pins and distinct local/hosted evidence. |
 | Accepted exchange owner | Persistent private owner, projection and nested-map reuse; retained-capacity census and scoped adoption lifetime witnesses; explicit hierarchy-sealing, capture and command-construction gates are integrated through #235. The harness remains borrowed. This is bounded CPU acceptance, not complete owner-resource or public-operation qualification. See [resource inventory](engine/docs/OWNER-RESOURCES.md). |
-| Next implementation | Start from current main. Complete declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting, then remaining operations and same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Next implementation | Staging-work gate contribution is awaiting review (see below). Next: adoption-byte/setup-work limits and combined caller/borrowed resource accounting, then remaining operations and same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Broad AGENTS factoring remains deferred until after the engine PoC. |
 | Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
@@ -61,6 +61,13 @@ Do not copy historical “next” instructions back into this table.
 
 Private exchange ownership and scoped resource/preparation gates are accepted through #235.
 Continue from main with declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting.
+
+
+Active contribution (2026-11-08, awaiting review): declaration/projection/map
+staging now has a separate structural-work allowance with safe partial-pool retry.
+See [resource inventory](engine/docs/OWNER-RESOURCES.md#owner-staging-work-gate-contribution-awaiting-review) for boundaries and limits. After review, continue
+adoption-byte/setup-work gates and combined caller/borrowed resource accounting,
+then remaining-operation integration. Accepted baseline remains #235.
 
 ## Latest model direction — 2026-10-23
 
