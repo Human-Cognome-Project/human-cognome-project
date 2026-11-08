@@ -63,10 +63,11 @@ std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
   reservation = {};
   result = input_admission(projection,rows,fields,budget);
   if (result.status != AdoptionInputStatus::Ok) return {};
-  // The small domain object is separate overhead, not one of its buffer requests.
-  auto domain = std::make_unique<ReservationDomain>(budgeted_buffers);
+  // The domain and its own control block are separate overhead. Shared data
+  // allocators keep it alive through their final strong/weak reference release.
+  auto domain = std::make_shared<ReservationDomain>(budgeted_buffers);
   try {
-    auto owner = std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields,*domain));
+    auto owner = std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields,domain));
     reservation = domain->result();
     owner->reservations_ = std::move(domain);
     return owner;
@@ -78,13 +79,17 @@ std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
 }
 
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
-    std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields, ReservationDomain &domain)
+    std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields,
+    const std::shared_ptr<ReservationDomain> &domain)
     : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
-      occurrences_(rows,&domain), fields_(fields,&domain), generation_(h.prepared_storage().generation) {
+      occurrences_(rows,domain.get()), fields_(fields,domain.get()),
+      declarations_(SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>(domain)),
+      generation_(h.prepared_storage().generation) {
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
-  memberships_ = std::make_shared<const MembershipFields>(MembershipFields::collect(*projection_,true));
+  memberships_ = std::allocate_shared<const MembershipFields>(
+      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
   for (const auto &selection : projection_->recipe().selections) {
@@ -95,15 +100,17 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     auto reverse = forward;
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
-    auto retained = std::make_shared<const LetterExchangeContract>(std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,&domain);
+    auto retained = std::allocate_shared<const LetterExchangeContract>(
+        SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain.get());
     declarations_.push_back(std::move(retained));
-    declarations_.push_back(std::make_shared<const LetterExchangeContract>(std::move(reverse)));
+    declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
+        SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }
   prospective_ = std::make_unique<LetterProjection>(*projection_);
   projection_->reserve_exposure();
   prospective_->reserve_exposure();
-  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_,&domain));
+  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_,domain.get()));
   const auto &limits = h_.prepared_storage().capacity.limits();
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_);
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);

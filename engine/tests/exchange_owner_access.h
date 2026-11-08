@@ -5,6 +5,7 @@ namespace assembly::testing {
 struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
+  static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
   static auto map_outer_bytes(const detail::ExchangeOwner &o) {
     return o.occurrences_.storage().capacity()*sizeof(detail::OccurrenceBinding)+
         o.fields_.storage().capacity()*sizeof(detail::ExchangeFieldBinding)+
