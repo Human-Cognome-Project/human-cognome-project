@@ -1,6 +1,6 @@
 # Human Cognome Project (HCP)
 
-**New coding environment or agent:** start with the [fresh-instance onboarding/spec brief](docs/onboarding/AGENT-START.md).
+**Choose your path:** [bounded work, project understanding, review, first run or history](docs/onboarding/README.md).
 
 The Human Cognome Project is an open-source experimental architecture for digital intelligence built around explicit structure, field dynamics, and auditable data rather than a monolithic statistical model.
 
@@ -8,11 +8,7 @@ The September repository reconciliation is complete, and a subsequent recovery p
 
 ## Start here
 
-Start with [orientation](docs/onboarding/README.md) for objects, fields and
-component boundaries, then the [current state](AGENTS.md#current-state) for
-built, held and active work. [First run](docs/onboarding/FIRST-RUN.md) leads to
-one native CPU smoke check and an optional retained visual capture.
-Agents read [AGENTS.md](AGENTS.md) in full before working.
+Use the [onboarding paths](docs/onboarding/README.md) for your purpose. Understanding the model does not require the current code stage; bounded implementation does not require the full project history. Contributors read the short [AGENTS.md](AGENTS.md) and the contracts applicable to their task.
 
 ## Current system shape
 
@@ -28,7 +24,7 @@ future analyst functions
 
 The **physics engine** implements the field dynamics. The **engine harness** is its control interface: the surface used to add, remove and adjust elements, control runs, and inspect engine state for analysis.
 
-The **analyst functions have not yet been designed or implemented**.
+Analyst functions are conceptually designed within the overall architecture. Their concrete implementation structure must be engineered and calibrated against engine results on real data structures; see the [architecture clarification](engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
 
 Alongside the field-engine stack is a loosely coupled kernel network:
 

@@ -1,9 +1,6 @@
 # Documentation
 
-Start with the [fresh-instance onboarding/spec brief](onboarding/AGENT-START.md),
-[documentation map](documentation-map.md), [orientation](onboarding/README.md) and the [current state](../AGENTS.md#current-state) and
-[canonical reading paths](../AGENTS.md#reading-paths). This index supplies
-references, not another mandatory reading sequence.
+Choose an [onboarding path](onboarding/README.md) for bounded work, project understanding, review, first run or history. The [documentation map](documentation-map.md) catalogs deeper material. This index supplies references, not another mandatory reading sequence.
 
 ## Warm-cache contracts and bounded results
 

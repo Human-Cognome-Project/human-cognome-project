@@ -1,6 +1,6 @@
 # Documentation map and authority
 
-Start with the [fresh-instance onboarding/spec brief](onboarding/AGENT-START.md).
+Choose an [onboarding path](onboarding/README.md) for bounded work, understanding, review, first run or history.
 This catalog locates project-maintained documentation; it is not a requirement
 to read every research record before a first build.
 
@@ -8,7 +8,7 @@ to read every research record before a first build.
 
 | Kind | How to interpret it |
 |---|---|
-| Current task/status | AGENTS current state and the core continuation point to the accepted baseline and remaining work. Recheck live PRs before acting. |
+| Current task/status | CURRENT-STATE and the core continuation point to the accepted baseline and remaining work. Recheck live PRs before acting. |
 | Accepted contract/plan | Governs its stated scope and acceptance criteria. An imperative in a completed stage is not an instruction to repeat it. Later explicitly accepted corrections supersede older intent. |
 | Implementation/component reference | Read with current source and its profile/backend limits. A bounded component does not prove full operations. |
 | Source-pinned evidence | Describes that source and execution environment. Preserve results, failures, checksums and distinctions between local and hosted runs. |
@@ -16,7 +16,7 @@ to read every research record before a first build.
 | Upstream/vendor docs | Describe Taichi or dependencies, not HCP operating policy or authorization to use their Python frontend. |
 
 The [2026-11-01 review](documentation-review-2026-11-01.md) records the status
-reconciliation and validation scope. Keep queue changes in AGENTS and the owning
+reconciliation and validation scope. Keep queue changes in [CURRENT-STATE](onboarding/CURRENT-STATE.md) and the owning
 plan, link them from entry points, and preserve measurements with their evidence.
 Do not append another competing “next task” to every historical document.
 
@@ -58,6 +58,19 @@ establish current authority; check their status/provenance and accepted successo
 - [docs/onboarding/AGENT-START.md](onboarding/AGENT-START.md)
 - [docs/onboarding/FIRST-RUN.md](onboarding/FIRST-RUN.md)
 - [docs/onboarding/README.md](onboarding/README.md)
+- [docs/onboarding/NUMERICS.md](onboarding/NUMERICS.md)
+- [docs/onboarding/OPERATIONS.md](onboarding/OPERATIONS.md)
+- [docs/onboarding/DATA-MODEL.md](onboarding/DATA-MODEL.md)
+- [docs/onboarding/SYSTEM-BOUNDARIES.md](onboarding/SYSTEM-BOUNDARIES.md)
+- [docs/onboarding/WORK-DISCIPLINE.md](onboarding/WORK-DISCIPLINE.md)
+- [docs/onboarding/CURRENT-STATE.md](onboarding/CURRENT-STATE.md)
+- [docs/onboarding/VALIDATION.md](onboarding/VALIDATION.md)
+- [docs/onboarding/RELEASE.md](onboarding/RELEASE.md)
+- [docs/onboarding/UNDERSTAND.md](onboarding/UNDERSTAND.md)
+- [docs/onboarding/REVIEW.md](onboarding/REVIEW.md)
+- [docs/onboarding/HISTORY.md](onboarding/HISTORY.md)
+- [docs/onboarding/IMPLEMENTATION-CHECKLIST.md](onboarding/IMPLEMENTATION-CHECKLIST.md)
+- [docs/onboarding/ONBOARDING-PLAN.md](onboarding/ONBOARDING-PLAN.md)
 
 ### Project contracts, plans and model references
 
