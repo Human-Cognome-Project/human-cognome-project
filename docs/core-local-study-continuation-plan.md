@@ -80,7 +80,9 @@ payload and inspection/copy work before owner allocation or by-value input copie
 This input gate does not bound subsequent constructor allocations/setup or actual
 allocator/native peak. Complete means input admission, not construction.
 
-**Next coding-agent task:** subsequent constructor-byte/setup-work limits and
+**Active contribution:** a shared allocator domain now admits actual binding/coordinator buffer requests, including temporary bindings, before allocation; review is pending. See [scope and exclusions](../engine/docs/OWNER-RESOURCES.md#bindingcoordinator-allocation-domain-contribution-awaiting-review).
+
+**Next coding-agent task:** remaining constructor-byte/setup-work limits and
 combined caller/borrowed resource accounting. Gate before allocation/work, preserve
 unwind and retry, and distinguish retained capacity, logical payload, actual
 allocation and simultaneous overlap. Do not count moved input snapshots again as
