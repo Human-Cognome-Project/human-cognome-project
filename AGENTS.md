@@ -12,7 +12,7 @@ native check, see [first run](docs/onboarding/FIRST-RUN.md).
 
 ## Current state
 
-Last checked: **2026-11-07**, accepted integrated CPU implementation through #227 (reviewed head `b9ea490f86333ba1bd572abd74a202fe19c7534a`). Native run 42252528197 and smoke passed. Next: nested map staging reuse, complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
+Last checked: **2026-11-08**, accepted integrated CPU implementation through #235 (reviewed head `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8`). Native run 42388030237 and smoke passed; all seven PRs in #228/#230–#235 have green hosted gates. Next: declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting, then remaining-operation integration and same-execution controls. C2b-1 is accepted in #192 under the [#191 plan](docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
 The [production hierarchy/response plan](docs/production-hierarchy-response-plan.md)
 is accepted in #194. It specifies comparison and force ownership, production
@@ -43,9 +43,10 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted data and preparation | Retained [letter/core snapshots](data/postgres/snapshots/2026-10-13-letter-seed-validation/MANIFEST.md), native [warm tools](kernels/database/warm/README.md), coordinate-free [v2 recipes](kernels/database/warm/STRUCTURAL-RECIPES.md), [projection](engine/docs/LETTER-PROJECTION.md) and prepared native backing/updates. Preserve existing stores; population and operational ownership are separate. |
 | Accepted CPU numerical path | Cumulative publication, [accepted motion](engine/docs/ACCEPTED-MOTION.md), [installed hierarchy](engine/docs/LIVE-HIERARCHY.md), coherent [refresh](engine/docs/LIVE-REFRESH.md) and [contact-safe ticks](engine/docs/CONTACT-SAFE-TICKS.md), accepted through #198/#201. Scope-specific GPU evidence does not qualify the complete path. |
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
-| Latest accepted engine evidence | #227 head `b9ea490f86333ba1bd572abd74a202fe19c7534a`: [native run 42252528197](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42252528197) and smoke 42252525837 passed. Inspected regression logs cover 115 unique tests exactly once; all compiler jobs passed; database records 180 checks, addressed_reads=24 and private_reads=0. [Admission evidence](engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07) preserves distinct local/hosted evidence and cancelled #224 history. |
-| Accepted exchange owner | Field lifecycle, persistent study identity and reserved projections through #223, plus #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging, are integrated. The harness remains borrowed; nested maps, total owner resources and other operations remain open. |
-| Next implementation | Start from current main. Complete nested map staging reuse, complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Latest accepted engine evidence | #235 head `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8`: [native run 42388030237](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42388030237) and smoke 42388030193 passed. Inspected logs cover 115 unique regression tests exactly once and 180 database checks, addressed_reads=24/private_reads=0; all compiler jobs passed. [Acceptance record](engine/tests/admission/README.md#maintainer-integrated-acceptance--228235-2026-11-08) retains all stack pins and distinct local/hosted evidence. |
+| Accepted exchange owner | Persistent private owner, projection and nested-map reuse; retained-capacity census and scoped adoption lifetime witnesses; explicit hierarchy-sealing, capture and command-construction gates are integrated through #235. The harness remains borrowed. This is bounded CPU acceptance, not complete owner-resource or public-operation qualification. See [resource inventory](engine/docs/OWNER-RESOURCES.md). |
+| Next implementation | Start from current main. Complete declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting, then remaining operations and same-execution controls. See [continuation](docs/core-local-study-continuation-plan.md#next-agent-task--2026-11-05). |
+| Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Broad AGENTS factoring remains deferred until after the engine PoC. |
 | Accepted tooling | [Local evidence runner](engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
 | Held/deferred | #111 and #123 remain held; draft #75 remains deferred. They do not block separately accepted core work. Analyst functions are conceptually designed within the overall architecture; their implementation structure and calibration await engine results on real data structures. Dynamic LoD selection and process-failure hosting remain unbuilt. |
@@ -58,8 +59,8 @@ Do not copy historical “next” instructions back into this table.
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-Private source bindings, atomic exchange, field lifecycle, persistent exchange owner
-and scoped preparation reuse are accepted through #227. Continue nested map staging reuse, complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. Do not duplicate the accepted work.
+Private exchange ownership and scoped resource/preparation gates are accepted through #235.
+Continue from main with declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting.
 
 ## Latest model direction — 2026-10-23
 
@@ -119,9 +120,9 @@ with C2a's publication/consume contract without a same-tick global solve.
 
 ## Active and deferred work
 
-**Immediate work:** continue from current main through accepted #227. Complete
-nested map staging reuse, complete owner peak/lifetime/work accounting and remaining-operation integration, then same-execution controls. Reuse the accepted private owner and
-preparation components under the [continuation plan](docs/core-local-study-continuation-plan.md).
+**Immediate work:** continue from current main through accepted #235. Complete
+declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting. Then integrate admission/removal/focus/rebase/restart
+and same-execution controls under the [continuation plan](docs/core-local-study-continuation-plan.md).
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

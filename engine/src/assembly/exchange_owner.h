@@ -4,6 +4,24 @@
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
 namespace detail {
+enum class PreparationPhase { Capture, Commands, Complete };
+struct OwnerPreparationResult {
+  PreparationStatus status{PreparationStatus::Ok};
+  PreparationPhase phase{PreparationPhase::Capture};
+  PreparationResult capture, commands;
+};
+// Host retained-capacity charge. Shared pointees are counted once; allocator
+// control blocks, setup peak and borrowed execution are separate surfaces.
+struct OwnerStorage {
+  ProjectionStorage owner, projections, maps, binding, coordinator, declarations, memberships;
+  std::uint64_t shared_allocations{};
+  ProjectionStorage total() const {
+    auto out = owner;
+    for (const auto *part : {&projections, &maps, &binding, &coordinator,
+                            &declarations, &memberships}) out.add(*part);
+    return out;
+  }
+};
 // Private owner of logical exposure and committed mappings on one borrowed
 // prepared execution. The harness outlives this owner; all calls are exclusive.
 class ExchangeOwner {
@@ -11,17 +29,19 @@ class ExchangeOwner {
   friend struct assembly::testing::ExchangeOwnerAccess;
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
                 std::vector<ExchangeFieldBinding>);
-  void prepare(const OccurrenceKey &, warm::Exposure,
-               const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &);
-  void seal(const field::LiveRefreshSpec &);
+  OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
+               const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
+               std::uint64_t capture_work, std::uint64_t command_work);
+  HierarchySealResult seal(const field::LiveRefreshSpec &, HierarchySealBudget);
   void prepare_projection(const OccurrenceKey &, warm::Exposure);
   std::shared_ptr<const LetterExchangeContract> declaration(const OccurrenceKey &, warm::Exposure) const;
   ProjectionStorage projection_storage() const;
+  OwnerStorage storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
   std::unique_ptr<LetterProjection> projection_, prospective_;
-  std::vector<OccurrenceBinding> occurrences_;
-  std::vector<ExchangeFieldBinding> fields_;
+  ExchangeMap<OccurrenceBinding> occurrences_;
+  ExchangeMap<ExchangeFieldBinding> fields_;
   std::unique_ptr<ExchangeCoordinator> plan_;
   std::vector<std::shared_ptr<const LetterExchangeContract>> declarations_;
   std::shared_ptr<const MembershipFields> memberships_;

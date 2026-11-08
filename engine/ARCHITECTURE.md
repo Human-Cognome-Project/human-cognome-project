@@ -82,6 +82,30 @@ engine harness. Its name is retained during recovery to avoid gratuitously
 renaming working code. The wider harness includes CPU-resident composition,
 working-set/focus control, and the eventual analyst control surface.
 
+### Field implementation factoring (first slice accepted in #230)
+
+The first slice of [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229)
+moves `Harness::build_numerical_kernels` into `src/field/numerical_kernels.cpp`,
+compiled by the same `field_core` target. The private method declaration and its
+two callers (Harness setup and TickExecution setup) remain unchanged. The builder
+still returns the same seven kernels, in the same order, with the same expressions,
+names, flags, strict-math choices and native selection inputs. No class member,
+allocation boundary, ownership transfer, publication or cleanup order is changed.
+
+Builder-only IR helpers move with the method. Three small file-local helpers
+(`store`, `accumulate`, `array_param`) are also needed by prepared inspection in
+`field.cpp`; both compilation units retain identical private definitions. No new
+header or widened access is introduced. The remaining `field.cpp` owns construction,
+transfer/inspection, launches and execution coordination as before. This first move
+does not claim that those responsibilities are already separated.
+
+Complete owner peak/lifetime/work accounting remains the next implementation task.
+Its ownership/borrowing and construction-failure/destruction inventory should guide
+later cohesive extractions. Keep one readiness/generation/publication authority;
+further responsibility or ownership changes require separate review. #229 remains
+open beyond this first mechanical slice. Source-pinned CPU regression and compiler
+evidence belongs in [local CI evidence](tests/local_ci/README.md).
+
 ## Modified Taichi fork
 
 The fork is expected at `engine/taichi/`.

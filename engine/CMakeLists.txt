@@ -29,6 +29,7 @@ target_compile_options(engine_support PRIVATE -Wall -Wextra -Wno-unused-paramete
 # The field model: one law, the tick that runs it, and the state it runs on.
 # A separate target, linking the engine rather than living inside it.
 add_library(field_core STATIC src/field/field.cpp src/field/activity.cpp
+    src/field/numerical_kernels.cpp
     src/field/native_selection.cpp
   src/field/tick_execution.cpp
     src/field/placement.cpp
@@ -48,7 +49,8 @@ target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-paramete
 
 add_library(active_workbench STATIC src/assembly/active_workbench.cpp)
 add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp
-    src/assembly/exchange_coordinator.cpp src/assembly/exchange_owner.cpp)
+    src/assembly/exchange_coordinator.cpp src/assembly/exchange_owner.cpp
+    src/assembly/owner_storage.cpp)
 target_link_libraries(exchange_coordination PUBLIC field_core membership_fields)
 target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)

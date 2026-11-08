@@ -7,9 +7,9 @@ replace their detailed acceptance tests.
 
 ## Establish the actual starting point
 
-Baseline checked **2026-11-07**: accepted integrated private CPU work through #227,
-reviewed head `b9ea490f86333ba1bd572abd74a202fe19c7534a`. Native run 42252528197
-and smoke 42252525837 passed. #220's viewport security fix remains integrated.
+Baseline checked **2026-11-08**: accepted integrated private CPU work through #235,
+reviewed head `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8`. Native run 42388030237
+and smoke 42388030193 passed; all seven stack PRs have green hosted gates.
 Always fetch current refs and inspect the open PR queue: these pins describe
 the handoff, not a permanent instruction to stay on an old commit.
 
@@ -27,25 +27,23 @@ the handoff, not a permanent instruction to stay on an old commit.
    population or an accepted-baseline CI rerun.
 
 The current queue and task ownership live in [AGENTS](../../AGENTS.md#current-state).
-Start from current main. Field creation/retirement, the persistent private exchange
-owner and reserved projection reuse are accepted; do not implement them again.
-#123/#111 remain held and draft #75 deferred. The owner still borrows its execution;
-other preparation metadata and complete resource accounting remain separate work.
-The next contributing-agent task is **nested map staging reuse, complete owner peak/lifetime/work
-accounting and integration of the remaining operations**. Reuse accepted
-private admission/bootstrap, focus/rebase, source/accounting and atomic exchange.
-Publish owner identities and projection exposure coherently with successful native
-operations; rejected edits preserve the old usable execution. Account for all
-owner preparation surfaces, not just the native scratch manifest. Same-execution
-controls follow. The [continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
-defines this sequence; deliver reviewable slices with source-pinned local evidence.
-Hosted CPU and actual GPU evidence remain distinct.
+Start from current main. The accepted stack includes nested-map reuse (#228),
+numerical-kernel extraction (#230), retained-capacity census (#231), scoped
+adoption peak/failure/reclamation witnesses (#232), hierarchy-sealing allowances
+(#233), capture work (#234) and command-construction work (#235). These are bounded
+private CPU capabilities. Do not reimplement them or rerun the accepted baseline
+merely to start a fresh environment. [Acceptance evidence](../../engine/tests/admission/README.md#maintainer-integrated-acceptance--228235-2026-11-08)
+retains source/run pins and earlier attempts.
 
-Integrated preparation reuse includes #224 retained coordinator command/intrinsic/hierarchy backing, #225 immutable declarations, #226 binding/source buffers and #227 all-alternative membership catalogue with allocation-free source capture after map staging.
-#224's cancelled native run remains incomplete historical evidence; successful
-#225, #226 and #227 descendant runs validate the combined source. See
-[acceptance evidence](../../engine/tests/admission/README.md#maintainer-integrated-acceptance--224227-2026-11-07).
-Nested maps still allocate; complete owner accounting and other operations remain open.
+The next task is **declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource accounting**.
+Preserve unchanged rejection/retry, survivors, generation and one publication
+authority. Retained destination capacity is counted once; distinguish caller
+spans, setup overlaps, allocator/control-block overhead and borrowed native resources.
+Then integrate admission/removal/focus/rebase/restart and same-execution controls.
+The [continuation plan](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05)
+and [resource inventory](../../engine/docs/OWNER-RESOURCES.md) define the remaining scope.
+#229 remains open for further factoring guided by that inventory. #111/#123 remain
+held and draft #75 deferred. Actual GPU qualification remains separate.
 
 ## Authority and reading order
 
@@ -76,7 +74,7 @@ derivations, not authorization to replace the accepted model. See the
 | B1 | Native selection gate (#200) and complete CPU contact-safe candidate ticks (#201), including unchanged rejection and one completed publication. |
 | B2 | Certified nearest-free placement accepted in #203, superseding #202. |
 | B3 / D6 / D7 | Private ordinary admission/bootstrap accepted through #210; focus and exact f64 rebase through #213; outgoing-state and replacement scratch through #214/#215. Private source-bound atomic exchange is accepted through #219; field creation/retirement is accepted in #221. Enduring operational admission remains outstanding. |
-| C / D | Private persistent exchange owner and scoped preparation reuse accepted through #227. Complete nested map staging reuse, total owner resources and remaining-operation integration; then observable same-execution commands. Legacy `ActiveSession`/`FixedStudy` refresh is not live Add. |
+| C / D | Private exchange owner and scoped resource/preparation gates accepted through #235. Complete staging/adoption and combined-resource limits, then remaining operations and same-execution commands. Legacy FixedStudy reconstruction is not live Add. |
 | P / E | Separate CUDA mixed-precision repair and integrated actual-hardware qualification. Docker packaging follows the supported core. |
 
 #201's accepted hosted [run 41220868948, job 124594948773](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/41220868948/job/124594948773)

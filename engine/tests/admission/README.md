@@ -1413,3 +1413,306 @@ integration, then same-execution controls. Catalogue construction temporaries,
 nested keys/pins, coordinator maps and caller preparation remain outside the scoped
 projection census. The harness is borrowed; no full resource, performance, public
 operation or GPU qualification follows from this acceptance.
+
+## Contributor-local nested map reuse — 2026-11-07
+
+Tested source: `73e41847d91c3df1a17cd85bae896dff2e70e266`, based on accepted
+main `8f88635b5e9b2f84e603abe1e7890b0d601bea95`. The submitted head adds only
+status/scope/evidence documentation. Actual CPU, WSL Ubuntu, native Clang/LLVM 15;
+Taichi pin `5ba579a8a11255b7a258cde93801070956d81d57`. No GPU was used.
+
+Commands (from the Linux checkout, after sourcing `engine/build/engine-env.sh`):
+
+```sh
+cmake --build engine/build --target live_hierarchy_test membership_fields_test -j 2
+ctest --test-dir engine/build --output-on-failure -R '^membership_fields_test$'
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_owner
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_owner_multiple
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_commit
+nice -n 10 engine/build/live_hierarchy_test --threads 1 --case exchange_fields
+HCP_B2_IR_DIR=/root/hcp-workspace/logs/exchange-maps-ir nice -n 10 \
+  engine/build/live_hierarchy_test --threads 2 --direct --compiler-no-unroll --case placement
+```
+
+All passed: 61 membership value checks; both bulk/default one-worker owner sequences
+with 32 exchanges/ticks each; focused commit and field lifecycle suites; and all
+22 combined direct/no-unroll two-worker cases. Both 52/8-bit compiler audits passed,
+with 19 kernels and 29 unsafe controls each. The capacity-focused pair ran in an
+independent process concurrently with the main qualifier after its build completed;
+these are functional checks, with no timing/performance interpretation.
+
+First and repeated successful owner preparation, including valid retries, are
+covered by C++ `new` guards. Separate map-staging/capture, hierarchy sealing,
+execution and tick guards remain. The complete pool of six outer map buffers and
+all constructed path/address buffers retains its addresses/capacities across field
+retirement and publication swaps. Tests cover erasure order, full slots, oversized
+keys, checked reservation overflow, copied empty-slot capacity and retry. An
+oversized field key cancels pending intent without changing committed owner state
+or backing. Existing independent-copy, shared-field, survivor, source-validation,
+ordinary-rejection and late-unready witnesses remain unchanged.
+
+The initial `68698240` owner and four-copy sequences passed; its combined run was
+stopped intentionally while adding reservation-copy corrections/backing witnesses.
+`2ce859f9` built and passed values; its owner run was stopped when trusted initial
+field-key bounds were added. Neither interrupted suite is counted as completed.
+`044883ab` passed values and focused owners but failed combined `exchange_commit`
+and `exchange_fields`: host candidate maps were incorrectly bounded by native live
+capacity, preventing native peak-exhaustion witnesses from reaching preflight.
+That combined run was stopped after the failures were confirmed. The final code
+reserves checked `Particles + Batch` and `Fields + min(Fields, Batch)` candidate
+metadata in all three stores, preserving the unchanged native `CapacityExhausted`
+results and live claim limits. No expected result was weakened. Failed/interrupted
+logs are retained separately from the complete final-source run.
+
+Local bundle `exchange-maps-73e41847` contains source/submodule pins, configuration,
+toolchain and binary hashes, complete logs, commands and final emitted LLVM.
+`SHA256SUMS` digest:
+`74e6134fa48c973f57620eb0a7c79f870e5cd66f57d2226a334c1d3260b93084`.
+Raw contents remain local contributor evidence, not independently inspected
+maintainer evidence. Full 115-test baseline, other compiler configurations,
+database and GPU suites were not rerun. Hosted checks remain authoritative.
+
+Adoption, standalone adapter construction, caller inputs/hierarchy and exception
+construction may allocate. Constructed spare map slots, UUID/path/address storage
+and field-command capacity are outside `projection_storage()`. Complete owner
+peak/lifetime/work accounting and byte-budget enforcement remain next, followed by
+remaining-operation integration and same-execution controls. This is nested-map
+reuse qualification, not complete owner resource, performance or GPU acceptance.
+
+## Combined owner retained-capacity census — 2026-11-07
+
+Contribution on explicit provisional #228/#230 dependencies. Tested code:
+9bff8d55c454223b21f3eb02e05b9c017bbcea5b. Main documentation clarification
+7f938878c8178e27b582069847c84d713c18de95 is retained by the separate integration
+merge, including analyst conceptual design and post-PoC documentation factoring.
+
+Native Clang/LLVM 15 CPU build of live_hierarchy_test passed. Taichi pin:
+5ba579a8a11255b7a258cde93801070956d81d57. The focused commands were
+live_hierarchy_test --backend cpu --threads 1|2 --case exchange_owner
+and --case exchange_owner_multiple, with the default bulk path and with
+--direct --compiler-no-unroll. All eight runs passed, case_failures=0.
+
+Both sequences exercise 32 exchanges/ticks. Added checks cover allocation-free
+combined reporting, all retained component families, inactive nested-map and
+field-command capacity deltas, aggregate overflow rejection, shared allocation
+counts and stable totals across publication. Existing numerical, survivor,
+rejection/retry and late-failure witnesses remain unchanged.
+
+The report counts retained payload capacity. It does not measure setup peak,
+allocator/control-block bytes or reclamation, and does not enforce a complete
+byte/preparation-work budget. The [resource inventory](../../docs/OWNER-RESOURCES.md)
+records those remaining gates, borrowed surfaces and constructor/cleanup paths.
+
+Source-pinned logs, build output, commands, configuration and binary/toolchain
+identities are retained locally as owner-storage-9bff8d55. SHA256SUMS verified;
+its SHA-256 is:
+
+    d36466089ecb2f0bc333b6aca1f4d65cdce5267108a49d75dc956f7d4a8faf19
+
+The final head adds documentation only after tested code. Raw evidence remains
+contributor-local; its hash does not make it remotely available. No full regression,
+compiler-audit matrix, database, GPU or performance rerun is claimed for this
+inspection-only change. #230's full baseline evidence retains its own source pin;
+hosted native run 42377616217 was still running and smoke 42377616279 passed at
+this check. No duplicate baseline run was started.
+
+## Owner adoption peak and failure reclamation — 2026-11-07
+
+Test-only continuation on provisional #228/#230/#231. Tested source:
+ad7f8552baa20fbc2ba15ef70a36a116514be3bd. Native Clang/LLVM 15 CPU;
+Taichi 5ba579a8a11255b7a258cde93801070956d81d57. Production source unchanged.
+
+The focused live_hierarchy_test build and all eight runs passed:
+--backend cpu --threads 1|2 --case exchange_owner|exchange_owner_multiple,
+using bulk/default and --direct --compiler-no-unroll. Each fixture's successful
+adoption trace was followed by a failing attempt at every allocation ordinal,
+full tracked reclamation after each failure, a successful retry and exact native
+snapshot comparison. Existing 32-exchange/tick sequences and oracles passed.
+
+| Fixture | Allocation/failure sites per run | Retained requested bytes | Peak requested bytes | Retained capacity charge | Maximum failed-attempt peak |
+|---|---:|---:|---:|---:|---:|
+| One occurrence | 4,192 | 276,329 | 276,874 | 277,017 | 276,859 |
+| Four occurrences | 7,856 | 331,491 | 333,533 | 332,083 | 333,518 |
+
+All four configurations produced those figures. Zero tracked blocks/bytes
+remained after final alias release, each failure unwind and the successful retry.
+Observer controls checked exact bytes, scalar/array/aligned/sized-delete paths,
+pre-existing deallocation exclusion and injected failure.
+
+These are current-thread requested C++ allocation bytes around adoption, including
+by-value argument copies and the standard library's shared allocations. They are
+not allocator metadata, stack, RSS, driver/GPU or combined process peaks. The
+capacity charge can be above or below the observed peak; neither substitutes for
+the other. Detailed scope and outstanding budget enforcement are in
+[OWNER-RESOURCES.md](../../docs/OWNER-RESOURCES.md).
+
+Raw local evidence: owner-lifetime-ad7f8552, including build, commands, all logs,
+configuration, toolchain and binary identities. SHA256SUMS verified; its SHA-256:
+
+    6976596b8186d62447e2b7826ffd1f805e4ae59d404706616bbb41fbfe41724f
+
+Final head differs from tested code only in documentation. Raw evidence remains
+contributor-local, not independently hosted review evidence. No full regression,
+compiler-audit matrix, database, GPU or performance rerun is claimed. Parent #231
+smoke 42378741344 passed and native 42378741420 remained in progress at the check;
+no duplicate parent baseline was started. Complete byte/preparation-work budget
+enforcement and broader resource qualification remain next.
+
+## Explicit hierarchy-sealing budgets — 2026-11-07
+
+Tested source 6689c292dd3b3f40ddbe986a2e83b2ee2d75d74a, on provisional
+#228/#230/#231/#232 dependencies. Native Clang/LLVM15 CPU build passed;
+Taichi pin 5ba579a8a11255b7a258cde93801070956d81d57.
+
+All sixteen focused runs passed: exchange_owner, exchange_owner_multiple,
+exchange_commit and exchange_fields, each with --backend cpu --threads 1|2,
+bulk/default or --direct --compiler-no-unroll. New owner checks cover separate
+one-unit byte/work shortages before unreadable caller pointers are accessed,
+overflow with an empty report, unchanged pending/native/backing state and retry
+with exact allowances. Existing owner allocation-failure/reclamation,
+32-exchange/tick, numerical and standalone field-lifecycle witnesses passed.
+
+The byte charge covers caller table spans plus reserved destination capacities.
+Copy work counts input payload bytes. Neither is a whole-owner/process budget;
+adoption allocations, other preparation work, caller slack and native/driver
+resources remain outside this gate. See [resource scope](../../docs/OWNER-RESOURCES.md#hierarchy-sealing-gate-contribution-awaiting-review).
+Native hierarchy validation/work limits remain unchanged.
+
+Raw local evidence hierarchy-budget-6689c292 includes build, commands, all
+sixteen logs, configuration, toolchain and binary identities. SHA256SUMS verified;
+its SHA-256 is:
+
+    8d775f769d35ff9ead6662bd9f2afe5ddf68e88c9e5c13eb9d0cf2e8399113fe
+
+A shared Taichi cache-lock warning occurred after the one-worker bulk commit
+suite passed; that process exited successfully and the runner completed all
+remaining cases. The warning remains in the raw logs. No timing claim follows
+from these concurrent processes on a shared host.
+
+Final head changes documentation only beyond tested code. Raw logs remain
+contributor-local, not independently inspected maintainer evidence. No full
+115-test baseline, complete compiler-audit matrix, database, GPU or performance
+rerun is claimed. Parent #232 smoke passed and native remained running at the
+last check; no duplicate baseline was started. Complete combined byte and
+remaining preparation-work enforcement remain next.
+
+## Incremental source-capture work gate — 2026-11-07
+
+Tested source eff2bb538901858817a45d2b7b87d4746362a7e1 on provisional #228/#230/#231/#232/#233.
+Native Clang/LLVM15 CPU build passed; Taichi pin
+5ba579a8a11255b7a258cde93801070956d81d57. All twenty focused runs passed:
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit,
+exchange_fields × --threads 1|2 × bulk/default or --direct --compiler-no-unroll,
+all with --backend cpu.
+
+The first single-occurrence exchange traversed 235 successive capture charge
+boundaries, reaching the exact 5,087-unit successful allowance in all four
+configurations. Each exhausted attempt retained invalid binding/pending state
+and made forward progress through next_required. Zero allowance, one-unit-short
+late exhaustion and exact-charge retry were also checked across both directions,
+with unchanged committed/native state and backing. Product/sum overflow witnesses
+passed. Existing allocation-failure/reclamation, 32-exchange/tick, source validation,
+commit/field-capacity and numerical witnesses passed without oracle changes.
+
+Work is defined structural units, including upper-bound variable key bytes and
+the existing final validation charge, not instructions or timing. This gate
+covers capture only, after declaration/projection/map staging and before command
+construction. Adoption/standalone construction explicitly retains the maximum
+capture allowance pending separate setup-work admission. The internal stop token
+is caught at capture; no C++ new was observed in tested exhaustion paths, but
+exception-runtime allocation is outside that witness. See
+[resource scope](../../docs/OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review)
+and the separate combined-domain/double-counting discussion.
+
+Evidence capture-budget-eff2bb53 retains build, commands, twenty logs, toolchain,
+configuration and binary identities locally. SHA256SUMS verified; its SHA-256:
+
+    bc77c79ca282e4ae815c5c9fd83af9949ac764c122173bafb4e85e404ee072ba
+
+Shared Taichi cache-lock warnings after passing one-worker bulk commit/field
+suites remain in the raw logs; all processes exited successfully. No performance
+claim follows from concurrent checks on the shared host. Final head differs from
+tested code only in documentation. Raw evidence remains contributor-local.
+
+No full 115-test baseline, complete compiler-audit matrix, database or GPU rerun
+is claimed. Parent #233 smoke passed and native remained running at the last
+check; no duplicate baseline was started. Complete adoption-byte/setup-work,
+remaining preparation gates and combined caller/borrowed resource policy remain
+outstanding before full owner-resource qualification.
+
+## Separate command-construction work gate — 2026-11-07
+
+Tested source 749b769dbded7f98d0b93f16625357c377d21cf4, on provisional
+#228/#230/#231/#232/#233/#234 dependencies. The shared preparation-meter extraction
+is a separate mechanical commit before command enforcement. Native Clang/LLVM15
+CPU build passed; Taichi pin 5ba579a8a11255b7a258cde93801070956d81d57.
+
+All twenty focused runs passed: exchange_owner, exchange_owner_multiple,
+exchange_bindings, exchange_commit and exchange_fields × --threads 1|2 ×
+bulk/default or --direct --compiler-no-unroll, all with --backend cpu.
+The first exchange checked 645 successive command-charge boundaries and an exact
+12,015-unit command allowance in all four configurations, separately from capture.
+Zero/late-short allowances, phase results, consumed/unsealed partial candidates,
+unchanged owner/native/backing state and exact two-allowance retry passed.
+An independent nested key-copy charge check and existing capture overflow,
+allocation-failure/lifetime, 32-exchange/tick and numerical witnesses also passed.
+
+These are structural work charges, including ABI object sizes and variable key
+payload, not instructions/time or memory reservations. Standalone coordinator
+setup explicitly uses maximum allowance pending setup admission. Preceding
+declaration/projection/map staging, adoption-byte/setup-work and the combined
+caller/borrowed resource policy remain outstanding. Phase Complete means capture
+and command preparation, not hierarchy sealing or native publication. Internal
+stop-token exception-runtime costs remain outside C++ new observation.
+See [resource scope](../../docs/OWNER-RESOURCES.md#command-construction-work-gate-contribution-awaiting-review).
+
+Source-pinned evidence command-budget-749b769d retains build, commands, twenty
+logs, toolchain/configuration and binary identities locally. SHA256SUMS verified;
+its SHA-256 is:
+
+    2dcd73e91ed5855eda6d4bc6a706ceaa924dfa6c64be856cc9bf91e2336b6c62
+
+Shared Taichi cache-lock warnings remain in the raw logs, including after the
+passing two-worker direct commit suite. All processes exited successfully. No
+performance claim follows from concurrent shared-host execution.
+
+Final head changes documentation only after tested code. Raw evidence remains
+contributor-local. No full 115-test baseline, complete compiler-audit matrix,
+database or GPU rerun is claimed. Parent #234 smoke passed and native remained
+running at the last check; no duplicate baseline was started. Full owner-resource
+qualification, remaining operations and broader #229 factoring remain open.
+
+<a id="maintainer-integrated-acceptance--228235-2026-11-08"></a>
+
+## Maintainer integrated acceptance — #228/#230–#235 (2026-11-08)
+
+All seven reviewed contributions completed their hosted native and smoke gates successfully. This closes their provisional CI dependencies and integrates their original ancestry into main.
+
+| PR | Reviewed head | Native run (passed) | Smoke run (passed) |
+|---|---|---|---|
+| [#228](https://github.com/Human-Cognome-Project/human-cognome-project/pull/228) | `4596c3535bba92efa533616f074d702ede85939c` | [42370220296](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42370220296) | [42370220331](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42370220331) |
+| [#230](https://github.com/Human-Cognome-Project/human-cognome-project/pull/230) | `d0a57fbd08449a3ee6fc51a7e97f44348e31fea0` | [42377616217](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42377616217) | [42377616279](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42377616279) |
+| [#231](https://github.com/Human-Cognome-Project/human-cognome-project/pull/231) | `cadc00dc8e45482c792fa52b91a006d256ab2faa` | [42378741420](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42378741420) | [42378741344](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42378741344) |
+| [#232](https://github.com/Human-Cognome-Project/human-cognome-project/pull/232) | `d72acae0cefb5105f67e6903b1a91af661d2d299` | [42380990903](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42380990903) | [42380991092](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42380991092) |
+| [#233](https://github.com/Human-Cognome-Project/human-cognome-project/pull/233) | `4e6af996bac8663240dafd2b58e6d78334696108` | [42383533878](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42383533878) | [42383533954](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42383533954) |
+| [#234](https://github.com/Human-Cognome-Project/human-cognome-project/pull/234) | `ba7076f266a9b1312750a16fc38442e699dffe3d` | [42385728834](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42385728834) | [42385728835](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42385728835) |
+| [#235](https://github.com/Human-Cognome-Project/human-cognome-project/pull/235) | `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8` | [42388030237](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42388030237) | [42388030193](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42388030193) |
+
+The integrated code source is #235 head `db3789ee35a7139be96cd3099ef6d3c5ea5a07c8`, tree `484913e4a819d03070ddd5b6109ea15d57c9a206`. It already includes main `7f938878c8178e27b582069847c84d713c18de95`, including the analyst architecture clarification. The integration adds status/handoff/evidence documentation only; accepted-baseline CI is not rerun for that reconciliation.
+
+Independent inspection of native run 42388030237 found all 12 jobs successful. Regression job logs 128450516390, 128450516387, 128450516539 and 128450516375 cover all 115 numbered regression tests exactly once (29/29/29/28). Database job 128450516314 records 180 warm-to-active integration checks and `addressed_reads=24 private_reads=0`. All four compiler jobs passed; this statement records hosted job status, not a new independent audit of every compiler artifact.
+
+Accepted scope:
+- #228 retains all six nested map stores and witnesses allocation-free first/repeated owner preparation, including retry.
+- #230 extracts numerical kernels mechanically; it completes the first slice of #229.
+- #231 provides the combined retained-capacity census.
+- #232 adds scoped adoption allocation-peak, allocation-failure and final-alias reclamation witnesses.
+- #233 gates hierarchy sealing by payload bytes and copy work before table access.
+- #234 gates source capture incrementally, retaining invalid partial candidates and safe retry.
+- #235 gates command construction separately and reports capture/command charges and the stopping phase.
+
+These are bounded CPU contributions. Retained capacity is not RSS or complete allocator accounting; the adoption witness does not measure all machine memory. Local evidence remains local evidence with its original source/configuration pins. Earlier failed, interrupted and cancelled attempts remain historical records, including the cancelled #224 path; they are not rewritten as successful runs.
+
+The next coding agent starts from current main with declaration/projection/map staging gates, adoption-byte/setup-work limits and combined caller/borrowed resource policy and accounting. Charge before the guarded work/allocation, preserve ordinary rejection and exact retry, and count retained destinations once. Then continue admission/removal/focus/rebase/restart integration and same-execution controls. No full owner-resource, public-operation or integrated GPU qualification follows from this acceptance.
+
+Keep #229 open for further factoring guided by the resource/lifetime inventory. Broad AGENTS restructuring remains deferred until after the engine PoC. Analyst functions remain conceptually designed in the overall architecture; their implementation structure and calibration await engine results on real data structures.

@@ -2,15 +2,37 @@
 #include "assembly/exchange_coordinator.h"
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
+  static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
+  static auto &field_command_buffer(detail::ExchangeCoordinator &c) { return c.field_commands_; }
+  static auto map_backing(const detail::ExchangeCoordinator &c) {
+    std::vector<std::pair<const void *,std::size_t>> result;
+    const auto append = [&](const auto &map) {
+      const auto &slots = map.storage();
+      result.push_back({slots.data(),slots.capacity()*sizeof(slots[0])});
+      for (const auto &row : slots) {
+        const auto &key = detail::key_buffer(row);
+        result.push_back({key.data(),key.capacity()*sizeof(key[0])});
+      }
+    };
+    append(c.bound_->occurrences_); append(c.bound_->fields_);
+    append(c.next_); append(c.next_fields_);
+    return result;
+  }
   static const auto *memberships(const detail::ExchangeCoordinator &c) { return c.bound_->memberships_.get(); }
   static void stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
       std::shared_ptr<const MembershipFields> memberships,
-      const std::vector<detail::OccurrenceBinding> &rows,
-      const std::vector<detail::ExchangeFieldBinding> &fields) {
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
     c.bound_->stage(std::move(declaration),std::move(memberships),rows,fields);
   }
-  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) { c.bound_->capture(p); }
+  static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p, std::uint64_t work) {
+    return c.bound_->capture(p,work);
+  }
+  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) {
+    if (capture(c,p,UINT64_MAX).status != detail::CaptureStatus::Ok)
+      throw warm::Error("test capture work overflow");
+  }
   static const auto *binding(const detail::ExchangeCoordinator &c) { return c.bound_.get(); }
   static auto binding_backing(const detail::ExchangeCoordinator &c) {
     const auto &b = *c.bound_;
@@ -24,9 +46,10 @@ struct ExchangeCoordinatorAccess {
   }
   static void rebind(detail::ExchangeCoordinator &c, const LetterProjection &p,
       std::shared_ptr<const LetterExchangeContract> declaration,
-      const std::vector<detail::OccurrenceBinding> &rows,
-      const std::vector<detail::ExchangeFieldBinding> &fields) {
-    c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields);
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
+    if (c.bound_->prepare(p,std::move(declaration),c.bound_->memberships_,rows,fields,UINT64_MAX).status !=
+        detail::CaptureStatus::Ok) throw warm::Error("test rebind work overflow");
   }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }
   static auto backing(const detail::ExchangeCoordinator &c) {
@@ -53,8 +76,14 @@ struct ExchangeCoordinatorAccess {
   static const auto &outgoing_report(const detail::ExchangeCoordinator &c) { return c.outgoing_report_; }
   static const auto &balance_report(const detail::ExchangeCoordinator &c) { return c.balance_report_; }
   static void seal(detail::ExchangeCoordinator &c, const field::LiveRefreshSpec &spec) {
-    c.prepare_hierarchy(spec);
+    const auto charge = c.hierarchy_charge(spec);
+    if (c.prepare_hierarchy(spec,{charge.required_bytes,charge.required_work}).status !=
+        detail::HierarchySealStatus::Ok) throw warm::Error("test hierarchy sealing rejected");
   }
+  static auto hierarchy_charge(const detail::ExchangeCoordinator &c, const field::LiveRefreshSpec &s) {
+    return c.hierarchy_charge(s);
+  }
+  static bool sealed(const detail::ExchangeCoordinator &c) { return c.sealed_; }
   static auto execute(detail::ExchangeCoordinator &c, std::uint64_t generation,
       std::uint64_t work = UINT64_MAX, std::uint64_t cells = UINT64_MAX,
       std::uint64_t hierarchy_work = UINT64_MAX) {

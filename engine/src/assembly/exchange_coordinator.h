@@ -1,5 +1,6 @@
 #pragma once
 #include "assembly/exchange_bindings.h"
+#include "assembly/hierarchy_seal_budget.h"
 
 namespace assembly {
 namespace testing { struct ExchangeCoordinatorAccess; }
@@ -26,19 +27,20 @@ class ExchangeCoordinator {
   friend class ExchangeOwner;
   explicit ExchangeCoordinator(field::Harness &);
   void reserve(const field::Harness &);
-  void prepare(const std::vector<ExchangeIncoming> &,
-               const std::vector<ExchangeNewField> &);
+  PreparationResult prepare(const std::vector<ExchangeIncoming> &,
+               const std::vector<ExchangeNewField> &, std::uint64_t command_work);
   ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});
-  void prepare_hierarchy(const field::LiveRefreshSpec &);
+  HierarchySealResult hierarchy_charge(const field::LiveRefreshSpec &) const;
+  HierarchySealResult prepare_hierarchy(const field::LiveRefreshSpec &, HierarchySealBudget);
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
   std::unique_ptr<ExchangeBindings> bound_;
   std::vector<field::UpdateCommand> commands_;
   std::vector<field::PlacementIntrinsic> intrinsics_;
-  std::vector<OccurrenceBinding> next_;
-  std::vector<ExchangeFieldBinding> next_fields_;
+  ExchangeMap<OccurrenceBinding> next_;
+  ExchangeMap<ExchangeFieldBinding> next_fields_;
   // -1 for retained fields; otherwise the sealed DefineField command index.
   std::vector<int> field_commands_;
   std::vector<field::LiveRefreshNode> nodes_;

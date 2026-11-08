@@ -40,6 +40,15 @@ by trusted preparation. Preparation and hierarchy sealing do not publish any liv
 projection or mapping. A new preparation discards previous pending intent; a
 preparation exception preserves committed identity, mappings and last report.
 
+Hierarchy sealing now takes explicit per-call payload-byte and copy-work
+allowances. The checked byte charge combines the caller's three table spans with
+the three retained destination capacities; copy work is one unit per payload
+byte. Exhaustion or arithmetic overflow returns before source table access,
+leaving the unsealed pending operation available for retry. Existing native
+capacity and malformed-input checks still apply before copying. This is a
+bounded sealing gate, not a total owner memory/preparation-work policy; see
+[the precise budget scope](OWNER-RESOURCES.md#hierarchy-sealing-gate-contribution-awaiting-review).
+
 Adoption also retains two immutable exchange declarations per selected occurrence,
 one for each direction. Both come from the validated structural recipe: the reverse
 swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact
@@ -55,6 +64,23 @@ copying its nested descriptors. Readiness/generation and current source particip
 are still validated afresh; a retained declaration is not live execution authority.
 There is no mutable declaration alias on this path. Reference-counted ownership
 keeps it alive through binding teardown; all harness/owner calls remain exclusive.
+
+Owner preparation now requires an explicit allowance for binding source capture.
+Capture charges structural row work, variable-length identity comparisons, mask
+fills and final validation before performing them. Exhaustion/overflow returns
+with an invalid binding and no pending owner operation; partial candidate buffers
+are overwritten by retry. Committed identity, reports and native state are unchanged.
+This does not yet gate declaration selection or projection/map staging. Later
+command construction now has its own allowance. See [capture-work scope](OWNER-RESOURCES.md#source-capture-work-gate-contribution-awaiting-review),
+including setup's separate allowance and exception-runtime accounting limits.
+
+Preparation returns separate capture/command results and a phase identifying
+where it stopped, or `Complete`. Command-work exhaustion leaves the coordinator
+consumed/unsealed and the owner non-pending, even though captured source metadata
+may be valid. The candidate's partial commands/maps are overwritten on retry;
+committed owner/native state is unchanged. Command searches, copies, source
+revalidation and field-retirement moves are charged before their work. See
+[command-work scope](OWNER-RESOURCES.md#command-construction-work-gate-contribution-awaiting-review).
 
 The same lifetime holds a membership catalogue for all declared alternatives.
 It follows only pinned upward memberships of the owning letter, preserving each
@@ -88,6 +114,68 @@ rebind. Integrating admission, removal/reuse, focus/rebase and restart through t
 same owner is subsequent work.
 
 ## Resource boundary and evidence
+
+### Combined retained-capacity report (accepted #231)
+
+`ExchangeOwner::storage()` now reports both projections, all six nested map stores,
+binding and coordinator objects/buffers, both declarations per selection, and the
+all-alternative membership catalogue. Shared pointees are counted once; control
+block identities are reported separately from their unmeasured byte overhead.
+The checked total uses the existing conservative capacity convention, including
+constructed inactive map slots and the field-command vector. Reporting does not
+allocate. This is a retained payload-capacity charge, not a complete memory budget.
+
+The [owner resource inventory](OWNER-RESOURCES.md) specifies every charged family,
+ownership/cleanup paths, adoption overlaps, borrowed native/caller surfaces and
+the work still outside execution's existing allowances. Complete byte/work budget enforcement remains next. Accepted #232 supplies scoped adoption allocation-peak,
+every-allocation failure and final-alias reclamation witnesses; their exact
+coverage and exclusions are in that inventory. These do not establish a total
+byte/work gate. The projection-only figures below retain their original scope.
+
+### Retained nested maps (accepted #228)
+
+The owner, binding and coordinator each retain an occurrence map and a field map.
+Each `ExchangeMap` separates the active length from constructed reserved slots.
+Adoption reserves occurrence slots to `Particles + Batch` and field slots to
+`Fields + min(Fields, Batch)`, with checked sums. These include candidate metadata
+that may exceed native live capacity: preparation must still describe an oversized
+request so native preflight can report ordinary `CapacityExhausted`. Reserving host
+candidate keys does not increase native claim limits. The same capacity is retained
+in each store because publication rotates their roles.
+Every slot has UUID storage and a path/address buffer sized from the full pinned
+alternative inventory, including trusted initial field identities. These are host
+identity slots only: unused slots do not become native objects, claims or mass.
+The coordinator reserves the parallel field-command index vector to the same
+candidate field bound.
+
+Staging copy-assigns keys into existing slots. Clearing changes only the active
+length; field retirement rotates whole slots, preserving live order and nested
+storage. Incoming keys are assigned by reference without temporary key objects.
+Slot or nested-key exhaustion rejects before the offending append and cannot grow
+backing. A failed staging operation may leave partial candidate metadata, but the
+binding/owner pending gates are already invalid and committed mappings remain
+unchanged. Valid retry overwrites the candidate. Publication swaps complete map
+stores and their active lengths with no allocation. Copies made during standalone
+adapter setup preserve reservation even for inactive slots.
+
+The first and repeated successful `ExchangeOwner::prepare` calls are now guarded
+against C++ `new`, including successful retries after partial preparation/capture
+failure. Both owner sequences also compare the complete pool of outer map and
+nested path/address buffer addresses and capacities across publication swaps.
+Map tests cover erasure order, full capacity, oversized keys, empty-copy reservation
+and retry. An oversized incoming field key cancels pending intent without growing
+the pools or changing committed state. The independent four-copy sequence retains
+its shared fields and survivor-history checks.
+
+This reservation has a real setup and lifetime cost: three constructed occurrence
+stores, three constructed field stores, all their nested UUID/path/address backing,
+and the field-command vector survive until teardown. They are **not included** in
+`projection_storage()`. The pointer/capacity checks are reuse witnesses, not a total
+byte census or budget. Complete owner peak/lifetime/work accounting remains next,
+including these slots, immutable declarations/catalogue, setup transients, shared
+ownership overhead and borrowed native surfaces. Caller-built inputs and hierarchy,
+adoption, standalone adapter construction and exception construction may allocate.
+No allocator/RSS, GPU, performance or other-operation qualification follows.
 
 Projection reservation occurs at adoption: both complete views and their immutable
 recipe copies remain allocated until owner teardown. Repeated projection staging
@@ -143,12 +231,15 @@ setup transients; no complete peak/lifetime or byte-budget claim follows.
 Membership traversal now occurs at adoption and the catalogue is shared across
 preparations. After nested occurrence/field maps are staged, fresh source capture
 uses reserved buffers and borrowed key references without C++ allocation. Nested
-map staging and caller preparation still allocate. The catalogue, its nested rows/
-pins and ownership control block, and the binding buffers are all outside
-the projection charge; no total binding-byte census has been added. Setup transients, native storage
-and lifetime/cleanup measurement also remain outside the projection charge.
-Allocation-free **whole-owner** preparation and complete peak/lifetime accounting
-remain unqualified. No new native numerical kernel or backing array is introduced.
+map staging now reuses retained slots; caller preparation still allocates. The
+catalogue, its nested rows/pins and ownership control block, and the binding buffers
+are all outside the projection charge. The combined report now counts retained
+payload capacity; control-block bytes remain outside that charge.
+Setup transients, native storage and lifetime/cleanup measurement also remain outside
+the projection charge.
+Successful private owner preparation is guarded against C++ `new` in the tested
+sequences; complete peak/lifetime accounting remains open. No new native numerical
+kernel or backing array is introduced.
 
 `exchange_owner`, also included in the combined placement matrix, alternates 32
 exchanges of one two-byte letter on one execution, with a tick after each. It checks
@@ -170,7 +261,7 @@ after binding recapture/partial plan construction, invalidates preceding pending
 intent, preserves the committed owner and permits a valid retry. Both view addresses and
 the combined projection charge remain stable; tests include active cardinality
 changes, overflow rejection, and an isolated address-reservation increase with an
-exact expected charge delta. Other host preparation and exception construction
+exact expected charge delta. Caller preparation, adoption and exception construction
 remain excluded. Native backing is observed separately.
 
 Declaration tests retain all two/eight original declaration identities across the

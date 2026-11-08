@@ -60,3 +60,47 @@ Local evidence is retained as `cache-d4adfd70`, including before/after CMake
 caches, archive inventories, the quick run and its verified checksum manifest.
 The outer evidence `SHA256SUMS` digest is
 `692a2633c74bf3a8b29e22d54d71c231b64fa73304b0c2d8b178d4ee07e9e764`.
+
+## Numerical-kernel extraction — 2026-11-07
+
+First mechanical slice of [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229),
+explicitly based on provisionally accepted #228 at
+`4596c3535bba92efa533616f074d702ede85939c`.
+Tested code: `44ff31fef653f1afa42b129c3db81ad8d978b007`;
+Taichi: `5ba579a8a11255b7a258cde93801070956d81d57`.
+The subsequent contribution changes documentation only.
+
+Native CPU/x64 under WSL Ubuntu, Clang/LLVM 15; CUDA disabled in the build and
+hidden from execution. The shared host ran CTest with two jobs alongside four
+independent compiler-matrix processes. No timing, GPU or database qualification
+is claimed. No test expectations, compiler auditors or negative controls changed.
+
+| Check | Result |
+|---|---|
+| Full native build, `cmake --build engine/build -j 2` | Passed |
+| `ctest --test-dir engine/build -j 2 --no-tests=error --output-on-failure` | 115/115 passed |
+| Unchanged `engine/scripts/hosted_cpu_compiler.sh`, `HCP_WORKERS=1/2` × `HCP_SOURCE_PATH=bulk/direct` | All four jobs passed |
+| Default/no-unroll compiler collection and audits in each job | All eight configurations passed, including placement negative controls |
+| No-unroll hierarchy, refresh, selection, contact ticks and placement | All four matrices passed, including all 22 placement cases each |
+| Bulk placement arithmetic | Both worker configurations passed, 632 samples each |
+| Mechanical source comparison against #228 | Entire builder and all seven helper definitions identical after LF normalization |
+
+The unchanged builder's SHA-256 is
+`bd073e2871b8bc704bf3eb2387a8018b5c11debffd3d19e7bb79ba24ceb1ac5a`.
+Its private declaration, callers and ownership remain unchanged; only the
+compilation-unit boundary and CMake source list change.
+
+Raw logs, emitted LLVM, audit output, build configuration, binary/toolchain
+identities, source pins, exact commands and mechanical comparison remain local
+in `numerical-extraction-44ff31fe`. All manifest entries verified successfully.
+SHA-256 of `SHA256SUMS`:
+
+```text
+ae6ea7093056219f7230d6653621306557f8907ce62f94ca76b529626eace09b
+```
+
+This identifies contributor-local evidence, not remotely available or independent
+maintainer evidence. #228 hosted native run 42370220296 and smoke 42370220331
+passed; merge/disposition remains separate. Complete owner resource/lifetime/work
+accounting remains next and should guide subsequent #229 factoring. This first
+slice does not close the broader issue.
