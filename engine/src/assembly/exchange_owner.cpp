@@ -57,16 +57,28 @@ AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &proje
 std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
     const LetterProjection &projection, const std::vector<OccurrenceBinding> &rows,
     const std::vector<ExchangeFieldBinding> &fields, AdoptionInputBudget budget,
-    AdoptionInputResult &result) {
+    AdoptionInputResult &result, ReservationBudget budgeted_buffers, ReservationResult &reservation) {
   // References cross this gate. No by-value argument copy or owner allocation
   // may precede it. Later constructor setup remains a separately scoped domain.
+  reservation = {};
   result = input_admission(projection,rows,fields,budget);
   if (result.status != AdoptionInputStatus::Ok) return {};
-  return std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields));
+  // The small domain object is separate overhead, not one of its buffer requests.
+  auto domain = std::make_unique<ReservationDomain>(budgeted_buffers);
+  try {
+    auto owner = std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields,*domain));
+    reservation = domain->result();
+    owner->reservations_ = std::move(domain);
+    return owner;
+  } catch (const ReservationStop &) {
+    // Constructor members/temporaries have unwound while the domain stays alive.
+    reservation = domain->result();
+    return {};
+  }
 }
 
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
-    std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields)
+    std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields, ReservationDomain &domain)
     : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
       occurrences_(rows), fields_(fields), generation_(h.prepared_storage().generation) {
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
@@ -84,14 +96,14 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
     auto retained = std::make_shared<const LetterExchangeContract>(std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields);
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,&domain);
     declarations_.push_back(std::move(retained));
     declarations_.push_back(std::make_shared<const LetterExchangeContract>(std::move(reverse)));
   }
   prospective_ = std::make_unique<LetterProjection>(*projection_);
   projection_->reserve_exposure();
   prospective_->reserve_exposure();
-  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_));
+  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_,&domain));
   const auto &limits = h_.prepared_storage().capacity.limits();
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_);
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);

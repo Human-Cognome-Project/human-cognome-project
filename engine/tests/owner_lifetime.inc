@@ -123,12 +123,120 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
             << ",required_bytes=" << full.required_bytes << " PASS\n";
 }
 
+void reservation_allocator_controls() {
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  ReservationDomain domain({32,UINT64_MAX});
+  {
+    ReservedVector<int> values{ReservationAllocator<int>(&domain)};
+    values.reserve(4); values.push_back(123);
+    const auto *backing = values.data();
+    bool rejected = false;
+    no_new([&] { try { values.reserve(8); } catch (const ReservationStop &) { rejected = true; } });
+    require(rejected && domain.result().status == ReservationStatus::ByteExhausted &&
+                domain.result().required_bytes >= 48 && domain.result().live_bytes == 16 &&
+                values.data() == backing && values.size() == 1 && values[0] == 123,
+            "reservation growth omitted overlapping old backing or changed vector on rejection");
+  }
+  require(!domain.result().live_bytes, "reservation vector destruction did not release charge");
+  ReservationDomain measured({UINT64_MAX,UINT64_MAX});
+  A::begin();
+  try {
+    ReservedVector<bool> bits{ReservationAllocator<bool>(&measured)};
+    ReservedVector<int> integers{ReservationAllocator<int>(&measured)};
+    bits.reserve(65); integers.reserve(7);
+    require(measured.result().live_bytes == A::counts.live && measured.result().charged_work == A::counts.live &&
+                measured.result().live_bytes >= 9+7*sizeof(int),
+            "reservation allocator omitted actual bit-word or integer requests");
+  } catch (...) { A::end(); throw; }
+  const auto finished = A::end();
+  require(!finished.live && !measured.result().live_bytes && measured.result().peak_bytes == finished.peak,
+          "reservation allocator failed exact request/release witness");
+  ReservationDomain work({UINT64_MAX,16});
+  ReservationAllocator<int> allocator(&work);
+  auto *p = allocator.allocate(4); allocator.deallocate(p,4);
+  no_new([&] {
+    bool rejected = false;
+    try { p = allocator.allocate(1); } catch (const ReservationStop &) { rejected = true; }
+    require(rejected && work.result().status == ReservationStatus::WorkExhausted &&
+                work.result().charged_work == 16 && work.result().required_work == 20 && !work.result().live_bytes,
+            "released bytes incorrectly refunded cumulative allocation work");
+    ReservationDomain overflow({UINT64_MAX,UINT64_MAX});
+    ReservationAllocator<std::uint64_t> huge(&overflow);
+    rejected = false;
+    try { huge.allocate(SIZE_MAX); } catch (const ReservationStop &) { rejected = true; }
+    require(rejected && overflow.result().status == ReservationStatus::Overflow &&
+                !overflow.result().live_bytes && !overflow.result().charged_work,
+            "reservation multiplication overflow reached underlying allocation");
+  });
+  ReservationDomain failed({UINT64_MAX,UINT64_MAX});
+  A::begin(1);
+  bool rejected = false;
+  try { ReservationAllocator<int>(&failed).allocate(4); }
+  catch (const std::bad_alloc &) { rejected = true; }
+  const auto failure = A::end();
+  require(rejected && !failed.result().live_bytes && failed.result().charged_work == 16 && !failure.live,
+          "underlying allocator failure acquired phantom bytes or refunded admitted work");
+}
+
+void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
+    const std::vector<assembly::detail::OccurrenceBinding> &rows,
+    const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  reservation_allocator_controls();
+  const TickSnapshot before(f);
+  ReservationResult full;
+  {
+    auto owner = Access::adopt(f.h,projection,rows,fields,{UINT64_MAX,UINT64_MAX},full);
+    const auto storage = Access::resources(*owner);
+    require(full.status == ReservationStatus::Ok && full.live_bytes && full.peak_bytes >= full.live_bytes &&
+                full.charged_work > full.live_bytes &&
+                full.live_bytes == storage.binding.vector_bytes+storage.coordinator.vector_bytes,
+            "reservation domain omitted fixed buffers or repeated temporary setup");
+  }
+  std::uint64_t byte_boundaries = 0, work_boundaries = 0;
+  for (bool bytes : {true,false}) {
+    const auto total = bytes ? full.peak_bytes : full.charged_work;
+    std::uint64_t allowance = 0;
+    while (allowance < total) {
+      ReservationResult stopped;
+      A::begin();
+      bool returned = false;
+      try {
+        auto owner = Access::adopt(f.h,projection,rows,fields,
+            {bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance},stopped);
+        returned = bool(owner);
+      } catch (...) { A::end(); throw; }
+      const auto released = A::end();
+      const auto next = bytes ? stopped.required_bytes : stopped.required_work;
+      require(!returned && stopped.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                  !stopped.live_bytes && !released.live && !released.blocks && next > allowance && next <= total &&
+                  (bytes ? stopped.peak_bytes : stopped.charged_work) <= allowance &&
+                  f.h.ready(), "constructor reservation exhaustion leaked allocations or failed progress");
+      allowance = next;
+      if (bytes) ++byte_boundaries; else ++work_boundaries;
+    }
+  }
+  ReservationResult exact;
+  auto retry = Access::adopt(f.h,projection,rows,fields,{full.peak_bytes,full.charged_work},exact);
+  require(retry && exact.status == ReservationStatus::Ok && exact.live_bytes == full.live_bytes &&
+              exact.peak_bytes == full.peak_bytes && exact.charged_work == full.charged_work &&
+              before == TickSnapshot(f), "exact constructor reservation retry failed or changed native state");
+  std::cout << "owner_reservations,selections=" << projection.recipe().selections.size()
+            << ",byte_boundaries=" << byte_boundaries << ",work_boundaries=" << work_boundaries
+            << ",live_bytes=" << full.live_bytes << ",peak_bytes=" << full.peak_bytes
+            << ",allocation_work=" << full.charged_work << " PASS\n";
+}
+
 void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   namespace A = allocation_lifetime;
   owner_input_admission(f,projection,rows,fields);
+  owner_reservation_admission(f,projection,rows,fields);
   allocation_lifetime_controls();
   const TickSnapshot before(f);
   const auto generation = f.h.prepared_storage().generation;

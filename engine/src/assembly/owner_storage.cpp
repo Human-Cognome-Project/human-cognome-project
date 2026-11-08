@@ -10,11 +10,11 @@ struct Census {
     if (n > UINT64_MAX - to) throw warm::Error("owner storage charge overflow");
     to += n;
   }
-  template<class T> void buffer(const std::vector<T> &v) {
+  template<class T, class A> void buffer(const std::vector<T,A> &v) {
     if (v.capacity() > UINT64_MAX / sizeof(T)) throw warm::Error("owner capacity overflow");
     add(result.vector_bytes, v.capacity() * sizeof(T));
   }
-  void buffer(const std::vector<bool> &v) {
+  template<class A> void buffer(const std::vector<bool,A> &v) {
     // vector<bool>::capacity is in bits. Round without an overflowing +7.
     add(result.vector_bytes, v.capacity()/8 + (v.capacity()%8 != 0));
   }
@@ -50,6 +50,7 @@ struct Census {
 OwnerStorage ExchangeOwner::storage() const {
   OwnerStorage out;
   out.owner.object_bytes = sizeof(*this);
+  if (reservations_) out.owner.object_bytes += sizeof(*reservations_);
   out.projections = projection_storage();
   const auto &p = *plan_;
   const auto &b = *p.bound_;

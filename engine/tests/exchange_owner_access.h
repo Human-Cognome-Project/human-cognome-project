@@ -4,6 +4,7 @@
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
+  static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto &inactive_path(detail::ExchangeOwner &o) {
     return o.occurrences_[o.occurrences_.storage().size()-1].occurrence.source.path;
   }
@@ -53,7 +54,15 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::OccurrenceBinding> &rows,
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::AdoptionInputBudget budget, detail::AdoptionInputResult &result) {
-    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result);
+    detail::ReservationResult reservation;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result,{UINT64_MAX,UINT64_MAX},reservation);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields,
+      detail::ReservationBudget budget, detail::ReservationResult &result) {
+    detail::AdoptionInputResult input;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,budget,result);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,

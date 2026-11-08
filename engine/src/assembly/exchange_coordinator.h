@@ -25,7 +25,7 @@ class ExchangeCoordinator {
  private:
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   friend class ExchangeOwner;
-  explicit ExchangeCoordinator(field::Harness &);
+  explicit ExchangeCoordinator(field::Harness &, ReservationDomain * = nullptr);
   void reserve(const field::Harness &);
   PreparationResult prepare(const std::vector<ExchangeIncoming> &,
                const std::vector<ExchangeNewField> &, std::uint64_t command_work);
@@ -37,15 +37,15 @@ class ExchangeCoordinator {
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
   std::unique_ptr<ExchangeBindings> bound_;
-  std::vector<field::UpdateCommand> commands_;
-  std::vector<field::PlacementIntrinsic> intrinsics_;
+  ReservedVector<field::UpdateCommand> commands_;
+  ReservedVector<field::PlacementIntrinsic> intrinsics_;
   ExchangeMap<OccurrenceBinding> next_;
   ExchangeMap<ExchangeFieldBinding> next_fields_;
   // -1 for retained fields; otherwise the sealed DefineField command index.
-  std::vector<int> field_commands_;
-  std::vector<field::LiveRefreshNode> nodes_;
-  std::vector<int> children_;
-  std::vector<field::LiveRefreshContribution> contributions_;
+  ReservedVector<int> field_commands_;
+  ReservedVector<field::LiveRefreshNode> nodes_;
+  ReservedVector<int> children_;
+  ReservedVector<field::LiveRefreshContribution> contributions_;
   std::size_t survivors_{};
   std::uint64_t mapping_generation_{}, work_{};
   bool sealed_{}, consumed_{};

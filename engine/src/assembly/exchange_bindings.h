@@ -2,6 +2,7 @@
 
 #include "assembly/exchange_contract.h"
 #include "assembly/capture_work.h"
+#include "assembly/reservation_allocator.h"
 #include "assembly/exchange_map.h"
 #include "assembly/membership_fields.h"
 #include <memory>
@@ -56,7 +57,7 @@ class ExchangeBindings {
   friend class ExchangeOwner;
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
-  explicit ExchangeBindings(field::Harness &);
+  explicit ExchangeBindings(field::Harness &, ReservationDomain * = nullptr);
   CaptureResult prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
                std::shared_ptr<const MembershipFields>,
                const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
@@ -69,7 +70,7 @@ class ExchangeBindings {
   ExchangeBindings(field::Harness &, const LetterProjection &,
                    std::shared_ptr<const LetterExchangeContract>,
                    std::shared_ptr<const MembershipFields>,
-                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
+                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>, ReservationDomain * = nullptr);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   struct Edge {
     std::size_t row;
@@ -81,10 +82,10 @@ class ExchangeBindings {
   std::shared_ptr<const MembershipFields> memberships_;
   ExchangeMap<OccurrenceBinding> occurrences_;
   ExchangeMap<ExchangeFieldBinding> fields_;
-  std::vector<std::uint64_t> masses_;
-  std::vector<engine::RecordHandle> outgoing_;
-  std::vector<Edge> edges_;
-  std::vector<bool> outgoing_rows_, edge_rows_;
+  ReservedVector<std::uint64_t> masses_;
+  ReservedVector<engine::RecordHandle> outgoing_;
+  ReservedVector<Edge> edges_;
+  ReservedVector<bool> outgoing_rows_, edge_rows_;
   std::uint64_t generation_{}, work_{};
   std::size_t source_edges_{};
   bool valid_{};
