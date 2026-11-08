@@ -106,6 +106,7 @@ class LetterProjection {
   void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
                         detail::PreparationWork &) const;
   ProjectionStorage storage() const;
+  ProjectionStorage storage(detail::PreparationWork *, bool logical) const;
   warm::Uuid study_;
   warm::Bundle recipe_;
   std::vector<warm::Exposure> exposures_;

@@ -1,5 +1,6 @@
 #pragma once
 #include "assembly/exchange_coordinator.h"
+#include "assembly/adoption_input.h"
 
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
@@ -27,6 +28,12 @@ struct OwnerStorage {
 class ExchangeOwner {
  private:
   friend struct assembly::testing::ExchangeOwnerAccess;
+  static AdoptionInputResult input_admission(const LetterProjection &,
+      const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
+      AdoptionInputBudget);
+  static std::unique_ptr<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
+      const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
+      AdoptionInputBudget, AdoptionInputResult &);
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
                 std::vector<ExchangeFieldBinding>);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,

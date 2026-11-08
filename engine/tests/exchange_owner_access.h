@@ -44,10 +44,24 @@ struct ExchangeOwnerAccess {
   static auto declaration(const detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {
     detail::PreparationWork meter(UINT64_MAX); return o.declaration(key,target,meter);
   }
-  static auto adopt(field::Harness &h, LetterProjection p,
-      std::vector<detail::OccurrenceBinding> rows, std::vector<detail::ExchangeFieldBinding> fields) {
-    return std::unique_ptr<detail::ExchangeOwner>(
-        new detail::ExchangeOwner(h, std::move(p), std::move(rows), std::move(fields)));
+  static auto input_admission(const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields, detail::AdoptionInputBudget budget) {
+    return detail::ExchangeOwner::input_admission(p,rows,fields,budget);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields,
+      detail::AdoptionInputBudget budget, detail::AdoptionInputResult &result) {
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields) {
+    detail::AdoptionInputResult result;
+    auto owner = adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},result);
+    if (!owner) throw warm::Error("test owner input admission failed");
+    return owner;
   }
   static void prepare(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target,
       const std::vector<detail::ExchangeIncoming> &incoming,

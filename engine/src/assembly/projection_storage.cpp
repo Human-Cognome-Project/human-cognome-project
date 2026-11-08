@@ -1,4 +1,5 @@
 #include "assembly/letter_projection.h"
+#include "assembly/adoption_input.h"
 #include <limits>
 
 namespace assembly {
@@ -9,13 +10,24 @@ void add(std::uint64_t &to, std::uint64_t n) {
 }
 struct Census {
   ProjectionStorage result;
+  detail::PreparationWork *meter{};
+  bool logical{};
+  void count(std::uint64_t &to, std::uint64_t n) {
+    if (meter) detail::input_add(to,n,*meter); else add(to,n);
+  }
   template<class T> void buffer(const std::vector<T> &v) {
-    if (v.capacity() > UINT64_MAX / sizeof(T)) throw warm::Error("projection capacity overflow");
-    add(result.vector_bytes, v.capacity() * sizeof(T));
+    if (meter) { meter->charge(1); meter->elements(v.size(),1); }
+    const auto n = logical ? v.size() : v.capacity();
+    if (meter) detail::input_elements(result.vector_bytes,n,sizeof(T),*meter);
+    else {
+      if (n > UINT64_MAX / sizeof(T)) throw warm::Error("projection capacity overflow");
+      add(result.vector_bytes,n*sizeof(T));
+    }
   }
   void text(const std::string &s) {
-    add(result.text_bytes,s.capacity());
-    add(result.text_bytes,1);
+    if (meter) meter->charge(1);
+    count(result.text_bytes,logical ? s.size() : s.capacity());
+    count(result.text_bytes,1);
   }
   void uuid(const warm::Uuid &u) { text(u.str()); }
   void object(const warm::ObjectKey &o) { uuid(o.scope); buffer(o.address); }
@@ -58,7 +70,7 @@ struct Census {
     buffer(in.focal_fields); for (const auto &f : in.focal_fields) text(f.value);
   }
   void parents(const std::vector<ParentContribution> &v) {
-    buffer(v); add(result.parent_slots,v.size());
+    buffer(v); count(result.parent_slots,v.size());
     for (const auto &p : v) { key(p.occurrence); object(p.field.object); }
   }
 };
@@ -79,7 +91,12 @@ void ProjectionStorage::add(const ProjectionStorage &other) {
   parent_slots = slots;
 }
 ProjectionStorage LetterProjection::storage() const {
+  return storage(nullptr,false);
+}
+ProjectionStorage LetterProjection::storage(detail::PreparationWork *meter, bool logical) const {
   Census c;
+  c.meter = meter; c.logical = logical;
+  if (meter) meter->charge(1);
   c.result.object_bytes = sizeof(*this);
   c.uuid(study_); c.bundle(recipe_); c.buffer(exposures_); c.buffer(occurrences_);
   for (const auto &o : occurrences_) {
@@ -89,7 +106,8 @@ ProjectionStorage LetterProjection::storage() const {
   }
   c.parents(parents_); c.parents(spare_parents_);
   c.input(input_); c.input(structural_input_);
-  c.result.charged_bytes();
+  auto total = c.result.object_bytes;
+  c.count(total,c.result.vector_bytes); c.count(total,c.result.text_bytes);
   return c.result;
 }
 }
