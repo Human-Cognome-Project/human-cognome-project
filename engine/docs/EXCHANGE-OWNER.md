@@ -295,3 +295,17 @@ copies. Budget rejection returns no owner; exact input admission permits the
 existing constructor and its unwind behavior. This gates only caller/input-snapshot
 payload, not later constructor allocations or complete setup work. See
 [input admission scope](OWNER-RESOURCES.md#adoption-input-snapshot-admission-contribution-awaiting-review).
+
+The constructor-buffer contribution adds a separate allocation domain for all
+binding capture/mask buffers (including temporary validators) and coordinator
+command/hierarchy buffers. It admits actual requested bytes before allocation,
+tracks live/peak bytes and cumulative request work, and survives constructor unwind
+so budget rejection can report full reclamation. Other constructor allocation and
+work domains remain open. See [allocator scope](OWNER-RESOURCES.md#bindingcoordinator-allocation-domain-contribution-awaiting-review).
+
+The map-store contribution extends that allocation domain to all six retained map
+outer vectors, initial owner map copies and explicit temporary validation/staging
+maps. Ordinary copied snapshots detach from the source owner's accounting lifetime;
+setup-owned copies explicitly attach. Assignment retains the destination domain,
+and swaps move it with the backing. Separately allocated nested key payload remains
+outside this limit. See [map-store scope](OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).

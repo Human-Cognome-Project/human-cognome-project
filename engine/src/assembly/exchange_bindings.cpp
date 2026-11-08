@@ -19,7 +19,10 @@ bool current(engine::RecordHandle h, const std::vector<engine::RecordHandle> &ro
 }
 }  // namespace
 
-ExchangeBindings::ExchangeBindings(field::Harness &h) : h_(h) {
+ExchangeBindings::ExchangeBindings(field::Harness &h, ReservationDomain *domain)
+    : h_(h), occurrences_(domain), fields_(domain), masses_(ReservationAllocator<std::uint64_t>(domain)),
+      outgoing_(ReservationAllocator<engine::RecordHandle>(domain)), edges_(ReservationAllocator<Edge>(domain)),
+      outgoing_rows_(ReservationAllocator<bool>(domain)), edge_rows_(ReservationAllocator<bool>(domain)) {
   const auto &s = h.prepared_storage();
   const auto &limits = s.capacity.limits();
   masses_.reserve(limits[field::Budget::Particles]);
@@ -40,13 +43,17 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     std::shared_ptr<const LetterExchangeContract> contract,
     std::shared_ptr<const MembershipFields> memberships, std::vector<OccurrenceBinding> occurrences,
-    std::vector<ExchangeFieldBinding> fields)
-    : ExchangeBindings(h) {
+    std::vector<ExchangeFieldBinding> fields, ReservationDomain *domain)
+    : ExchangeBindings(h,domain) {
   const auto &limits = h.prepared_storage().capacity.limits();
-  const ExchangeMap<ExchangeFieldBinding> trusted(fields);
+  const ExchangeMap<ExchangeFieldBinding> trusted(fields,domain);
   reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,&trusted);
   // Adoption is a separate setup operation; its work gate remains outstanding.
-  need(prepare(projection, std::move(contract), std::move(memberships), occurrences, fields,
+  // Preserve the separate setup copies, but attach their outer stores to the
+  // same domain instead of making implicit untracked vector-to-map conversions.
+  const ExchangeMap<OccurrenceBinding> staged_rows(occurrences,domain);
+  const ExchangeMap<ExchangeFieldBinding> staged_fields(fields,domain);
+  need(prepare(projection, std::move(contract), std::move(memberships), staged_rows, staged_fields,
                UINT64_MAX).status == CaptureStatus::Ok, "adoption capture work overflow");
 }
 

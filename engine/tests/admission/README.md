@@ -1835,3 +1835,138 @@ The final source delta from the tested pin contains documentation only.
 All 12 jobs in [native run 42486720445](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42486720445) succeeded. Independently inspected regression logs 128751381895, 128751381972, 128751381922 and 128751381937 cover all 115 numbered tests exactly once (29/29/29/28). Database log 128751381866 records 180 warm-to-active integration checks and `addressed_reads=24 private_reads=0`. Compiler success is confirmed by hosted job status; contributor-local raw bundles were not inspected and the local matrix was not rerun by the maintainer.
 
 The input factory admits caller capacity plus logical snapshot payload and inspection/copy work before owner allocation/argument copying. This is not an allocator-capacity or complete constructor/setup bound. Subsequent constructor-byte/setup-work gates and combined caller/borrowed accounting remain next, with unwind/retry and single counting of moved snapshots/retained destinations. Remaining operations and #229 factoring stay open; GPU qualification is separate.
+
+## Binding/coordinator reservation domain — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review, based on main e19a134f386b4f3cb0e85d41fbeccf476a141759
+through accepted #238. The [#238 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/238#pullrequestreview-5818542620)
+found no source blockers and verified both #237/#238 hosted gates; this work does
+not repeat their accepted baseline. Tested code:
+`09858db0632deeef3ce16052914c2711c526879e` (implementation 721ff3d5 plus arithmetic
+control). Later source changes are documentation only.
+
+A shared reservation allocator now gates actual binding/coordinator buffer requests
+before allocation. Its domain spans per-selection temporary bindings and retained
+buffers, records live/peak requested bytes and cumulative allocation work, and
+survives constructor unwind. Growth includes old/new simultaneous backing; release
+refunds live bytes only. Underlying allocation failure acquires no live charge.
+The owner census includes the domain object without adding its buffer report twice.
+See [scope/exclusions](../../docs/OWNER-RESOURCES.md#bindingcoordinator-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15 with Taichi 5ba579a8a11255b7a258cde93801070956d81d57,
+CUDA_VISIBLE_DEVICES=-1, shared personal host. The focused native matrix is
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit and
+exchange_fields × workers 1/2 × bulk/default or --direct --compiler-no-unroll.
+Final aggregate result and manifest follow below.
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Live/peak domain bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 11 | 16 | 98,448 / 98,448 | 141,728 |
+| Four selections | 11 | 31 | 98,448 / 98,448 | 271,568 |
+
+All four configurations reproduce these values. Each rejected constructor returns
+no owner, zero remaining domain bytes and zero observer-tracked allocations, with
+successful exact-budget retry and unchanged native snapshot. Independent allocator
+controls verify packed-bit/integer requests against observed C++ allocation sizes,
+reallocation overlap rejection preserving old vector contents, nonrefundable work,
+product/sum overflow and underlying allocator failure. Existing adoption failure
+sweeps now cover 4,193/7,857 sites (the domain object adds one), with final-alias
+reclamation and repeated exchange/tick oracles retained. Whole observed adoption
+peaks are 277,034 / 333,693 requested bytes, deliberately distinct from this bounded
+98,448-byte buffer subset; no total-adoption claim follows.
+
+Raw contributor evidence is local in adoption-reservation-09858db0, retaining build,
+commands, twenty case logs, configuration/toolchain and binary identities. No full
+115-test baseline, complete compiler audit, database or GPU run is claimed. The
+remaining map/key, projection, catalogue/declaration, object/control-block and graph
+setup allocations/work, allocator/exception-runtime overhead and borrowed native
+resources remain outside this domain. Complete owner resources and remaining
+operations are still open.
+
+Result: all 20 focused native runs passed; every process exited zero. Manifest
+SHA256SUMS verified; its SHA-256 is:
+
+    e958ca1efab122ef2c5fb232e47b492cc9ec64cc36f038da1246250c403a63a7
+
+Contributor-local archive: setup-evidence/adoption-reservation-09858db0.tar.gz.
+The final delta from tested code changes documentation only. Raw evidence remains
+local; this manifest does not make it remotely available or replace hosted CI.
+
+## Map outer-store allocation domain — contributor CPU evidence (2026-11-08)
+
+Contribution awaiting review on provisionally accepted #239 at
+`df3625fffbf37118a40d5c702005f834a626f3a5`. The
+[#239 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/239#pullrequestreview-5818720258)
+found no blockers and permits this continuation. At the recorded check smoke
+42499395649 passed and native 42499395644 remained in progress; no duplicate
+parent baseline was started. Integrated acceptance remains through #238.
+CURRENT-STATE and the continuation entry reflect this provisional dependency.
+
+Tested source: `66ec7c761bcf9155b921319a17468b5c48e851ed`. Final changes after this
+pin are documentation only. All six retained map outer vectors and initial owner
+map copies now attach to the reservation domain, together with every temporary
+validation map and its explicit trusted/staging copies. Nested allocated UUID,
+path and address payload is excluded; fixed nested object headers are inside the
+outer slot size. Plain copied snapshots detach from the source owner's domain,
+while setup-owned copies explicitly select one. See [scope and lifetime](../../docs/OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15, Taichi 5ba579a8a11255b7a258cde93801070956d81d57,
+CUDA_VISIBLE_DEVICES=-1, shared personal host. The focused matrix is
+exchange_owner, exchange_owner_multiple, exchange_bindings, exchange_commit and
+exchange_fields × workers 1/2 × bulk/default or --direct --compiler-no-unroll.
+The final aggregate result and verified manifest are recorded below.
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Domain live/peak bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 20 | 29 | 172,368 / 172,368 | 241,256 |
+| Four selections | 20 | 59 | 172,368 / 172,368 | 453,816 |
+
+All four configurations reproduce these charges. Every rejected constructor
+reclaims domain and observer-tracked allocations; exact allowances retry with an
+unchanged native snapshot. Controls reject before outer allocation/nested-row
+construction, preserve existing backing and logical rows on growth denial, verify
+outer bytes separately from larger outer-plus-nested observed bytes, check bounded
+copies and detached snapshots after source-domain destruction, retain destination
+allocators on assignment and propagate them with swapped backing. The retained
+domain total equals six outer map capacities plus binding/coordinator buffers,
+without counting nested payload or the census twice.
+
+The full allocation-failure traces remain 4,193/7,857 sites, with final-alias
+reclamation and existing repeated exchange/tick/numerical witnesses. The additional
+allocator pointers add 48 observed retained bytes; whole-adoption observed requested
+peaks are 277,082 / 333,741 bytes and remain distinct from this selected-domain peak.
+Cumulative work includes released setup copies and growth blocks; it is not peak
+memory or allocator CPU time.
+
+Evidence remains contributor-local in map-store-domain-66ec7c76 (build, commands,
+twenty case logs, configuration/toolchain and binary hashes). No full 115-test
+baseline, complete compiler audit, database or GPU run is claimed. Remaining
+nested-key, projection, catalogue/declaration, object/control-block and graph
+allocation/work limits, allocator/exception-runtime overhead and combined borrowed
+native accounting remain open, ahead of remaining-operation integration.
+
+Result: all 20 focused native runs passed; every process exited zero. SHA256SUMS
+verified; its SHA-256 is:
+
+    6a6aba0e91a30353b81b94be3deb3931a98e77cd44abae82458be03be8ea2306
+
+Contributor-local archive: setup-evidence/map-store-domain-66ec7c76.tar.gz.
+The final delta from tested code changes documentation only. The local manifest
+identifies retained evidence and does not imply remote availability or hosted success.
+
+<a id="maintainer-integrated-acceptance--239240-2026-11-08"></a>
+
+## Maintainer integrated acceptance — #239/#240 (2026-11-08)
+
+The selected binding/coordinator buffer domain (#239) and map outer-store extension (#240) are accepted with original ancestry preserved. Earlier provisional and contributor records retain their original scope.
+
+| PR | Reviewed source | Native run (passed) | Smoke run (passed) |
+|---|---|---|---|
+| #239 | `df3625fffbf37118a40d5c702005f834a626f3a5` | 42499395644 | 42499395649 |
+| #240 | `46afdb0a41aac3372864c758e91943276923c2ae` | 42503182912 | 42503182939 |
+
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/240#pullrequestreview-5819269075) records the source assessment. Tested code `66ec7c761bcf9155b921319a17468b5c48e851ed` differs from reviewed #240 only in five Markdown files. Integration reconciles documentation only beyond that green source; no duplicate accepted-baseline CI was requested.
+
+All 12 jobs in [native run 42503182912](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42503182912) passed. Independently inspected regression logs 128801943220, 128801943268, 128801943218 and 128801943214 cover all 115 tests exactly once (29/29/29/28). Database log 128801943213 records 180 checks and `addressed_reads=24 private_reads=0`. Compiler success is verified by hosted status. Contributor-local raw bundles were not inspected or rerun by the maintainer.
+
+Accepted scope includes actual requests for selected buffers, all six map outer stores and explicit setup copies, old/new growth overlap, domain lifetime through unwind and allocator-aware copy/assignment/swap behavior. Independent snapshots detach from the owner's domain. Separately allocated nested keys, projection, catalogue/declaration, object/control-block and graph-temporary resources remain next, followed by combined caller/borrowed accounting and remaining-operation integration. Do not double-count slot headers, moved snapshots or the domain report alongside retained capacity. No complete-constructor, machine-memory, GPU or performance qualification follows. #229 remains open.

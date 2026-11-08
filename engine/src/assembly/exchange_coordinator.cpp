@@ -10,8 +10,12 @@ namespace {
 void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
 }
 
-ExchangeCoordinator::ExchangeCoordinator(field::Harness &h)
-    : bound_(new ExchangeBindings(h)) {
+ExchangeCoordinator::ExchangeCoordinator(field::Harness &h, ReservationDomain *domain)
+    : bound_(new ExchangeBindings(h,domain)), commands_(ReservationAllocator<field::UpdateCommand>(domain)),
+      intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(domain)),
+      next_(domain), next_fields_(domain),
+      field_commands_(ReservationAllocator<int>(domain)), nodes_(ReservationAllocator<field::LiveRefreshNode>(domain)),
+      children_(ReservationAllocator<int>(domain)), contributions_(ReservationAllocator<field::LiveRefreshContribution>(domain)) {
   reserve(h);
 }
 

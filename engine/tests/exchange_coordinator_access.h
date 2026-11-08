@@ -3,6 +3,10 @@
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
   static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
+  static auto map_outer_bytes(const detail::ExchangeCoordinator &c) {
+    const auto bytes = [](const auto &map) { return map.storage().capacity()*sizeof(map.storage()[0]); };
+    return bytes(c.bound_->occurrences_)+bytes(c.bound_->fields_)+bytes(c.next_)+bytes(c.next_fields_);
+  }
   static auto &field_command_buffer(detail::ExchangeCoordinator &c) { return c.field_commands_; }
   static auto map_backing(const detail::ExchangeCoordinator &c) {
     std::vector<std::pair<const void *,std::size_t>> result;

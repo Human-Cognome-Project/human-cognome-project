@@ -33,9 +33,9 @@ class ExchangeOwner {
       AdoptionInputBudget);
   static std::unique_ptr<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
-      AdoptionInputBudget, AdoptionInputResult &);
+      AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &);
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
-                std::vector<ExchangeFieldBinding>);
+                std::vector<ExchangeFieldBinding>, ReservationDomain &);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
                std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work);
@@ -46,6 +46,8 @@ class ExchangeOwner {
   OwnerStorage storage() const;
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
+  // Declared before the buffers: destroyed after every attached allocator.
+  std::unique_ptr<ReservationDomain> reservations_;
   std::unique_ptr<LetterProjection> projection_, prospective_;
   ExchangeMap<OccurrenceBinding> occurrences_;
   ExchangeMap<ExchangeFieldBinding> fields_;

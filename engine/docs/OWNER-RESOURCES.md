@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #238 on 2026-11-08; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--237238-2026-11-08)
+Accepted through #240 on 2026-11-08; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--239240-2026-11-08)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237/#238 stack. It accompanies the retained-capacity census and scoped
+integrated #228/#230–#235/#237–#240 stack. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -21,7 +21,7 @@ not an operational memory-budget policy or a second state authority.
 
 | Family | Owned surfaces counted |
 |---|---|
-| `owner` | `sizeof(ExchangeOwner)`, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
+| `owner` | `sizeof(ExchangeOwner)` plus its separately allocated reservation-domain object, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
 | `projections` | Both complete projection objects and their existing recursive census: recipes, inputs, occurrences, exposures, active and spare parents, nested keys/pins/text |
 | `maps` | Outer capacity of all six stores: occurrence/field maps in owner, binding and coordinator; nested UUID/path/address storage of **every constructed slot**, including inactive slots |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
@@ -215,6 +215,119 @@ outer/nested caller capacity from populated path and recipe-text snapshot sizes.
 Overflow controls preserve accumulators; the existing constructor allocation-failure,
 peak, alias-lifetime/reclamation and repeated exchange/tick tests remain active.
 Exception-runtime costs remain outside the allocation witness.
+<a id="bindingcoordinator-allocation-domain-contribution-awaiting-review"></a>
+
+### Binding/coordinator allocation domain (accepted #239)
+
+The private adoption factory now also requires `ReservationBudget {bytes,
+allocation_work}` and returns a separate `ReservationResult`. Input admission still
+runs first; when it fails, the reservation result is unused and its zero/default
+value must not be read as a successful constructor. After input admission, a small
+accounting object is created. It survives constructor unwind and is transferred
+to the successful owner; member order releases it only after all attached buffers.
+
+A stateful standard-library allocator gates the following **actual allocation
+requests**, including any implementation-selected capacity and bit-vector words:
+
+- Binding masses, outgoing handles, captured edges, outgoing-row and edge masks.
+  Every per-selection temporary validation binding and the persistent binding use
+  the same domain; released temporaries reduce live bytes.
+- Coordinator commands, intrinsics, field-command indices, hierarchy nodes,
+  child indices and contributions.
+
+Before delegating each allocation, checked count-times-element-size and cumulative
+arithmetic reject overflow. The byte allowance checks currently live requested
+bytes plus the new request. Thus vector growth must admit old and new blocks
+simultaneously; freeing the old block later cannot hide the allocation peak.
+Allocation work prepays one unit per requested byte, cumulatively across the whole
+adoption/owner lifetime. Deallocation refunds live bytes, never charged work.
+This is a structural allocation-request quota, not allocator CPU time or complete
+constructor/setup work. No native numerical algorithm or execution gate changes.
+
+Successful allocation updates live/peak bytes only after the underlying allocator
+returns. `std::bad_alloc` propagates normally: no phantom live bytes are acquired,
+while prepaid request work is not refunded. Byte/work exhaustion throws a trivial
+internal stop token; the factory catches it after all constructed members and
+temporaries unwind, returns no owner, and reports zero remaining domain bytes.
+`required_bytes` and `required_work` describe the denied request at that point;
+peak and charged work preserve the preceding history. Overflow leaves required
+values zero. Fresh adoption creates a new domain and supports exact-budget retry.
+Existing input-Complete still means input admission only; construction also needs
+a returned owner and a successful reservation result.
+
+The domain remains attached after adoption so any unexpected later growth still
+uses its quotas. Normal preparation/execution reuses the accepted reservations.
+Private standalone binding/coordinator fixtures retain an explicit default null
+allocation domain and are not claimed as budgeted adoption. The owner factory has
+no default reservation allowance; test conveniences explicitly supply maxima.
+
+At the #239 boundary this is the first actual requested-byte bound for these selected buffers. It does
+**not** cover the domain/owner/coordinator/binding object allocations themselves,
+input copies, maps and nested keys, projection copies/reservations, membership
+catalogue or declarations, their shared control blocks, graph temporaries,
+allocator metadata/alignment overhead, exception runtime, stack, other threads or
+borrowed harness/runtime/driver allocations. Some of those allocations/work precede
+the first guarded buffer request. This is not a total-constructor or machine budget.
+
+The retained census includes the new domain object and allocator pointer objects.
+Its binding/coordinator vector capacities already represent these buffers: the
+actual requested-byte report must **not** be added to that census a second time.
+The report's peak also includes temporary binding buffers which are absent from
+the final retained census. These distinctions remain necessary for combined policy.
+
+Tests compare actual bit-word/integer requests and releases with the independent
+C++ allocation observer; check old/new vector overlap, cumulative work after free,
+product/sum overflow, and underlying allocation failure. One/four-selection owner
+fixtures traverse every successive byte-peak and cumulative-work rejection boundary,
+require complete allocation reclamation and unchanged native state, then retry
+with exact successful allowances. Existing full allocation-failure/alias-lifetime,
+input/staging/capture/command gates and repeated exchanges remain active.
+<a id="map-outer-store-allocation-domain-contribution-awaiting-review"></a>
+
+### Map outer-store allocation domain (accepted #240)
+
+All six retained `ExchangeMap` outer vectors now use the same reservation domain
+as the owner's binding/coordinator buffers. This includes the owner's initial
+row/field copies and their later growth, both capture maps and both candidate maps.
+Temporary validation also explicitly attaches the trusted-field map and both
+staging input maps, preserving their separate copies rather than leaving implicit
+vector-to-map conversions outside the domain. Every temporary binding's two reserved
+outer stores likewise use that domain.
+
+An outer request charges actual slot capacity times `sizeof(OccurrenceBinding)` or
+`sizeof(ExchangeFieldBinding)` through the allocator before allocating. Old and new
+outer blocks coexist in the byte admission during growth. Rejection before allocation
+cannot construct new nested rows; normal constructor unwind releases earlier outer
+and nested allocations. The nested string/vector **objects** are included inside
+slot size; their separately allocated UUID/path/address payload is **not** tracked
+by this domain. Default-slot UUID creation and nested-key reserve/copy work still
+need their own limits. This is not a complete-map or complete-constructor bound.
+
+A plain map copy is an independent caller snapshot with a null allocation domain.
+It preserves every constructed inactive slot and nested reservation, but must not
+retain a raw pointer to a source owner's accounting object. An explicit map-copy
+constructor accepts a domain for setup-owned copies. Every production owner/setup
+path in this slice passes its domain explicitly; standalone/caller snapshots are
+outside owner reservation admission. Assignment reuses existing slots and retains
+the destination allocator. Swapping whole stores propagates the allocator together
+with its backing and logical length. Attached domains must outlive their stores;
+owner member order and constructor unwind preserve this requirement.
+
+The owner retained census already counts map outer capacity once. Comparing its
+outer capacities plus the binding/coordinator buffer capacities with domain live
+bytes verifies the selected retained surfaces; neither the whole nested-map census
+nor the live-byte report is added again to a combined charge. Cumulative work also
+includes released setup copies and old blocks, separately from simultaneous peak.
+
+Controls check zero-byte outer rejection before any C++ allocation, growth overlap
+with unchanged logical rows/backing, exact outer accounting versus larger observed
+outer-plus-nested allocation, reclamation, explicit bounded copies, detached copies
+surviving their source domain, destination-preserving assignment and allocator-aware
+swaps. The one/four-owner byte/work boundary sweeps now cover these requests together
+with the accepted buffer domain, followed by exact retry, full failure/reclamation
+witnesses and repeated exchanges. Underlying allocator/exception overhead, nested
+payload, projection, catalogue/declaration, object/control-block and graph-temporary
+limits plus borrowed-resource accounting remain open.
 ## Work inventory and remaining budget gate
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>

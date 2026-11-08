@@ -1,5 +1,6 @@
 #pragma once
 #include "assembly/letter_projection.h"
+#include "assembly/reservation_allocator.h"
 #include <algorithm>
 
 namespace assembly::detail {
@@ -11,8 +12,14 @@ inline const auto &key_buffer(const FieldKey &v) { return v.object.address; }
 template<class T> class ExchangeMap {
  public:
   ExchangeMap() = default;
-  ExchangeMap(const std::vector<T> &rows) : slots_(rows), size_(rows.size()) {}
-  ExchangeMap(const ExchangeMap &other) : slots_(other.slots_), size_(other.size_) {
+  explicit ExchangeMap(ReservationDomain *domain) : slots_(ReservationAllocator<T>(domain)) {}
+  ExchangeMap(const std::vector<T> &rows, ReservationDomain *domain = nullptr)
+      : slots_(rows.begin(),rows.end(),ReservationAllocator<T>(domain)), size_(rows.size()) {}
+  // Plain copies are independent caller snapshots: do not retain a raw pointer
+  // to another owner's allocation domain. Setup copies opt in explicitly.
+  ExchangeMap(const ExchangeMap &other) : ExchangeMap(other,nullptr) {}
+  ExchangeMap(const ExchangeMap &other, ReservationDomain *domain)
+      : slots_(other.slots_.begin(),other.slots_.end(),ReservationAllocator<T>(domain)), size_(other.size_) {
     for (std::size_t i = 0; i < slots_.size(); ++i)
       nested(slots_[i]).reserve(nested(other.slots_[i]).capacity());
   }
@@ -52,7 +59,7 @@ template<class T> class ExchangeMap {
     slots_[size_].handle = handle;
     ++size_;
   }
-  void erase(typename std::vector<T>::iterator where) {
+  void erase(typename ReservedVector<T>::iterator where) {
     // Rotate whole slots, preserving both ordering and all nested reservations.
     std::rotate(where,where+1,end());
     --size_;
@@ -64,7 +71,7 @@ template<class T> class ExchangeMap {
  private:
   static auto &nested(T &row) { return key_buffer(row); }
   static const auto &nested(const T &row) { return key_buffer(row); }
-  std::vector<T> slots_;
+  ReservedVector<T> slots_;
   std::size_t size_{};
 };
 }

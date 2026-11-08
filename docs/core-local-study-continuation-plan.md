@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #238 with scoped resource/preparation gates; broader owner integration remains active. No manual
+through #240 with scoped resource/preparation gates; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #238. Complete constructor/setup limits and combined resources, then remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #240. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,30 +66,32 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-08**. Start from current main through accepted #238,
-reviewed source `5366dc6b275b15d14e5d112325845529c51a490e`.
-#237 and #238 native/smoke gates passed. Inspected #238 regression logs cover
-115 tests; database records 180 checks with zero private reads. All compiler
-jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--237238-2026-11-08)
-retains individual pins and distinct contributor/hosted evidence. No duplicate
-accepted-baseline run is requested.
+Updated **2026-11-08**. Start from current main through accepted #240,
+reviewed source `46afdb0a41aac3372864c758e91943276923c2ae`.
+#239/#240 native and smoke gates passed. Inspected #240 regression logs cover
+115 tests; database records 180 checks with zero private reads; all compiler
+jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--239240-2026-11-08)
+retains individual pins and distinct contributor/hosted evidence. Do not duplicate
+the accepted baseline merely to continue.
 
-Completed preparation gates cover hierarchy sealing, capture, commands and
-declaration/projection/map staging. Adoption now admits caller/input-snapshot
-payload and inspection/copy work before owner allocation or by-value input copies.
-This input gate does not bound subsequent constructor allocations/setup or actual
-allocator/native peak. Complete means input admission, not construction.
+Preparation gates cover hierarchy sealing, capture, commands and staging.
+Adoption admits caller/input snapshots before copies. Actual allocation limits
+now cover binding/coordinator buffers and all six map outer stores, initial owner
+copies and explicit temporary validation/staging maps. Detached caller snapshots
+do not borrow the owner's domain. Growth admits old/new overlap and constructor
+unwind reclaims attached allocations.
 
-**Next coding-agent task:** subsequent constructor-byte/setup-work limits and
-combined caller/borrowed resource accounting. Gate before allocation/work, preserve
-unwind and retry, and distinguish retained capacity, logical payload, actual
-allocation and simultaneous overlap. Do not count moved input snapshots again as
-independent retained allocations or count hierarchy destinations twice.
-Use [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md) for the detailed inventory.
+**Next coding-agent task:** remaining nested UUID/path/address payload, projection,
+catalogue/declaration, object/control-block and graph-temporary allocation/setup
+limits, then combined caller/borrowed resource accounting. Gate before allocation
+and work, preserve cleanup/retry, and distinguish cumulative request work from
+simultaneous peak and actual allocator overhead. Outer slot headers are already
+charged; do not count them again with nested payload or add the domain report
+on top of the retained census. Use [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md)
+for exact boundaries.
 
-The harness remains borrowed. #229 remains open for further factoring; the first
-kernel extraction is complete. Layered onboarding is integrated in #236; see the
-[onboarding plan](onboarding/ONBOARDING-PLAN.md).
+The harness remains borrowed. #229 stays open for further factoring; its first
+kernel extraction is complete. Layered onboarding is integrated in #236.
 
 Remaining work is **slice C: finish resource gates and operation integration**:
 
