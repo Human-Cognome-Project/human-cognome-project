@@ -168,6 +168,14 @@ void reservation_allocator_controls() {
     require(rejected && overflow.result().status == ReservationStatus::Overflow &&
                 !overflow.result().live_bytes && !overflow.result().charged_work,
             "reservation multiplication overflow reached underlying allocation");
+    ReservationDomain sum({UINT64_MAX,UINT64_MAX});
+    sum.before(UINT64_MAX,1); sum.acquired(UINT64_MAX);
+    rejected = false;
+    try { sum.before(1,1); } catch (const ReservationStop &) { rejected = true; }
+    require(rejected && sum.result().status == ReservationStatus::Overflow &&
+                sum.result().live_bytes == UINT64_MAX && sum.result().charged_work == UINT64_MAX,
+            "reservation sum overflow wrapped an existing charge");
+    sum.released(UINT64_MAX);
   });
   ReservationDomain failed({UINT64_MAX,UINT64_MAX});
   A::begin(1);
