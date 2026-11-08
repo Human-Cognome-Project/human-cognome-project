@@ -80,7 +80,7 @@ std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields, ReservationDomain &domain)
     : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
-      occurrences_(rows), fields_(fields), generation_(h.prepared_storage().generation) {
+      occurrences_(rows,&domain), fields_(fields,&domain), generation_(h.prepared_storage().generation) {
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");

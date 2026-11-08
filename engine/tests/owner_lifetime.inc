@@ -187,6 +187,82 @@ void reservation_allocator_controls() {
           "underlying allocator failure acquired phantom bytes or refunded admitted work");
 }
 
+void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBinding> &rows) {
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  using Map = ExchangeMap<OccurrenceBinding>;
+  const std::vector<OccurrenceBinding> one{rows.front()};
+  const auto row_bytes = sizeof(OccurrenceBinding);
+  ReservationDomain zero({0,UINT64_MAX});
+  Map empty(&zero);
+  no_new([&] {
+    bool rejected = false;
+    try { empty.reserve(3,4); } catch (const ReservationStop &) { rejected = true; }
+    require(rejected && zero.result().status == ReservationStatus::ByteExhausted &&
+                !zero.result().live_bytes && empty.storage().empty(),
+            "map outer rejection allocated nested slots or published storage");
+  });
+  ReservationDomain growth({2*row_bytes,UINT64_MAX});
+  {
+    Map map(one,&growth);
+    const auto *backing = map.storage().data();
+    no_new([&] {
+      bool rejected = false;
+      try { map.reserve(2,4); } catch (const ReservationStop &) { rejected = true; }
+      require(rejected && growth.result().required_bytes >= 3*row_bytes &&
+                  growth.result().live_bytes == row_bytes && growth.result().charged_work == row_bytes &&
+                  map.storage().data() == backing && map.size() == 1 && map[0].occurrence == one[0].occurrence,
+              "map growth omitted old/new overlap or changed committed rows");
+    });
+  }
+  require(!growth.result().live_bytes, "map growth rejection leaked its original store");
+  ReservationDomain measured({UINT64_MAX,UINT64_MAX});
+  A::begin();
+  try {
+    Map map(one,&measured);
+    map.reserve(3,4);
+    require(measured.result().live_bytes == map.storage().capacity()*row_bytes &&
+                A::counts.live > measured.result().live_bytes,
+            "map accounting confused outer storage with untracked nested keys");
+  } catch (...) { A::end(); throw; }
+  const auto released = A::end();
+  require(!released.live && !released.blocks && !measured.result().live_bytes,
+          "map outer/nested storage was not reclaimed together");
+  std::optional<Map> detached;
+  {
+    ReservationDomain first({UINT64_MAX,UINT64_MAX}), second({UINT64_MAX,UINT64_MAX});
+    Map original(one,&first); original.reserve(3,4);
+    const auto live = first.result().live_bytes;
+    detached.emplace(original);
+    require(!detached->storage().get_allocator().domain && first.result().live_bytes == live &&
+                detached->storage().size() == original.storage().size() &&
+                detached->storage()[2].occurrence.source.path.capacity() >= 4,
+            "plain map snapshot borrowed owner domain or lost inactive nested reservation");
+    Map copy(original,&second);
+    require(second.result().live_bytes == copy.storage().capacity()*row_bytes &&
+                copy.storage().get_allocator().domain == &second,
+            "explicit map copy bypassed its requested allocation domain");
+    no_new([&] {
+      original = copy;
+      require(original.storage().get_allocator().domain == &first,
+              "map assignment replaced the destination domain");
+      original.swap(copy);
+      require(original.storage().get_allocator().domain == &second &&
+                  copy.storage().get_allocator().domain == &first,
+              "map swap left an allocator attached to foreign backing");
+      bool rejected = false;
+      try { Map denied(original,&zero); } catch (const ReservationStop &) { rejected = true; }
+      require(rejected && !zero.result().live_bytes,
+              "explicit map-copy rejection allocated before outer admission");
+    });
+  }
+  // The copied snapshot remains usable after both source allocation domains die.
+  detached->reserve(4,5);
+  require(detached->size() == 1 && detached->operator[](0).occurrence == one[0].occurrence &&
+              !detached->storage().get_allocator().domain,
+          "detached map snapshot depended on a destroyed source domain");
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -194,6 +270,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
   reservation_allocator_controls();
+  map_reservation_controls(rows);
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -201,7 +278,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
     const auto storage = Access::resources(*owner);
     require(full.status == ReservationStatus::Ok && full.live_bytes && full.peak_bytes >= full.live_bytes &&
                 full.charged_work > full.live_bytes &&
-                full.live_bytes == storage.binding.vector_bytes+storage.coordinator.vector_bytes,
+                full.live_bytes == storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner),
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
