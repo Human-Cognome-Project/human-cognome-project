@@ -2123,3 +2123,9 @@ temporaries, complete setup-work limits, domain/allocator/exception overhead and
 combined caller/borrowed resources remain open before remaining-operation
 integration. #229 remains open. The final delta from the tested pin changes five
 Markdown files only.
+
+## Maintainer integrated acceptance — #242 (2026-11-09)
+
+Reviewed head `ad370dd564171650686a00e42d01b8d6be4fee76`, merged at `01d25b046ec838295b6ce3ffe9b39ad2fa92a57d`. [Final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/242#pullrequestreview-5828999730) reconciles provisional acceptance. Native 42642498836 and smoke 42642498358 passed; all 12 native jobs succeeded. Independently inspected regression logs 129251736445/129251736337/129251736451/129251736436 cover 115 distinct passing tests. Database log 129251736659 records 180 checks, addressed_reads=24/private_reads=0. Compiler jobs passed; local raw evidence remains contributor-retained, not independently rerun. The tested `fa9809145dc077c865acc2b6ee4f8c1c3cefd70a` to reviewed-head delta is five Markdown files only. No duplicate baseline requested.
+
+Five unique-object allocation gates are accepted; nested payload, preceding construction, complete setup and combined resources remain open. #243 (`01943e888b6e3583cb5c9845f860919aa98d9ac9`) is provisionally accepted for the retained projection-table extension by review 5829010722; its hosted native run 42646168341 remains pending. Its reported 20 exchange runs plus five reader/value cases are local contributor evidence. This status reconciliation does not merge that pending implementation or infer GPU qualification.

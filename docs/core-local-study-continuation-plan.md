@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #241 with scoped resource/preparation gates; broader owner integration remains active. No manual
+through #242 with scoped resource/preparation gates; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #241. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #242. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,12 +66,12 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-09**. Start from current main through accepted #241,
-reviewed source `918312b7b289c00263095b89cebbc25dbb387fce`.
-Native 42515939810 and smoke 42515939806 passed. Inspected regression logs cover
+Updated **2026-11-09**. Integrated main is accepted through #242,
+reviewed source `ad370dd564171650686a00e42d01b8d6be4fee76`.
+Native 42642498836 and smoke 42642498358 passed. Inspected regression logs cover
 115 tests; database records 180 checks with zero private reads; all compiler
-jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--241-2026-11-09)
-preserves individual pins, the earlier failed assertion and local/hosted distinctions.
+jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--242-2026-11-09)
+preserves source/run pins and local/hosted distinctions.
 Do not rerun the accepted baseline merely to continue.
 
 Preparation gates cover hierarchy sealing, capture, commands and staging.
@@ -81,10 +81,10 @@ and shared declaration/catalogue object/control-block requests. Shared allocator
 retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
-**Active contribution:** pre-construction allocation limits for the owner, both projection objects, coordinator and binding, with matching deallocation and domain lifetime through teardown. Nested payload and complete setup work remain excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review). Integrated acceptance remains through #241.
+**Provisional continuation:** #243 at `01943e888b6e3583cb5c9845f860919aa98d9ac9` attaches both retained projections' four table stores to the allocation domain. [Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/243#pullrequestreview-5829010722) permits bounded continuation; native CI remains pending. #242's five unique-object gates are accepted and merged. Neither slice needs reimplementation.
 
-**Next coding-agent task:** separately allocated nested UUID/path/address payload,
-projection and other unique objects, preceding catalogue/declaration construction,
+**Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
+preceding catalogue/declaration construction,
 graph temporaries and complete setup-work limits, followed by combined caller/
 borrowed resource accounting. Gate before allocation/work and preserve cleanup,
 retry and exclusive synchronous access. Shared ownership does not make accounting

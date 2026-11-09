@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #241 on 2026-11-09; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--241-2026-11-09)
+Accepted through #242 on 2026-11-09; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--242-2026-11-09)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237–#241 stack. It accompanies the retained-capacity census and scoped
+integrated #228/#230–#235/#237–#242 stack. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -386,7 +386,9 @@ with table/map/buffer capacities against retained domain bytes. That witness
 checks the observed colocated object/control-block layout; the production
 allocator instead admits every request using the library's actual rebound type.
 
-### Unique object allocation domain (contribution awaiting review)
+<a id="unique-object-allocation-domain-contribution-awaiting-review"></a>
+
+### Unique object allocation domain (accepted #242)
 
 Actual single-object requests for `ExchangeOwner`, both `LetterProjection`
 objects, `ExchangeCoordinator` and its persistent `ExchangeBindings` now enter
