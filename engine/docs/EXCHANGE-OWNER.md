@@ -316,3 +316,10 @@ retain the accounting domain through final shared or weak release, including aft
 owner destruction. Independent table snapshots detach their backing allocator while
 retaining shared pointee ownership. Nested payload and preceding construction/graph
 work remain separately scoped. See [shared allocation lifetime and limits](OWNER-RESOURCES.md#shared-object-allocation-domain-contribution-awaiting-review).
+
+The unique-object contribution admits storage for the owner, both projections,
+coordinator and binding before construction. Their deleters retain the domain
+through member destruction and final deallocation; failed construction releases
+the outer block after member unwind. Projection publication still swaps retained
+objects. Nested payload and complete setup work remain outside this increment.
+See [unique object scope](OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review).

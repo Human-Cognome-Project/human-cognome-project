@@ -2056,3 +2056,70 @@ All 12 native jobs succeeded. Independently inspected regression logs 1288402953
 The tested `c6f9dd993653ec246b5d7266600e5c262393b4ff` to reviewed-head delta contains only five Markdown files. Integration adds documentation reconciliation only beyond that green head; no duplicate baseline CI is requested. Original ancestry, the failed initial assertion, its corrected scope and the added independent exact allocation reconciliation remain preserved.
 
 Shared allocators retain the domain through final weak release without an ownership cycle. Ordinary table snapshots detach backing accounting while retaining pointee ownership. Actual shared requests and table growth are covered; preceding catalogue/declaration construction, nested payload, projection/other unique objects, graph temporaries, complete setup work, domain overhead and combined caller/borrowed resources remain open. Reference release remains exclusive and synchronous. No complete constructor, GPU or performance qualification follows; #229 and remaining-operation integration remain open.
+
+## Unique owner object allocation domain — contributor CPU evidence (2026-11-09)
+
+Contribution from merged main `3eaf6e457ba060fd0e8b79422160820ea1fa34f2` through accepted #241. The
+[maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/241#pullrequestreview-5825596717)
+found no blocking corrections; native 42515939810 and smoke 42515939806 passed.
+No accepted baseline was rerun. This increment admits actual storage for the
+owner, two projection objects, coordinator and persistent binding before their
+constructors run. Shared declaration/catalogue and table gates are unchanged.
+Nested payload and complete setup work remain outside this scope. See
+[unique object allocation and lifetime](../../docs/OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review).
+
+Tested source: `fa9809145dc077c865acc2b6ee4f8c1c3cefd70a`; subsequent changes are
+documentation only. CPU-only Clang/LLVM 15, matching Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, CUDA_VISIBLE_DEVICES=-1,
+shared personal host. Focused matrix: exchange_owner, exchange_owner_multiple,
+exchange_bindings, exchange_commit and exchange_fields × workers 1/2 ×
+bulk/default or --direct --compiler-no-unroll.
+
+New controls check pre-construction rejection, outer bytes acquired before nested
+member work, nested budget denial, constructor exception unwind, underlying
+allocation failure without phantom live bytes, prepaid request work, exact fresh
+retry, alignment, pointer/deleter moves and swaps, and domain release on reset.
+Null-domain standalone bindings use matching allocation/deallocation. The existing
+independent allocation observer additionally locates each unique object's actual
+request, checks its size and reconciles all selected retained allocation bytes
+exactly. Existing shared/weak release, adoption rejection/retry, full failure-site
+reclamation and repeated numerical/exchange witnesses remain active.
+
+All four configurations passed both owner fixtures with these charges:
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Domain live/peak bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 24 | 39 | 176,248 / 176,248 | 245,152 |
+| Four selections | 27 | 77 | 177,880 / 177,880 | 459,440 |
+
+The five object requests add 3,176 selected bytes in each fixture; these requests
+already existed outside the quota in #241. Embedded deleter references increase
+whole-adoption retained requested bytes by 64, with no additional allocation sites.
+Whole-adoption retained requested bytes are 276,689 / 331,947; observed peaks are
+277,234 / 333,989. Conservative retained census totals are 277,313 / 332,379.
+These overlapping measurements must not be added together. Allocation work is
+cumulative request payload, not simultaneous peak or allocator CPU time.
+
+Every rejected owner construction releases all tracked allocations and permits
+an exact fresh retry with unchanged native state. Full failure traces cover
+4,193 / 7,857 allocation sites with zero remaining blocks. New unique-object
+requests reconcile exactly with the independent observer alongside already-covered
+buffers, map/table backing and shared objects; nested capacity is not added.
+
+All 20 focused native runs passed; every process exited zero. Final SHA256SUMS
+verified, with SHA-256:
+
+    591fa54b648a38673870ff568bd0a1f06c429c255cd2f8ce91b5b5a996dd31db
+
+Contributor-local evidence: unique-owner-domain-fa980914 (build, exact commands,
+twenty case logs, source/configuration/toolchain and binary hashes). Archive:
+setup-evidence/unique-owner-domain-fa980914.tar.gz. Source was clean before and
+after execution. No offline-cache lock warning appeared in this run. Raw evidence
+remains local; hashes identify it, not remote availability or hosted acceptance.
+
+No full 115-test baseline, full compiler audit, database or GPU run is claimed.
+Nested key/projection payload, preceding catalogue/declaration construction, graph
+temporaries, complete setup-work limits, domain/allocator/exception overhead and
+combined caller/borrowed resources remain open before remaining-operation
+integration. #229 remains open. The final delta from the tested pin changes five
+Markdown files only.
