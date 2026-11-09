@@ -80,11 +80,11 @@ ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
   }
 }
 
-ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
+ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields,
     const std::shared_ptr<ReservationDomain> &domain)
     : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
-        ::new (static_cast<void *>(p)) LetterProjection(std::move(projection));
+        ::new (static_cast<void *>(p)) LetterProjection(projection,domain);
       })),
       occurrences_(rows,domain.get()), fields_(fields,domain.get()),
       declarations_(SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>(domain)),
@@ -112,7 +112,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }
   prospective_ = reserve_unique<LetterProjection>(domain,[&](auto *p) {
-    ::new (static_cast<void *>(p)) LetterProjection(*projection_);
+    ::new (static_cast<void *>(p)) LetterProjection(*projection_,domain);
   });
   projection_->reserve_exposure();
   prospective_->reserve_exposure();

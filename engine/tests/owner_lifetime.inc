@@ -438,6 +438,71 @@ void unique_reservation_controls() {
   require(destroyed == 2, "unbudgeted unique fixture did not destroy its object");
 }
 
+void projection_reservation_controls(const assembly::LetterProjection &projection) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  std::weak_ptr<ReservationDomain> watch = domain;
+  std::optional<assembly::LetterProjection> snapshot;
+  std::uint64_t outer = 0;
+  A::begin();
+  try {
+    {
+      auto copy = Access::projection_copy(projection,domain);
+      Access::reserve_projection(copy);
+      outer = Access::projection_table_bytes(copy);
+      require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
+              "projection table domain omitted backing or charged nested payload");
+      for (const auto *d : Access::projection_domains(copy))
+        require(d == domain.get(), "explicit projection copy detached a table allocator");
+      snapshot.emplace(copy);
+      for (const auto *d : Access::projection_domains(*snapshot))
+        require(!d, "ordinary projection snapshot borrowed source quota");
+      require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
+                  snapshot->occurrences().size() == copy.occurrences().size() &&
+                  Access::projection_parent_sizes(*snapshot) == Access::projection_parent_sizes(copy),
+              "projection snapshot changed source accounting or lost inactive contributions");
+    }
+    require(!domain->result().live_bytes, "projection destruction did not release its table bytes");
+    domain.reset();
+    require(watch.expired(), "detached projection snapshot retained its source domain");
+    // Restore full parent capacity on the independent snapshot after source death.
+    Access::reserve_projection(*snapshot);
+    require(snapshot->study() == projection.study() &&
+                snapshot->occurrences().front().key == projection.occurrences().front().key,
+            "detached projection snapshot depended on destroyed source storage");
+    snapshot.reset();
+  } catch (...) { A::end(); throw; }
+  const auto released = A::end();
+  require(!released.live && !released.blocks, "projection copy/reservation leaked storage");
+
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{0,UINT64_MAX});
+  A::begin();
+  bool rejected = false;
+  try { auto copy = Access::projection_copy(projection,domain); }
+  catch (const ReservationStop &) { rejected = true; }
+  catch (...) { A::end(); throw; }
+  const auto denied = A::end();
+  require(rejected && !domain->result().live_bytes && !domain->result().charged_work &&
+              !denied.live && !denied.blocks,
+          "projection copy denial leaked preceding recipe or selected table allocations");
+  // Moving a bounded value keeps its domain; copying the value detaches it.
+  std::optional<assembly::LetterProjection> moved;
+  {
+    domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch = domain;
+    auto copy = Access::projection_copy(projection,domain);
+    moved.emplace(std::move(copy));
+    domain.reset();
+  }
+  require(!watch.expired(), "moved projection lost its allocation domain");
+  for (const auto *d : Access::projection_domains(*moved))
+    require(d != nullptr, "moved projection detached its backing allocator");
+  moved.reset();
+  require(watch.expired(), "projection table allocator retained a lifetime cycle");
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -448,6 +513,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   map_reservation_controls(rows);
   shared_reservation_controls();
   unique_reservation_controls();
+  projection_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -459,7 +525,9 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
                 full.charged_work > full.live_bytes &&
                 full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
                     Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
-                    storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes,
+                    storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes+
+                    Access::projection_table_bytes(Access::projection(*owner))+
+                    Access::projection_table_bytes(Access::spare_projection(*owner)),
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -536,8 +604,15 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       require(request == entry.second, "unique allocation request differs from object storage size");
       unique_bytes += request;
     }
+    std::uint64_t projection_bytes = 0;
+    for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
+      for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
+        const auto request = containing_request(entry.first);
+        require(request == entry.second, "projection table differs from observed allocation request");
+        projection_bytes += request;
+      }
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
