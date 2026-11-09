@@ -16,7 +16,7 @@ struct MembershipContribution {
 class MembershipFields {
  public:
   const warm::Uuid &study() const { return study_; }
-  const std::vector<MembershipContribution> &contributions() const {
+  const auto &contributions() const {
     return contributions_;
   }
   // Extend this same projection's bounded input values. The native prepare
@@ -29,16 +29,20 @@ class MembershipFields {
       const std::vector<StudyNode> &nodes) const;
 
  private:
-  MembershipFields() = default;
+  explicit MembershipFields(const std::shared_ptr<detail::ReservationDomain> &domain)
+      : contributions_(detail::SharedReservationAllocator<MembershipContribution>(domain)) {}
   friend MembershipFields membership_fields(const LetterProjection &);
   friend class detail::ExchangeOwner;
   friend class detail::ExchangeBindings;
   friend struct testing::MembershipFieldsAccess;
+  friend struct testing::ExchangeOwnerAccess;
   static MembershipFields collect(const LetterProjection &, bool alternatives);
+  static MembershipFields collect(const LetterProjection &, bool alternatives,
+      const std::shared_ptr<detail::ReservationDomain> &);
   warm::Uuid study_;
   warm::BundleRef recipe_;
   bool alternatives_{};
-  std::vector<MembershipContribution> contributions_;
+  detail::SharedReservedVector<MembershipContribution> contributions_;
 };
 
 // Follow only actual pinned upward memberships of each owning letter. Dedup

@@ -503,6 +503,70 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   require(watch.expired(), "projection table allocator retained a lifetime cycle");
 }
 
+void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  ReservationResult full;
+  std::optional<assembly::MembershipFields> snapshot;
+  std::weak_ptr<ReservationDomain> watch;
+  {
+    auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch = domain;
+    {
+      auto catalogue = Access::catalogue(projection,domain);
+      full = domain->result();
+      const auto &rows = catalogue.contributions();
+      require(rows.get_allocator().domain == domain &&
+                  full.live_bytes == rows.capacity()*sizeof(rows[0]) &&
+                  full.charged_work > full.live_bytes,
+              "catalogue omitted retained table or failed to release graph nodes");
+      snapshot.emplace(catalogue);
+      require(!snapshot->contributions().get_allocator().domain &&
+                  domain->result().live_bytes == full.live_bytes,
+              "catalogue value snapshot retained or charged its source domain");
+    }
+    require(!domain->result().live_bytes, "catalogue graph/table storage survived teardown");
+  }
+  require(watch.expired(), "detached catalogue snapshot extended domain lifetime");
+  auto standalone = Access::catalogue(projection,{});
+  require(snapshot->study() == standalone.study() &&
+              snapshot->contributions().size() == standalone.contributions().size(),
+          "catalogue snapshot lost identity or rows after domain death");
+  for (std::size_t i=0; i<standalone.contributions().size(); ++i) {
+    const auto &a=snapshot->contributions()[i], &b=standalone.contributions()[i];
+    require(a.occurrence == b.occurrence && a.field.kind == b.field.kind &&
+                a.field.object == b.field.object && a.target == b.target && a.count == b.count,
+            "domain-bound catalogue changed membership semantics");
+  }
+  for (bool bytes : {true,false}) {
+    const auto total = bytes ? full.peak_bytes : full.charged_work;
+    std::uint64_t allowance=0;
+    while (allowance < total) {
+      auto domain = std::make_shared<ReservationDomain>(ReservationBudget{
+          bytes ? allowance : UINT64_MAX, bytes ? UINT64_MAX : allowance});
+      bool stopped=false;
+      A::begin();
+      try { auto catalogue=Access::catalogue(projection,domain); }
+      catch (const ReservationStop &) { stopped=true; }
+      catch (...) { A::end(); throw; }
+      const auto released=A::end();
+      const auto result=domain->result();
+      const auto next=bytes ? result.required_bytes : result.required_work;
+      require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                  !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+              "catalogue graph allocation rejection failed cleanup/progress");
+      allowance=next;
+    }
+  }
+  auto domain = std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+  auto retry=Access::catalogue(projection,domain);
+  require(domain->result().status == ReservationStatus::Ok &&
+              domain->result().live_bytes == full.live_bytes &&
+              domain->result().charged_work == full.charged_work,
+          "exact catalogue construction retry failed");
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -514,6 +578,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
+  catalogue_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -665,8 +730,12 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
       }
+    const auto &membership_rows = Access::memberships(*owner)->contributions();
+    const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
+    require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
+            "catalogue table differs from observed allocation request");
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
@@ -681,7 +750,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     const auto catalogue_only = A::counts.live;
     const auto catalogue_charge = domain->result().live_bytes;
     catalogue.reset();
-    require(weak_catalogue.expired() && domain->result().live_bytes == catalogue_charge,
+    require(weak_catalogue.expired() && domain->result().live_bytes == catalogue_charge-membership_bytes,
             "owner catalogue control block lost its charge before weak release");
     weak_catalogue.reset();
     require(alias_charge > catalogue_charge && catalogue_charge && !domain->result().live_bytes,

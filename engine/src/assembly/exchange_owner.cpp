@@ -106,7 +106,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
   memberships_ = std::allocate_shared<const MembershipFields>(
-      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true));
+      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true,domain));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
   for (const auto &selection : projection_->recipe().selections) {

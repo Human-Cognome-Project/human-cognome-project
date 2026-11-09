@@ -66,6 +66,9 @@ struct ExchangeOwnerAccess {
     return result;
   }
   static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
+  static auto catalogue(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
+    return MembershipFields::collect(p,true,domain);
+  }
   static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
         a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||
