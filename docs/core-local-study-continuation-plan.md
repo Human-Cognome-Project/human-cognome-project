@@ -283,6 +283,10 @@ large-artifact handling. Verify clean load/restore/run without rebuilding or
 requiring a previous model state. Application/build/Docker work stays in a
 separate PR.
 
+Before publication, refresh applicable security fixes in builder/runtime and
+PostgreSQL images, record base digests/package inventories and scan findings,
+and validate the patched artifacts under the [release security requirement](onboarding/RELEASE.md#security-updates-before-publication).
+
 The bounded mini-release gate is reproducible letter physics and observable
 active execution with an honest supported-operation/backend list. It does not
 require completion of analyst implementation/calibration or all deferred LoD work,
