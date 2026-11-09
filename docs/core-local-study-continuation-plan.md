@@ -83,7 +83,9 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Accepted continuation:** #242's five unique-object gates and #243's retained projection-table gates are integrated. Both projections explicitly attach occurrence, exposure and active/spare parent backing; ordinary snapshots detach accounting and moves retain the domain lifetime. These completed gates need not be reimplemented.
 
-**Active contribution:** spare-projection copy and both exposure-pool setup work gates. This bounded setup-work slice leaves nested allocation limits open; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-setup-work-gate-contribution-awaiting-review).
+**Provisional dependency:** #245 at `9023dbec59124bc4983d0e6b37fac6445c6aef14` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/245#pullrequestreview-5829660424). Its spare-copy/exposure-pool work gate need not be repeated. Hosted native CI remains pending; no duplicate suite is requested. Integrated acceptance remains through #243.
+
+**Active contribution:** membership contribution-table and temporary graph-node allocation limits. Nested payload and other setup work remain open; see [scope](../engine/docs/OWNER-RESOURCES.md#membership-construction-allocation-domain-contribution-awaiting-review).
 
 **Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
 preceding catalogue/declaration construction,

@@ -491,7 +491,47 @@ resources are still open. This is not complete projection or constructor admissi
 
 ## Work inventory and remaining budget gate
 
-### Projection setup work gate (contribution awaiting review)
+### Membership construction allocation domain (contribution awaiting review)
+
+Owner catalogue collection now receives the shared reservation domain before it
+builds the catalogue. Its retained contribution vector and temporary tool lookup,
+visit-state, reached-target and occurrence-owner maps use allocator-aware storage.
+Every reached-target set is explicitly constructed with that same allocator;
+default insertion of a detached set is not used. Standard-library rebinding
+charges actual map/set node requests, including their embedded key/value headers,
+without assuming a node layout. Contribution-vector growth includes old/new
+backing overlap. Shared-object allocation remains separately admitted afterward.
+
+The graph nodes are released on return or unwind; only the contribution backing
+survives in the catalogue. That backing retains the domain through catalogue
+aliases and moves. Its charge ends at pointee destruction, while the separate
+shared object/control-block charge continues through the last weak reference.
+Ordinary value snapshots detach their copied vector backing from the source
+quota. Detached standalone collection still uses the same algorithm with no owner
+domain. The contribution accessor now exposes an allocator-aware vector by const
+reference; in-tree value/native readers are part of the validation scope.
+
+This extends actual allocation admission into preceding catalogue construction,
+but does not bound the whole graph traversal: separately allocated UUID/address/
+path text and vectors, callable backing, recursion/exception/allocator overhead,
+comparisons and other setup work remain outside this gate. Row payload can be
+constructed before a contribution-table request. No thread-local interception,
+database value-type change or additional native state authority is introduced.
+The top-level map headers live on the stack and are not heap charges; nested set
+headers are embedded in the admitted reached-map nodes.
+
+Catalogue-only controls sweep every successive byte/work rejection boundary,
+reclaim all observed allocations and retry with exact allowances. Detached copies
+remain usable after domain death and match standalone membership identities,
+targets and counts. The owner witness independently reconciles contribution-table
+requests against the allocation observer, and checks table release at last strong
+alias followed by control-block release at last weak alias. Existing complete
+owner allocation-failure, setup rejection and repeated-operation checks remain.
+The selected domain overlaps the retained census; do not add their totals.
+
+<a id="projection-setup-work-gate-contribution-awaiting-review"></a>
+
+### Projection setup work gate (provisionally accepted #245)
 
 Owner adoption now requires a separate explicit projection-setup work allowance.
 The input gate continues to authorize the initial projection snapshot. This new

@@ -2273,3 +2273,64 @@ Verified SHA256SUMS manifest SHA-256:
 Local archive: `setup-evidence/projection-setup-work-50374ed9.tar.gz`. The hash
 identifies retained evidence; it does not make the raw archive remotely available
 or replace hosted CI.
+
+## Membership construction allocation domain — contributor CPU evidence (2026-11-09)
+
+Tested source: `ba85ddce108e55d838d802e978828dc32d46d7a6` on provisionally accepted #245 head
+`9023dbec59124bc4983d0e6b37fac6445c6aef14`. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/245#pullrequestreview-5829660424)
+found no blocking source findings and explicitly permits bounded continuation.
+At inspection, parent smoke 42661328034 passed and native 42661328044 remained
+in progress; no duplicate baseline was started. Integrated acceptance remains #243.
+
+Catalogue collection now attaches its contribution table and temporary graph map/
+set nodes before constructing them. Nested target sets receive an explicit domain
+allocator. Shared catalogue-object admission still occurs after collection.
+See [scope](../../docs/OWNER-RESOURCES.md#membership-construction-allocation-domain-contribution-awaiting-review).
+Separately allocated keys, callable backing, graph work/stack and other setup
+surfaces are excluded; no complete catalogue or owner-resource limit is claimed.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2, bulk/default and direct/compiler-no-unroll, shared personal host.
+Both owner fixtures pass catalogue-only byte/work boundary sweeps, exact retry,
+complete reclamation and detached-copy use after domain destruction. Snapshot
+identities, target pins and counts match standalone collection. The whole owner
+independently matches the actual contribution backing request, then releases that
+charge at last strong alias and the remaining control block at last weak alias.
+The existing projection setup sweeps and repeated exchange/tick oracles remain.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Allocation failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 57 / 81 | 182,768 | 255,472 | 4,109 |
+| Four selections | 67 / 124 | 203,528 | 494,312 | 7,773 |
+
+All injected failure sites reclaim every observed block. Whole-adoption retained/
+peak requested bytes are 276,833 / 277,378 and 332,091 / 334,133; conservative
+retained census is 277,457 / 332,523. Whole retained/peak/census increases by 16
+bytes for the catalogue's embedded allocator reference. Selected live bytes also
+include 896 / 3,584 bytes of contribution backing previously outside the domain.
+The trace now has 84 fewer observed allocation sites than #245; this measurement
+is not a performance qualification. Temporary node requests contribute to
+allocation work and instantaneous overlap, not final retained catalogue bytes.
+Selected/census/whole-scope figures overlap and must not be summed.
+
+The source-pinned validation matrix is owner, multiple owner, bindings, commit
+and fields × workers 1/2 × bulk/default or direct/compiler-no-unroll. The affected
+reader/value cases are letter_projection_test, membership_fields_test,
+active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. No GPU, database, full baseline or full compiler
+qualification is claimed. Nested key/recipe/input allocation, declaration
+construction, other setup work and combined caller/borrowed resources remain
+open before remaining operations; #156/#145/#229 remain open.
+All 20 focused exchange processes and five additional CTest cases passed; each
+process exited zero. Source remained clean during execution. Final changes after
+the tested source are four Markdown files only. Contributor-local evidence is
+`membership-construction-domain-ba85ddce`, including build/commands, twenty case
+logs, CTest log, source/configuration/toolchain and executable hashes. Archive:
+`setup-evidence/membership-construction-domain-ba85ddce.tar.gz`. Verified manifest
+SHA-256:
+
+    84f7707897a68ed942927efe052f07bc2ccd8ea7678dc2fd9109d8e111d9a910
+
+Raw evidence remains local; the hash identifies the bundle without claiming
+remote inspection or replacing hosted CI.
