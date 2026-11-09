@@ -386,7 +386,9 @@ with table/map/buffer capacities against retained domain bytes. That witness
 checks the observed colocated object/control-block layout; the production
 allocator instead admits every request using the library's actual rebound type.
 
-### Unique object allocation domain (contribution awaiting review)
+<a id="unique-object-allocation-domain-contribution-awaiting-review"></a>
+
+### Unique object allocation domain (provisionally accepted #242)
 
 Actual single-object requests for `ExchangeOwner`, both `LetterProjection`
 objects, `ExchangeCoordinator` and its persistent `ExchangeBindings` now enter
@@ -414,7 +416,7 @@ to swap the same two objects without allocation. There is no additional pointee
 control block or domain-to-owner ownership cycle. Standalone test bindings use the
 same matched allocation/deallocation path with a null, unbudgeted domain.
 
-Only object storage is newly charged. Vector/string member headers and deleter
+At the #242 boundary only object storage is newly charged. Vector/string member headers and deleter
 state embedded inside these objects are included in `sizeof(T)` once; separately
 allocated nested payload is not silently included. Projection copy contents,
 UUID/path/address backing, graph temporaries and preceding catalogue/declaration
@@ -436,6 +438,54 @@ on reset. The independent allocation observer reconciles each of the five object
 requests with its size and the complete selected-domain sum. Owner byte/work
 boundary sweeps, full allocation-failure/reclamation traces, shared/weak aliases
 and repeated native operations remain active.
+
+### Projection table allocation domain (contribution awaiting review)
+
+The four projection tables (exposures, occurrences, active parents and spare
+parents) now use `SharedReservationAllocator`. Both retained projections select
+the owner's domain explicitly, covering eight table stores, initial table copies
+and later parent-pool reservations. Each actual backing request is admitted before
+allocation, including old/new overlap during growth and cumulative request work.
+Nested row objects reside inside the slots; their separately allocated UUID/path/
+address payload remains outside this gate. No second slot-header charge is added.
+
+The owner constructor now borrows its projection argument and directly constructs
+the retained copy with the selected domain. This replaces the former unbudgeted
+by-value projection snapshot followed by a move; it does not add another whole
+projection copy. The earlier input gate is unchanged and still runs before the
+owner allocation. The spare projection uses the same explicit-domain copy path.
+Study/recipe, exposure state, active flags, both parent pools, legacy input and
+structural input are preserved. Recipe/input/nested copies remain unbounded by
+this selected allocator, and recipe copying precedes the first table request.
+
+Ordinary projection value copies detach all four table allocators through their
+copy-selection rule. Snapshots remain usable after the owner's domain dies; copied
+inactive parent rows are preserved. As before, a value copy preserves logical
+rows, not unused capacity; `reserve_exposure` restores both parent capacities
+before owner use. Explicit-domain copies attach each table even when it is empty.
+Moves carry the allocator with the backing and retain the shared domain lifetime.
+Copy assignment retains the destination allocators; assignment is not an owner
+publication/transaction path. Publication still swaps two retained object pointers
+and reuses their already-reserved backing.
+
+The read-only occurrence/parent accessors now return the allocator-aware vector
+type by const reference. In-tree consumers continue to use iteration/indexing;
+the changed container type is not a database, identity or numerical contract.
+The projection census accepts either vector allocator and continues to count
+table capacity once, then nested payload separately. Its total must not be added
+to the overlapping domain report. Allocator references are embedded in the
+already-admitted projection object size, not separate allocations.
+
+Controls reconcile selected table bytes against larger outer-plus-nested observed
+allocation, check explicit and detached copies, inactive rows, moves and domain
+lifetime, and verify complete unwind when the first table request is denied.
+The full owner witness independently locates every retained table allocation and
+checks the exact selected-domain sum. Constructor byte/work boundary sweeps,
+allocation-failure traces, unchanged-state/retry and repeated exchanges remain
+active. Projection, membership and workbench value/native tests qualify affected
+readers as well. Remaining key/recipe/input payload, graph/declaration/catalogue
+construction, full setup work, domain overhead and combined borrowed/caller
+resources are still open. This is not complete projection or constructor admission.
 
 ## Work inventory and remaining budget gate
 

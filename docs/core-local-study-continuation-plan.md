@@ -81,10 +81,12 @@ and shared declaration/catalogue object/control-block requests. Shared allocator
 retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
-**Active contribution:** pre-construction allocation limits for the owner, both projection objects, coordinator and binding, with matching deallocation and domain lifetime through teardown. Nested payload and complete setup work remain excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review). Integrated acceptance remains through #241.
+**Provisional dependency:** #242 at `ad370dd564171650686a00e42d01b8d6be4fee76` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/242#pullrequestreview-5827980299); its five unique-object storage gates need not be implemented again. Native CI remains pending; no duplicate run is requested. Integrated acceptance remains through #241.
 
-**Next coding-agent task:** separately allocated nested UUID/path/address payload,
-projection and other unique objects, preceding catalogue/declaration construction,
+**Active contribution:** retained projection-table allocation limits. Nested key/recipe/input payload and complete setup work remain excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-table-allocation-domain-contribution-awaiting-review).
+
+**Next coding-agent task:** separately allocated nested UUID/path/address and
+recipe/input payload, preceding catalogue/declaration construction,
 graph temporaries and complete setup-work limits, followed by combined caller/
 borrowed resource accounting. Gate before allocation/work and preserve cleanup,
 retry and exclusive synchronous access. Shared ownership does not make accounting

@@ -323,3 +323,10 @@ through member destruction and final deallocation; failed construction releases
 the outer block after member unwind. Projection publication still swaps retained
 objects. Nested payload and complete setup work remain outside this increment.
 See [unique object scope](OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review).
+
+The projection-table contribution attaches both retained projections' occurrence,
+exposure and active/spare parent backing to the owner allocation domain. Explicit
+domain copies replace the previous by-value projection argument and attach the
+spare copy as well. Ordinary snapshots detach their table allocators, while moved
+values retain their backing/domain lifetime. Nested key, recipe and input payload
+remain outside this limit. See [table scope and copy behavior](OWNER-RESOURCES.md#projection-table-allocation-domain-contribution-awaiting-review).

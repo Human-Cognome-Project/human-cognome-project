@@ -2123,3 +2123,78 @@ temporaries, complete setup-work limits, domain/allocator/exception overhead and
 combined caller/borrowed resources remain open before remaining-operation
 integration. #229 remains open. The final delta from the tested pin changes five
 Markdown files only.
+
+## Projection table allocation domain — contributor CPU evidence (2026-11-09)
+
+Contribution on provisionally accepted #242 at
+`ad370dd564171650686a00e42d01b8d6be4fee76`. The
+[maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/242#pullrequestreview-5827980299)
+found no blockers and authorizes bounded continuation. At the initial check,
+smoke 42642498358 passed and native 42642498836 remained in progress; no duplicate
+parent run was started. Integrated acceptance remains through #241. The handoff
+now marks the five unique-object storage requests provisional instead of listing
+them as unimplemented work.
+
+Tested source: `aab3308dc79049fb96bef6c48a719367b44e28bd`; subsequent changes are
+documentation only. This extends actual allocation admission to both retained
+projections' occurrence, exposure and active/spare parent tables, including initial
+copies and setup reservations. The owner directly copies its const-reference
+projection into the selected domain, replacing the old by-value argument plus
+move. Ordinary snapshots detach table accounting; moved values retain it. Nested
+UUID/path/address, recipe and input payload remain outside this gate. See
+[scope and lifetime](../../docs/OWNER-RESOURCES.md#projection-table-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15, matching Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, CUDA_VISIBLE_DEVICES=-1, shared personal
+host. The focused exchange matrix is exchange_owner, exchange_owner_multiple,
+exchange_bindings, exchange_commit and exchange_fields × workers 1/2 ×
+bulk/default or --direct --compiler-no-unroll. The same source also builds/runs
+letter_projection_test, membership_fields_test, active_workbench_test,
+letter_projection_native_test and membership_fields_native_test through CTest.
+Their executable hashes and combined CTest log are retained with the matrix.
+
+New controls reconcile table bytes with the separate outer-plus-nested allocation
+observer, check explicit-domain and detached snapshots (including inactive parent
+rows), use snapshots after source-domain destruction, verify moved-domain lifetime,
+and reclaim preceding recipe allocations when the first table request is denied.
+The full owner witness independently locates every retained table request and
+checks the complete selected-domain sum without double-counting nested storage.
+Existing budget/failure-site sweeps, exact retry, unchanged state, shared/weak
+lifetimes and repeated native operations remain active.
+
+All four configurations passed both owner fixtures with these charges:
+
+| Fixture | Byte rejection boundaries | Work rejection boundaries | Domain live/peak bytes | Cumulative allocation work |
+|---|---:|---:|---:|---:|
+| One selection | 29 | 49 | 181,856 / 181,856 | 251,048 |
+| Four selections | 34 | 87 | 199,928 / 199,928 | 484,368 |
+
+Selected retained bytes increase by 5,608 / 22,048 from #242, including 128 bytes
+of allocator references embedded in the two projection objects; their object
+requests already participate in the domain. Whole-adoption retained requested
+bytes are 276,817 / 332,075 and observed peaks 277,362 / 334,117. Conservative
+retained census totals are 277,441 / 332,507. Whole retained/peak/census bytes
+increase by 128 without new allocation sites. These overlapping measurements
+must not be summed; cumulative allocation work is not peak memory or CPU time.
+
+Full failure traces remain 4,193 / 7,857 sites, with zero remaining blocks and
+unchanged native state. Expanded byte/work rejection sweeps reclaim every stopped
+construction and permit exact fresh retry. The five additional CTest cases passed
+(100%, zero failures). All 20 exchange runs and all five additional tests passed; every process exited
+zero. The final SHA256SUMS verified, with SHA-256:
+
+    3f9e4c03ff1de3f709e82c28bb9b4f47cca24df901c2b0aacaaa23c4d8388ac7
+
+Contributor-local evidence: projection-table-domain-aab3308d (build, commands,
+twenty exchange logs, five-case CTest log, source/configuration/toolchain and
+executable hashes). Archive: setup-evidence/projection-table-domain-aab3308d.tar.gz.
+Source was clean before/after execution. No offline-cache lock warning appeared.
+The final delta from tested source changes five Markdown files only. Raw bundles
+remain local; their hashes identify evidence, not remote availability or hosted
+acceptance.
+
+No full 115-test baseline, full compiler audit, database or GPU run is claimed.
+Nested key/recipe/input payload, preceding catalogue/declaration construction and
+graph temporaries, complete setup work, domain/allocator/exception overhead and
+combined caller/borrowed resources remain open before remaining operations.
+#156/#145/#229 remain open.
