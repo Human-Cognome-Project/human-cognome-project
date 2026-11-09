@@ -366,23 +366,35 @@ warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   throw warm::Error("unknown projected selection");
 }
 
-void LetterProjection::reserve_exposure() {
+void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
+  meter.charge(1);
   need(recipe_.recipe_version == 2, "projection is not structural");
   std::size_t count = 0;
   for (const auto &o : occurrences_) {
+    meter.charge(1);
     const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
-        [&](const auto &v) { return v.ref == o.definition; });
+        [&](const auto &v) { return meter.equal(v.ref,o.definition); });
     need(t != recipe_.tools.end() && t->parents.size() <= SIZE_MAX - count,
          "projection parent reservation overflow");
     count += t->parents.size();
   }
-  parents_.reserve(count);
-  spare_parents_.reserve(count);
-  for (const auto &o : occurrences_) if (!exposure_reserved_ && !o.active) {
+  const auto reserve = [&](auto &rows) {
+    meter.charge(1);
+    if (count > rows.capacity()) meter.elements(rows.size(),sizeof(ParentContribution));
+    rows.reserve(count);
+  };
+  reserve(parents_);
+  reserve(spare_parents_);
+  for (const auto &o : occurrences_) {
+    meter.charge(1);
+    if (exposure_reserved_ || o.active) continue;
     const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
-        [&](const auto &v) { return v.ref == o.definition; });
-    for (const auto &p : t->parents)
+        [&](const auto &v) { return meter.equal(v.ref,o.definition); });
+    for (const auto &p : t->parents) {
+      meter.charge(sizeof(ParentContribution));
+      meter.copy_key(o.key); meter.copy_key(p.target.object);
       spare_parents_.push_back({o.key,{GroupKind::ParentValue,p.target.object},p.ordinal,p.contribution});
+    }
   }
   exposure_reserved_ = true;
 }

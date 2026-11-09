@@ -564,6 +564,59 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
             << ",allocation_work=" << full.charged_work << " PASS\n";
 }
 
+void owner_projection_setup(Fixture &f, const assembly::LetterProjection &projection,
+    const std::vector<assembly::detail::OccurrenceBinding> &rows,
+    const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  const TickSnapshot before(f);
+  const auto generation = f.h.prepared_storage().generation;
+  const auto ticks = f.h.prepared_storage().completed_ticks;
+  const auto parents = Access::projection_parent_sizes(projection);
+  ProjectionSetupResult full;
+  {
+    auto owner = Access::adopt(f.h,projection,rows,fields,UINT64_MAX,full);
+    require(owner && full.phase == ProjectionSetupPhase::Complete && full.work.charged,
+            "projection setup did not finish its explicit work gate");
+  }
+  std::uint64_t allowance = 0, boundaries = 0;
+  std::array<bool,5> phases{};
+  while (allowance < full.work.charged) {
+    ProjectionSetupResult stopped;
+    A::begin();
+    bool returned = false;
+    try {
+      auto owner = Access::adopt(f.h,projection,rows,fields,allowance,stopped);
+      returned = bool(owner);
+    } catch (...) { A::end(); throw; }
+    const auto released = A::end();
+    require(!returned && stopped.work.status == PreparationStatus::WorkExhausted &&
+                stopped.work.charged <= allowance && stopped.work.next_required > allowance &&
+                stopped.work.next_required <= full.work.charged && !released.live && !released.blocks &&
+                (allowance || !released.attempts) &&
+                f.h.ready() && f.h.prepared_storage().generation == generation &&
+                f.h.prepared_storage().completed_ticks == ticks,
+            "projection setup rejection leaked, allocated before zero gate or changed native authority");
+    const auto phase = static_cast<std::size_t>(stopped.phase);
+    require(phase < phases.size(), "projection setup rejection reported completion");
+    phases[phase] = true;
+    allowance = stopped.work.next_required;
+    ++boundaries;
+  }
+  for (const auto visited : phases) require(visited, "projection setup sweep omitted a phase");
+  ProjectionSetupResult short_result, exact;
+  require(!Access::adopt(f.h,projection,rows,fields,full.work.charged-1,short_result),
+          "one-short projection setup allowance succeeded");
+  auto retry = Access::adopt(f.h,projection,rows,fields,full.work.charged,exact);
+  require(retry && exact.phase == ProjectionSetupPhase::Complete &&
+              exact.work.status == PreparationStatus::Ok && exact.work.charged == full.work.charged &&
+              before == TickSnapshot(f) && parents == Access::projection_parent_sizes(projection),
+          "exact projection setup retry failed or changed caller/native state");
+  std::cout << "owner_projection_setup,selections=" << projection.recipe().selections.size()
+            << ",boundaries=" << boundaries << ",work=" << full.work.charged << " PASS\n";
+}
+
 void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -571,6 +624,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
   namespace A = allocation_lifetime;
   owner_input_admission(f,projection,rows,fields);
   owner_reservation_admission(f,projection,rows,fields);
+  owner_projection_setup(f,projection,rows,fields);
   allocation_lifetime_controls();
   const TickSnapshot before(f);
   const auto generation = f.h.prepared_storage().generation;

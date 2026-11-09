@@ -26,7 +26,9 @@ struct ExchangeOwnerAccess {
   static auto projection_copy(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterProjection(p,domain);
   }
-  static void reserve_projection(LetterProjection &p) { p.reserve_exposure(); }
+  static void reserve_projection(LetterProjection &p) {
+    detail::PreparationWork meter(UINT64_MAX); p.reserve_exposure(meter);
+  }
   static auto projection_parent_sizes(const LetterProjection &p) {
     return std::make_pair(p.parents_.size(),p.spare_parents_.size());
   }
@@ -91,14 +93,25 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::AdoptionInputBudget budget, detail::AdoptionInputResult &result) {
     detail::ReservationResult reservation;
-    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result,{UINT64_MAX,UINT64_MAX},reservation);
+    detail::ProjectionSetupResult setup;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result,{UINT64_MAX,UINT64_MAX},reservation,UINT64_MAX,setup);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::ReservationBudget budget, detail::ReservationResult &result) {
     detail::AdoptionInputResult input;
-    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,budget,result);
+    detail::ProjectionSetupResult setup;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,budget,result,UINT64_MAX,setup);
+  }
+  static auto adopt(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields,
+      std::uint64_t setup_work, detail::ProjectionSetupResult &setup) {
+    detail::AdoptionInputResult input;
+    detail::ReservationResult reservation;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,
+        {UINT64_MAX,UINT64_MAX},reservation,setup_work,setup);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,

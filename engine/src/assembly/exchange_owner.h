@@ -11,6 +11,14 @@ struct OwnerPreparationResult {
   PreparationPhase phase{PreparationPhase::Staging};
   PreparationResult staging, capture, commands;
 };
+// Setup of the spare projection and both retained exposure pools only.
+// Initial projection copying is covered by AdoptionInputBudget; catalogue,
+// declarations, maps and other constructor work remain separate.
+enum class ProjectionSetupPhase { Admission, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
+struct ProjectionSetupResult {
+  ProjectionSetupPhase phase{ProjectionSetupPhase::Admission};
+  PreparationResult work;
+};
 // Host retained-capacity charge. Shared pointees are counted once; allocator
 // control blocks, setup peak and borrowed execution are separate surfaces.
 struct OwnerStorage {
@@ -33,9 +41,11 @@ class ExchangeOwner {
       AdoptionInputBudget);
   static ReservedUnique<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
-      AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &);
+      AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &,
+      std::uint64_t projection_setup_work, ProjectionSetupResult &);
   ExchangeOwner(field::Harness &, const LetterProjection &, std::vector<OccurrenceBinding>,
-                std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> &);
+                std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> &,
+                PreparationWork &, ProjectionSetupResult &);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
                std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work);
