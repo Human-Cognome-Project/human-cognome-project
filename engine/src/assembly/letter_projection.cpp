@@ -348,6 +348,18 @@ LetterProjection project_letters(const warm::Bundle &b) {
   return out;
 }
 
+// Explicit owner copy attaches table backing; ordinary value copies use the
+// allocator's detached copy selection. Nested row/recipe/input payload remains
+// independent of these four outer requests.
+LetterProjection::LetterProjection(const LetterProjection &other,
+    const std::shared_ptr<detail::ReservationDomain> &domain)
+    : study_(other.study_), recipe_(other.recipe_),
+      exposures_(other.exposures_.begin(),other.exposures_.end(),detail::SharedReservationAllocator<warm::Exposure>(domain)),
+      occurrences_(other.occurrences_.begin(),other.occurrences_.end(),detail::SharedReservationAllocator<ProjectedOccurrence>(domain)),
+      parents_(other.parents_.begin(),other.parents_.end(),detail::SharedReservationAllocator<ParentContribution>(domain)),
+      spare_parents_(other.spare_parents_.begin(),other.spare_parents_.end(),detail::SharedReservationAllocator<ParentContribution>(domain)),
+      exposure_reserved_(other.exposure_reserved_), input_(other.input_), structural_input_(other.structural_input_) {}
+
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
     if (recipe_.selections[i].entry == entry) return exposures_[i];

@@ -34,7 +34,7 @@ class ExchangeOwner {
   static ReservedUnique<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &);
-  ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
+  ExchangeOwner(field::Harness &, const LetterProjection &, std::vector<OccurrenceBinding>,
                 std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> &);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,

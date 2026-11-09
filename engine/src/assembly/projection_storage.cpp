@@ -15,7 +15,7 @@ struct Census {
   void count(std::uint64_t &to, std::uint64_t n) {
     if (meter) detail::input_add(to,n,*meter); else add(to,n);
   }
-  template<class T> void buffer(const std::vector<T> &v) {
+  template<class T, class A> void buffer(const std::vector<T,A> &v) {
     if (meter) { meter->charge(1); meter->elements(v.size(),1); }
     const auto n = logical ? v.size() : v.capacity();
     if (meter) detail::input_elements(result.vector_bytes,n,sizeof(T),*meter);
@@ -69,7 +69,7 @@ struct Census {
     buffer(in.memberships); for (const auto &m : in.memberships) { text(m.occurrence); text(m.group); }
     buffer(in.focal_fields); for (const auto &f : in.focal_fields) text(f.value);
   }
-  void parents(const std::vector<ParentContribution> &v) {
+  template<class A> void parents(const std::vector<ParentContribution,A> &v) {
     buffer(v); count(result.parent_slots,v.size());
     for (const auto &p : v) { key(p.occurrence); object(p.field.object); }
   }

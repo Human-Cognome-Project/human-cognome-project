@@ -82,6 +82,7 @@ template<class T> struct SharedReservationAllocator {
   template<class U> bool operator==(const SharedReservationAllocator<U> &a) const noexcept { return domain == a.domain; }
   template<class U> bool operator!=(const SharedReservationAllocator<U> &a) const noexcept { return !(*this == a); }
 };
+template<class T> using SharedReservedVector = std::vector<T,SharedReservationAllocator<T>>;
 
 // Single-object ownership. Keep the domain alive through destruction (which may
 // release attached members) and the final object deallocation, even for the owner

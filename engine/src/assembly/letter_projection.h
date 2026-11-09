@@ -3,10 +3,12 @@
 #include <optional>
 
 #include "assembly/study_input.h"
+#include "assembly/reservation_allocator.h"
 #include "warm/values.h"
 
 namespace assembly {
 namespace detail { class ExchangeOwner; class PreparationWork; }
+namespace testing { struct ExchangeOwnerAccess; }
 
 struct InitialState {
   warm::Point position, velocity;
@@ -85,10 +87,10 @@ class LetterProjection {
   const warm::Bundle &recipe() const { return recipe_; }
   // Current owner-local exposure; recipe() remains the immutable initial recipe.
   warm::Exposure exposure(std::uint64_t entry) const;
-  const std::vector<ProjectedOccurrence> &occurrences() const {
+  const auto &occurrences() const {
     return occurrences_;
   }
-  const std::vector<ParentContribution> &parents() const { return parents_; }
+  const auto &parents() const { return parents_; }
   // Legacy v1 numerical handoff. Caller owns real SNodes; native prepare
   // verifies their structure and converts local geometry/state. No SNode
   // creation, engine staging, DB acquisition or live refresh happens here.
@@ -100,8 +102,10 @@ class LetterProjection {
 
  private:
   LetterProjection() = default;
+  LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &);
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
+  friend struct testing::ExchangeOwnerAccess;
   void reserve_exposure();
   void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
                         detail::PreparationWork &) const;
@@ -109,11 +113,11 @@ class LetterProjection {
   ProjectionStorage storage(detail::PreparationWork *, bool logical) const;
   warm::Uuid study_;
   warm::Bundle recipe_;
-  std::vector<warm::Exposure> exposures_;
-  std::vector<ProjectedOccurrence> occurrences_;
-  std::vector<ParentContribution> parents_;
+  detail::SharedReservedVector<warm::Exposure> exposures_;
+  detail::SharedReservedVector<ProjectedOccurrence> occurrences_;
+  detail::SharedReservedVector<ParentContribution> parents_;
   // Every inactive contribution keeps its nested strings/path alive here.
-  std::vector<ParentContribution> spare_parents_;
+  detail::SharedReservedVector<ParentContribution> spare_parents_;
   bool exposure_reserved_{};
   StudyInput input_;
   StructuralStudyInput structural_input_;

@@ -6,6 +6,30 @@ struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
+  static auto projection_tables(const LetterProjection &p) {
+    return std::array<std::pair<const void *,std::size_t>,4>{{
+      {p.exposures_.data(),p.exposures_.capacity()*sizeof(warm::Exposure)},
+      {p.occurrences_.data(),p.occurrences_.capacity()*sizeof(ProjectedOccurrence)},
+      {p.parents_.data(),p.parents_.capacity()*sizeof(ParentContribution)},
+      {p.spare_parents_.data(),p.spare_parents_.capacity()*sizeof(ParentContribution)}}};
+  }
+  static auto projection_table_bytes(const LetterProjection &p) {
+    std::uint64_t bytes = 0;
+    for (const auto &entry : projection_tables(p)) bytes += entry.second;
+    return bytes;
+  }
+  static auto projection_domains(const LetterProjection &p) {
+    return std::array<detail::ReservationDomain *,4>{{p.exposures_.get_allocator().domain.get(),
+      p.occurrences_.get_allocator().domain.get(),p.parents_.get_allocator().domain.get(),
+      p.spare_parents_.get_allocator().domain.get()}};
+  }
+  static auto projection_copy(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
+    return LetterProjection(p,domain);
+  }
+  static void reserve_projection(LetterProjection &p) { p.reserve_exposure(); }
+  static auto projection_parent_sizes(const LetterProjection &p) {
+    return std::make_pair(p.parents_.size(),p.spare_parents_.size());
+  }
   static auto unique_objects(const detail::ExchangeOwner &o) {
     return std::array<std::pair<const void *,std::size_t>,5>{{
       {&o,sizeof(o)}, {o.projection_.get(),sizeof(*o.projection_)},
