@@ -66,7 +66,7 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-09**. Start from current main through accepted #241,
+Updated **2026-11-09**. Main includes accepted #242; this contribution continues on the explicitly accepted #243 head below. The earlier integrated #241 baseline used
 reviewed source `918312b7b289c00263095b89cebbc25dbb387fce`.
 Native 42515939810 and smoke 42515939806 passed. Inspected regression logs cover
 115 tests; database records 180 checks with zero private reads; all compiler
@@ -81,9 +81,18 @@ and shared declaration/catalogue object/control-block requests. Shared allocator
 retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
-**Provisional dependency:** #242 at `ad370dd564171650686a00e42d01b8d6be4fee76` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/242#pullrequestreview-5827980299); its five unique-object storage gates need not be implemented again. Native CI remains pending; no duplicate run is requested. Integrated acceptance remains through #241.
+**Continuation dependency:** #242 is accepted and merged at
+`01d25b046ec838295b6ce3ffe9b39ad2fa92a57d`. #243 at
+`01943e888b6e3583cb5c9845f860919aa98d9ac9` is accepted for continuation by
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/243#pullrequestreview-5829010722)
+and Patrick's 2026-11-09 instruction. Hosted native 42646168341 and smoke
+42646168346 now both report success; no duplicate baseline was run. Its five
+unique-object and eight projection-table store gates need not be repeated.
 
-**Active contribution:** retained projection-table allocation limits. Nested key/recipe/input payload and complete setup work remain excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-table-allocation-domain-contribution-awaiting-review).
+**Active contribution:** spare-projection copying and both exposure-pool setup
+work gates. The initial projection copy retains its existing input gate. This
+bounded work slice precedes the broader changes needed for nested allocation
+limits; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-setup-work-gate-contribution-awaiting-review).
 
 **Next coding-agent task:** separately allocated nested UUID/path/address and
 recipe/input payload, preceding catalogue/declaration construction,

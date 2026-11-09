@@ -388,7 +388,7 @@ allocator instead admits every request using the library's actual rebound type.
 
 <a id="unique-object-allocation-domain-contribution-awaiting-review"></a>
 
-### Unique object allocation domain (provisionally accepted #242)
+### Unique object allocation domain (accepted #242)
 
 Actual single-object requests for `ExchangeOwner`, both `LetterProjection`
 objects, `ExchangeCoordinator` and its persistent `ExchangeBindings` now enter
@@ -439,7 +439,7 @@ requests with its size and the complete selected-domain sum. Owner byte/work
 boundary sweeps, full allocation-failure/reclamation traces, shared/weak aliases
 and repeated native operations remain active.
 
-### Projection table allocation domain (contribution awaiting review)
+### Projection table allocation domain (accepted for continuation #243)
 
 The four projection tables (exposures, occurrences, active parents and spare
 parents) now use `SharedReservationAllocator`. Both retained projections select
@@ -488,6 +488,47 @@ construction, full setup work, domain overhead and combined borrowed/caller
 resources are still open. This is not complete projection or constructor admission.
 
 ## Work inventory and remaining budget gate
+
+### Projection setup work gate (contribution awaiting review)
+
+Owner adoption now requires a separate explicit projection-setup work allowance.
+The input gate continues to authorize the initial projection snapshot. This new
+meter covers the spare projection copy and exposure-pool initialization of both
+retained projections. It does not meter catalogue/declaration construction, map
+setup, other validation or the complete constructor.
+
+One admission unit is required before the domain/owner allocation. After the
+existing catalogue/declaration checks, the spare projection's logical census uses
+the same incremental inspection meter as input admission. Its complete logical
+payload charge, including object/table headers and conservative text terminators,
+is prepaid before allocating or copying the spare projection. This is structural
+copy work, not actual allocation bytes or a memory-peak estimate.
+
+Each exposure-pool initialization charges admission, occurrence visits and tool
+identity comparisons before the corresponding reads. Each reserve charges one
+dispatch unit plus existing parent-row header bytes if growth will move rows.
+Inactive parent creation charges the row header and occurrence/object key payload
+before copying. The allocation domain independently gates actual outer-table
+requests; nested backing remains outside that allocation gate. Inline/scalar
+work is included in the enclosing structural charge, not instruction counting.
+
+`ProjectionSetupResult` identifies Admission, SpareInspection, SpareCopy,
+CommittedParents, SpareParents or Complete and reports cumulative reserved work.
+Work exhaustion/overflow returns no owner after unwinding all constructed data;
+caller inputs and borrowed native execution remain unchanged. Partial parent pools
+are discarded, never retried in place. A fresh adoption with sufficient allowance
+reconstructs them. Allocation rejection still has its separate reservation result;
+input rejection leaves setup in Admission with zero work. Complete is set only
+after owner construction succeeds. An Ok work result in an earlier phase does
+not mean adoption succeeded.
+
+Both owner fixtures sweep successive work boundaries across every phase, verify
+zero-allocation rejection for a zero allowance, complete reclamation, unchanged
+native authority/state and exact fresh retry. Existing allocation-failure,
+reservation and repeated exchange/tick witnesses remain active. Structural work
+and allocation-request work overlap conceptually and are independent allowances;
+neither should be added to the retained byte census. Full setup work, nested
+allocation limits and combined caller/borrowed accounting remain outstanding.
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
 
