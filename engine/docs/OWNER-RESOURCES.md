@@ -386,6 +386,57 @@ with table/map/buffer capacities against retained domain bytes. That witness
 checks the observed colocated object/control-block layout; the production
 allocator instead admits every request using the library's actual rebound type.
 
+### Unique object allocation domain (contribution awaiting review)
+
+Actual single-object requests for `ExchangeOwner`, both `LetterProjection`
+objects, `ExchangeCoordinator` and its persistent `ExchangeBindings` now enter
+the same reservation domain. Each request is admitted and acquired before its
+placement constructor runs. This includes the outer owner before its by-value
+constructor arguments are copied; the earlier input-admission gate still runs
+first. The accounting domain's own shared allocation precedes this gate and
+remains separately scoped overhead.
+
+`reserve_unique` allocates one aligned object through the existing allocator,
+then invokes a reference-capturing callback, whose closure needs no allocation,
+to construct it in that storage without widening private constructor access. If allocation fails, no
+constructor runs and no live bytes are acquired. If construction or an argument
+copy throws, completed members unwind before the helper releases the outer block;
+the whole-object destructor is not called for an incomplete object. Prepaid
+allocation work is never refunded. The factory still catches budget rejection
+after complete unwind and supports a fresh exact-budget retry.
+
+`ReservedUnique` carries its allocator in the deleter. The deleter owns a shared
+domain reference through object/member destruction and final deallocation, then
+clears that reference so an empty reset handle does not retain the domain. This
+also protects the outer owner after its own `reservations_` member is destroyed.
+Move and swap carry pointer and deleter together; projection publication continues
+to swap the same two objects without allocation. There is no additional pointee
+control block or domain-to-owner ownership cycle. Standalone test bindings use the
+same matched allocation/deallocation path with a null, unbudgeted domain.
+
+Only object storage is newly charged. Vector/string member headers and deleter
+state embedded inside these objects are included in `sizeof(T)` once; separately
+allocated nested payload is not silently included. Projection copy contents,
+UUID/path/address backing, graph temporaries and preceding catalogue/declaration
+construction still require limits. This is not a complete projection, constructor
+or setup-work bound. Borrowed harness/native storage and allocator/exception costs
+remain separate. All allocation and reference release is exclusive and synchronous.
+
+The retained census already includes these five object sizes and the new embedded
+deleter state. The outer returned handle and its deleter live in caller storage,
+outside that owner census; the domain's own object/control-block overhead remains
+outside its quota. Do not add selected live/peak bytes to retained census totals.
+Shared declaration/catalogue requests and table backing retain the accepted #241
+accounting and are not charged again by this extension.
+
+Controls verify rejection before callback entry, object bytes live during member
+construction, nested budget rejection, throwing constructors, underlying allocation
+failure, prepaid work, exact retry, alignment, move/swap and final-domain release
+on reset. The independent allocation observer reconciles each of the five object
+requests with its size and the complete selected-domain sum. Owner byte/work
+boundary sweeps, full allocation-failure/reclamation traces, shared/weak aliases
+and repeated native operations remain active.
+
 ## Work inventory and remaining budget gate
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>

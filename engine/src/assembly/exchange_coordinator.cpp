@@ -10,12 +10,14 @@ namespace {
 void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
 }
 
-ExchangeCoordinator::ExchangeCoordinator(field::Harness &h, ReservationDomain *domain)
-    : bound_(new ExchangeBindings(h,domain)), commands_(ReservationAllocator<field::UpdateCommand>(domain)),
-      intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(domain)),
-      next_(domain), next_fields_(domain),
-      field_commands_(ReservationAllocator<int>(domain)), nodes_(ReservationAllocator<field::LiveRefreshNode>(domain)),
-      children_(ReservationAllocator<int>(domain)), contributions_(ReservationAllocator<field::LiveRefreshContribution>(domain)) {
+ExchangeCoordinator::ExchangeCoordinator(field::Harness &h, const std::shared_ptr<ReservationDomain> &domain)
+    : bound_(reserve_unique<ExchangeBindings>(domain,[&](auto *p) {
+        ::new (static_cast<void *>(p)) ExchangeBindings(h,domain.get());
+      })), commands_(ReservationAllocator<field::UpdateCommand>(domain.get())),
+      intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(domain.get())),
+      next_(domain.get()), next_fields_(domain.get()),
+      field_commands_(ReservationAllocator<int>(domain.get())), nodes_(ReservationAllocator<field::LiveRefreshNode>(domain.get())),
+      children_(ReservationAllocator<int>(domain.get())), contributions_(ReservationAllocator<field::LiveRefreshContribution>(domain.get())) {
   reserve(h);
 }
 
@@ -30,7 +32,7 @@ void ExchangeCoordinator::reserve(const field::Harness &h) {
       std::min(limits[field::Budget::Fields],limits[field::Budget::Batch])));
 }
 
-ExchangeCoordinator::ExchangeCoordinator(std::unique_ptr<ExchangeBindings> bound,
+ExchangeCoordinator::ExchangeCoordinator(ReservedUnique<ExchangeBindings> bound,
     const std::vector<ExchangeIncoming> &incoming,
     const std::vector<ExchangeNewField> &new_fields) : bound_(std::move(bound)) {
   need(bool(bound_), "missing trusted exchange bindings");

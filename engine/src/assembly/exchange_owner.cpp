@@ -54,7 +54,7 @@ AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &proje
   }
 }
 
-std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
+ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
     const LetterProjection &projection, const std::vector<OccurrenceBinding> &rows,
     const std::vector<ExchangeFieldBinding> &fields, AdoptionInputBudget budget,
     AdoptionInputResult &result, ReservationBudget budgeted_buffers, ReservationResult &reservation) {
@@ -67,7 +67,9 @@ std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
   // allocators keep it alive through their final strong/weak reference release.
   auto domain = std::make_shared<ReservationDomain>(budgeted_buffers);
   try {
-    auto owner = std::unique_ptr<ExchangeOwner>(new ExchangeOwner(h,projection,rows,fields,domain));
+    auto owner = reserve_unique<ExchangeOwner>(domain,[&](auto *p) {
+      ::new (static_cast<void *>(p)) ExchangeOwner(h,projection,rows,fields,domain);
+    });
     reservation = domain->result();
     owner->reservations_ = std::move(domain);
     return owner;
@@ -81,7 +83,9 @@ std::unique_ptr<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
 ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields,
     const std::shared_ptr<ReservationDomain> &domain)
-    : h_(h), projection_(std::make_unique<LetterProjection>(std::move(projection))),
+    : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
+        ::new (static_cast<void *>(p)) LetterProjection(std::move(projection));
+      })),
       occurrences_(rows,domain.get()), fields_(fields,domain.get()),
       declarations_(SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>(domain)),
       generation_(h.prepared_storage().generation) {
@@ -107,10 +111,14 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, LetterProjection projection,
     declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }
-  prospective_ = std::make_unique<LetterProjection>(*projection_);
+  prospective_ = reserve_unique<LetterProjection>(domain,[&](auto *p) {
+    ::new (static_cast<void *>(p)) LetterProjection(*projection_);
+  });
   projection_->reserve_exposure();
   prospective_->reserve_exposure();
-  plan_ = std::unique_ptr<ExchangeCoordinator>(new ExchangeCoordinator(h_,domain.get()));
+  plan_ = reserve_unique<ExchangeCoordinator>(domain,[&](auto *p) {
+    ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain);
+  });
   const auto &limits = h_.prepared_storage().capacity.limits();
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_);
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);

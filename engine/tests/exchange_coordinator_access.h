@@ -65,7 +65,7 @@ struct ExchangeCoordinatorAccess {
       {c.children_.data(),c.children_.capacity()},
       {c.contributions_.data(),c.contributions_.capacity()}}};
   }
-  static auto prepare(std::unique_ptr<detail::ExchangeBindings> b,
+  static auto prepare(detail::ReservedUnique<detail::ExchangeBindings> b,
                       const std::vector<detail::ExchangeIncoming> &incoming,
                       const std::vector<detail::ExchangeNewField> &fields = {}) {
     return std::unique_ptr<detail::ExchangeCoordinator>(

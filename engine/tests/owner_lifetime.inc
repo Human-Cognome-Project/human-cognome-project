@@ -353,6 +353,91 @@ void shared_reservation_controls() {
   require(snapshot->front() == 29, "detached table snapshot lost its contents");
 }
 
+void unique_reservation_controls() {
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  struct alignas(64) Object {
+    ReservedVector<int> nested;
+    int *destroyed;
+    Object(ReservationDomain *domain, int *d, bool fail)
+        : nested(ReservationAllocator<int>(domain)), destroyed(d) {
+      // The object's own storage must already be live during member work.
+      if (domain) require(domain->result().live_bytes == sizeof(Object),
+                          "unique object acquired its bytes after construction");
+      nested.reserve(4);
+      if (fail) throw 17;
+    }
+    ~Object() { ++*destroyed; }
+  };
+  int entered = 0, destroyed = 0;
+  const auto make = [&](const auto &domain, bool fail = false) {
+    return reserve_unique<Object>(domain,[&](auto *p) {
+      ++entered;
+      ::new (static_cast<void *>(p)) Object(domain.get(),&destroyed,fail);
+    });
+  };
+  auto domain = std::make_shared<ReservationDomain>(ReservationBudget{sizeof(Object)-1,UINT64_MAX});
+  no_new([&] {
+    bool rejected = false;
+    try { auto p = make(domain); } catch (const ReservationStop &) { rejected = true; }
+    require(rejected && !entered && !destroyed && !domain->result().live_bytes,
+            "unique allocation denial entered construction or acquired bytes");
+  });
+  // Exact object allowance cannot also fund nested construction; unwind must
+  // reclaim the admitted outer block without calling a nonexistent destructor.
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{sizeof(Object),UINT64_MAX});
+  A::begin();
+  bool rejected = false;
+  try { auto p = make(domain); } catch (const ReservationStop &) { rejected = true; }
+  catch (...) { A::end(); throw; }
+  auto released = A::end();
+  require(rejected && entered == 1 && !destroyed && !domain->result().live_bytes &&
+              domain->result().charged_work == sizeof(Object) && released.attempts == 1 && !released.live,
+          "unique nested denial leaked or refunded the outer request");
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  A::begin();
+  bool failed = false;
+  try { auto p = make(domain,true); } catch (int value) { failed = value == 17; }
+  catch (...) { A::end(); throw; }
+  released = A::end();
+  const auto bytes = domain->result().charged_work;
+  require(failed && entered == 2 && !destroyed && !released.live && !released.blocks &&
+              !domain->result().live_bytes && bytes == sizeof(Object)+4*sizeof(int),
+          "unique constructor failure leaked object/members or refunded work");
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{bytes,bytes});
+  A::begin(1);
+  failed = false;
+  try { auto p = make(domain); } catch (const std::bad_alloc &) { failed = true; }
+  catch (...) { A::end(); throw; }
+  released = A::end();
+  require(failed && entered == 2 && !domain->result().live_bytes &&
+              domain->result().charged_work == sizeof(Object) && !released.live,
+          "unique allocator failure constructed an object or acquired phantom bytes");
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{bytes,bytes});
+  std::weak_ptr<ReservationDomain> watch = domain;
+  A::begin();
+  try {
+    auto original = make(domain);
+    require(domain->result().live_bytes == A::counts.live && A::counts.live == bytes &&
+                reinterpret_cast<std::uintptr_t>(original.get())%alignof(Object) == 0,
+            "unique allocation charge/alignment differs from observed requests");
+    ReservedUnique<Object> moved = std::move(original);
+    ReservedUnique<Object> swapped;
+    moved.swap(swapped);
+    require(!original && !moved && swapped, "unique move/swap lost ownership");
+    domain.reset();
+    require(!watch.expired(), "unique deleter lost domain before object destruction");
+    swapped.reset();
+    require(watch.expired() && destroyed == 1,
+            "unique reset retained domain or failed object destruction");
+  } catch (...) { A::end(); throw; }
+  released = A::end();
+  require(!released.live && !released.blocks, "unique teardown leaked backing");
+  // Null-domain standalone fixtures still use matching allocation/deallocation.
+  { auto standalone = make(std::shared_ptr<ReservationDomain>{}); }
+  require(destroyed == 2, "unbudgeted unique fixture did not destroy its object");
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -362,16 +447,19 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   reservation_allocator_controls();
   map_reservation_controls(rows);
   shared_reservation_controls();
+  unique_reservation_controls();
   const TickSnapshot before(f);
   ReservationResult full;
   {
     auto owner = Access::adopt(f.h,projection,rows,fields,{UINT64_MAX,UINT64_MAX},full);
     const auto storage = Access::resources(*owner);
+    std::uint64_t unique_bytes = 0;
+    for (const auto &entry : Access::unique_objects(*owner)) unique_bytes += entry.second;
     require(full.status == ReservationStatus::Ok && full.live_bytes && full.peak_bytes >= full.live_bytes &&
                 full.charged_work > full.live_bytes &&
                 full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
                     Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
-                    storage.declarations.object_bytes+storage.memberships.object_bytes,
+                    storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes,
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -442,8 +530,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     for (const auto &p : Access::declarations(*owner)) shared_bytes += containing_request(p.get());
     const auto table_bytes = Access::declarations(*owner).capacity()*
         sizeof(std::shared_ptr<const assembly::LetterExchangeContract>);
+    std::uint64_t unique_bytes = 0;
+    for (const auto &entry : Access::unique_objects(*owner)) {
+      const auto request = containing_request(entry.first);
+      require(request == entry.second, "unique allocation request differs from object storage size");
+      unique_bytes += request;
+    }
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.

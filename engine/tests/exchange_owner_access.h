@@ -6,6 +6,12 @@ struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
+  static auto unique_objects(const detail::ExchangeOwner &o) {
+    return std::array<std::pair<const void *,std::size_t>,5>{{
+      {&o,sizeof(o)}, {o.projection_.get(),sizeof(*o.projection_)},
+      {o.prospective_.get(),sizeof(*o.prospective_)}, {o.plan_.get(),sizeof(*o.plan_)},
+      {ExchangeCoordinatorAccess::binding(*o.plan_),sizeof(detail::ExchangeBindings)}}};
+  }
   static auto map_outer_bytes(const detail::ExchangeOwner &o) {
     return o.occurrences_.storage().capacity()*sizeof(detail::OccurrenceBinding)+
         o.fields_.storage().capacity()*sizeof(detail::ExchangeFieldBinding)+

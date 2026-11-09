@@ -81,6 +81,8 @@ and shared declaration/catalogue object/control-block requests. Shared allocator
 retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
+**Active contribution:** pre-construction allocation limits for the owner, both projection objects, coordinator and binding, with matching deallocation and domain lifetime through teardown. Nested payload and complete setup work remain excluded; see [scope](../engine/docs/OWNER-RESOURCES.md#unique-object-allocation-domain-contribution-awaiting-review). Integrated acceptance remains through #241.
+
 **Next coding-agent task:** separately allocated nested UUID/path/address payload,
 projection and other unique objects, preceding catalogue/declaration construction,
 graph temporaries and complete setup-work limits, followed by combined caller/
