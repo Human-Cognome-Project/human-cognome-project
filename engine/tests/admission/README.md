@@ -2210,3 +2210,66 @@ Five unique-object allocation gates are accepted; nested payload, preceding cons
 Reviewed head `01943e888b6e3583cb5c9845f860919aa98d9ac9`; [final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/243#pullrequestreview-5829428119) reconciles provisional review 5829010722. Native 42646168341 and smoke 42646168346 passed; all 12 native jobs succeeded. Independently inspected regression logs 129265803857/129265804209/129265803867/129265803958 cover 115 distinct passing tests (29/29/29/28). Database log 129265803763 records 180 checks, addressed_reads=24/private_reads=0. All compiler jobs passed. Contributor-local 20 exchange runs and five reader/value cases remain separately attributed; raw archives were not independently rerun. The tested `aab3308dc79049fb96bef6c48a719367b44e28bd` to reviewed-head delta contains five Markdown files only.
 
 Integration preserves main's #242 acceptance record and #244 Docker release-security requirement, with documentation reconciliation only beyond the reviewed head. No duplicate accepted-baseline CI is requested. Both retained projections' four table stores are admitted before allocation, snapshots detach accounting, and moved values retain domain lifetime. Nested key/recipe/input payload, preceding catalogue/declaration/graph construction, complete setup work and combined caller/borrowed resources remain open. No complete resource, performance or GPU qualification follows; #156/#145/#229 remain open.
+
+## Projection setup work — contributor CPU evidence (2026-11-09)
+
+Tested source: `50374ed94e7f7e7bc62d7bc81b5b0f9e00d49965`. The later merge
+of main `a7ceb088fe3c10aa77d04071291e8a94cc17e64b` and handoff/evidence changes
+are Markdown only. Parent #243 is accepted and merged; its hosted native
+42646168341 and smoke 42646168346 both passed. No duplicate baseline was run.
+
+The new explicit work allowance gates spare-projection inspection/copy and both
+exposure-pool setup operations; the initial snapshot keeps its existing input
+admission. The scope and result phases are described in
+[OWNER-RESOURCES](../../docs/OWNER-RESOURCES.md#projection-setup-work-gate-contribution-awaiting-review).
+This is a bounded setup-work contribution, not nested allocation admission or
+complete constructor-resource qualification.
+
+Validation uses CPU-only Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, CUDA disabled, on the shared personal
+host after its Ubuntu package updates and WSL kernel update to
+6.18.54.1-microsoft-standard-WSL2. No GPU or database work is included.
+
+Both owner fixtures passed zero allowance, every successive rejection boundary
+through all five setup phases, one-unit-short rejection and exact fresh retry.
+Every rejected construction releases all observed C++ allocations. Zero allowance
+performs no observed allocation. Readiness, generation and tick count remain
+unchanged throughout the sweep; final native snapshot and caller parent-pool sizes
+remain unchanged. Partial pools are discarded on rejection rather than reused.
+
+| Fixture | Setup rejection boundaries | Exact structural work |
+|---|---:|---:|
+| One selection | 1,556 | 51,284 |
+| Four selections | 4,628 | 137,062 |
+
+All four worker/compiler configurations report the same figures. Existing
+allocation-failure traces still cover all 4,193 / 7,857 sites with zero blocks
+remaining, plus repeated exchange/tick and exact reservation retry controls.
+Selected domain live/peak remains 181,856 / 199,928 bytes, with allocation-request
+work 251,048 / 484,368. Whole-adoption retained/peak figures remain
+276,817 / 277,362 and 332,075 / 334,117 bytes; retained census remains
+277,441 / 332,507. These overlapping accounting domains must not be summed.
+
+The focused matrix is owner, multiple-owner, bindings, commit and fields × workers
+1/2 × bulk/default or direct/compiler-no-unroll. Additional CTest cases are
+letter_projection_test, membership_fields_test, active_workbench_test,
+letter_projection_native_test and membership_fields_native_test. Logs, commands,
+source pins, toolchain/configuration and executable hashes are retained under
+`projection-setup-work-50374ed9`; raw evidence remains contributor-local.
+
+Nested UUID/path/address and recipe/input allocations, catalogue/declaration
+construction, graph temporaries, remaining setup work, domain/allocator/exception
+costs, combined caller/borrowed accounting and remaining-operation integration
+remain open. No full baseline, compiler audit or GPU qualification is claimed.
+Refs #156/#145; #229 remains open.
+All 20 focused exchange processes and all five additional CTest cases passed;
+each process exited zero. No source changes or offline-cache lock warnings were
+observed during the run. The final delta from tested source is five Markdown
+files only, including the accepted main documentation merge.
+Verified SHA256SUMS manifest SHA-256:
+
+    59ae89d3466a3102f8e6edd424b9e0c8778f5d963d5a0b347c7aceb8d93b6b35
+
+Local archive: `setup-evidence/projection-setup-work-50374ed9.tar.gz`. The hash
+identifies retained evidence; it does not make the raw archive remotely available
+or replace hosted CI.
