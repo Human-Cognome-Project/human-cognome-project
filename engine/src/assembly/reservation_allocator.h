@@ -64,4 +64,22 @@ template<class T> struct ReservationAllocator {
   template<class U> bool operator!=(const ReservationAllocator<U> &a) const noexcept { return !(*this == a); }
 };
 template<class T> using ReservedVector = std::vector<T,ReservationAllocator<T>>;
+
+// Shared pointees/control blocks may outlive the owner, including through weak
+// references after pointee destruction. The rebound allocator keeps the domain
+// alive through the final deallocation; the domain does not own these objects.
+template<class T> struct SharedReservationAllocator {
+  using value_type = T;
+  using propagate_on_container_move_assignment = std::true_type;
+  using propagate_on_container_swap = std::true_type;
+  std::shared_ptr<ReservationDomain> domain;
+  SharedReservationAllocator() = default;
+  explicit SharedReservationAllocator(std::shared_ptr<ReservationDomain> d) noexcept : domain(std::move(d)) {}
+  template<class U> SharedReservationAllocator(const SharedReservationAllocator<U> &a) noexcept : domain(a.domain) {}
+  SharedReservationAllocator select_on_container_copy_construction() const noexcept { return {}; }
+  T *allocate(std::size_t n) { return ReservationAllocator<T>(domain.get()).allocate(n); }
+  void deallocate(T *p, std::size_t n) noexcept { ReservationAllocator<T>(domain.get()).deallocate(p,n); }
+  template<class U> bool operator==(const SharedReservationAllocator<U> &a) const noexcept { return domain == a.domain; }
+  template<class U> bool operator!=(const SharedReservationAllocator<U> &a) const noexcept { return !(*this == a); }
+};
 }

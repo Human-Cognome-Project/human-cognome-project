@@ -35,7 +35,7 @@ class ExchangeOwner {
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &);
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
-                std::vector<ExchangeFieldBinding>, ReservationDomain &);
+                std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> &);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,
                std::uint64_t staging_work, std::uint64_t capture_work, std::uint64_t command_work);
@@ -47,12 +47,13 @@ class ExchangeOwner {
   field::UpdateResult execute(std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t);
   field::Harness &h_;
   // Declared before the buffers: destroyed after every attached allocator.
-  std::unique_ptr<ReservationDomain> reservations_;
+  std::shared_ptr<ReservationDomain> reservations_;
   std::unique_ptr<LetterProjection> projection_, prospective_;
   ExchangeMap<OccurrenceBinding> occurrences_;
   ExchangeMap<ExchangeFieldBinding> fields_;
   std::unique_ptr<ExchangeCoordinator> plan_;
-  std::vector<std::shared_ptr<const LetterExchangeContract>> declarations_;
+  std::vector<std::shared_ptr<const LetterExchangeContract>,
+              SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>> declarations_;
   std::shared_ptr<const MembershipFields> memberships_;
   std::uint64_t generation_{};
   std::array<double,8> outgoing_report_{};

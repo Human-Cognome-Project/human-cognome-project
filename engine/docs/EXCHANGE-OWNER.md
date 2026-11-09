@@ -309,3 +309,10 @@ maps. Ordinary copied snapshots detach from the source owner's accounting lifeti
 setup-owned copies explicitly attach. Assignment retains the destination domain,
 and swaps move it with the backing. Separately allocated nested key payload remains
 outside this limit. See [map-store scope](OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).
+
+The shared-object contribution extends allocation admission to declaration-table
+backing and declaration/catalogue object/control-block requests. Their allocators
+retain the accounting domain through final shared or weak release, including after
+owner destruction. Independent table snapshots detach their backing allocator while
+retaining shared pointee ownership. Nested payload and preceding construction/graph
+work remain separately scoped. See [shared allocation lifetime and limits](OWNER-RESOURCES.md#shared-object-allocation-domain-contribution-awaiting-review).

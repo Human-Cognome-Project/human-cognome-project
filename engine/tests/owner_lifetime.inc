@@ -263,6 +263,96 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
           "detached map snapshot depended on a destroyed source domain");
 }
 
+void shared_reservation_controls() {
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  struct alignas(64) Object {
+    int *destroyed;
+    explicit Object(int *d, bool fail = false) : destroyed(d) { if (fail) throw 17; }
+    ~Object() { ++*destroyed; }
+  };
+  int destroyed = 0;
+  auto zero = std::make_shared<ReservationDomain>(ReservationBudget{0,UINT64_MAX});
+  no_new([&] {
+    bool rejected = false;
+    try { auto p = std::allocate_shared<Object>(SharedReservationAllocator<Object>(zero),&destroyed); }
+    catch (const ReservationStop &) { rejected = true; }
+    require(rejected && !zero->result().live_bytes && !destroyed,
+            "shared allocation bypassed admission before construction");
+  });
+  auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  std::weak_ptr<ReservationDomain> watch = domain;
+  std::weak_ptr<Object> weak;
+  std::uint64_t bytes = 0;
+  A::begin();
+  try {
+    auto p = std::allocate_shared<Object>(SharedReservationAllocator<Object>(domain),&destroyed);
+    bytes = domain->result().live_bytes;
+    require(bytes == A::counts.live && bytes >= sizeof(Object) &&
+                domain->result().charged_work == bytes && !destroyed,
+            "shared allocation charge differs from actual object/control-block request");
+    weak = p;
+    auto alias = p;
+    p.reset();
+    require(!destroyed && domain->result().live_bytes == bytes,
+            "shared alias released live accounting early");
+    alias.reset();
+    require(destroyed == 1 && weak.expired() && domain->result().live_bytes == bytes &&
+                A::counts.live == bytes,
+            "weak reference lost its charged control-block allocation");
+    domain.reset();
+    require(!watch.expired(), "shared allocator let its domain die before deallocation");
+    weak.reset();
+    require(watch.expired(), "shared allocation domain formed a reference cycle");
+  } catch (...) { A::end(); throw; }
+  const auto released = A::end();
+  require(!released.live && !released.blocks, "shared allocation was not reclaimed");
+
+  // Constructor failure releases storage but never refunds prepaid request work.
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{bytes,bytes});
+  bool failed = false;
+  A::begin();
+  try { auto p = std::allocate_shared<Object>(SharedReservationAllocator<Object>(domain),&destroyed,true); }
+  catch (int value) { failed = value == 17; }
+  catch (...) { A::end(); throw; }
+  const auto unwound = A::end();
+  require(failed && !unwound.live && !unwound.blocks && !domain->result().live_bytes &&
+              domain->result().charged_work == bytes && destroyed == 1,
+          "shared constructor failure leaked or refunded allocation work");
+  no_new([&] {
+    bool rejected = false;
+    try { auto p = std::allocate_shared<Object>(SharedReservationAllocator<Object>(domain),&destroyed); }
+    catch (const ReservationStop &) { rejected = true; }
+    require(rejected && domain->result().status == ReservationStatus::WorkExhausted,
+            "shared allocation reused already spent request work");
+  });
+  domain = std::make_shared<ReservationDomain>(ReservationBudget{bytes,bytes});
+  { auto retry = std::allocate_shared<Object>(SharedReservationAllocator<Object>(domain),&destroyed); }
+  require(!domain->result().live_bytes && destroyed == 2, "exact shared allocation retry failed");
+
+  // Ordinary table copies detach accounting but retain shared pointee lifetime.
+  using Table = std::vector<int,SharedReservationAllocator<int>>;
+  std::optional<Table> snapshot;
+  {
+    auto table_domain = std::make_shared<ReservationDomain>(ReservationBudget{4*sizeof(int),UINT64_MAX});
+    Table original{SharedReservationAllocator<int>(table_domain)};
+    original.reserve(4); original.push_back(29);
+    snapshot.emplace(original);
+    require(!snapshot->get_allocator().domain && table_domain->result().live_bytes == 4*sizeof(int),
+            "table snapshot borrowed or charged its source domain");
+    const auto *backing = original.data();
+    no_new([&] {
+      bool rejected = false;
+      try { original.reserve(8); } catch (const ReservationStop &) { rejected = true; }
+      require(rejected && original.data() == backing && original[0] == 29 &&
+                  table_domain->result().required_bytes >= 12*sizeof(int),
+              "shared table growth omitted old/new allocation overlap");
+    });
+  }
+  snapshot->push_back(31);
+  require(snapshot->front() == 29, "detached table snapshot lost its contents");
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -271,6 +361,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   namespace A = allocation_lifetime;
   reservation_allocator_controls();
   map_reservation_controls(rows);
+  shared_reservation_controls();
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -278,7 +369,9 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
     const auto storage = Access::resources(*owner);
     require(full.status == ReservationStatus::Ok && full.live_bytes && full.peak_bytes >= full.live_bytes &&
                 full.charged_work > full.live_bytes &&
-                full.live_bytes == storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner),
+                full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
+                    Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
+                    storage.declarations.object_bytes+storage.memberships.object_bytes,
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -332,16 +425,45 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
   try {
     auto owner = Access::adopt(f.h,projection,rows,fields);
     retained = A::counts;
-    capacity_charge = Access::resources(*owner).total().charged_bytes();
+    const auto census = Access::resources(*owner);
+    capacity_charge = census.total().charged_bytes();
+    // On this qualified standard library allocate_shared colocates each object
+    // and control block. Find its whole actual new request independently of the
+    // reservation allocator; do not guess control-block layout or use nested census.
+    const auto containing_request = [](const void *object) {
+      const auto address = reinterpret_cast<std::uintptr_t>(object);
+      for (const auto &entry : A::table) {
+        const auto base = reinterpret_cast<std::uintptr_t>(entry.pointer);
+        if (entry.pointer && address >= base && address-base < entry.bytes) return entry.bytes;
+      }
+      throw std::runtime_error("shared pointee missing from independent allocation observer");
+    };
+    std::uint64_t shared_bytes = containing_request(Access::memberships(*owner).get());
+    for (const auto &p : Access::declarations(*owner)) shared_bytes += containing_request(p.get());
+    const auto table_bytes = Access::declarations(*owner).capacity()*
+        sizeof(std::shared_ptr<const assembly::LetterExchangeContract>);
+    require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes,
+            "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
     auto declaration = Access::declarations(*owner).front();
     auto catalogue = Access::memberships(*owner);
+    auto domain = Access::reservation_domain(*owner);
+    std::weak_ptr<const assembly::MembershipFields> weak_catalogue = catalogue;
     owner.reset();
     const auto aliased = A::counts.live;
+    const auto alias_charge = domain->result().live_bytes;
     declaration.reset();
     const auto catalogue_only = A::counts.live;
+    const auto catalogue_charge = domain->result().live_bytes;
     catalogue.reset();
+    require(weak_catalogue.expired() && domain->result().live_bytes == catalogue_charge,
+            "owner catalogue control block lost its charge before weak release");
+    weak_catalogue.reset();
+    require(alias_charge > catalogue_charge && catalogue_charge && !domain->result().live_bytes,
+            "owner shared allocation charge failed alias/weak release accounting");
+    domain.reset();
     complete = A::end();
     require(aliased > catalogue_only && catalogue_only > 0,
             "shared owner data did not survive until final alias release");

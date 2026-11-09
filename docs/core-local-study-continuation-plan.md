@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-11-08. This organizes the
+Status: maintainer implementation sequencing, updated 2026-11-09. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #240 with scoped resource/preparation gates; broader owner integration remains active. No manual
+through #241 with scoped resource/preparation gates; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #240. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #241. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,29 +66,29 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-08**. Start from current main through accepted #240,
-reviewed source `46afdb0a41aac3372864c758e91943276923c2ae`.
-#239/#240 native and smoke gates passed. Inspected #240 regression logs cover
+Updated **2026-11-09**. Start from current main through accepted #241,
+reviewed source `918312b7b289c00263095b89cebbc25dbb387fce`.
+Native 42515939810 and smoke 42515939806 passed. Inspected regression logs cover
 115 tests; database records 180 checks with zero private reads; all compiler
-jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--239240-2026-11-08)
-retains individual pins and distinct contributor/hosted evidence. Do not duplicate
-the accepted baseline merely to continue.
+jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--241-2026-11-09)
+preserves individual pins, the earlier failed assertion and local/hosted distinctions.
+Do not rerun the accepted baseline merely to continue.
 
 Preparation gates cover hierarchy sealing, capture, commands and staging.
-Adoption admits caller/input snapshots before copies. Actual allocation limits
-now cover binding/coordinator buffers and all six map outer stores, initial owner
-copies and explicit temporary validation/staging maps. Detached caller snapshots
-do not borrow the owner's domain. Growth admits old/new overlap and constructor
-unwind reclaims attached allocations.
+Adoption input admission and selected actual allocation limits cover binding/
+coordinator buffers, map outer stores and setup copies, declaration-table backing
+and shared declaration/catalogue object/control-block requests. Shared allocators
+retain accounting through final weak release; detached table backing does not
+borrow the source owner's quota. These are not complete constructor limits.
 
-**Next coding-agent task:** remaining nested UUID/path/address payload, projection,
-catalogue/declaration, object/control-block and graph-temporary allocation/setup
-limits, then combined caller/borrowed resource accounting. Gate before allocation
-and work, preserve cleanup/retry, and distinguish cumulative request work from
-simultaneous peak and actual allocator overhead. Outer slot headers are already
-charged; do not count them again with nested payload or add the domain report
-on top of the retained census. Use [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md)
-for exact boundaries.
+**Next coding-agent task:** separately allocated nested UUID/path/address payload,
+projection and other unique objects, preceding catalogue/declaration construction,
+graph temporaries and complete setup-work limits, followed by combined caller/
+borrowed resource accounting. Gate before allocation/work and preserve cleanup,
+retry and exclusive synchronous access. Shared ownership does not make accounting
+counters thread-safe. Do not reimplement the accepted shared-object/table gates or
+add their domain report to the retained census. Keep domain overhead and allocator/
+exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
 
 The harness remains borrowed. #229 stays open for further factoring; its first
 kernel extraction is complete. Layered onboarding is integrated in #236.
