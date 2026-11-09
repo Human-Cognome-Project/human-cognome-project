@@ -2198,3 +2198,15 @@ Nested key/recipe/input payload, preceding catalogue/declaration construction an
 graph temporaries, complete setup work, domain/allocator/exception overhead and
 combined caller/borrowed resources remain open before remaining operations.
 #156/#145/#229 remain open.
+
+## Maintainer integrated acceptance — #242 (2026-11-09)
+
+Reviewed head `ad370dd564171650686a00e42d01b8d6be4fee76`, merged at `01d25b046ec838295b6ce3ffe9b39ad2fa92a57d`. [Final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/242#pullrequestreview-5828999730) reconciles provisional acceptance. Native 42642498836 and smoke 42642498358 passed; all 12 native jobs succeeded. Independently inspected regression logs 129251736445/129251736337/129251736451/129251736436 cover 115 distinct passing tests. Database log 129251736659 records 180 checks, addressed_reads=24/private_reads=0. Compiler jobs passed; local raw evidence remains contributor-retained, not independently rerun. The tested `fa9809145dc077c865acc2b6ee4f8c1c3cefd70a` to reviewed-head delta is five Markdown files only. No duplicate baseline requested.
+
+Five unique-object allocation gates are accepted; nested payload, preceding construction, complete setup and combined resources remain open. #243 (`01943e888b6e3583cb5c9845f860919aa98d9ac9`) is provisionally accepted for the retained projection-table extension by review 5829010722; its hosted native run 42646168341 remains pending. Its reported 20 exchange runs plus five reader/value cases are local contributor evidence. This status reconciliation does not merge that pending implementation or infer GPU qualification.
+
+## Maintainer integrated acceptance — #243 (2026-11-09)
+
+Reviewed head `01943e888b6e3583cb5c9845f860919aa98d9ac9`; [final review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/243#pullrequestreview-5829428119) reconciles provisional review 5829010722. Native 42646168341 and smoke 42646168346 passed; all 12 native jobs succeeded. Independently inspected regression logs 129265803857/129265804209/129265803867/129265803958 cover 115 distinct passing tests (29/29/29/28). Database log 129265803763 records 180 checks, addressed_reads=24/private_reads=0. All compiler jobs passed. Contributor-local 20 exchange runs and five reader/value cases remain separately attributed; raw archives were not independently rerun. The tested `aab3308dc79049fb96bef6c48a719367b44e28bd` to reviewed-head delta contains five Markdown files only.
+
+Integration preserves main's #242 acceptance record and #244 Docker release-security requirement, with documentation reconciliation only beyond the reviewed head. No duplicate accepted-baseline CI is requested. Both retained projections' four table stores are admitted before allocation, snapshots detach accounting, and moved values retain domain lifetime. Nested key/recipe/input payload, preceding catalogue/declaration/graph construction, complete setup work and combined caller/borrowed resources remain open. No complete resource, performance or GPU qualification follows; #156/#145/#229 remain open.

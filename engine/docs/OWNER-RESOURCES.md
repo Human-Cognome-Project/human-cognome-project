@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #241 on 2026-11-09; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--241-2026-11-09)
+Accepted through #243 on 2026-11-09; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--243-2026-11-09)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237–#241 stack. It accompanies the retained-capacity census and scoped
+integrated #228/#230–#235/#237–#243 stack. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -439,7 +439,9 @@ requests with its size and the complete selected-domain sum. Owner byte/work
 boundary sweeps, full allocation-failure/reclamation traces, shared/weak aliases
 and repeated native operations remain active.
 
-### Projection table allocation domain (accepted for continuation #243)
+<a id="projection-table-allocation-domain-contribution-awaiting-review"></a>
+
+### Projection table allocation domain (accepted #243)
 
 The four projection tables (exposures, occurrences, active parents and spare
 parents) now use `SharedReservationAllocator`. Both retained projections select

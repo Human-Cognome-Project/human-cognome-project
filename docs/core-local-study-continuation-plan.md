@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #241 with scoped resource/preparation gates; broader owner integration remains active. No manual
+through #243 with scoped resource/preparation gates; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #241. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #243. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,12 +66,12 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-09**. Main includes accepted #242; this contribution continues on the explicitly accepted #243 head below. The earlier integrated #241 baseline used
-reviewed source `918312b7b289c00263095b89cebbc25dbb387fce`.
-Native 42515939810 and smoke 42515939806 passed. Inspected regression logs cover
+Updated **2026-11-09**. Integrated main is accepted through #243,
+reviewed source `01943e888b6e3583cb5c9845f860919aa98d9ac9`.
+Native 42646168341 and smoke 42646168346 passed. Inspected regression logs cover
 115 tests; database records 180 checks with zero private reads; all compiler
-jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--241-2026-11-09)
-preserves individual pins, the earlier failed assertion and local/hosted distinctions.
+jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--243-2026-11-09)
+preserves source/run pins and local/hosted distinctions.
 Do not rerun the accepted baseline merely to continue.
 
 Preparation gates cover hierarchy sealing, capture, commands and staging.
@@ -81,21 +81,12 @@ and shared declaration/catalogue object/control-block requests. Shared allocator
 retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
-**Continuation dependency:** #242 is accepted and merged at
-`01d25b046ec838295b6ce3ffe9b39ad2fa92a57d`. #243 at
-`01943e888b6e3583cb5c9845f860919aa98d9ac9` is accepted for continuation by
-[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/243#pullrequestreview-5829010722)
-and Patrick's 2026-11-09 instruction. Hosted native 42646168341 and smoke
-42646168346 now both report success; no duplicate baseline was run. Its five
-unique-object and eight projection-table store gates need not be repeated.
+**Accepted continuation:** #242's five unique-object gates and #243's retained projection-table gates are integrated. Both projections explicitly attach occurrence, exposure and active/spare parent backing; ordinary snapshots detach accounting and moves retain the domain lifetime. These completed gates need not be reimplemented.
 
-**Active contribution:** spare-projection copying and both exposure-pool setup
-work gates. The initial projection copy retains its existing input gate. This
-bounded work slice precedes the broader changes needed for nested allocation
-limits; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-setup-work-gate-contribution-awaiting-review).
+**Active contribution:** spare-projection copy and both exposure-pool setup work gates. This bounded setup-work slice leaves nested allocation limits open; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-setup-work-gate-contribution-awaiting-review).
 
-**Next coding-agent task:** separately allocated nested UUID/path/address and
-recipe/input payload, preceding catalogue/declaration construction,
+**Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
+preceding catalogue/declaration construction,
 graph temporaries and complete setup-work limits, followed by combined caller/
 borrowed resource accounting. Gate before allocation/work and preserve cleanup,
 retry and exclusive synchronous access. Shared ownership does not make accounting
@@ -293,6 +284,10 @@ File bundles under `docker/snapshots/<date>-<source-revision>/` using appropriat
 large-artifact handling. Verify clean load/restore/run without rebuilding or
 requiring a previous model state. Application/build/Docker work stays in a
 separate PR.
+
+Before publication, refresh applicable security fixes in builder/runtime and
+PostgreSQL images, record base digests/package inventories and scan findings,
+and validate the patched artifacts under the [release security requirement](onboarding/RELEASE.md#security-updates-before-publication).
 
 The bounded mini-release gate is reproducible letter physics and observable
 active execution with an honest supported-operation/backend list. It does not
