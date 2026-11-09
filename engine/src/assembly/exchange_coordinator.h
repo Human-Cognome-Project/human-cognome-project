@@ -25,18 +25,18 @@ class ExchangeCoordinator {
  private:
   friend struct assembly::testing::ExchangeCoordinatorAccess;
   friend class ExchangeOwner;
-  explicit ExchangeCoordinator(field::Harness &, ReservationDomain * = nullptr);
+  explicit ExchangeCoordinator(field::Harness &, const std::shared_ptr<ReservationDomain> & = {});
   void reserve(const field::Harness &);
   PreparationResult prepare(const std::vector<ExchangeIncoming> &,
                const std::vector<ExchangeNewField> &, std::uint64_t command_work);
-  ExchangeCoordinator(std::unique_ptr<ExchangeBindings>,
+  ExchangeCoordinator(ReservedUnique<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});
   HierarchySealResult hierarchy_charge(const field::LiveRefreshSpec &) const;
   HierarchySealResult prepare_hierarchy(const field::LiveRefreshSpec &, HierarchySealBudget);
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
-  std::unique_ptr<ExchangeBindings> bound_;
+  ReservedUnique<ExchangeBindings> bound_;
   ReservedVector<field::UpdateCommand> commands_;
   ReservedVector<field::PlacementIntrinsic> intrinsics_;
   ExchangeMap<OccurrenceBinding> next_;

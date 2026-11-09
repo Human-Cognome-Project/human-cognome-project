@@ -82,4 +82,29 @@ template<class T> struct SharedReservationAllocator {
   template<class U> bool operator==(const SharedReservationAllocator<U> &a) const noexcept { return domain == a.domain; }
   template<class U> bool operator!=(const SharedReservationAllocator<U> &a) const noexcept { return !(*this == a); }
 };
+
+// Single-object ownership. Keep the domain alive through destruction (which may
+// release attached members) and the final object deallocation, even for the owner
+// that itself holds the domain. Empty handles need not retain that lifetime.
+template<class T> struct ReservationDelete {
+  SharedReservationAllocator<T> allocator;
+  void operator()(T *p) noexcept {
+    p->~T();
+    allocator.deallocate(p,1);
+    allocator.domain.reset();
+  }
+};
+template<class T> using ReservedUnique = std::unique_ptr<T,ReservationDelete<T>>;
+
+// The callback constructs T in supplied storage, allowing private constructors
+// to stay private. Allocation is admitted/acquired before callback evaluation;
+// constructor arguments and nested allocations are not implicitly covered.
+template<class T, class Construct>
+ReservedUnique<T> reserve_unique(const std::shared_ptr<ReservationDomain> &domain, Construct construct) {
+  SharedReservationAllocator<T> allocator(domain);
+  auto *p = allocator.allocate(1);
+  try { construct(p); }
+  catch (...) { allocator.deallocate(p,1); throw; }
+  return ReservedUnique<T>(p,ReservationDelete<T>{std::move(allocator)});
+}
 }

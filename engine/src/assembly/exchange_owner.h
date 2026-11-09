@@ -31,7 +31,7 @@ class ExchangeOwner {
   static AdoptionInputResult input_admission(const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget);
-  static std::unique_ptr<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
+  static ReservedUnique<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &);
   ExchangeOwner(field::Harness &, LetterProjection, std::vector<OccurrenceBinding>,
@@ -48,10 +48,10 @@ class ExchangeOwner {
   field::Harness &h_;
   // Declared before the buffers: destroyed after every attached allocator.
   std::shared_ptr<ReservationDomain> reservations_;
-  std::unique_ptr<LetterProjection> projection_, prospective_;
+  ReservedUnique<LetterProjection> projection_, prospective_;
   ExchangeMap<OccurrenceBinding> occurrences_;
   ExchangeMap<ExchangeFieldBinding> fields_;
-  std::unique_ptr<ExchangeCoordinator> plan_;
+  ReservedUnique<ExchangeCoordinator> plan_;
   std::vector<std::shared_ptr<const LetterExchangeContract>,
               SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>> declarations_;
   std::shared_ptr<const MembershipFields> memberships_;
