@@ -22,6 +22,7 @@ struct ExchangeOwnerAccess {
       for (const auto &row : *rows) visit(row.occurrence.source.path);
   }
   template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit) {
+    recipe_addresses(p.recipe_,visit);
     for (const auto &o : p.occurrences_) {
       visit(o.definition.object.address);
       if (o.byte) visit(o.byte->character.object.address);
@@ -30,8 +31,56 @@ struct ExchangeOwnerAccess {
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
       for (const auto &row : *rows) visit(row.field.object.address);
   }
+  template<class Visit> static void recipe_addresses(const warm::Bundle &b, Visit visit) {
+    for (const auto &t : b.tools) {
+      visit(t.ref.object.address);
+      for (const auto &parent : t.parents) visit(parent.target.object.address);
+      for (const auto &ref : t.member_of) visit(ref.object.address);
+    }
+    for (const auto &g : b.geometry) visit(g.object.address);
+    for (const auto &o : b.occurrences) visit(o.definition.address);
+    for (const auto &o : b.structural_occurrences) visit(o.definition.address);
+    for (const auto &f : b.focal_fields) visit(f.object.address);
+  }
+  static bool recipe_equivalent(const warm::Bundle &a, const warm::Bundle &b) {
+    const auto rows=[](const auto &x, const auto &y, auto equal) {
+      return x.size()==y.size() && std::equal(x.begin(),x.end(),y.begin(),equal);
+    };
+    const auto point=[](const auto &x, const auto &y) { return x.x==y.x && x.y==y.y && x.z==y.z; };
+    return a.ref.selection==b.ref.selection && a.ref.revision==b.ref.revision &&
+        a.owner==b.owner && a.creator==b.creator && a.recipe_version==b.recipe_version &&
+        rows(a.tools,b.tools,[&](const auto &x,const auto &y) {
+          return x.ref==y.ref && x.epoch==y.epoch && x.recipe==y.recipe && x.notation==y.notation &&
+              x.mass==y.mass && x.author==y.author && x.member_of==y.member_of &&
+              rows(x.parents,y.parents,[](const auto &p,const auto &q) {
+                return p.target==q.target && p.ordinal==q.ordinal && p.stored_mass==q.stored_mass &&
+                    p.contribution==q.contribution;
+              });
+        }) &&
+        rows(a.geometry,b.geometry,[&](const auto &x,const auto &y) {
+          return x.object==y.object && point(x.centroid,y.centroid) &&
+              rows(x.spheres,y.spheres,[&](const auto &p,const auto &q) {
+                return point(p.centre,q.centre) && p.radius==q.radius;
+              });
+        }) &&
+        rows(a.nodes,b.nodes,[](const auto &x,const auto &y) { return x.parent==y.parent && x.role==y.role; }) &&
+        rows(a.occurrences,b.occurrences,[&](const auto &x,const auto &y) {
+          return x.id==y.id && x.definition==y.definition && x.node==y.node &&
+              point(x.position,y.position) && point(x.velocity,y.velocity);
+        }) &&
+        rows(a.selections,b.selections,[](const auto &x,const auto &y) {
+          return x.entry==y.entry && x.exposure==y.exposure && x.parts==y.parts;
+        }) &&
+        rows(a.contacts,b.contacts,[](const auto &x,const auto &y) { return x.a==y.a && x.b==y.b; }) &&
+        rows(a.structural_occurrences,b.structural_occurrences,[](const auto &x,const auto &y) {
+          return x.id==y.id && x.definition==y.definition && x.node==y.node;
+        }) &&
+        rows(a.focal_fields,b.focal_fields,[](const auto &x,const auto &y) {
+          return x.kind==y.kind && x.object==y.object;
+        });
+  }
   static bool projection_equivalent(const LetterProjection &a, const LetterProjection &b) {
-    if (a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
+    if (!recipe_equivalent(a.recipe_,b.recipe_) || a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
         a.occurrences_.size() != b.occurrences_.size()) return false;
     for (std::size_t i=0; i<a.occurrences_.size(); ++i) {
       const auto &x=a.occurrences_[i], &y=b.occurrences_[i];

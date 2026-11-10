@@ -507,12 +507,12 @@ void unique_reservation_controls() {
   require(destroyed == 2, "unbudgeted unique fixture did not destroy its object");
 }
 
-void projection_reservation_controls(const assembly::LetterProjection &projection) {
+void projection_reservation_controls(const assembly::LetterProjection &projection, bool reserve=true) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
   auto prepared=projection;
-  Access::reserve_projection(prepared);
+  if (reserve) Access::reserve_projection(prepared);
   auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   std::weak_ptr<ReservationDomain> watch = domain;
   std::optional<assembly::LetterProjection> snapshot;
@@ -521,7 +521,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   try {
     {
       auto copy = Access::projection_copy(projection,domain);
-      Access::reserve_projection(copy);
+      if (reserve) Access::reserve_projection(copy);
       outer = Access::projection_table_bytes(copy);
       Access::projection_paths(copy,[&](const auto &path) {
         require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
@@ -529,6 +529,11 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       });
       Access::projection_addresses(copy,[&](const auto &address) {
         require(address.get_allocator().domain == domain,"projection address detached during copy/reservation");
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==address.data(); });
+        require(address.empty() || (observed!=std::end(A::table) &&
+                    observed->bytes==address.capacity()*sizeof(codec::AddressElement)),
+                "projection address backing differs from independent request");
         outer += address.capacity()*sizeof(codec::AddressElement);
       });
       require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
@@ -540,7 +545,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       {
         auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
         auto reserved_copy=Access::projection_copy(copy,other_domain);
-        Access::reserve_projection(reserved_copy);
+        if (reserve) Access::reserve_projection(reserved_copy);
         std::uint64_t bytes=Access::projection_table_bytes(reserved_copy);
         Access::projection_paths(reserved_copy,[&](const auto &path) {
           require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
@@ -574,7 +579,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain.reset();
     require(watch.expired(), "detached projection snapshot retained its source domain");
     // Restore full parent capacity on the independent snapshot after source death.
-    Access::reserve_projection(*snapshot);
+    if (reserve) Access::reserve_projection(*snapshot);
     require(Access::projection_equivalent(*snapshot,prepared),"snapshot references depended on destroyed projection");
     require(snapshot->study() == projection.study() &&
                 snapshot->occurrences().front().key == projection.occurrences().front().key,
@@ -600,7 +605,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
     watch = domain;
     auto copy = Access::projection_copy(projection,domain);
-    Access::reserve_projection(copy);
+    if (reserve) Access::reserve_projection(copy);
     moved.emplace(std::move(copy));
     domain.reset();
   }
@@ -622,7 +627,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   for (const auto *source : {&projection,static_cast<const assembly::LetterProjection *>(&prepared)}) {
     const auto construct = [&](const auto &d) {
       auto value=Access::projection_copy(*source,d);
-      Access::reserve_projection(value);
+      if (reserve) Access::reserve_projection(value);
       return value;
     };
     domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
@@ -655,6 +660,21 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
             "exact projection path construction retry failed");
     require(Access::projection_equivalent(retry,prepared),"projection exact retry changed references or pool order");
   }
+}
+
+void legacy_recipe_address_controls() {
+  membership_fixture::Fixture letters;
+  auto recipe=assembly::normalize_letters(letters.base,
+      {letters.request(letters.accented,0,warm::Exposure::Aggregate),
+       letters.request(letters.english,1,warm::Exposure::Parts)});
+  recipe.contacts.push_back({recipe.occurrences.front().id,recipe.occurrences.back().id});
+  recipe.geometry.front().centroid={0.25,0.5,0.75};
+  recipe.geometry.front().spheres.front()={{0.5,0.25,0.125},0.625};
+  warm::validate(recipe);
+  auto projection=assembly::project_letters(recipe);
+  require(!recipe.occurrences.empty() && !recipe.contacts.empty() && !recipe.geometry.empty(),
+          "legacy recipe address fixture lost populated fields");
+  projection_reservation_controls(projection,false);
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
@@ -952,6 +972,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
+  legacy_recipe_address_controls();
   catalogue_reservation_controls(projection);
   catalogue_graph_address_controls();
   contract_reservation_controls(projection);
