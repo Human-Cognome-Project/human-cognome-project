@@ -589,9 +589,19 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
       full = domain->result();
       std::uint64_t backing=0;
       for (const auto &entry : Access::contract_tables(contract)) backing += entry.second;
+      for (const auto *side : {&contract.outgoing(),&contract.incoming()})
+        for (const auto &source : *side) {
+          require(source.parents.get_allocator().domain == domain,
+                  "declaration parent backing detached during construction/copy");
+          backing += source.parents.capacity()*sizeof(warm::Parent);
+        }
       require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
               "declaration omitted table backing or changed its structural values");
       snapshot.emplace(contract);
+      for (const auto *side : {&snapshot->outgoing(),&snapshot->incoming()})
+        for (const auto &source : *side)
+          require(!source.parents.get_allocator().domain,
+                  "declaration snapshot retained nested parent domain");
       require(!snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
                   !snapshot->leaves().get_allocator().domain && domain->result().live_bytes == backing,
               "declaration snapshot retained or charged its source domain");
@@ -796,12 +806,20 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       }
     const auto &membership_rows = Access::memberships(*owner)->contributions();
     std::uint64_t declaration_bytes=0;
-    for (const auto &declaration : Access::declarations(*owner))
+    for (const auto &declaration : Access::declarations(*owner)) {
       for (const auto &entry : Access::contract_tables(*declaration)) if (entry.second) {
         require(containing_request(entry.first) == entry.second,
                 "declaration table differs from observed allocation request");
         declaration_bytes += entry.second;
       }
+      for (const auto *side : {&declaration->outgoing(),&declaration->incoming()})
+        for (const auto &source : *side) {
+          const auto bytes=source.parents.capacity()*sizeof(warm::Parent);
+          require(!bytes || containing_request(source.parents.data()) == bytes,
+                  "declaration parent table differs from observed allocation request");
+          declaration_bytes += bytes;
+        }
+    }
     const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");

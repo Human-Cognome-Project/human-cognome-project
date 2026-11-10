@@ -10,7 +10,7 @@ struct ExchangeSource {
   warm::ToolRef definition;
   std::uint64_t mass{};
   int node{-1};
-  std::vector<warm::Parent> parents;
+  detail::SharedReservedVector<warm::Parent> parents;
 };
 struct ExchangeLeaf {
   std::uint32_t character{}, byte{}, nibble{};
