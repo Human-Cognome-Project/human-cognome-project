@@ -57,32 +57,45 @@ AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &proje
 ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
     const LetterProjection &projection, const std::vector<OccurrenceBinding> &rows,
     const std::vector<ExchangeFieldBinding> &fields, AdoptionInputBudget budget,
-    AdoptionInputResult &result, ReservationBudget budgeted_buffers, ReservationResult &reservation) {
+    AdoptionInputResult &result, ReservationBudget budgeted_buffers, ReservationResult &reservation,
+    std::uint64_t projection_setup_work, ProjectionSetupResult &setup) {
   // References cross this gate. No by-value argument copy or owner allocation
   // may precede it. Later constructor setup remains a separately scoped domain.
   reservation = {};
+  setup = {};
   result = input_admission(projection,rows,fields,budget);
   if (result.status != AdoptionInputStatus::Ok) return {};
+  PreparationWork meter(projection_setup_work);
+  try { meter.charge(1); }
+  catch (const PreparationStop &stop) { setup.work = stop.result; return {}; }
   // The domain and its own control block are separate overhead. Shared data
   // allocators keep it alive through their final strong/weak reference release.
   auto domain = std::make_shared<ReservationDomain>(budgeted_buffers);
   try {
     auto owner = reserve_unique<ExchangeOwner>(domain,[&](auto *p) {
-      ::new (static_cast<void *>(p)) ExchangeOwner(h,projection,rows,fields,domain);
+      ::new (static_cast<void *>(p)) ExchangeOwner(h,projection,rows,fields,domain,meter,setup);
     });
     reservation = domain->result();
     owner->reservations_ = std::move(domain);
+    setup.phase = ProjectionSetupPhase::Complete;
+    setup.work = meter.result();
     return owner;
+  } catch (const PreparationStop &stop) {
+    setup.work = stop.result;
+    reservation = domain->result();
+    return {};
   } catch (const ReservationStop &) {
     // Constructor members/temporaries have unwound while the domain stays alive.
     reservation = domain->result();
+    setup.work = meter.result();
     return {};
   }
 }
 
 ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projection,
     std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields,
-    const std::shared_ptr<ReservationDomain> &domain)
+    const std::shared_ptr<ReservationDomain> &domain,
+    PreparationWork &meter, ProjectionSetupResult &setup)
     : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
         ::new (static_cast<void *>(p)) LetterProjection(projection,domain);
       })),
@@ -93,7 +106,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
   memberships_ = std::allocate_shared<const MembershipFields>(
-      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true));
+      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true,domain));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
   for (const auto &selection : projection_->recipe().selections) {
@@ -111,11 +124,17 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }
+  setup.phase = ProjectionSetupPhase::SpareInspection;
+  const auto copy_bytes = projection_->storage(&meter,true).charged_bytes();
+  setup.phase = ProjectionSetupPhase::SpareCopy;
+  meter.charge(copy_bytes);
   prospective_ = reserve_unique<LetterProjection>(domain,[&](auto *p) {
     ::new (static_cast<void *>(p)) LetterProjection(*projection_,domain);
   });
-  projection_->reserve_exposure();
-  prospective_->reserve_exposure();
+  setup.phase = ProjectionSetupPhase::CommittedParents;
+  projection_->reserve_exposure(meter);
+  setup.phase = ProjectionSetupPhase::SpareParents;
+  prospective_->reserve_exposure(meter);
   plan_ = reserve_unique<ExchangeCoordinator>(domain,[&](auto *p) {
     ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain);
   });

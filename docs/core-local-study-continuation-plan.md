@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-Status: maintainer implementation sequencing, updated 2026-11-09. This organizes the
+Status: maintainer implementation sequencing, updated 2026-11-10. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
@@ -16,7 +16,7 @@ keeps the earlier initialization failure and job-budget cancellation. Slice A
 is complete for CPU structural refresh. CPU B1/B2 and private ordinary/bootstrap admission are accepted through #210;
 focus/rebase and existing-field D7 atomic exchange are accepted through #219.
 Field lifecycle, persistent exchange ownership and reserved projection reuse are accepted
-through #243 with scoped resource/preparation gates; broader owner integration remains active. No manual
+through #246 with scoped resource/preparation gates; broader owner integration remains active. No manual
 rerun of the accepted baseline is requested. CUDA refresh remains unqualified.
 
 #195 is merged. Review of #196 at
@@ -55,7 +55,7 @@ conversion path must remain separately described.
 |---|---|---|
 | A | C3-2 combined source/hierarchy refresh | Accepted in #198 with complete hosted CPU evidence; new-body starts remain private fixtures. |
 | B | Native admission and candidate contact/tick transaction | Private CPU ticks, placement, admission/bootstrap, focus/rebase and existing-field atomic exchange are accepted through #219. Field lifecycle is accepted in #221. |
-| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #243. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
+| C | Enduring operational owner and letter commands | Private exchange owner and scoped resource/preparation gates accepted through #246. Complete remaining constructor/setup limits and combined resources, then remaining-operation integration. |
 | D | Observable same-execution study | Attach-before-start, step/run/pause and optional pacing; fixed-study controls may develop earlier, but live Add depends on C. |
 | P | CUDA mixed-precision conversion repair | Independent narrow backend work; local GPU evidence required. |
 | E | Integrated operation and hardware evidence | Exercise completed core slices on CPU, then the same path on GTX 1070. Docker release follows separately. |
@@ -66,11 +66,11 @@ No routine permission step is added to the accepted implementation scope.
 
 ## Next agent task — 2026-11-05
 
-Updated **2026-11-09**. Integrated main is accepted through #243,
-reviewed source `01943e888b6e3583cb5c9845f860919aa98d9ac9`.
-Native 42646168341 and smoke 42646168346 passed. Inspected regression logs cover
+Updated **2026-11-10**. Integrated main is accepted through #246,
+reviewed source `8c0468168e3837a45e0526c51dce55707a2f81c3`.
+Native 42665443526 and smoke 42665443451 passed. Inspected regression logs cover
 115 tests; database records 180 checks with zero private reads; all compiler
-jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--243-2026-11-09)
+jobs passed. [Acceptance record](../engine/tests/admission/README.md#maintainer-integrated-acceptance--245246-2026-11-10)
 preserves source/run pins and local/hosted distinctions.
 Do not rerun the accepted baseline merely to continue.
 
@@ -82,6 +82,10 @@ retain accounting through final weak release; detached table backing does not
 borrow the source owner's quota. These are not complete constructor limits.
 
 **Accepted continuation:** #242's five unique-object gates and #243's retained projection-table gates are integrated. Both projections explicitly attach occurrence, exposure and active/spare parent backing; ordinary snapshots detach accounting and moves retain the domain lifetime. These completed gates need not be reimplemented.
+
+**Combined acceptance:** #245's projection setup work gate and #246's membership contribution-table/temporary graph-node allocation limits are integrated on #246's full green stack. The parent #245 workflow remains recorded as failed with all 11 listed jobs passing and no final aggregate job; cause is unestablished. Do not relabel it green or rerun its baseline merely to continue.
+
+**Completed scope:** retained contribution backing and temporary map/set node requests are admitted before allocation. Nested payload, traversal/callable/stack costs and other setup work remain open.
 
 **Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
 preceding catalogue/declaration construction,

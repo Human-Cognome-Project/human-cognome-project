@@ -16,11 +16,18 @@ MembershipFields membership_fields(const LetterProjection &projection) {
 }
 
 MembershipFields MembershipFields::collect(const LetterProjection &projection, bool alternatives) {
-  MembershipFields out;
+  return collect(projection,alternatives,{});
+}
+
+MembershipFields MembershipFields::collect(const LetterProjection &projection, bool alternatives,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  MembershipFields out(domain);
   out.study_ = projection.study();
   out.recipe_ = projection.recipe().ref;
   out.alternatives_ = alternatives;
-  std::map<warm::ObjectKey, const warm::Tool *> tools;
+  using ToolAllocator = detail::SharedReservationAllocator<std::pair<const warm::ObjectKey,const warm::Tool *>>;
+  std::map<warm::ObjectKey, const warm::Tool *,std::less<warm::ObjectKey>,ToolAllocator>
+      tools{ToolAllocator(domain)};
   for (const auto &t : projection.recipe().tools)
     tools.emplace(t.ref.object, &t);
   auto get = [&](const warm::ToolRef &ref) -> const warm::Tool & {
@@ -29,15 +36,22 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
          "membership: missing or inconsistent pinned group reference");
     return *it->second;
   };
-  std::map<warm::ObjectKey, int> state;
-  std::map<warm::ObjectKey, std::set<warm::ObjectKey>> reached;
-  std::function<const std::set<warm::ObjectKey> &(const warm::ToolRef &)>
+  using Targets = std::set<warm::ObjectKey,std::less<warm::ObjectKey>,
+      detail::SharedReservationAllocator<warm::ObjectKey>>;
+  using StateAllocator = detail::SharedReservationAllocator<std::pair<const warm::ObjectKey,int>>;
+  using ReachedAllocator = detail::SharedReservationAllocator<std::pair<const warm::ObjectKey,Targets>>;
+  std::map<warm::ObjectKey,int,std::less<warm::ObjectKey>,StateAllocator> state{StateAllocator(domain)};
+  std::map<warm::ObjectKey,Targets,std::less<warm::ObjectKey>,ReachedAllocator> reached{ReachedAllocator(domain)};
+  std::function<const Targets &(const warm::ToolRef &)>
       follow =
-          [&](const warm::ToolRef &ref) -> const std::set<warm::ObjectKey> & {
+          [&](const warm::ToolRef &ref) -> const Targets & {
     const auto &t = get(ref);
     auto &status = state[ref.object];
     need(status != 1, "membership: cyclic upward membership");
-    auto &targets = reached[ref.object];
+    // operator[] would default-construct a detached nested set. Construct its
+    // allocator explicitly in the node before any target insertion.
+    auto &targets = reached.try_emplace(ref.object,
+        detail::SharedReservationAllocator<warm::ObjectKey>(domain)).first->second;
     if (status == 2) return targets;
     status = 1;
     for (const auto &group : t.member_of) {
@@ -48,7 +62,9 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     status = 2;
     return targets;
   };
-  std::map<std::uint64_t, const ProjectedOccurrence *> owners;
+  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,const ProjectedOccurrence *>>;
+  std::map<std::uint64_t,const ProjectedOccurrence *,std::less<std::uint64_t>,OwnerAllocator>
+      owners{OwnerAllocator(domain)};
   for (const auto &o : projection.occurrences())
     if (o.key.source.path.empty()) owners.emplace(o.key.source.entry, &o);
   for (const auto &o : projection.occurrences()) {

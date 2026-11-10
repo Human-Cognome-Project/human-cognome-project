@@ -106,7 +106,7 @@ class LetterProjection {
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
   friend struct testing::ExchangeOwnerAccess;
-  void reserve_exposure();
+  void reserve_exposure(detail::PreparationWork &);
   void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
                         detail::PreparationWork &) const;
   ProjectionStorage storage() const;

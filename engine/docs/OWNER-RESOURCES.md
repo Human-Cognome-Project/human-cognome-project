@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #243 on 2026-11-09; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--243-2026-11-09)
+Accepted through #246 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--245246-2026-11-10)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237–#243 stack. It accompanies the retained-capacity census and scoped
+integrated #228/#230–#235/#237–#243/#245/#246 stack. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -490,6 +490,89 @@ construction, full setup work, domain overhead and combined borrowed/caller
 resources are still open. This is not complete projection or constructor admission.
 
 ## Work inventory and remaining budget gate
+
+<a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
+
+### Membership construction allocation domain (accepted #246)
+
+Owner catalogue collection now receives the shared reservation domain before it
+builds the catalogue. Its retained contribution vector and temporary tool lookup,
+visit-state, reached-target and occurrence-owner maps use allocator-aware storage.
+Every reached-target set is explicitly constructed with that same allocator;
+default insertion of a detached set is not used. Standard-library rebinding
+charges actual map/set node requests, including their embedded key/value headers,
+without assuming a node layout. Contribution-vector growth includes old/new
+backing overlap. Shared-object allocation remains separately admitted afterward.
+
+The graph nodes are released on return or unwind; only the contribution backing
+survives in the catalogue. That backing retains the domain through catalogue
+aliases and moves. Its charge ends at pointee destruction, while the separate
+shared object/control-block charge continues through the last weak reference.
+Ordinary value snapshots detach their copied vector backing from the source
+quota. Detached standalone collection still uses the same algorithm with no owner
+domain. The contribution accessor now exposes an allocator-aware vector by const
+reference; in-tree value/native readers are part of the validation scope.
+
+This extends actual allocation admission into preceding catalogue construction,
+but does not bound the whole graph traversal: separately allocated UUID/address/
+path text and vectors, callable backing, recursion/exception/allocator overhead,
+comparisons and other setup work remain outside this gate. Row payload can be
+constructed before a contribution-table request. No thread-local interception,
+database value-type change or additional native state authority is introduced.
+The top-level map headers live on the stack and are not heap charges; nested set
+headers are embedded in the admitted reached-map nodes.
+
+Catalogue-only controls sweep every successive byte/work rejection boundary,
+reclaim all observed allocations and retry with exact allowances. Detached copies
+remain usable after domain death and match standalone membership identities,
+targets and counts. The owner witness independently reconciles contribution-table
+requests against the allocation observer, and checks table release at last strong
+alias followed by control-block release at last weak alias. Existing complete
+owner allocation-failure, setup rejection and repeated-operation checks remain.
+The selected domain overlaps the retained census; do not add their totals.
+
+<a id="projection-setup-work-gate-contribution-awaiting-review"></a>
+
+### Projection setup work gate (accepted #245 through combined #246 stack)
+
+Owner adoption now requires a separate explicit projection-setup work allowance.
+The input gate continues to authorize the initial projection snapshot. This new
+meter covers the spare projection copy and exposure-pool initialization of both
+retained projections. It does not meter catalogue/declaration construction, map
+setup, other validation or the complete constructor.
+
+One admission unit is required before the domain/owner allocation. After the
+existing catalogue/declaration checks, the spare projection's logical census uses
+the same incremental inspection meter as input admission. Its complete logical
+payload charge, including object/table headers and conservative text terminators,
+is prepaid before allocating or copying the spare projection. This is structural
+copy work, not actual allocation bytes or a memory-peak estimate.
+
+Each exposure-pool initialization charges admission, occurrence visits and tool
+identity comparisons before the corresponding reads. Each reserve charges one
+dispatch unit plus existing parent-row header bytes if growth will move rows.
+Inactive parent creation charges the row header and occurrence/object key payload
+before copying. The allocation domain independently gates actual outer-table
+requests; nested backing remains outside that allocation gate. Inline/scalar
+work is included in the enclosing structural charge, not instruction counting.
+
+`ProjectionSetupResult` identifies Admission, SpareInspection, SpareCopy,
+CommittedParents, SpareParents or Complete and reports cumulative reserved work.
+Work exhaustion/overflow returns no owner after unwinding all constructed data;
+caller inputs and borrowed native execution remain unchanged. Partial parent pools
+are discarded, never retried in place. A fresh adoption with sufficient allowance
+reconstructs them. Allocation rejection still has its separate reservation result;
+input rejection leaves setup in Admission with zero work. Complete is set only
+after owner construction succeeds. An Ok work result in an earlier phase does
+not mean adoption succeeded.
+
+Both owner fixtures sweep successive work boundaries across every phase, verify
+zero-allocation rejection for a zero allowance, complete reclamation, unchanged
+native authority/state and exact fresh retry. Existing allocation-failure,
+reservation and repeated exchange/tick witnesses remain active. Structural work
+and allocation-request work overlap conceptually and are independent allowances;
+neither should be added to the retained byte census. Full setup work, nested
+allocation limits and combined caller/borrowed accounting remain outstanding.
 
 <a id="hierarchy-sealing-gate-contribution-awaiting-review"></a>
 
