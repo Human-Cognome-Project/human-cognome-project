@@ -452,11 +452,33 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       auto copy = Access::projection_copy(projection,domain);
       Access::reserve_projection(copy);
       outer = Access::projection_table_bytes(copy);
+      Access::projection_paths(copy,[&](const auto &path) {
+        require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
+        outer += path.capacity()*sizeof(std::uint32_t);
+      });
       require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
-              "projection table domain omitted backing or charged nested payload");
+              "projection domain omitted table/path backing or charged excluded payload");
       for (const auto *d : Access::projection_domains(copy))
         require(d == domain.get(), "explicit projection copy detached a table allocator");
+      // Also copy a populated inactive pool; owner adoption normally copies
+      // before reserving it, so that alone would not exercise this branch.
+      {
+        auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+        auto reserved_copy=Access::projection_copy(copy,other_domain);
+        Access::reserve_projection(reserved_copy);
+        std::uint64_t bytes=Access::projection_table_bytes(reserved_copy);
+        Access::projection_paths(reserved_copy,[&](const auto &path) {
+          require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
+          bytes += path.capacity()*sizeof(std::uint32_t);
+        });
+        require(other_domain->result().live_bytes == bytes &&
+                    Access::projection_parent_sizes(reserved_copy) == Access::projection_parent_sizes(copy),
+                "explicit reserved projection copy lost or duplicated a parent pool");
+      }
       snapshot.emplace(copy);
+      Access::projection_paths(*snapshot,[&](const auto &path) {
+        require(!path.get_allocator().domain,"projection snapshot retained path domain");
+      });
       for (const auto *d : Access::projection_domains(*snapshot))
         require(!d, "ordinary projection snapshot borrowed source quota");
       require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
@@ -499,8 +521,47 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   require(!watch.expired(), "moved projection lost its allocation domain");
   for (const auto *d : Access::projection_domains(*moved))
     require(d != nullptr, "moved projection detached its backing allocator");
+  Access::projection_paths(*moved,[&](const auto &path) {
+    require(bool(path.get_allocator().domain),"moved projection detached path backing");
+  });
   moved.reset();
   require(watch.expired(), "projection table allocator retained a lifetime cycle");
+
+  // Sweep the complete explicit copy plus inactive-parent reservation, including
+  // nested path requests, then retry with exactly the measured byte/work limits.
+  const auto construct = [&](const auto &d) {
+    auto value=Access::projection_copy(projection,d);
+    Access::reserve_projection(value);
+    return value;
+  };
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  ReservationResult full;
+  { auto value=construct(domain); full=domain->result(); }
+  for (bool bytes : {true,false}) {
+    const auto total=bytes ? full.peak_bytes : full.charged_work;
+    std::uint64_t allowance=0;
+    while (allowance < total) {
+      auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+          bytes ? allowance : UINT64_MAX, bytes ? UINT64_MAX : allowance});
+      bool stopped=false;
+      A::begin();
+      try { auto value=construct(d); }
+      catch (const ReservationStop &) { stopped=true; }
+      catch (...) { A::end(); throw; }
+      const auto released=A::end();
+      const auto result=d->result();
+      const auto next=bytes ? result.required_bytes : result.required_work;
+      require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                  !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+              "projection path rejection failed cleanup or progress");
+      allowance=next;
+    }
+  }
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+  auto retry=construct(domain);
+  require(domain->result().live_bytes == full.live_bytes && domain->result().charged_work == full.charged_work &&
+              retry.study() == projection.study() && retry.occurrences().size() == projection.occurrences().size(),
+          "exact projection path construction retry failed");
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
@@ -809,6 +870,13 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
       }
+    for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
+      Access::projection_paths(*p,[&](const auto &path) {
+        const auto bytes=path.capacity()*sizeof(std::uint32_t);
+        require(!bytes || containing_request(path.data()) == bytes,
+                "projection path differs from observed allocation request");
+        projection_bytes += bytes;
+      });
     const auto &membership_rows = Access::memberships(*owner)->contributions();
     std::uint64_t declaration_bytes=0;
     for (const auto &declaration : Access::declarations(*owner)) {

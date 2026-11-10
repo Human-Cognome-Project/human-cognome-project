@@ -348,16 +348,42 @@ LetterProjection project_letters(const warm::Bundle &b) {
   return out;
 }
 
-// Explicit owner copy attaches table backing; ordinary value copies use the
-// allocator's detached copy selection. Nested row/recipe/input payload remains
-// independent of these four outer requests.
+namespace {
+OccurrenceKey projection_key(const OccurrenceKey &key,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
+      detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+}
+ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  std::optional<ByteProvenance> byte;
+  if (o.byte) byte.emplace(ByteProvenance{projection_key(o.byte->owner,domain),o.byte->character,
+      o.byte->character_ordinal,o.byte->byte_ordinal});
+  return {projection_key(o.key,domain),o.definition,o.slot,o.node,o.active,std::move(byte),o.complete_character};
+}
+ParentContribution projection_row(const ParentContribution &p,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {projection_key(p.occurrence,domain),p.field,p.ordinal,p.count};
+}
+template<class T> auto projection_rows(const detail::SharedReservedVector<T> &rows,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  detail::SharedReservedVector<T> result{detail::SharedReservationAllocator<T>(domain)};
+  result.reserve(rows.size());
+  for (const auto &row : rows) result.push_back(projection_row(row,domain));
+  return result;
+}
+}
+
+// Explicit owner copies attach table and occurrence-path backing before copying.
+// Ordinary value copies detach; recipe/input and UUID/address payload remain
+// outside this selected domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
     : study_(other.study_), recipe_(other.recipe_),
       exposures_(other.exposures_.begin(),other.exposures_.end(),detail::SharedReservationAllocator<warm::Exposure>(domain)),
-      occurrences_(other.occurrences_.begin(),other.occurrences_.end(),detail::SharedReservationAllocator<ProjectedOccurrence>(domain)),
-      parents_(other.parents_.begin(),other.parents_.end(),detail::SharedReservationAllocator<ParentContribution>(domain)),
-      spare_parents_(other.spare_parents_.begin(),other.spare_parents_.end(),detail::SharedReservationAllocator<ParentContribution>(domain)),
+      occurrences_(projection_rows(other.occurrences_,domain)),
+      parents_(projection_rows(other.parents_,domain)),
+      spare_parents_(projection_rows(other.spare_parents_,domain)),
       exposure_reserved_(other.exposure_reserved_), input_(other.input_), structural_input_(other.structural_input_) {}
 
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
@@ -393,7 +419,8 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
     for (const auto &p : t->parents) {
       meter.charge(sizeof(ParentContribution));
       meter.copy_key(o.key); meter.copy_key(p.target.object);
-      spare_parents_.push_back({o.key,{GroupKind::ParentValue,p.target.object},p.ordinal,p.contribution});
+      spare_parents_.push_back({projection_key(o.key,spare_parents_.get_allocator().domain),
+          {GroupKind::ParentValue,p.target.object},p.ordinal,p.contribution});
     }
   }
   exposure_reserved_ = true;

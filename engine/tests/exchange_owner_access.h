@@ -13,6 +13,14 @@ struct ExchangeOwnerAccess {
       {p.parents_.data(),p.parents_.capacity()*sizeof(ParentContribution)},
       {p.spare_parents_.data(),p.spare_parents_.capacity()*sizeof(ParentContribution)}}};
   }
+  template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit) {
+    for (const auto &o : p.occurrences_) {
+      visit(o.key.source.path);
+      if (o.byte) visit(o.byte->owner.source.path);
+    }
+    for (const auto *rows : {&p.parents_,&p.spare_parents_})
+      for (const auto &row : *rows) visit(row.occurrence.source.path);
+  }
   static auto projection_table_bytes(const LetterProjection &p) {
     std::uint64_t bytes = 0;
     for (const auto &entry : projection_tables(p)) bytes += entry.second;
