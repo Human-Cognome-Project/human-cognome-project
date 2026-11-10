@@ -25,7 +25,9 @@ struct ExchangeFieldBinding {
 inline void initialize_key(OccurrenceBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
   v.occurrence.source.path = warm::OccurrencePath{SharedReservationAllocator<std::uint32_t>(domain)};
 }
-inline void initialize_key(ExchangeFieldBinding &, const std::shared_ptr<ReservationDomain> &) {}
+inline void initialize_key(ExchangeFieldBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
+  v.field.object.address = codec::Address{SharedReservationAllocator<codec::AddressElement>(domain)};
+}
 inline auto &key_buffer(OccurrenceBinding &v) { return v.occurrence.source.path; }
 inline const auto &key_buffer(const OccurrenceBinding &v) { return v.occurrence.source.path; }
 inline auto &key_buffer(ExchangeFieldBinding &v) { return v.field.object.address; }

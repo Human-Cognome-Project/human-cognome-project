@@ -187,20 +187,27 @@ void reservation_allocator_controls() {
           "underlying allocator failure acquired phantom bytes or refunded admitted work");
 }
 
-void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBinding> &rows) {
+template<class T> void map_reservation_controls(const std::vector<T> &rows) {
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
-  using Map = ExchangeMap<OccurrenceBinding>;
-  std::vector<OccurrenceBinding> one{rows.front()};
-  one.front().occurrence.source.path={3,5};
+  using Map = ExchangeMap<T>;
+  std::vector<T> one{rows.front()};
+  if constexpr (std::is_same_v<T,OccurrenceBinding>) key_buffer(one.front())={3,5};
+  else key_buffer(one.front())=*codec::decode_token_id("Az.0z");
+  const auto equal = [](const T &a, const T &b) {
+    if constexpr (std::is_same_v<T,OccurrenceBinding>) return a.occurrence==b.occurrence;
+    else return a.field.kind==b.field.kind && a.field.object==b.field.object;
+  };
+  const auto element_bytes=sizeof(key_buffer(one.front())[0]);
+  const auto initial_bytes=2*element_bytes;
   Map reference(one); reference.reserve(3,4);
   const auto backing = [&](const Map &map, const auto &domain) {
-    std::uint64_t bytes=map.storage().capacity()*sizeof(OccurrenceBinding);
+    std::uint64_t bytes=map.storage().capacity()*sizeof(T);
     require(map.storage().get_allocator().domain == domain.get(),"map outer domain mismatch");
     for (const auto &row : map.storage()) {
-      const auto &path=row.occurrence.source.path;
+      const auto &path=key_buffer(row);
       require(path.get_allocator().domain == domain,"map active/inactive path domain mismatch");
-      bytes += path.capacity()*sizeof(std::uint32_t);
+      bytes += path.capacity()*element_bytes;
     }
     return bytes;
   };
@@ -212,17 +219,17 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
     require(stopped && !zero->result().live_bytes && empty.storage().empty(),
             "map outer rejection allocated nested paths");
   });
-  const auto row_bytes=sizeof(OccurrenceBinding);
-  auto growth=std::make_shared<ReservationDomain>(ReservationBudget{2*row_bytes+8,UINT64_MAX});
+  const auto row_bytes=sizeof(T);
+  auto growth=std::make_shared<ReservationDomain>(ReservationBudget{2*row_bytes+initial_bytes,UINT64_MAX});
   {
     Map value(one,growth);
     const auto *original=value.storage().data();
     no_new([&] {
       bool stopped=false;
       try { value.reserve(2,4); } catch (const ReservationStop &) { stopped=true; }
-      require(stopped && growth->result().required_bytes>=3*row_bytes+8 &&
-                  growth->result().live_bytes==row_bytes+8 && value.storage().data()==original &&
-                  value.size()==1 && value[0].occurrence==one[0].occurrence,
+      require(stopped && growth->result().required_bytes>=3*row_bytes+initial_bytes &&
+                  growth->result().live_bytes==row_bytes+initial_bytes && value.storage().data()==original &&
+                  value.size()==1 && equal(value[0],one[0]),
               "map growth omitted old/new overlap or changed existing rows");
       stopped=false;
       try { Map denied(value,zero); } catch (const ReservationStop &) { stopped=true; }
@@ -243,7 +250,7 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
       auto value=construct(domain); value.reserve(3,4);
       full=domain->result(); sites=A::counts.attempts;
       require(full.live_bytes == backing(value,domain) && value.size()==1 &&
-                  value[0].occurrence==one[0].occurrence && value.storage().size()==3,
+                  equal(value[0],one[0]) && value.storage().size()==3,
               "map construction/copy lost values or selected backing");
     } catch (...) { A::end(); throw; }
     auto released=A::end();
@@ -282,7 +289,7 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
     auto exact=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
     auto retry=construct(exact); retry.reserve(3,4);
     require(exact->result().live_bytes==full.live_bytes && exact->result().charged_work==full.charged_work &&
-                retry[0].occurrence==one[0].occurrence,"map exact retry failed");
+                equal(retry[0],one[0]),"map exact retry failed");
   }
   std::optional<Map> snapshot, retained;
   std::weak_ptr<ReservationDomain> watch;
@@ -294,7 +301,7 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
     snapshot.emplace(*retained);
     const auto live=first->result().live_bytes;
     backing(*snapshot,std::shared_ptr<ReservationDomain>{});
-    require(snapshot->storage()[2].occurrence.source.path.capacity()>=4 && first->result().live_bytes==live,
+    require(key_buffer(snapshot->storage()[2]).capacity()>=4 && first->result().live_bytes==live,
             "map snapshot lost inactive capacity or borrowed quota");
     Map other(reference,second);
     no_new([&] {
@@ -312,7 +319,7 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
   retained.reset();
   require(watch.expired(),"map retained domain after destruction");
   snapshot->reserve(4,5);
-  require(snapshot->size()==1 && snapshot->operator[](0).occurrence==one[0].occurrence,
+  require(snapshot->size()==1 && equal(snapshot->operator[](0),one[0]),
           "map snapshot failed after domain destruction");
   backing(*snapshot,std::shared_ptr<ReservationDomain>{});
   {
@@ -797,6 +804,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   namespace A = allocation_lifetime;
   reservation_allocator_controls();
   map_reservation_controls(rows);
+  map_reservation_controls(fields);
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
@@ -954,6 +962,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
               "map active/inactive path differs from observed allocation request");
       map_path_bytes += bytes;
     });
+    std::uint64_t map_address_bytes=0;
+    Access::map_addresses(*owner,[&](const auto &address) {
+      const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+      require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(address.data())==bytes),
+              "map active/inactive address differs from observed allocation request");
+      map_address_bytes += bytes;
+    });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
@@ -1000,7 +1016,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       membership_bytes += bytes;
     }
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.

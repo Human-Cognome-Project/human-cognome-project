@@ -7,6 +7,10 @@ struct ExchangeCoordinatorAccess {
     for (const auto &row : c.bound_->occurrences_.storage()) visit(row.occurrence.source.path);
     for (const auto &row : c.next_.storage()) visit(row.occurrence.source.path);
   }
+  template<class Visit> static void map_addresses(const detail::ExchangeCoordinator &c, Visit visit) {
+    for (const auto &row : c.bound_->fields_.storage()) visit(row.field.object.address);
+    for (const auto &row : c.next_fields_.storage()) visit(row.field.object.address);
+  }
   static auto map_outer_bytes(const detail::ExchangeCoordinator &c) {
     const auto bytes = [](const auto &map) { return map.storage().capacity()*sizeof(map.storage()[0]); };
     return bytes(c.bound_->occurrences_)+bytes(c.bound_->fields_)+bytes(c.next_)+bytes(c.next_fields_);
