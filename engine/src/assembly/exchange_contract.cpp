@@ -13,18 +13,35 @@ OccurrenceKey copy_occurrence(const OccurrenceKey &key,
   return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
       detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
 }
+warm::ToolRef copy_reference(const warm::ToolRef &ref,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {{ref.object.scope,{ref.object.address.begin(),ref.object.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain)}},ref.revision};
+}
 template<class A>
 detail::SharedReservedVector<warm::Parent> copy_parents(const std::vector<warm::Parent,A> &parents,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {parents.begin(),parents.end(),detail::SharedReservationAllocator<warm::Parent>(domain)};
+  detail::SharedReservedVector<warm::Parent> result{detail::SharedReservationAllocator<warm::Parent>(domain)};
+  result.reserve(parents.size());
+  for (const auto &parent : parents)
+    result.push_back({copy_reference(parent.target,domain),parent.ordinal,parent.stored_mass,parent.contribution});
+  return result;
 }
 auto copy_sources(const detail::SharedReservedVector<ExchangeSource> &sources,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   detail::SharedReservedVector<ExchangeSource> result{detail::SharedReservationAllocator<ExchangeSource>(domain)};
   result.reserve(sources.size());
   for (const auto &source : sources)
-    result.push_back({copy_occurrence(source.occurrence,domain),source.definition,source.mass,source.node,
+    result.push_back({copy_occurrence(source.occurrence,domain),copy_reference(source.definition,domain),source.mass,source.node,
                       copy_parents(source.parents,domain)});
+  return result;
+}
+auto copy_leaves(const detail::SharedReservedVector<ExchangeLeaf> &leaves,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  detail::SharedReservedVector<ExchangeLeaf> result{detail::SharedReservationAllocator<ExchangeLeaf>(domain)};
+  result.reserve(leaves.size());
+  for (const auto &leaf : leaves)
+    result.push_back({leaf.character,leaf.byte,leaf.nibble,copy_reference(leaf.definition,domain),leaf.count});
   return result;
 }
 bool same(const ExchangeSource &a, const ExchangeSource &b) {
@@ -73,7 +90,7 @@ LetterExchangeContract::LetterExchangeContract(const LetterExchangeContract &oth
       mass_(other.mass_), match_work_(other.match_work_),
       outgoing_(copy_sources(other.outgoing_,domain)),
       incoming_(copy_sources(other.incoming_,domain)),
-      leaves_(other.leaves_.begin(),other.leaves_.end(),detail::SharedReservationAllocator<ExchangeLeaf>(domain)) {}
+      leaves_(copy_leaves(other.leaves_,domain)) {}
 
 LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &projection,
     const OccurrenceKey &owner, warm::Exposure target,
@@ -100,7 +117,7 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
         [&](const auto &t) { return t.ref == occurrence->definition; });
     need(tool != recipe.tools.end() && tool->mass && *tool->mass,
          "missing exact exchange definition mass");
-    return ExchangeSource{copy_occurrence(occurrence->key,domain), occurrence->definition, *tool->mass,
+    return ExchangeSource{copy_occurrence(occurrence->key,domain), copy_reference(occurrence->definition,domain), *tool->mass,
                           occurrence->node, copy_parents(tool->parents,domain)};
   };
   detail::SharedReservedVector<ExchangeSource> aggregate{detail::SharedReservationAllocator<ExchangeSource>(domain)},
@@ -120,7 +137,7 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
     // including repeated bytes/nibbles, rather than deduplicating definitions.
     for (const auto &parent : part.parents)
       result.leaves_.push_back({id.path[0], id.path[1], parent.ordinal,
-                                parent.target, parent.contribution});
+                                copy_reference(parent.target,domain), parent.contribution});
     parts.push_back(std::move(part));
   }
   need(!parts.empty() && mass == result.mass_, "exchange alternatives differ in exact mass");

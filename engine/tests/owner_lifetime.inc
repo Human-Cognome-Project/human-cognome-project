@@ -751,9 +751,16 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
                   "declaration source path detached");
           backing += source.occurrence.source.path.capacity()*sizeof(std::uint32_t);
         }
+      Access::contract_addresses(contract,[&](const auto &address) {
+        require(address.get_allocator().domain==domain,"declaration reference address detached");
+        backing += address.capacity()*sizeof(codec::AddressElement);
+      });
       require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
               "declaration omitted table backing or changed its structural values");
       snapshot.emplace(contract);
+      Access::contract_addresses(*snapshot,[&](const auto &address) {
+        require(!address.get_allocator().domain,"declaration snapshot retained address domain");
+      });
       for (const auto *side : {&snapshot->outgoing(),&snapshot->incoming()})
         for (const auto &source : *side)
           require(!source.parents.get_allocator().domain && !source.occurrence.source.path.get_allocator().domain,
@@ -765,6 +772,9 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
     }
     require(!watch.expired() && Access::equivalent(*moved,reference),
             "moved declaration lost source domain or structural values");
+    Access::contract_addresses(*moved,[&](const auto &address) {
+      require(address.get_allocator().domain==watch.lock(),"moved declaration lost address domain");
+    });
     moved.reset();
     require(watch.expired() && Access::equivalent(*snapshot,reference),
             "detached declaration snapshot failed after source domain death");
@@ -1005,6 +1015,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
           declaration_bytes += path_bytes;
         }
     }
+    for (const auto &declaration : Access::declarations(*owner))
+      Access::contract_addresses(*declaration,[&](const auto &address) {
+        const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+        require(address.get_allocator().domain==Access::reservation_domain(*owner) &&
+                    (!bytes || containing_request(address.data())==bytes),
+                "declaration address differs from observed allocation request");
+        declaration_bytes += bytes;
+      });
     auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");

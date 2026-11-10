@@ -92,6 +92,14 @@ struct ExchangeOwnerAccess {
   static auto contract_copy(const LetterExchangeContract &c, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterExchangeContract(c,domain);
   }
+  template<class Visit> static void contract_addresses(const LetterExchangeContract &c, Visit visit) {
+    for (const auto *side : {&c.outgoing(),&c.incoming()})
+      for (const auto &source : *side) {
+        visit(source.definition.object.address);
+        for (const auto &parent : source.parents) visit(parent.target.object.address);
+      }
+    for (const auto &leaf : c.leaves()) visit(leaf.definition.object.address);
+  }
   static auto contract_tables(const LetterExchangeContract &c) {
     return std::array<std::pair<const void *,std::size_t>,3>{{
       {c.outgoing_.data(),c.outgoing_.capacity()*sizeof(ExchangeSource)},
