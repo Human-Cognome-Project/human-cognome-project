@@ -2407,3 +2407,70 @@ Verified SHA256SUMS manifest SHA-256:
 
 The raw bundle remains local; its hash does not imply remote inspection or
 replace hosted acceptance.
+
+## Declaration parent allocation domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `6db0beaefe817cc13f1d532923ddd9a4bf5ecad8` on provisionally
+accepted #247 head `a13d3125b814662fd1f03d5aca975ef349b645ba`. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/247#pullrequestreview-5841698860)
+found no blocking corrections and permits bounded continuation. At inspection,
+parent smoke 42813498122 passed; native 42813498120 remained in progress. No
+duplicate baseline was run. Integrated acceptance remains through #246; the
+historical #245 failed workflow remains recorded as such.
+
+The explicit owner declaration construction/copy paths now attach each direct
+parent vector before copying rows. Ordinary source/declaration snapshots detach
+nested parent backing; moves carry its allocator with the backing. The explicit
+copy reserves source tables and constructs domain-bound parent copies directly,
+without first allocating detached parents. Scope excludes parent UUID/address
+payload, other recipe/input vectors, setup work and complete resource accounting;
+see [inventory](../../docs/OWNER-RESOURCES.md#declaration-parent-allocation-domain-contribution-awaiting-review).
+Awake/asleep mechanics remain outside this work.
+
+CPU-only Clang/LLVM 15, pinned Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 and bulk/default or
+direct/compiler-no-unroll on the shared personal host. Tests extend construction
+and explicit-copy sweeps to the nested requests, verify every parent allocator,
+exact selected-domain totals and snapshot detachment, plus independent actual
+allocation lookup in the owner. Full parent values remain part of structural
+equivalence. Existing exact retry, reclamation, moved lifetime, projection setup,
+catalogue, failure-site and repeated exchange/tick checks remain active.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 61 / 96 | 186,208 | 259,456 | 4,101 |
+| Four selections | 74 / 184 | 217,288 | 510,248 | 7,741 |
+
+All failure sites reclaim every observed allocation. Whole-adoption retained/peak
+requested bytes are 277,025 / 277,570 and 332,859 / 334,901; retained census is
+277,649 / 333,291. The 96 / 384-byte increase over #247 is embedded parent-allocator
+references in source rows. An additional 1,200 / 4,800 bytes of pre-existing parent
+backing is now inside the selected domain. Allocation site counts are unchanged.
+Projection setup remains 1,556 / 4,628 boundaries and work 51,284 / 137,062.
+Selected/whole/census figures overlap and must not be summed; allocation-request
+work is not peak memory or CPU timing.
+
+Validation matrix: owner, multiple owner, bindings, commit and fields × workers
+1/2 × bulk/default or direct/compiler-no-unroll. Additional cases:
+structural_recipe_test, letter_projection_test, membership_fields_test,
+active_workbench_test, letter_projection_native_test and membership_fields_native_test.
+No GPU/database/full baseline/compiler audit was run. Remaining nested UUID/path/
+address and recipe/input allocations, declaration/catalogue/graph setup work and
+combined caller/borrowed accounting remain open before remaining operations.
+#156/#145/#229 remain open.
+All 20 focused exchange processes and six CTest cases passed; each process exited
+zero. The two-worker direct exchange_commit log contains an offline-cache lock
+warning after its complete PASS result. That warning is preserved; no cache
+cleanup or duplicate run was used, and cache-performance qualification is not
+claimed. Source remained clean throughout execution. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `declaration-parent-domain-6db0beae`, including build,
+commands, twenty case logs, six-case CTest log, source/configuration/toolchain and
+executable hashes. Archive: `setup-evidence/declaration-parent-domain-6db0beae.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    45734103d38aa22a8924067c79ff8061a797fcace3ce7361f77e1f18cacbf834
+
+Raw logs remain local; the hash identifies evidence without implying remote
+inspection or replacing hosted acceptance.

@@ -491,7 +491,9 @@ resources are still open. This is not complete projection or constructor admissi
 
 ## Work inventory and remaining budget gate
 
-### Declaration table allocation domain (contribution awaiting review)
+<a id="declaration-table-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration table allocation domain (provisionally accepted #247)
 
 Owner declaration construction now receives its shared reservation domain before
 building outgoing/incoming source tables or ordered leaves. The temporary aggregate
@@ -512,7 +514,8 @@ allocator-aware vectors and the retained census accepts those container types.
 This is table admission, not complete declaration admission. Owner/recipe UUID
 copies, separately allocated source/leaf keys, direct-parent vectors and their
 nested payload, lookup/matching work, stack and allocator/exception overhead are
-still outside this gate. Row temporaries may copy nested payload before a table
+outside this #247 gate; the following contribution extends it to direct-parent
+vector backing. Row temporaries may copy nested payload before a table
 request. Embedded row headers are already part of the table allocation and must
 not be charged twice. Selected domain and retained census totals overlap.
 
@@ -526,6 +529,34 @@ retained declaration-table allocation and reconciles the complete selected-domai
 sum. Existing failure-site, setup rejection, shared lifetime and repeated native
 exchange/tick controls remain active. Complete declaration/setup accounting and
 combined caller/borrowed resources remain open.
+
+### Declaration parent allocation domain (contribution awaiting review)
+
+Each `ExchangeSource::parents` vector now uses the shared reservation allocator.
+Initial declaration construction copies parent rows directly into a domain-bound
+vector. Explicit declaration copying reserves each source table, then constructs
+every source with an explicit domain-bound parent copy. It does not first make
+detached parent copies and attach them afterward. Moves into source tables and
+their growth preserve the same parent backing/domain; reverse-side swaps keep it
+attached. Ordinary value-copy construction recursively detaches the source and
+parent tables; copy assignment retains the destination allocator as before.
+
+The parent-vector allocation is admitted before its row copies. UUID/address
+backing within each `warm::Parent`, occurrence/definition keys constructed before
+the parent request, other recipe/input parent vectors and setup work remain
+outside this gate. Parent object headers are included once in vector backing;
+the extra allocator reference is embedded in each source row and thus already
+covered by its outer table request/census. This is not a second full-row charge.
+
+Construction and explicit-copy controls now verify every parent allocator and
+include parent backing in their exact selected-domain sum, rejection sweeps,
+reclamation and exact retry. Detached snapshots check nested allocators and remain
+usable after source-domain destruction; moves preserve the original lifetime.
+The owner witness independently locates every retained parent allocation alongside
+the source/leaf tables. Structural comparisons still include parent target pins,
+ordinals, stored mass and contributions; no exchange or awake/asleep behavior is
+changed. Remaining key/recipe/input allocation and full setup/combined-resource
+qualification remain open.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
