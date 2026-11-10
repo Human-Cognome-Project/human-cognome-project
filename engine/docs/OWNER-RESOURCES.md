@@ -493,7 +493,7 @@ resources are still open. This is not complete projection or constructor admissi
 
 <a id="declaration-table-allocation-domain-contribution-awaiting-review"></a>
 
-### Declaration table allocation domain (provisionally accepted #247)
+### Declaration table allocation domain (accepted #247 via #259)
 
 Owner declaration construction now receives its shared reservation domain before
 building outgoing/incoming source tables or ordered leaves. The temporary aggregate
@@ -532,7 +532,7 @@ combined caller/borrowed resources remain open.
 
 <a id="declaration-parent-allocation-domain-contribution-awaiting-review"></a>
 
-### Declaration parent allocation domain (provisionally accepted #250)
+### Declaration parent allocation domain (accepted #250 via #259)
 
 Each `ExchangeSource::parents` vector now uses the shared reservation allocator.
 Initial declaration construction copies parent rows directly into a domain-bound
@@ -562,7 +562,7 @@ qualification remain open.
 
 <a id="declaration-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
 
-### Declaration occurrence-path allocation domain (provisionally accepted #252)
+### Declaration occurrence-path allocation domain (accepted #252 via #259)
 
 The reservation primitives now live in `common/reservation_allocator.h`, with
 engine-private aliases preserving existing names. This is standard-C++ support,
@@ -599,7 +599,7 @@ No schema migration, database writes or activity-state behavior changes occur.
 
 <a id="projection-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
 
-### Projection occurrence-path allocation domain (provisionally accepted #253)
+### Projection occurrence-path allocation domain (accepted #253 via #259)
 
 Both retained projections now explicitly attach occurrence identity paths,
 optional byte-provenance owner paths, and active/spare parent-contribution paths
@@ -633,7 +633,7 @@ unchanged.
 
 <a id="catalogue-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
 
-### Catalogue occurrence-path allocation domain (provisionally accepted #254)
+### Catalogue occurrence-path allocation domain (accepted #254 via #259)
 
 `MembershipFields::collect` now constructs each contribution's occurrence path
 with the supplied reservation domain before copying ordinals. The finished key
@@ -668,7 +668,7 @@ backing is a separate remaining item. Deferred wake/sleep research is unchanged.
 
 <a id="occurrence-map-path-allocation-domain-contribution-awaiting-review"></a>
 
-### Occurrence-map path allocation domain (provisionally accepted #255)
+### Occurrence-map path allocation domain (accepted #255 via #259)
 
 `ExchangeMap` now retains a shared reservation-domain handle before its raw outer
 allocator. That handle survives empty maps and is destroyed after all slot backing;
@@ -712,7 +712,7 @@ No numerical/publication or deferred activity behavior changes here.
 
 <a id="field-map-address-allocation-domain-contribution-awaiting-review"></a>
 
-### Field-map address allocation domain (provisionally accepted #256)
+### Field-map address allocation domain (accepted #256 via #259)
 
 `codec::Address` now uses the neutral shared reservation allocator for its existing
 `AddressElement` sequence. The codec remains engine-independent; pure codec
@@ -755,7 +755,7 @@ integration. Deferred activity and GPU sequencing are unchanged.
 
 <a id="declaration-address-allocation-domain-contribution-awaiting-review"></a>
 
-### Declaration address allocation domain (provisionally accepted #257)
+### Declaration address allocation domain (accepted #257 via #259)
 
 Initial `LetterExchangeContract::collect` and explicit domain-bound reverse copies
 now construct source-definition, direct-parent-target and ordered-leaf reference
@@ -784,7 +784,7 @@ and same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
 <a id="projection-address-allocation-domain-contribution-awaiting-review"></a>
 
-### Projection address allocation domain (provisionally accepted #258)
+### Projection address allocation domain (accepted #258 via #259)
 
 Both retained projections now construct occurrence-definition, optional byte-
 provenance character and complete-character addresses in their supplied domain.
@@ -812,7 +812,9 @@ input payload, complete setup work and combined caller/borrowed resources remain
 open before remaining-operation integration and same-execution controls. Deferred
 activity and GPU sequencing are unchanged.
 
-### Catalogue address allocation domain (contribution awaiting review)
+<a id="catalogue-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Catalogue address allocation domain (accepted #259)
 
 `MembershipFields::collect` now constructs each retained contribution's field
 object and pinned target address with the supplied domain before copying elements.
@@ -1154,3 +1156,9 @@ field-command capacity deltas, aggregate overflow, shared allocation counts, and
 stable totals across repeated one/four-occurrence exchanges and ticks. Numerical
 oracles and operation behavior remain unchanged. See the source-pinned run record
 in [admission evidence](../tests/admission/README.md).
+
+## Integrated stack acceptance — 2026-11-10
+
+Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed head `a2636cad6e85b9582f7e37aa1dd537bbd7b5c430`. Native 42874078745 and smoke 42874078677 passed; all 12 native jobs succeeded. Inspected regression shards passed 29 + 29 + 29 + 28 = 115 tests; database log reports addressed_reads=24/private_reads=0.
+
+The scoped allocation gates above are accepted; this does not close complete owner resources, setup, operations or hardware qualification. Earlier provisional evidence remains historical.
