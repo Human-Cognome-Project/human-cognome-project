@@ -212,6 +212,24 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
     require(stopped && !zero->result().live_bytes && empty.storage().empty(),
             "map outer rejection allocated nested paths");
   });
+  const auto row_bytes=sizeof(OccurrenceBinding);
+  auto growth=std::make_shared<ReservationDomain>(ReservationBudget{2*row_bytes+8,UINT64_MAX});
+  {
+    Map value(one,growth);
+    const auto *original=value.storage().data();
+    no_new([&] {
+      bool stopped=false;
+      try { value.reserve(2,4); } catch (const ReservationStop &) { stopped=true; }
+      require(stopped && growth->result().required_bytes>=3*row_bytes+8 &&
+                  growth->result().live_bytes==row_bytes+8 && value.storage().data()==original &&
+                  value.size()==1 && value[0].occurrence==one[0].occurrence,
+              "map growth omitted old/new overlap or changed existing rows");
+      stopped=false;
+      try { Map denied(value,zero); } catch (const ReservationStop &) { stopped=true; }
+      require(stopped && !zero->result().live_bytes,"map copy allocated before outer admission");
+    });
+  }
+  require(!growth->result().live_bytes,"map growth denial leaked original backing");
   for (bool copying : {false,true}) {
     const auto construct = [&](const auto &d) {
       // Return a prvalue: an ordinary Map copy intentionally detaches.
