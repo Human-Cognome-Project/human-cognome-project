@@ -839,7 +839,9 @@ those nested addresses. UUID text, recipe/input payload, complete setup work and
 combined caller/borrowed resources remain open before operation integration and
 same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
-### Catalogue graph-address allocation domain (contribution awaiting review)
+<a id="catalogue-graph-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Catalogue graph-address allocation domain (provisionally accepted #261)
 
 Temporary catalogue `tools`, `state` and `reached` map keys and nested `Targets`
 set elements now construct addresses in the supplied domain before insertion.
@@ -868,6 +870,36 @@ Next: addresses throughout both retained projection recipes (tool/parent/member
 refs, geometry, occurrence definitions and focal fields), attached during explicit
 copies before allocation. Recipe paths/tables, UUID/text/input payload, complete
 setup and combined caller/borrowed accounting remain open before operation/control
+integration. Deferred activity and GPU sequencing are unchanged.
+
+### Recipe address allocation domain (contribution awaiting review)
+
+Explicit owner copies of `LetterProjection` now build `recipe_` addressed rows
+with the supplied domain: tool references, parent targets, member-of references,
+geometry objects, legacy/structural occurrence definitions and focal fields.
+Each address is admitted before copying elements. A detached whole-recipe copy
+is not made first. Finished rows move into reserved ordinary recipe vectors;
+those vectors and other recipe payload remain outside this address-only gate.
+
+The copy preserves every Bundle field: publication/owner/creator pins, version,
+tool metadata, optional values, ordered parents/memberships, geometry/spheres,
+nodes, occurrence identity/state, selections, contacts and focal fields. Ordinary
+snapshots detach addresses recursively; moves retain their domain. There is no
+new type/layout, codec, schema or numerical change.
+
+Projection controls now include recipe addresses in exact backing totals and
+independently locate retained requests. A nonallocating comparison checks all
+recipe values alongside projection rows. Existing structural and populated-pool
+controls are joined by a legacy fixture with nonzero positions/velocities,
+geometry and contacts. Both versions exercise byte/work refusal, cleanup, exact
+retry, detached snapshots after source death and moved lifetime. Whole-owner
+allocation failures and repeated native zero-new checks remain active. Embedded
+headers belong to their containing rows; backing is counted once and overlapping
+selected/whole-owner/census reports must not be summed.
+
+Next: recipe occurrence paths in legacy/structural rows, selection parts and
+contact endpoints. Recipe tables, UUID/text/input payload, complete setup work
+and combined caller/borrowed accounting remain open before operation/control
 integration. Deferred activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>

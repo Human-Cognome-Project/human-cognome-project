@@ -3137,3 +3137,69 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; these hashes do not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Retained recipe address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `64e85a5fcdcdc9da719def6f8d49f585ada61e06`, stacked on
+provisionally accepted #261 at `942c93aaa5f4487bd7abcecd0b6f9fb4cca64c9e`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/261#pullrequestreview-5849608177)
+found no blocking corrections and accepted this recipe-address slice. Parent
+smoke 42903689287 passed; native 42903689200 remains running at review inspection.
+Integrated acceptance remains through #259. The earlier #261 missing-focus fixture
+failure remains preserved in its separate source-pinned record above.
+
+Explicit owner copies now build addressed recipe rows directly in the supplied
+domain: tool refs, parent targets, member-of refs, geometry, legacy/structural
+occurrence definitions and focal-field objects. No detached whole-recipe copy
+precedes admission. Finished rows move into reserved ordinary recipe vectors;
+those tables, recipe paths and text remain separately scoped. Every Bundle field
+and pin is preserved. No new type/layout, codec, schema or numerical change.
+See [scope](../../docs/OWNER-RESOURCES.md#recipe-address-allocation-domain-contribution-awaiting-review).
+
+Projection address visitors now cover recipe addresses in exact backing totals,
+nested attachment/detachment, moved lifetime and independent retained requests.
+The nonallocating equivalence check compares every recipe field, including tool
+metadata/optional values, parent/membership order, geometry/spheres, nodes,
+legacy positions/velocities, selections, contacts and focal fields. Structural
+and populated spare-pool controls retain byte/work refusal, reclamation, exact
+retry and source-death snapshot checks. A validated legacy fixture with mixed
+exposures, nonzero state/geometry and populated contacts runs the same copy and
+lifetime controls without structural-only pool reservation. Whole-owner allocation
+failures and repeated native zero-new witnesses remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,267 / 1,458 | 214,222 | 296,592 | 4,118 |
+| Four selections | 1,695 / 2,696 | 253,816 | 583,108 | 7,761 |
+
+Newly selected backing adds 2,070 / 2,340 bytes. Whole-adoption retained/peak
+requested bytes remain 294,753 / 295,362 and 356,827 / 359,109; census remains
+295,377 / 357,259. Allocation-site counts are unchanged and all failure sites
+reclaim storage. Selected-domain, whole-owner and census reports overlap and
+must not be summed; allocation-request work is not peak memory or CPU timing.
+
+Next: retained recipe paths in legacy/structural occurrence IDs, selection parts
+and contact endpoints. Recipe tables, UUID/text/input payload, complete setup and
+combined resources remain open before operation/control integration. Deferred
+activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero; no build/runtime warnings. Source remained clean and
+unchanged during validation. Final delta is four Markdown files only.
+
+Contributor-local evidence: `recipe-address-domain-64e85a5f`, including commands,
+build/raw logs, source/configuration/toolchain and binary/runtime hashes. Archive:
+`setup-evidence/recipe-address-domain-64e85a5f.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    6d002e0ca6c5760030ba908d92b301d2ee028c0779e737439d126a4bc628f1bf
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
