@@ -4,8 +4,8 @@ namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
   static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
   template<class Visit> static void map_paths(const detail::ExchangeCoordinator &c, Visit visit) {
-    for (const auto *map : {&c.bound_->occurrences_,&c.next_})
-      for (const auto &row : map->storage()) visit(row.occurrence.source.path);
+    for (const auto &row : c.bound_->occurrences_.storage()) visit(row.occurrence.source.path);
+    for (const auto &row : c.next_.storage()) visit(row.occurrence.source.path);
   }
   static auto map_outer_bytes(const detail::ExchangeCoordinator &c) {
     const auto bytes = [](const auto &map) { return map.storage().capacity()*sizeof(map.storage()[0]); };
