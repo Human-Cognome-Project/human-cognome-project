@@ -155,20 +155,23 @@ struct Selection {
 struct Contact {
   OccurrenceId a, b;
 };
+// Top-level recipe backing may attach to an explicit owner allocation domain.
+// Ordinary copies detach through the engine-independent allocator.
+template<class T> using RecipeTable = hcp::resources::SharedReservedVector<T>;
 struct Bundle {
   BundleRef ref;
   Uuid owner, creator;
   int recipe_version{1};
-  std::vector<Tool> tools;
-  std::vector<Geometry> geometry;
-  std::vector<Node> nodes;
-  std::vector<Occurrence> occurrences;
-  std::vector<Selection> selections;
-  std::vector<Contact> contacts;
+  RecipeTable<Tool> tools;
+  RecipeTable<Geometry> geometry;
+  RecipeTable<Node> nodes;
+  RecipeTable<Occurrence> occurrences;
+  RecipeTable<Selection> selections;
+  RecipeTable<Contact> contacts;
   // Versioned alternatives: v1 uses occurrences, v2 uses these structural rows.
   // Mixing versions is rejected, rather than discarding supplied initial state.
-  std::vector<StructuralOccurrence> structural_occurrences;
-  std::vector<FocalField> focal_fields;
+  RecipeTable<StructuralOccurrence> structural_occurrences;
+  RecipeTable<FocalField> focal_fields;
 };
 
 // Validate a supplied normalized recipe, rather than derive one (Stage B).

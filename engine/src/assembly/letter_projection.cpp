@@ -373,34 +373,42 @@ template<class T, class Copy> std::vector<T> recipe_rows(const std::vector<T> &r
   for (const auto &row : rows) result.push_back(copy(row));
   return result;
 }
+template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
+    const warm::RecipeTable<T> &rows,
+    const std::shared_ptr<detail::ReservationDomain> &domain, Copy copy) {
+  warm::RecipeTable<T> result{detail::SharedReservationAllocator<T>(domain)};
+  result.reserve(rows.size());
+  for (const auto &row : rows) result.push_back(copy(row));
+  return result;
+}
 warm::Bundle projection_recipe(const warm::Bundle &b,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   // Build addressed rows directly; a detached whole-recipe copy would allocate
   // their backing before admission. Other recipe storage remains outside it.
   return {b.ref,b.owner,b.creator,b.recipe_version,
-      recipe_rows(b.tools,[&](const auto &t) -> warm::Tool {
+      recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
         return {projection_reference(t.ref,domain),t.epoch,t.recipe,t.notation,t.mass,
             recipe_rows(t.parents,[&](const auto &p) -> warm::Parent {
               return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
             }),
             recipe_rows(t.member_of,[&](const auto &ref) { return projection_reference(ref,domain); }),t.author};
       }),
-      recipe_rows(b.geometry,[&](const auto &g) -> warm::Geometry {
+      recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
         return {projection_object(g.object,domain),g.centroid,g.spheres};
-      }),b.nodes,
-      recipe_rows(b.occurrences,[&](const auto &o) -> warm::Occurrence {
+      }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
+      recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
         return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
       }),
-      recipe_rows(b.selections,[&](const auto &s) -> warm::Selection {
+      recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
         return {s.entry,s.exposure,recipe_rows(s.parts,[&](const auto &id) { return projection_id(id,domain); })};
       }),
-      recipe_rows(b.contacts,[&](const auto &c) -> warm::Contact {
+      recipe_tables(b.contacts,domain,[&](const auto &c) -> warm::Contact {
         return {projection_id(c.a,domain),projection_id(c.b,domain)};
       }),
-      recipe_rows(b.structural_occurrences,[&](const auto &o) -> warm::StructuralOccurrence {
+      recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
         return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node};
       }),
-      recipe_rows(b.focal_fields,[&](const auto &f) -> warm::FocalField {
+      recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
         return {f.kind,projection_object(f.object,domain)};
       })};
 }

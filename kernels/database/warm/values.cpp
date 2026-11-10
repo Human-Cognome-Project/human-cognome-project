@@ -386,7 +386,8 @@ Bundle structural_from_v1(const Bundle &legacy, BundleRef publication,
   for (const auto &o : legacy.occurrences)
     out.structural_occurrences.push_back({o.id, o.definition, o.node});
   out.occurrences.clear();
-  out.focal_fields = std::move(focal_fields);
+  out.focal_fields.assign(std::make_move_iterator(focal_fields.begin()),
+                          std::make_move_iterator(focal_fields.end()));
   validate(out);
   return out;
 }

@@ -85,7 +85,7 @@ Bundle fixture(const std::vector<Tool> &tools) {
   b.ref = {new_uuid(), new_uuid()};
   b.owner = instance;
   b.creator = actor;
-  b.tools = tools;
+  b.tools.assign(tools.begin(),tools.end());
   const auto letter = object("02.00.00.00.03");
   const auto &t = *std::find_if(tools.begin(), tools.end(), [&](const auto &v) {
     return v.ref.object == letter;

@@ -523,6 +523,12 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       auto copy = Access::projection_copy(projection,domain);
       if (reserve) Access::reserve_projection(copy);
       outer = Access::projection_table_bytes(copy);
+      for (const auto &table : Access::projection_tables(copy)) if (table.second) {
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==table.first; });
+        require(observed!=std::end(A::table) && observed->bytes==table.second,
+                "projection table backing differs from independent request");
+      }
       Access::projection_paths(copy,[&](const auto &path) {
         require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
         const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
