@@ -2972,3 +2972,75 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Catalogue address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `7910e75d45f208a52f5eeed329825334bad15cc0`, stacked on
+provisionally accepted #258 at `a10838d811e7f2de50f668cda3568a4d1ba8015a`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/258#pullrequestreview-5846910693)
+found no blocking corrections and accepts retained catalogue addresses next.
+Parent smoke 42868181997 passed; native 42868181981 remains running at review
+inspection. #257 native 42837316813 has now passed; earlier pending-parent
+statements are historical observations. Dependency integration remains pending;
+integrated implementation acceptance remains through #246. Earlier #255 build
+failures and #250 cache qualifications remain recorded above.
+
+`MembershipFields::collect` now attaches retained contribution field-object and
+pinned-target addresses before allocation. Finished rows move into the table;
+target resolution remains one lookup per contribution. Exact scope/revision,
+occurrence, field kind, counts and order are unchanged, as are graph traversal
+and deduplication. Ordinary snapshots detach; moves retain domain lifetime.
+No new type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#catalogue-address-allocation-domain-contribution-awaiting-review).
+
+Catalogue controls reconcile both addresses with exact retained backing and
+check attachment/detachment. Exact ordered rows are compared after source-domain
+destruction, move and exact retry. Existing byte/work refusal sweeps reclaim all
+observed allocations; whole-owner allocation-site failures and repeated native
+zero-new controls remain active. Independent owner observation locates every
+retained address request. The expanded membership byte total also verifies that
+final strong release reclaims table/path/address backing while the control block
+remains charged until final weak release.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated parent codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,170 / 1,292 | 212,152 | 294,102 | 4,102 |
+| Four selections | 1,589 / 2,512 | 251,476 | 580,348 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+90 / 360 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: temporary catalogue graph-key addresses in `tools`, `state`,
+`reached` and nested `Targets`, including ancestor propagation. Their node limits
+do not cover nested addresses. UUID text, recipe/input payload, complete setup
+work and combined caller/borrowed accounting remain open before remaining
+operations and same-execution controls. Deferred activity/GPU sequencing is
+unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only. The first source build at `81eb1a32` passed;
+a pre-validation refinement avoided a duplicate target lookup, and the final
+source was rebuilt before the single qualification run.
+
+Contributor-local evidence: `catalogue-address-domain-7910e75d`, including initial/
+final build scripts and logs, test commands/raw logs, source/configuration/toolchain
+and binary/runtime hashes. Archive:
+`setup-evidence/catalogue-address-domain-7910e75d.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    444901cf5771824d98af1480955badb5819f76d016fd3b401e27e500a169579a
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.

@@ -782,7 +782,9 @@ and parent-pool setup. UUID text, catalogue/recipe/input payload, complete setup
 work and combined caller/borrowed resources remain open before operation integration
 and same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
-### Projection address allocation domain (contribution awaiting review)
+<a id="projection-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Projection address allocation domain (provisionally accepted #258)
 
 Both retained projections now construct occurrence-definition, optional byte-
 provenance character and complete-character addresses in their supplied domain.
@@ -809,6 +811,31 @@ Next: retained catalogue contribution field and pinned-target addresses in
 input payload, complete setup work and combined caller/borrowed resources remain
 open before remaining-operation integration and same-execution controls. Deferred
 activity and GPU sequencing are unchanged.
+
+### Catalogue address allocation domain (contribution awaiting review)
+
+`MembershipFields::collect` now constructs each retained contribution's field
+object and pinned target address with the supplied domain before copying elements.
+Finished rows move into the contribution table. Exact scope/revision, occurrence,
+field kind and count remain unchanged, as do traversal, deduplication and row
+order. Ordinary snapshots detach recursively; moves retain backing/domain lifetime.
+No new type/layout, codec, schema or numerical change is introduced.
+
+Catalogue controls include both addresses in exact retained backing totals, check
+attachment/detachment and moved lifetime, and compare exact ordered rows after
+source-domain destruction and exact retry. Existing byte/work refusal sweeps and
+whole-owner allocation-site injection cover the new requests. Independent owner
+observation locates each retained address allocation. Strong aliases preserve the
+backing after owner death; final strong release reclaims all table/path/address
+storage while final weak release reclaims the shared control block. Repeated native
+zero-new checks remain active. Embedded allocator headers belong to table requests;
+address backing is counted once. Domain, whole-owner and census totals overlap.
+
+Next: temporary catalogue `tools`/`state`/`reached` map-key and `Targets` set-element
+addresses, including ancestor copies. Node allocation limits alone do not cover
+those nested addresses. UUID text, recipe/input payload, complete setup work and
+combined caller/borrowed resources remain open before operation integration and
+same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
