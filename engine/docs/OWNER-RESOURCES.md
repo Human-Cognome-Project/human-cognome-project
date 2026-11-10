@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #246 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--245246-2026-11-10)
+Accepted through #259 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--247-through-259-2026-11-10)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237–#243/#245/#246 stack. It accompanies the retained-capacity census and scoped
+integrated allocation stack through #259. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -838,6 +838,37 @@ addresses, including ancestor copies. Node allocation limits alone do not cover
 those nested addresses. UUID text, recipe/input payload, complete setup work and
 combined caller/borrowed resources remain open before operation integration and
 same-execution controls. Deferred activity and GPU sequencing are unchanged.
+
+### Catalogue graph-address allocation domain (contribution awaiting review)
+
+Temporary catalogue `tools`, `state` and `reached` map keys and nested `Targets`
+set elements now construct addresses in the supplied domain before insertion.
+State/reached entries and target elements are looked up before constructing a
+missing key, avoiding detached ancestor-range copies and allocations for known
+targets. Tool insertion retains its existing first-value behavior for duplicate
+keys; rejected temporary keys release their backing. Exact graph identity,
+traversal, ancestor deduplication and cycle rejection remain unchanged.
+
+The diamond fixture has five-element addresses whose 15-byte requests are distinct
+from its UUID text, path, table/node and callable allocations. Optional nonthrowing
+callbacks in the test allocation witness independently count those requests and
+releases, compare their prepayment against the domain, and verify the expected
+transient-plus-retained address peak. Four visited vertices and ancestor-set
+sizes 3+1+1+0 provide a fixture-derived temporary count; direct and mediated paths
+to the same ancestor must deduplicate. This is a fixture-specific C++ allocation
+witness, not a production allocator-size assumption or total machine budget.
+
+The same fixture runs byte/work refusal and exact retry, every observed allocation
+failure, post-failure retry, duplicate-tool insertion and cycle-rejection cleanup.
+Existing owner retained-request, shared lifetime and native zero-new checks remain
+active. Temporary addresses release before collection returns and are not added
+to the retained census. Request work, peak overlap and retained totals are distinct.
+
+Next: addresses throughout both retained projection recipes (tool/parent/member
+refs, geometry, occurrence definitions and focal fields), attached during explicit
+copies before allocation. Recipe paths/tables, UUID/text/input payload, complete
+setup and combined caller/borrowed accounting remain open before operation/control
+integration. Deferred activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 

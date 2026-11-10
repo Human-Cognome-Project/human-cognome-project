@@ -3052,3 +3052,88 @@ Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed 
 Reviewed stack: #247, #250, #252, #253 (including its two Markdown-only handoff commits), #254–#259. The final contributor test pin is `7910e75d45f208a52f5eeed329825334bad15cc0`; its delta to reviewed #259 head is four Markdown files only. Contributor-local artifacts remain distinct from inspected hosted logs. Regression jobs: 130036766716, 130036766528, 130036766848, 130036766609. Database job: 130036766421. Compiler jobs all passed. No duplicate baseline was run.
 
 Preserve earlier failures and warnings as recorded. This acceptance supersedes pending/integration status in earlier dated evidence without relabeling those observations. Remaining temporary graph addresses, UUID/recipe/input payload, complete setup and combined resource accounting, operation/control integration and GPU qualification remain open under #156/#145. Next bounded task: catalogue temporary graph-key addresses.
+
+## Catalogue graph-address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `26dc6b16af74a990f60ae65f247d8ae496b208f7`, based on integrated
+main `f4907da096924599a850cca1d4ce97237bac23f0`. The #247/#250/#252–#259 stack
+was merged at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9`; #259 native
+42874078745 and smoke 42874078677 passed, including all 12 native jobs.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/259#pullrequestreview-5849105996)
+found no blocking corrections and accepted this temporary-address slice;
+[integration disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/259#issuecomment-6778916353)
+explicitly authorizes continuation from main. No accepted baseline was rerun.
+
+Temporary `tools`/`state`/`reached` keys and nested `Targets` addresses now attach
+before insertion. State/reached and target lookups avoid constructing known keys;
+ancestor propagation explicitly constructs missing addresses rather than copying
+a detached range. Tool duplicates preserve first-value behavior and reclaim their
+temporary keys. Traversal, exact identity, deduplication and cycle rejection remain
+unchanged. No new type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#catalogue-graph-address-allocation-domain-contribution-awaiting-review).
+
+The diamond fixture independently identifies its five-element address requests
+by their 15-byte size, distinct from its UUID text, paths, nodes/tables, comparator
+text and callable requests. Optional nonthrowing test-only allocation callbacks
+check prepayment and count acquired/released bytes and peak overlap. Four visited
+vertices, tool keys and ancestor-set sizes 3+1+1+0 predict 570 temporary bytes;
+retained contributions use 180 bytes. Measured address peak is exactly 750 bytes;
+all 570 temporary bytes release before return, and all 180 retained bytes release
+at destruction. This classification is fixture-specific, not an allocator or ABI
+assumption for arbitrary production inputs.
+
+The diamond also passes byte/work refusal, exact retry, all 1,414 observed
+allocation-failure sites with complete reclamation, post-failure retry, duplicate
+tool insertion and post-validation cycle rejection. Existing owner failure-site,
+independent retained-request, strong/weak lifetime and repeated native zero-new
+controls remain active. Comparator text, UUID payload, callable/traversal/stack
+costs and complete setup accounting remain outside this new address gate.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,198 / 1,320 | 212,152 | 294,522 | 4,118 |
+| Four selections | 1,617 / 2,540 | 251,476 | 580,768 | 7,761 |
+
+The newly admitted transient address requests add 420 work bytes per owner fixture;
+selected retained/peak totals remain unchanged because other phases dominate the
+owner peak. Additional lookup comparisons create transient text requests (outside
+the selected domain); observed whole-owner allocation sites rise by 16. No timing
+or allocation-count improvement is claimed. Whole-adoption retained/peak requests
+remain 294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+All failure sites reclaim storage. These overlapping reports must not be summed;
+allocation-request work is not peak memory or CPU timing.
+
+Initial source `b3e9ea1178c509e1110c6b2d8f582ec324a0f896` built, but all four
+owner lanes stopped because the new structural fixture omitted explicit focus.
+Six supporting CTests passed; later exchange cases were not reached. The corrected
+fixture supplies a membership focus. Failed raw evidence is retained separately
+as `catalogue-graph-address-domain-b3e9ea11`, archive
+`setup-evidence/catalogue-graph-address-domain-b3e9ea11-failed.tar.gz`, verified
+manifest SHA-256:
+
+    8d12dac1bbe2069c9ab6a9a698d55483c4c7e591984628d3c33d48255cd02c9e
+
+At corrected source all 26 scoped checks pass: 20 exchange processes and six
+supporting CTests, all exit zero, with no build/runtime warnings. Source remained
+clean and unchanged during validation. Final delta is four Markdown files only.
+Next: retained projection recipe addresses; recipe paths/tables, UUID/text/input
+payload, complete setup, combined resources and operation/control integration
+remain open. Deferred activity/GPU sequencing is unchanged.
+
+Final contributor-local evidence: `catalogue-graph-address-domain-26dc6b16`,
+including commands, build/raw logs, source/configuration/toolchain and binary/
+runtime hashes. Archive:
+`setup-evidence/catalogue-graph-address-domain-26dc6b16.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    f3cd38ad26c5e0e92e19d2c8fefc2c9a14ecb5103f0936e4209c5d2949dc5977
+
+Raw evidence remains local; these hashes do not imply independent remote inspection
+or replace authoritative hosted checks.
