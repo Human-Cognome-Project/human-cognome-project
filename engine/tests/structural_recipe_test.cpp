@@ -113,7 +113,8 @@ int main() {
           "explicit legacy adapter leaves original starts unchanged");
     rejects(
         [&] {
-          warm::structural_from_v1(legacy, legacy.ref, adapted.focal_fields);
+          warm::structural_from_v1(legacy, legacy.ref,
+              {adapted.focal_fields.begin(),adapted.focal_fields.end()});
         },
         "adapter must not overwrite an immutable publication identity");
     auto old = project_letters(legacy);
