@@ -10,3 +10,8 @@ target_link_libraries(structural_postgres_test PRIVATE warm_toolbox Threads::Thr
 target_compile_options(structural_postgres_test PRIVATE -Wall -Wextra -Wpedantic)
 add_executable(recipe_reader_probe recipe_reader_probe.cpp)
 target_link_libraries(recipe_reader_probe PRIVATE warm_toolbox)
+include(CTest)
+add_executable(occurrence_path_test occurrence_path_test.cpp)
+target_link_libraries(occurrence_path_test PRIVATE warm_values PostgreSQL::PostgreSQL)
+target_compile_options(occurrence_path_test PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME occurrence_path_test COMMAND occurrence_path_test)
