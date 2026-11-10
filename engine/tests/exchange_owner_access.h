@@ -21,6 +21,38 @@ struct ExchangeOwnerAccess {
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
       for (const auto &row : *rows) visit(row.occurrence.source.path);
   }
+  template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit) {
+    for (const auto &o : p.occurrences_) {
+      visit(o.definition.object.address);
+      if (o.byte) visit(o.byte->character.object.address);
+      if (o.complete_character) visit(o.complete_character->object.address);
+    }
+    for (const auto *rows : {&p.parents_,&p.spare_parents_})
+      for (const auto &row : *rows) visit(row.field.object.address);
+  }
+  static bool projection_equivalent(const LetterProjection &a, const LetterProjection &b) {
+    if (a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
+        a.occurrences_.size() != b.occurrences_.size()) return false;
+    for (std::size_t i=0; i<a.occurrences_.size(); ++i) {
+      const auto &x=a.occurrences_[i], &y=b.occurrences_[i];
+      if (!(x.key == y.key) || !(x.definition == y.definition) || x.slot != y.slot ||
+          x.node != y.node || x.active != y.active || bool(x.byte) != bool(y.byte) ||
+          bool(x.complete_character) != bool(y.complete_character)) return false;
+      if (x.byte && (!(x.byte->owner == y.byte->owner) || !(x.byte->character == y.byte->character) ||
+          x.byte->character_ordinal != y.byte->character_ordinal || x.byte->byte_ordinal != y.byte->byte_ordinal))
+        return false;
+      if (x.complete_character && !(*x.complete_character == *y.complete_character)) return false;
+    }
+    const auto same_parents=[](const auto &x, const auto &y) {
+      if (x.size() != y.size()) return false;
+      for (std::size_t i=0; i<x.size(); ++i)
+        if (!(x[i].occurrence == y[i].occurrence) || x[i].field.kind != y[i].field.kind ||
+            !(x[i].field.object == y[i].field.object) ||
+            x[i].ordinal != y[i].ordinal || x[i].count != y[i].count) return false;
+      return true;
+    };
+    return same_parents(a.parents_,b.parents_) && same_parents(a.spare_parents_,b.spare_parents_);
+  }
   static auto projection_table_bytes(const LetterProjection &p) {
     std::uint64_t bytes = 0;
     for (const auto &entry : projection_tables(p)) bytes += entry.second;

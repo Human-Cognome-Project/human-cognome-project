@@ -354,16 +354,28 @@ OccurrenceKey projection_key(const OccurrenceKey &key,
   return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
       detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
 }
+warm::ObjectKey projection_object(const warm::ObjectKey &key,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {key.scope,{key.address.begin(),key.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
+}
+warm::ToolRef projection_reference(const warm::ToolRef &ref,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {projection_object(ref.object,domain),ref.revision};
+}
 ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   std::optional<ByteProvenance> byte;
-  if (o.byte) byte.emplace(ByteProvenance{projection_key(o.byte->owner,domain),o.byte->character,
+  if (o.byte) byte.emplace(ByteProvenance{projection_key(o.byte->owner,domain),projection_reference(o.byte->character,domain),
       o.byte->character_ordinal,o.byte->byte_ordinal});
-  return {projection_key(o.key,domain),o.definition,o.slot,o.node,o.active,std::move(byte),o.complete_character};
+  std::optional<warm::ToolRef> complete;
+  if (o.complete_character) complete.emplace(projection_reference(*o.complete_character,domain));
+  return {projection_key(o.key,domain),projection_reference(o.definition,domain),o.slot,o.node,o.active,
+      std::move(byte),std::move(complete)};
 }
 ParentContribution projection_row(const ParentContribution &p,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {projection_key(p.occurrence,domain),p.field,p.ordinal,p.count};
+  return {projection_key(p.occurrence,domain),{p.field.kind,projection_object(p.field.object,domain)},p.ordinal,p.count};
 }
 template<class T> auto projection_rows(const detail::SharedReservedVector<T> &rows,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -374,8 +386,8 @@ template<class T> auto projection_rows(const detail::SharedReservedVector<T> &ro
 }
 }
 
-// Explicit owner copies attach table and occurrence-path backing before copying.
-// Ordinary value copies detach; recipe/input and UUID/address payload remain
+// Explicit owner copies attach table, occurrence-path and row-address backing.
+// Ordinary value copies detach; recipe/input and UUID payload remain
 // outside this selected domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
@@ -420,7 +432,8 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
       meter.charge(sizeof(ParentContribution));
       meter.copy_key(o.key); meter.copy_key(p.target.object);
       spare_parents_.push_back({projection_key(o.key,spare_parents_.get_allocator().domain),
-          {GroupKind::ParentValue,p.target.object},p.ordinal,p.contribution});
+          {GroupKind::ParentValue,projection_object(p.target.object,spare_parents_.get_allocator().domain)},
+          p.ordinal,p.contribution});
     }
   }
   exposure_reserved_ = true;
