@@ -93,16 +93,15 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Provisional dependency:** #252 at `8b60de7f45efd9f6a5e64d742c6e252c351ec320` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/252#pullrequestreview-5842244532). Declaration owner/source path gates and the neutral allocator move need not be repeated. Hosted checks and #247/#250 integration remain pending; integrated acceptance remains through #246.
 
-**Active contribution:** retained projection occurrence/provenance and active/spare parent path allocation limits during explicit copies and pool initialization; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-occurrence-path-allocation-domain-contribution-awaiting-review). Recipe/input, catalogue contribution and map paths, plus UUID/address payload, remain open. Awake/asleep/state-on-demand research (#248/#251) remains deferred and imposes no requirements on this allocation work.
+**Provisional dependency:** #253 at `22de9b62b39fa18c76eb1554bf4ea6a552d82dba` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/253#pullrequestreview-5842598923). Retained projection occurrence/provenance and active/spare parent path gates need not be repeated. Smoke passed; hosted native checks and stack integration remain pending. Integrated acceptance remains through #246.
 
-**Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
-preceding catalogue/declaration construction,
-graph temporaries and complete setup-work limits, followed by combined caller/
-borrowed resource accounting. Gate before allocation/work and preserve cleanup,
-retry and exclusive synchronous access. Shared ownership does not make accounting
-counters thread-safe. Do not reimplement the accepted shared-object/table gates or
-add their domain report to the retained census. Keep domain overhead and allocator/
-exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
+**Immediate coding-agent task — 2026-11-10:** admit occurrence-path backing in membership-catalogue contribution rows during `MembershipFields::collect` in `engine/src/assembly/membership_fields.cpp`. The existing `contributions_.push_back({o.key,...})` copies the nested path into detached storage. Use the existing neutral reservation allocator to construct that path in the supplied domain before copying ordinals. Preserve membership deduplication, identities and values, ordinary detached snapshots, and shared allocation lifetime.
+
+Acceptance for this slice: focused byte/work refusal and reclamation, exact retry, nested allocator attachment/detachment and lifetime checks, and independent reconciliation of actual path requests. Preserve existing membership and repeated-exchange controls. Reuse source-pinned accepted evidence; do not duplicate running CI. Stack the bounded PR on #253 and record the provisional dependency.
+
+**Remaining sequence:** finish the inventoried map/recipe/input and UUID/address payload, preceding catalogue/declaration construction, graph temporaries and complete setup-work limits; then combined caller/borrowed accounting; then remaining-operation integration and same-execution controls (C/D below). Each handoff must name the next concrete slice and the remaining inventory. Do not reimplement accepted gates or add their overlapping domain report to the retained census. Gate before allocation/work and preserve cleanup, retry and exclusive synchronous access. Shared counters are not thread-safe; keep domain overhead and allocator/exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
+
+**GPU sequencing:** the complete observable PoC still needs C/D integration before the same operation path is qualified on GTX 1070 in E. Existing bounded GPU experiments and the independent conversion repair in P remain separately available. A declared f64-only study does not depend on mixed-precision repair. Transfer/pinning qualification remains under #145; the mini-release's supported-operation/backend list must be explicit. No new GPU task replaces the immediate allocation task above. Awake/asleep/state-on-demand research (#248/#251) remains deferred.
 
 The harness remains borrowed. #229 stays open for further factoring; its first
 kernel extraction is complete. Layered onboarding is integrated in #236.
