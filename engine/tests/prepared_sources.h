@@ -46,10 +46,10 @@ inline FixtureSource letters(engine::Runtime &runtime, int mode) {
   for (auto &byte : second.bytes)
     byte.initial = {{2, 0, 0}, {-0.015625, 0, 0}};
   auto recipe = assembly::normalize_letters(f.base, {first, second});
-  recipe.contacts = mode == 0 ? std::vector<warm::Contact>{{{0, {}}, {1, {}}}}
+  recipe.contacts = mode == 0 ? warm::RecipeTable<warm::Contact>{{{0, {}}, {1, {}}}}
                     : mode == 1
-                        ? std::vector<warm::Contact>{{{0, {0, 0}}, {1, {0, 0}}}}
-                        : std::vector<warm::Contact>{{{0, {}}, {1, {0, 0}}}};
+                        ? warm::RecipeTable<warm::Contact>{{{0, {0, 0}}, {1, {0, 0}}}}
+                        : warm::RecipeTable<warm::Contact>{{{0, {}}, {1, {0, 0}}}};
   const auto projection = assembly::project_letters(recipe);
   const auto memberships = assembly::membership_fields(projection);
   using namespace taichi::lang;
