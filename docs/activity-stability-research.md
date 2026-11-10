@@ -8,6 +8,15 @@ instruction. Existing numerical and activity contracts remain in effect.
 
 ## Intended question
 
+Patrick clarified the practical motivation: dense knowledge contains uncertain
+identities and competing or unresolved relationships. Continued motion across
+fields is therefore likely, even when the arrangement is useful. Human knowledge
+is messy; exact stillness need not be the endpoint. The research question is how
+to avoid treating all persistent motion as equally consequential unfinished work,
+while preserving meaningful uncertainty and sensitivity to new evidence. This is
+not a request to force agreement, erase ambiguity or assume literal stable orbits.
+
+
 Can the existing hierarchical particle/centroid calculation distinguish continued
 motion from meaningful reorganization, so stable relationships need less repeated
 calculation even while their participants move?
