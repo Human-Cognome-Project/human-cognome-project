@@ -2904,3 +2904,71 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Projection address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `80f2a43dea6eec4999f30dc51395e23604c88440`, stacked on
+provisionally accepted #257 at `7ace326603b59de4dfb6514a1b8e1092a963e9f8`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/257#pullrequestreview-5843840961)
+found no blocking corrections and accepts the projection-address slice, including
+populated spare-pool copies. Parent smoke 42837316590 passed; native 42837316813
+and #256 native 42834146576 remain running at review inspection. Dependency
+integration is pending; integrated implementation acceptance remains through #246.
+Earlier #255 build failures and #250 cache qualifications remain recorded above.
+
+Both retained projections now attach occurrence-definition, optional byte-
+provenance character/complete-character and active/spare parent-field addresses
+before allocation. Explicit copies of populated spare pools and initial inactive-
+pool setup use the same domain. Exact refs, field kinds, ordinals/counts, exposure
+and pool order are unchanged. Ordinary snapshots detach, moves retain domain
+lifetime and exchanges reuse existing backing. No new type/layout, codec, schema
+or numerical change. See [scope](../../docs/OWNER-RESOURCES.md#projection-address-allocation-domain-contribution-awaiting-review).
+
+Copy/reservation controls reconcile every address capacity with exact backing
+sums and verify attachment/detachment. Structural comparisons check every
+occurrence reference, optional provenance value and parent row in order.
+Snapshots preserve those values after source-domain destruction; moves retain
+populated parent pools. Byte/work refusal sweeps cover both ordinary source
+copies plus reservation and already populated spare-pool copies, with complete
+reclamation and exact retry. Independent whole-owner observation locates each
+retained address request in both projections. Existing allocation-failure and
+repeated native zero-new witnesses remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated parent codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,166 / 1,286 | 212,062 | 294,012 | 4,102 |
+| Four selections | 1,585 / 2,488 | 251,116 | 579,988 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+330 / 1,320 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: retained catalogue contribution field and pinned-target
+addresses in `MembershipFields::collect`. Temporary graph key addresses, UUID
+text, recipe/input payload, complete setup work and combined caller/borrowed
+accounting remain open before remaining operations and same-execution controls.
+Deferred activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `projection-address-domain-80f2a43d`, including
+commands, build/raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/projection-address-domain-80f2a43d.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    da222cf737d9d5fe9a12a5c422360d4ef8d1bbafc6205fa976eedb4882b9c13d
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.

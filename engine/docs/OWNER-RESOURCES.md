@@ -753,7 +753,9 @@ matching and detached snapshots. Other UUID/address/recipe/input payload, comple
 setup and combined caller/borrowed accounting remain open before operation
 integration. Deferred activity and GPU sequencing are unchanged.
 
-### Declaration address allocation domain (contribution awaiting review)
+<a id="declaration-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration address allocation domain (provisionally accepted #257)
 
 Initial `LetterExchangeContract::collect` and explicit domain-bound reverse copies
 now construct source-definition, direct-parent-target and ordered-leaf reference
@@ -779,6 +781,34 @@ complete-character refs and active/spare parent field addresses in explicit copi
 and parent-pool setup. UUID text, catalogue/recipe/input payload, complete setup
 work and combined caller/borrowed resources remain open before operation integration
 and same-execution controls. Deferred activity and GPU sequencing are unchanged.
+
+### Projection address allocation domain (contribution awaiting review)
+
+Both retained projections now construct occurrence-definition, optional byte-
+provenance character and complete-character addresses in their supplied domain.
+Explicit copies also attach active/spare parent field addresses; inactive-pool
+initialization attaches addresses before copying the pinned parent object.
+Scope/revision identity, field kind, ordinals/counts, exposure and pool order are
+unchanged. Finished rows move into their tables without detached address copies.
+Ordinary snapshots recursively detach; moves and pool transfers retain backing
+and domain together. There is no new type/layout, codec or numerical change.
+
+Copy/reservation controls include address capacity in exact backing totals and
+check nested attachment, populated spare-pool copies, detached snapshots after
+source death and moved lifetimes. Byte/work refusal and exact-retry sweeps cover
+both initial copies with inactive-pool setup and copies of an already populated
+pool. Structural comparisons preserve every occurrence reference, optional
+provenance value and parent row in order. Independent owner observation locates
+all retained address requests in both projections; existing allocation-site
+failure and repeated native zero-new controls remain active. Address backing is
+counted once, alongside tables that already contain allocator headers. Selected,
+whole-owner and retained-census reports overlap and must not be summed.
+
+Next: retained catalogue contribution field and pinned-target addresses in
+`MembershipFields::collect`. Temporary graph key addresses, UUID text, recipe/
+input payload, complete setup work and combined caller/borrowed resources remain
+open before remaining-operation integration and same-execution controls. Deferred
+activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
