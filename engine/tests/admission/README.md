@@ -2606,3 +2606,75 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local. This hash identifies artifacts without implying
 independent remote inspection or replacing authoritative hosted checks.
+
+## Catalogue occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `793ea992c95e5a0efe1334c7e3bab2e10797c89a`, stacked on #253's
+updated handoff head `b373601e4fb37330ec7a5c900cca912fd9e9bd62`. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/253#pullrequestreview-5842598923)
+provisionally accepts source `22de9b62b39fa18c76eb1554bf4ea6a552d82dba` and
+requests this catalogue-path slice. The updated parent adds only two Markdown
+handoff files. Parent smoke 42824232342 passed; native 42824232291 remains in
+progress at inspection. #252 warm-toolbox 42820621241 passed. Dependency-stack
+integration is still pending; integrated implementation acceptance remains through
+#246. The historical #250 cache warning and exit-zero qualification remain intact.
+Deferred wake/sleep research is unchanged; GPU work remains independently scoped.
+
+`MembershipFields::collect` constructs the contribution key's path in the supplied
+domain before ordinal copies and moves it into its row. Existing table/header
+requests and ordinal backing are counted separately once. Table growth and moved
+catalogues preserve paths and their domain. Ordinary snapshots detach. Nested
+path storage releases at last strong alias, while shared object/control-block
+accounting continues through the final weak reference. Membership traversal,
+deduplication, target pins and values are unchanged; UUID/address and map/recipe/
+input payload remain excluded. See [scope](../../docs/OWNER-RESOURCES.md#catalogue-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+Focused catalogue controls now include every path's allocator and capacity,
+snapshot detachment and usability after domain death, moved lifetime, successive
+byte/work rejection, reclamation and exact retry. Existing complete membership
+value comparisons remain active. The owner observer independently locates path
+requests, includes them in the selected-domain sum and verifies their release
+before the last weak control-block release. Complete failure-site and repeated
+allocation-free exchange/tick checks remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Validation: owner, multiple owner, bindings, commit and fields × four
+variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. No GPU, live database, full baseline or separate
+full compiler audit rerun; unchanged warm-format checks were not duplicated.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 64 / 114 | 193,776 | 269,392 | 4,102 |
+| Four selections | 91 / 256 | 227,400 | 530,424 | 7,745 |
+
+Existing path backing of 16 / 64 bytes is newly admitted. Whole-adoption retained/
+peak requested bytes remain 284,609 / 285,170 and 343,035 / 345,173; retained census
+remains 285,233 / 343,467. Total retained memory and allocation-site counts are
+unchanged. Projection setup remains 1,556 / 4,628 boundaries, work 51,636 / 138,566.
+Selected/whole/census reports overlap and must not be summed; allocation-request
+work is not peak memory or CPU timing.
+
+Next concrete slice: occurrence-map path allocation in initial construction,
+explicit setup copying and inactive-slot reservation of `ExchangeMap<OccurrenceBinding>`,
+with appropriate domain lifetime, detached snapshots and allocation-free reuse.
+Field address backing, recipe/input paths, UUID/address payload, complete setup
+work and combined caller/borrowed accounting remain open before operation
+integration and same-execution controls. #156/#145/#229 remain open.
+
+All 20 focused exchange processes and six supporting CTest cases passed, each
+with exit zero. All owner failure sites reclaimed observed storage. No warnings
+were found in this run's build/matrix logs. Source stayed clean and unchanged
+throughout execution. Final changes after tested source are four Markdown files.
+
+Contributor-local evidence: `catalogue-path-domain-793ea992`, including build,
+commands, raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/catalogue-path-domain-793ea992.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    08b678ca9e7bc22a8482b5ea0a3f8cb9de938fa3b82ab699989fae8a13d5cac6
+
+Raw artifacts remain local; their hash does not imply independent remote
+inspection or replace authoritative hosted checks.

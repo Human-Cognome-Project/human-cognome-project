@@ -597,7 +597,9 @@ exact PostgreSQL parameter text (empty and maximum uint32 paths), and decoding v
 a locally constructed libpq result. Warm clients compile without engine linkage.
 No schema migration, database writes or activity-state behavior changes occur.
 
-### Projection occurrence-path allocation domain (contribution awaiting review)
+<a id="projection-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Projection occurrence-path allocation domain (provisionally accepted #253)
 
 Both retained projections now explicitly attach occurrence identity paths,
 optional byte-provenance owner paths, and active/spare parent-contribution paths
@@ -628,6 +630,39 @@ still outside this extension. Recipe copying still precedes the first projection
 table request. Complete setup and combined caller/borrowed accounting remain open;
 this is not a total constructor or machine budget. Deferred activity research is
 unchanged.
+
+### Catalogue occurrence-path allocation domain (contribution awaiting review)
+
+`MembershipFields::collect` now constructs each contribution's occurrence path
+with the supplied reservation domain before copying ordinals. The finished key
+moves into the contribution row; vector growth moves existing rows with their
+backing/domain. Empty aggregate paths retain the allocator without an ordinal
+request. Existing membership graph traversal, deduplication, pinned targets,
+identities and exact contribution values are unchanged. Standalone collection
+still receives no domain.
+
+Path backing is separate from the embedded key header already covered by the
+contribution table request. A new row's path can be constructed before table
+growth; both requests are admitted individually, and rejection unwinds the
+pending row and catalogue. Ordinary snapshots detach nested paths and remain
+usable after domain destruction. Moves retain their accounting lifetime. Paths
+release at last strong catalogue alias, while the shared object/control block
+continues through final weak release. No global allocator or execution authority
+is added, and counters still require exclusive synchronous access.
+
+Focused catalogue controls now include path capacities and allocator attachment,
+detached snapshots and moved lifetimes. Existing successive byte/work rejection
+sweeps and exact retries include the nested requests. The independent owner
+observer locates each path allocation and includes it in selected-domain and
+strong/weak lifetime reconciliation. Membership value comparisons and repeated
+exchange/tick controls remain active. These overlapping reports must not be added
+to the retained census.
+
+Map and recipe/input paths, UUID/address backing, other setup/traversal work and
+combined caller/borrowed accounting remain open. The next bounded slice is
+occurrence-map path backing in `ExchangeMap<OccurrenceBinding>` construction,
+explicit setup copies and reservation, including inactive slots; field address
+backing is a separate remaining item. Deferred wake/sleep research is unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
