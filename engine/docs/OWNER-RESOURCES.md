@@ -530,7 +530,9 @@ sum. Existing failure-site, setup rejection, shared lifetime and repeated native
 exchange/tick controls remain active. Complete declaration/setup accounting and
 combined caller/borrowed resources remain open.
 
-### Declaration parent allocation domain (contribution awaiting review)
+<a id="declaration-parent-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration parent allocation domain (provisionally accepted #250)
 
 Each `ExchangeSource::parents` vector now uses the shared reservation allocator.
 Initial declaration construction copies parent rows directly into a domain-bound
@@ -557,6 +559,41 @@ the source/leaf tables. Structural comparisons still include parent target pins,
 ordinals, stored mass and contributions; no exchange or awake/asleep behavior is
 changed. Remaining key/recipe/input allocation and full setup/combined-resource
 qualification remain open.
+
+### Declaration occurrence-path allocation domain (contribution awaiting review)
+
+The reservation primitives now live in `common/reservation_allocator.h`, with
+engine-private aliases preserving existing names. This is standard-C++ support,
+not an engine dependency for warm values or a new execution authority. The move
+is a separate mechanical commit; only the namespace changes in the implementation.
+`warm::OccurrenceId::path` now uses `warm::OccurrencePath`, an allocator-aware
+vector of the same uint32 ordinals. Its C++ container type/layout changes; callers
+with concrete std::vector containers must use iterator-range conversion. Identity,
+ordering and PostgreSQL text encoding are unchanged. Shared-header changes trigger
+both native engine and warm toolbox CI.
+
+Only declaration owner/source paths explicitly attach to the owner domain in
+this contribution. Initial collection and explicit reverse copies allocate paths
+with that domain before copying ordinals. Aggregate owner paths are empty but
+retain the explicit allocator. Source-row moves and reverse swaps carry backing
+and domain together. Ordinary value-copy construction detaches; assignment keeps
+the destination allocator and moves propagate it. Standalone warm reads and other
+recipe/input/projection/map paths stay detached and outside this allocation gate.
+
+The source tables already charge embedded path headers, including the additional
+shared allocator reference; ordinal backing is charged separately exactly once.
+This container-layout change also changes other retained object/table sizes, even
+where their path backing remains detached. The selected domain still overlaps the
+whole-owner census and cannot be added to it. UUID/address payload, recipe/input
+paths and complete construction/setup work remain open.
+
+Controls reconcile every source-path request with the independent allocation
+observer, extend declaration construction/copy budget rejection and exact retries,
+and check allocator attachment, detached snapshots, moved lifetime and unchanged
+structural values. A server-free warm test exercises copy/move identity and ordering,
+exact PostgreSQL parameter text (empty and maximum uint32 paths), and decoding via
+a locally constructed libpq result. Warm clients compile without engine linkage.
+No schema migration, database writes or activity-state behavior changes occur.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 

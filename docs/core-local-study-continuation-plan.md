@@ -89,7 +89,9 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Provisional dependency:** #247 at `a13d3125b814662fd1f03d5aca975ef349b645ba` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/247#pullrequestreview-5841698860). Its source/leaf table gates need not be repeated; hosted native CI remains pending. Integrated acceptance remains through #246.
 
-**Active contribution:** nested declaration parent-vector allocation limits during construction and explicit copies. Parent UUID/address payload and other setup work remain open; see [scope](../engine/docs/OWNER-RESOURCES.md#declaration-parent-allocation-domain-contribution-awaiting-review). Awake/asleep mechanics remain a separate maintainer discussion, outside this allocation work.
+**Provisional dependency:** #250 at `2c07c0e339d11ee66d0db175d55c81344d502393` is accepted for continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/250#pullrequestreview-5841949730), with no blocking source findings. Its declaration parent-vector limits need not be repeated. Its post-PASS cache-lock warning and exit-zero qualification remain in the evidence record.
+
+**Active contribution:** declaration owner/source occurrence-path allocation limits during construction and explicit copies, using neutral shared allocator support for engine-independent warm values. Other recipe/input/map paths remain detached; see [scope](../engine/docs/OWNER-RESOURCES.md#declaration-occurrence-path-allocation-domain-contribution-awaiting-review). Awake/asleep/state-on-demand research (#248/#251) remains deferred and imposes no requirements on this allocation work.
 
 **Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
 preceding catalogue/declaration construction,

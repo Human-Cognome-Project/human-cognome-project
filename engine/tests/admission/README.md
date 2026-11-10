@@ -2474,3 +2474,67 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw logs remain local; the hash identifies evidence without implying remote
 inspection or replacing hosted acceptance.
+
+## Declaration occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `c3bce3c9fbda68d7144e9bc56430214b5e811598`, stacked on
+provisionally accepted #250 at `2c07c0e339d11ee66d0db175d55c81344d502393`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/250#pullrequestreview-5841949730)
+found no blocking source corrections. Parent smoke 42816893735 passed and native
+42816893666 remained in progress at inspection. #247 integration also remains a
+parent dependency; integrated acceptance is through #246. The #250 post-PASS
+cache-lock warning and exit-zero qualification above remain unchanged.
+Deferred activity/state-on-demand research (#248/#251) is outside this work.
+
+A separate mechanical commit moves reservation primitives into neutral `common`
+support with engine aliases. Declaration owner/source paths explicitly use that
+domain before ordinal copies. Other recipe/input/projection/map paths remain
+detached. The warm path container type/layout changes, including embedded allocator
+references, while identity, ordering and PostgreSQL encoding remain unchanged.
+See the [scope and exclusions](../../docs/OWNER-RESOURCES.md#declaration-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15 and Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Controls extend declaration construction/copy denial, exact retry, allocator
+attachment/detachment and lifetime checks to source paths. The independent owner
+observer reconciles path requests with selected-domain totals. Existing failure
+injection, projection setup, catalogue, native exchange/tick and zero-new checks
+remain active. Standalone warm clients build without engine linkage; a new
+server-free libpq test checks exact parameter rendering and decoding, identity,
+ordering, copy detachment and move/release behavior. Hosted warm CI runs it too.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 61 / 100 | 193,664 | 269,280 | 4,102 |
+| Four selections | 74 / 200 | 226,952 | 529,976 | 7,745 |
+
+Both owner failure sweeps reclaim all observed allocations. Whole-adoption
+retained/peak requested bytes are 284,609 / 285,170 and 343,035 / 345,173;
+retained census is 285,233 / 343,467. Projection setup boundaries remain
+1,556 / 4,628, with work 51,636 / 138,566. These figures include changed embedded
+path-container sizes throughout retained values, not just newly gated ordinal
+backing. Selected/whole/census reports overlap and must not be summed.
+Allocation-request work is neither peak memory nor CPU timing.
+
+Validation scope: owner, multiple owner, bindings, commit and fields × four
+worker/compiler variants; six structural-recipe/projection/membership/workbench
+CTest cases; one server-free occurrence-path CTest. No GPU, live database,
+full baseline rerun or separate full compiler audit. Remaining UUID/address and
+recipe/input paths, full setup work and combined caller/borrowed accounting remain
+open before remaining-operation integration. #156/#145/#229 remain open.
+
+All 20 focused exchange processes and seven CTest cases passed, each with exit
+zero. The warm-active integration client also compiled successfully; it was not
+run against a database. No warning was found in this run's matrix/build logs.
+Source remained clean and unchanged throughout the test run. Final changes after
+tested source are five Markdown files only.
+
+Contributor-local evidence: `declaration-path-domain-c3bce3c9`, including raw logs,
+commands, source/configuration/toolchain, warm/integration builds and executable
+hashes. Archive: `setup-evidence/declaration-path-domain-c3bce3c9.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    001192cfaeadffcbc4272e098e9f63dd155ff39e9ba37585e0eee665dcdd48c5
+
+Raw evidence stays local; its hash does not imply independent remote inspection
+or replace authoritative hosted CI. This is no cache-performance qualification.
