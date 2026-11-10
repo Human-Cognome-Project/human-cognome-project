@@ -3044,3 +3044,11 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Maintainer integrated acceptance — #247 through #259 (2026-11-10)
+
+Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed head `a2636cad6e85b9582f7e37aa1dd537bbd7b5c430`. Native 42874078745 and smoke 42874078677 passed; all 12 native jobs succeeded. Inspected regression shards passed 29 + 29 + 29 + 28 = 115 tests; database log reports addressed_reads=24/private_reads=0.
+
+Reviewed stack: #247, #250, #252, #253 (including its two Markdown-only handoff commits), #254–#259. The final contributor test pin is `7910e75d45f208a52f5eeed329825334bad15cc0`; its delta to reviewed #259 head is four Markdown files only. Contributor-local artifacts remain distinct from inspected hosted logs. Regression jobs: 130036766716, 130036766528, 130036766848, 130036766609. Database job: 130036766421. Compiler jobs all passed. No duplicate baseline was run.
+
+Preserve earlier failures and warnings as recorded. This acceptance supersedes pending/integration status in earlier dated evidence without relabeling those observations. Remaining temporary graph addresses, UUID/recipe/input payload, complete setup and combined resource accounting, operation/control integration and GPU qualification remain open under #156/#145. Next bounded task: catalogue temporary graph-key addresses.
