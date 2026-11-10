@@ -2678,3 +2678,85 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw artifacts remain local; their hash does not imply independent remote
 inspection or replace authoritative hosted checks.
+
+## Occurrence-map path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `3f6a9c45d2c6b25d09e81938838d282409f45401`, stacked on
+provisionally accepted #254 at `9375b39c60d19441c2d48b7a47643d644f14c1a2`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/254#pullrequestreview-5842799829)
+found no blocking corrections and explicitly accepts this next map-path slice.
+Parent smoke 42826713819 passed; native 42826713814 remains in progress at
+inspection. Dependency integration is pending; integrated implementation
+acceptance remains through #246. Historical #250 cache-warning qualifications
+remain unchanged. Deferred activity research and independent GPU work are unchanged.
+
+Owner/binding/coordinator setup now supplies shared domains to maps. Each map
+retains that lifetime before its raw outer allocator, including when empty.
+Initial copies and newly reserved inactive slots attach paths before copying or
+reserving ordinal backing. Explicit setup copies reserve full nested capacity
+before assigning values, avoiding detached/duplicate size-then-capacity copies.
+Ordinary snapshots detach and preserve inactive capacity; assignment keeps the
+destination allocator, erase rotates slots, and swap exchanges backing plus
+lifetime. Field addresses, UUID payload and full setup work remain outside this
+gate. See [scope](../../docs/OWNER-RESOURCES.md#occurrence-map-path-allocation-domain-contribution-awaiting-review).
+
+Map-specific controls cover initial construction and explicit copies with active
+and inactive paths, successive byte/work refusal, underlying allocation-site
+failure injection, full reclamation and exact retry. Existing old/new growth
+overlap and no-allocation early-copy denial checks remain. Detached snapshots
+survive source-domain destruction, and empty/populated maps retain domain lifetime.
+Assignment/append/erase/cross-domain swap run under the no-allocation guard.
+Independent owner observation locates every retained map path, including inactive
+slots in all three occurrence maps. Existing membership/projection/declaration,
+owner failure-site and repeated exchange/tick controls remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Validation scope: owner, multiple owner, bindings, commit and fields × four
+variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. No GPU, live database, full baseline or separate
+full compiler audit rerun.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 610 / 674 | 197,232 | 273,968 | 4,102 |
+| Four selections | 588 / 1,252 | 230,856 | 538,488 | 7,745 |
+
+All owner failure sites reclaim observed storage. Existing retained map paths of
+3,360 bytes are newly admitted in each fixture. The six embedded map lifetime
+handles add 96 bytes to retained objects. Whole-adoption retained/peak requested
+bytes are 284,705 / 285,266 and 343,131 / 345,269; census 285,329 / 343,563.
+Allocation-site counts are unchanged. Projection setup remains 1,556 / 4,628
+boundaries, work 51,636 / 138,566. Reports overlap and must not be summed;
+allocation-request work is not peak memory or CPU timing.
+
+Initial builds at `4708e779` and `a9cb3597` failed in the new test observer because
+an initializer list mixed const/non-const map pointers. The first correction did
+not apply due to mixed line endings; `3f6a9c45` fixes traversal explicitly.
+Both failed build logs are retained. Production targets compiled in those attempts;
+no runtime pass is claimed for either failed source. The final build and test
+results are pinned to the corrected revision above.
+
+Next concrete slice: field-map address backing with engine-independent allocator
+support, preserving address identity and codec/database formats. Other UUID/address
+and recipe/input payload, complete setup and combined caller/borrowed accounting
+remain open before operation integration and same-execution controls.
+#156/#145/#229 remain open.
+
+All 20 focused exchange processes and six supporting CTest cases passed at the
+corrected source, each with exit zero. No warnings were found in the final build
+or runtime logs. Earlier failed builds remain explicitly separate. Source stayed
+clean and unchanged during execution; final changes after tested source are four
+Markdown files only.
+
+Contributor-local evidence: `map-path-domain-3f6a9c45`, including final build,
+commands, raw runtime logs, both initial failed builds, source/configuration/
+toolchain and binary/runtime hashes. Archive:
+`setup-evidence/map-path-domain-3f6a9c45.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    c842cb94a753e86440177eb41a008f7f3f86741c0ec87c8a28070c998eb6682e
+
+Raw artifacts remain local; their hash does not imply independent remote
+inspection or replace authoritative hosted checks.

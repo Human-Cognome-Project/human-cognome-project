@@ -631,7 +631,9 @@ table request. Complete setup and combined caller/borrowed accounting remain ope
 this is not a total constructor or machine budget. Deferred activity research is
 unchanged.
 
-### Catalogue occurrence-path allocation domain (contribution awaiting review)
+<a id="catalogue-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Catalogue occurrence-path allocation domain (provisionally accepted #254)
 
 `MembershipFields::collect` now constructs each contribution's occurrence path
 with the supplied reservation domain before copying ordinals. The finished key
@@ -663,6 +665,48 @@ combined caller/borrowed accounting remain open. The next bounded slice is
 occurrence-map path backing in `ExchangeMap<OccurrenceBinding>` construction,
 explicit setup copies and reservation, including inactive slots; field address
 backing is a separate remaining item. Deferred wake/sleep research is unchanged.
+
+### Occurrence-map path allocation domain (contribution awaiting review)
+
+`ExchangeMap` now retains a shared reservation-domain handle before its raw outer
+allocator. That handle survives empty maps and is destroyed after all slot backing;
+whole-map swaps exchange it with the allocator/store. Owner, binding and coordinator
+setup carry the shared domain into both map kinds. Field-address backing stays
+unattached; only its existing outer table is charged. The added handle is embedded
+in each map object and covered by the existing unique-object/census charge.
+
+Initial occurrence-map construction creates destination slots, attaches their
+empty paths, then assigns source rows. Explicit setup copies attach before
+reserving each source slot's nested capacity, including inactive slots, and copy
+values into that capacity. This avoids a detached path copy followed by quota
+attachment or a second size-then-capacity allocation. Reservation attaches newly
+constructed inactive paths before reserving their ordinal backing. Existing slots
+retain their domain when the outer table grows. UUID construction/copying and
+field addresses remain outside this gate.
+
+Ordinary map snapshots select no domain and preserve logical rows plus inactive
+nested capacity. Assignment retains destination allocators/capacities; erase
+rotates complete slots, and publication swaps complete stores and domain handles.
+No move constructor is introduced: ordinary copy semantics remain detached.
+Preparation and publication continue to reuse prepared storage. Paths and the
+outer allocation retain the domain through map destruction, including maps that
+were initially empty. Counters still require exclusive synchronous access.
+
+Controls cover initial construction and explicit setup copying, active/inactive
+attachment, successive byte/work rejection, allocation-site failure injection,
+reclamation and exact retries. Old/new outer-growth overlap and preallocation
+refusal checks remain. Detached snapshots survive source-domain death; empty and
+populated maps retain the required lifetime. Assignment, append, erase and
+cross-domain swap run under the zero-allocation guard. The owner independently
+locates every retained path request in its own, binding and candidate maps,
+including inactive storage, and reconciles the selected-domain sum. Existing
+repeated exchange/tick controls remain active. Domain and census reports overlap.
+
+Next: field-map address backing in `ExchangeMap<ExchangeFieldBinding>`, first
+providing engine-independent allocator-aware address storage with unchanged
+address identity and codec/database encoding. Recipe/input, other UUID/address
+payload, complete setup work and combined caller/borrowed accounting remain open.
+No numerical/publication or deferred activity behavior changes here.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
