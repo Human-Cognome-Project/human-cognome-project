@@ -781,6 +781,7 @@ void catalogue_graph_address_controls() {
   letters.base.tools.at(letters.tools.at(letters.english)).member_of={left,right,top};
   letters.base.tools.at(letters.tools.at(left.object)).member_of={top};
   letters.base.tools.at(letters.tools.at(right.object)).member_of={top};
+  letters.base.focal_fields={{warm::FieldKind::Membership,left.object}};
   auto projection=assembly::project_letters(assembly::normalize_structural_letters(letters.base,
       {{0,letters.ref(letters.english),warm::Exposure::Aggregate}}));
   for (const auto &t : projection.recipe().tools)
