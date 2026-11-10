@@ -32,6 +32,34 @@ resident and relevant to participating mass and centroid calculations. Decisions
 made from tick N affect following native phases/ticks. No same-tick retry,
 stacked solve or permanent duplicate simulation is proposed.
 
+## Clarification: evaluate known motion when needed — 2026-11-10
+
+Patrick clarified the intended meaning of passivation: if a particle's position
+at the required time is fully determinable from its motion description, there is
+no need to integrate every intervening tick merely to keep that position current.
+A periodic description can be evaluated at the required times, retaining phase,
+period and a time reference. The same principle includes nested motion: evaluate
+the necessary chain of relative descriptions to obtain the requested state.
+
+This settles the intended semantics, not the mathematics for recognizing suitable
+trajectories. Sleeping here means omitting unnecessary repeated numerical solving
+while retaining an evaluable temporal description. It does not mean freezing
+position, dropping orbital phase, replacing motion by an average, or ceasing to
+represent consequential effects. Continued motion and uncertain knowledge can
+persist without demanding repeated reconstruction of a known trajectory.
+
+When an interaction needs position or other required state, it obtains that state
+at the relevant time. Changes that invalidate the description return affected
+elements to active solving. How to establish validity, compose nested descriptions,
+detect invalidation and account for interactions between observations remains
+research. No periodic model, fit, tolerance, event-detection method or evaluator
+has been chosen. Do not infer that deterministic dynamics alone supplies a cheap
+closed-form trajectory.
+
+Patrick requested that wake/sleep work be left for later. Preserve next-tick
+decision semantics and the existing execution authority; this note changes no
+runtime behavior and adds no work to the current allocation PRs.
+
 ## Origin and candidate ideas
 
 A discussion with Google began with minimum observables for orbital stability,
@@ -80,10 +108,10 @@ These explain ideal mechanics; they do not validate an HCP activity predicate.
    level: relative geometry, change in combined response, bounded recurring
    dynamics, or another quantity? Define the local frame and treatment of bulk
    motion, damping, multiple fields and overlapping participation.
-2. What does passivation omit? Distinguish reusing an interaction result from
-   ceasing to apply its physical effect. If internal motion continues to affect
-   exposed fields or contacts, specify how that effect remains represented.
-   Any intentional approximation needs an explicit model contract.
+2. How can an evaluable motion description replace intervening integration?
+   The intended semantics are clarified above. Specify phase/time references,
+   requested state, nested composition and how field/contact effects remain
+   represented. If an approximation is proposed, state its error contract.
 3. What changes invalidate the stability decision? Preserve structural/mass/input
    changes, contacts, focus/rebase and consequential pending inputs. Do not assume
    every influence passes through a parent or that the membership graph is an
@@ -106,7 +134,9 @@ Useful discriminating cases include translating structures with unchanged relati
 geometry; radial approach versus tangential motion at the same speed; eccentric or
 recurring motion; opposing forces that deform a group without moving its centroid;
 multi-field cancellation; damping; insertion/contact perturbations; source/mass
-changes; overlapping fields; and multilevel wake propagation.
+changes; overlapping fields; and multilevel wake propagation. Include phase-sensitive queries at arbitrary
+requested times, nested periodic descriptions, and perturbations or contacts
+between queries; compare evaluated state and event recovery with the reference.
 
 Record missed consequential changes, false wakes, retained observable relationships,
 recovery after perturbation, active work and incremental cost. Derive thresholds
