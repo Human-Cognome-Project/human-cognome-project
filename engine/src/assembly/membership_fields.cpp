@@ -88,9 +88,10 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
       OccurrenceKey occurrence{o.key.study,{o.key.source.entry,
           {o.key.source.path.begin(),o.key.source.path.end(),
            detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+      const auto &target=tools.at(group)->ref;
       out.contributions_.push_back({std::move(occurrence),
                                     {GroupKind::Membership, catalogue_object(group,domain)},
-                                    {catalogue_object(tools.at(group)->ref.object,domain),tools.at(group)->ref.revision},
+                                    {catalogue_object(target.object,domain),target.revision},
                                     *live.mass});
     }
   }
