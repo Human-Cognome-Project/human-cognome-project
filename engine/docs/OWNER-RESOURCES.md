@@ -904,7 +904,8 @@ contact endpoints. Recipe tables, UUID/text/input payload, complete setup work
 and combined caller/borrowed accounting remain open before operation/control
 integration. Deferred activity and GPU sequencing are unchanged.
 
-### Recipe path allocation domain (contribution awaiting review)
+<a id="recipe-path-allocation-domain-contribution-awaiting-review"></a>
+### Recipe path allocation domain (provisionally accepted #263)
 
 Explicit owner recipe copies now construct legacy/structural occurrence ID paths,
 every selection part path and both contact endpoint paths in the supplied domain
@@ -1253,3 +1254,37 @@ in [admission evidence](../tests/admission/README.md).
 Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed head `a2636cad6e85b9582f7e37aa1dd537bbd7b5c430`. Native 42874078745 and smoke 42874078677 passed; all 12 native jobs succeeded. Inspected regression shards passed 29 + 29 + 29 + 28 = 115 tests; database log reports addressed_reads=24/private_reads=0.
 
 The scoped allocation gates above are accepted; this does not close complete owner resources, setup, operations or hardware qualification. Earlier provisional evidence remains historical.
+
+### Recipe table allocation domain (contribution awaiting review)
+
+The eight top-level retained Bundle stores (tools, geometry, nodes, legacy
+occurrences, selections, contacts, structural occurrences and focal fields) use
+`warm::RecipeTable<T>`, an alias of the existing engine-independent shared
+reservation vector. Explicit owner projection copies select the destination
+allocator before reserve, construct each row with existing nested address/path
+attachment, and move finished rows into tables. Empty tables retain the domain
+without allocating elements. Ordinary copy construction detaches recursively;
+moves keep backing and domain alive. This remains exclusive synchronous accounting.
+
+This changes C++ container types and Bundle layout, requiring consumers to rebuild.
+On the pinned Clang 15/libstdc++ x64 build, table headers grow from 24 to 40 bytes;
+Bundle grows from 328 to 456 bytes (+128). The eight vector headers each gain
+shared allocator state; no stable C++ ABI is
+claimed. Ordinary-vector assignments use explicit iterator conversion in the
+legacy focal adapter and PostgreSQL fixture. Prepared contacts use RecipeTable;
+the structural adapter test converts its focal table explicitly. The public
+adapter still accepts std::vector<FocalField>. Serialization, SQL, recipe versions,
+values and numerical behavior are unchanged. Standalone storage stays detached.
+
+The table visitor now includes all eight stores in exact selected backing and
+independent allocation-request checks for both owner projections. Existing v1/v2
+copy controls cover all domain charge boundaries, reclamation and exact retry,
+complete recipe equivalence, detached snapshots after source death, moved lifetime,
+populated inactive pools and whole-owner allocation-failure injection. Empty
+version-specific tables also participate in allocator attachment checks.
+
+Nested Tool.parents/member_of, Geometry.spheres and Selection.parts table backing
+remains outside this domain and is the next slice. Their addresses/paths are already
+attached. UUID/text/input payload, preceding setup, allocator metadata and combined
+resources remain separate. Selected reports overlap the retained census; do not
+add them together. See source-pinned admission evidence for qualification limits.

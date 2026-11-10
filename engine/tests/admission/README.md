@@ -3273,3 +3273,88 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Retained recipe table domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `73f015f1df59aaede65f6cfc2f5c056204e501cd`, stacked on
+provisionally accepted #263 at `8647cfc77fd00f9cb2cf7ac0a8b3d9619c06dfdf`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/263#pullrequestreview-5851136271)
+found no blocking source findings and approved this eight-table slice. Parent
+smoke 42917037200 and native 42917037269 are now confirmed passed; #262 native
+42912109277 passed as reported in that review. Integrated implementation
+acceptance remains through #259 pending stack integration. Earlier pending
+observations, #261's fixture failure and #263's post-PASS cache-lock warning
+remain historical evidence, not superseded results.
+
+All eight top-level Bundle stores now use engine-independent RecipeTable storage.
+Explicit projection copies attach the destination domain before reserve and move
+completed rows with attached addresses/paths. Nodes also construct in that domain.
+Ordinary snapshots detach recursively; moves retain domain/backing. Complete
+values/order and encoding remain unchanged. See [scope](../../docs/OWNER-RESOURCES.md#recipe-table-allocation-domain-contribution-awaiting-review).
+
+This is a C++ container/layout change, requiring rebuilds. The pinned x64
+Clang 15/libstdc++ layout probe measures ordinary/table headers at 24/40 bytes,
+and prior/current Bundle at 328/456 bytes (+128). Iterator conversions adapt the
+legacy focal adapter and PostgreSQL fixture. Prepared contacts use RecipeTable;
+the structural adapter test explicitly converts to the unchanged std::vector
+parameter. Full configured native targets and standalone warm targets build,
+including warm_active_integration, warm_postgres_test, structural_postgres_test
+and recipe_reader_probe. These client builds do not qualify live database I/O.
+
+The table visitor includes all eight stores in selected backing, attachment,
+snapshot/move lifetime and independent actual-request checks. Validated legacy
+and structural fixtures preserve complete recipe values, both contact endpoints
+and empty version-specific tables. Existing copy charge-boundary sweeps,
+refusal/reclamation/exact retry, populated inactive pools, whole-owner failure
+injection and repeated native zero-new controls remain active.
+
+CPU results (workers 1/2, bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1279 / 1478 | 1718 / 2740 |
+| Selected live / peak requested bytes | 232910 / 232910 | 275256 / 275256 |
+| Selected cumulative allocation work | 315280 | 604548 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 295009 / 295618 | 357083 / 359365 |
+| Retained capacity census | 295633 | 357515 |
+
+Selected totals increase by 18624 / 21184 bytes, of which 18368 / 20928 is
+newly selected existing table backing and 256 is the two larger retained Bundle
+headers. Whole-owner retained/peak and census increase by 256; allocation-site
+counts are unchanged. Selected reports overlap the census and must not be added.
+No allocator-metadata, physical-residency or performance qualification is implied.
+
+Validation outcome: all 40 scoped checks passed, exit zero, with no warnings in the final build/run logs. Source remained clean and pinned;
+final tested-to-head changes are documentation only. The 20 exchange processes
+cover owner, owner_multiple, bindings, commit and fields in four configurations.
+Supporting checks comprise six projection/membership/workbench/structural CTests,
+12 prepared-execution/update CTests and two standalone warm allocation CTests.
+No GPU, live database, full baseline or repeated codec qualification was run.
+
+Two earlier compiler failures are preserved, not counted as passes:
+
+- `0faa6998`: structural recipe test passed the new focal table directly to the
+  unchanged std::vector adapter parameter; corrected by explicit iterator conversion.
+  Standalone warm build and two tests passed at this source; native execution was
+  not reached. Archive `setup-evidence/recipe-table-initial-0faa6998.tar.gz`;
+  manifest SHA-256 `a794f1481ef50c7a2940a6dcf7c5adcd0ab425e562fff641568a8f8e1e49c6e2`.
+- `aa09786c`: broad native rebuild exposed prepared_sources.h assigning an ordinary
+  contact vector into the recipe table; corrected with RecipeTable fixture values.
+  Native execution was not reached. Warm logs retained in this failure directory
+  are earlier unchanged logs from the first source, not a second run at aa09786c.
+  Archive `setup-evidence/recipe-table-consumers-aa09786c.tar.gz`;
+  manifest SHA-256 `5672c7e0d8acdec4b4f6492a963e4d603bedada651636c0e9a32b63bc4cc762b`.
+
+Final local evidence: `recipe-table-domain-73f015f1`, including commands, raw logs,
+source/configuration/toolchain, layout probe and binary/runtime hashes. Archive
+`setup-evidence/recipe-table-domain-73f015f1.tar.gz`. Verified SHA256SUMS manifest:
+
+    3529818cef1fde7b0de182854d3cce4a381a1b1008ae4351f2624fceb0a0c169
+
+Raw evidence remains local, not independently inspected remotely. Hosted checks
+remain authoritative. Next: nested Tool.parents/member_of, Geometry.spheres and
+Selection.parts tables, with before-allocation attachment and C++ compatibility
+qualification. UUID/text/input payload, full setup and combined resources remain
+open before operation/control integration. Activity/GPU sequencing is unchanged;
+#156/#145/#229 remain open.
