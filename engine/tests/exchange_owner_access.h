@@ -132,6 +132,7 @@ struct ExchangeOwnerAccess {
   static auto catalogue(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return MembershipFields::collect(p,true,domain);
   }
+  static auto &catalogue_recipe(LetterProjection &p) { return p.recipe_; }
   static auto contract(const LetterProjection &p, const OccurrenceKey &key, warm::Exposure target,
       const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterExchangeContract::collect(p,key,target,domain);

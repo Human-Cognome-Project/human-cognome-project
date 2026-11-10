@@ -749,6 +749,108 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
           "exact catalogue construction retry failed");
 }
 
+// This fixture has only five-element addresses (15 requested bytes), empty or
+// two-ordinal paths, UUID text, table/node blocks and a larger callable. The
+// 15-byte request class therefore independently identifies address backing.
+namespace catalogue_address_witness {
+inline thread_local assembly::detail::ReservationDomain *domain{};
+inline thread_local std::uint64_t previous_work{}, live{}, peak{}, acquired{}, released{};
+inline thread_local bool prepaid=true;
+void acquire(std::size_t bytes) noexcept {
+  const auto work=domain->result().charged_work;
+  if (bytes == 5*sizeof(codec::AddressElement)) {
+    prepaid &= work-previous_work == bytes;
+    live += bytes; acquired += bytes; peak=std::max(peak,live);
+  }
+  previous_work=work;
+}
+void release(std::size_t bytes) noexcept {
+  if (bytes == 5*sizeof(codec::AddressElement)) { live-=bytes; released+=bytes; }
+}
+}
+
+void catalogue_graph_address_controls() {
+  using Access=assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A=allocation_lifetime;
+  namespace W=catalogue_address_witness;
+  letter_fixture::Fixture letters;
+  const auto left=letters.add(letter_fixture::object("02.00.00.01.00"),"left",0);
+  const auto right=letters.add(letter_fixture::object("02.00.00.02.00"),"right",0);
+  const auto top=letters.add(letter_fixture::object("02.00.00.03.00"),"top",0);
+  letters.base.tools.at(letters.tools.at(letters.english)).member_of={left,right,top};
+  letters.base.tools.at(letters.tools.at(left.object)).member_of={top};
+  letters.base.tools.at(letters.tools.at(right.object)).member_of={top};
+  auto projection=assembly::project_letters(assembly::normalize_structural_letters(letters.base,
+      {{0,letters.ref(letters.english),warm::Exposure::Aggregate}}));
+  for (const auto &t : projection.recipe().tools)
+    require(t.ref.object.address.size()==5,"graph witness requires five-element addresses");
+  const auto reference=Access::catalogue(projection,{});
+  const auto address_size=5*sizeof(codec::AddressElement);
+  // Four visited graph vertices have state/reached keys. Their ancestor sets
+  // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
+  const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
+  const auto retained=reference.contributions().size()*2*address_size;
+  require(reference.contributions().size()==projection.occurrences().size()*3,
+          "diamond catalogue failed per-occurrence deduplication");
+  auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0; W::prepaid=true;
+  A::on_acquired=W::acquire; A::on_released=W::release;
+  A::begin();
+  try {
+    {
+      auto value=Access::catalogue(projection,domain);
+      require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
+                  W::acquired==temporary+retained && W::peak==temporary+retained &&
+                  W::live==retained && W::released==temporary,
+              "graph address requests, prepayment or transient overlap differ from independent fixture");
+    }
+  } catch (...) { A::on_acquired=nullptr; A::on_released=nullptr; A::end(); throw; }
+  A::on_acquired=nullptr; A::on_released=nullptr;
+  const auto released=A::end();
+  require(!released.live && !released.blocks && !W::live && W::acquired==W::released &&
+              !domain->result().live_bytes,"graph address witness leaked temporary or retained backing");
+  // Reuse the complete refusal/retry and lifetime controls with diamond ancestry.
+  catalogue_reservation_controls(projection);
+  for (std::size_t at=1; at<=released.attempts; ++at) {
+    domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin(at);
+    bool failed=false;
+    try { auto value=Access::catalogue(projection,domain); }
+    catch (const std::bad_alloc &) { failed=true; }
+    catch (...) { A::end(); throw; }
+    const auto observed=A::end();
+    require(failed && observed.attempts==at && !observed.live && !observed.blocks &&
+                !domain->result().live_bytes,"diamond allocation failure leaked graph backing");
+  }
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference),"diamond allocation failures prevented retry"); }
+  // Duplicate tool insertion keeps the first exact value and reclaims the rejected key.
+  auto &recipe=Access::catalogue_recipe(projection);
+  recipe.tools.push_back(recipe.tools.front());
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference),"duplicate graph key changed catalogue"); }
+  require(!domain->result().live_bytes,"duplicate graph key retained allocation");
+  // Introduce a cycle only after normal recipe validation; collection must reject
+  // it and reclaim every preceding node/key allocation.
+  auto top_it=std::find_if(recipe.tools.begin(),recipe.tools.end(),[&](const auto &t){return t.ref==top;});
+  require(top_it!=recipe.tools.end(),"graph cycle fixture lost ancestor");
+  top_it->member_of={left};
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  A::begin();
+  bool rejected=false;
+  try { auto value=Access::catalogue(projection,domain); }
+  catch (const warm::Error &) { rejected=true; }
+  catch (...) { A::end(); throw; }
+  const auto failed=A::end();
+  require(rejected && !domain->result().live_bytes && !failed.live && !failed.blocks,
+          "cyclic catalogue failed rejection or complete reclamation");
+  std::cout << "catalogue_graph_addresses,temporary_bytes=" << temporary
+            << ",retained_bytes=" << retained << ",address_peak=" << W::peak
+            << ",failure_sites=" << released.attempts << " PASS\n";
+}
 void contract_reservation_controls(const assembly::LetterProjection &projection) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
@@ -850,6 +952,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   unique_reservation_controls();
   projection_reservation_controls(projection);
   catalogue_reservation_controls(projection);
+  catalogue_graph_address_controls();
   contract_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
