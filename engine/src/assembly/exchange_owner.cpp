@@ -99,7 +99,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
         ::new (static_cast<void *>(p)) LetterProjection(projection,domain);
       })),
-      occurrences_(rows,domain.get()), fields_(fields,domain.get()),
+      occurrences_(rows,domain), fields_(fields,domain),
       declarations_(SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>(domain)),
       generation_(h.prepared_storage().generation) {
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
@@ -119,7 +119,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     reverse.outgoing_.swap(reverse.incoming_);
     auto retained = std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain.get());
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain);
     declarations_.push_back(std::move(retained));
     declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));

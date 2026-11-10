@@ -3,6 +3,10 @@
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
   static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
+  template<class Visit> static void map_paths(const detail::ExchangeCoordinator &c, Visit visit) {
+    for (const auto *map : {&c.bound_->occurrences_,&c.next_})
+      for (const auto &row : map->storage()) visit(row.occurrence.source.path);
+  }
   static auto map_outer_bytes(const detail::ExchangeCoordinator &c) {
     const auto bytes = [](const auto &map) { return map.storage().capacity()*sizeof(map.storage()[0]); };
     return bytes(c.bound_->occurrences_)+bytes(c.bound_->fields_)+bytes(c.next_)+bytes(c.next_fields_);

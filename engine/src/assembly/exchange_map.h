@@ -12,16 +12,29 @@ inline const auto &key_buffer(const FieldKey &v) { return v.object.address; }
 template<class T> class ExchangeMap {
  public:
   ExchangeMap() = default;
-  explicit ExchangeMap(ReservationDomain *domain) : slots_(ReservationAllocator<T>(domain)) {}
-  ExchangeMap(const std::vector<T> &rows, ReservationDomain *domain = nullptr)
-      : slots_(rows.begin(),rows.end(),ReservationAllocator<T>(domain)), size_(rows.size()) {}
-  // Plain copies are independent caller snapshots: do not retain a raw pointer
-  // to another owner's allocation domain. Setup copies opt in explicitly.
-  ExchangeMap(const ExchangeMap &other) : ExchangeMap(other,nullptr) {}
-  ExchangeMap(const ExchangeMap &other, ReservationDomain *domain)
-      : slots_(other.slots_.begin(),other.slots_.end(),ReservationAllocator<T>(domain)), size_(other.size_) {
-    for (std::size_t i = 0; i < slots_.size(); ++i)
+  explicit ExchangeMap(std::shared_ptr<ReservationDomain> domain)
+      : domain_(std::move(domain)), slots_(ReservationAllocator<T>(domain_.get())) {}
+  ExchangeMap(const std::vector<T> &rows, std::shared_ptr<ReservationDomain> domain = {})
+      : ExchangeMap(std::move(domain)) {
+    slots_.resize(rows.size());
+    for (std::size_t i=0; i<rows.size(); ++i) {
+      initialize_key(slots_[i],domain_);
+      slots_[i]=rows[i];
+    }
+    size_=rows.size();
+  }
+  // Ordinary snapshots detach, including inactive paths. Explicit setup copies
+  // attach before allocating nested capacity, never after detached copying.
+  ExchangeMap(const ExchangeMap &other) : ExchangeMap(other,{}) {}
+  ExchangeMap(const ExchangeMap &other, std::shared_ptr<ReservationDomain> domain)
+      : ExchangeMap(std::move(domain)) {
+    slots_.resize(other.slots_.size());
+    for (std::size_t i=0; i<slots_.size(); ++i) {
+      initialize_key(slots_[i],domain_);
       nested(slots_[i]).reserve(nested(other.slots_[i]).capacity());
+      slots_[i]=other.slots_[i];
+    }
+    size_=other.size_;
   }
   ExchangeMap &operator=(const ExchangeMap &other) {
     if (this != &other) {
@@ -33,7 +46,9 @@ template<class T> class ExchangeMap {
   }
   void reserve(std::size_t count, std::size_t extent) {
     if (count < size_) throw warm::Error("exchange map reservation below live size");
+    const auto previous=slots_.size();
     slots_.resize(count);
+    for (std::size_t i=previous; i<count; ++i) initialize_key(slots_[i],domain_);
     for (auto &row : slots_) nested(row).reserve(extent);
   }
   auto begin() { return slots_.begin(); }
@@ -65,12 +80,15 @@ template<class T> class ExchangeMap {
     --size_;
   }
   void swap(ExchangeMap &other) noexcept {
-    slots_.swap(other.slots_); std::swap(size_,other.size_);
+    slots_.swap(other.slots_); domain_.swap(other.domain_); std::swap(size_,other.size_);
   }
   const auto &storage() const { return slots_; }
  private:
   static auto &nested(T &row) { return key_buffer(row); }
   static const auto &nested(const T &row) { return key_buffer(row); }
+  // Declared first so even empty maps keep the raw outer allocator alive until
+  // after slot destruction. Swapping stores swaps this lifetime as well.
+  std::shared_ptr<ReservationDomain> domain_;
   ReservedVector<T> slots_;
   std::size_t size_{};
 };

@@ -46,6 +46,10 @@ struct ExchangeOwnerAccess {
       {o.prospective_.get(),sizeof(*o.prospective_)}, {o.plan_.get(),sizeof(*o.plan_)},
       {ExchangeCoordinatorAccess::binding(*o.plan_),sizeof(detail::ExchangeBindings)}}};
   }
+  template<class Visit> static void map_paths(const detail::ExchangeOwner &o, Visit visit) {
+    for (const auto &row : o.occurrences_.storage()) visit(row.occurrence.source.path);
+    ExchangeCoordinatorAccess::map_paths(*o.plan_,visit);
+  }
   static auto map_outer_bytes(const detail::ExchangeOwner &o) {
     return o.occurrences_.storage().capacity()*sizeof(detail::OccurrenceBinding)+
         o.fields_.storage().capacity()*sizeof(detail::ExchangeFieldBinding)+

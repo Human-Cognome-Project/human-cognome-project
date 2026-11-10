@@ -191,76 +191,120 @@ void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBind
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
   using Map = ExchangeMap<OccurrenceBinding>;
-  const std::vector<OccurrenceBinding> one{rows.front()};
-  const auto row_bytes = sizeof(OccurrenceBinding);
-  ReservationDomain zero({0,UINT64_MAX});
-  Map empty(&zero);
+  std::vector<OccurrenceBinding> one{rows.front()};
+  one.front().occurrence.source.path={3,5};
+  Map reference(one); reference.reserve(3,4);
+  const auto backing = [&](const Map &map, const auto &domain) {
+    std::uint64_t bytes=map.storage().capacity()*sizeof(OccurrenceBinding);
+    require(map.storage().get_allocator().domain == domain.get(),"map outer domain mismatch");
+    for (const auto &row : map.storage()) {
+      const auto &path=row.occurrence.source.path;
+      require(path.get_allocator().domain == domain,"map active/inactive path domain mismatch");
+      bytes += path.capacity()*sizeof(std::uint32_t);
+    }
+    return bytes;
+  };
+  auto zero=std::make_shared<ReservationDomain>(ReservationBudget{0,UINT64_MAX});
+  Map empty(zero);
   no_new([&] {
-    bool rejected = false;
-    try { empty.reserve(3,4); } catch (const ReservationStop &) { rejected = true; }
-    require(rejected && zero.result().status == ReservationStatus::ByteExhausted &&
-                !zero.result().live_bytes && empty.storage().empty(),
-            "map outer rejection allocated nested slots or published storage");
+    bool stopped=false;
+    try { empty.reserve(3,4); } catch (const ReservationStop &) { stopped=true; }
+    require(stopped && !zero->result().live_bytes && empty.storage().empty(),
+            "map outer rejection allocated nested paths");
   });
-  ReservationDomain growth({2*row_bytes,UINT64_MAX});
+  for (bool copying : {false,true}) {
+    const auto construct = [&](const auto &d) {
+      // Return a prvalue: an ordinary Map copy intentionally detaches.
+      return copying ? Map(reference,d) : Map(one,d);
+    };
+    ReservationResult full;
+    std::size_t sites=0;
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin();
+    try {
+      auto value=construct(domain); value.reserve(3,4);
+      full=domain->result(); sites=A::counts.attempts;
+      require(full.live_bytes == backing(value,domain) && value.size()==1 &&
+                  value[0].occurrence==one[0].occurrence && value.storage().size()==3,
+              "map construction/copy lost values or selected backing");
+    } catch (...) { A::end(); throw; }
+    auto released=A::end();
+    require(!released.live && !released.blocks && !domain->result().live_bytes,"map construction leaked");
+    for (bool bytes : {true,false}) {
+      const auto total=bytes ? full.peak_bytes : full.charged_work;
+      std::uint64_t allowance=0;
+      while (allowance<total) {
+        auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance});
+        bool stopped=false;
+        A::begin();
+        try { auto value=construct(d); value.reserve(3,4); }
+        catch (const ReservationStop &) { stopped=true; }
+        catch (...) { A::end(); throw; }
+        released=A::end();
+        const auto result=d->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        require(stopped && result.status==(bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next>allowance && next<=total,
+                "map path refusal failed reclamation or progress");
+        allowance=next;
+      }
+    }
+    for (std::size_t at=1; at<=sites; ++at) {
+      auto d=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      bool failed=false;
+      A::begin(at);
+      try { auto value=construct(d); value.reserve(3,4); }
+      catch (const std::bad_alloc &) { failed=true; }
+      catch (...) { A::end(); throw; }
+      released=A::end();
+      require(failed && released.attempts==at && !released.live && !released.blocks && !d->result().live_bytes,
+              "map path allocation failure leaked or missed injection");
+    }
+    auto exact=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+    auto retry=construct(exact); retry.reserve(3,4);
+    require(exact->result().live_bytes==full.live_bytes && exact->result().charged_work==full.charged_work &&
+                retry[0].occurrence==one[0].occurrence,"map exact retry failed");
+  }
+  std::optional<Map> snapshot, retained;
+  std::weak_ptr<ReservationDomain> watch;
   {
-    Map map(one,&growth);
-    const auto *backing = map.storage().data();
+    auto first=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    auto second=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=first;
+    retained.emplace(reference,first);
+    snapshot.emplace(*retained);
+    const auto live=first->result().live_bytes;
+    backing(*snapshot,std::shared_ptr<ReservationDomain>{});
+    require(snapshot->storage()[2].occurrence.source.path.capacity()>=4 && first->result().live_bytes==live,
+            "map snapshot lost inactive capacity or borrowed quota");
+    Map other(reference,second);
     no_new([&] {
-      bool rejected = false;
-      try { map.reserve(2,4); } catch (const ReservationStop &) { rejected = true; }
-      require(rejected && growth.result().required_bytes >= 3*row_bytes &&
-                  growth.result().live_bytes == row_bytes && growth.result().charged_work == row_bytes &&
-                  map.storage().data() == backing && map.size() == 1 && map[0].occurrence == one[0].occurrence,
-              "map growth omitted old/new overlap or changed committed rows");
+      *retained=other;
+      retained->push_back(one.front());
+      retained->erase(retained->begin());
+      retained->swap(other);
+      require(backing(*retained,second)==second->result().live_bytes &&
+                  backing(other,first)==first->result().live_bytes,
+              "map assignment/erase/swap lost domains or capacity");
+      retained->swap(other);
     });
   }
-  require(!growth.result().live_bytes, "map growth rejection leaked its original store");
-  ReservationDomain measured({UINT64_MAX,UINT64_MAX});
-  A::begin();
-  try {
-    Map map(one,&measured);
-    map.reserve(3,4);
-    require(measured.result().live_bytes == map.storage().capacity()*row_bytes &&
-                A::counts.live > measured.result().live_bytes,
-            "map accounting confused outer storage with untracked nested keys");
-  } catch (...) { A::end(); throw; }
-  const auto released = A::end();
-  require(!released.live && !released.blocks && !measured.result().live_bytes,
-          "map outer/nested storage was not reclaimed together");
-  std::optional<Map> detached;
+  require(!watch.expired(),"map released domain before its outer/nested backing");
+  retained.reset();
+  require(watch.expired(),"map retained domain after destruction");
+  snapshot->reserve(4,5);
+  require(snapshot->size()==1 && snapshot->operator[](0).occurrence==one[0].occurrence,
+          "map snapshot failed after domain destruction");
+  backing(*snapshot,std::shared_ptr<ReservationDomain>{});
   {
-    ReservationDomain first({UINT64_MAX,UINT64_MAX}), second({UINT64_MAX,UINT64_MAX});
-    Map original(one,&first); original.reserve(3,4);
-    const auto live = first.result().live_bytes;
-    detached.emplace(original);
-    require(!detached->storage().get_allocator().domain && first.result().live_bytes == live &&
-                detached->storage().size() == original.storage().size() &&
-                detached->storage()[2].occurrence.source.path.capacity() >= 4,
-            "plain map snapshot borrowed owner domain or lost inactive nested reservation");
-    Map copy(original,&second);
-    require(second.result().live_bytes == copy.storage().capacity()*row_bytes &&
-                copy.storage().get_allocator().domain == &second,
-            "explicit map copy bypassed its requested allocation domain");
-    no_new([&] {
-      original = copy;
-      require(original.storage().get_allocator().domain == &first,
-              "map assignment replaced the destination domain");
-      original.swap(copy);
-      require(original.storage().get_allocator().domain == &second &&
-                  copy.storage().get_allocator().domain == &first,
-              "map swap left an allocator attached to foreign backing");
-      bool rejected = false;
-      try { Map denied(original,&zero); } catch (const ReservationStop &) { rejected = true; }
-      require(rejected && !zero.result().live_bytes,
-              "explicit map-copy rejection allocated before outer admission");
-    });
+    auto d=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=d; retained.emplace(d); d.reset();
+    require(!watch.expired(),"empty map lost domain before later reservation");
+    retained->reserve(2,4);
   }
-  // The copied snapshot remains usable after both source allocation domains die.
-  detached->reserve(4,5);
-  require(detached->size() == 1 && detached->operator[](0).occurrence == one[0].occurrence &&
-              !detached->storage().get_allocator().domain,
-          "detached map snapshot depended on a destroyed source domain");
+  retained.reset();
+  require(watch.expired(),"empty map domain lifetime cycle");
 }
 
 void shared_reservation_controls() {
@@ -884,6 +928,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       require(request == entry.second, "unique allocation request differs from object storage size");
       unique_bytes += request;
     }
+    std::uint64_t map_path_bytes=0;
+    Access::map_paths(*owner,[&](const auto &path) {
+      const auto bytes=path.capacity()*sizeof(std::uint32_t);
+      require(path.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(path.data())==bytes),
+              "map active/inactive path differs from observed allocation request");
+      map_path_bytes += bytes;
+    });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
@@ -930,7 +982,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       membership_bytes += bytes;
     }
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
