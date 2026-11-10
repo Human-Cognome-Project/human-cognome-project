@@ -114,6 +114,21 @@ struct ExchangeOwnerAccess {
     return result;
   }
   static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
+  template<class Visit> static void catalogue_addresses(const MembershipFields &c, Visit visit) {
+    for (const auto &row : c.contributions()) {
+      visit(row.field.object.address);
+      visit(row.target.object.address);
+    }
+  }
+  static bool catalogue_equivalent(const MembershipFields &a, const MembershipFields &b) {
+    if (a.study() != b.study() || a.contributions().size() != b.contributions().size()) return false;
+    for (std::size_t i=0; i<a.contributions().size(); ++i) {
+      const auto &x=a.contributions()[i], &y=b.contributions()[i];
+      if (!(x.occurrence == y.occurrence) || x.field.kind != y.field.kind ||
+          !(x.field.object == y.field.object) || !(x.target == y.target) || x.count != y.count) return false;
+    }
+    return true;
+  }
   static auto catalogue(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return MembershipFields::collect(p,true,domain);
   }

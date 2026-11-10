@@ -9,6 +9,11 @@ namespace {
 void need(bool condition, const char *message) {
   if (!condition) throw warm::Error(message);
 }
+warm::ObjectKey catalogue_object(const warm::ObjectKey &key,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {key.scope,{key.address.begin(),key.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
+}
 }  // namespace
 
 MembershipFields membership_fields(const LetterProjection &projection) {
@@ -84,8 +89,8 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
           {o.key.source.path.begin(),o.key.source.path.end(),
            detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
       out.contributions_.push_back({std::move(occurrence),
-                                    {GroupKind::Membership, group},
-                                    tools.at(group)->ref,
+                                    {GroupKind::Membership, catalogue_object(group,domain)},
+                                    {catalogue_object(tools.at(group)->ref.object,domain),tools.at(group)->ref.revision},
                                     *live.mass});
     }
   }

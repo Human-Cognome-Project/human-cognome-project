@@ -678,10 +678,20 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
         path_bytes += path.capacity()*sizeof(std::uint32_t);
       }
       require(rows.get_allocator().domain == domain && path_bytes &&
-                  full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes &&
+                  full.live_bytes > rows.capacity()*sizeof(rows[0])+path_bytes &&
                   full.charged_work > full.live_bytes,
               "catalogue omitted retained table or failed to release graph nodes");
+      std::uint64_t address_bytes=0;
+      Access::catalogue_addresses(catalogue,[&](const auto &address) {
+        require(address.get_allocator().domain == domain,"catalogue address detached during collection");
+        address_bytes += address.capacity()*sizeof(codec::AddressElement);
+      });
+      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes,
+              "catalogue omitted address backing or charged temporary payload");
       snapshot.emplace(catalogue);
+      Access::catalogue_addresses(*snapshot,[&](const auto &address) {
+        require(!address.get_allocator().domain,"catalogue snapshot retained address domain");
+      });
       for (const auto &row : snapshot->contributions())
         require(!row.occurrence.source.path.get_allocator().domain,"catalogue snapshot retained path domain");
       require(!snapshot->contributions().get_allocator().domain &&
@@ -692,15 +702,8 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   }
   require(watch.expired(), "detached catalogue snapshot extended domain lifetime");
   auto standalone = Access::catalogue(projection,{});
-  require(snapshot->study() == standalone.study() &&
-              snapshot->contributions().size() == standalone.contributions().size(),
-          "catalogue snapshot lost identity or rows after domain death");
-  for (std::size_t i=0; i<standalone.contributions().size(); ++i) {
-    const auto &a=snapshot->contributions()[i], &b=standalone.contributions()[i];
-    require(a.occurrence == b.occurrence && a.field.kind == b.field.kind &&
-                a.field.object == b.field.object && a.target == b.target && a.count == b.count,
-            "domain-bound catalogue changed membership semantics");
-  }
+  require(Access::catalogue_equivalent(*snapshot,standalone),
+          "catalogue snapshot lost exact rows after domain death");
   std::optional<assembly::MembershipFields> moved;
   {
     auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
@@ -712,6 +715,10 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       require(row.occurrence.source.path.get_allocator().domain == domain,"catalogue move detached path");
   }
   require(!watch.expired(),"moved catalogue lost allocation domain");
+  require(Access::catalogue_equivalent(*moved,standalone),"catalogue move changed exact rows");
+  Access::catalogue_addresses(*moved,[&](const auto &address) {
+    require(address.get_allocator().domain == watch.lock(),"catalogue move detached address");
+  });
   moved.reset();
   require(watch.expired(),"catalogue path allocator retained a lifetime cycle");
   for (bool bytes : {true,false}) {
@@ -738,7 +745,7 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   auto retry=Access::catalogue(projection,domain);
   require(domain->result().status == ReservationStatus::Ok &&
               domain->result().live_bytes == full.live_bytes &&
-              domain->result().charged_work == full.charged_work,
+              domain->result().charged_work == full.charged_work && Access::catalogue_equivalent(retry,standalone),
           "exact catalogue construction retry failed");
 }
 
@@ -1065,6 +1072,13 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
               "catalogue path differs from observed allocation request");
       membership_bytes += bytes;
     }
+    Access::catalogue_addresses(*Access::memberships(*owner),[&](const auto &address) {
+      const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+      require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(address.data()) == bytes),
+              "catalogue address differs from observed allocation request");
+      membership_bytes += bytes;
+    });
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
                 census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes,
             "owner domain differs from independently observed selected allocations");
