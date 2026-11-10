@@ -27,9 +27,9 @@ class LetterExchangeContract {
   warm::Exposure from() const { return from_; }
   warm::Exposure to() const { return to_; }
   std::uint64_t mass() const { return mass_; }
-  const std::vector<ExchangeSource> &outgoing() const { return outgoing_; }
-  const std::vector<ExchangeSource> &incoming() const { return incoming_; }
-  const std::vector<ExchangeLeaf> &leaves() const { return leaves_; }
+  const auto &outgoing() const { return outgoing_; }
+  const auto &incoming() const { return incoming_; }
+  const auto &leaves() const { return leaves_; }
   std::uint64_t match_work() const { return match_work_; }
   // Exact bijections, independent of adapter row order. No allocation/mutation.
   bool matches(const ExchangeSource *outgoing, std::size_t outgoing_count,
@@ -38,15 +38,19 @@ class LetterExchangeContract {
 
  private:
   friend class detail::ExchangeOwner;
-  LetterExchangeContract() = default;
+  friend struct testing::ExchangeOwnerAccess;
+  explicit LetterExchangeContract(const std::shared_ptr<detail::ReservationDomain> &);
+  LetterExchangeContract(const LetterExchangeContract &, const std::shared_ptr<detail::ReservationDomain> &);
+  static LetterExchangeContract collect(const LetterProjection &, const OccurrenceKey &,
+      warm::Exposure, const std::shared_ptr<detail::ReservationDomain> &);
   friend LetterExchangeContract declare_letter_exchange(
       const LetterProjection &, const OccurrenceKey &, warm::Exposure);
   OccurrenceKey owner_;
   warm::BundleRef recipe_;
   warm::Exposure from_{}, to_{};
   std::uint64_t mass_{}, match_work_{};
-  std::vector<ExchangeSource> outgoing_, incoming_;
-  std::vector<ExchangeLeaf> leaves_;
+  detail::SharedReservedVector<ExchangeSource> outgoing_, incoming_;
+  detail::SharedReservedVector<ExchangeLeaf> leaves_;
 };
 
 // Preparation operation. Target must be the other declared alternative of the

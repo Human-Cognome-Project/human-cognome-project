@@ -69,6 +69,19 @@ struct ExchangeOwnerAccess {
   static auto catalogue(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return MembershipFields::collect(p,true,domain);
   }
+  static auto contract(const LetterProjection &p, const OccurrenceKey &key, warm::Exposure target,
+      const std::shared_ptr<detail::ReservationDomain> &domain) {
+    return LetterExchangeContract::collect(p,key,target,domain);
+  }
+  static auto contract_copy(const LetterExchangeContract &c, const std::shared_ptr<detail::ReservationDomain> &domain) {
+    return LetterExchangeContract(c,domain);
+  }
+  static auto contract_tables(const LetterExchangeContract &c) {
+    return std::array<std::pair<const void *,std::size_t>,3>{{
+      {c.outgoing_.data(),c.outgoing_.capacity()*sizeof(ExchangeSource)},
+      {c.incoming_.data(),c.incoming_.capacity()*sizeof(ExchangeSource)},
+      {c.leaves_.data(),c.leaves_.capacity()*sizeof(ExchangeLeaf)}}};
+  }
   static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
         a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||

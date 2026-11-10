@@ -567,6 +567,69 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
           "exact catalogue construction retry failed");
 }
 
+void contract_reservation_controls(const assembly::LetterProjection &projection) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  const assembly::OccurrenceKey key{projection.study(),{projection.recipe().selections.front().entry,{}}};
+  const auto target = projection.exposure(key.source.entry) == warm::Exposure::Aggregate
+      ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+  const auto reference = assembly::declare_letter_exchange(projection,key,target);
+  for (bool copying : {false,true}) {
+    const auto construct = [&](const auto &domain) {
+      return copying ? Access::contract_copy(reference,domain) : Access::contract(projection,key,target,domain);
+    };
+    ReservationResult full;
+    std::optional<assembly::LetterExchangeContract> snapshot, moved;
+    std::weak_ptr<ReservationDomain> watch;
+    {
+      auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      watch = domain;
+      auto contract = construct(domain);
+      full = domain->result();
+      std::uint64_t backing=0;
+      for (const auto &entry : Access::contract_tables(contract)) backing += entry.second;
+      require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
+              "declaration omitted table backing or changed its structural values");
+      snapshot.emplace(contract);
+      require(!snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
+                  !snapshot->leaves().get_allocator().domain && domain->result().live_bytes == backing,
+              "declaration snapshot retained or charged its source domain");
+      moved.emplace(std::move(contract));
+    }
+    require(!watch.expired() && Access::equivalent(*moved,reference),
+            "moved declaration lost source domain or structural values");
+    moved.reset();
+    require(watch.expired() && Access::equivalent(*snapshot,reference),
+            "detached declaration snapshot failed after source domain death");
+    for (bool bytes : {true,false}) {
+      const auto total=bytes ? full.peak_bytes : full.charged_work;
+      std::uint64_t allowance=0;
+      while (allowance < total) {
+        auto domain=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance});
+        bool stopped=false;
+        A::begin();
+        try { auto contract=construct(domain); }
+        catch (const ReservationStop &) { stopped=true; }
+        catch (...) { A::end(); throw; }
+        const auto released=A::end();
+        const auto result=domain->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+                "declaration construction/copy rejection failed cleanup or progress");
+        allowance=next;
+      }
+    }
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+    auto retry=construct(domain);
+    require(Access::equivalent(retry,reference) && domain->result().live_bytes == full.live_bytes &&
+                domain->result().charged_work == full.charged_work,
+            "exact declaration construction/copy retry failed");
+  }
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -579,6 +642,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   unique_reservation_controls();
   projection_reservation_controls(projection);
   catalogue_reservation_controls(projection);
+  contract_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -731,11 +795,18 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         projection_bytes += request;
       }
     const auto &membership_rows = Access::memberships(*owner)->contributions();
+    std::uint64_t declaration_bytes=0;
+    for (const auto &declaration : Access::declarations(*owner))
+      for (const auto &entry : Access::contract_tables(*declaration)) if (entry.second) {
+        require(containing_request(entry.first) == entry.second,
+                "declaration table differs from observed allocation request");
+        declaration_bytes += entry.second;
+      }
     const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
