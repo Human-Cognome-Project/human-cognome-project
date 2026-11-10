@@ -523,7 +523,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       auto copy = Access::projection_copy(projection,domain);
       if (reserve) Access::reserve_projection(copy);
       outer = Access::projection_table_bytes(copy);
-      for (const auto &table : Access::projection_tables(copy)) if (table.second) {
+      Access::projection_tables(copy,[&](const auto &table) { if (table.second) {
         const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
             [&](const auto &entry) { return entry.pointer==table.first; });
         require(observed!=std::end(A::table) && observed->bytes==table.second,
@@ -549,8 +549,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       });
       require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
               "projection domain omitted table/path backing or charged excluded payload");
-      for (const auto *d : Access::projection_domains(copy))
+      Access::projection_domains(copy,[&](const auto *d) {
         require(d == domain.get(), "explicit projection copy detached a table allocator");
+      });
       // Also copy a populated inactive pool; owner adoption normally copies
       // before reserving it, so that alone would not exercise this branch.
       {
@@ -579,8 +580,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       Access::projection_paths(*snapshot,[&](const auto &path) {
         require(!path.get_allocator().domain,"projection snapshot retained path domain");
       });
-      for (const auto *d : Access::projection_domains(*snapshot))
+      Access::projection_domains(*snapshot,[&](const auto *d) {
         require(!d, "ordinary projection snapshot borrowed source quota");
+      });
       require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
                   snapshot->occurrences().size() == copy.occurrences().size() &&
                   Access::projection_parent_sizes(*snapshot) == Access::projection_parent_sizes(copy),
@@ -622,8 +624,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   }
   require(!watch.expired(), "moved projection lost its allocation domain");
   require(Access::projection_equivalent(*moved,prepared),"moved projection changed references or parent pools");
-  for (const auto *d : Access::projection_domains(*moved))
-    require(d != nullptr, "moved projection detached its backing allocator");
+  Access::projection_domains(*moved,[&](const auto *d) {
+        require(d != nullptr, "moved projection detached its backing allocator");
+      });
   Access::projection_paths(*moved,[&](const auto &path) {
     require(bool(path.get_allocator().domain),"moved projection detached path backing");
   });
@@ -1164,7 +1167,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
-      for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
+      Access::projection_tables(*p,[&](const auto &entry) { if (entry.second) {
         const auto request = containing_request(entry.first);
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;

@@ -6,20 +6,19 @@ struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
-  static auto projection_tables(const LetterProjection &p) {
-    return std::array<std::pair<const void *,std::size_t>,12>{{
-      {p.exposures_.data(),p.exposures_.capacity()*sizeof(warm::Exposure)},
-      {p.occurrences_.data(),p.occurrences_.capacity()*sizeof(ProjectedOccurrence)},
-      {p.parents_.data(),p.parents_.capacity()*sizeof(ParentContribution)},
-      {p.spare_parents_.data(),p.spare_parents_.capacity()*sizeof(ParentContribution)},
-      {p.recipe_.tools.data(),p.recipe_.tools.capacity()*sizeof(p.recipe_.tools[0])},
-      {p.recipe_.geometry.data(),p.recipe_.geometry.capacity()*sizeof(p.recipe_.geometry[0])},
-      {p.recipe_.nodes.data(),p.recipe_.nodes.capacity()*sizeof(p.recipe_.nodes[0])},
-      {p.recipe_.occurrences.data(),p.recipe_.occurrences.capacity()*sizeof(p.recipe_.occurrences[0])},
-      {p.recipe_.selections.data(),p.recipe_.selections.capacity()*sizeof(p.recipe_.selections[0])},
-      {p.recipe_.contacts.data(),p.recipe_.contacts.capacity()*sizeof(p.recipe_.contacts[0])},
-      {p.recipe_.structural_occurrences.data(),p.recipe_.structural_occurrences.capacity()*sizeof(p.recipe_.structural_occurrences[0])},
-      {p.recipe_.focal_fields.data(),p.recipe_.focal_fields.capacity()*sizeof(p.recipe_.focal_fields[0])}}};
+  template<class Visit> static void projection_table_vectors(const LetterProjection &p, Visit visit) {
+    visit(p.exposures_); visit(p.occurrences_); visit(p.parents_); visit(p.spare_parents_);
+    visit(p.recipe_.tools); visit(p.recipe_.geometry); visit(p.recipe_.nodes);
+    visit(p.recipe_.occurrences); visit(p.recipe_.selections); visit(p.recipe_.contacts);
+    visit(p.recipe_.structural_occurrences); visit(p.recipe_.focal_fields);
+    for (const auto &tool : p.recipe_.tools) { visit(tool.parents); visit(tool.member_of); }
+    for (const auto &geometry : p.recipe_.geometry) visit(geometry.spheres);
+    for (const auto &selection : p.recipe_.selections) visit(selection.parts);
+  }
+  template<class Visit> static void projection_tables(const LetterProjection &p, Visit visit) {
+    projection_table_vectors(p,[&](const auto &table) {
+      visit(std::make_pair(static_cast<const void *>(table.data()),table.capacity()*sizeof(table[0])));
+    });
   }
   template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit) {
     for (const auto &o : p.recipe_.occurrences) visit(o.id.path);
@@ -117,21 +116,11 @@ struct ExchangeOwnerAccess {
   }
   static auto projection_table_bytes(const LetterProjection &p) {
     std::uint64_t bytes = 0;
-    for (const auto &entry : projection_tables(p)) bytes += entry.second;
+    projection_tables(p,[&](const auto &entry) { bytes += entry.second; });
     return bytes;
   }
-  static auto projection_domains(const LetterProjection &p) {
-    return std::array<detail::ReservationDomain *,12>{{p.exposures_.get_allocator().domain.get(),
-      p.occurrences_.get_allocator().domain.get(),p.parents_.get_allocator().domain.get(),
-      p.spare_parents_.get_allocator().domain.get(),
-      p.recipe_.tools.get_allocator().domain.get(),
-      p.recipe_.geometry.get_allocator().domain.get(),
-      p.recipe_.nodes.get_allocator().domain.get(),
-      p.recipe_.occurrences.get_allocator().domain.get(),
-      p.recipe_.selections.get_allocator().domain.get(),
-      p.recipe_.contacts.get_allocator().domain.get(),
-      p.recipe_.structural_occurrences.get_allocator().domain.get(),
-      p.recipe_.focal_fields.get_allocator().domain.get()}};
+  template<class Visit> static void projection_domains(const LetterProjection &p, Visit visit) {
+    projection_table_vectors(p,[&](const auto &table) { visit(table.get_allocator().domain.get()); });
   }
   static auto projection_copy(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterProjection(p,domain);

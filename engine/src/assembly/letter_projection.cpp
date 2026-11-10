@@ -367,12 +367,6 @@ warm::ToolRef projection_reference(const warm::ToolRef &ref,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {projection_object(ref.object,domain),ref.revision};
 }
-template<class T, class Copy> std::vector<T> recipe_rows(const std::vector<T> &rows, Copy copy) {
-  std::vector<T> result;
-  result.reserve(rows.size());
-  for (const auto &row : rows) result.push_back(copy(row));
-  return result;
-}
 template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
     const warm::RecipeTable<T> &rows,
     const std::shared_ptr<detail::ReservationDomain> &domain, Copy copy) {
@@ -388,19 +382,19 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
   return {b.ref,b.owner,b.creator,b.recipe_version,
       recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
         return {projection_reference(t.ref,domain),t.epoch,t.recipe,t.notation,t.mass,
-            recipe_rows(t.parents,[&](const auto &p) -> warm::Parent {
+            recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
               return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
             }),
-            recipe_rows(t.member_of,[&](const auto &ref) { return projection_reference(ref,domain); }),t.author};
+            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain); }),t.author};
       }),
       recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
-        return {projection_object(g.object,domain),g.centroid,g.spheres};
+        return {projection_object(g.object,domain),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
       }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
       recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
         return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
       }),
       recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
-        return {s.entry,s.exposure,recipe_rows(s.parts,[&](const auto &id) { return projection_id(id,domain); })};
+        return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
       }),
       recipe_tables(b.contacts,domain,[&](const auto &c) -> warm::Contact {
         return {projection_id(c.a,domain),projection_id(c.b,domain)};

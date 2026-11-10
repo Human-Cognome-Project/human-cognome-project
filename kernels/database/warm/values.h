@@ -83,6 +83,7 @@ struct Context {
   WriterRole role{WriterRole::Reader};
 };
 
+template<class T> using RecipeTable = hcp::resources::SharedReservedVector<T>;
 struct Parent {
   ToolRef target;
   std::uint32_t ordinal{0};
@@ -95,8 +96,8 @@ struct Tool {
   std::string recipe;
   std::optional<std::string> notation;
   std::optional<std::uint64_t> mass;
-  std::vector<Parent> parents;
-  std::vector<ToolRef> member_of;
+  RecipeTable<Parent> parents;
+  RecipeTable<ToolRef> member_of;
   Uuid author;
 };
 struct Point {
@@ -109,7 +110,7 @@ struct Sphere {
 struct Geometry {
   ObjectKey object;
   Point centroid;
-  std::vector<Sphere> spheres;
+  RecipeTable<Sphere> spheres;
 };
 enum class ScaleRole {
   Root,
@@ -150,14 +151,14 @@ enum class Exposure { Aggregate, Parts };
 struct Selection {
   std::uint64_t entry{0};
   Exposure exposure{Exposure::Aggregate};
-  std::vector<OccurrenceId> parts;
+  RecipeTable<OccurrenceId> parts;
 };
 struct Contact {
   OccurrenceId a, b;
 };
 // Top-level recipe backing may attach to an explicit owner allocation domain.
 // Ordinary copies detach through the engine-independent allocator.
-template<class T> using RecipeTable = hcp::resources::SharedReservedVector<T>;
+
 struct Bundle {
   BundleRef ref;
   Uuid owner, creator;

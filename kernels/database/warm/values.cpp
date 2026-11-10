@@ -273,7 +273,7 @@ void validate(const Bundle &b) {
              !s.parts.empty(),
          "missing/overlapping aggregate");
     const auto &letter = *tools.at(key(occurrences.at(aggregate).definition));
-    std::vector<OccurrenceId> expected;
+    RecipeTable<OccurrenceId> expected;
     for (const auto &character : letter.parents) {
       const auto &c = target(character.target);
       const bool ascii_byte = c.mass && *c.mass == 2;
