@@ -2538,3 +2538,71 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence stays local; its hash does not imply independent remote inspection
 or replace authoritative hosted CI. This is no cache-performance qualification.
+
+## Projection occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `008c93200d22e25a8ac67fba05d5760461dba977`, stacked on
+provisionally accepted #252 at `8b60de7f45efd9f6a5e64d742c6e252c351ec320`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/252#pullrequestreview-5842244532)
+found no blocking source corrections and permits bounded continuation. At this
+inspection, #252 smoke 42820621262 and warm-toolbox 42820621241 passed; native
+42820621407 remained in progress. #247/#250 are still integration dependencies;
+integrated implementation acceptance remains through #246. The historical #250
+post-PASS cache warning and exit-zero qualification remain recorded above.
+Deferred activity/state-on-demand research (#248/#251) is unchanged.
+
+Both explicit retained-projection copies and inactive-pool setup now construct
+occurrence paths with the selected domain before copying ordinals. This includes
+optional provenance-owner keys and both parent pools. Ordinary value snapshots
+detach; moved paths preserve domain lifetime and active/spare transfers reuse
+backing. Recipe/input, catalogue contribution and map paths, plus UUID/address payload, remain excluded. There
+is no additional value-layout or encoding change beyond inherited #252.
+See [scope](../../docs/OWNER-RESOURCES.md#projection-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+The controls verify every nested allocator, populated spare-pool copying,
+detached snapshots after source death and moved lifetime. Projection construction
+plus pool setup sweeps each successive byte/work denial boundary, checks complete
+reclamation and retries with exact allowances. The owner independently locates
+all projection path requests alongside table requests in both retained views.
+Existing owner failure injection, setup rejection, catalogue/declaration controls
+and repeated native exchange/tick checks remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll, on the shared personal
+host. No GPU, live database, full baseline or separate full compiler audit rerun.
+Unchanged warm format tests were not duplicated from #252.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 63 / 112 | 193,760 | 269,376 | 4,102 |
+| Four selections | 90 / 248 | 227,336 | 530,360 | 7,745 |
+
+All owner failure sites reclaim observed storage. Whole-adoption retained/peak
+requested bytes remain 284,609 / 285,170 and 343,035 / 345,173; retained census
+remains 285,233 / 343,467. The existing 96 / 384 bytes of projection path backing
+are newly inside the selected domain, without increasing total retained memory
+or allocation-site counts. Projection setup remains 1,556 / 4,628 boundaries and
+work 51,636 / 138,566. Selected/whole/census reports overlap and must not be added;
+allocation-request work is not peak memory or CPU timing.
+
+Validation scope: owner, multiple owner, bindings, commit and fields × four
+worker/compiler variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. Complete recipe/input/catalogue/map/UUID/address allocation,
+setup work and combined caller/borrowed accounting remain open before remaining
+operations. #156/#145/#229 remain open.
+
+All 20 exchange processes and six supporting CTest cases passed, each with exit
+zero. No warnings were found in this run's build/matrix logs. Source stayed clean
+and unchanged during execution; final changes after tested source are four
+Markdown files only.
+
+Contributor-local evidence: `projection-path-domain-008c9320`, including build,
+commands, raw case/CTest logs, source/configuration/toolchain and binary/runtime
+hashes. Archive: `setup-evidence/projection-path-domain-008c9320.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    f3eefecc75cf2acc0e93f1db5fde44619b2ec934e4d35cdbe2ea6ea9b9c60291
+
+Raw evidence remains local. This hash identifies artifacts without implying
+independent remote inspection or replacing authoritative hosted checks.

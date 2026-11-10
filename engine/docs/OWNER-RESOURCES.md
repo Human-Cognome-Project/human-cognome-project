@@ -560,7 +560,9 @@ ordinals, stored mass and contributions; no exchange or awake/asleep behavior is
 changed. Remaining key/recipe/input allocation and full setup/combined-resource
 qualification remain open.
 
-### Declaration occurrence-path allocation domain (contribution awaiting review)
+<a id="declaration-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration occurrence-path allocation domain (provisionally accepted #252)
 
 The reservation primitives now live in `common/reservation_allocator.h`, with
 engine-private aliases preserving existing names. This is standard-C++ support,
@@ -594,6 +596,38 @@ structural values. A server-free warm test exercises copy/move identity and orde
 exact PostgreSQL parameter text (empty and maximum uint32 paths), and decoding via
 a locally constructed libpq result. Warm clients compile without engine linkage.
 No schema migration, database writes or activity-state behavior changes occur.
+
+### Projection occurrence-path allocation domain (contribution awaiting review)
+
+Both retained projections now explicitly attach occurrence identity paths,
+optional byte-provenance owner paths, and active/spare parent-contribution paths
+to their owner allocation domain. Explicit copies reserve the destination table
+and construct each row's path with that domain before copying ordinals; they do
+not make detached nested copies first. Inactive-pool initialization uses the same
+domain before constructing each contribution. Empty paths retain the allocator
+without an ordinal allocation. Table requests already include the embedded path
+headers; separate ordinal backing is counted once.
+
+Ordinary value-copy construction still detaches all nested paths, while moves and
+pool transfers carry their backing/domain together. Active/inactive exchanges
+reuse the reserved contributions without new allocation. Explicit copying of an
+already populated spare pool is covered as well as the usual copy-before-reserve
+owner setup. No C++ layout, warm encoding, identity, native publication or numerical
+behavior changes in this slice; #252's documented value-layout change is inherited.
+
+Projection copy/reservation controls now check all nested allocators, detached
+snapshots after source death and moved lifetimes, sweep successive byte/work
+rejection boundaries with complete reclamation, and retry at exact measured
+allowances. The owner observer independently locates every retained projection
+path request in both projections and reconciles it with the selected-domain sum.
+Existing failure-site, setup refusal and repeated allocation-free exchange/tick
+controls remain active. Reports overlap the retained census and must not be added.
+
+Recipe/input, catalogue contribution and map paths, UUID/address payload and other nested allocations are
+still outside this extension. Recipe copying still precedes the first projection
+table request. Complete setup and combined caller/borrowed accounting remain open;
+this is not a total constructor or machine budget. Deferred activity research is
+unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 

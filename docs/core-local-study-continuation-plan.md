@@ -91,7 +91,9 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Provisional dependency:** #250 at `2c07c0e339d11ee66d0db175d55c81344d502393` is accepted for continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/250#pullrequestreview-5841949730), with no blocking source findings. Its declaration parent-vector limits need not be repeated. Its post-PASS cache-lock warning and exit-zero qualification remain in the evidence record.
 
-**Active contribution:** declaration owner/source occurrence-path allocation limits during construction and explicit copies, using neutral shared allocator support for engine-independent warm values. Other recipe/input/map paths remain detached; see [scope](../engine/docs/OWNER-RESOURCES.md#declaration-occurrence-path-allocation-domain-contribution-awaiting-review). Awake/asleep/state-on-demand research (#248/#251) remains deferred and imposes no requirements on this allocation work.
+**Provisional dependency:** #252 at `8b60de7f45efd9f6a5e64d742c6e252c351ec320` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/252#pullrequestreview-5842244532). Declaration owner/source path gates and the neutral allocator move need not be repeated. Hosted checks and #247/#250 integration remain pending; integrated acceptance remains through #246.
+
+**Active contribution:** retained projection occurrence/provenance and active/spare parent path allocation limits during explicit copies and pool initialization; see [scope](../engine/docs/OWNER-RESOURCES.md#projection-occurrence-path-allocation-domain-contribution-awaiting-review). Recipe/input, catalogue contribution and map paths, plus UUID/address payload, remain open. Awake/asleep/state-on-demand research (#248/#251) remains deferred and imposes no requirements on this allocation work.
 
 **Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
 preceding catalogue/declaration construction,
