@@ -253,3 +253,16 @@ The warm build includes `occurrence_path_test`; run it with
 moves, equality/ordering and production PostgreSQL parameter rendering/decoding
 using a local libpq result, with no server or persistent writes. Hosted warm CI
 runs this check before its existing database acceptance work.
+
+### Address allocation compatibility (contribution awaiting review)
+
+`ObjectKey::address` inherits allocator-aware `codec::Address`; see the
+[codec storage contract](../codec/README.md#allocator-aware-address-storage-contribution-awaiting-review).
+Default reads and ordinary copies remain detached. Address identity, full-pair
+text-array parameters and rejection of empty/partial object identities remain
+unchanged; the C++ container/layout change is explicit.
+
+The warm build adds `address_allocation_test` to CTest. It uses a local libpq result
+and production formatting/decoding, without a server, to verify exact parameters,
+identity/order, validation and allocator copy/move lifetime. Both warm compatibility
+checks run in hosted warm CI. This is not live-database qualification.

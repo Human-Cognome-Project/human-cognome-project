@@ -666,7 +666,9 @@ occurrence-map path backing in `ExchangeMap<OccurrenceBinding>` construction,
 explicit setup copies and reservation, including inactive slots; field address
 backing is a separate remaining item. Deferred wake/sleep research is unchanged.
 
-### Occurrence-map path allocation domain (contribution awaiting review)
+<a id="occurrence-map-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Occurrence-map path allocation domain (provisionally accepted #255)
 
 `ExchangeMap` now retains a shared reservation-domain handle before its raw outer
 allocator. That handle survives empty maps and is destroyed after all slot backing;
@@ -707,6 +709,47 @@ providing engine-independent allocator-aware address storage with unchanged
 address identity and codec/database encoding. Recipe/input, other UUID/address
 payload, complete setup work and combined caller/borrowed accounting remain open.
 No numerical/publication or deferred activity behavior changes here.
+
+### Field-map address allocation domain (contribution awaiting review)
+
+`codec::Address` now uses the neutral shared reservation allocator for its existing
+`AddressElement` sequence. The codec remains engine-independent; pure codec
+transforms and default values produce detached addresses. Element representation,
+identity, validation, ordering, dotted rendering, positional delta/reconstruction
+and PostgreSQL literal-pair text-array encoding are unchanged. This is a C++
+container type/layout change, not binary compatibility: concrete std::vector
+callers use iterator-range conversions. The extra allocator handle is embedded
+wherever an address occurs, including values outside the selected domain.
+
+Only `ExchangeFieldBinding` map slots explicitly attach address backing in this
+contribution. The same setup construction/copy/reservation hooks used for occurrence
+paths attach empty address vectors before allocation. Both active and inactive
+slots retain the domain through assignment, growth, erase and whole-map swap.
+Ordinary map snapshots recursively detach and preserve inactive capacity. Other
+warm/recipe/projection/catalogue/declaration addresses remain detached, as do the
+codec's ordinary results. UUID payload and full setup work remain separate gaps.
+
+The map controls now run for both occurrence and field maps, with the actual
+nested element size. They retain byte/work rejection, allocation failure,
+reclamation, exact retry, growth overlap, detached/empty-map lifetime and no-new
+assignment/append/erase/swap checks. Independent owner observation locates every
+address request in all three field maps, including inactive slots. Header/table
+requests already include each embedded allocator reference; address backing is
+counted separately once. These domain and census reports overlap.
+
+A server-free warm test exercises production parameter rendering/decoding via a
+locally constructed libpq result, empty/wildcard rejection for object identities,
+codec wildcard validation, ordering, delta/reconstruction and detached-copy/move
+lifetime. Existing codec unit/adversarial, command IR/span and pure WAL tests
+qualify other address consumers. Warm clients and native integration compile;
+no live-store writes or schema changes are involved. Repository smoke now watches
+`common/**` as well as codec sources, matching the new header dependency.
+
+Next: declaration address backing in source definition refs, parent target refs
+and ordered leaf refs during collection and explicit reverse copies, preserving
+matching and detached snapshots. Other UUID/address/recipe/input payload, complete
+setup and combined caller/borrowed accounting remain open before operation
+integration. Deferred activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 

@@ -2760,3 +2760,80 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw artifacts remain local; their hash does not imply independent remote
 inspection or replace authoritative hosted checks.
+
+## Field-map address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `eb10ce19f0247d0ce395fb0a68a5b60d21d7f5e4`, stacked on
+provisionally accepted #255 at `52a5e5d00ee4aea0774d1bc135334114c78b6262`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/255#pullrequestreview-5843122210)
+found no blocking source corrections and accepts this field-address slice with
+codec/warm compatibility controls. Parent smoke 42830224176 passed; native
+42830224093 remains in progress at inspection. Dependency integration is pending;
+integrated implementation acceptance remains through #246. Prior #255 failed
+build attempts and #250 cache qualifications remain recorded separately above.
+Deferred activity research and independent GPU sequencing are unchanged.
+
+`codec::Address` uses neutral shared reservation support with the same element
+representation and codec rules. Field-map slots explicitly attach before initial
+copy, setup copying and inactive-slot reservation. All other address backing
+remains detached unless explicitly attached by a caller; ordinary snapshots and
+codec results detach. C++ type/layout changes are explicit, including embedded
+headers in values outside the selected domain. Identity, validation, order and
+literal-pair PostgreSQL encoding are unchanged; no schema migration occurs.
+See [scope](../../docs/OWNER-RESOURCES.md#field-map-address-allocation-domain-contribution-awaiting-review).
+
+The map controls now run for both map types with their actual element sizes:
+initial/explicit copying, active/inactive attachment, byte/work refusal,
+allocation-site failures, reclamation, exact retry, outer growth overlap,
+detached/empty-map lifetime and allocation-free assignment/append/erase/swap.
+Independent owner observation locates all retained field-map address requests,
+including inactive slots, alongside occurrence paths. Existing native owner,
+projection/catalogue/declaration and repeated-exchange controls remain active.
+
+CPU native checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants plus six structural-recipe/
+projection/membership/workbench CTests. Warm clients and warm-active integration
+compile. Two server-free warm CTests pass: occurrence paths and address allocator/
+identity/validation/parameter rendering/decoding via a local libpq result.
+Six additional GCC-built pure checks pass using the smoke workflow's commands:
+codec unit and adversarial, command IR, span planner, WAL recognition and report.
+Their compiler version, build/run logs and binary hashes are retained. No GPU,
+live database, full native baseline or separate full compiler audit rerun.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,155 / 1,240 | 211,372 | 293,322 | 4,102 |
+| Four selections | 1,551 / 2,304 | 248,356 | 577,228 | 7,745 |
+
+All owner failure sites reclaim observed storage. Whole-adoption retained/peak
+requested bytes are 294,753 / 295,362 and 356,827 / 359,109; census 295,377 /
+357,259. Enlarged address-container headers contribute throughout retained values,
+not just newly gated field-map backing; allocation-site counts remain unchanged.
+Projection setup boundaries remain 1,556 / 4,628, with work 53,060 / 141,190.
+Selected/whole/census reports overlap and must not be summed. Allocation-request
+work is not peak memory or CPU timing.
+
+Next concrete slice: declaration source definition, parent target and ordered leaf
+address backing during collection and explicit reverse copies. Other projection/
+catalogue/recipe/input addresses, UUID payload, complete setup work and combined
+caller/borrowed accounting remain open before operation integration and
+same-execution controls. #156/#145/#229 remain open.
+
+All 34 scoped checks pass: 20 exchange processes, six native supporting CTests,
+two warm compatibility CTests and six pure codec/command/WAL executables. Each
+process exits zero. No warnings were found in the build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are six Markdown files only.
+
+Contributor-local evidence: `map-address-domain-eb10ce19`, including the native
+build/commands/raw logs/configuration/toolchain/runtime hashes plus the complete
+compatibility sub-bundle with warm build, six pure builds, commands, logs and
+binary hashes. Archive: `setup-evidence/map-address-domain-eb10ce19.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    c823d0449c1cf0a62124830c484fc5594ebd48d2d02838053d8fbb10660ca142
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.

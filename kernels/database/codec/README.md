@@ -38,3 +38,17 @@ std::optional<Address> decode_token_id(const std::string &token_id);
 std::optional<Address> compute_delta(const Address &context, const Address &full);
 Address reconstruct_address(const Address &context, const Address &delta);
 ```
+
+## Allocator-aware address storage (contribution awaiting review)
+
+`codec::Address` uses the engine-independent shared reservation allocator in
+[`common`](../../../common/README.md). The element sequence and all codec rules
+above are unchanged. Default addresses, ordinary value copies and codec outputs
+are detached; explicit callers can select an allocation domain. Copy assignment
+retains the destination allocator, while vector moves carry backing and domain.
+No engine, Taichi, PostgreSQL or runtime dependency is introduced into the codec.
+
+This changes the C++ container type and layout, including addresses embedded in
+other objects. It is not binary compatibility. Convert to/from a concrete
+`std::vector<AddressElement>` with iterator ranges. PostgreSQL still stores
+literal pair text arrays; this is not an address encoding or schema migration.
