@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "engine/**"
+      - "common/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - "tools/viewport/native/**"
@@ -14,6 +15,7 @@ on:
       - "main"
     paths:
       - "engine/**"
+      - "common/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - "tools/viewport/native/**"
