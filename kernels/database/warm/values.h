@@ -83,6 +83,8 @@ struct Context {
   WriterRole role{WriterRole::Reader};
 };
 
+// Recipe table backing may attach to an explicit owner allocation domain.
+// Ordinary copies detach through the engine-independent allocator.
 template<class T> using RecipeTable = hcp::resources::SharedReservedVector<T>;
 struct Parent {
   ToolRef target;
@@ -156,9 +158,6 @@ struct Selection {
 struct Contact {
   OccurrenceId a, b;
 };
-// Top-level recipe backing may attach to an explicit owner allocation domain.
-// Ordinary copies detach through the engine-independent allocator.
-
 struct Bundle {
   BundleRef ref;
   Uuid owner, creator;

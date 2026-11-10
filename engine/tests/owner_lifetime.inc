@@ -528,7 +528,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
             [&](const auto &entry) { return entry.pointer==table.first; });
         require(observed!=std::end(A::table) && observed->bytes==table.second,
                 "projection table backing differs from independent request");
-      }
+      }});
       Access::projection_paths(copy,[&](const auto &path) {
         require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
         const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
@@ -1171,7 +1171,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         const auto request = containing_request(entry.first);
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
-      }
+      }});
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       Access::projection_paths(*p,[&](const auto &path) {
         const auto bytes=path.capacity()*sizeof(std::uint32_t);
