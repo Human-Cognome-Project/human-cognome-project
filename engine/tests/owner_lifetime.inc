@@ -587,22 +587,27 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
       watch = domain;
       auto contract = construct(domain);
       full = domain->result();
-      std::uint64_t backing=0;
+      std::uint64_t backing=contract.owner().source.path.capacity()*sizeof(std::uint32_t);
+      require(contract.owner().source.path.get_allocator().domain == domain,
+              "declaration owner path detached");
       for (const auto &entry : Access::contract_tables(contract)) backing += entry.second;
       for (const auto *side : {&contract.outgoing(),&contract.incoming()})
         for (const auto &source : *side) {
           require(source.parents.get_allocator().domain == domain,
                   "declaration parent backing detached during construction/copy");
           backing += source.parents.capacity()*sizeof(warm::Parent);
+          require(source.occurrence.source.path.get_allocator().domain == domain,
+                  "declaration source path detached");
+          backing += source.occurrence.source.path.capacity()*sizeof(std::uint32_t);
         }
       require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
               "declaration omitted table backing or changed its structural values");
       snapshot.emplace(contract);
       for (const auto *side : {&snapshot->outgoing(),&snapshot->incoming()})
         for (const auto &source : *side)
-          require(!source.parents.get_allocator().domain,
+          require(!source.parents.get_allocator().domain && !source.occurrence.source.path.get_allocator().domain,
                   "declaration snapshot retained nested parent domain");
-      require(!snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
+      require(!snapshot->owner().source.path.get_allocator().domain && !snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
                   !snapshot->leaves().get_allocator().domain && domain->result().live_bytes == backing,
               "declaration snapshot retained or charged its source domain");
       moved.emplace(std::move(contract));
@@ -818,6 +823,11 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
           require(!bytes || containing_request(source.parents.data()) == bytes,
                   "declaration parent table differs from observed allocation request");
           declaration_bytes += bytes;
+          const auto &path=source.occurrence.source.path;
+          const auto path_bytes=path.capacity()*sizeof(std::uint32_t);
+          require(!path_bytes || containing_request(path.data()) == path_bytes,
+                  "declaration path differs from observed allocation request");
+          declaration_bytes += path_bytes;
         }
     }
     const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);

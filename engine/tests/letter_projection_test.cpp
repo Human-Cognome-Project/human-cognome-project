@@ -87,7 +87,7 @@ int main() {
         if (o.key.source.entry == 4) {
           dutch_bytes.push_back(
               *b.tools.at(f.tools.at(o.definition.object)).notation);
-          dutch_paths.push_back(o.key.source.path);
+          dutch_paths.emplace_back(o.key.source.path.begin(),o.key.source.path.end());
         }
       }
     }

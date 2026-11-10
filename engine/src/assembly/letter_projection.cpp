@@ -179,7 +179,7 @@ warm::Bundle normalize_letters(warm::Bundle b,
     for (std::size_t i = 0; i < expected.size(); ++i) {
       const auto &v = expected[i];
       need(r.bytes[i].path == v.path, "missing/reordered/repeated byte path");
-      const warm::OccurrenceId id{r.entry, v.path};
+      const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
       const auto &state = r.bytes[i].initial;
       b.occurrences.push_back(
           {id, v.byte.object, 0, state.position, state.velocity});
@@ -220,7 +220,7 @@ warm::Bundle normalize_structural_letters(
         {{r.entry, {}}, r.letter.object, parts ? 1 : 0});
     warm::Selection selection{r.entry, r.exposure, {}};
     for (const auto &v : expected) {
-      const warm::OccurrenceId id{r.entry, v.path};
+      const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
       b.structural_occurrences.push_back({id, v.byte.object, 0});
       selection.parts.push_back(id);
     }
@@ -272,7 +272,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
       equivalent.emplace(aggregate, letter.parents[0].target);
     for (std::size_t i = 0; i < expanded.size(); ++i) {
       const auto &v = expanded[i];
-      need(s.parts[i] == warm::OccurrenceId{s.entry, v.path},
+      need(s.parts[i] == warm::OccurrenceId{s.entry, {v.path.begin(),v.path.end()}},
            "invalid persisted byte path");
       provenance.emplace(
           s.parts[i],

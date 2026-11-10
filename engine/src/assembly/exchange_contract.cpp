@@ -8,6 +8,11 @@ namespace {
 void need(bool ok, const char *message) {
   if (!ok) throw warm::Error(message);
 }
+OccurrenceKey copy_occurrence(const OccurrenceKey &key,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
+      detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+}
 template<class A>
 detail::SharedReservedVector<warm::Parent> copy_parents(const std::vector<warm::Parent,A> &parents,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -18,7 +23,7 @@ auto copy_sources(const detail::SharedReservedVector<ExchangeSource> &sources,
   detail::SharedReservedVector<ExchangeSource> result{detail::SharedReservationAllocator<ExchangeSource>(domain)};
   result.reserve(sources.size());
   for (const auto &source : sources)
-    result.push_back({source.occurrence,source.definition,source.mass,source.node,
+    result.push_back({copy_occurrence(source.occurrence,domain),source.definition,source.mass,source.node,
                       copy_parents(source.parents,domain)});
   return result;
 }
@@ -64,7 +69,7 @@ LetterExchangeContract::LetterExchangeContract(const std::shared_ptr<detail::Res
 
 LetterExchangeContract::LetterExchangeContract(const LetterExchangeContract &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
-    : owner_(other.owner_), recipe_(other.recipe_), from_(other.from_), to_(other.to_),
+    : owner_(copy_occurrence(other.owner_,domain)), recipe_(other.recipe_), from_(other.from_), to_(other.to_),
       mass_(other.mass_), match_work_(other.match_work_),
       outgoing_(copy_sources(other.outgoing_,domain)),
       incoming_(copy_sources(other.incoming_,domain)),
@@ -83,7 +88,7 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
   need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
        target != projection.exposure(owner.source.entry), "exchange requires the other declared alternative");
   LetterExchangeContract result(domain);
-  result.owner_ = owner;
+  result.owner_ = copy_occurrence(owner,domain);
   result.recipe_ = recipe.ref;
   result.from_ = projection.exposure(owner.source.entry);
   result.to_ = target;
@@ -95,7 +100,7 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
         [&](const auto &t) { return t.ref == occurrence->definition; });
     need(tool != recipe.tools.end() && tool->mass && *tool->mass,
          "missing exact exchange definition mass");
-    return ExchangeSource{occurrence->key, occurrence->definition, *tool->mass,
+    return ExchangeSource{copy_occurrence(occurrence->key,domain), occurrence->definition, *tool->mass,
                           occurrence->node, copy_parents(tool->parents,domain)};
   };
   detail::SharedReservedVector<ExchangeSource> aggregate{detail::SharedReservationAllocator<ExchangeSource>(domain)},
