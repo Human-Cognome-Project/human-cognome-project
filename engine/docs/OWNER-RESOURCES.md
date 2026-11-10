@@ -491,6 +491,352 @@ resources are still open. This is not complete projection or constructor admissi
 
 ## Work inventory and remaining budget gate
 
+<a id="declaration-table-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration table allocation domain (provisionally accepted #247)
+
+Owner declaration construction now receives its shared reservation domain before
+building outgoing/incoming source tables or ordered leaves. The temporary aggregate
+and parts tables use the same allocator and move their backing into the result.
+The aggregate is appended by move instead of copied through an initializer list.
+Vector requests, including overlapping old/new growth backing, enter the domain
+before allocation. The reverse declaration uses an explicit domain-bound copy;
+its three independent backing requests are also admitted before copying rows.
+The shared declaration object/control-block request remains a later separate gate.
+
+Ordinary value-copy construction detaches all three table allocations. Moves and
+swaps carry the domain with the backing; no domain-to-declaration ownership cycle
+exists. Declaration aliases retain the tables through owner destruction. Their
+backing is released at pointee destruction; shared control blocks retain their
+own charge through final weak release. The source/leaf accessors now return const
+allocator-aware vectors and the retained census accepts those container types.
+
+This is table admission, not complete declaration admission. Owner/recipe UUID
+copies, separately allocated source/leaf keys, direct-parent vectors and their
+nested payload, lookup/matching work, stack and allocator/exception overhead are
+outside this #247 gate; the following contribution extends it to direct-parent
+vector backing. Row temporaries may copy nested payload before a table
+request. Embedded row headers are already part of the table allocation and must
+not be charged twice. Selected domain and retained census totals overlap.
+
+Construction and explicit-copy controls independently sweep successive byte/work
+rejection boundaries, check all observed storage is reclaimed, and retry with
+exact allowances. Full structural equivalence includes recipe/occurrence identity,
+source definitions/parents/masses, ordered leaves, exposures and match work.
+Detached snapshots remain usable after source-domain destruction, while moved
+values keep that domain alive. The full owner witness independently locates every
+retained declaration-table allocation and reconciles the complete selected-domain
+sum. Existing failure-site, setup rejection, shared lifetime and repeated native
+exchange/tick controls remain active. Complete declaration/setup accounting and
+combined caller/borrowed resources remain open.
+
+<a id="declaration-parent-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration parent allocation domain (provisionally accepted #250)
+
+Each `ExchangeSource::parents` vector now uses the shared reservation allocator.
+Initial declaration construction copies parent rows directly into a domain-bound
+vector. Explicit declaration copying reserves each source table, then constructs
+every source with an explicit domain-bound parent copy. It does not first make
+detached parent copies and attach them afterward. Moves into source tables and
+their growth preserve the same parent backing/domain; reverse-side swaps keep it
+attached. Ordinary value-copy construction recursively detaches the source and
+parent tables; copy assignment retains the destination allocator as before.
+
+The parent-vector allocation is admitted before its row copies. UUID/address
+backing within each `warm::Parent`, occurrence/definition keys constructed before
+the parent request, other recipe/input parent vectors and setup work remain
+outside this gate. Parent object headers are included once in vector backing;
+the extra allocator reference is embedded in each source row and thus already
+covered by its outer table request/census. This is not a second full-row charge.
+
+Construction and explicit-copy controls now verify every parent allocator and
+include parent backing in their exact selected-domain sum, rejection sweeps,
+reclamation and exact retry. Detached snapshots check nested allocators and remain
+usable after source-domain destruction; moves preserve the original lifetime.
+The owner witness independently locates every retained parent allocation alongside
+the source/leaf tables. Structural comparisons still include parent target pins,
+ordinals, stored mass and contributions; no exchange or awake/asleep behavior is
+changed. Remaining key/recipe/input allocation and full setup/combined-resource
+qualification remain open.
+
+<a id="declaration-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration occurrence-path allocation domain (provisionally accepted #252)
+
+The reservation primitives now live in `common/reservation_allocator.h`, with
+engine-private aliases preserving existing names. This is standard-C++ support,
+not an engine dependency for warm values or a new execution authority. The move
+is a separate mechanical commit; only the namespace changes in the implementation.
+`warm::OccurrenceId::path` now uses `warm::OccurrencePath`, an allocator-aware
+vector of the same uint32 ordinals. Its C++ container type/layout changes; callers
+with concrete std::vector containers must use iterator-range conversion. Identity,
+ordering and PostgreSQL text encoding are unchanged. Shared-header changes trigger
+both native engine and warm toolbox CI.
+
+Only declaration owner/source paths explicitly attach to the owner domain in
+this contribution. Initial collection and explicit reverse copies allocate paths
+with that domain before copying ordinals. Aggregate owner paths are empty but
+retain the explicit allocator. Source-row moves and reverse swaps carry backing
+and domain together. Ordinary value-copy construction detaches; assignment keeps
+the destination allocator and moves propagate it. Standalone warm reads and other
+recipe/input/projection/map paths stay detached and outside this allocation gate.
+
+The source tables already charge embedded path headers, including the additional
+shared allocator reference; ordinal backing is charged separately exactly once.
+This container-layout change also changes other retained object/table sizes, even
+where their path backing remains detached. The selected domain still overlaps the
+whole-owner census and cannot be added to it. UUID/address payload, recipe/input
+paths and complete construction/setup work remain open.
+
+Controls reconcile every source-path request with the independent allocation
+observer, extend declaration construction/copy budget rejection and exact retries,
+and check allocator attachment, detached snapshots, moved lifetime and unchanged
+structural values. A server-free warm test exercises copy/move identity and ordering,
+exact PostgreSQL parameter text (empty and maximum uint32 paths), and decoding via
+a locally constructed libpq result. Warm clients compile without engine linkage.
+No schema migration, database writes or activity-state behavior changes occur.
+
+<a id="projection-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Projection occurrence-path allocation domain (provisionally accepted #253)
+
+Both retained projections now explicitly attach occurrence identity paths,
+optional byte-provenance owner paths, and active/spare parent-contribution paths
+to their owner allocation domain. Explicit copies reserve the destination table
+and construct each row's path with that domain before copying ordinals; they do
+not make detached nested copies first. Inactive-pool initialization uses the same
+domain before constructing each contribution. Empty paths retain the allocator
+without an ordinal allocation. Table requests already include the embedded path
+headers; separate ordinal backing is counted once.
+
+Ordinary value-copy construction still detaches all nested paths, while moves and
+pool transfers carry their backing/domain together. Active/inactive exchanges
+reuse the reserved contributions without new allocation. Explicit copying of an
+already populated spare pool is covered as well as the usual copy-before-reserve
+owner setup. No C++ layout, warm encoding, identity, native publication or numerical
+behavior changes in this slice; #252's documented value-layout change is inherited.
+
+Projection copy/reservation controls now check all nested allocators, detached
+snapshots after source death and moved lifetimes, sweep successive byte/work
+rejection boundaries with complete reclamation, and retry at exact measured
+allowances. The owner observer independently locates every retained projection
+path request in both projections and reconciles it with the selected-domain sum.
+Existing failure-site, setup refusal and repeated allocation-free exchange/tick
+controls remain active. Reports overlap the retained census and must not be added.
+
+Recipe/input, catalogue contribution and map paths, UUID/address payload and other nested allocations are
+still outside this extension. Recipe copying still precedes the first projection
+table request. Complete setup and combined caller/borrowed accounting remain open;
+this is not a total constructor or machine budget. Deferred activity research is
+unchanged.
+
+<a id="catalogue-occurrence-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Catalogue occurrence-path allocation domain (provisionally accepted #254)
+
+`MembershipFields::collect` now constructs each contribution's occurrence path
+with the supplied reservation domain before copying ordinals. The finished key
+moves into the contribution row; vector growth moves existing rows with their
+backing/domain. Empty aggregate paths retain the allocator without an ordinal
+request. Existing membership graph traversal, deduplication, pinned targets,
+identities and exact contribution values are unchanged. Standalone collection
+still receives no domain.
+
+Path backing is separate from the embedded key header already covered by the
+contribution table request. A new row's path can be constructed before table
+growth; both requests are admitted individually, and rejection unwinds the
+pending row and catalogue. Ordinary snapshots detach nested paths and remain
+usable after domain destruction. Moves retain their accounting lifetime. Paths
+release at last strong catalogue alias, while the shared object/control block
+continues through final weak release. No global allocator or execution authority
+is added, and counters still require exclusive synchronous access.
+
+Focused catalogue controls now include path capacities and allocator attachment,
+detached snapshots and moved lifetimes. Existing successive byte/work rejection
+sweeps and exact retries include the nested requests. The independent owner
+observer locates each path allocation and includes it in selected-domain and
+strong/weak lifetime reconciliation. Membership value comparisons and repeated
+exchange/tick controls remain active. These overlapping reports must not be added
+to the retained census.
+
+Map and recipe/input paths, UUID/address backing, other setup/traversal work and
+combined caller/borrowed accounting remain open. The next bounded slice is
+occurrence-map path backing in `ExchangeMap<OccurrenceBinding>` construction,
+explicit setup copies and reservation, including inactive slots; field address
+backing is a separate remaining item. Deferred wake/sleep research is unchanged.
+
+<a id="occurrence-map-path-allocation-domain-contribution-awaiting-review"></a>
+
+### Occurrence-map path allocation domain (provisionally accepted #255)
+
+`ExchangeMap` now retains a shared reservation-domain handle before its raw outer
+allocator. That handle survives empty maps and is destroyed after all slot backing;
+whole-map swaps exchange it with the allocator/store. Owner, binding and coordinator
+setup carry the shared domain into both map kinds. Field-address backing stays
+unattached; only its existing outer table is charged. The added handle is embedded
+in each map object and covered by the existing unique-object/census charge.
+
+Initial occurrence-map construction creates destination slots, attaches their
+empty paths, then assigns source rows. Explicit setup copies attach before
+reserving each source slot's nested capacity, including inactive slots, and copy
+values into that capacity. This avoids a detached path copy followed by quota
+attachment or a second size-then-capacity allocation. Reservation attaches newly
+constructed inactive paths before reserving their ordinal backing. Existing slots
+retain their domain when the outer table grows. UUID construction/copying and
+field addresses remain outside this gate.
+
+Ordinary map snapshots select no domain and preserve logical rows plus inactive
+nested capacity. Assignment retains destination allocators/capacities; erase
+rotates complete slots, and publication swaps complete stores and domain handles.
+No move constructor is introduced: ordinary copy semantics remain detached.
+Preparation and publication continue to reuse prepared storage. Paths and the
+outer allocation retain the domain through map destruction, including maps that
+were initially empty. Counters still require exclusive synchronous access.
+
+Controls cover initial construction and explicit setup copying, active/inactive
+attachment, successive byte/work rejection, allocation-site failure injection,
+reclamation and exact retries. Old/new outer-growth overlap and preallocation
+refusal checks remain. Detached snapshots survive source-domain death; empty and
+populated maps retain the required lifetime. Assignment, append, erase and
+cross-domain swap run under the zero-allocation guard. The owner independently
+locates every retained path request in its own, binding and candidate maps,
+including inactive storage, and reconciles the selected-domain sum. Existing
+repeated exchange/tick controls remain active. Domain and census reports overlap.
+
+Next: field-map address backing in `ExchangeMap<ExchangeFieldBinding>`, first
+providing engine-independent allocator-aware address storage with unchanged
+address identity and codec/database encoding. Recipe/input, other UUID/address
+payload, complete setup work and combined caller/borrowed accounting remain open.
+No numerical/publication or deferred activity behavior changes here.
+
+<a id="field-map-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Field-map address allocation domain (provisionally accepted #256)
+
+`codec::Address` now uses the neutral shared reservation allocator for its existing
+`AddressElement` sequence. The codec remains engine-independent; pure codec
+transforms and default values produce detached addresses. Element representation,
+identity, validation, ordering, dotted rendering, positional delta/reconstruction
+and PostgreSQL literal-pair text-array encoding are unchanged. This is a C++
+container type/layout change, not binary compatibility: concrete std::vector
+callers use iterator-range conversions. The extra allocator handle is embedded
+wherever an address occurs, including values outside the selected domain.
+
+Only `ExchangeFieldBinding` map slots explicitly attach address backing in this
+contribution. The same setup construction/copy/reservation hooks used for occurrence
+paths attach empty address vectors before allocation. Both active and inactive
+slots retain the domain through assignment, growth, erase and whole-map swap.
+Ordinary map snapshots recursively detach and preserve inactive capacity. Other
+warm/recipe/projection/catalogue/declaration addresses remain detached, as do the
+codec's ordinary results. UUID payload and full setup work remain separate gaps.
+
+The map controls now run for both occurrence and field maps, with the actual
+nested element size. They retain byte/work rejection, allocation failure,
+reclamation, exact retry, growth overlap, detached/empty-map lifetime and no-new
+assignment/append/erase/swap checks. Independent owner observation locates every
+address request in all three field maps, including inactive slots. Header/table
+requests already include each embedded allocator reference; address backing is
+counted separately once. These domain and census reports overlap.
+
+A server-free warm test exercises production parameter rendering/decoding via a
+locally constructed libpq result, empty/wildcard rejection for object identities,
+codec wildcard validation, ordering, delta/reconstruction and detached-copy/move
+lifetime. Existing codec unit/adversarial, command IR/span and pure WAL tests
+qualify other address consumers. Warm clients and native integration compile;
+no live-store writes or schema changes are involved. Repository smoke now watches
+`common/**` as well as codec sources, matching the new header dependency.
+
+Next: declaration address backing in source definition refs, parent target refs
+and ordered leaf refs during collection and explicit reverse copies, preserving
+matching and detached snapshots. Other UUID/address/recipe/input payload, complete
+setup and combined caller/borrowed accounting remain open before operation
+integration. Deferred activity and GPU sequencing are unchanged.
+
+<a id="declaration-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Declaration address allocation domain (provisionally accepted #257)
+
+Initial `LetterExchangeContract::collect` and explicit domain-bound reverse copies
+now construct source-definition, direct-parent-target and ordered-leaf reference
+addresses with the supplied domain before allocation. Each parent/leaf is copied
+in its existing order with unchanged scope, revision, ordinal, mass/contribution
+and byte/nibble identity. Matching rules and exact references are unchanged.
+Standalone declarations and ordinary snapshots remain detached; moves retain the
+source domain through final address release. No address type or format changes
+are introduced by this slice.
+
+The declaration controls include every retained address capacity in the exact
+backing sum, alongside tables, paths and parent vectors. Construction and explicit
+copy sweeps exercise byte/work refusal, complete reclamation and exact retry;
+snapshots survive source-domain destruction and moved values retain attachment.
+Independent whole-owner allocation observation locates each address request,
+including reverse declarations, and existing allocation-site failure and repeated
+native no-new witnesses remain active. Address backing is counted once; embedded
+allocator headers already belong to the table requests. The domain, whole-owner
+observation and retained census overlap and must not be summed.
+
+Next: retained projection occurrence definitions, optional provenance character/
+complete-character refs and active/spare parent field addresses in explicit copies
+and parent-pool setup. UUID text, catalogue/recipe/input payload, complete setup
+work and combined caller/borrowed resources remain open before operation integration
+and same-execution controls. Deferred activity and GPU sequencing are unchanged.
+
+<a id="projection-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Projection address allocation domain (provisionally accepted #258)
+
+Both retained projections now construct occurrence-definition, optional byte-
+provenance character and complete-character addresses in their supplied domain.
+Explicit copies also attach active/spare parent field addresses; inactive-pool
+initialization attaches addresses before copying the pinned parent object.
+Scope/revision identity, field kind, ordinals/counts, exposure and pool order are
+unchanged. Finished rows move into their tables without detached address copies.
+Ordinary snapshots recursively detach; moves and pool transfers retain backing
+and domain together. There is no new type/layout, codec or numerical change.
+
+Copy/reservation controls include address capacity in exact backing totals and
+check nested attachment, populated spare-pool copies, detached snapshots after
+source death and moved lifetimes. Byte/work refusal and exact-retry sweeps cover
+both initial copies with inactive-pool setup and copies of an already populated
+pool. Structural comparisons preserve every occurrence reference, optional
+provenance value and parent row in order. Independent owner observation locates
+all retained address requests in both projections; existing allocation-site
+failure and repeated native zero-new controls remain active. Address backing is
+counted once, alongside tables that already contain allocator headers. Selected,
+whole-owner and retained-census reports overlap and must not be summed.
+
+Next: retained catalogue contribution field and pinned-target addresses in
+`MembershipFields::collect`. Temporary graph key addresses, UUID text, recipe/
+input payload, complete setup work and combined caller/borrowed resources remain
+open before remaining-operation integration and same-execution controls. Deferred
+activity and GPU sequencing are unchanged.
+
+### Catalogue address allocation domain (contribution awaiting review)
+
+`MembershipFields::collect` now constructs each retained contribution's field
+object and pinned target address with the supplied domain before copying elements.
+Finished rows move into the contribution table. Exact scope/revision, occurrence,
+field kind and count remain unchanged, as do traversal, deduplication and row
+order. Ordinary snapshots detach recursively; moves retain backing/domain lifetime.
+No new type/layout, codec, schema or numerical change is introduced.
+
+Catalogue controls include both addresses in exact retained backing totals, check
+attachment/detachment and moved lifetime, and compare exact ordered rows after
+source-domain destruction and exact retry. Existing byte/work refusal sweeps and
+whole-owner allocation-site injection cover the new requests. Independent owner
+observation locates each retained address allocation. Strong aliases preserve the
+backing after owner death; final strong release reclaims all table/path/address
+storage while final weak release reclaims the shared control block. Repeated native
+zero-new checks remain active. Embedded allocator headers belong to table requests;
+address backing is counted once. Domain, whole-owner and census totals overlap.
+
+Next: temporary catalogue `tools`/`state`/`reached` map-key and `Targets` set-element
+addresses, including ancestor copies. Node allocation limits alone do not cover
+those nested addresses. UUID text, recipe/input payload, complete setup work and
+combined caller/borrowed resources remain open before operation integration and
+same-execution controls. Deferred activity and GPU sequencing are unchanged.
+
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
 ### Membership construction allocation domain (accepted #246)

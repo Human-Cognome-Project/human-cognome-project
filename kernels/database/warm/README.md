@@ -236,3 +236,33 @@ interactive shell (`set -e` closes an interactive session on the first failure).
    `-DHCP_WITH_WARM_INTEGRATION=ON`) reads the same three variables.
 4. Re-fingerprint both cold databases as in step 1 and compare with the
    earlier hashes; any difference fails acceptance.
+
+### Occurrence-path allocation support (contribution awaiting review)
+
+`OccurrenceId::path` is now `OccurrencePath`, a vector using the neutral
+[`common` reservation allocator](../../../common/README.md). It adds no engine,
+Taichi or database runtime dependency to the values library. Default values and
+ordinary copy construction are detached from a reservation domain; explicit
+callers can attach storage. Copy assignment preserves the destination allocator;
+moves carry the allocator and its lifetime. Identity, ordering and wire encoding
+are unchanged, but the C++ container type/layout changes: use iterator ranges to
+convert from/to a concrete `std::vector<uint32_t>`.
+
+The warm build includes `occurrence_path_test`; run it with
+`ctest --test-dir BUILD_DIRECTORY --output-on-failure`. It checks detached copies,
+moves, equality/ordering and production PostgreSQL parameter rendering/decoding
+using a local libpq result, with no server or persistent writes. Hosted warm CI
+runs this check before its existing database acceptance work.
+
+### Address allocation compatibility (contribution awaiting review)
+
+`ObjectKey::address` inherits allocator-aware `codec::Address`; see the
+[codec storage contract](../codec/README.md#allocator-aware-address-storage-contribution-awaiting-review).
+Default reads and ordinary copies remain detached. Address identity, full-pair
+text-array parameters and rejection of empty/partial object identities remain
+unchanged; the C++ container/layout change is explicit.
+
+The warm build adds `address_allocation_test` to CTest. It uses a local libpq result
+and production formatting/decoding, without a server, to verify exact parameters,
+identity/order, validation and allocator copy/move lifetime. Both warm compatibility
+checks run in hosted warm CI. This is not live-database qualification.

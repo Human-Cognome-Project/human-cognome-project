@@ -187,80 +187,149 @@ void reservation_allocator_controls() {
           "underlying allocator failure acquired phantom bytes or refunded admitted work");
 }
 
-void map_reservation_controls(const std::vector<assembly::detail::OccurrenceBinding> &rows) {
+template<class T> void map_reservation_controls(const std::vector<T> &rows) {
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
-  using Map = ExchangeMap<OccurrenceBinding>;
-  const std::vector<OccurrenceBinding> one{rows.front()};
-  const auto row_bytes = sizeof(OccurrenceBinding);
-  ReservationDomain zero({0,UINT64_MAX});
-  Map empty(&zero);
+  using Map = ExchangeMap<T>;
+  std::vector<T> one{rows.front()};
+  if constexpr (std::is_same_v<T,OccurrenceBinding>) key_buffer(one.front())={3,5};
+  else key_buffer(one.front())=*codec::decode_token_id("Az.0z");
+  const auto equal = [](const T &a, const T &b) {
+    if constexpr (std::is_same_v<T,OccurrenceBinding>) return a.occurrence==b.occurrence;
+    else return a.field.kind==b.field.kind && a.field.object==b.field.object;
+  };
+  const auto element_bytes=sizeof(key_buffer(one.front())[0]);
+  const auto initial_bytes=2*element_bytes;
+  Map reference(one); reference.reserve(3,4);
+  const auto backing = [&](const Map &map, const auto &domain) {
+    std::uint64_t bytes=map.storage().capacity()*sizeof(T);
+    require(map.storage().get_allocator().domain == domain.get(),"map outer domain mismatch");
+    for (const auto &row : map.storage()) {
+      const auto &path=key_buffer(row);
+      require(path.get_allocator().domain == domain,"map active/inactive path domain mismatch");
+      bytes += path.capacity()*element_bytes;
+    }
+    return bytes;
+  };
+  auto zero=std::make_shared<ReservationDomain>(ReservationBudget{0,UINT64_MAX});
+  Map empty(zero);
   no_new([&] {
-    bool rejected = false;
-    try { empty.reserve(3,4); } catch (const ReservationStop &) { rejected = true; }
-    require(rejected && zero.result().status == ReservationStatus::ByteExhausted &&
-                !zero.result().live_bytes && empty.storage().empty(),
-            "map outer rejection allocated nested slots or published storage");
+    bool stopped=false;
+    try { empty.reserve(3,4); } catch (const ReservationStop &) { stopped=true; }
+    require(stopped && !zero->result().live_bytes && empty.storage().empty(),
+            "map outer rejection allocated nested paths");
   });
-  ReservationDomain growth({2*row_bytes,UINT64_MAX});
+  const auto row_bytes=sizeof(T);
+  auto growth=std::make_shared<ReservationDomain>(ReservationBudget{2*row_bytes+initial_bytes,UINT64_MAX});
   {
-    Map map(one,&growth);
-    const auto *backing = map.storage().data();
+    Map value(one,growth);
+    const auto *original=value.storage().data();
     no_new([&] {
-      bool rejected = false;
-      try { map.reserve(2,4); } catch (const ReservationStop &) { rejected = true; }
-      require(rejected && growth.result().required_bytes >= 3*row_bytes &&
-                  growth.result().live_bytes == row_bytes && growth.result().charged_work == row_bytes &&
-                  map.storage().data() == backing && map.size() == 1 && map[0].occurrence == one[0].occurrence,
-              "map growth omitted old/new overlap or changed committed rows");
+      bool stopped=false;
+      try { value.reserve(2,4); } catch (const ReservationStop &) { stopped=true; }
+      require(stopped && growth->result().required_bytes>=3*row_bytes+initial_bytes &&
+                  growth->result().live_bytes==row_bytes+initial_bytes && value.storage().data()==original &&
+                  value.size()==1 && equal(value[0],one[0]),
+              "map growth omitted old/new overlap or changed existing rows");
+      stopped=false;
+      try { Map denied(value,zero); } catch (const ReservationStop &) { stopped=true; }
+      require(stopped && !zero->result().live_bytes,"map copy allocated before outer admission");
     });
   }
-  require(!growth.result().live_bytes, "map growth rejection leaked its original store");
-  ReservationDomain measured({UINT64_MAX,UINT64_MAX});
-  A::begin();
-  try {
-    Map map(one,&measured);
-    map.reserve(3,4);
-    require(measured.result().live_bytes == map.storage().capacity()*row_bytes &&
-                A::counts.live > measured.result().live_bytes,
-            "map accounting confused outer storage with untracked nested keys");
-  } catch (...) { A::end(); throw; }
-  const auto released = A::end();
-  require(!released.live && !released.blocks && !measured.result().live_bytes,
-          "map outer/nested storage was not reclaimed together");
-  std::optional<Map> detached;
+  require(!growth->result().live_bytes,"map growth denial leaked original backing");
+  for (bool copying : {false,true}) {
+    const auto construct = [&](const auto &d) {
+      // Return a prvalue: an ordinary Map copy intentionally detaches.
+      return copying ? Map(reference,d) : Map(one,d);
+    };
+    ReservationResult full;
+    std::size_t sites=0;
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin();
+    try {
+      auto value=construct(domain); value.reserve(3,4);
+      full=domain->result(); sites=A::counts.attempts;
+      require(full.live_bytes == backing(value,domain) && value.size()==1 &&
+                  equal(value[0],one[0]) && value.storage().size()==3,
+              "map construction/copy lost values or selected backing");
+    } catch (...) { A::end(); throw; }
+    auto released=A::end();
+    require(!released.live && !released.blocks && !domain->result().live_bytes,"map construction leaked");
+    for (bool bytes : {true,false}) {
+      const auto total=bytes ? full.peak_bytes : full.charged_work;
+      std::uint64_t allowance=0;
+      while (allowance<total) {
+        auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance});
+        bool stopped=false;
+        A::begin();
+        try { auto value=construct(d); value.reserve(3,4); }
+        catch (const ReservationStop &) { stopped=true; }
+        catch (...) { A::end(); throw; }
+        released=A::end();
+        const auto result=d->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        require(stopped && result.status==(bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next>allowance && next<=total,
+                "map path refusal failed reclamation or progress");
+        allowance=next;
+      }
+    }
+    for (std::size_t at=1; at<=sites; ++at) {
+      auto d=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      bool failed=false;
+      A::begin(at);
+      try { auto value=construct(d); value.reserve(3,4); }
+      catch (const std::bad_alloc &) { failed=true; }
+      catch (...) { A::end(); throw; }
+      released=A::end();
+      require(failed && released.attempts==at && !released.live && !released.blocks && !d->result().live_bytes,
+              "map path allocation failure leaked or missed injection");
+    }
+    auto exact=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+    auto retry=construct(exact); retry.reserve(3,4);
+    require(exact->result().live_bytes==full.live_bytes && exact->result().charged_work==full.charged_work &&
+                equal(retry[0],one[0]),"map exact retry failed");
+  }
+  std::optional<Map> snapshot, retained;
+  std::weak_ptr<ReservationDomain> watch;
   {
-    ReservationDomain first({UINT64_MAX,UINT64_MAX}), second({UINT64_MAX,UINT64_MAX});
-    Map original(one,&first); original.reserve(3,4);
-    const auto live = first.result().live_bytes;
-    detached.emplace(original);
-    require(!detached->storage().get_allocator().domain && first.result().live_bytes == live &&
-                detached->storage().size() == original.storage().size() &&
-                detached->storage()[2].occurrence.source.path.capacity() >= 4,
-            "plain map snapshot borrowed owner domain or lost inactive nested reservation");
-    Map copy(original,&second);
-    require(second.result().live_bytes == copy.storage().capacity()*row_bytes &&
-                copy.storage().get_allocator().domain == &second,
-            "explicit map copy bypassed its requested allocation domain");
+    auto first=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    auto second=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=first;
+    retained.emplace(reference,first);
+    snapshot.emplace(*retained);
+    const auto live=first->result().live_bytes;
+    backing(*snapshot,std::shared_ptr<ReservationDomain>{});
+    require(key_buffer(snapshot->storage()[2]).capacity()>=4 && first->result().live_bytes==live,
+            "map snapshot lost inactive capacity or borrowed quota");
+    Map other(reference,second);
     no_new([&] {
-      original = copy;
-      require(original.storage().get_allocator().domain == &first,
-              "map assignment replaced the destination domain");
-      original.swap(copy);
-      require(original.storage().get_allocator().domain == &second &&
-                  copy.storage().get_allocator().domain == &first,
-              "map swap left an allocator attached to foreign backing");
-      bool rejected = false;
-      try { Map denied(original,&zero); } catch (const ReservationStop &) { rejected = true; }
-      require(rejected && !zero.result().live_bytes,
-              "explicit map-copy rejection allocated before outer admission");
+      *retained=other;
+      retained->push_back(one.front());
+      retained->erase(retained->begin());
+      retained->swap(other);
+      require(backing(*retained,second)==second->result().live_bytes &&
+                  backing(other,first)==first->result().live_bytes,
+              "map assignment/erase/swap lost domains or capacity");
+      retained->swap(other);
     });
   }
-  // The copied snapshot remains usable after both source allocation domains die.
-  detached->reserve(4,5);
-  require(detached->size() == 1 && detached->operator[](0).occurrence == one[0].occurrence &&
-              !detached->storage().get_allocator().domain,
-          "detached map snapshot depended on a destroyed source domain");
+  require(!watch.expired(),"map released domain before its outer/nested backing");
+  retained.reset();
+  require(watch.expired(),"map retained domain after destruction");
+  snapshot->reserve(4,5);
+  require(snapshot->size()==1 && equal(snapshot->operator[](0),one[0]),
+          "map snapshot failed after domain destruction");
+  backing(*snapshot,std::shared_ptr<ReservationDomain>{});
+  {
+    auto d=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=d; retained.emplace(d); d.reset();
+    require(!watch.expired(),"empty map lost domain before later reservation");
+    retained->reserve(2,4);
+  }
+  retained.reset();
+  require(watch.expired(),"empty map domain lifetime cycle");
 }
 
 void shared_reservation_controls() {
@@ -442,6 +511,8 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
+  auto prepared=projection;
+  Access::reserve_projection(prepared);
   auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   std::weak_ptr<ReservationDomain> watch = domain;
   std::optional<assembly::LetterProjection> snapshot;
@@ -452,11 +523,46 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       auto copy = Access::projection_copy(projection,domain);
       Access::reserve_projection(copy);
       outer = Access::projection_table_bytes(copy);
+      Access::projection_paths(copy,[&](const auto &path) {
+        require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
+        outer += path.capacity()*sizeof(std::uint32_t);
+      });
+      Access::projection_addresses(copy,[&](const auto &address) {
+        require(address.get_allocator().domain == domain,"projection address detached during copy/reservation");
+        outer += address.capacity()*sizeof(codec::AddressElement);
+      });
       require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
-              "projection table domain omitted backing or charged nested payload");
+              "projection domain omitted table/path backing or charged excluded payload");
       for (const auto *d : Access::projection_domains(copy))
         require(d == domain.get(), "explicit projection copy detached a table allocator");
+      // Also copy a populated inactive pool; owner adoption normally copies
+      // before reserving it, so that alone would not exercise this branch.
+      {
+        auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+        auto reserved_copy=Access::projection_copy(copy,other_domain);
+        Access::reserve_projection(reserved_copy);
+        std::uint64_t bytes=Access::projection_table_bytes(reserved_copy);
+        Access::projection_paths(reserved_copy,[&](const auto &path) {
+          require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
+          bytes += path.capacity()*sizeof(std::uint32_t);
+        });
+        Access::projection_addresses(reserved_copy,[&](const auto &address) {
+          require(address.get_allocator().domain == other_domain,"copied inactive projection address detached");
+          bytes += address.capacity()*sizeof(codec::AddressElement);
+        });
+        require(Access::projection_equivalent(reserved_copy,copy),"populated projection copy changed exact rows");
+        require(other_domain->result().live_bytes == bytes &&
+                    Access::projection_parent_sizes(reserved_copy) == Access::projection_parent_sizes(copy),
+                "explicit reserved projection copy lost or duplicated a parent pool");
+      }
       snapshot.emplace(copy);
+      require(Access::projection_equivalent(*snapshot,copy),"projection snapshot changed exact rows");
+      Access::projection_addresses(*snapshot,[&](const auto &address) {
+        require(!address.get_allocator().domain,"projection snapshot retained address domain");
+      });
+      Access::projection_paths(*snapshot,[&](const auto &path) {
+        require(!path.get_allocator().domain,"projection snapshot retained path domain");
+      });
       for (const auto *d : Access::projection_domains(*snapshot))
         require(!d, "ordinary projection snapshot borrowed source quota");
       require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
@@ -469,6 +575,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     require(watch.expired(), "detached projection snapshot retained its source domain");
     // Restore full parent capacity on the independent snapshot after source death.
     Access::reserve_projection(*snapshot);
+    require(Access::projection_equivalent(*snapshot,prepared),"snapshot references depended on destroyed projection");
     require(snapshot->study() == projection.study() &&
                 snapshot->occurrences().front().key == projection.occurrences().front().key,
             "detached projection snapshot depended on destroyed source storage");
@@ -493,14 +600,61 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
     watch = domain;
     auto copy = Access::projection_copy(projection,domain);
+    Access::reserve_projection(copy);
     moved.emplace(std::move(copy));
     domain.reset();
   }
   require(!watch.expired(), "moved projection lost its allocation domain");
+  require(Access::projection_equivalent(*moved,prepared),"moved projection changed references or parent pools");
   for (const auto *d : Access::projection_domains(*moved))
     require(d != nullptr, "moved projection detached its backing allocator");
+  Access::projection_paths(*moved,[&](const auto &path) {
+    require(bool(path.get_allocator().domain),"moved projection detached path backing");
+  });
+  Access::projection_addresses(*moved,[&](const auto &address) {
+    require(address.get_allocator().domain == watch.lock(),"moved projection detached address backing");
+  });
   moved.reset();
   require(watch.expired(), "projection table allocator retained a lifetime cycle");
+
+  // Sweep the complete explicit copy plus inactive-parent reservation, including
+  // nested path/address requests, also copying an already populated spare pool.
+  for (const auto *source : {&projection,static_cast<const assembly::LetterProjection *>(&prepared)}) {
+    const auto construct = [&](const auto &d) {
+      auto value=Access::projection_copy(*source,d);
+      Access::reserve_projection(value);
+      return value;
+    };
+    domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    ReservationResult full;
+    { auto value=construct(domain); full=domain->result(); }
+    for (bool bytes : {true,false}) {
+      const auto total=bytes ? full.peak_bytes : full.charged_work;
+      std::uint64_t allowance=0;
+      while (allowance < total) {
+        auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX, bytes ? UINT64_MAX : allowance});
+        bool stopped=false;
+        A::begin();
+        try { auto value=construct(d); }
+        catch (const ReservationStop &) { stopped=true; }
+        catch (...) { A::end(); throw; }
+        const auto released=A::end();
+        const auto result=d->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+                "projection path rejection failed cleanup or progress");
+        allowance=next;
+      }
+    }
+    domain=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+    auto retry=construct(domain);
+    require(domain->result().live_bytes == full.live_bytes && domain->result().charged_work == full.charged_work &&
+                retry.study() == projection.study() && retry.occurrences().size() == projection.occurrences().size(),
+            "exact projection path construction retry failed");
+    require(Access::projection_equivalent(retry,prepared),"projection exact retry changed references or pool order");
+  }
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
@@ -517,11 +671,29 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       auto catalogue = Access::catalogue(projection,domain);
       full = domain->result();
       const auto &rows = catalogue.contributions();
-      require(rows.get_allocator().domain == domain &&
-                  full.live_bytes == rows.capacity()*sizeof(rows[0]) &&
+      std::uint64_t path_bytes=0;
+      for (const auto &row : rows) {
+        const auto &path=row.occurrence.source.path;
+        require(path.get_allocator().domain == domain,"catalogue contribution path detached");
+        path_bytes += path.capacity()*sizeof(std::uint32_t);
+      }
+      require(rows.get_allocator().domain == domain && path_bytes &&
+                  full.live_bytes > rows.capacity()*sizeof(rows[0])+path_bytes &&
                   full.charged_work > full.live_bytes,
               "catalogue omitted retained table or failed to release graph nodes");
+      std::uint64_t address_bytes=0;
+      Access::catalogue_addresses(catalogue,[&](const auto &address) {
+        require(address.get_allocator().domain == domain,"catalogue address detached during collection");
+        address_bytes += address.capacity()*sizeof(codec::AddressElement);
+      });
+      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes,
+              "catalogue omitted address backing or charged temporary payload");
       snapshot.emplace(catalogue);
+      Access::catalogue_addresses(*snapshot,[&](const auto &address) {
+        require(!address.get_allocator().domain,"catalogue snapshot retained address domain");
+      });
+      for (const auto &row : snapshot->contributions())
+        require(!row.occurrence.source.path.get_allocator().domain,"catalogue snapshot retained path domain");
       require(!snapshot->contributions().get_allocator().domain &&
                   domain->result().live_bytes == full.live_bytes,
               "catalogue value snapshot retained or charged its source domain");
@@ -530,15 +702,25 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   }
   require(watch.expired(), "detached catalogue snapshot extended domain lifetime");
   auto standalone = Access::catalogue(projection,{});
-  require(snapshot->study() == standalone.study() &&
-              snapshot->contributions().size() == standalone.contributions().size(),
-          "catalogue snapshot lost identity or rows after domain death");
-  for (std::size_t i=0; i<standalone.contributions().size(); ++i) {
-    const auto &a=snapshot->contributions()[i], &b=standalone.contributions()[i];
-    require(a.occurrence == b.occurrence && a.field.kind == b.field.kind &&
-                a.field.object == b.field.object && a.target == b.target && a.count == b.count,
-            "domain-bound catalogue changed membership semantics");
+  require(Access::catalogue_equivalent(*snapshot,standalone),
+          "catalogue snapshot lost exact rows after domain death");
+  std::optional<assembly::MembershipFields> moved;
+  {
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=domain;
+    auto value=Access::catalogue(projection,domain);
+    moved.emplace(std::move(value));
+    require(domain->result().live_bytes == full.live_bytes,"catalogue move changed accounting");
+    for (const auto &row : moved->contributions())
+      require(row.occurrence.source.path.get_allocator().domain == domain,"catalogue move detached path");
   }
+  require(!watch.expired(),"moved catalogue lost allocation domain");
+  require(Access::catalogue_equivalent(*moved,standalone),"catalogue move changed exact rows");
+  Access::catalogue_addresses(*moved,[&](const auto &address) {
+    require(address.get_allocator().domain == watch.lock(),"catalogue move detached address");
+  });
+  moved.reset();
+  require(watch.expired(),"catalogue path allocator retained a lifetime cycle");
   for (bool bytes : {true,false}) {
     const auto total = bytes ? full.peak_bytes : full.charged_work;
     std::uint64_t allowance=0;
@@ -563,8 +745,96 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   auto retry=Access::catalogue(projection,domain);
   require(domain->result().status == ReservationStatus::Ok &&
               domain->result().live_bytes == full.live_bytes &&
-              domain->result().charged_work == full.charged_work,
+              domain->result().charged_work == full.charged_work && Access::catalogue_equivalent(retry,standalone),
           "exact catalogue construction retry failed");
+}
+
+void contract_reservation_controls(const assembly::LetterProjection &projection) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  const assembly::OccurrenceKey key{projection.study(),{projection.recipe().selections.front().entry,{}}};
+  const auto target = projection.exposure(key.source.entry) == warm::Exposure::Aggregate
+      ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+  const auto reference = assembly::declare_letter_exchange(projection,key,target);
+  for (bool copying : {false,true}) {
+    const auto construct = [&](const auto &domain) {
+      return copying ? Access::contract_copy(reference,domain) : Access::contract(projection,key,target,domain);
+    };
+    ReservationResult full;
+    std::optional<assembly::LetterExchangeContract> snapshot, moved;
+    std::weak_ptr<ReservationDomain> watch;
+    {
+      auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      watch = domain;
+      auto contract = construct(domain);
+      full = domain->result();
+      std::uint64_t backing=contract.owner().source.path.capacity()*sizeof(std::uint32_t);
+      require(contract.owner().source.path.get_allocator().domain == domain,
+              "declaration owner path detached");
+      for (const auto &entry : Access::contract_tables(contract)) backing += entry.second;
+      for (const auto *side : {&contract.outgoing(),&contract.incoming()})
+        for (const auto &source : *side) {
+          require(source.parents.get_allocator().domain == domain,
+                  "declaration parent backing detached during construction/copy");
+          backing += source.parents.capacity()*sizeof(warm::Parent);
+          require(source.occurrence.source.path.get_allocator().domain == domain,
+                  "declaration source path detached");
+          backing += source.occurrence.source.path.capacity()*sizeof(std::uint32_t);
+        }
+      Access::contract_addresses(contract,[&](const auto &address) {
+        require(address.get_allocator().domain==domain,"declaration reference address detached");
+        backing += address.capacity()*sizeof(codec::AddressElement);
+      });
+      require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
+              "declaration omitted table backing or changed its structural values");
+      snapshot.emplace(contract);
+      Access::contract_addresses(*snapshot,[&](const auto &address) {
+        require(!address.get_allocator().domain,"declaration snapshot retained address domain");
+      });
+      for (const auto *side : {&snapshot->outgoing(),&snapshot->incoming()})
+        for (const auto &source : *side)
+          require(!source.parents.get_allocator().domain && !source.occurrence.source.path.get_allocator().domain,
+                  "declaration snapshot retained nested parent domain");
+      require(!snapshot->owner().source.path.get_allocator().domain && !snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
+                  !snapshot->leaves().get_allocator().domain && domain->result().live_bytes == backing,
+              "declaration snapshot retained or charged its source domain");
+      moved.emplace(std::move(contract));
+    }
+    require(!watch.expired() && Access::equivalent(*moved,reference),
+            "moved declaration lost source domain or structural values");
+    Access::contract_addresses(*moved,[&](const auto &address) {
+      require(address.get_allocator().domain==watch.lock(),"moved declaration lost address domain");
+    });
+    moved.reset();
+    require(watch.expired() && Access::equivalent(*snapshot,reference),
+            "detached declaration snapshot failed after source domain death");
+    for (bool bytes : {true,false}) {
+      const auto total=bytes ? full.peak_bytes : full.charged_work;
+      std::uint64_t allowance=0;
+      while (allowance < total) {
+        auto domain=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance});
+        bool stopped=false;
+        A::begin();
+        try { auto contract=construct(domain); }
+        catch (const ReservationStop &) { stopped=true; }
+        catch (...) { A::end(); throw; }
+        const auto released=A::end();
+        const auto result=domain->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+                "declaration construction/copy rejection failed cleanup or progress");
+        allowance=next;
+      }
+    }
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
+    auto retry=construct(domain);
+    require(Access::equivalent(retry,reference) && domain->result().live_bytes == full.live_bytes &&
+                domain->result().charged_work == full.charged_work,
+            "exact declaration construction/copy retry failed");
+  }
 }
 
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
@@ -575,10 +845,12 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   namespace A = allocation_lifetime;
   reservation_allocator_controls();
   map_reservation_controls(rows);
+  map_reservation_controls(fields);
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
   catalogue_reservation_controls(projection);
+  contract_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
   {
@@ -723,6 +995,22 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       require(request == entry.second, "unique allocation request differs from object storage size");
       unique_bytes += request;
     }
+    std::uint64_t map_path_bytes=0;
+    Access::map_paths(*owner,[&](const auto &path) {
+      const auto bytes=path.capacity()*sizeof(std::uint32_t);
+      require(path.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(path.data())==bytes),
+              "map active/inactive path differs from observed allocation request");
+      map_path_bytes += bytes;
+    });
+    std::uint64_t map_address_bytes=0;
+    Access::map_addresses(*owner,[&](const auto &address) {
+      const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+      require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(address.data())==bytes),
+              "map active/inactive address differs from observed allocation request");
+      map_address_bytes += bytes;
+    });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
@@ -730,12 +1018,69 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
       }
+    for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
+      Access::projection_paths(*p,[&](const auto &path) {
+        const auto bytes=path.capacity()*sizeof(std::uint32_t);
+        require(!bytes || containing_request(path.data()) == bytes,
+                "projection path differs from observed allocation request");
+        projection_bytes += bytes;
+      });
+    for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
+      Access::projection_addresses(*p,[&](const auto &address) {
+        const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+        require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
+                    (!bytes || containing_request(address.data()) == bytes),
+                "projection address differs from observed allocation request");
+        projection_bytes += bytes;
+      });
     const auto &membership_rows = Access::memberships(*owner)->contributions();
-    const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
+    std::uint64_t declaration_bytes=0;
+    for (const auto &declaration : Access::declarations(*owner)) {
+      for (const auto &entry : Access::contract_tables(*declaration)) if (entry.second) {
+        require(containing_request(entry.first) == entry.second,
+                "declaration table differs from observed allocation request");
+        declaration_bytes += entry.second;
+      }
+      for (const auto *side : {&declaration->outgoing(),&declaration->incoming()})
+        for (const auto &source : *side) {
+          const auto bytes=source.parents.capacity()*sizeof(warm::Parent);
+          require(!bytes || containing_request(source.parents.data()) == bytes,
+                  "declaration parent table differs from observed allocation request");
+          declaration_bytes += bytes;
+          const auto &path=source.occurrence.source.path;
+          const auto path_bytes=path.capacity()*sizeof(std::uint32_t);
+          require(!path_bytes || containing_request(path.data()) == path_bytes,
+                  "declaration path differs from observed allocation request");
+          declaration_bytes += path_bytes;
+        }
+    }
+    for (const auto &declaration : Access::declarations(*owner))
+      Access::contract_addresses(*declaration,[&](const auto &address) {
+        const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+        require(address.get_allocator().domain==Access::reservation_domain(*owner) &&
+                    (!bytes || containing_request(address.data())==bytes),
+                "declaration address differs from observed allocation request");
+        declaration_bytes += bytes;
+      });
+    auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
+    for (const auto &row : membership_rows) {
+      const auto &path=row.occurrence.source.path;
+      const auto bytes=path.capacity()*sizeof(std::uint32_t);
+      require(!bytes || containing_request(path.data()) == bytes,
+              "catalogue path differs from observed allocation request");
+      membership_bytes += bytes;
+    }
+    Access::catalogue_addresses(*Access::memberships(*owner),[&](const auto &address) {
+      const auto bytes=address.capacity()*sizeof(codec::AddressElement);
+      require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
+                  (!bytes || containing_request(address.data()) == bytes),
+              "catalogue address differs from observed allocation request");
+      membership_bytes += bytes;
+    });
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.

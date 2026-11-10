@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "../../../common/reservation_allocator.h"
 
 // The address / token_id codec: pure functions that convert between the
 // byte-ordered Base62 symbol alphabet, address sequences, their dotted
@@ -79,7 +80,7 @@ struct AddressElement {
   bool partial = false;
 };
 
-using Address = std::vector<AddressElement>;
+using Address = hcp::resources::SharedReservedVector<AddressElement>;
 
 inline bool operator==(const AddressElement &a, const AddressElement &b) {
   return a.first == b.first && a.partial == b.partial &&

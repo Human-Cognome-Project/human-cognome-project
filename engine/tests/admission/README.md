@@ -2342,3 +2342,705 @@ Reviewed combined head `8c0468168e3837a45e0526c51dce55707a2f81c3`; [#246 review]
 Parent #245 native 42661328044 has conclusion failure, despite success for all 11 listed jobs; no final native-cpu aggregate job is listed. The cause is unestablished. Preserve that outcome, rather than claiming the exact-head workflow passed. The successful full-stack descendant run above qualifies combined integration without duplicating the parent baseline. Parent smoke 42661328034 passed. Contributor-local 20+5 matrices remain separately attributed; their raw archives were not remotely inspected or rerun. #246 tested `ba85ddce108e55d838d802e978828dc32d46d7a6` to reviewed-head delta is four Markdown files only.
 
 Integration preserves both PR ancestries and changes only documentation beyond the green head. Projection setup work, retained membership contribution backing and temporary map/set node requests are accepted within their stated scopes. Nested key/recipe/input payload, declaration construction, remaining graph traversal/setup work, domain/allocator/exception overhead and combined caller/borrowed resources remain open before remaining-operation integration. No complete resource, performance or GPU qualification follows; #156/#145/#229 stay open.
+
+## Declaration table allocation domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `b09b41243b82238679c6b5626033a82d5516670c`, based on accepted
+main `f1c2a260` through the combined #245/#246 stack. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/246#pullrequestreview-5841384226)
+reports no blocking findings and full descendant native 42665443526 / smoke
+42665443451 success. Parent #245 native 42661328044 remains a failed run with
+unestablished cause and no final aggregate job listed; it is not relabeled green.
+No duplicate parent baseline was run.
+
+Outgoing/incoming source and ordered-leaf tables now enter the owner allocation
+domain during declaration construction, including temporary aggregate/parts
+backing and the explicit reverse copy. Ordinary value copies detach, moves retain
+the domain. Nested parent/key backing and construction work remain excluded.
+See [scope](../../docs/OWNER-RESOURCES.md#declaration-table-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15 and Taichi `5ba579a8a11255b7a258cde93801070956d81d57`
+on the shared personal host. Matrix: owner, multiple-owner, bindings, commit and
+fields × workers 1/2 × bulk/default or direct/compiler-no-unroll. Reader/value
+cases include structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test
+and membership_fields_native_test. No GPU or database work is included.
+
+New construction/explicit-copy controls sweep byte/work rejection boundaries,
+verify all observed storage is reclaimed, and retry with exact allowances.
+Snapshots are checked after domain destruction; moved declarations retain their
+domain and complete structural values. The owner independently finds every
+retained source/leaf table request and reconciles the selected-domain sum.
+Existing complete allocation-failure, projection setup, catalogue, shared/weak
+lifetime and repeated exchange/tick witnesses remain active.
+
+| Fixture | Owner byte/work rejection boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 58 / 90 | 184,912 | 258,144 | 4,101 |
+| Four selections | 73 / 160 | 212,104 | 505,000 | 7,741 |
+
+All failure sites reclaim all observed blocks. Whole-adoption retained/peak
+requested bytes are 276,929 / 277,474 and 332,475 / 334,517. Conservative census
+is 277,553 / 332,907. These totals increase 96 / 384 bytes from #246 for the
+three embedded allocator references in each of two declarations per selection.
+The selected domain additionally covers 2,048 / 8,192 bytes of pre-existing table
+backing. Aggregate construction now moves its source row rather than copying an
+initializer-list element; the trace observes 8 / 32 fewer allocation sites.
+This is not performance qualification. Selected, census and whole-scope figures
+overlap and must not be added together. Allocation work is not peak memory or
+measured CPU work.
+
+Projection setup still covers 1,556 / 4,628 boundaries with structural work
+51,284 / 137,062. Nested parent/UUID/path/address and recipe/input allocation,
+declaration and graph setup work, combined caller/borrowed resources and remaining
+operations stay open; #156/#145/#229 remain open. No full baseline/compiler audit
+or GPU qualification follows from these focused CPU checks.
+All 20 exchange processes and all six additional CTest cases passed; each
+process exited zero. Source remained clean during execution. The final changes
+after tested source are four Markdown files only. Contributor-local evidence:
+`declaration-construction-domain-b09b4124` (build/commands, twenty case logs,
+six-case CTest log, source/configuration/toolchain and executable hashes).
+Archive: `setup-evidence/declaration-construction-domain-b09b4124.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    811de35b07db3369afcfd2a4d2ff8de91db3795fc94df011e8d68eac4cec30e7
+
+The raw bundle remains local; its hash does not imply remote inspection or
+replace hosted acceptance.
+
+## Declaration parent allocation domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `6db0beaefe817cc13f1d532923ddd9a4bf5ecad8` on provisionally
+accepted #247 head `a13d3125b814662fd1f03d5aca975ef349b645ba`. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/247#pullrequestreview-5841698860)
+found no blocking corrections and permits bounded continuation. At inspection,
+parent smoke 42813498122 passed; native 42813498120 remained in progress. No
+duplicate baseline was run. Integrated acceptance remains through #246; the
+historical #245 failed workflow remains recorded as such.
+
+The explicit owner declaration construction/copy paths now attach each direct
+parent vector before copying rows. Ordinary source/declaration snapshots detach
+nested parent backing; moves carry its allocator with the backing. The explicit
+copy reserves source tables and constructs domain-bound parent copies directly,
+without first allocating detached parents. Scope excludes parent UUID/address
+payload, other recipe/input vectors, setup work and complete resource accounting;
+see [inventory](../../docs/OWNER-RESOURCES.md#declaration-parent-allocation-domain-contribution-awaiting-review).
+Awake/asleep mechanics remain outside this work.
+
+CPU-only Clang/LLVM 15, pinned Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 and bulk/default or
+direct/compiler-no-unroll on the shared personal host. Tests extend construction
+and explicit-copy sweeps to the nested requests, verify every parent allocator,
+exact selected-domain totals and snapshot detachment, plus independent actual
+allocation lookup in the owner. Full parent values remain part of structural
+equivalence. Existing exact retry, reclamation, moved lifetime, projection setup,
+catalogue, failure-site and repeated exchange/tick checks remain active.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 61 / 96 | 186,208 | 259,456 | 4,101 |
+| Four selections | 74 / 184 | 217,288 | 510,248 | 7,741 |
+
+All failure sites reclaim every observed allocation. Whole-adoption retained/peak
+requested bytes are 277,025 / 277,570 and 332,859 / 334,901; retained census is
+277,649 / 333,291. The 96 / 384-byte increase over #247 is embedded parent-allocator
+references in source rows. An additional 1,200 / 4,800 bytes of pre-existing parent
+backing is now inside the selected domain. Allocation site counts are unchanged.
+Projection setup remains 1,556 / 4,628 boundaries and work 51,284 / 137,062.
+Selected/whole/census figures overlap and must not be summed; allocation-request
+work is not peak memory or CPU timing.
+
+Validation matrix: owner, multiple owner, bindings, commit and fields × workers
+1/2 × bulk/default or direct/compiler-no-unroll. Additional cases:
+structural_recipe_test, letter_projection_test, membership_fields_test,
+active_workbench_test, letter_projection_native_test and membership_fields_native_test.
+No GPU/database/full baseline/compiler audit was run. Remaining nested UUID/path/
+address and recipe/input allocations, declaration/catalogue/graph setup work and
+combined caller/borrowed accounting remain open before remaining operations.
+#156/#145/#229 remain open.
+All 20 focused exchange processes and six CTest cases passed; each process exited
+zero. The two-worker direct exchange_commit log contains an offline-cache lock
+warning after its complete PASS result. That warning is preserved; no cache
+cleanup or duplicate run was used, and cache-performance qualification is not
+claimed. Source remained clean throughout execution. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `declaration-parent-domain-6db0beae`, including build,
+commands, twenty case logs, six-case CTest log, source/configuration/toolchain and
+executable hashes. Archive: `setup-evidence/declaration-parent-domain-6db0beae.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    45734103d38aa22a8924067c79ff8061a797fcace3ce7361f77e1f18cacbf834
+
+Raw logs remain local; the hash identifies evidence without implying remote
+inspection or replacing hosted acceptance.
+
+## Declaration occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `c3bce3c9fbda68d7144e9bc56430214b5e811598`, stacked on
+provisionally accepted #250 at `2c07c0e339d11ee66d0db175d55c81344d502393`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/250#pullrequestreview-5841949730)
+found no blocking source corrections. Parent smoke 42816893735 passed and native
+42816893666 remained in progress at inspection. #247 integration also remains a
+parent dependency; integrated acceptance is through #246. The #250 post-PASS
+cache-lock warning and exit-zero qualification above remain unchanged.
+Deferred activity/state-on-demand research (#248/#251) is outside this work.
+
+A separate mechanical commit moves reservation primitives into neutral `common`
+support with engine aliases. Declaration owner/source paths explicitly use that
+domain before ordinal copies. Other recipe/input/projection/map paths remain
+detached. The warm path container type/layout changes, including embedded allocator
+references, while identity, ordering and PostgreSQL encoding remain unchanged.
+See the [scope and exclusions](../../docs/OWNER-RESOURCES.md#declaration-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15 and Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Controls extend declaration construction/copy denial, exact retry, allocator
+attachment/detachment and lifetime checks to source paths. The independent owner
+observer reconciles path requests with selected-domain totals. Existing failure
+injection, projection setup, catalogue, native exchange/tick and zero-new checks
+remain active. Standalone warm clients build without engine linkage; a new
+server-free libpq test checks exact parameter rendering and decoding, identity,
+ordering, copy detachment and move/release behavior. Hosted warm CI runs it too.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 61 / 100 | 193,664 | 269,280 | 4,102 |
+| Four selections | 74 / 200 | 226,952 | 529,976 | 7,745 |
+
+Both owner failure sweeps reclaim all observed allocations. Whole-adoption
+retained/peak requested bytes are 284,609 / 285,170 and 343,035 / 345,173;
+retained census is 285,233 / 343,467. Projection setup boundaries remain
+1,556 / 4,628, with work 51,636 / 138,566. These figures include changed embedded
+path-container sizes throughout retained values, not just newly gated ordinal
+backing. Selected/whole/census reports overlap and must not be summed.
+Allocation-request work is neither peak memory nor CPU timing.
+
+Validation scope: owner, multiple owner, bindings, commit and fields × four
+worker/compiler variants; six structural-recipe/projection/membership/workbench
+CTest cases; one server-free occurrence-path CTest. No GPU, live database,
+full baseline rerun or separate full compiler audit. Remaining UUID/address and
+recipe/input paths, full setup work and combined caller/borrowed accounting remain
+open before remaining-operation integration. #156/#145/#229 remain open.
+
+All 20 focused exchange processes and seven CTest cases passed, each with exit
+zero. The warm-active integration client also compiled successfully; it was not
+run against a database. No warning was found in this run's matrix/build logs.
+Source remained clean and unchanged throughout the test run. Final changes after
+tested source are five Markdown files only.
+
+Contributor-local evidence: `declaration-path-domain-c3bce3c9`, including raw logs,
+commands, source/configuration/toolchain, warm/integration builds and executable
+hashes. Archive: `setup-evidence/declaration-path-domain-c3bce3c9.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    001192cfaeadffcbc4272e098e9f63dd155ff39e9ba37585e0eee665dcdd48c5
+
+Raw evidence stays local; its hash does not imply independent remote inspection
+or replace authoritative hosted CI. This is no cache-performance qualification.
+
+## Projection occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `008c93200d22e25a8ac67fba05d5760461dba977`, stacked on
+provisionally accepted #252 at `8b60de7f45efd9f6a5e64d742c6e252c351ec320`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/252#pullrequestreview-5842244532)
+found no blocking source corrections and permits bounded continuation. At this
+inspection, #252 smoke 42820621262 and warm-toolbox 42820621241 passed; native
+42820621407 remained in progress. #247/#250 are still integration dependencies;
+integrated implementation acceptance remains through #246. The historical #250
+post-PASS cache warning and exit-zero qualification remain recorded above.
+Deferred activity/state-on-demand research (#248/#251) is unchanged.
+
+Both explicit retained-projection copies and inactive-pool setup now construct
+occurrence paths with the selected domain before copying ordinals. This includes
+optional provenance-owner keys and both parent pools. Ordinary value snapshots
+detach; moved paths preserve domain lifetime and active/spare transfers reuse
+backing. Recipe/input, catalogue contribution and map paths, plus UUID/address payload, remain excluded. There
+is no additional value-layout or encoding change beyond inherited #252.
+See [scope](../../docs/OWNER-RESOURCES.md#projection-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+The controls verify every nested allocator, populated spare-pool copying,
+detached snapshots after source death and moved lifetime. Projection construction
+plus pool setup sweeps each successive byte/work denial boundary, checks complete
+reclamation and retries with exact allowances. The owner independently locates
+all projection path requests alongside table requests in both retained views.
+Existing owner failure injection, setup rejection, catalogue/declaration controls
+and repeated native exchange/tick checks remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll, on the shared personal
+host. No GPU, live database, full baseline or separate full compiler audit rerun.
+Unchanged warm format tests were not duplicated from #252.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 63 / 112 | 193,760 | 269,376 | 4,102 |
+| Four selections | 90 / 248 | 227,336 | 530,360 | 7,745 |
+
+All owner failure sites reclaim observed storage. Whole-adoption retained/peak
+requested bytes remain 284,609 / 285,170 and 343,035 / 345,173; retained census
+remains 285,233 / 343,467. The existing 96 / 384 bytes of projection path backing
+are newly inside the selected domain, without increasing total retained memory
+or allocation-site counts. Projection setup remains 1,556 / 4,628 boundaries and
+work 51,636 / 138,566. Selected/whole/census reports overlap and must not be added;
+allocation-request work is not peak memory or CPU timing.
+
+Validation scope: owner, multiple owner, bindings, commit and fields × four
+worker/compiler variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. Complete recipe/input/catalogue/map/UUID/address allocation,
+setup work and combined caller/borrowed accounting remain open before remaining
+operations. #156/#145/#229 remain open.
+
+All 20 exchange processes and six supporting CTest cases passed, each with exit
+zero. No warnings were found in this run's build/matrix logs. Source stayed clean
+and unchanged during execution; final changes after tested source are four
+Markdown files only.
+
+Contributor-local evidence: `projection-path-domain-008c9320`, including build,
+commands, raw case/CTest logs, source/configuration/toolchain and binary/runtime
+hashes. Archive: `setup-evidence/projection-path-domain-008c9320.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    f3eefecc75cf2acc0e93f1db5fde44619b2ec934e4d35cdbe2ea6ea9b9c60291
+
+Raw evidence remains local. This hash identifies artifacts without implying
+independent remote inspection or replacing authoritative hosted checks.
+
+## Catalogue occurrence-path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `793ea992c95e5a0efe1334c7e3bab2e10797c89a`, stacked on #253's
+updated handoff head `b373601e4fb37330ec7a5c900cca912fd9e9bd62`. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/253#pullrequestreview-5842598923)
+provisionally accepts source `22de9b62b39fa18c76eb1554bf4ea6a552d82dba` and
+requests this catalogue-path slice. The updated parent adds only two Markdown
+handoff files. Parent smoke 42824232342 passed; native 42824232291 remains in
+progress at inspection. #252 warm-toolbox 42820621241 passed. Dependency-stack
+integration is still pending; integrated implementation acceptance remains through
+#246. The historical #250 cache warning and exit-zero qualification remain intact.
+Deferred wake/sleep research is unchanged; GPU work remains independently scoped.
+
+`MembershipFields::collect` constructs the contribution key's path in the supplied
+domain before ordinal copies and moves it into its row. Existing table/header
+requests and ordinal backing are counted separately once. Table growth and moved
+catalogues preserve paths and their domain. Ordinary snapshots detach. Nested
+path storage releases at last strong alias, while shared object/control-block
+accounting continues through the final weak reference. Membership traversal,
+deduplication, target pins and values are unchanged; UUID/address and map/recipe/
+input payload remain excluded. See [scope](../../docs/OWNER-RESOURCES.md#catalogue-occurrence-path-allocation-domain-contribution-awaiting-review).
+
+Focused catalogue controls now include every path's allocator and capacity,
+snapshot detachment and usability after domain death, moved lifetime, successive
+byte/work rejection, reclamation and exact retry. Existing complete membership
+value comparisons remain active. The owner observer independently locates path
+requests, includes them in the selected-domain sum and verifies their release
+before the last weak control-block release. Complete failure-site and repeated
+allocation-free exchange/tick checks remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Validation: owner, multiple owner, bindings, commit and fields × four
+variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. No GPU, live database, full baseline or separate
+full compiler audit rerun; unchanged warm-format checks were not duplicated.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 64 / 114 | 193,776 | 269,392 | 4,102 |
+| Four selections | 91 / 256 | 227,400 | 530,424 | 7,745 |
+
+Existing path backing of 16 / 64 bytes is newly admitted. Whole-adoption retained/
+peak requested bytes remain 284,609 / 285,170 and 343,035 / 345,173; retained census
+remains 285,233 / 343,467. Total retained memory and allocation-site counts are
+unchanged. Projection setup remains 1,556 / 4,628 boundaries, work 51,636 / 138,566.
+Selected/whole/census reports overlap and must not be summed; allocation-request
+work is not peak memory or CPU timing.
+
+Next concrete slice: occurrence-map path allocation in initial construction,
+explicit setup copying and inactive-slot reservation of `ExchangeMap<OccurrenceBinding>`,
+with appropriate domain lifetime, detached snapshots and allocation-free reuse.
+Field address backing, recipe/input paths, UUID/address payload, complete setup
+work and combined caller/borrowed accounting remain open before operation
+integration and same-execution controls. #156/#145/#229 remain open.
+
+All 20 focused exchange processes and six supporting CTest cases passed, each
+with exit zero. All owner failure sites reclaimed observed storage. No warnings
+were found in this run's build/matrix logs. Source stayed clean and unchanged
+throughout execution. Final changes after tested source are four Markdown files.
+
+Contributor-local evidence: `catalogue-path-domain-793ea992`, including build,
+commands, raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/catalogue-path-domain-793ea992.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    08b678ca9e7bc22a8482b5ea0a3f8cb9de938fa3b82ab699989fae8a13d5cac6
+
+Raw artifacts remain local; their hash does not imply independent remote
+inspection or replace authoritative hosted checks.
+
+## Occurrence-map path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `3f6a9c45d2c6b25d09e81938838d282409f45401`, stacked on
+provisionally accepted #254 at `9375b39c60d19441c2d48b7a47643d644f14c1a2`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/254#pullrequestreview-5842799829)
+found no blocking corrections and explicitly accepts this next map-path slice.
+Parent smoke 42826713819 passed; native 42826713814 remains in progress at
+inspection. Dependency integration is pending; integrated implementation
+acceptance remains through #246. Historical #250 cache-warning qualifications
+remain unchanged. Deferred activity research and independent GPU work are unchanged.
+
+Owner/binding/coordinator setup now supplies shared domains to maps. Each map
+retains that lifetime before its raw outer allocator, including when empty.
+Initial copies and newly reserved inactive slots attach paths before copying or
+reserving ordinal backing. Explicit setup copies reserve full nested capacity
+before assigning values, avoiding detached/duplicate size-then-capacity copies.
+Ordinary snapshots detach and preserve inactive capacity; assignment keeps the
+destination allocator, erase rotates slots, and swap exchanges backing plus
+lifetime. Field addresses, UUID payload and full setup work remain outside this
+gate. See [scope](../../docs/OWNER-RESOURCES.md#occurrence-map-path-allocation-domain-contribution-awaiting-review).
+
+Map-specific controls cover initial construction and explicit copies with active
+and inactive paths, successive byte/work refusal, underlying allocation-site
+failure injection, full reclamation and exact retry. Existing old/new growth
+overlap and no-allocation early-copy denial checks remain. Detached snapshots
+survive source-domain destruction, and empty/populated maps retain domain lifetime.
+Assignment/append/erase/cross-domain swap run under the no-allocation guard.
+Independent owner observation locates every retained map path, including inactive
+slots in all three occurrence maps. Existing membership/projection/declaration,
+owner failure-site and repeated exchange/tick controls remain active.
+
+CPU-only Clang/LLVM 15, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`,
+workers 1/2 × bulk/default or direct/compiler-no-unroll on the shared personal
+host. Validation scope: owner, multiple owner, bindings, commit and fields × four
+variants, plus structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test and
+membership_fields_native_test. No GPU, live database, full baseline or separate
+full compiler audit rerun.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 610 / 674 | 197,232 | 273,968 | 4,102 |
+| Four selections | 588 / 1,252 | 230,856 | 538,488 | 7,745 |
+
+All owner failure sites reclaim observed storage. Existing retained map paths of
+3,360 bytes are newly admitted in each fixture. The six embedded map lifetime
+handles add 96 bytes to retained objects. Whole-adoption retained/peak requested
+bytes are 284,705 / 285,266 and 343,131 / 345,269; census 285,329 / 343,563.
+Allocation-site counts are unchanged. Projection setup remains 1,556 / 4,628
+boundaries, work 51,636 / 138,566. Reports overlap and must not be summed;
+allocation-request work is not peak memory or CPU timing.
+
+Initial builds at `4708e779` and `a9cb3597` failed in the new test observer because
+an initializer list mixed const/non-const map pointers. The first correction did
+not apply due to mixed line endings; `3f6a9c45` fixes traversal explicitly.
+Both failed build logs are retained. Production targets compiled in those attempts;
+no runtime pass is claimed for either failed source. The final build and test
+results are pinned to the corrected revision above.
+
+Next concrete slice: field-map address backing with engine-independent allocator
+support, preserving address identity and codec/database formats. Other UUID/address
+and recipe/input payload, complete setup and combined caller/borrowed accounting
+remain open before operation integration and same-execution controls.
+#156/#145/#229 remain open.
+
+All 20 focused exchange processes and six supporting CTest cases passed at the
+corrected source, each with exit zero. No warnings were found in the final build
+or runtime logs. Earlier failed builds remain explicitly separate. Source stayed
+clean and unchanged during execution; final changes after tested source are four
+Markdown files only.
+
+Contributor-local evidence: `map-path-domain-3f6a9c45`, including final build,
+commands, raw runtime logs, both initial failed builds, source/configuration/
+toolchain and binary/runtime hashes. Archive:
+`setup-evidence/map-path-domain-3f6a9c45.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    c842cb94a753e86440177eb41a008f7f3f86741c0ec87c8a28070c998eb6682e
+
+Raw artifacts remain local; their hash does not imply independent remote
+inspection or replace authoritative hosted checks.
+
+## Field-map address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `eb10ce19f0247d0ce395fb0a68a5b60d21d7f5e4`, stacked on
+provisionally accepted #255 at `52a5e5d00ee4aea0774d1bc135334114c78b6262`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/255#pullrequestreview-5843122210)
+found no blocking source corrections and accepts this field-address slice with
+codec/warm compatibility controls. Parent smoke 42830224176 passed; native
+42830224093 remains in progress at inspection. Dependency integration is pending;
+integrated implementation acceptance remains through #246. Prior #255 failed
+build attempts and #250 cache qualifications remain recorded separately above.
+Deferred activity research and independent GPU sequencing are unchanged.
+
+`codec::Address` uses neutral shared reservation support with the same element
+representation and codec rules. Field-map slots explicitly attach before initial
+copy, setup copying and inactive-slot reservation. All other address backing
+remains detached unless explicitly attached by a caller; ordinary snapshots and
+codec results detach. C++ type/layout changes are explicit, including embedded
+headers in values outside the selected domain. Identity, validation, order and
+literal-pair PostgreSQL encoding are unchanged; no schema migration occurs.
+See [scope](../../docs/OWNER-RESOURCES.md#field-map-address-allocation-domain-contribution-awaiting-review).
+
+The map controls now run for both map types with their actual element sizes:
+initial/explicit copying, active/inactive attachment, byte/work refusal,
+allocation-site failures, reclamation, exact retry, outer growth overlap,
+detached/empty-map lifetime and allocation-free assignment/append/erase/swap.
+Independent owner observation locates all retained field-map address requests,
+including inactive slots, alongside occurrence paths. Existing native owner,
+projection/catalogue/declaration and repeated-exchange controls remain active.
+
+CPU native checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants plus six structural-recipe/
+projection/membership/workbench CTests. Warm clients and warm-active integration
+compile. Two server-free warm CTests pass: occurrence paths and address allocator/
+identity/validation/parameter rendering/decoding via a local libpq result.
+Six additional GCC-built pure checks pass using the smoke workflow's commands:
+codec unit and adversarial, command IR, span planner, WAL recognition and report.
+Their compiler version, build/run logs and binary hashes are retained. No GPU,
+live database, full native baseline or separate full compiler audit rerun.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,155 / 1,240 | 211,372 | 293,322 | 4,102 |
+| Four selections | 1,551 / 2,304 | 248,356 | 577,228 | 7,745 |
+
+All owner failure sites reclaim observed storage. Whole-adoption retained/peak
+requested bytes are 294,753 / 295,362 and 356,827 / 359,109; census 295,377 /
+357,259. Enlarged address-container headers contribute throughout retained values,
+not just newly gated field-map backing; allocation-site counts remain unchanged.
+Projection setup boundaries remain 1,556 / 4,628, with work 53,060 / 141,190.
+Selected/whole/census reports overlap and must not be summed. Allocation-request
+work is not peak memory or CPU timing.
+
+Next concrete slice: declaration source definition, parent target and ordered leaf
+address backing during collection and explicit reverse copies. Other projection/
+catalogue/recipe/input addresses, UUID payload, complete setup work and combined
+caller/borrowed accounting remain open before operation integration and
+same-execution controls. #156/#145/#229 remain open.
+
+All 34 scoped checks pass: 20 exchange processes, six native supporting CTests,
+two warm compatibility CTests and six pure codec/command/WAL executables. Each
+process exits zero. No warnings were found in the build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are six Markdown files only.
+
+Contributor-local evidence: `map-address-domain-eb10ce19`, including the native
+build/commands/raw logs/configuration/toolchain/runtime hashes plus the complete
+compatibility sub-bundle with warm build, six pure builds, commands, logs and
+binary hashes. Archive: `setup-evidence/map-address-domain-eb10ce19.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    c823d0449c1cf0a62124830c484fc5594ebd48d2d02838053d8fbb10660ca142
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Declaration address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `ebb5e11680375851186c5e710a9519077f3faa0d`, stacked on
+provisionally accepted #256 at `959142ac03a1aa2bb663bae6a431fe4481b42689`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/256#pullrequestreview-5843531653)
+found no blocking source corrections and accepts this declaration-address slice.
+Parent smoke 42834146582 and warm 42834146478 passed; reviewer-inspected warm
+logs contain 90 Stage A, three pre-migration and 16 structural checks. Parent
+native 42834146576 remains in progress at inspection. Dependency integration
+is pending; integrated implementation acceptance remains through #246. Earlier
+#255 build failures and #250 cache qualifications remain recorded above.
+
+Source-definition, direct-parent-target and ordered-leaf addresses now attach to
+the supplied domain before collection/copy allocation. Explicit reverse copies
+retain the domain; ordinary snapshots detach and survive source-domain death.
+Exact references, parent/leaf order, matching and detached standalone values
+remain unchanged. This adds no type, codec, schema or numerical changes.
+See [scope](../../docs/OWNER-RESOURCES.md#declaration-address-allocation-domain-contribution-awaiting-review).
+
+Construction and explicit-copy controls include every address capacity in their
+exact backing sums. Byte/work rejection sweeps reclaim all observed allocations;
+exact retry preserves structural values. Move/snapshot controls check address
+domain attachment and lifetime. Independent owner allocation observation locates
+each retained address request, including reverse declarations. Existing whole-owner
+failure-site injection and repeated native zero-new checks remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline or separate compiler audit rerun; accepted #256 codec/warm compatibility
+is not repeated for this declaration-only change.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,159 / 1,264 | 211,732 | 293,682 | 4,102 |
+| Four selections | 1,551 / 2,400 | 249,796 | 578,668 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+360 / 1,440 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: retained projection occurrence definitions, optional
+provenance character/complete-character refs and active/spare parent field
+addresses during explicit copies and parent-pool setup. UUID text, catalogue/
+recipe/input payload, complete setup work and combined caller/borrowed accounting
+remain open before remaining operations and same-execution controls. Deferred
+activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `declaration-address-domain-ebb5e116`, including
+commands, build/raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/declaration-address-domain-ebb5e116.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    577ba4ea6c24330036792e51add623bec1c198a21a471650279e17ecfb01fc52
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Projection address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `80f2a43dea6eec4999f30dc51395e23604c88440`, stacked on
+provisionally accepted #257 at `7ace326603b59de4dfb6514a1b8e1092a963e9f8`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/257#pullrequestreview-5843840961)
+found no blocking corrections and accepts the projection-address slice, including
+populated spare-pool copies. Parent smoke 42837316590 passed; native 42837316813
+and #256 native 42834146576 remain running at review inspection. Dependency
+integration is pending; integrated implementation acceptance remains through #246.
+Earlier #255 build failures and #250 cache qualifications remain recorded above.
+
+Both retained projections now attach occurrence-definition, optional byte-
+provenance character/complete-character and active/spare parent-field addresses
+before allocation. Explicit copies of populated spare pools and initial inactive-
+pool setup use the same domain. Exact refs, field kinds, ordinals/counts, exposure
+and pool order are unchanged. Ordinary snapshots detach, moves retain domain
+lifetime and exchanges reuse existing backing. No new type/layout, codec, schema
+or numerical change. See [scope](../../docs/OWNER-RESOURCES.md#projection-address-allocation-domain-contribution-awaiting-review).
+
+Copy/reservation controls reconcile every address capacity with exact backing
+sums and verify attachment/detachment. Structural comparisons check every
+occurrence reference, optional provenance value and parent row in order.
+Snapshots preserve those values after source-domain destruction; moves retain
+populated parent pools. Byte/work refusal sweeps cover both ordinary source
+copies plus reservation and already populated spare-pool copies, with complete
+reclamation and exact retry. Independent whole-owner observation locates each
+retained address request in both projections. Existing allocation-failure and
+repeated native zero-new witnesses remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated parent codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,166 / 1,286 | 212,062 | 294,012 | 4,102 |
+| Four selections | 1,585 / 2,488 | 251,116 | 579,988 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+330 / 1,320 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: retained catalogue contribution field and pinned-target
+addresses in `MembershipFields::collect`. Temporary graph key addresses, UUID
+text, recipe/input payload, complete setup work and combined caller/borrowed
+accounting remain open before remaining operations and same-execution controls.
+Deferred activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `projection-address-domain-80f2a43d`, including
+commands, build/raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/projection-address-domain-80f2a43d.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    da222cf737d9d5fe9a12a5c422360d4ef8d1bbafc6205fa976eedb4882b9c13d
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Catalogue address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `7910e75d45f208a52f5eeed329825334bad15cc0`, stacked on
+provisionally accepted #258 at `a10838d811e7f2de50f668cda3568a4d1ba8015a`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/258#pullrequestreview-5846910693)
+found no blocking corrections and accepts retained catalogue addresses next.
+Parent smoke 42868181997 passed; native 42868181981 remains running at review
+inspection. #257 native 42837316813 has now passed; earlier pending-parent
+statements are historical observations. Dependency integration remains pending;
+integrated implementation acceptance remains through #246. Earlier #255 build
+failures and #250 cache qualifications remain recorded above.
+
+`MembershipFields::collect` now attaches retained contribution field-object and
+pinned-target addresses before allocation. Finished rows move into the table;
+target resolution remains one lookup per contribution. Exact scope/revision,
+occurrence, field kind, counts and order are unchanged, as are graph traversal
+and deduplication. Ordinary snapshots detach; moves retain domain lifetime.
+No new type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#catalogue-address-allocation-domain-contribution-awaiting-review).
+
+Catalogue controls reconcile both addresses with exact retained backing and
+check attachment/detachment. Exact ordered rows are compared after source-domain
+destruction, move and exact retry. Existing byte/work refusal sweeps reclaim all
+observed allocations; whole-owner allocation-site failures and repeated native
+zero-new controls remain active. Independent owner observation locates every
+retained address request. The expanded membership byte total also verifies that
+final strong release reclaims table/path/address backing while the control block
+remains charged until final weak release.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated parent codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,170 / 1,292 | 212,152 | 294,102 | 4,102 |
+| Four selections | 1,589 / 2,512 | 251,476 | 580,348 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+90 / 360 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: temporary catalogue graph-key addresses in `tools`, `state`,
+`reached` and nested `Targets`, including ancestor propagation. Their node limits
+do not cover nested addresses. UUID text, recipe/input payload, complete setup
+work and combined caller/borrowed accounting remain open before remaining
+operations and same-execution controls. Deferred activity/GPU sequencing is
+unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only. The first source build at `81eb1a32` passed;
+a pre-validation refinement avoided a duplicate target lookup, and the final
+source was rebuilt before the single qualification run.
+
+Contributor-local evidence: `catalogue-address-domain-7910e75d`, including initial/
+final build scripts and logs, test commands/raw logs, source/configuration/toolchain
+and binary/runtime hashes. Archive:
+`setup-evidence/catalogue-address-domain-7910e75d.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    444901cf5771824d98af1480955badb5819f76d016fd3b401e27e500a169579a
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.

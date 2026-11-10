@@ -87,14 +87,31 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Completed scope:** retained contribution backing and temporary map/set node requests are admitted before allocation. Nested payload, traversal/callable/stack costs and other setup work remain open.
 
-**Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
-preceding catalogue/declaration construction,
-graph temporaries and complete setup-work limits, followed by combined caller/
-borrowed resource accounting. Gate before allocation/work and preserve cleanup,
-retry and exclusive synchronous access. Shared ownership does not make accounting
-counters thread-safe. Do not reimplement the accepted shared-object/table gates or
-add their domain report to the retained census. Keep domain overhead and allocator/
-exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
+**Provisional dependency:** #247 at `a13d3125b814662fd1f03d5aca975ef349b645ba` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/247#pullrequestreview-5841698860). Its source/leaf table gates need not be repeated; hosted native CI remains pending. Integrated acceptance remains through #246.
+
+**Provisional dependency:** #250 at `2c07c0e339d11ee66d0db175d55c81344d502393` is accepted for continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/250#pullrequestreview-5841949730), with no blocking source findings. Its declaration parent-vector limits need not be repeated. Its post-PASS cache-lock warning and exit-zero qualification remain in the evidence record.
+
+**Provisional dependency:** #252 at `8b60de7f45efd9f6a5e64d742c6e252c351ec320` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/252#pullrequestreview-5842244532). Declaration owner/source path gates and the neutral allocator move need not be repeated. Hosted checks and #247/#250 integration remain pending; integrated acceptance remains through #246.
+
+**Provisional dependency:** #253 at `22de9b62b39fa18c76eb1554bf4ea6a552d82dba` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/253#pullrequestreview-5842598923). Retained projection occurrence/provenance and active/spare parent path gates need not be repeated. Smoke passed; hosted native checks and stack integration remain pending. Integrated acceptance remains through #246.
+
+**Provisional dependency:** #254 at `9375b39c60d19441c2d48b7a47643d644f14c1a2` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/254#pullrequestreview-5842799829). Catalogue paths need not be reimplemented. Smoke passed; hosted native checks and dependency integration remain pending.
+
+**Provisional dependency:** #255 at `52a5e5d00ee4aea0774d1bc135334114c78b6262` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/255#pullrequestreview-5843122210). Occurrence-map paths and lifetime plumbing need not be repeated. Smoke passed; hosted native checks and dependency integration remain pending.
+
+**Provisional dependency:** #256 at `959142ac03a1aa2bb663bae6a431fe4481b42689` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/256#pullrequestreview-5843531653), with no blocking source findings. Field-map addresses and the neutral address-container change need not be repeated. Smoke 42834146582 and warm 42834146478 passed; the reviewer inspected 90 Stage A, three pre-migration and 16 structural checks. Native 42834146576 remains in progress at inspection; dependency integration remains pending.
+
+**Provisional dependency:** #257 at `7ace326603b59de4dfb6514a1b8e1092a963e9f8` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/257#pullrequestreview-5843840961), with no blocking source findings. Declaration source/parent/leaf addresses need not be repeated. Smoke 42837316590 passed; native 42837316813 and parent #256 native 42834146576 remain running at review inspection. Dependency integration remains pending.
+
+**Provisional dependency:** #258 at `a10838d811e7f2de50f668cda3568a4d1ba8015a` is accepted for bounded continuation by [review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/258#pullrequestreview-5846910693), with no blocking source findings. Retained projection addresses need not be repeated. Smoke 42868181997 passed; native 42868181981 remains running at review inspection. Parent #257 native 42837316813 has now passed; earlier pending-parent statements above are historical observations. Dependency integration remains pending.
+
+**Active contribution:** retained catalogue contribution field-object and pinned-target addresses in `MembershipFields::collect`, attached before copying. Exact identity/counts, row ordering, traversal/deduplication, detached snapshots and strong/weak lifetime remain unchanged. Refusal/reclamation/exact-retry and independent request accounting include the new backing. See [scope](../engine/docs/OWNER-RESOURCES.md#catalogue-address-allocation-domain-contribution-awaiting-review).
+
+**Next concrete coding slice:** temporary graph-key addresses during catalogue collection (`engine/src/assembly/membership_fields.cpp`): `tools`, `state`, `reached` map keys and nested `Targets` set elements, including ancestor propagation. Their node allocators already attach; their nested addresses still detach. Construct keys in the domain before insertion, preserve duplicate-key behavior, traversal and cycle rejection, and account for transient copies/overlap without double counting. Extend failure/reclamation/exact-retry and independently observed transient allocation evidence. UUID text, recipe/input payload and complete setup work remain separate gaps.
+
+**Remaining sequence:** finish the inventoried map/recipe/input and UUID/address payload, preceding catalogue/declaration construction, graph temporaries and complete setup-work limits; then combined caller/borrowed accounting; then remaining-operation integration and same-execution controls (C/D below). Each handoff must name the next concrete slice and the remaining inventory. Do not reimplement accepted gates or add their overlapping domain report to the retained census. Gate before allocation/work and preserve cleanup, retry and exclusive synchronous access. Shared counters are not thread-safe; keep domain overhead and allocator/exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
+
+**GPU sequencing:** the complete observable PoC still needs C/D integration before the same operation path is qualified on GTX 1070 in E. Existing bounded GPU experiments and the independent conversion repair in P remain separately available. A declared f64-only study does not depend on mixed-precision repair. Transfer/pinning qualification remains under #145; the mini-release's supported-operation/backend list must be explicit. No new GPU task replaces the bounded allocation work above. Awake/asleep/state-on-demand research (#248/#251) remains deferred.
 
 The harness remains borrowed. #229 stays open for further factoring; its first
 kernel extraction is complete. Layered onboarding is integrated in #236.

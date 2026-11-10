@@ -3,12 +3,14 @@ name: Native warm toolbox
 on:
   pull_request:
     paths:
+      - "common/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - ".github/workflows/warm-toolbox.yml"
   push:
     branches: [main]
     paths:
+      - "common/**"
       - "kernels/database/warm/**"
       - "kernels/database/codec/**"
       - ".github/workflows/warm-toolbox.yml"
@@ -27,6 +29,7 @@ jobs:
           sudo apt-get install -y libpq-dev
           cmake -S kernels/database/warm -B /tmp/hcp-warm-build -DCMAKE_BUILD_TYPE=Release
           cmake --build /tmp/hcp-warm-build -j 2
+          ctest --test-dir /tmp/hcp-warm-build --output-on-failure
       - name: Fetch and verify the retained paired exports
         run: |
           git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''

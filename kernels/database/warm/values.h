@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../codec/codec.h"
+#include "../../../common/reservation_allocator.h"
 
 // Engine-independent, supplied recipe values. No projection engine, live slots,
 // SNode pointers or device state are part of the Stage A interface.
@@ -120,9 +121,10 @@ struct Node {
   int parent{-1};
   ScaleRole role{ScaleRole::Root};
 };
+using OccurrencePath = hcp::resources::SharedReservedVector<std::uint32_t>;
 struct OccurrenceId {
   std::uint64_t entry{0};
-  std::vector<std::uint32_t> path;
+  OccurrencePath path;
 };
 bool operator==(const OccurrenceId &a, const OccurrenceId &b);
 bool operator<(const OccurrenceId &a, const OccurrenceId &b);

@@ -31,7 +31,7 @@ struct Census {
     // Includes constructed inactive slots; begin()/end() expose only live rows.
     for (const auto &r : m.storage()) row(r);
   }
-  void sources(const std::vector<ExchangeSource> &v) {
+  template<class A> void sources(const std::vector<ExchangeSource,A> &v) {
     buffer(v);
     for (const auto &s : v) {
       key(s.occurrence); ref(s.definition); buffer(s.parents);

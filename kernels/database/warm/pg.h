@@ -165,7 +165,7 @@ inline Point point(const Result &r, int row, int col) {
   return {real_value(cell(r, row, col)), real_value(cell(r, row, col + 1)),
           real_value(cell(r, row, col + 2))};
 }
-inline std::string path_array(const std::vector<std::uint32_t> &path) {
+template<class A> inline std::string path_array(const std::vector<std::uint32_t,A> &path) {
   std::string out = "{";
   for (auto value : path) {
     if (out.size() > 1) out += ',';

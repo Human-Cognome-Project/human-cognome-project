@@ -5,6 +5,7 @@ on:
     paths:
       - "engine/**"
       - "network/endpoint/**"
+      - "common/**"
       - "kernels/database/**"
       - "kernels/wal/**"
       - ".github/workflows/repository-smoke.yml"
@@ -14,6 +15,7 @@ on:
     paths:
       - "engine/**"
       - "network/endpoint/**"
+      - "common/**"
       - "kernels/database/**"
       - "kernels/wal/**"
       - ".github/workflows/repository-smoke.yml"

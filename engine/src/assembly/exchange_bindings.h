@@ -22,6 +22,12 @@ struct ExchangeFieldBinding {
   FieldKey field;
   engine::RecordHandle handle;
 };
+inline void initialize_key(OccurrenceBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
+  v.occurrence.source.path = warm::OccurrencePath{SharedReservationAllocator<std::uint32_t>(domain)};
+}
+inline void initialize_key(ExchangeFieldBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
+  v.field.object.address = codec::Address{SharedReservationAllocator<codec::AddressElement>(domain)};
+}
 inline auto &key_buffer(OccurrenceBinding &v) { return v.occurrence.source.path; }
 inline const auto &key_buffer(const OccurrenceBinding &v) { return v.occurrence.source.path; }
 inline auto &key_buffer(ExchangeFieldBinding &v) { return v.field.object.address; }
@@ -57,7 +63,7 @@ class ExchangeBindings {
   friend class ExchangeOwner;
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
-  explicit ExchangeBindings(field::Harness &, ReservationDomain * = nullptr);
+  explicit ExchangeBindings(field::Harness &, const std::shared_ptr<ReservationDomain> & = {});
   CaptureResult prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
                std::shared_ptr<const MembershipFields>,
                const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
@@ -70,7 +76,7 @@ class ExchangeBindings {
   ExchangeBindings(field::Harness &, const LetterProjection &,
                    std::shared_ptr<const LetterExchangeContract>,
                    std::shared_ptr<const MembershipFields>,
-                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>, ReservationDomain * = nullptr);
+                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> & = {});
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   struct Edge {
     std::size_t row;
