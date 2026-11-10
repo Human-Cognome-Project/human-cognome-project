@@ -578,11 +578,19 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       auto catalogue = Access::catalogue(projection,domain);
       full = domain->result();
       const auto &rows = catalogue.contributions();
-      require(rows.get_allocator().domain == domain &&
-                  full.live_bytes == rows.capacity()*sizeof(rows[0]) &&
+      std::uint64_t path_bytes=0;
+      for (const auto &row : rows) {
+        const auto &path=row.occurrence.source.path;
+        require(path.get_allocator().domain == domain,"catalogue contribution path detached");
+        path_bytes += path.capacity()*sizeof(std::uint32_t);
+      }
+      require(rows.get_allocator().domain == domain && path_bytes &&
+                  full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes &&
                   full.charged_work > full.live_bytes,
               "catalogue omitted retained table or failed to release graph nodes");
       snapshot.emplace(catalogue);
+      for (const auto &row : snapshot->contributions())
+        require(!row.occurrence.source.path.get_allocator().domain,"catalogue snapshot retained path domain");
       require(!snapshot->contributions().get_allocator().domain &&
                   domain->result().live_bytes == full.live_bytes,
               "catalogue value snapshot retained or charged its source domain");
@@ -600,6 +608,19 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
                 a.field.object == b.field.object && a.target == b.target && a.count == b.count,
             "domain-bound catalogue changed membership semantics");
   }
+  std::optional<assembly::MembershipFields> moved;
+  {
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    watch=domain;
+    auto value=Access::catalogue(projection,domain);
+    moved.emplace(std::move(value));
+    require(domain->result().live_bytes == full.live_bytes,"catalogue move changed accounting");
+    for (const auto &row : moved->contributions())
+      require(row.occurrence.source.path.get_allocator().domain == domain,"catalogue move detached path");
+  }
+  require(!watch.expired(),"moved catalogue lost allocation domain");
+  moved.reset();
+  require(watch.expired(),"catalogue path allocator retained a lifetime cycle");
   for (bool bytes : {true,false}) {
     const auto total = bytes ? full.peak_bytes : full.charged_work;
     std::uint64_t allowance=0;
@@ -898,9 +919,16 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
           declaration_bytes += path_bytes;
         }
     }
-    const auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
+    auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
+    for (const auto &row : membership_rows) {
+      const auto &path=row.occurrence.source.path;
+      const auto bytes=path.capacity()*sizeof(std::uint32_t);
+      require(!bytes || containing_request(path.data()) == bytes,
+              "catalogue path differs from observed allocation request");
+      membership_bytes += bytes;
+    }
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
                 census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes,
             "owner domain differs from independently observed selected allocations");

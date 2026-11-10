@@ -80,7 +80,10 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     for (const auto &group : follow(owner.definition)) {
       need(out.contributions_.size() < std::size_t(INT32_MAX),
            "membership: native contribution count overflow");
-      out.contributions_.push_back({o.key,
+      OccurrenceKey occurrence{o.key.study,{o.key.source.entry,
+          {o.key.source.path.begin(),o.key.source.path.end(),
+           detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+      out.contributions_.push_back({std::move(occurrence),
                                     {GroupKind::Membership, group},
                                     tools.at(group)->ref,
                                     *live.mass});
