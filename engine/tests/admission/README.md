@@ -2342,3 +2342,68 @@ Reviewed combined head `8c0468168e3837a45e0526c51dce55707a2f81c3`; [#246 review]
 Parent #245 native 42661328044 has conclusion failure, despite success for all 11 listed jobs; no final native-cpu aggregate job is listed. The cause is unestablished. Preserve that outcome, rather than claiming the exact-head workflow passed. The successful full-stack descendant run above qualifies combined integration without duplicating the parent baseline. Parent smoke 42661328034 passed. Contributor-local 20+5 matrices remain separately attributed; their raw archives were not remotely inspected or rerun. #246 tested `ba85ddce108e55d838d802e978828dc32d46d7a6` to reviewed-head delta is four Markdown files only.
 
 Integration preserves both PR ancestries and changes only documentation beyond the green head. Projection setup work, retained membership contribution backing and temporary map/set node requests are accepted within their stated scopes. Nested key/recipe/input payload, declaration construction, remaining graph traversal/setup work, domain/allocator/exception overhead and combined caller/borrowed resources remain open before remaining-operation integration. No complete resource, performance or GPU qualification follows; #156/#145/#229 stay open.
+
+## Declaration table allocation domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `b09b41243b82238679c6b5626033a82d5516670c`, based on accepted
+main `f1c2a260` through the combined #245/#246 stack. The
+[review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/246#pullrequestreview-5841384226)
+reports no blocking findings and full descendant native 42665443526 / smoke
+42665443451 success. Parent #245 native 42661328044 remains a failed run with
+unestablished cause and no final aggregate job listed; it is not relabeled green.
+No duplicate parent baseline was run.
+
+Outgoing/incoming source and ordered-leaf tables now enter the owner allocation
+domain during declaration construction, including temporary aggregate/parts
+backing and the explicit reverse copy. Ordinary value copies detach, moves retain
+the domain. Nested parent/key backing and construction work remain excluded.
+See [scope](../../docs/OWNER-RESOURCES.md#declaration-table-allocation-domain-contribution-awaiting-review).
+
+CPU-only Clang/LLVM 15 and Taichi `5ba579a8a11255b7a258cde93801070956d81d57`
+on the shared personal host. Matrix: owner, multiple-owner, bindings, commit and
+fields × workers 1/2 × bulk/default or direct/compiler-no-unroll. Reader/value
+cases include structural_recipe_test, letter_projection_test,
+membership_fields_test, active_workbench_test, letter_projection_native_test
+and membership_fields_native_test. No GPU or database work is included.
+
+New construction/explicit-copy controls sweep byte/work rejection boundaries,
+verify all observed storage is reclaimed, and retry with exact allowances.
+Snapshots are checked after domain destruction; moved declarations retain their
+domain and complete structural values. The owner independently finds every
+retained source/leaf table request and reconciles the selected-domain sum.
+Existing complete allocation-failure, projection setup, catalogue, shared/weak
+lifetime and repeated exchange/tick witnesses remain active.
+
+| Fixture | Owner byte/work rejection boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 58 / 90 | 184,912 | 258,144 | 4,101 |
+| Four selections | 73 / 160 | 212,104 | 505,000 | 7,741 |
+
+All failure sites reclaim all observed blocks. Whole-adoption retained/peak
+requested bytes are 276,929 / 277,474 and 332,475 / 334,517. Conservative census
+is 277,553 / 332,907. These totals increase 96 / 384 bytes from #246 for the
+three embedded allocator references in each of two declarations per selection.
+The selected domain additionally covers 2,048 / 8,192 bytes of pre-existing table
+backing. Aggregate construction now moves its source row rather than copying an
+initializer-list element; the trace observes 8 / 32 fewer allocation sites.
+This is not performance qualification. Selected, census and whole-scope figures
+overlap and must not be added together. Allocation work is not peak memory or
+measured CPU work.
+
+Projection setup still covers 1,556 / 4,628 boundaries with structural work
+51,284 / 137,062. Nested parent/UUID/path/address and recipe/input allocation,
+declaration and graph setup work, combined caller/borrowed resources and remaining
+operations stay open; #156/#145/#229 remain open. No full baseline/compiler audit
+or GPU qualification follows from these focused CPU checks.
+All 20 exchange processes and all six additional CTest cases passed; each
+process exited zero. Source remained clean during execution. The final changes
+after tested source are four Markdown files only. Contributor-local evidence:
+`declaration-construction-domain-b09b4124` (build/commands, twenty case logs,
+six-case CTest log, source/configuration/toolchain and executable hashes).
+Archive: `setup-evidence/declaration-construction-domain-b09b4124.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    811de35b07db3369afcfd2a4d2ff8de91db3795fc94df011e8d68eac4cec30e7
+
+The raw bundle remains local; its hash does not imply remote inspection or
+replace hosted acceptance.

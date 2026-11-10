@@ -87,6 +87,8 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Completed scope:** retained contribution backing and temporary map/set node requests are admitted before allocation. Nested payload, traversal/callable/stack costs and other setup work remain open.
 
+**Active contribution:** outgoing/incoming declaration tables and ordered leaves, including temporary aggregate/parts construction and explicit reverse copies. Nested source/parent payload and declaration setup work remain open; see [scope](../engine/docs/OWNER-RESOURCES.md#declaration-table-allocation-domain-contribution-awaiting-review).
+
 **Next coding-agent task:** separately allocated nested UUID/path/address and recipe/input payload,
 preceding catalogue/declaration construction,
 graph temporaries and complete setup-work limits, followed by combined caller/

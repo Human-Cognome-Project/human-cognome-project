@@ -491,6 +491,42 @@ resources are still open. This is not complete projection or constructor admissi
 
 ## Work inventory and remaining budget gate
 
+### Declaration table allocation domain (contribution awaiting review)
+
+Owner declaration construction now receives its shared reservation domain before
+building outgoing/incoming source tables or ordered leaves. The temporary aggregate
+and parts tables use the same allocator and move their backing into the result.
+The aggregate is appended by move instead of copied through an initializer list.
+Vector requests, including overlapping old/new growth backing, enter the domain
+before allocation. The reverse declaration uses an explicit domain-bound copy;
+its three independent backing requests are also admitted before copying rows.
+The shared declaration object/control-block request remains a later separate gate.
+
+Ordinary value-copy construction detaches all three table allocations. Moves and
+swaps carry the domain with the backing; no domain-to-declaration ownership cycle
+exists. Declaration aliases retain the tables through owner destruction. Their
+backing is released at pointee destruction; shared control blocks retain their
+own charge through final weak release. The source/leaf accessors now return const
+allocator-aware vectors and the retained census accepts those container types.
+
+This is table admission, not complete declaration admission. Owner/recipe UUID
+copies, separately allocated source/leaf keys, direct-parent vectors and their
+nested payload, lookup/matching work, stack and allocator/exception overhead are
+still outside this gate. Row temporaries may copy nested payload before a table
+request. Embedded row headers are already part of the table allocation and must
+not be charged twice. Selected domain and retained census totals overlap.
+
+Construction and explicit-copy controls independently sweep successive byte/work
+rejection boundaries, check all observed storage is reclaimed, and retry with
+exact allowances. Full structural equivalence includes recipe/occurrence identity,
+source definitions/parents/masses, ordered leaves, exposures and match work.
+Detached snapshots remain usable after source-domain destruction, while moved
+values keep that domain alive. The full owner witness independently locates every
+retained declaration-table allocation and reconciles the complete selected-domain
+sum. Existing failure-site, setup rejection, shared lifetime and repeated native
+exchange/tick controls remain active. Complete declaration/setup accounting and
+combined caller/borrowed resources remain open.
+
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
 ### Membership construction allocation domain (accepted #246)
