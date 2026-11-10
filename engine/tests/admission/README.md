@@ -3203,3 +3203,73 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Retained recipe path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `8c66c95ee51916271e2a6b9daa6193c629e50147`, stacked on
+provisionally accepted #262 at `3e04a02b07a4aa2872e2d974c39cc0d98b01a7da`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/262#pullrequestreview-5850532407)
+found no blocking corrections and accepted this recipe-path slice. Parent smoke
+42912109232 passed; native 42912109277 remains running at review inspection.
+Integrated implementation acceptance remains through #259. The earlier #261
+missing-focus fixture failure remains preserved in its separate record above.
+
+Explicit owner recipe copies now construct legacy/structural occurrence paths,
+every selection part path and both contact endpoint paths with the destination
+domain before copying ordinals. The shared projection-ID helper preserves entry
+numbers; finished IDs and rows move into their tables. Empty paths retain the
+domain without an ordinal allocation. Recipe addresses and all other values
+remain unchanged. No type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#recipe-path-allocation-domain-contribution-awaiting-review).
+
+Expanded path visitors include all recipe paths in exact selected backing,
+attachment/detachment, moved lifetime and source-death snapshot controls.
+Independent observation checks actual path allocation requests. Complete recipe
+comparisons preserve entries, order, metadata and contact semantics. Validated
+legacy and structural fixtures now include contacts with nonempty paths at both
+ends, as well as empty aggregate endpoints, occurrence IDs and selection parts.
+Both versions run refusal/reclamation/exact-retry and lifetime controls; populated
+spare-pool, whole-owner failure injection and repeated native zero-new witnesses
+remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,271 / 1,466 | 214,286 | 296,656 | 4,118 |
+| Four selections | 1,711 / 2,728 | 254,072 | 583,364 | 7,761 |
+
+Newly selected backing adds 64 / 256 bytes. Whole-adoption retained/peak requested
+bytes remain 294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 /
+357,259. Allocation-site counts are unchanged and all failure sites reclaim
+storage. Selected-domain, whole-owner and census reports overlap and must not
+be summed; allocation-request work is not peak memory or CPU timing.
+
+Next: the eight top-level retained Bundle table stores, with engine-independent
+allocator support and explicit C++ container/layout compatibility qualification.
+Nested recipe tables, UUID/text/input payload, complete setup and combined
+resources remain open before operation/control integration. Deferred activity/
+GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No build warnings were found. The two-worker direct
+commit case (`2-direct-exchange_commit.log`) emitted a post-PASS Taichi offline-
+cache lock warning at `offline_cache.h:run@187` for the shared `ticache.lock`.
+The warning is preserved; no cache cleanup or repeat run was used to suppress it,
+and no performance qualification is claimed. Source remained clean and
+unchanged during validation. Final delta is four Markdown files only.
+
+Contributor-local evidence: `recipe-path-domain-8c66c95e`, including commands,
+build/raw logs, source/configuration/toolchain and binary/runtime hashes. Archive:
+`setup-evidence/recipe-path-domain-8c66c95e.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    8796ef6e9e153b491b680a08ad2b26819c98d2307b7cbfa5dfc7557d3672d5d9
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.

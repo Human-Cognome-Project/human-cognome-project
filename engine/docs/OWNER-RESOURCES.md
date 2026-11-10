@@ -872,7 +872,9 @@ copies before allocation. Recipe paths/tables, UUID/text/input payload, complete
 setup and combined caller/borrowed accounting remain open before operation/control
 integration. Deferred activity and GPU sequencing are unchanged.
 
-### Recipe address allocation domain (contribution awaiting review)
+<a id="recipe-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Recipe address allocation domain (provisionally accepted #262)
 
 Explicit owner copies of `LetterProjection` now build `recipe_` addressed rows
 with the supplied domain: tool references, parent targets, member-of references,
@@ -901,6 +903,32 @@ Next: recipe occurrence paths in legacy/structural rows, selection parts and
 contact endpoints. Recipe tables, UUID/text/input payload, complete setup work
 and combined caller/borrowed accounting remain open before operation/control
 integration. Deferred activity and GPU sequencing are unchanged.
+
+### Recipe path allocation domain (contribution awaiting review)
+
+Explicit owner recipe copies now construct legacy/structural occurrence ID paths,
+every selection part path and both contact endpoint paths in the supplied domain
+before copying ordinals. The shared projection-ID helper preserves entry numbers;
+finished IDs and rows move into their tables. Empty aggregate paths retain the
+domain without allocating ordinal storage. Existing recipe addresses remain
+attached; no detached recipe/path copy precedes admission.
+
+Projection path controls now include every recipe path in exact backing totals,
+allocator attachment/detachment, source-death snapshots and moved lifetime.
+Independent allocation observation checks the actual requests. Existing complete
+recipe comparisons preserve IDs, order, contacts, metadata and other values.
+Validated legacy and structural fixtures cover empty aggregate endpoints and
+contacts with nonempty paths at both ends, alongside selection/occurrence paths.
+Both run refusal/reclamation/exact-retry controls; populated spare-pool, whole-owner
+allocation failures and repeated native zero-new checks remain active. No type/
+layout, codec, schema or numerical change is introduced. Reports overlap the
+retained census and must not be summed.
+
+Next: the eight top-level Bundle table stores, using engine-independent allocator
+support and explicitly qualified C++ type/layout compatibility. Nested recipe
+tables, UUID/text/input payload, complete setup and combined caller/borrowed
+resources remain open before operation/control integration. Deferred activity
+and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
