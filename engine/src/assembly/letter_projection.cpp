@@ -349,10 +349,14 @@ LetterProjection project_letters(const warm::Bundle &b) {
 }
 
 namespace {
+warm::OccurrenceId projection_id(const warm::OccurrenceId &id,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {id.entry,{id.path.begin(),id.path.end(),
+      detail::SharedReservationAllocator<std::uint32_t>(domain)}};
+}
 OccurrenceKey projection_key(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
-      detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+  return {key.study,projection_id(key.source,domain)};
 }
 warm::ObjectKey projection_object(const warm::ObjectKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -385,10 +389,16 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
         return {projection_object(g.object,domain),g.centroid,g.spheres};
       }),b.nodes,
       recipe_rows(b.occurrences,[&](const auto &o) -> warm::Occurrence {
-        return {o.id,projection_object(o.definition,domain),o.node,o.position,o.velocity};
-      }),b.selections,b.contacts,
+        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
+      }),
+      recipe_rows(b.selections,[&](const auto &s) -> warm::Selection {
+        return {s.entry,s.exposure,recipe_rows(s.parts,[&](const auto &id) { return projection_id(id,domain); })};
+      }),
+      recipe_rows(b.contacts,[&](const auto &c) -> warm::Contact {
+        return {projection_id(c.a,domain),projection_id(c.b,domain)};
+      }),
       recipe_rows(b.structural_occurrences,[&](const auto &o) -> warm::StructuralOccurrence {
-        return {o.id,projection_object(o.definition,domain),o.node};
+        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node};
       }),
       recipe_rows(b.focal_fields,[&](const auto &f) -> warm::FocalField {
         return {f.kind,projection_object(f.object,domain)};

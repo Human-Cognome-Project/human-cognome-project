@@ -525,6 +525,11 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       outer = Access::projection_table_bytes(copy);
       Access::projection_paths(copy,[&](const auto &path) {
         require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==path.data(); });
+        require(path.empty() || (observed!=std::end(A::table) &&
+                    observed->bytes==path.capacity()*sizeof(std::uint32_t)),
+                "projection path backing differs from independent request");
         outer += path.capacity()*sizeof(std::uint32_t);
       });
       Access::projection_addresses(copy,[&](const auto &address) {
@@ -662,12 +667,16 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   }
 }
 
-void legacy_recipe_address_controls() {
+void recipe_payload_controls() {
   membership_fixture::Fixture letters;
   auto recipe=assembly::normalize_letters(letters.base,
       {letters.request(letters.accented,0,warm::Exposure::Aggregate),
-       letters.request(letters.english,1,warm::Exposure::Parts)});
+       letters.request(letters.english,1,warm::Exposure::Parts),
+       letters.request(letters.french,2,warm::Exposure::Parts)});
   recipe.contacts.push_back({recipe.occurrences.front().id,recipe.occurrences.back().id});
+  recipe.contacts.push_back({recipe.selections[1].parts.front(),recipe.selections[2].parts.front()});
+  require(!recipe.contacts.back().a.path.empty() && !recipe.contacts.back().b.path.empty(),
+          "legacy contact fixture lacks byte paths");
   recipe.geometry.front().centroid={0.25,0.5,0.75};
   recipe.geometry.front().spheres.front()={{0.5,0.25,0.125},0.625};
   warm::validate(recipe);
@@ -675,6 +684,17 @@ void legacy_recipe_address_controls() {
   require(!recipe.occurrences.empty() && !recipe.contacts.empty() && !recipe.geometry.empty(),
           "legacy recipe address fixture lost populated fields");
   projection_reservation_controls(projection,false);
+  letters.base.focal_fields={{warm::FieldKind::Membership,letters.en}};
+  auto structural=assembly::normalize_structural_letters(letters.base,
+      {{0,letters.ref(letters.accented),warm::Exposure::Parts},
+       {1,letters.ref(letters.english),warm::Exposure::Aggregate}});
+  const auto &parts=structural.selections.front().parts;
+  require(parts.size()>=2 && !parts[0].path.empty() && !parts[1].path.empty(),
+          "structural contact fixture lacks byte paths");
+  structural.contacts.push_back({parts[0],parts[1]});
+  structural.contacts.push_back({{1,{}},parts[0]});
+  warm::validate(structural);
+  projection_reservation_controls(assembly::project_letters(structural));
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
@@ -972,7 +992,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
-  legacy_recipe_address_controls();
+  recipe_payload_controls();
   catalogue_reservation_controls(projection);
   catalogue_graph_address_controls();
   contract_reservation_controls(projection);

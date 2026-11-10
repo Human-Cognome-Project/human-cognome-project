@@ -14,6 +14,11 @@ struct ExchangeOwnerAccess {
       {p.spare_parents_.data(),p.spare_parents_.capacity()*sizeof(ParentContribution)}}};
   }
   template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit) {
+    for (const auto &o : p.recipe_.occurrences) visit(o.id.path);
+    for (const auto &o : p.recipe_.structural_occurrences) visit(o.id.path);
+    for (const auto &s : p.recipe_.selections)
+      for (const auto &id : s.parts) visit(id.path);
+    for (const auto &c : p.recipe_.contacts) { visit(c.a.path); visit(c.b.path); }
     for (const auto &o : p.occurrences_) {
       visit(o.key.source.path);
       if (o.byte) visit(o.byte->owner.source.path);
