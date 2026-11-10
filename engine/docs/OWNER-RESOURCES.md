@@ -710,7 +710,9 @@ address identity and codec/database encoding. Recipe/input, other UUID/address
 payload, complete setup work and combined caller/borrowed accounting remain open.
 No numerical/publication or deferred activity behavior changes here.
 
-### Field-map address allocation domain (contribution awaiting review)
+<a id="field-map-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Field-map address allocation domain (provisionally accepted #256)
 
 `codec::Address` now uses the neutral shared reservation allocator for its existing
 `AddressElement` sequence. The codec remains engine-independent; pure codec
@@ -750,6 +752,33 @@ and ordered leaf refs during collection and explicit reverse copies, preserving
 matching and detached snapshots. Other UUID/address/recipe/input payload, complete
 setup and combined caller/borrowed accounting remain open before operation
 integration. Deferred activity and GPU sequencing are unchanged.
+
+### Declaration address allocation domain (contribution awaiting review)
+
+Initial `LetterExchangeContract::collect` and explicit domain-bound reverse copies
+now construct source-definition, direct-parent-target and ordered-leaf reference
+addresses with the supplied domain before allocation. Each parent/leaf is copied
+in its existing order with unchanged scope, revision, ordinal, mass/contribution
+and byte/nibble identity. Matching rules and exact references are unchanged.
+Standalone declarations and ordinary snapshots remain detached; moves retain the
+source domain through final address release. No address type or format changes
+are introduced by this slice.
+
+The declaration controls include every retained address capacity in the exact
+backing sum, alongside tables, paths and parent vectors. Construction and explicit
+copy sweeps exercise byte/work refusal, complete reclamation and exact retry;
+snapshots survive source-domain destruction and moved values retain attachment.
+Independent whole-owner allocation observation locates each address request,
+including reverse declarations, and existing allocation-site failure and repeated
+native no-new witnesses remain active. Address backing is counted once; embedded
+allocator headers already belong to the table requests. The domain, whole-owner
+observation and retained census overlap and must not be summed.
+
+Next: retained projection occurrence definitions, optional provenance character/
+complete-character refs and active/spare parent field addresses in explicit copies
+and parent-pool setup. UUID text, catalogue/recipe/input payload, complete setup
+work and combined caller/borrowed resources remain open before operation integration
+and same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 

@@ -2837,3 +2837,70 @@ Verified SHA256SUMS manifest SHA-256:
 
 Raw evidence remains local; this hash does not imply independent remote inspection
 or replace authoritative hosted checks.
+
+## Declaration address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `ebb5e11680375851186c5e710a9519077f3faa0d`, stacked on
+provisionally accepted #256 at `959142ac03a1aa2bb663bae6a431fe4481b42689`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/256#pullrequestreview-5843531653)
+found no blocking source corrections and accepts this declaration-address slice.
+Parent smoke 42834146582 and warm 42834146478 passed; reviewer-inspected warm
+logs contain 90 Stage A, three pre-migration and 16 structural checks. Parent
+native 42834146576 remains in progress at inspection. Dependency integration
+is pending; integrated implementation acceptance remains through #246. Earlier
+#255 build failures and #250 cache qualifications remain recorded above.
+
+Source-definition, direct-parent-target and ordered-leaf addresses now attach to
+the supplied domain before collection/copy allocation. Explicit reverse copies
+retain the domain; ordinary snapshots detach and survive source-domain death.
+Exact references, parent/leaf order, matching and detached standalone values
+remain unchanged. This adds no type, codec, schema or numerical changes.
+See [scope](../../docs/OWNER-RESOURCES.md#declaration-address-allocation-domain-contribution-awaiting-review).
+
+Construction and explicit-copy controls include every address capacity in their
+exact backing sums. Byte/work rejection sweeps reclaim all observed allocations;
+exact retry preserves structural values. Move/snapshot controls check address
+domain attachment and lifetime. Independent owner allocation observation locates
+each retained address request, including reverse declarations. Existing whole-owner
+failure-site injection and repeated native zero-new checks remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline or separate compiler audit rerun; accepted #256 codec/warm compatibility
+is not repeated for this declaration-only change.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,159 / 1,264 | 211,732 | 293,682 | 4,102 |
+| Four selections | 1,551 / 2,400 | 249,796 | 578,668 | 7,745 |
+
+All owner failure sites reclaim observed storage. Newly selected backing adds
+360 / 1,440 bytes. Whole-adoption retained/peak requested bytes remain
+294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+Selected-domain, whole-owner and census reports overlap and must not be summed.
+Allocation-request work is not peak memory or CPU timing.
+
+Next concrete slice: retained projection occurrence definitions, optional
+provenance character/complete-character refs and active/spare parent field
+addresses during explicit copies and parent-pool setup. UUID text, catalogue/
+recipe/input payload, complete setup work and combined caller/borrowed accounting
+remain open before remaining operations and same-execution controls. Deferred
+activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No warnings were found in build or runtime logs. Source
+remained clean and unchanged throughout validation. Final changes after tested
+source are four Markdown files only.
+
+Contributor-local evidence: `declaration-address-domain-ebb5e116`, including
+commands, build/raw logs, source/configuration/toolchain and binary/runtime hashes.
+Archive: `setup-evidence/declaration-address-domain-ebb5e116.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    577ba4ea6c24330036792e51add623bec1c198a21a471650279e17ecfb01fc52
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
