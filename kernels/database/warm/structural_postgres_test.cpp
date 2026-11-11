@@ -77,7 +77,7 @@ Bundle seed(const std::string &conn) {
     Tool t{{id, new_uuid()},
            epoch,
            "structural-compatibility-fixture",
-           row->notation,
+           std::optional<RecipeText>(row->notation),
            row->mass,
            {},
            {},
