@@ -1,5 +1,8 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; combined-head qualification is pending before integration. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
+
+
 Status: maintainer implementation sequencing, updated 2026-11-10. This organizes the
 accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
@@ -7,7 +10,7 @@ distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hiera
 
 **Queue reconciliation — 2026-11-11:** Reviewed #268–#274 are integrated into main at `b05db31c2e591f8fbcd5c14dc7ddff14ef46b2e9`, reviewed tip `ce3642ee463beb76948a2497c9aeb50172c3267d`. Every head in that stack has successful native and smoke workflows; #272 warm also passed. #274 native 43030713058 passed all 12 jobs; inspected regression logs total 115 tests and database reports addressed_reads=24/private_reads=0. Earlier provisional/pending labels below are historical and superseded by this acceptance.
 
-**Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The active contribution attaches definition/occurrence identities and references to owner reservations, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
+**Earlier review queue (preserved history):** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The active contribution attaches definition/occurrence identities and references to owner reservations, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
 
 ## Reviewed baseline and limits
 
@@ -467,3 +470,15 @@ acceptance evidence and existing link anchors; historical records explain the
 development journey and are not disposable onboarding material. Verify that the
 shortened entry point still leads new contributors to every applicable constraint.
 This documentation work does not block the PoC or replace engine qualification.
+
+### Hosted infrastructure follow-up — 2026-11-11
+
+Review #277/5863228338 authorizes a separate bounded investigation of repeated
+package-mirror DNS failures. Main `05635f07` reconciles accepted #268–#274; #275–#277
+remain provisional and unmerged. The active CI-only repair replaces exact Azure
+Ubuntu archive URLs with the primary archive before existing native/viewport
+package installation, preserving signing configuration, toolchain versions and
+acceptance gates. Local mirror and orchestration checks pass; hosted qualification
+remains required. See [evidence and limits](../engine/docs/HOSTED-CI.md#ubuntu-archive-resolution-repair-2026-11-11-awaiting-review).
+Definition/occurrence identity text remains queued after this independent repair;
+no allocation implementation is changed by the infrastructure contribution.

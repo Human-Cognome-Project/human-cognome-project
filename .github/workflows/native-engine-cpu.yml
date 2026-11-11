@@ -68,14 +68,16 @@ jobs:
           fi
       - name: Install recovered native toolchain
         run: |
+          sudo bash engine/scripts/hosted_ubuntu_mirror.sh
           sudo apt-get update
           sudo apt-get install -y clang-15 llvm-15-dev ninja-build libx11-dev libpq-dev ccache shellcheck
           echo "CCACHE_DIR=$RUNNER_TEMP/ccache" >> "$GITHUB_ENV"
 
       - name: Check CI orchestration contracts
         run: |
-          shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh
+          shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh engine/scripts/*hosted_ubuntu_mirror.sh
           bash engine/scripts/check_hosted_cpu_ci.sh
+          bash engine/scripts/check_hosted_ubuntu_mirror.sh
       - name: Identify compiler cache compatibility
         id: toolchain
         run: |
@@ -198,6 +200,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native execution dependencies
         run: |
+          sudo bash engine/scripts/hosted_ubuntu_mirror.sh
           sudo apt-get update
           sudo apt-get install -y clang-15 llvm-15-dev libx11-6 libpq5
       - uses: actions/download-artifact@v4
@@ -234,6 +237,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native execution dependencies
         run: |
+          sudo bash engine/scripts/hosted_ubuntu_mirror.sh
           sudo apt-get update
           sudo apt-get install -y clang-15 llvm-15-dev libx11-6 libpq5
       - uses: actions/download-artifact@v4
@@ -264,6 +268,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native execution dependencies
         run: |
+          sudo bash engine/scripts/hosted_ubuntu_mirror.sh
           sudo apt-get update
           sudo apt-get install -y clang-15 llvm-15-dev libx11-6 libpq5
       - uses: actions/download-artifact@v4
