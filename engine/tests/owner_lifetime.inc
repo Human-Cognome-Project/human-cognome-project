@@ -586,8 +586,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
                 "projection address backing differs from independent request");
         outer += address.capacity()*sizeof(codec::AddressElement);
       });
-      require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
-              "projection domain omitted table/path backing or charged excluded payload");
+      // Every retained projection allocation is now selected, including input identities.
+      require(outer && domain->result().live_bytes == outer && A::counts.live == outer,
+              "projection domain differs from independently observed complete retained backing");
       Access::projection_domains(copy,[&](const auto *d) {
         require(d == domain.get(), "explicit projection copy detached a table allocator");
       });
