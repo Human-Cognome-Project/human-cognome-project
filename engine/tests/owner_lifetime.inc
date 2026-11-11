@@ -857,27 +857,40 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
 
 // This fixture has only five-element addresses (15 requested bytes), empty or
 // two-ordinal paths, UUID text, table/node blocks and a larger callable. The
-// 15-byte and 37-byte request classes independently identify addresses and UUIDs.
+// Addresses uniquely request 15 bytes. UUID payload and comparison formatting
+// both request 37; classify prepaid requests by work delta, track their pointers,
+// then check their count against the independent graph structure below.
 namespace catalogue_address_witness {
 inline thread_local assembly::detail::ReservationDomain *domain{};
 inline thread_local std::uint64_t previous_work{}, live{}, peak{}, acquired{}, released{};
 inline thread_local std::uint64_t uuid_live{}, uuid_peak{}, uuid_acquired{}, uuid_released{};
+inline thread_local void *uuid_blocks[1024]{};
+inline thread_local std::uint64_t unselected_uuid_sized{};
 inline thread_local bool prepaid=true;
-void acquire(std::size_t bytes) noexcept {
+void acquire(void *pointer, std::size_t bytes) noexcept {
   const auto work=domain->result().charged_work;
   if (bytes == 5*sizeof(codec::AddressElement)) {
     prepaid &= work-previous_work == bytes;
     live += bytes; acquired += bytes; peak=std::max(peak,live);
   }
   if (bytes == 37) {
-    prepaid &= work-previous_work == bytes;
-    uuid_live += bytes; uuid_acquired += bytes; uuid_peak=std::max(uuid_peak,uuid_live);
+    if (work-previous_work == bytes) {
+      auto slot=std::find(std::begin(uuid_blocks),std::end(uuid_blocks),nullptr);
+      if (slot==std::end(uuid_blocks)) std::abort();
+      *slot=pointer;
+      uuid_live += bytes; uuid_acquired += bytes; uuid_peak=std::max(uuid_peak,uuid_live);
+    } else ++unselected_uuid_sized;
   }
   previous_work=work;
 }
-void release(std::size_t bytes) noexcept {
+void release(void *pointer, std::size_t bytes) noexcept {
   if (bytes == 5*sizeof(codec::AddressElement)) { live-=bytes; released+=bytes; }
-  if (bytes == 37) { uuid_live-=bytes; uuid_released+=bytes; }
+  if (bytes == 37) {
+    auto slot=std::find(std::begin(uuid_blocks),std::end(uuid_blocks),pointer);
+    if (slot!=std::end(uuid_blocks)) {
+      *slot=nullptr; uuid_live-=bytes; uuid_released+=bytes;
+    }
+  }
 }
 }
 
@@ -911,7 +924,8 @@ void catalogue_graph_address_controls() {
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   const auto observe=[&] {
     W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0;
-    W::uuid_live=W::uuid_peak=W::uuid_acquired=W::uuid_released=0; W::prepaid=true;
+    W::uuid_live=W::uuid_peak=W::uuid_acquired=W::uuid_released=W::unselected_uuid_sized=0; W::prepaid=true;
+    std::fill(std::begin(W::uuid_blocks),std::end(W::uuid_blocks),nullptr);
     A::on_acquired=W::acquire; A::on_released=W::release;
     A::begin();
   };
@@ -933,7 +947,7 @@ void catalogue_graph_address_controls() {
   } catch (...) { A::on_acquired=nullptr; A::on_released=nullptr; A::end(); throw; }
   A::on_acquired=nullptr; A::on_released=nullptr;
   const auto released=A::end();
-  const auto address_peak=W::peak, uuid_peak=W::uuid_peak;
+  const auto address_peak=W::peak, uuid_peak=W::uuid_peak, comparison_requests=W::unselected_uuid_sized;
   require(!released.live && !released.blocks && !W::live && W::acquired==W::released &&
               !W::uuid_live && W::uuid_acquired==W::uuid_released &&
               !domain->result().live_bytes,"graph address witness leaked temporary or retained backing");
@@ -956,6 +970,17 @@ void catalogue_graph_address_controls() {
   // Duplicate tool insertion keeps the first exact value and reclaims the rejected key.
   auto &recipe=Access::catalogue_recipe(projection);
   recipe.tools.push_back(recipe.tools.front());
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  // Same-sized detached control must not be counted as admitted UUID backing.
+  observe();
+  try {
+    warm::Uuid attached(projection.study(),domain), detached(projection.study());
+    require(W::uuid_acquired==37 && W::uuid_live==37 && W::unselected_uuid_sized==1,
+            "UUID witness did not distinguish same-sized detached allocation");
+  } catch (...) { finish(); throw; }
+  const auto calibration=finish();
+  require(!calibration.live && !calibration.blocks && !W::uuid_live && W::uuid_released==37,
+          "UUID witness calibration leaked storage");
   domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   observe();
   try {
@@ -998,7 +1023,7 @@ void catalogue_graph_address_controls() {
   std::cout << "catalogue_graph_addresses,temporary_bytes=" << temporary
             << ",retained_bytes=" << retained << ",address_peak=" << address_peak
             << ",temporary_uuid_bytes=" << temporary_uuid << ",retained_uuid_bytes=" << retained_uuid
-            << ",uuid_peak=" << uuid_peak
+            << ",uuid_peak=" << uuid_peak << ",unselected_37_byte_requests=" << comparison_requests
             << ",failure_sites=" << released.attempts << " PASS\n";
 }
 void contract_reservation_controls(const assembly::LetterProjection &projection) {

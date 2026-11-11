@@ -14,8 +14,8 @@ inline thread_local Counts counts;
 inline thread_local bool active = false;
 inline thread_local std::size_t fail_at = 0;
 // Optional nonallocating test observers; callbacks must not throw.
-inline thread_local void (*on_acquired)(std::size_t) noexcept = nullptr;
-inline thread_local void (*on_released)(std::size_t) noexcept = nullptr;
+inline thread_local void (*on_acquired)(void *, std::size_t) noexcept = nullptr;
+inline thread_local void (*on_released)(void *, std::size_t) noexcept = nullptr;
 inline std::size_t bucket(void *p) {
   return (reinterpret_cast<std::uintptr_t>(p) >> 4) % 65536;
 }
@@ -35,7 +35,7 @@ inline void acquired(void *p, std::size_t n) {
       if (n > SIZE_MAX-counts.live) std::abort();
       e = {p,n,true}; ++counts.acquired; ++counts.blocks; counts.live += n;
       if (counts.live > counts.peak) counts.peak = counts.live;
-      if (on_acquired) on_acquired(n);
+      if (on_acquired) on_acquired(p,n);
       return;
     }
   }
@@ -47,7 +47,7 @@ inline void released(void *p) noexcept {
     auto &e = table[i];
     if (!e.used) return; // A pre-existing allocation is outside this scope.
     if (e.pointer == p) {
-      if (on_released) on_released(e.bytes);
+      if (on_released) on_released(p,e.bytes);
       counts.live -= e.bytes; --counts.blocks; ++counts.released;
       e.pointer = nullptr; // Keep a tombstone so collision chains remain valid.
       return;
