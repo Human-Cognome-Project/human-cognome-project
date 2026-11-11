@@ -210,6 +210,13 @@ struct ExchangeOwnerAccess {
     return result;
   }
   static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
+  template<class Visit> static void catalogue_uuids(const MembershipFields &c, Visit visit) {
+    visit(c.study_); visit(c.recipe_.selection); visit(c.recipe_.revision);
+    for (const auto &row : c.contributions()) {
+      visit(row.occurrence.study); visit(row.field.object.scope);
+      visit(row.target.object.scope); visit(row.target.revision);
+    }
+  }
   template<class Visit> static void catalogue_addresses(const MembershipFields &c, Visit visit) {
     for (const auto &row : c.contributions()) {
       visit(row.field.object.address);
@@ -217,7 +224,9 @@ struct ExchangeOwnerAccess {
     }
   }
   static bool catalogue_equivalent(const MembershipFields &a, const MembershipFields &b) {
-    if (a.study() != b.study() || a.contributions().size() != b.contributions().size()) return false;
+    if (a.study() != b.study() || a.recipe_.selection != b.recipe_.selection ||
+        a.recipe_.revision != b.recipe_.revision || a.alternatives_ != b.alternatives_ ||
+        a.contributions().size() != b.contributions().size()) return false;
     for (std::size_t i=0; i<a.contributions().size(); ++i) {
       const auto &x=a.contributions()[i], &y=b.contributions()[i];
       if (!(x.occurrence == y.occurrence) || x.field.kind != y.field.kind ||

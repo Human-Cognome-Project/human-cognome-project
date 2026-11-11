@@ -737,6 +737,24 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
+  auto observed_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  A::begin();
+  try {
+    auto value=Access::catalogue(projection,observed_domain);
+    Access::catalogue_uuids(value,[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+          [&](const auto &entry) { return entry.pointer==text.data(); });
+      require(text.get_allocator().domain==observed_domain && found!=std::end(A::table) &&
+                  found->bytes==text.capacity()+1 && text.data()[text.size()]=='\0',
+              "catalogue UUID request, domain or terminator differs from observation");
+    });
+    require(A::counts.live==observed_domain->result().live_bytes,
+            "catalogue retained unselected storage");
+  } catch (...) { A::end(); throw; }
+  const auto observed=A::end();
+  require(!observed.live && !observed.blocks && !observed_domain->result().live_bytes,
+          "catalogue UUID observation leaked storage");
   ReservationResult full;
   std::optional<assembly::MembershipFields> snapshot;
   std::weak_ptr<ReservationDomain> watch;
@@ -762,9 +780,17 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
         require(address.get_allocator().domain == domain,"catalogue address detached during collection");
         address_bytes += address.capacity()*sizeof(codec::AddressElement);
       });
-      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes,
+      std::uint64_t uuid_bytes=0;
+      Access::catalogue_uuids(catalogue,[&](const auto &uuid) {
+        require(uuid.str().get_allocator().domain==domain,"catalogue UUID detached");
+        uuid_bytes += warm::recipe_text_backing(uuid.str());
+      });
+      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes+uuid_bytes,
               "catalogue omitted address backing or charged temporary payload");
       snapshot.emplace(catalogue);
+      Access::catalogue_uuids(*snapshot,[&](const auto &uuid) {
+        require(!uuid.str().get_allocator().domain,"catalogue snapshot retained UUID domain");
+      });
       Access::catalogue_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"catalogue snapshot retained address domain");
       });
@@ -792,6 +818,9 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   }
   require(!watch.expired(),"moved catalogue lost allocation domain");
   require(Access::catalogue_equivalent(*moved,standalone),"catalogue move changed exact rows");
+  Access::catalogue_uuids(*moved,[&](const auto &uuid) {
+    require(uuid.str().get_allocator().domain==watch.lock(),"catalogue move detached UUID");
+  });
   Access::catalogue_addresses(*moved,[&](const auto &address) {
     require(address.get_allocator().domain == watch.lock(),"catalogue move detached address");
   });
@@ -814,6 +843,7 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
                   !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
               "catalogue graph allocation rejection failed cleanup/progress");
+      if (!allowance) require(!released.attempts,"catalogue allocated before first UUID admission");
       allowance=next;
     }
   }
@@ -1292,6 +1322,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
               "catalogue path differs from observed allocation request");
       membership_bytes += bytes;
     }
+    Access::catalogue_uuids(*Access::memberships(*owner),[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto bytes=warm::recipe_text_backing(text);
+      require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                  containing_request(text.data())==bytes && bytes==text.capacity()+1,
+              "catalogue UUID differs from observed allocation request");
+      membership_bytes += bytes;
+    });
     Access::catalogue_addresses(*Access::memberships(*owner),[&](const auto &address) {
       const auto bytes=address.capacity()*sizeof(codec::AddressElement);
       require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
