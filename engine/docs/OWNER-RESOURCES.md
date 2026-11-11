@@ -1288,7 +1288,8 @@ remains outside this domain and is the next slice. Their addresses/paths are alr
 attached. UUID/text/input payload, preceding setup, allocator metadata and combined
 resources remain separate. Selected reports overlap the retained census; do not
 add them together. See source-pinned admission evidence for qualification limits.
-### Nested recipe table allocation domain (contribution awaiting review)
+<a id="nested-recipe-table-allocation-domain-contribution-awaiting-review"></a>
+### Nested recipe table allocation domain (provisionally accepted #265)
 
 Tool.parents/member_of, Geometry.spheres and Selection.parts now use the same
 engine-independent RecipeTable storage as the eight top-level Bundle tables.
@@ -1317,3 +1318,42 @@ Next: retained Tool.recipe and optional Tool.notation text, including exact byte
 terminators, short/long-string behavior, detached snapshots and before-allocation
 attachment. UUID/input payload, full setup and combined resources remain open.
 See admission evidence for source pins, compatibility/build results and limits.
+### Recipe text allocation domain (contribution awaiting review)
+
+Tool.recipe and optional Tool.notation use RecipeText, a basic_string with the
+existing engine-independent shared reservation allocator. Explicit owner copies
+construct it with the destination allocator before character allocation. Empty
+optional state remains absent; empty/short strings retain the allocator without
+heap characters. Ordinary copies detach; moves keep domain/backing alive.
+
+Actual heap requests include capacity plus one terminating byte. Inline characters
+are already within the string/Tool object; recipe_text_backing detects them by
+whether data lies within that object, not a hard-coded short-string length.
+The retained census uses heap backing only for these fields. Logical-copy input
+preflight excludes strings fitting the default inline capacity, and otherwise
+charges size plus terminator; this is the payload-copy admission witness, not a
+new claim that all allocator overhead or global input payload is complete. Existing
+non-recipe UUID/input std::string accounting remains separate and unchanged.
+
+On pinned Clang 15/libstdc++ x64, string/optional string headers grow from 32/40 to
+48/56 bytes, Tool from 336 to 368; Bundle remains 456. Default inline capacity is
+15 in that build; a 131-character value requests 132 bytes. Consumers must rebuild;
+no stable ABI or other-library layout claim is made. Warm validation uses string
+views. SQL parameters, retained-data fixtures and viewport labels/capture use
+explicit standard-string/optional conversions, preserving NULL versus empty and
+exact bytes. Canonical tool_body encoding and numerical behavior stay unchanged.
+
+Selected-backing and domain visitors now cover text as well as table storage.
+Independent request observation checks capacity plus terminator and zero separate
+SSO backing. v1/v2 fixtures add valid unreferenced tools with absent, empty, escaped
+short and long notation/recipe text without changing requested letter semantics.
+Complete recipe and immutable-body comparisons, all charge-boundary refusal/
+reclamation/exact-retry, snapshots after source death, moves, populated pools and
+whole-owner failure injection remain active. Standalone text tests qualify exact
+encoding, optional states, short/long requests and lifetime. Affected viewport
+snapshot coverage and warm client builds remain scoped, without live database I/O.
+
+Next: retained recipe UUID payload, with a shared Uuid interface/consumer audit.
+Other UUID/input payload, complete setup and combined resources remain open.
+Selected allocation reports overlap the census; do not sum them. See admission
+evidence for exact source pins, failures, checks and observed resource changes.

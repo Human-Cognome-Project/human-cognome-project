@@ -3439,3 +3439,99 @@ including short/long strings, terminators, exact text/optional semantics, detach
 snapshots and before-allocation attachment. UUID/input payload, full setup and
 combined resources remain before operation/control integration. Activity/GPU
 sequencing is unchanged; #156/#145/#229 remain open.
+
+
+## Retained recipe text domain — contributor CPU evidence (2026-11-11)
+
+Tested source: `fe064fcc275dc910d446263c5fe42eea23f8a9cc`, stacked on
+provisionally accepted #265 at `21ae236fe19f8c4721ef46fbc602004014e730cb`.
+[Review 5851571884](https://github.com/Human-Cognome-Project/human-cognome-project/pull/265#pullrequestreview-5851571884)
+found no blocking source findings and approved this recipe/notation text slice.
+#264 is also provisionally accepted by review 5851571748; earlier awaiting-review
+statements remain historical. #265 smoke 42928854772 and warm 42928854774 passed;
+native 42928854860 was running at review inspection. Integrated implementation
+acceptance remains through #259 pending stack integration.
+
+Tool.recipe and optional Tool.notation use RecipeText with the existing shared
+reservation allocator. Explicit owner copies select the domain before heap
+character allocation. Heap backing includes capacity plus terminator; inline
+characters are already in row headers and incur no separate request. The helper
+detects inline storage by data location within the object rather than a fixed
+capacity threshold. Retained census excludes inline recipe text; logical input
+copy admission excludes text fitting the default inline capacity and otherwise
+charges size plus terminator. Other UUID/input string accounting is unchanged.
+
+Absent/empty optional state, exact bytes, ordinary detached copies and moved
+lifetime are preserved. Warm validation uses string views; SQL parameters,
+retained-data fixtures and viewport labels/capture convert explicitly between
+recipe and ordinary strings. Canonical immutable-body encoding and numerical
+behavior remain unchanged. Full configured native and standalone warm builds
+include PostgreSQL clients/probe, warm_active_integration and viewport capture.
+These builds do not qualify live database access or rendering.
+
+C++ string/Tool layout changes require consumer rebuilding. Pinned Clang 15 with
+libstdc++ x64 measures ordinary/recipe strings at 32/48 bytes, optional strings at
+40/56, Tool 336 -> 368, Bundle unchanged at 456. Default inline capacity is 15;
+131 characters request 132 bytes. No other-library ABI/layout claim is made.
+
+Independent request observation covers terminators and zero separate inline
+backing. Validated v1/v2 fixtures add unreferenced tools with absent, empty,
+escaped short and long notation/recipe text without altering the requested letter
+graph. Complete recipe and tool_body comparisons, snapshots after source death,
+moves, all copy charge-boundary refusals/reclamation/exact retries, populated pools
+and whole-owner failure/repeated native zero-new controls remain active. The new
+standalone recipe_text_test checks exact escaped serialization and optional
+states, short/long requests, detached/moved lifetime and terminator refusal/retry.
+
+CPU results (workers 1/2, bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1334 / 1584 | 1777 / 2852 |
+| Selected live / peak requested bytes | 245986 / 245986 | 289004 / 289004 |
+| Selected cumulative allocation work | 328356 | 618296 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 298433 / 299042 | 360603 / 362885 |
+| Retained capacity census | 298321 | 360299 |
+
+For both fixtures, selected totals increase by 2484 bytes: 1012 existing heap
+character bytes newly selected plus 1472 larger Tool headers. Whole-owner retained/
+peak increase by 1472. Census increases by 736: +1472 row headers minus 736 formerly
+counted inline recipe characters. Allocation-site counts are unchanged. The census
+is not a complete allocator/physical-memory bound; selected reports overlap it and
+must not be summed. UUID/input/metadata and other resource domains remain separate.
+
+Validation outcome: all 42 scoped checks passed, exit zero, with no warnings in the final build/run logs. The 42 scoped checks comprise 20
+exchange processes, seven recipe/projection/viewport CTests, 12 prepared-execution/
+update CTests and three standalone warm CTests. Source remained clean/pinned;
+tested-to-head delta is four Markdown files only. No GPU, live database, full
+baseline, browser rerun, physical-residency or performance qualification.
+
+Preserved compilation failures (neither reached runtime qualification or the
+standalone warm build in its failed script):
+
+- `3728945d`: warm_active_integration passed ordinary optional notation to the
+  new type without an explicit conversion. Corrected there and in the structural
+  PostgreSQL fixture. Archive `recipe-text-initial-3728945d.tar.gz`; manifest:
+  `694cc64df8bf98cb5954d49c78b4ad97f0c1292ab373aad1c0e4dc7fa2b548bb`.
+- `8be6d61f`: letter_projection_test pushed recipe text into an ordinary string
+  vector without explicit conversion. Corrected it and the viewport capture/label
+  boundaries. Archive `recipe-text-consumers-8be6d61f.tar.gz`; manifest:
+  `cf824a8ad228a3119ac490a468a9d6ed7710fd1ac12b0ac7320e353d3a35c9f8`.
+
+A rebuild invocation was not executed when automatic approval review returned an
+internal Bad Request error. The same authorized invocation succeeded on retry;
+this was an approval-service error, not a source/test result. Earlier parent
+compilation/fixture failures and cache warning remain preserved in their records.
+
+Final local evidence: `recipe-text-domain-fe064fcc`, with commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe. Archive:
+`setup-evidence/recipe-text-domain-fe064fcc.tar.gz`. Verified SHA256SUMS manifest:
+
+    e2d00f171c9364c64c94e3baa805ebc2ac5bc87212e06cf46ba0e525a1c87286
+
+Raw local artifacts are not independently inspected remotely; hosted checks
+remain authoritative. Next: retained recipe UUID text, beginning with Uuid/str()
+and serialization consumer audit. Other UUID/input payload, full setup and
+combined resources remain before operation/control integration. Activity/GPU
+sequencing is unchanged; #156/#145/#229 remain open.
