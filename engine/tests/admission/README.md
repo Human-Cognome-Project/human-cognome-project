@@ -3876,3 +3876,67 @@ copy before allocation and preserving inactive-slot reuse. Other owner identitie
 comparison-formatting/input payload, full setup, combined resources and operation/
 control integration remain separate. No GPU, live DB, browser rerun, full baseline
 or performance qualification is claimed.
+
+### Retained map-slot UUID qualification (2026-11-11)
+
+Tested source `cb177073e68355ceba50dd38d388695aa59c70a1`, stacked on #271 head
+`768d530b4e140c9fc96bfc7ce13fe7a57c4b739c`. Review 5859029648 found no blockers
+and explicitly authorized map-slot UUIDs. Parent smoke 43022851916 passed; native
+43022851847 was running at inspection. #268–#271 remain provisional; integrated
+acceptance is through #267. Historical graph witness failures and cache warnings
+remain preserved. The graph witness combines allocation observations with domain
+telemetry; its expected structural counts are independently derived.
+
+Uuid gains a domain-selected nil constructor. ExchangeMap reserves outer backing,
+then constructs each occurrence/field slot with its UUID and empty path/address
+allocator already selected. No detached default UUID precedes attachment. Explicit
+copies preserve inactive nested capacity; assignment retains the destination
+domain, and ordinary snapshots detach. UUID representation/encoding is unchanged.
+
+Both slot kinds have independent UUID request/terminator and exact retained-byte
+observations. A budget admitting only the outer row rejects the first UUID with
+one observed allocation attempt and complete cleanup. Full byte/work sweeps,
+all-site failure injection, exact retry, inactive-slot snapshots, source-death,
+empty-map later reserve and no-allocation assignment/reuse/erase/swap pass.
+Owner/coordinator visitors include all active/inactive slot UUIDs. Standalone
+warm checks cover domain-selected nil values, refusal and exact retry.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2731 / 3210 | 3648 / 5803 |
+| Selected live / peak requested bytes | 316077 / 316077 | 381907 / 381907 |
+| Selected cumulative allocation work | 415606 | 779547 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Relative to #271, selected live/peak increases
+31080 bytes in each fixture; cumulative work increases 41699 / 76072 bytes,
+including setup copies and slot construction. Whole-owner requested storage,
+allocation-site counts and census are unchanged in these fixtures. Slot growth
+now reserves requested outer capacity explicitly; no general claim of identical
+capacity growth is made. Selected reports overlap the census and must not be
+summed; they are not physical-memory or performance bounds.
+
+Full configured native and standalone warm builds passed. All 43 CPU checks
+passed: 20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared
+checks, seven supporting checks and four warm CTests. No build/run warnings or
+errors were found. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `map-uuid-domain-cb177073` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/map-uuid-domain-cb177073.tar.gz`.
+SHA256SUMS manifest digest:
+
+    6a70d8accae17cf066e034a205428fc777889bbbbfba2da3e9a32a3bec7916e3
+
+Raw local artifacts have not been independently inspected remotely. Hosted checks
+remain authoritative; historical failures and warnings remain preserved.
+
+Next: retained projection input top-level tables in StudyInput/StructuralStudyInput,
+after auditing shared interfaces and consumers. Nested input arrays/text,
+comparison-formatting temporaries, other setup payload, combined resources and
+operation/control integration remain separate. No GPU, live DB, browser rerun
+or full baseline qualification is claimed.

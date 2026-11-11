@@ -174,14 +174,20 @@ Temporary graph-key UUIDs deliberately remain detached in this bounded slice.
 `065958cb068f453ecc17693850693275aede3b21` for bounded continuation with no blockers.
 Smoke 43020338422 passed; native 43020338513 remains running at inspection.
 #268/#269 also remain provisional; integrated acceptance remains through #267.
-**Active contribution (awaiting review):** temporary catalogue graph-key UUIDs in tools, state,
+**Provisionally accepted (#271):** temporary catalogue graph-key UUIDs in tools, state,
 reached and ancestor-target sets. Extend the independent graph witness to count
 UUID requests separately from addresses, distinguish temporary/retained overlap,
 and prove prepayment, diamond deduplication, duplicate insertion, cycle rejection,
 all allocation-failure cleanup and exact retry. Map/other owner UUIDs and input
 payload remain separate before full setup, combined accounting and operation/
 control integration.
-**Next concrete slice after graph UUID review:** ExchangeMap retained slot UUIDs
+**Dependency review (2026-11-11):** #271 review 5859029648 accepts head
+`768d530b4e140c9fc96bfc7ce13fe7a57c4b739c` for bounded continuation with no blockers.
+Smoke 43022851916 passed; native 43022851847 remains running at inspection.
+The graph witness combines allocation observations with domain telemetry; only
+its expected structural counts are independent of that telemetry. Its initial
+failure and comparison-formatting gap remain preserved. Integration is through #267.
+**Active contribution (awaiting review):** ExchangeMap retained slot UUIDs
 for occurrence study and field scope across owner/coordinator maps. Audit default
 slot construction, explicit setup copies, reservation growth and assignment
 before attaching payload; attachment after detached resize would be too late.
@@ -189,6 +195,14 @@ Preserve inactive-slot backing, allocation-free reuse/erase/swap, domain lifetim
 detached snapshots, refusal cleanup and exact retry. Other owner identities, comparison-formatting temporaries and
 input payload remain separate before complete setup, combined resources and
 operation/control integration.
+
+**Next concrete slice after map UUID review:** retained projection input top-level
+tables in StudyInput and StructuralStudyInput (nodes, definitions, occurrences,
+selections, contacts, memberships and focal fields). Audit shared interfaces and
+consumers before adopting allocator-aware storage; select the destination domain
+before explicit owner copies. Preserve detached public snapshots, exact v1/v2
+values and native handoff. Nested input arrays/text, comparison-formatting and
+other setup payload remain separate before combined resources and operations.
 
 ## A. Coherent source/hierarchy refresh
 

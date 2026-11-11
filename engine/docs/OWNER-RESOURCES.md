@@ -1505,3 +1505,28 @@ operator< renders warm::key strings, including 37-byte UUID text copies. These
 comparison-formatting requests remain unselected setup payload, not graph-key
 UUID admission. The initial size-only witness failure is retained in admission
 evidence; no comparator behavior was changed to satisfy the new witness.
+
+### Map-slot UUID domain (contribution awaiting review)
+
+A nil Uuid constructor accepts the reservation domain and allocates its normalized
+36-character payload directly with that allocator. ExchangeMap reserves outer
+backing first, then constructs occurrence/field binding slots with this nil UUID
+and domain-selected empty path/address storage. It no longer default-resizes
+UUID-bearing rows and attaches allocators afterward. Explicit copies preserve
+inactive nested capacities; assignment keeps the destination allocator. Ordinary
+snapshots detach. Clear/erase/reuse/swap retain the existing no-allocation behavior.
+
+Every constructed slot's study/scope UUID is included in standalone and owner/
+coordinator visitors, independent actual-request/terminator checks, exact domain
+backing, refusal/reclamation/retry and all-site failure injection. A budget that
+admits only the outer row must refuse the first UUID with exactly one observed
+allocation attempt. Active and inactive allocators are checked during assignment,
+erase/swap, snapshot source death and empty-map later reservation. The standalone
+warm test covers domain-selected nil values, refusal and exact retry.
+
+UUID layout/encoding is unchanged. Slot growth now explicitly reserves the
+requested outer capacity before append; measured capacity/request changes must
+be reported rather than assumed identical. Selected accounting overlaps the
+capacity census. Next: retained projection input top-level tables, after shared
+interface/consumer audit. Nested input payload, comparison formatting, other setup,
+combined resources and operation/control integration remain separate.
