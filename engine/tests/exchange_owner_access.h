@@ -30,6 +30,19 @@ struct ExchangeOwnerAccess {
   }
   template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
     recipe_uuids(p.recipe_,[&](const auto &uuid) { visit(uuid.str()); });
+    visit(p.study_.str());
+    const auto reference=[&](const auto &ref) {
+      visit(ref.object.scope.str()); visit(ref.revision.str());
+    };
+    for (const auto &o : p.occurrences_) {
+      visit(o.key.study.str()); reference(o.definition);
+      if (o.byte) { visit(o.byte->owner.study.str()); reference(o.byte->character); }
+      if (o.complete_character) reference(*o.complete_character);
+    }
+    for (const auto *rows : {&p.parents_,&p.spare_parents_})
+      for (const auto &row : *rows) {
+        visit(row.occurrence.study.str()); visit(row.field.object.scope.str());
+      }
     for (const auto &tool : p.recipe_.tools) {
       visit(tool.recipe);
       if (tool.notation) visit(*tool.notation);

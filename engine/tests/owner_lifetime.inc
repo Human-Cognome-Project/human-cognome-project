@@ -578,6 +578,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
           require(address.get_allocator().domain == other_domain,"copied inactive projection address detached");
           bytes += address.capacity()*sizeof(codec::AddressElement);
         });
+        Access::projection_domains(reserved_copy,[&](const auto *d) {
+          require(d == other_domain.get(),"populated projection copy retained foreign backing domain");
+        });
         require(Access::projection_equivalent(reserved_copy,copy),"populated projection copy changed exact rows");
         require(other_domain->result().live_bytes == bytes &&
                     Access::projection_parent_sizes(reserved_copy) == Access::projection_parent_sizes(copy),
