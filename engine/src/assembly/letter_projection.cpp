@@ -454,8 +454,12 @@ Definition input_row(const Definition &row, const std::shared_ptr<detail::Reserv
       std::move(parents)};
 }
 Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {row.aggregate,
-      InputTable<std::string>(row.parts.begin(),row.parts.end(),detail::SharedReservationAllocator<std::string>(domain)),row.exposure};
+  InputTable<InputText> parts{detail::SharedReservationAllocator<InputText>(domain)};
+  parts.reserve(row.parts.size());
+  for (const auto &part : row.parts)
+    parts.emplace_back(part.begin(),part.end(),detail::SharedReservationAllocator<char>(domain));
+  return {InputText(row.aggregate.begin(),row.aggregate.end(),detail::SharedReservationAllocator<char>(domain)),
+      std::move(parts),row.exposure};
 }
 InputText input_text(const InputText &text, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return InputText(text.begin(),text.end(),detail::SharedReservationAllocator<char>(domain));
