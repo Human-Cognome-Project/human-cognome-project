@@ -49,6 +49,9 @@ void cycles(const std::map<std::string, const Tool *> &tools, bool membership) {
 }  // namespace
 
 Uuid::Uuid() : value_("00000000-0000-0000-0000-000000000000") {}
+Uuid::Uuid(const std::shared_ptr<hcp::resources::ReservationDomain> &domain)
+    : value_("00000000-0000-0000-0000-000000000000",
+        hcp::resources::SharedReservationAllocator<char>(domain)) {}
 Uuid::Uuid(std::string_view value) : value_(value) {
   need(value_.size() == 36, "malformed UUID");
   for (std::size_t i = 0; i < value_.size(); ++i) {

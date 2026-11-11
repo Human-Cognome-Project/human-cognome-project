@@ -50,7 +50,7 @@ std::uint64_t add_mass(std::uint64_t a, std::uint64_t b) {
   return a + b;
 }
 
-std::vector<ScaleBinding> scale_bindings(const std::vector<StudyNode> &nodes) {
+std::vector<ScaleBinding> scale_bindings(const InputTable<StudyNode> &nodes) {
   std::vector<ScaleBinding> scales;
   std::set<const taichi::lang::SNode *> seen;
   for (std::size_t i = 0; i < nodes.size(); ++i) {
@@ -85,7 +85,8 @@ std::vector<ScaleBinding> scale_bindings(const std::vector<StudyNode> &nodes) {
 
 }  // namespace
 
-double enclosing_radius(Point centroid, const std::vector<Sphere> &components) {
+namespace {
+template<class A> double enclosing_radius_impl(Point centroid, const std::vector<Sphere,A> &components) {
   finite(centroid);
   require(!components.empty(), "assembly: supplied component geometry required");
   double radius = 0;
@@ -103,6 +104,11 @@ double enclosing_radius(Point centroid, const std::vector<Sphere> &components) {
   return radius;
 }
 
+} // namespace
+double enclosing_radius(Point centroid, const std::vector<Sphere> &components) {
+  return enclosing_radius_impl(centroid,components);
+}
+
 PreparedStudy prepare(const StudyInput &input) {
   require(input.capacity >= 0, "assembly: negative capacity");
   PreparedStudy target;
@@ -114,7 +120,7 @@ PreparedStudy prepare(const StudyInput &input) {
     require(!definition.id.empty() && definitions.emplace(definition.id, &definition).second,
             "assembly: empty or duplicate definition identity");
     require(definition.mass > 0, "assembly: active definitions need positive exact mass");
-    radii.emplace(definition.id, enclosing_radius(definition.centroid, definition.components));
+    radii.emplace(definition.id, enclosing_radius_impl(definition.centroid, definition.components));
     std::set<std::uint32_t> ordinals;
     std::uint64_t parent_mass = 0;
     for (const auto &parent : definition.parents) {

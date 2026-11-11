@@ -96,13 +96,13 @@ std::vector<Origin> ActiveAssembly::origins() const {
 StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
   require(inputs_available());
   auto input = memberships_.bind(projection_, nodes);
-  input.focal_fields = focal_fields_;
+  input.focal_fields.assign(focal_fields_.begin(),focal_fields_.end());
   if (!local_) return input;
   for (const auto &v : local_->values) {
     require(input.capacity < std::numeric_limits<int>::max());
     const auto id = occurrence(study(), {v.entry, {}});
     input.definitions.push_back(
-        {local_name(v.ref), v.mass, v.centroid, v.components, {}});
+        {local_name(v.ref), v.mass, v.centroid, {v.components.begin(),v.components.end()}, {}});
     input.occurrences.push_back({id, local_name(v.ref), input.capacity++, 0,
                                  point(v.initial.position),
                                  point(v.initial.velocity)});
@@ -130,7 +130,7 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
         [&](const auto &d) { return d.id == warm::key(g.shared_definition); });
     require(found != input.definitions.end());
     found->centroid = g.centroid;
-    found->components = g.components;
+    found->components.assign(g.components.begin(),g.components.end());
   }
   return input;
 }

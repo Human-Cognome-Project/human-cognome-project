@@ -105,7 +105,7 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Integration update (2026-11-11):** Reviewed #261–#267 are integrated into main at `4c0c3c56ea83c7868a62c7dd41de10d183053ec5`, preserving #260. #267 review 5858105951 found no blockers. All four hosted workflows at reviewed head `7d9a7e484d923d17edc223d95007171b273c2680` passed: native 42937702239 (12 jobs), warm 42937702260, viewport 42937702136 and smoke 42937702124. This supersedes earlier provisional/pending status observations below; their failures and source-pinned evidence remain historical. Continue from current main with the remaining projection UUID slice below.
 
-**Next concrete coding slice:** remaining retained projection UUID fields: study_, occurrence/provenance owner-study IDs, occurrence/byte/complete-character ToolRefs, and active/spare parent contribution study/field scopes. Reuse explicit pre-allocation Uuid copies, preserve already attached recipe/address/path/text stores and detached snapshots/moves, and extend independent request and refusal/reclamation/exact-retry/lifetime controls. Declaration, catalogue, map, other owner UUIDs and input payload remain separate after this slice, ahead of complete setup, combined accounting and operation/control integration.
+**Provisionally accepted (#268):** remaining retained projection UUID fields: study_, occurrence/provenance owner-study IDs, occurrence/byte/complete-character ToolRefs, and active/spare parent contribution study/field scopes. Reuse explicit pre-allocation Uuid copies, preserve already attached recipe/address/path/text stores and detached snapshots/moves, and extend independent request and refusal/reclamation/exact-retry/lifetime controls. Declaration, catalogue, map, other owner UUIDs and input payload remain separate after this slice, ahead of complete setup, combined accounting and operation/control integration.
 
 **Remaining sequence:** finish the inventoried map/recipe/input and UUID/address payload, preceding catalogue/declaration construction, graph temporaries and complete setup-work limits; then combined caller/borrowed accounting; then remaining-operation integration and same-execution controls (C/D below). Each handoff must name the next concrete slice and the remaining inventory. Do not reimplement accepted gates or add their overlapping domain report to the retained census. Gate before allocation/work and preserve cleanup, retry and exclusive synchronous access. Shared counters are not thread-safe; keep domain overhead and allocator/exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
 
@@ -142,6 +142,88 @@ The contracts below retain required behavior for each slice; imperative wording
 in an accepted slice does not reopen its completed implementation. Local evidence
 permits scoped provisional continuation; hosted findings must be reconciled before
 final acceptance. Actual GPU qualification and Docker release remain later work.
+
+**Dependency review (2026-11-11):** #268 review 5858272490 accepts head
+`864eabe731f3238302ac6505516fa6cad4bd4e8e` for bounded continuation, with no
+blocking findings. Smoke 43015222103 passed; native 43015222274 remains running
+at inspection. Its post-PASS cache warning is preserved. Integrated acceptance
+remains through #267; this contribution is stacked on #268 without merging it.
+**Provisionally accepted (#269):** retained declaration UUID
+payload in LetterExchangeContract owner/recipe identity, outgoing/incoming source
+occurrences and references, parent references and leaf references. Audit both
+collect and explicit domain-copy paths before allocation; preserve ordinary
+snapshot detachment, moves, exact declaration/matching behavior and independent
+request/refusal/reclamation/retry/lifetime controls. Catalogue/map/other owner
+UUIDs and input payload remain separate; no complete setup or combined resource
+claim follows from this contribution.
+
+**Dependency review (2026-11-11):** #269 review 5858547912 accepts head
+`f6830b9d404126cb14ee3a2a07db9896cee47936` for bounded continuation with no
+blocking findings. Smoke 43017931238 passed; native 43017931472 remains running
+at inspection. #268 remains provisional. Integrated acceptance is through #267.
+
+**Provisionally accepted (#270):** retained catalogue UUID payload in
+MembershipFields: study/recipe identities and contribution occurrence/group
+scope/revision references. Construct identities directly with the destination
+domain and select it before contribution payload allocation. Preserve ordinary
+detached snapshots, moved lifetime, exact graph outputs, address/table attachment,
+independent requests, refusal/reclamation/retry and cycle/deduplication controls.
+Temporary graph-key UUIDs deliberately remain detached in this bounded slice.
+
+**Dependency review (2026-11-11):** #270 review 5858692092 accepts head
+`065958cb068f453ecc17693850693275aede3b21` for bounded continuation with no blockers.
+Smoke 43020338422 passed; native 43020338513 remains running at inspection.
+#268/#269 also remain provisional; integrated acceptance remains through #267.
+**Provisionally accepted (#271):** temporary catalogue graph-key UUIDs in tools, state,
+reached and ancestor-target sets. Extend the independent graph witness to count
+UUID requests separately from addresses, distinguish temporary/retained overlap,
+and prove prepayment, diamond deduplication, duplicate insertion, cycle rejection,
+all allocation-failure cleanup and exact retry. Map/other owner UUIDs and input
+payload remain separate before full setup, combined accounting and operation/
+control integration.
+**Dependency review (2026-11-11):** #271 review 5859029648 accepts head
+`768d530b4e140c9fc96bfc7ce13fe7a57c4b739c` for bounded continuation with no blockers.
+Smoke 43022851916 passed; native 43022851847 remains running at inspection.
+The graph witness combines allocation observations with domain telemetry; only
+its expected structural counts are independent of that telemetry. Its initial
+failure and comparison-formatting gap remain preserved. Integration is through #267.
+**Provisionally accepted (#272):** ExchangeMap retained slot UUIDs
+for occurrence study and field scope across owner/coordinator maps. Audit default
+slot construction, explicit setup copies, reservation growth and assignment
+before attaching payload; attachment after detached resize would be too late.
+Preserve inactive-slot backing, allocation-free reuse/erase/swap, domain lifetime,
+detached snapshots, refusal cleanup and exact retry. Other owner identities, comparison-formatting temporaries and
+input payload remain separate before complete setup, combined resources and
+operation/control integration.
+
+**Provisionally accepted (#273):** retained projection input top-level
+tables in StudyInput and StructuralStudyInput (nodes, definitions, occurrences,
+selections, contacts, memberships and focal fields). Audit shared interfaces and
+consumers before adopting allocator-aware storage; select the destination domain
+before explicit owner copies. Preserve detached public snapshots, exact v1/v2
+values and native handoff. Nested input arrays/text, comparison-formatting and
+other setup payload remain separate before combined resources and operations.
+
+**Dependency review (2026-11-11):** #272 review 5859234213 accepts head
+`5ea60585234fbdea12a6f4441103d82884eb9417` for bounded continuation with no blockers.
+Smoke 43026470580 and warm 43026470847 passed; native 43026470568 remains running
+at inspection. Integrated acceptance remains through #267.
+**Active contribution (awaiting review):** nested retained input arrays:
+Definition components/parents and Selection parts. Preserve complete values,
+detached public snapshots, domain lifetime and native handoff; attach storage
+before explicit owner copies. Input text, other identities/comparison formatting,
+full setup and combined resources remain separate before operation integration.
+
+**Dependency review (2026-11-11):** #273 review 5859431800 accepts head
+`8c142c3056736ba6a1a683b14ced8c79163a08ab` for bounded continuation with no blockers.
+Smoke 43028610415 passed; native 43028610546 remains running at inspection.
+Integrated acceptance remains through #267.
+**Next concrete slice after nested-input review:** retained input text in definition
+IDs/parent values, occurrence IDs/definitions, selection aggregates/parts, contacts,
+memberships and focal fields. Audit shared consumers; attach before copying, cover
+inline/heap strings and terminators, preserve complete values and detached snapshots.
+Other identities/comparison formatting, full setup and combined accounting remain
+separate before operation/control integration.
 
 ## A. Coherent source/hierarchy refresh
 

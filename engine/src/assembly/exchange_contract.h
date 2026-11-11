@@ -39,7 +39,8 @@ class LetterExchangeContract {
  private:
   friend class detail::ExchangeOwner;
   friend struct testing::ExchangeOwnerAccess;
-  explicit LetterExchangeContract(const std::shared_ptr<detail::ReservationDomain> &);
+  LetterExchangeContract(const OccurrenceKey &, const warm::BundleRef &,
+      const std::shared_ptr<detail::ReservationDomain> &);
   LetterExchangeContract(const LetterExchangeContract &, const std::shared_ptr<detail::ReservationDomain> &);
   static LetterExchangeContract collect(const LetterProjection &, const OccurrenceKey &,
       warm::Exposure, const std::shared_ptr<detail::ReservationDomain> &);

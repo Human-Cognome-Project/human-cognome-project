@@ -199,7 +199,11 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     else return a.field.kind==b.field.kind && a.field.object==b.field.object;
   };
   const auto element_bytes=sizeof(key_buffer(one.front())[0]);
-  const auto initial_bytes=2*element_bytes;
+  const auto initial_bytes=2*element_bytes+37;
+  const auto uuid=[](const T &row) -> const warm::Uuid & {
+    if constexpr (std::is_same_v<T,OccurrenceBinding>) return row.occurrence.study;
+    else return row.field.object.scope;
+  };
   Map reference(one); reference.reserve(3,4);
   const auto backing = [&](const Map &map, const auto &domain) {
     std::uint64_t bytes=map.storage().capacity()*sizeof(T);
@@ -207,6 +211,10 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     for (const auto &row : map.storage()) {
       const auto &path=key_buffer(row);
       require(path.get_allocator().domain == domain,"map active/inactive path domain mismatch");
+      const auto &text=uuid(row).str();
+      require(text.get_allocator().domain==domain && text.size()==36 && text.data()[36]=='\0',
+              "map active/inactive UUID domain or encoding mismatch");
+      bytes += warm::recipe_text_backing(text);
       bytes += path.capacity()*element_bytes;
     }
     return bytes;
@@ -237,6 +245,18 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     });
   }
   require(!growth->result().live_bytes,"map growth denial leaked original backing");
+  for (bool bytes : {true,false}) {
+    auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+        bytes ? row_bytes : UINT64_MAX,bytes ? UINT64_MAX : row_bytes});
+    A::begin();
+    bool stopped=false;
+    try { Map denied(one,d); } catch (const ReservationStop &) { stopped=true; }
+    catch (...) { A::end(); throw; }
+    const auto seen=A::end();
+    require(stopped && seen.attempts==1 && !seen.live && !seen.blocks && !d->result().live_bytes &&
+                (bytes ? d->result().required_bytes : d->result().required_work)==row_bytes+37,
+            "map UUID allocated before admission or leaked its admitted outer table");
+  }
   for (bool copying : {false,true}) {
     const auto construct = [&](const auto &d) {
       // Return a prvalue: an ordinary Map copy intentionally detaches.
@@ -249,6 +269,14 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     try {
       auto value=construct(domain); value.reserve(3,4);
       full=domain->result(); sites=A::counts.attempts;
+      for (const auto &row : value.storage()) {
+        const auto &text=uuid(row).str();
+        const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        require(found!=std::end(A::table) && found->bytes==text.capacity()+1,
+                "map UUID differs from independent allocation request");
+      }
+      require(A::counts.live==domain->result().live_bytes,"map retained unselected backing");
       require(full.live_bytes == backing(value,domain) && value.size()==1 &&
                   equal(value[0],one[0]) && value.storage().size()==3,
               "map construction/copy lost values or selected backing");
@@ -578,6 +606,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
           require(address.get_allocator().domain == other_domain,"copied inactive projection address detached");
           bytes += address.capacity()*sizeof(codec::AddressElement);
         });
+        Access::projection_domains(reserved_copy,[&](const auto *d) {
+          require(d == other_domain.get(),"populated projection copy retained foreign backing domain");
+        });
         require(Access::projection_equivalent(reserved_copy,copy),"populated projection copy changed exact rows");
         require(other_domain->result().live_bytes == bytes &&
                     Access::projection_parent_sizes(reserved_copy) == Access::projection_parent_sizes(copy),
@@ -716,6 +747,7 @@ void recipe_payload_controls() {
   auto projection=assembly::project_letters(recipe);
   require(!recipe.occurrences.empty() && !recipe.contacts.empty() && !recipe.geometry.empty(),
           "legacy recipe address fixture lost populated fields");
+  assembly::testing::ExchangeOwnerAccess::populate_input_tables(projection);
   projection_reservation_controls(projection,false);
   letters.base.focal_fields={{warm::FieldKind::Membership,letters.en}};
   auto structural=assembly::normalize_structural_letters(letters.base,
@@ -727,13 +759,33 @@ void recipe_payload_controls() {
   structural.contacts.push_back({parts[0],parts[1]});
   structural.contacts.push_back({{1,{}},parts[0]});
   warm::validate(structural);
-  projection_reservation_controls(assembly::project_letters(structural));
+  auto structural_projection=assembly::project_letters(structural);
+  assembly::testing::ExchangeOwnerAccess::populate_input_tables(structural_projection);
+  projection_reservation_controls(structural_projection);
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
+  auto observed_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  A::begin();
+  try {
+    auto value=Access::catalogue(projection,observed_domain);
+    Access::catalogue_uuids(value,[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+          [&](const auto &entry) { return entry.pointer==text.data(); });
+      require(text.get_allocator().domain==observed_domain && found!=std::end(A::table) &&
+                  found->bytes==text.capacity()+1 && text.data()[text.size()]=='\0',
+              "catalogue UUID request, domain or terminator differs from observation");
+    });
+    require(A::counts.live==observed_domain->result().live_bytes,
+            "catalogue retained unselected storage");
+  } catch (...) { A::end(); throw; }
+  const auto observed=A::end();
+  require(!observed.live && !observed.blocks && !observed_domain->result().live_bytes,
+          "catalogue UUID observation leaked storage");
   ReservationResult full;
   std::optional<assembly::MembershipFields> snapshot;
   std::weak_ptr<ReservationDomain> watch;
@@ -759,9 +811,17 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
         require(address.get_allocator().domain == domain,"catalogue address detached during collection");
         address_bytes += address.capacity()*sizeof(codec::AddressElement);
       });
-      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes,
+      std::uint64_t uuid_bytes=0;
+      Access::catalogue_uuids(catalogue,[&](const auto &uuid) {
+        require(uuid.str().get_allocator().domain==domain,"catalogue UUID detached");
+        uuid_bytes += warm::recipe_text_backing(uuid.str());
+      });
+      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes+uuid_bytes,
               "catalogue omitted address backing or charged temporary payload");
       snapshot.emplace(catalogue);
+      Access::catalogue_uuids(*snapshot,[&](const auto &uuid) {
+        require(!uuid.str().get_allocator().domain,"catalogue snapshot retained UUID domain");
+      });
       Access::catalogue_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"catalogue snapshot retained address domain");
       });
@@ -789,6 +849,9 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
   }
   require(!watch.expired(),"moved catalogue lost allocation domain");
   require(Access::catalogue_equivalent(*moved,standalone),"catalogue move changed exact rows");
+  Access::catalogue_uuids(*moved,[&](const auto &uuid) {
+    require(uuid.str().get_allocator().domain==watch.lock(),"catalogue move detached UUID");
+  });
   Access::catalogue_addresses(*moved,[&](const auto &address) {
     require(address.get_allocator().domain == watch.lock(),"catalogue move detached address");
   });
@@ -811,6 +874,7 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
                   !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
               "catalogue graph allocation rejection failed cleanup/progress");
+      if (!allowance) require(!released.attempts,"catalogue allocated before first UUID admission");
       allowance=next;
     }
   }
@@ -824,21 +888,40 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
 
 // This fixture has only five-element addresses (15 requested bytes), empty or
 // two-ordinal paths, UUID text, table/node blocks and a larger callable. The
-// 15-byte request class therefore independently identifies address backing.
+// Addresses uniquely request 15 bytes. UUID payload and comparison formatting
+// both request 37; classify prepaid requests by work delta, track their pointers,
+// then check their count against the independent graph structure below.
 namespace catalogue_address_witness {
 inline thread_local assembly::detail::ReservationDomain *domain{};
 inline thread_local std::uint64_t previous_work{}, live{}, peak{}, acquired{}, released{};
+inline thread_local std::uint64_t uuid_live{}, uuid_peak{}, uuid_acquired{}, uuid_released{};
+inline thread_local void *uuid_blocks[1024]{};
+inline thread_local std::uint64_t unselected_uuid_sized{};
 inline thread_local bool prepaid=true;
-void acquire(std::size_t bytes) noexcept {
+void acquire(void *pointer, std::size_t bytes) noexcept {
   const auto work=domain->result().charged_work;
   if (bytes == 5*sizeof(codec::AddressElement)) {
     prepaid &= work-previous_work == bytes;
     live += bytes; acquired += bytes; peak=std::max(peak,live);
   }
+  if (bytes == 37) {
+    if (work-previous_work == bytes) {
+      auto slot=std::find(std::begin(uuid_blocks),std::end(uuid_blocks),nullptr);
+      if (slot==std::end(uuid_blocks)) std::abort();
+      *slot=pointer;
+      uuid_live += bytes; uuid_acquired += bytes; uuid_peak=std::max(uuid_peak,uuid_live);
+    } else ++unselected_uuid_sized;
+  }
   previous_work=work;
 }
-void release(std::size_t bytes) noexcept {
+void release(void *pointer, std::size_t bytes) noexcept {
   if (bytes == 5*sizeof(codec::AddressElement)) { live-=bytes; released+=bytes; }
+  if (bytes == 37) {
+    auto slot=std::find(std::begin(uuid_blocks),std::end(uuid_blocks),pointer);
+    if (slot!=std::end(uuid_blocks)) {
+      *slot=nullptr; uuid_live-=bytes; uuid_released+=bytes;
+    }
+  }
 }
 }
 
@@ -865,24 +948,39 @@ void catalogue_graph_address_controls() {
   // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
   const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
   const auto retained=reference.contributions().size()*2*address_size;
+  const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
+  const auto retained_uuid=(3+reference.contributions().size()*4)*37;
   require(reference.contributions().size()==projection.occurrences().size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0; W::prepaid=true;
-  A::on_acquired=W::acquire; A::on_released=W::release;
-  A::begin();
+  const auto observe=[&] {
+    W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0;
+    W::uuid_live=W::uuid_peak=W::uuid_acquired=W::uuid_released=W::unselected_uuid_sized=0; W::prepaid=true;
+    std::fill(std::begin(W::uuid_blocks),std::end(W::uuid_blocks),nullptr);
+    A::on_acquired=W::acquire; A::on_released=W::release;
+    A::begin();
+  };
+  const auto finish=[] {
+    A::on_acquired=nullptr; A::on_released=nullptr; return A::end();
+  };
+  observe();
   try {
     {
       auto value=Access::catalogue(projection,domain);
       require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
                   W::acquired==temporary+retained && W::peak==temporary+retained &&
-                  W::live==retained && W::released==temporary,
+                  W::live==retained && W::released==temporary &&
+                  W::uuid_acquired==temporary_uuid+retained_uuid &&
+                  W::uuid_peak==temporary_uuid+retained_uuid &&
+                  W::uuid_live==retained_uuid && W::uuid_released==temporary_uuid,
               "graph address requests, prepayment or transient overlap differ from independent fixture");
     }
   } catch (...) { A::on_acquired=nullptr; A::on_released=nullptr; A::end(); throw; }
   A::on_acquired=nullptr; A::on_released=nullptr;
   const auto released=A::end();
+  const auto address_peak=W::peak, uuid_peak=W::uuid_peak, comparison_requests=W::unselected_uuid_sized;
   require(!released.live && !released.blocks && !W::live && W::acquired==W::released &&
+              !W::uuid_live && W::uuid_acquired==W::uuid_released &&
               !domain->result().live_bytes,"graph address witness leaked temporary or retained backing");
   // Reuse the complete refusal/retry and lifetime controls with diamond ancestry.
   catalogue_reservation_controls(projection);
@@ -904,25 +1002,59 @@ void catalogue_graph_address_controls() {
   auto &recipe=Access::catalogue_recipe(projection);
   recipe.tools.push_back(recipe.tools.front());
   domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  { auto value=Access::catalogue(projection,domain);
-    require(Access::catalogue_equivalent(value,reference),"duplicate graph key changed catalogue"); }
-  require(!domain->result().live_bytes,"duplicate graph key retained allocation");
+  // Same-sized detached control must not be counted as admitted UUID backing.
+  observe();
+  try {
+    warm::Uuid attached(projection.study(),domain), detached(projection.study());
+    require(W::uuid_acquired==37 && W::uuid_live==37 && W::unselected_uuid_sized==1,
+            "UUID witness did not distinguish same-sized detached allocation");
+  } catch (...) { finish(); throw; }
+  const auto calibration=finish();
+  require(!calibration.live && !calibration.blocks && !W::uuid_live && W::uuid_released==37,
+          "UUID witness calibration leaked storage");
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  observe();
+  try {
+    auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
+                W::uuid_acquired==temporary_uuid+retained_uuid+37 &&
+                W::uuid_released==temporary_uuid+37 && W::uuid_live==retained_uuid &&
+                W::acquired==temporary+retained+address_size &&
+                W::released==temporary+address_size && W::live==retained,
+            "duplicate graph key changed values or failed to prepay/release UUID and address");
+  } catch (...) { finish(); throw; }
+  const auto duplicate=finish();
+  require(!domain->result().live_bytes && !duplicate.live && !duplicate.blocks &&
+              !W::uuid_live && W::uuid_acquired==W::uuid_released,
+          "duplicate graph key retained allocation");
+  const auto duplicate_budget=domain->result();
   // Introduce a cycle only after normal recipe validation; collection must reject
   // it and reclaim every preceding node/key allocation.
   auto top_it=std::find_if(recipe.tools.begin(),recipe.tools.end(),[&](const auto &t){return t.ref==top;});
   require(top_it!=recipe.tools.end(),"graph cycle fixture lost ancestor");
   top_it->member_of={left};
   domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  A::begin();
+  observe();
   bool rejected=false;
   try { auto value=Access::catalogue(projection,domain); }
   catch (const warm::Error &) { rejected=true; }
-  catch (...) { A::end(); throw; }
-  const auto failed=A::end();
+  catch (...) { finish(); throw; }
+  const auto failed=finish();
+  require(W::prepaid && !W::uuid_live && W::uuid_acquired==W::uuid_released,
+          "cyclic graph UUID requests were not prepaid or reclaimed");
   require(rejected && !domain->result().live_bytes && !failed.live && !failed.blocks,
           "cyclic catalogue failed rejection or complete reclamation");
+  top_it->member_of.clear();
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{duplicate_budget.peak_bytes,duplicate_budget.charged_work});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference) &&
+                domain->result().charged_work==duplicate_budget.charged_work,
+            "cycle repair failed exact-budget retry"); }
+  require(!domain->result().live_bytes,"cycle repair retry retained backing");
   std::cout << "catalogue_graph_addresses,temporary_bytes=" << temporary
-            << ",retained_bytes=" << retained << ",address_peak=" << W::peak
+            << ",retained_bytes=" << retained << ",address_peak=" << address_peak
+            << ",temporary_uuid_bytes=" << temporary_uuid << ",retained_uuid_bytes=" << retained_uuid
+            << ",uuid_peak=" << uuid_peak << ",unselected_37_byte_requests=" << comparison_requests
             << ",failure_sites=" << released.attempts << " PASS\n";
 }
 void contract_reservation_controls(const assembly::LetterProjection &projection) {
@@ -937,6 +1069,25 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
     const auto construct = [&](const auto &domain) {
       return copying ? Access::contract_copy(reference,domain) : Access::contract(projection,key,target,domain);
     };
+    // Observe both collection and explicit copies without allocating in the visitor.
+    auto observed_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin();
+    try {
+      auto value=construct(observed_domain);
+      Access::contract_uuids(value,[&](const auto &uuid) {
+        const auto &text=uuid.str();
+        const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        require(text.get_allocator().domain==observed_domain && found!=std::end(A::table) &&
+                    found->bytes==text.capacity()+1 && text.data()[text.size()]=='\0',
+                "declaration UUID request or terminator differs from independent observation");
+      });
+      require(A::counts.live==observed_domain->result().live_bytes,
+              "declaration retained unselected allocation");
+    } catch (...) { A::end(); throw; }
+    const auto observed=A::end();
+    require(!observed.live && !observed.blocks && !observed_domain->result().live_bytes,
+            "observed declaration leaked backing");
     ReservationResult full;
     std::optional<assembly::LetterExchangeContract> snapshot, moved;
     std::weak_ptr<ReservationDomain> watch;
@@ -962,9 +1113,16 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
         require(address.get_allocator().domain==domain,"declaration reference address detached");
         backing += address.capacity()*sizeof(codec::AddressElement);
       });
+      Access::contract_uuids(contract,[&](const auto &uuid) {
+        require(uuid.str().get_allocator().domain==domain,"declaration UUID detached");
+        backing += warm::recipe_text_backing(uuid.str());
+      });
       require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
               "declaration omitted table backing or changed its structural values");
       snapshot.emplace(contract);
+      Access::contract_uuids(*snapshot,[&](const auto &uuid) {
+        require(!uuid.str().get_allocator().domain,"declaration snapshot retained UUID domain");
+      });
       Access::contract_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"declaration snapshot retained address domain");
       });
@@ -979,6 +1137,9 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
     }
     require(!watch.expired() && Access::equivalent(*moved,reference),
             "moved declaration lost source domain or structural values");
+    Access::contract_uuids(*moved,[&](const auto &uuid) {
+      require(uuid.str().get_allocator().domain==watch.lock(),"moved declaration lost UUID domain");
+    });
     Access::contract_addresses(*moved,[&](const auto &address) {
       require(address.get_allocator().domain==watch.lock(),"moved declaration lost address domain");
     });
@@ -1002,6 +1163,7 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
         require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
                     !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
                 "declaration construction/copy rejection failed cleanup or progress");
+        if (!allowance) require(!released.attempts,"declaration allocated before first UUID admission");
         allowance=next;
       }
     }
@@ -1173,6 +1335,15 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       require(request == entry.second, "unique allocation request differs from object storage size");
       unique_bytes += request;
     }
+    std::uint64_t map_uuid_bytes=0;
+    Access::map_uuids(*owner,[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto bytes=warm::recipe_text_backing(text);
+      require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                  containing_request(text.data())==bytes && bytes==text.capacity()+1,
+              "owner map UUID differs from independent allocation request");
+      map_uuid_bytes += bytes;
+    });
     std::uint64_t map_path_bytes=0;
     Access::map_paths(*owner,[&](const auto &path) {
       const auto bytes=path.capacity()*sizeof(std::uint32_t);
@@ -1240,6 +1411,15 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
                 "declaration address differs from observed allocation request");
         declaration_bytes += bytes;
       });
+    for (const auto &declaration : Access::declarations(*owner))
+      Access::contract_uuids(*declaration,[&](const auto &uuid) {
+        const auto &text=uuid.str();
+        const auto bytes=warm::recipe_text_backing(text);
+        require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                    containing_request(text.data())==bytes && bytes==text.capacity()+1,
+                "declaration UUID differs from observed allocation request");
+        declaration_bytes += bytes;
+      });
     auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
@@ -1250,6 +1430,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
               "catalogue path differs from observed allocation request");
       membership_bytes += bytes;
     }
+    Access::catalogue_uuids(*Access::memberships(*owner),[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto bytes=warm::recipe_text_backing(text);
+      require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                  containing_request(text.data())==bytes && bytes==text.capacity()+1,
+              "catalogue UUID differs from observed allocation request");
+      membership_bytes += bytes;
+    });
     Access::catalogue_addresses(*Access::memberships(*owner),[&](const auto &address) {
       const auto bytes=address.capacity()*sizeof(codec::AddressElement);
       require(address.get_allocator().domain == Access::reservation_domain(*owner) &&
@@ -1258,7 +1446,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       membership_bytes += bytes;
     });
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes+map_uuid_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.

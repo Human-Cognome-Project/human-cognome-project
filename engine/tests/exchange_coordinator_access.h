@@ -3,6 +3,12 @@
 namespace assembly::testing {
 struct ExchangeCoordinatorAccess {
   static bool consumed(const detail::ExchangeCoordinator &c) { return c.consumed_; }
+  template<class Visit> static void map_uuids(const detail::ExchangeCoordinator &c, Visit visit) {
+    for (const auto &row : c.bound_->occurrences_.storage()) visit(row.occurrence.study);
+    for (const auto &row : c.next_.storage()) visit(row.occurrence.study);
+    for (const auto &row : c.bound_->fields_.storage()) visit(row.field.object.scope);
+    for (const auto &row : c.next_fields_.storage()) visit(row.field.object.scope);
+  }
   template<class Visit> static void map_paths(const detail::ExchangeCoordinator &c, Visit visit) {
     for (const auto &row : c.bound_->occurrences_.storage()) visit(row.occurrence.source.path);
     for (const auto &row : c.next_.storage()) visit(row.occurrence.source.path);

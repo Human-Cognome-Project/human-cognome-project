@@ -35,6 +35,7 @@ using UuidText = std::basic_string<char,std::char_traits<char>,
 class Uuid {
  public:
   Uuid();  // Shared scope / nil.
+  explicit Uuid(const std::shared_ptr<hcp::resources::ReservationDomain> &domain);
   explicit Uuid(std::string_view value);
   Uuid(const Uuid &other, const std::shared_ptr<hcp::resources::ReservationDomain> &domain);
   const UuidText &str() const { return value_; }

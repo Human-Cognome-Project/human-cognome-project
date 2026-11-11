@@ -356,17 +356,17 @@ warm::OccurrenceId projection_id(const warm::OccurrenceId &id,
 }
 OccurrenceKey projection_key(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.study,projection_id(key.source,domain)};
+  return {warm::Uuid(key.study,domain),projection_id(key.source,domain)};
 }
 warm::ObjectKey projection_object(const warm::ObjectKey &key,
-    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
-  return {recipe_uuid ? warm::Uuid(key.scope,domain) : key.scope,{key.address.begin(),key.address.end(),
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {warm::Uuid(key.scope,domain),{key.address.begin(),key.address.end(),
       detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
 }
 warm::ToolRef projection_reference(const warm::ToolRef &ref,
-    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
-  return {projection_object(ref.object,domain,recipe_uuid),
-      recipe_uuid ? warm::Uuid(ref.revision,domain) : ref.revision};
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {projection_object(ref.object,domain),
+      warm::Uuid(ref.revision,domain)};
 }
 template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
     const warm::RecipeTable<T> &rows,
@@ -392,17 +392,17 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
   return {{warm::Uuid(b.ref.selection,domain),warm::Uuid(b.ref.revision,domain)},
       warm::Uuid(b.owner,domain),warm::Uuid(b.creator,domain),b.recipe_version,
       recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
-        return {projection_reference(t.ref,domain,true),warm::Uuid(t.epoch,domain),projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
+        return {projection_reference(t.ref,domain),warm::Uuid(t.epoch,domain),projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
             recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
-              return {projection_reference(p.target,domain,true),p.ordinal,p.stored_mass,p.contribution};
+              return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
             }),
-            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain,true); }),warm::Uuid(t.author,domain)};
+            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain); }),warm::Uuid(t.author,domain)};
       }),
       recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
-        return {projection_object(g.object,domain,true),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
+        return {projection_object(g.object,domain),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
       }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
       recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node,o.position,o.velocity};
+        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
       }),
       recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
         return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
@@ -411,10 +411,10 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
         return {projection_id(c.a,domain),projection_id(c.b,domain)};
       }),
       recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node};
+        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node};
       }),
       recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
-        return {f.kind,projection_object(f.object,domain,true)};
+        return {f.kind,projection_object(f.object,domain)};
       })};
 }
 ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
@@ -440,17 +440,46 @@ template<class T> auto projection_rows(const detail::SharedReservedVector<T> &ro
 }
 }
 
-// Explicit owner copies attach table, occurrence-path and row-address backing.
-// Ordinary value copies detach; other recipe/input and UUID payload remain
-// outside this selected domain.
+namespace {
+template<class T> T input_row(const T &row, const std::shared_ptr<detail::ReservationDomain> &) {
+  return row;
+}
+Definition input_row(const Definition &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.id,row.mass,row.centroid,
+      InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
+      InputTable<ParentOccurrence>(row.parents.begin(),row.parents.end(),detail::SharedReservationAllocator<ParentOccurrence>(domain))};
+}
+Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.aggregate,
+      InputTable<std::string>(row.parts.begin(),row.parts.end(),detail::SharedReservationAllocator<std::string>(domain)),row.exposure};
+}
+template<class Input> Input projection_input(const Input &source,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  Input result;
+  const auto copy=[&](auto &target, const auto &rows) {
+    using Table = std::decay_t<decltype(target)>;
+    target = Table(typename Table::allocator_type(domain));
+    target.reserve(rows.size());
+    for (const auto &row : rows) target.push_back(input_row(row,domain));
+  };
+  copy(result.nodes,source.nodes); copy(result.definitions,source.definitions);
+  copy(result.occurrences,source.occurrences); copy(result.selections,source.selections);
+  copy(result.contacts,source.contacts); copy(result.memberships,source.memberships);
+  copy(result.focal_fields,source.focal_fields);
+  if constexpr (std::is_same_v<Input,StudyInput>) result.capacity=source.capacity;
+  return result;
+}
+}
+// Explicit owner copies attach table, path, address, text and UUID backing.
+// Ordinary value copies detach; input text remains outside this domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
-    : study_(other.study_), recipe_(projection_recipe(other.recipe_,domain)),
+    : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),
       exposures_(other.exposures_.begin(),other.exposures_.end(),detail::SharedReservationAllocator<warm::Exposure>(domain)),
       occurrences_(projection_rows(other.occurrences_,domain)),
       parents_(projection_rows(other.parents_,domain)),
       spare_parents_(projection_rows(other.spare_parents_,domain)),
-      exposure_reserved_(other.exposure_reserved_), input_(other.input_), structural_input_(other.structural_input_) {}
+      exposure_reserved_(other.exposure_reserved_), input_(projection_input(other.input_,domain)), structural_input_(projection_input(other.structural_input_,domain)) {}
 
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
@@ -563,7 +592,7 @@ StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
              nodes[i].role == role(recipe_.nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = input_;
-  input.nodes = nodes;
+  input.nodes.assign(nodes.begin(),nodes.end());
   return input;
 }
 StructuralStudyInput LetterProjection::bind_structure(
@@ -578,7 +607,7 @@ StructuralStudyInput LetterProjection::bind_structure(
              nodes[i].role == role(recipe_.nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = structural_input_;
-  input.nodes = nodes;
+  input.nodes.assign(nodes.begin(),nodes.end());
   return input;
 }
 }  // namespace assembly

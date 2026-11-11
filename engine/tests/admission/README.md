@@ -3619,3 +3619,473 @@ stack, without erasing earlier failures. No GPU or performance claim follows.
 Next authorized slice: remaining retained projection UUID payload, as listed in
 the continuation plan. Other owner/input payload, setup, combined resources and
 operation/control integration remain open.
+
+### Remaining projection UUID qualification (2026-11-11)
+
+Base: accepted integrated main `427977d8`; #267 review 5858105951 explicitly
+approves this slice. Tested source: `938d8ef507bea11d45149ee7fc4b9e569da000ae`.
+The reviewed #261–#267 stack is merged; no dependent provisional stack is needed.
+
+Explicit copies select the destination domain before allocating retained study,
+occurrence/provenance owner-study, occurrence/byte/complete-character reference,
+and active/spare parent study/field UUID characters. Reserving inactive parents
+uses the same helpers. Recipe/address/path/table/text attachment is preserved.
+The visitor independently checks these backing requests, their terminators and
+allocator identity. Existing v1/v2 controls cover complete values, detached
+snapshots, source-death moves, populated spare-pool copies, every byte/work
+refusal boundary, reclamation and exact retry. Repeated owner exchange retains
+active/spare objects rather than recreating their UUID storage.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1518 / 1980 | 2023 / 3428 |
+| Selected live / peak requested bytes | 282222 / 282222 | 340060 / 340060 |
+| Selected cumulative allocation work | 370096 | 691672 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Compared with #267, selected live/peak/work
+increase by 2072 / 8066 bytes. Whole-owner requests, allocation-site counts and
+capacity census are unchanged. Uuid and containing-row layout remain unchanged;
+this admits existing storage, not additional storage. Selected reports overlap
+the census and must not be summed; neither proves complete physical-memory bounds.
+
+Full native and standalone warm builds passed first attempt. All 43 scoped CPU
+checks passed: 20 exchange processes, 12 prepared CTests, seven supporting CTests
+and four warm CTests. Workers 1/2 and bulk/default or direct/compiler-no-unroll
+were exercised. Tested source stayed clean/pinned; final delta is four Markdown
+files only. Pinned Clang 15/libstdc++ x64 and Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+
+One warning is preserved in `2-bulk-exchange_commit.log`: line 202 reports PASS;
+line 203 reports Taichi offline-cache lock failure. The process exited zero.
+No cache cleanup or warning-erasing rerun was performed. No other warning/error
+was found in final build/run logs. Earlier historical failures remain preserved.
+A restricted Windows submodule-status read hit MSYS access denied; an authorized
+retry succeeded. This was not a source/build/test failure.
+
+Evidence directory `projection-uuid-domain-938d8ef5` contains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout measurement.
+Verified local archive: `setup-evidence/projection-uuid-domain-938d8ef5.tar.gz`.
+SHA256SUMS manifest digest:
+
+    5468d4daca1d6ea074646121bdd4cb2bedfb342acc328d1a32239a631ea068c1
+
+Raw artifacts are local and have not been independently inspected remotely;
+hosted checks remain authoritative. No full baseline or browser rerun was made.
+No GPU or live database work was requested. Declaration/catalogue/map/other owner
+UUIDs and input payload remain separate from this contribution. Next bounded
+scope is retained declaration UUIDs, before full setup/combined resource work
+and operation/control integration.
+
+### Retained declaration UUID qualification (2026-11-11)
+
+Tested source `dbfd06463c25514dadc6dcdf06c666796157b52c`, stacked on #268 head
+`864eabe731f3238302ac6505516fa6cad4bd4e8e`. Review 5858272490 reported no blockers
+and explicitly authorized this slice. Parent smoke 43015222103 passed; native
+43015222274 was running at inspection. Integrated acceptance remains through
+#267, and #268's post-PASS cache warning remains preserved.
+
+Collection directly initializes owner/recipe identities with the destination
+domain instead of allocating detached defaults and then replacing them. Explicit
+copies also attach before allocation. Outgoing/incoming source study IDs,
+source/parent/leaf reference scopes and revisions use the same explicit copies.
+Public detached declarations, complete structural values and matching are unchanged.
+
+Both collection and copy controls observe each UUID request independently,
+including its terminator and allocator; retained live requests equal domain bytes.
+Zero byte/work budget refuses before any allocation attempt. Boundary sweeps,
+complete-value comparison, detached snapshots, source-death moves, reclamation
+and exact retry remain active. Whole-owner observations and every allocation
+failure-injection site include the new selected payload.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1551 / 2040 | 2038 / 3668 |
+| Selected live / peak requested bytes | 284442 / 284442 | 348940 / 348940 |
+| Selected cumulative allocation work | 372316 | 700552 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Selected live/peak/work increase by
+2220 / 8880 bytes from #268. Whole-owner retained/peak requests and capacity census
+are unchanged; allocation-site counts decrease by 1 / 4 after eliminating
+replaced default identity storage. UUID and containing-row layout are unchanged.
+The selected report overlaps the census and must not be added to it.
+
+Full configured native and standalone warm builds passed first attempt. All 43
+scoped CPU checks passed: 20 exchange processes (workers 1/2, bulk/default and
+direct/compiler-no-unroll), 12 prepared CTests, seven supporting CTests and four
+warm CTests. Final build/run logs contain no warnings/errors. Source remained
+clean/pinned; tested-source-to-final-head delta is four Markdown files only.
+Pinned Clang 15/libstdc++ x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, shared host; no timing claim.
+
+Evidence directory `declaration-uuid-domain-dbfd0646` retains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout measurements.
+Verified local archive: `setup-evidence/declaration-uuid-domain-dbfd0646.tar.gz`.
+SHA256SUMS manifest digest:
+
+    6d93c65ced4843aeb9b744df3cee41856bb6b6e877b34221868546efeeb70f97
+
+Local raw artifacts have not been independently inspected remotely; hosted
+checks remain authoritative. Historical failures/warnings remain in their
+original records; this run does not relabel #268's warning as warning-free.
+
+Next: catalogue UUIDs, auditing retained fields and temporary graph keys
+separately. Map/other owner UUIDs, input payload, full setup, combined accounting
+and operation/control integration remain open. No GPU, live database, browser
+rerun, full baseline or performance qualification is claimed.
+
+### Retained catalogue UUID qualification (2026-11-11)
+
+Tested source `14e34f0d606cb26c7e4a84617e9976835f3fb737`, stacked on #269 head
+`f6830b9d404126cb14ee3a2a07db9896cee47936`. Review 5858547912 found no blockers
+and authorized a catalogue UUID audit with retained/transient scopes distinguished.
+This contribution selects retained payload only. #269 smoke 43017931238 passed;
+native 43017931472 was running at inspection. #268/#269 remain provisional;
+integrated acceptance is through #267. Earlier warnings/failures remain preserved.
+
+Study/recipe UUIDs initialize directly with their destination allocator; retained
+contribution occurrence study, field scope, target scope and revision attach
+before character allocation. Temporary graph-key UUIDs deliberately remain
+detached; their existing address/node attachment is preserved. Public detached
+collection, graph semantics, per-occurrence deduplication and exact values remain
+unchanged. Equivalence now also checks recipe identity and the alternatives flag.
+
+The retained UUID visitor feeds independent request/terminator/domain checks,
+exact observed retained-byte equality, snapshot/source-death/move controls,
+byte/work refusal/reclamation/exact retry and whole-owner failure injection.
+Zero allowance refuses before allocation. Existing diamond, duplicate graph-key
+and cycle witnesses run unchanged, preserving temporary-address qualification.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1562 / 2055 | 2053 / 3719 |
+| Selected live / peak requested bytes | 284997 / 284997 | 350827 / 350827 |
+| Selected cumulative allocation work | 372871 | 702439 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Selected live/peak/work increase by 555 / 1887
+bytes from #269. Whole-owner retained/peak requests, allocation-site counts and
+census are unchanged, as are UUID and containing-row layouts. These reports
+overlap and must not be summed; they are not physical-memory/performance bounds.
+
+Full configured native and standalone warm builds passed first attempt. All 43
+scoped CPU checks passed: 20 exchange processes across workers 1/2 and bulk/default
+or direct/compiler-no-unroll, 12 prepared CTests, seven supporting CTests and four
+warm CTests. Final build/run logs contain no warnings/errors. Source stayed clean
+and pinned; final delta is four Markdown files only. Pinned Clang 15/libstdc++ x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`, shared host.
+
+Evidence directory `catalogue-uuid-domain-14e34f0d` retains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/catalogue-uuid-domain-14e34f0d.tar.gz`.
+SHA256SUMS manifest digest:
+
+    75146d0627b50b6ce2a0a3aa3f6696d3e106f3085de3e864c51a36073c3e23f3
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Prior #268 cache warning and earlier failures remain in
+their records; this run does not supersede those historical observations.
+
+Next: temporary catalogue graph-key UUIDs with independently counted requests,
+prepayment, transient/retained overlap and graph failure/retry witnesses. Map/
+other owner UUIDs, input payload, complete setup, combined resources and operation/
+control integration remain separate. No GPU, live DB, browser rerun or full
+baseline qualification is claimed.
+
+### Temporary catalogue graph UUID qualification (2026-11-11)
+
+Tested source `f4082be65778d5f262f1e21c448516ad90bca0b7`, stacked on #270 head
+`065958cb068f453ecc17693850693275aede3b21`. Review 5858692092 found no blockers
+and authorized this slice. Parent smoke 43020338422 passed; native 43020338513
+was running at inspection. #268–#270 remain provisional; integration is through #267.
+
+Catalogue object copies now select the UUID domain before allocation for tools,
+state, reached and ancestor-target graph keys; the retained-only flag is removed.
+Existing address/node/retained payload attachment and graph semantics are preserved.
+
+The diamond fixture independently predicts 38 temporary UUID requests (1406 bytes)
+and 27 retained requests (999 bytes), with peak overlap 2405 bytes. Address
+requests remain separately measured: temporary 570, retained 180, overlap 750 bytes.
+All 1414 graph allocation-failure sites reclaim storage. Duplicate insertion adds
+and releases one UUID/address pair without changing values. Cycle rejection
+reclaims all backing; repairing the cycle permits an exact-budget retry.
+
+Important witness correction: UUID payload and ObjectKey comparison formatting
+both request 37 bytes. The initial size-only observer incorrectly counted both.
+The corrected pointer-aware observer classifies pre-admitted requests by allocation-
+work delta, checks their count against independent graph cardinalities, and tracks
+their releases. A same-sized detached negative control verifies the distinction.
+It reports 626 unselected 37-byte formatting requests separately in this fixture.
+Those comparison temporaries remain unselected setup work; no comparator change
+or complete setup accounting is claimed. Full budget sweeps, exact retry and
+catalogue snapshot/move lifetime controls remain active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1578 / 2083 | 2066 / 3747 |
+| Selected live / peak requested bytes | 284997 / 284997 | 350827 / 350827 |
+| Selected cumulative allocation work | 373907 | 703475 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Compared with #270, cumulative selected work
+increases 1036 bytes in each fixture. Selected live/peak, whole-owner retained/
+peak requests, allocation-site counts and census are unchanged. Temporary graph
+UUID overlap is below the existing whole-owner peak. Reports overlap and must
+not be summed; layouts/encoding/numerical behavior are unchanged.
+
+Preserved initial run at `a4b1e3d34d45bccbc672792b97724c87e6797b30`: builds passed;
+four exchange_owner lanes failed the new size-only witness, so the remaining
+16 exchange processes did not run. Twelve prepared, seven supporting and four
+warm CTests passed; overall exit 1. Archive
+`setup-evidence/catalogue-graph-uuid-initial-a4b1e3d3.tar.gz`, SHA256SUMS:
+
+    9af193f7a094ca1865596bdd100cc580324885d619ed9e89d448a2a001bad594
+
+The correction is test-only; production graph attachment is unchanged. Initial
+raw logs remain intact. Earlier failures/cache warnings are preserved separately.
+
+Final corrected-source builds passed. All 43 scoped CPU checks passed: 20 exchange
+processes across workers 1/2 and bulk/default or direct/compiler-no-unroll,
+12 prepared CTests, seven supporting CTests and four warm CTests. Final build/run
+logs contain no warnings/errors. Source stayed clean/pinned; final delta is four
+Markdown files only. Pinned Clang 15/libstdc++ x64 and Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, shared host; no timing claim.
+
+Evidence directory `catalogue-graph-uuid-domain-f4082be6` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/catalogue-graph-uuid-domain-f4082be6.tar.gz`.
+SHA256SUMS manifest digest:
+
+    2ee5d3002a844e47baba1677eef171f9ceb99a35d754ea96ee7318226400f15a
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Neither the initial failed run nor historical warnings are
+relabeled by this final pass.
+
+Next: retained ExchangeMap slot UUIDs, auditing default construction/reservation/
+copy before allocation and preserving inactive-slot reuse. Other owner identities,
+comparison-formatting/input payload, full setup, combined resources and operation/
+control integration remain separate. No GPU, live DB, browser rerun, full baseline
+or performance qualification is claimed.
+
+### Retained map-slot UUID qualification (2026-11-11)
+
+Tested source `cb177073e68355ceba50dd38d388695aa59c70a1`, stacked on #271 head
+`768d530b4e140c9fc96bfc7ce13fe7a57c4b739c`. Review 5859029648 found no blockers
+and explicitly authorized map-slot UUIDs. Parent smoke 43022851916 passed; native
+43022851847 was running at inspection. #268–#271 remain provisional; integrated
+acceptance is through #267. Historical graph witness failures and cache warnings
+remain preserved. The graph witness combines allocation observations with domain
+telemetry; its expected structural counts are independently derived.
+
+Uuid gains a domain-selected nil constructor. ExchangeMap reserves outer backing,
+then constructs each occurrence/field slot with its UUID and empty path/address
+allocator already selected. No detached default UUID precedes attachment. Explicit
+copies preserve inactive nested capacity; assignment retains the destination
+domain, and ordinary snapshots detach. UUID representation/encoding is unchanged.
+
+Both slot kinds have independent UUID request/terminator and exact retained-byte
+observations. A budget admitting only the outer row rejects the first UUID with
+one observed allocation attempt and complete cleanup. Full byte/work sweeps,
+all-site failure injection, exact retry, inactive-slot snapshots, source-death,
+empty-map later reserve and no-allocation assignment/reuse/erase/swap pass.
+Owner/coordinator visitors include all active/inactive slot UUIDs. Standalone
+warm checks cover domain-selected nil values, refusal and exact retry.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2731 / 3210 | 3648 / 5803 |
+| Selected live / peak requested bytes | 316077 / 316077 | 381907 / 381907 |
+| Selected cumulative allocation work | 415606 | 779547 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Relative to #271, selected live/peak increases
+31080 bytes in each fixture; cumulative work increases 41699 / 76072 bytes,
+including setup copies and slot construction. Whole-owner requested storage,
+allocation-site counts and census are unchanged in these fixtures. Slot growth
+now reserves requested outer capacity explicitly; no general claim of identical
+capacity growth is made. Selected reports overlap the census and must not be
+summed; they are not physical-memory or performance bounds.
+
+Full configured native and standalone warm builds passed. All 43 CPU checks
+passed: 20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared
+checks, seven supporting checks and four warm CTests. No build/run warnings or
+errors were found. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `map-uuid-domain-cb177073` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/map-uuid-domain-cb177073.tar.gz`.
+SHA256SUMS manifest digest:
+
+    6a70d8accae17cf066e034a205428fc777889bbbbfba2da3e9a32a3bec7916e3
+
+Raw local artifacts have not been independently inspected remotely. Hosted checks
+remain authoritative; historical failures and warnings remain preserved.
+
+Next: retained projection input top-level tables in StudyInput/StructuralStudyInput,
+after auditing shared interfaces and consumers. Nested input arrays/text,
+comparison-formatting temporaries, other setup payload, combined resources and
+operation/control integration remain separate. No GPU, live DB, browser rerun
+or full baseline qualification is claimed.
+
+### Retained projection input table qualification (2026-11-11)
+
+Tested source `19263b23821992b38dbabe566b0e05b1dde3ba8d`, stacked on #272 head
+`5ea60585234fbdea12a6f4441103d82884eb9417`. Review 5859234213 found no blockers
+and authorized this shared-interface/consumer audit and bounded continuation.
+Parent smoke 43026470580 and warm 43026470847 passed; native 43026470568 was
+running at inspection. Integrated acceptance remains through #267; #268–#272
+remain provisional. Prior failures and warnings remain preserved.
+
+StudyInput and StructuralStudyInput top-level nodes, definitions, occurrences,
+selections, contacts, memberships and focal fields use InputTable, backed by the
+shared reservation allocator. Explicit projection copies select the destination
+domain before each table allocation. Nested arrays/text remain separate. Public
+bind nodes and active-workbench focus use iterator assignment; native scale
+binding and assembly fixtures consume the allocator-aware type. No model value,
+recipe version or numerical change is intended. All configured native consumers,
+including warm integration and viewport capture, were rebuilt successfully.
+
+Independent table pointer/request checks, exact selected-byte equality and all
+allocator identities now include fourteen input tables. Complete v1/v2 equality
+covers capacity, nodes, geometry, parents, starts, selections, contacts, membership
+and focus. Real recipe fixtures are supplemented with retained nodes/memberships/
+focus normally filled only at public handoff. Detached snapshots after source
+death, moves retaining domain lifetime, byte/work refusal sweeps, reclamation and
+exact retry cover these rows. Whole-owner all-site failure injection remains active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2735 / 3218 | 3652 / 5811 |
+| Selected live / peak requested bytes | 317837 / 317837 | 385347 / 385347 |
+| Selected cumulative allocation work | 417366 | 782987 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320465 / 321138 | 390795 / 393317 |
+| Retained capacity census | 320353 | 390491 |
+
+All four CPU configurations agree. Compared with #272, selected live/peak/work
+increases 1760 / 3440 bytes. Whole-owner retained/peak requests and census each
+increase 448 bytes, reflecting allocator state in two retained projection objects;
+allocation-site counts are unchanged. The remaining selected increase accounts
+for existing top-level table backing.
+
+Pinned layouts: StudyInput 288, StructuralStudyInput 280, LetterProjection 1304
+bytes. UUID/ObjectKey/ToolRef/Tool/Parent/Geometry/Bundle remain 48/88/136/432/168/
+152/520 bytes; UUID payload remains 37 bytes. Allocator state increases retained
+projection object size; selected accounting overlaps the existing capacity census
+and must not be summed. These are requested-storage observations, not physical
+memory or performance bounds.
+
+The auxiliary layout helper initially omitted include paths and failed to find
+assembly/study_input.h. Correcting only its include paths produced the above
+report; the diagnostic is retained in layout-helper-initial-failure.txt. This was
+not a native or warm product build failure. No source change or warning-erasing
+rerun followed it.
+
+All 45 CPU checks passed: 20 exchange processes (five cases, workers 1/2,
+bulk/direct), 12 prepared checks, nine supporting checks (including assembly and
+preparation) and four warm CTests. No native/warm build or test warnings/errors.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-table-domain-19263b23` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and the corrected layout probe.
+Verified local archive: `setup-evidence/input-table-domain-19263b23.tar.gz`.
+SHA256SUMS manifest digest:
+
+    d5c9513ea29df142de6c15b927d672df411d63408ac3870aa6f670dcd3acf8d9
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Historical failures and warnings remain preserved.
+
+Next: nested retained input arrays (Definition components/parents and Selection
+parts). Input text, other identities/comparison-formatting, full setup, combined
+resources and operation/control integration remain separately inventoried. No GPU,
+live database, browser rerun, full baseline or performance qualification is claimed.
+
+### Nested retained input array qualification (2026-11-11)
+
+Tested source `4820a18bb5f5aff6813b5707254cbbf8d2788e73`, stacked on #273 head
+`8c142c3056736ba6a1a683b14ced8c79163a08ab`. Review 5859431800 found no blocking
+source findings and authorized this slice. Parent smoke 43028610415 passed;
+native 43028610546 was running at inspection. Integrated acceptance remains
+through #267; #268–#273 remain provisional.
+
+Definition components/parents and Selection parts use InputTable. Explicit
+projection input copying reserves the outer table and constructs each row with
+its nested destination allocators already selected. Text stays detached. The
+input backing/domain visitor includes every nested array, including empty ones.
+Existing independent request observations, exact selected-byte equality, complete
+v1/v2 comparisons, refusal/reclamation/exact retry, detached snapshots/source death,
+moved lifetime and all-site owner failure injection exercise this added scope.
+
+The shared-consumer audit preserves the public std::vector enclosing-radius API
+and factors the unchanged calculation into an allocator-generic internal helper.
+Active-workbench local geometry and geometry overrides use iterator copies;
+assembly fixtures use InputTable. Definition/Selection layout changes require
+consumer rebuilds; model values and native handoff remain unchanged.
+
+Initial source `f0e40840f0a429c85ba93fa905c2002cb343a3d4` failed native compilation
+at active_workbench.cpp:133: geometry override still assigned std::vector into
+InputTable. The corrected source uses iterator assignment. No qualification tests
+ran at the failed source; warm build/tests were not reached. Initial build/source
+archive: `setup-evidence/input-nested-initial-f0e40840.tar.gz`, manifest digest:
+
+    c6eb73fe0e9b1d6d420528db022ad493dfe2670930b8b66fa1db109db3f26342
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2742 / 3232 | 3662 / 5831 |
+| Selected live / peak requested bytes | 318861 / 318861 | 386851 / 386851 |
+| Selected cumulative allocation work | 418390 | 784491 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320689 / 321362 | 391115 / 393637 |
+| Retained capacity census | 320577 | 390811 |
+
+All four CPU configurations agree. Compared with #273, selected live/peak/work
+increases 1024 / 1504 bytes. Whole-owner retained/peak requests and census each
+increase 224 / 320 bytes from nested allocator state; allocation-site counts are
+unchanged. The remaining selected increase accounts for existing nested backing.
+Pinned layouts: Definition 144, Selection 80 bytes; StudyInput 288,
+StructuralStudyInput 280 and LetterProjection 1304 remain unchanged. UUID-related
+layouts and encoding remain unchanged, including the 37-byte UUID payload.
+
+Corrected native and standalone warm builds passed. All 45 CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting checks (including assembly/preparation/native handoff/viewport)
+and four warm CTests. No corrected-source build or test warnings/errors.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-nested-domain-4820a18b` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-nested-domain-4820a18b.tar.gz`.
+SHA256SUMS manifest digest:
+
+    5f7f86d8996bc0b30529f11dc5c5a71a7c19fc986d900c6527e53899e06048ce
+
+Hosted checks remain authoritative. The corrected pass does not relabel the
+initial compiler failure or historical warnings.
+
+Selected reports overlap the capacity census and must not be summed. These are
+requested-storage observations, not physical-memory or performance bounds.
+Next: retained input text, including inline/heap payload and terminators. Other
+identities/comparison-formatting, full setup, combined resources and operation/
+control integration remain separate. No GPU, live database, browser rerun, full
+baseline or performance qualification is claimed. Earlier failures/warnings remain
+preserved; raw local artifacts have not been independently inspected remotely.

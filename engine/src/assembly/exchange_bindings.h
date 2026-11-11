@@ -22,11 +22,12 @@ struct ExchangeFieldBinding {
   FieldKey field;
   engine::RecordHandle handle;
 };
-inline void initialize_key(OccurrenceBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
-  v.occurrence.source.path = warm::OccurrencePath{SharedReservationAllocator<std::uint32_t>(domain)};
+// Construct nil UUID and empty nested storage with the domain already selected.
+inline OccurrenceBinding make_map_slot(OccurrenceBinding *, const std::shared_ptr<ReservationDomain> &domain) {
+  return {{warm::Uuid(domain),{0,warm::OccurrencePath{SharedReservationAllocator<std::uint32_t>(domain)}}},{}};
 }
-inline void initialize_key(ExchangeFieldBinding &v, const std::shared_ptr<ReservationDomain> &domain) {
-  v.field.object.address = codec::Address{SharedReservationAllocator<codec::AddressElement>(domain)};
+inline ExchangeFieldBinding make_map_slot(ExchangeFieldBinding *, const std::shared_ptr<ReservationDomain> &domain) {
+  return {{GroupKind{}, {warm::Uuid(domain),codec::Address{SharedReservationAllocator<codec::AddressElement>(domain)}}},{}};
 }
 inline auto &key_buffer(OccurrenceBinding &v) { return v.occurrence.source.path; }
 inline const auto &key_buffer(const OccurrenceBinding &v) { return v.occurrence.source.path; }

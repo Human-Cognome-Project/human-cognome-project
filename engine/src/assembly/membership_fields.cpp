@@ -11,7 +11,7 @@ void need(bool condition, const char *message) {
 }
 warm::ObjectKey catalogue_object(const warm::ObjectKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.scope,{key.address.begin(),key.address.end(),
+  return {warm::Uuid(key.scope,domain),{key.address.begin(),key.address.end(),
       detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
 }
 }  // namespace
@@ -26,9 +26,7 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
 
 MembershipFields MembershipFields::collect(const LetterProjection &projection, bool alternatives,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  MembershipFields out(domain);
-  out.study_ = projection.study();
-  out.recipe_ = projection.recipe().ref;
+  MembershipFields out(projection.study(),projection.recipe().ref,domain);
   out.alternatives_ = alternatives;
   using ToolAllocator = detail::SharedReservationAllocator<std::pair<const warm::ObjectKey,const warm::Tool *>>;
   std::map<warm::ObjectKey, const warm::Tool *,std::less<warm::ObjectKey>,ToolAllocator>
@@ -94,13 +92,13 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     for (const auto &group : follow(owner.definition)) {
       need(out.contributions_.size() < std::size_t(INT32_MAX),
            "membership: native contribution count overflow");
-      OccurrenceKey occurrence{o.key.study,{o.key.source.entry,
+      OccurrenceKey occurrence{warm::Uuid(o.key.study,domain),{o.key.source.entry,
           {o.key.source.path.begin(),o.key.source.path.end(),
            detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
       const auto &target=tools.at(group)->ref;
       out.contributions_.push_back({std::move(occurrence),
                                     {GroupKind::Membership, catalogue_object(group,domain)},
-                                    {catalogue_object(target.object,domain),target.revision},
+                                    {catalogue_object(target.object,domain),warm::Uuid(target.revision,domain)},
                                     *live.mass});
     }
   }

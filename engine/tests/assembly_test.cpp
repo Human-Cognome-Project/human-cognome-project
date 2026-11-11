@@ -22,7 +22,7 @@ engine::InstanceSettings settings(bool cuda) {
 
 // Real native study schema. Scale roles are explicit host bindings, not a
 // rule inferred from dense axes, structural depth or SNode identifier.
-std::vector<StudyNode> layout(engine::Runtime &runtime) {
+InputTable<StudyNode> layout(engine::Runtime &runtime) {
   using namespace taichi::lang;
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   auto &primary = root->dense(Axis(0), 1);
@@ -31,7 +31,7 @@ std::vector<StudyNode> layout(engine::Runtime &runtime) {
   auto &equivalent = nested.dense(Axis(3), 1);
   auto &leaf = equivalent.insert_children(SNodeType::place);
   leaf.dt = PrimitiveType::i32;
-  std::vector<StudyNode> nodes{{root.get(), -1, ScaleRole::Root},
+  InputTable<StudyNode> nodes{{root.get(), -1, ScaleRole::Root},
       {&primary, 0, ScaleRole::PrimaryStep},
       {&secondary, 1, ScaleRole::SecondaryCompression},
       {&nested, 2, ScaleRole::SecondaryCompression},
@@ -40,11 +40,11 @@ std::vector<StudyNode> layout(engine::Runtime &runtime) {
   return nodes;
 }
 
-StudyInput couplets(const std::vector<StudyNode> &nodes) {
+StudyInput couplets(const InputTable<StudyNode> &nodes) {
   StudyInput input;
   input.capacity = 6;
   input.nodes = nodes;
-  const std::vector<Sphere> geometry{{{-0.25, 0, 0}, 0.4}, {{0.25, 0, 0}, 0.4}};
+  const InputTable<Sphere> geometry{{{-0.25, 0, 0}, 0.4}, {{0.25, 0, 0}, 0.4}};
   input.definitions = {{"01", 2, {}, geometry, {{"0", 0, 1}, {"1", 1, 1}}},
                        {"10", 2, {}, geometry, {{"1", 0, 1}, {"0", 1, 1}}},
                        {"11", 2, {}, geometry, {{"1", 0, 1}, {"1", 1, 1}}}};

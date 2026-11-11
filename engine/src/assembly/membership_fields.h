@@ -29,8 +29,11 @@ class MembershipFields {
       const std::vector<StudyNode> &nodes) const;
 
  private:
-  explicit MembershipFields(const std::shared_ptr<detail::ReservationDomain> &domain)
-      : contributions_(detail::SharedReservationAllocator<MembershipContribution>(domain)) {}
+  MembershipFields(const warm::Uuid &study, const warm::BundleRef &recipe,
+      const std::shared_ptr<detail::ReservationDomain> &domain)
+      : study_(study,domain),
+        recipe_{warm::Uuid(recipe.selection,domain),warm::Uuid(recipe.revision,domain)},
+        contributions_(detail::SharedReservationAllocator<MembershipContribution>(domain)) {}
   friend MembershipFields membership_fields(const LetterProjection &);
   friend class detail::ExchangeOwner;
   friend class detail::ExchangeBindings;

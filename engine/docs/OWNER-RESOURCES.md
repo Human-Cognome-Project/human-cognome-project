@@ -1403,3 +1403,185 @@ Review 5858105951 accepts the recipe UUID scope at
 workflows passed. Scope limits and historical evidence remain unchanged.
 Next: remaining retained projection UUIDs; other owner/input UUID payload,
 full setup and combined resources remain open before operation/control integration.
+
+### Remaining projection UUID domain (contribution awaiting review)
+
+Explicit LetterProjection copies now attach study identity, occurrence and byte
+provenance owner-study IDs, occurrence/byte/complete-character reference scopes
+and revisions, and active/spare parent contribution study/field scopes. The
+existing projection key/object/reference helpers always select the destination
+UUID allocator before copying; reserve_exposure uses those same helpers when
+populating inactive contributions. The recipe-only switch is no longer needed.
+Existing recipe, table, address, path and text attachment is preserved.
+
+The nonallocating text/backing visitor includes each of these UUID fields,
+feeding independent actual requests (including terminators), domain identity,
+exact selected live bytes, budget refusal/reclamation/exact retry and detached/
+moved lifetime checks. Populated spare-pool copies also verify every backing
+allocator points to the new domain. Existing owner operation tests exercise
+repeated active/spare transfers without replacing retained UUID storage.
+
+This changes allocation-domain selection, not Uuid representation, projection
+values, encoding or numerical behavior. The prior census already counted these
+UUID characters; selected accounting overlaps that census. Declaration,
+catalogue/map/other owner UUIDs and input payload remain outside this slice.
+Next bounded scope is retained declaration UUID payload. Complete setup and
+combined resource accounting remain open before operation/control integration.
+
+### Declaration UUID domain (contribution awaiting review)
+
+LetterExchangeContract collection now constructs owner and recipe identities
+with their destination allocator directly, eliminating detached default UUID
+payloads that were subsequently replaced. Explicit copies attach those same
+identities before allocation. Source occurrence study IDs, source/parent/leaf
+reference scopes and revisions use explicit Uuid(source, domain) construction.
+The public detached declaration path and exact matching semantics are preserved.
+
+A nonallocating UUID visitor extends independent request/terminator, domain,
+complete retained-byte, detached snapshot and moved/source-death controls for
+both collection and explicit copying. Zero byte/work allowance must refuse
+before any observed allocation attempt. Existing boundary sweeps qualify
+reclamation and exact retry; whole-owner observation and allocation-failure
+injection include every retained declaration UUID. No representation, encoding
+or numerical policy changes. Selected totals overlap the retained census.
+
+Next: catalogue UUIDs, auditing retained and temporary graph requests separately.
+Map/other owner UUIDs, input payload, complete setup, combined resources and
+operation/control integration remain open. #268 is provisionally accepted;
+its post-PASS cache warning remains preserved, and integrated acceptance is
+through #267 pending hosted reconciliation.
+
+### Retained catalogue UUID domain (contribution awaiting review)
+
+MembershipFields now initializes study/recipe UUIDs directly with the destination
+domain. Every retained contribution attaches occurrence study, field scope,
+target scope and target revision before copying character payload. The shared
+object-copy helper explicitly selects this only for retained rows; UUIDs in
+temporary tools/state/reached/ancestor-target graph keys remain detached. Their
+existing domain-selected address and node backing is preserved.
+
+A nonallocating retained UUID visitor covers independent request/terminator and
+allocator observations, exact retained backing equality, ordinary detached copies,
+source-death snapshots, moves, budget refusal/reclamation/exact retry and whole-
+owner failure injection. Zero byte/work allowance refuses before allocation.
+Catalogue equivalence also compares recipe identity and the alternatives flag.
+Existing diamond, duplicate-key and cycle controls keep graph behavior checked.
+
+No representation, encoding or numerical policy changes. Selected reports overlap
+the census. Next: temporary graph-key UUIDs with independent transient/retained
+request witnesses. Map/other owner UUIDs, input payload, complete setup, combined
+resources and operation/control integration remain separate. #268/#269 are
+provisionally accepted; integrated acceptance remains through #267.
+
+### Temporary catalogue graph UUID domain (contribution awaiting review)
+
+The catalogue object helper now attaches every scope UUID before allocation,
+including keys in tools/state/reached maps and ancestor-target sets. The retained-
+only switch is removed. Existing retained UUID, address and node attachment and
+graph traversal/deduplication semantics are preserved. UUID representation and
+encoding are unchanged. These temporary payloads are charged while live and
+released after collection; their cumulative work remains charged.
+
+The pinned graph fixture identifies 15-byte address requests. UUID payload and
+comparison formatting both request 37 bytes: the observer tracks prepaid UUID
+blocks by pointer, checks their counts against independent graph cardinalities,
+and reports unselected same-sized requests separately. A detached 37-byte negative
+control qualifies that distinction. Separate counters check acquired/released
+bytes, transient/retained overlap and retained-only bytes after graph teardown.
+Its diamond has four visited vertices and five unique ancestor-set entries.
+Duplicate insertion checks the extra rejected UUID/address and exact reclamation.
+Cycle rejection checks prepayment/cleanup, then repairing the cycle must permit
+an exact-budget retry. Existing all-site failure injection, full byte/work
+refusal sweeps and detached/moved catalogue lifetime controls remain active.
+
+Next: retained ExchangeMap slot UUIDs, including setup/default construction and
+inactive-slot reuse. Other owner identities, input payload, full setup and combined
+accounting remain separate before operation/control integration. Selected reports
+overlap the census; no complete allocator, physical-memory or performance claim.
+#268–#270 are provisional; integrated acceptance remains through #267.
+
+Witness calibration exposed same-sized temporary allocations in ObjectKey ordering:
+operator< renders warm::key strings, including 37-byte UUID text copies. These
+comparison-formatting requests remain unselected setup payload, not graph-key
+UUID admission. The initial size-only witness failure is retained in admission
+evidence; no comparator behavior was changed to satisfy the new witness.
+
+### Map-slot UUID domain (contribution awaiting review)
+
+A nil Uuid constructor accepts the reservation domain and allocates its normalized
+36-character payload directly with that allocator. ExchangeMap reserves outer
+backing first, then constructs occurrence/field binding slots with this nil UUID
+and domain-selected empty path/address storage. It no longer default-resizes
+UUID-bearing rows and attaches allocators afterward. Explicit copies preserve
+inactive nested capacities; assignment keeps the destination allocator. Ordinary
+snapshots detach. Clear/erase/reuse/swap retain the existing no-allocation behavior.
+
+Every constructed slot's study/scope UUID is included in standalone and owner/
+coordinator visitors, independent actual-request/terminator checks, exact domain
+backing, refusal/reclamation/retry and all-site failure injection. A budget that
+admits only the outer row must refuse the first UUID with exactly one observed
+allocation attempt. Active and inactive allocators are checked during assignment,
+erase/swap, snapshot source death and empty-map later reservation. The standalone
+warm test covers domain-selected nil values, refusal and exact retry.
+
+UUID layout/encoding is unchanged. Slot growth now explicitly reserves the
+requested outer capacity before append; measured capacity/request changes must
+be reported rather than assumed identical. Selected accounting overlaps the
+capacity census. Next: retained projection input top-level tables, after shared
+interface/consumer audit. Nested input payload, comparison formatting, other setup,
+combined resources and operation/control integration remain separate.
+
+### Retained projection input table domain (contribution awaiting review)
+
+StudyInput and StructuralStudyInput use the shared reservation allocator for their
+seven top-level tables: nodes, definitions, occurrences, selections, contacts,
+memberships and focal fields. Explicit LetterProjection owner copies construct
+these tables with the destination domain before row allocation. Nested std::vector
+and std::string payload remains outside this bounded slice. Ordinary value copies
+detach through allocator copy selection; moves retain domain lifetime.
+
+The shared-interface audit found concrete std::vector handoffs in public bind
+nodes and active-workbench focus; these use iterator assignment into detached
+input tables. Native scale binding consumes the new table type. Assembly test
+helpers follow that type. Model values and numerical semantics are unchanged;
+container layouts grow by allocator state, requiring affected consumer rebuilds.
+The existing capacity census already visits these tables and is not added to the
+selected-domain report.
+
+The projection visitor includes all fourteen tables, including empty allocators.
+Independent pointer/request observations and exact selected-byte equality cover
+retained backing. Complete v1/v2 comparisons include capacity, layout pointers,
+geometry, parent ordinals/counts, occurrences/starts, selections, contacts,
+memberships and focus. Real v1/v2 fixtures supplement nodes/memberships/focus
+normally populated at public handoff, exercising copy, snapshot/source death,
+move lifetime, byte/work refusal and exact retry. Whole-owner failure injection
+and affected native/viewport consumer regressions remain required.
+
+Next: nested input arrays (Definition components/parents and Selection parts),
+then input text and remaining setup payload. Full setup, combined accounting and
+operation/control integration remain separate. No physical-memory/performance claim.
+
+### Nested retained input array domain (contribution awaiting review)
+
+Definition components/parents and Selection parts now use InputTable. Explicit
+projection input copies reserve outer backing, then construct each row with its
+nested destination allocator selected before allocation. Other rows use ordinary
+value copies. Input text stays detached. Ordinary snapshots detach nested tables;
+moves preserve their domains. Empty nested allocators are attached too.
+
+The shared geometry calculation is factored into an allocator-generic internal
+helper, preserving the public std::vector interface and its initializer-list
+callers without temporary geometry copies. Active-workbench local geometry uses
+iterator construction at its public handoff. Assembly fixtures use InputTable.
+All configured consumers must rebuild because Definition/Selection layouts grow.
+
+The existing input-table visitor now includes components, parents and parts,
+feeding independent pointer/request checks, exact selected accounting and domain
+identity assertions. Complete v1/v2 equality, refusal/reclamation/exact retry,
+detached source-death snapshots, moved lifetime and whole-owner all-site failure
+injection exercise the nested backing. Geometry/order/counts/exposure are unchanged.
+
+Next: retained input text. Other identities/comparison formatting, full setup,
+combined resources and operation/control integration remain separately inventoried.
+Selected accounting overlaps the capacity census; no physical-memory or performance
+qualification follows from these requested-storage observations.
