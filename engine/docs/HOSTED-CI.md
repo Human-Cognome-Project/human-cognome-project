@@ -145,3 +145,44 @@ the main build successfully saved its toolchain-qualified cache under source
 This verifies cache publication, not warm-cache reuse or a warm-cache speedup.
 The rollout is complete. No additional benchmark rerun was needed, and these
 hosted CPU results do not qualify contributor-local or GPU execution.
+
+## Ubuntu archive resolution repair (2026-11-11, awaiting review)
+
+Reviews of #275–#277 identified repeated DNS resolution failures for
+azure.archive.ubuntu.com during apt/toolchain installation, before product
+compilation. #276 viewport attempts failed during Playwright dependency installation
+and were cancelled before browser tests. Repeated identical retries did not restore
+qualification. Those attempts remain failed/cancelled; skipped suites are not passes.
+
+`hosted_ubuntu_mirror.sh` replaces only the exact Azure Ubuntu archive URL with
+`archive.ubuntu.com` in legacy `.list` and deb822 `.sources` files. It preserves
+protocol, suites, components, Signed-By keys and security.ubuntu.com; unrelated
+repositories are untouched. This is Ubuntu's primary archive, documented in the
+[Ubuntu package archive reference](https://ubuntu.com/project/docs/how-ubuntu-is-made/concepts/package-archive/).
+No package authentication bypass, toolchain-version change, numerical expectation
+change or weakened test gate is introduced. A remaining download failure still
+fails the existing dependency command.
+
+All four native job definitions that install APT packages normalize sources before
+apt update. The viewport job does so before Playwright installs its dependencies.
+The viewport path filter includes the shared helper/test. Native paths already
+include engine/**. Local validation never changes this machine's APT configuration;
+the optional script argument points fixture tests at a temporary source root.
+
+Tested source `464e4410984f98b4bacff566c4bfc96e1f12a814`: ShellCheck passed for
+existing orchestration and new scripts; mirror fixtures passed legacy/deb822 exact
+URL replacement, signature/suite/security preservation, unrelated-host protection,
+idempotence and absent sources. Existing orchestration contracts passed complete
+shards, failure propagation, inventory and bundle provenance guards. Workflow wiring
+was inspected for all four native install sites and the viewport working directory.
+No product baseline or browser suite was rerun locally for this script-only change.
+
+Verified local archive `setup-evidence/ci-ubuntu-mirror-464e4410.tar.gz`; manifest:
+
+    14003deee241e272684696b970f235840e4f1927ddb0c77f375d6c9443aebd0e
+
+Final tested-to-head changes are documentation only. Local fixtures prove rewrite
+behavior, not remote mirror availability or hosted qualification. Raw local evidence
+has not been independently inspected remotely. Hosted runs must qualify this repair
+before the blocked allocation stack can integrate; no self-merge or automatic
+relabeling of earlier attempts follows. The identity-text coding slice remains queued.

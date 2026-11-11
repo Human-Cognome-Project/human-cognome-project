@@ -421,3 +421,15 @@ acceptance evidence and existing link anchors; historical records explain the
 development journey and are not disposable onboarding material. Verify that the
 shortened entry point still leads new contributors to every applicable constraint.
 This documentation work does not block the PoC or replace engine qualification.
+
+### Hosted infrastructure follow-up — 2026-11-11
+
+Review #277/5863228338 authorizes a separate bounded investigation of repeated
+package-mirror DNS failures. Main `05635f07` reconciles accepted #268–#274; #275–#277
+remain provisional and unmerged. The active CI-only repair replaces exact Azure
+Ubuntu archive URLs with the primary archive before existing native/viewport
+package installation, preserving signing configuration, toolchain versions and
+acceptance gates. Local mirror and orchestration checks pass; hosted qualification
+remains required. See [evidence and limits](../engine/docs/HOSTED-CI.md#ubuntu-archive-resolution-repair-2026-11-11-awaiting-review).
+Definition/occurrence identity text remains queued after this independent repair;
+no allocation implementation is changed by the infrastructure contribution.
