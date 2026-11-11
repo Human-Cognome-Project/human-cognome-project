@@ -1450,3 +1450,25 @@ Map/other owner UUIDs, input payload, complete setup, combined resources and
 operation/control integration remain open. #268 is provisionally accepted;
 its post-PASS cache warning remains preserved, and integrated acceptance is
 through #267 pending hosted reconciliation.
+
+### Retained catalogue UUID domain (contribution awaiting review)
+
+MembershipFields now initializes study/recipe UUIDs directly with the destination
+domain. Every retained contribution attaches occurrence study, field scope,
+target scope and target revision before copying character payload. The shared
+object-copy helper explicitly selects this only for retained rows; UUIDs in
+temporary tools/state/reached/ancestor-target graph keys remain detached. Their
+existing domain-selected address and node backing is preserved.
+
+A nonallocating retained UUID visitor covers independent request/terminator and
+allocator observations, exact retained backing equality, ordinary detached copies,
+source-death snapshots, moves, budget refusal/reclamation/exact retry and whole-
+owner failure injection. Zero byte/work allowance refuses before allocation.
+Catalogue equivalence also compares recipe identity and the alternatives flag.
+Existing diamond, duplicate-key and cycle controls keep graph behavior checked.
+
+No representation, encoding or numerical policy changes. Selected reports overlap
+the census. Next: temporary graph-key UUIDs with independent transient/retained
+request witnesses. Map/other owner UUIDs, input payload, complete setup, combined
+resources and operation/control integration remain separate. #268/#269 are
+provisionally accepted; integrated acceptance remains through #267.

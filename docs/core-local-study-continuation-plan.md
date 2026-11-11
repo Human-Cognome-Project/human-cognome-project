@@ -148,7 +148,7 @@ final acceptance. Actual GPU qualification and Docker release remain later work.
 blocking findings. Smoke 43015222103 passed; native 43015222274 remains running
 at inspection. Its post-PASS cache warning is preserved. Integrated acceptance
 remains through #267; this contribution is stacked on #268 without merging it.
-**Active contribution (awaiting review):** retained declaration UUID
+**Provisionally accepted (#269):** retained declaration UUID
 payload in LetterExchangeContract owner/recipe identity, outgoing/incoming source
 occurrences and references, parent references and leaf references. Audit both
 collect and explicit domain-copy paths before allocation; preserve ordinary
@@ -157,14 +157,26 @@ request/refusal/reclamation/retry/lifetime controls. Catalogue/map/other owner
 UUIDs and input payload remain separate; no complete setup or combined resource
 claim follows from this contribution.
 
-**Next concrete slice after declaration review:** catalogue UUID payload in
-MembershipFields. Audit study/recipe identities, retained occurrence/group
-references and temporary graph keys; explicitly distinguish retained and
-transient requests before choosing the bounded implementation. Preserve existing
-address/table attachment, graph semantics, cycle rejection and detached/moved
-lifetimes. Map/other owner UUIDs and input payload remain separate, before full
-setup, combined accounting and operation/control integration.
+**Dependency review (2026-11-11):** #269 review 5858547912 accepts head
+`f6830b9d404126cb14ee3a2a07db9896cee47936` for bounded continuation with no
+blocking findings. Smoke 43017931238 passed; native 43017931472 remains running
+at inspection. #268 remains provisional. Integrated acceptance is through #267.
 
+**Active contribution (awaiting review):** retained catalogue UUID payload in
+MembershipFields: study/recipe identities and contribution occurrence/group
+scope/revision references. Construct identities directly with the destination
+domain and select it before contribution payload allocation. Preserve ordinary
+detached snapshots, moved lifetime, exact graph outputs, address/table attachment,
+independent requests, refusal/reclamation/retry and cycle/deduplication controls.
+Temporary graph-key UUIDs deliberately remain detached in this bounded slice.
+
+**Next concrete slice:** temporary catalogue graph-key UUIDs in tools, state,
+reached and ancestor-target sets. Extend the independent graph witness to count
+UUID requests separately from addresses, distinguish temporary/retained overlap,
+and prove prepayment, diamond deduplication, duplicate insertion, cycle rejection,
+all allocation-failure cleanup and exact retry. Map/other owner UUIDs and input
+payload remain separate before full setup, combined accounting and operation/
+control integration.
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

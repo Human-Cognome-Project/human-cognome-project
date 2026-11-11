@@ -3738,3 +3738,63 @@ Next: catalogue UUIDs, auditing retained fields and temporary graph keys
 separately. Map/other owner UUIDs, input payload, full setup, combined accounting
 and operation/control integration remain open. No GPU, live database, browser
 rerun, full baseline or performance qualification is claimed.
+
+### Retained catalogue UUID qualification (2026-11-11)
+
+Tested source `14e34f0d606cb26c7e4a84617e9976835f3fb737`, stacked on #269 head
+`f6830b9d404126cb14ee3a2a07db9896cee47936`. Review 5858547912 found no blockers
+and authorized a catalogue UUID audit with retained/transient scopes distinguished.
+This contribution selects retained payload only. #269 smoke 43017931238 passed;
+native 43017931472 was running at inspection. #268/#269 remain provisional;
+integrated acceptance is through #267. Earlier warnings/failures remain preserved.
+
+Study/recipe UUIDs initialize directly with their destination allocator; retained
+contribution occurrence study, field scope, target scope and revision attach
+before character allocation. Temporary graph-key UUIDs deliberately remain
+detached; their existing address/node attachment is preserved. Public detached
+collection, graph semantics, per-occurrence deduplication and exact values remain
+unchanged. Equivalence now also checks recipe identity and the alternatives flag.
+
+The retained UUID visitor feeds independent request/terminator/domain checks,
+exact observed retained-byte equality, snapshot/source-death/move controls,
+byte/work refusal/reclamation/exact retry and whole-owner failure injection.
+Zero allowance refuses before allocation. Existing diamond, duplicate graph-key
+and cycle witnesses run unchanged, preserving temporary-address qualification.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1562 / 2055 | 2053 / 3719 |
+| Selected live / peak requested bytes | 284997 / 284997 | 350827 / 350827 |
+| Selected cumulative allocation work | 372871 | 702439 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Selected live/peak/work increase by 555 / 1887
+bytes from #269. Whole-owner retained/peak requests, allocation-site counts and
+census are unchanged, as are UUID and containing-row layouts. These reports
+overlap and must not be summed; they are not physical-memory/performance bounds.
+
+Full configured native and standalone warm builds passed first attempt. All 43
+scoped CPU checks passed: 20 exchange processes across workers 1/2 and bulk/default
+or direct/compiler-no-unroll, 12 prepared CTests, seven supporting CTests and four
+warm CTests. Final build/run logs contain no warnings/errors. Source stayed clean
+and pinned; final delta is four Markdown files only. Pinned Clang 15/libstdc++ x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`, shared host.
+
+Evidence directory `catalogue-uuid-domain-14e34f0d` retains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/catalogue-uuid-domain-14e34f0d.tar.gz`.
+SHA256SUMS manifest digest:
+
+    75146d0627b50b6ce2a0a3aa3f6696d3e106f3085de3e864c51a36073c3e23f3
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Prior #268 cache warning and earlier failures remain in
+their records; this run does not supersede those historical observations.
+
+Next: temporary catalogue graph-key UUIDs with independently counted requests,
+prepayment, transient/retained overlap and graph failure/retry witnesses. Map/
+other owner UUIDs, input payload, complete setup, combined resources and operation/
+control integration remain separate. No GPU, live DB, browser rerun or full
+baseline qualification is claimed.
