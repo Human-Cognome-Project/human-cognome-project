@@ -311,6 +311,16 @@ and declaration/binding setup work before combined accounting and operations.
 #279 remains the main-targeted text-stack integration PR; queued hosted jobs do
 not qualify integration and dependent PRs stay open until disposition.
 
+
+**Adoption-copy contribution (awaiting review):** #281 review 5865407113 accepts
+head `15db4b816456fb9ff299801daac42e1624b50ead` provisionally and authorizes
+detached temporary identity/argument-copy work. Owner/binding constructors now
+borrow row/field inputs during construction, retaining independent selected maps;
+the temporary aggregate declaration UUID is explicitly reserved. Caller
+preservation/source-death and existing refusal/retry/lifetime controls cover the
+boundary. Remaining temporary identities and callable/recursive traversal plus
+declaration/binding setup budgets follow before combined resources and operations.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

@@ -1808,3 +1808,33 @@ make all setup allocations selected. Next: detached temporary identity/argument
 copies, then membership callable/recursion and declaration/binding setup budgets,
 combined resources and operation/control integration. Preserve caller ownership,
 detached snapshots and current rejection/retry semantics in those later slices.
+
+### Adoption argument copies and temporary declaration identity (awaiting review)
+
+Following #281 review 5865407113, ExchangeOwner and both ExchangeBindings
+construction paths take occurrence/field vectors by const reference. They use
+those references only during construction; the existing domain-owned ExchangeMap
+copies still retain their own rows, UUIDs, paths and addresses. No caller table
+is moved from or retained by reference. The legacy binding overload continues to
+consume its declaration value intentionally; shared declaration/catalogue aliases
+and detached snapshot behavior are unchanged.
+
+The aggregate OccurrenceKey passed temporarily to LetterExchangeContract::collect
+now constructs its UUID with the owner reservation domain. That character request
+is admitted before allocation and released at the end of the same call expression;
+its cumulative work remains charged. The declaration independently owns its
+existing domain-bound copy. This accounts for the temporary without adding a
+borrowed-identity API or changing lifetime/lookup semantics.
+
+A source-death control adopts from local caller tables, checks their backing and
+values are unchanged, destroys them, then verifies the retained owner mappings.
+Existing byte/work refusal sweeps, exact retries, full allocation-site failures,
+independent retained-byte/domain witnesses, detached snapshots and shared/weak
+lifetime controls remain active. Input admission's logical byte/copy gate stays
+conservative and unchanged; eliminating redundant argument copies does not remove
+selected map copies or claim all constructor work is metered.
+
+Next: audit remaining detached temporary identity copies outside these adoption
+paths and address membership callable/recursion plus declaration/binding setup
+budgets, then combined resources and operation/control integration. Domain object/
+control-block overhead and caller/native ownership remain separately inventoried.

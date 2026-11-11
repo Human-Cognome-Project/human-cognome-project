@@ -4,14 +4,23 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Active validation contribution (2026-11-11):** nonallocating nil/containment
-validation on provisionally accepted #280 `5e37be82`, authorized by review
-5865274115. Both-address rejection and containment semantics are preserved.
-Both builds, 47 scoped local CPU checks and two prior-source negative controls
-passed without warnings. Awaiting review and hosted qualification. #280 smoke
-and warm workflows report success; native remains running at inspection.
-Next: detached identity/argument copies, followed by traversal/setup budgets.
+**Active adoption-copy contribution (2026-11-11):** on provisionally accepted
+#281 `15db4b81`, authorized by review 5865407113. Owner/binding constructors
+borrow row/field arguments until independent domain-owned maps are established;
+the temporary declaration UUID is reserved in the same domain. Caller ownership,
+snapshot independence and refusal/retry semantics remain required. Both builds and all 47 scoped local CPU checks passed without warnings; the
+initial obsolete-assertion failure is preserved. Hosted qualification and
+review remain pending. Next: remaining detached identities outside these paths,
+membership callable/recursion and declaration/binding setup budgets, then combined
+resources and remaining-operation integration. #279 remains the main-targeted
+integration PR; #280/#281 and this continuation remain stacked and unmerged.
 
+**Provisionally accepted #281 (2026-11-11):** review 5865407113 accepts the
+nil/containment source provisionally at `15db4b81`, with no blocking findings.
+Its 47 scoped CPU checks and two prior-source negative controls passed locally.
+At inspection, smoke 43101300624 and warm 43101300677 succeeded; native
+43101300728 was queued. These states do not imply integration or qualify the
+new adoption-copy head.
 
 **Provisionally accepted #280 (2026-11-11):** allocation-free ObjectKey ordering on
 provisional #279 head `5f1ca0c3`, authorized by updated-head review 5865153858.

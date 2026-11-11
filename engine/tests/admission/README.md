@@ -4566,3 +4566,60 @@ Raw local artifacts have not been independently inspected remotely. Hosted
 qualification and review remain required. At parent recheck, #280 smoke
 43099228124 and warm 43099228183 reported success; native 43099228319 was running.
 These workflow states do not imply stack integration or qualify this new head.
+
+### Adoption argument and declaration identity qualification (2026-11-11)
+
+Tested `ccd8d4d9102379b6e85ce23858456f2d4c22acb5`, stacked on #281 head
+`15db4b816456fb9ff299801daac42e1624b50ead`, provisionally accepted by review
+5865407113. #279 remains the main-targeted integration PR; pending stack heads
+are not treated as merged or fully accepted.
+
+Owner and binding row/field arguments now use const references through construction,
+avoiding detached argument copies while retaining independent domain-owned maps.
+The temporary aggregate OccurrenceKey explicitly constructs its UUID in the
+reservation domain before allocation; its full-expression lifetime is unchanged.
+The legacy consumed declaration argument remains by value. Logical input admission
+and selected retained map copies are unchanged; this is not a complete setup gate.
+
+The added control verifies caller vector backing and values are unchanged by
+adoption, destroys those caller tables, and checks the owner's independent maps.
+Existing detached snapshots, shared alias lifetime, exact reservation boundaries,
+refusal/retry and exhaustive allocation failure sweeps remain active.
+
+Initial source `8e01828dee8ea71e20d6cc0ba98744ac87407226` built successfully but all
+four exchange-owner processes stopped at the older strict peak-greater-than-live
+assertion. Removing transient argument copies allows retained storage to dominate
+the peak. The correction permits equality while requiring observed temporary
+releases and full teardown reclamation. No product behavior changed in that
+correction. The failed attempt is preserved in
+`setup-evidence/adoption-arguments-domain-8e01828d.tar.gz`, manifest digest:
+
+    c0a4467703eeb1bfdd92931d62c33195180541076304e62ecdb6fab14a63e500
+Single/four-selection metrics agree across workers 1/2 and bulk/direct:
+selected live/peak 321185/392475; cumulative allocation work 420751/790263;
+byte/work boundaries 2761/3269 and 3707/5925. Retained/peak requests are now
+321265/321265 and 392555/392555, with census 321153/392251 unchanged.
+Allocation sites fall from 3289/6077 to 3271/5927; every site is injected and
+reclaimed, with zero remaining blocks. Failure peaks are 321250/392540.
+The newly charged UUID adds 37/148 cumulative bytes for one/four selections,
+without changing retained domain bytes. These are requested-allocation witnesses,
+not physical memory or dedicated-host performance measurements.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six standalone warm CTests. No build/test/helper warnings or errors in
+the corrected run. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no GPU computation.
+No live database, browser, full accepted-baseline rerun or performance qualification.
+
+Final tested-to-head changes are limited to four Markdown evidence/status records.
+Verified archive: `setup-evidence/adoption-arguments-domain-ccd8d4d9.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes and layouts are retained.
+SHA256SUMS manifest digest:
+
+    a929abe8fc7d4eeb562e49a5b980c6c9d3090e524b423239d5237cbf0f1d1d90
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. At parent inspection, #281 smoke
+43101300624 and warm 43101300677 succeeded; native 43101300728 was queued.
+Next: remaining identity copies outside these paths, membership callable/recursion
+and declaration/binding setup budgets, then combined resources and operations.
