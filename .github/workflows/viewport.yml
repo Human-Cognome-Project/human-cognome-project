@@ -9,7 +9,8 @@ on:
 
 jobs:
   browser:
-    runs-on: ubuntu-latest
+    # Keep the runner within the pinned Playwright version's supported OS set.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
       run:

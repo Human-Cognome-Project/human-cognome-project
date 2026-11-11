@@ -3504,7 +3504,7 @@ must not be summed. UUID/input/metadata and other resource domains remain separa
 Validation outcome: all 42 scoped checks passed, exit zero, with no warnings in the final build/run logs. The 42 scoped checks comprise 20
 exchange processes, seven recipe/projection/viewport CTests, 12 prepared-execution/
 update CTests and three standalone warm CTests. Source remained clean/pinned;
-tested-to-head delta is four Markdown files only. No GPU, live database, full
+tested-to-head delta is four Markdown files plus the viewport runner pin described below. No GPU, live database, full
 baseline, browser rerun, physical-residency or performance qualification.
 
 Preserved compilation failures (neither reached runtime qualification or the
@@ -3535,3 +3535,14 @@ remain authoritative. Next: retained recipe UUID text, beginning with Uuid/str()
 and serialization consumer audit. Other UUID/input payload, full setup and
 combined resources remain before operation/control integration. Activity/GPU
 sequencing is unchanged; #156/#145/#229 remain open.
+
+Hosted follow-up at `dc368c594a0d4900a83facf0360c07b4147f31a5`: smoke
+42934750915 passed. Viewport run 42934750737 / job 130241920643 failed during
+Playwright installation, before browser execution: ubuntu-latest selected Ubuntu
+26.04.1, unsupported by pinned Playwright 1.56.1. Its 15 model tests, build and
+retained bundle comparison passed; browser tests were skipped. This is preserved
+as a hosted failure, not a browser pass. The [job log](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42934750737/job/130241920643)
+was personally inspected. A separate follow-up commit pins only this workflow to
+Ubuntu 24.04, matching the native/warm baseline and the [pinned Playwright dependency map](https://github.com/microsoft/playwright/blob/v1.56.1/packages/playwright-core/src/server/registry/nativeDeps.ts#L452).
+Browser acceptance awaits the new hosted run. Native source and the 42 local CPU
+results are unchanged; no accepted local matrix was rerun for this CI-only repair.
