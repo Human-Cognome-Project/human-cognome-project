@@ -1318,7 +1318,8 @@ Next: retained Tool.recipe and optional Tool.notation text, including exact byte
 terminators, short/long-string behavior, detached snapshots and before-allocation
 attachment. UUID/input payload, full setup and combined resources remain open.
 See admission evidence for source pins, compatibility/build results and limits.
-### Recipe text allocation domain (contribution awaiting review)
+<a id="recipe-text-allocation-domain-contribution-awaiting-review"></a>
+### Recipe text allocation domain (provisionally accepted #266)
 
 Tool.recipe and optional Tool.notation use RecipeText, a basic_string with the
 existing engine-independent shared reservation allocator. Explicit owner copies
@@ -1357,3 +1358,37 @@ Next: retained recipe UUID payload, with a shared Uuid interface/consumer audit.
 Other UUID/input payload, complete setup and combined resources remain open.
 Selected allocation reports overlap the census; do not sum them. See admission
 evidence for exact source pins, failures, checks and observed resource changes.
+### Recipe UUID allocation domain (contribution awaiting review)
+
+Uuid stores UuidText, an engine-independent basic_string with the existing shared
+reservation allocator. Its string_view constructor immediately copies and applies
+the same length, separator, hexadecimal validation and lowercase normalization.
+str() now returns a const UuidText reference instead of const std::string&. Explicit
+standard-string conversions adapt SQL parameters, key formatting and viewport JSON;
+encoding/comparison/nil semantics remain unchanged. This is a C++ interface/layout
+change requiring consumer rebuilds, not a stable ABI promise.
+
+An explicit Uuid(source, domain) copy selects the allocator before copying the
+already normalized source payload. Recipe construction uses it for Bundle selection/
+revision/owner/creator, Tool reference scopes/revisions/epochs/authors, parent/member
+references, Geometry scopes, both occurrence-version scopes and focal-field scopes.
+Each UUID's payload includes its terminating byte. Ordinary copy construction
+detaches; moves retain the domain. Other projection UUIDs intentionally still use
+ordinary detached copies, as do declaration/catalogue/map/other owner UUID payloads.
+The shared representation enlarges their headers too; that is not payload admission.
+
+On pinned Clang 15/libstdc++ x64: Uuid is 48 bytes (formerly 32), ObjectKey 88,
+ToolRef 136, Tool 432, Parent 168, Geometry 152 and Bundle 520. A normalized
+36-character UUID requests 37 bytes. Existing sizeof-based censuses and domain
+requests reflect containing-row growth. The text visitor now includes every
+recipe UUID in independent actual-request, terminator, allocator attachment,
+complete copy/encoding, source-death snapshot, move, all refusal/reclamation/exact
+retry and whole-owner failure controls. The standalone UUID test also checks
+normalization, malformed values, ordering, nil/non-nil state and SQL parameter
+encoding without a live database.
+
+Next: remaining retained projection UUIDs, followed by declaration/catalogue/map/
+other owner UUIDs and input payload. Complete setup and combined resources remain
+open before operation/control integration. Selected reports overlap the census;
+heap request observations do not qualify allocator metadata, physical residency
+or performance. Source-pinned scope/results are in admission evidence.

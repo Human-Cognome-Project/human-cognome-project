@@ -3546,3 +3546,54 @@ was personally inspected. A separate follow-up commit pins only this workflow to
 Ubuntu 24.04, matching the native/warm baseline and the [pinned Playwright dependency map](https://github.com/microsoft/playwright/blob/v1.56.1/packages/playwright-core/src/server/registry/nativeDeps.ts#L452).
 Browser acceptance awaits the new hosted run. Native source and the 42 local CPU
 results are unchanged; no accepted local matrix was rerun for this CI-only repair.
+### Retained recipe UUID allocation-domain qualification (2026-11-11)
+
+Tested source: `dcc13ea368890f34f3a2744bf7de5fafd6963b23`, stacked on
+provisionally accepted #266 at `97ab2aafd4406f4d049397509de1ca4ccf54d4e1`.
+Review 5851957425 reported no blocking findings and approved this bounded slice.
+#266 smoke, replacement viewport and warm workflows passed; native was still
+running at inspection. The replacement viewport pass supersedes the earlier
+pending browser status, without erasing the preserved runner-install failure.
+Integrated acceptance remains through #259.
+
+Recipe UUID characters now select the reservation domain before heap allocation.
+Normalization, malformed input, nil/non-nil values, comparison and SQL encoding
+are preserved. Detached copies and moved/source-death lifetimes are covered.
+Uuid/str() and serialization consumers were audited; containing rows grow even
+where their UUID payload remains outside this selected scope. Other projection,
+owner and input UUID storage is not claimed as admitted.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1498 / 1924 | 1934 / 3210 |
+| Selected live / peak requested bytes | 280150 / 280150 | 331994 / 331994 |
+| Selected cumulative allocation work | 368024 | 683606 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree (workers 1/2, bulk/default and
+ direct/compiler-no-unroll). Allocation-site counts are unchanged from #266.
+Selected live growth is 34164 / 42990 bytes; whole-owner retained growth is
+21584 / 29744 bytes. Selected reports overlap the census and must not be summed;
+neither is a complete physical-memory bound.
+
+Full configured native and standalone warm builds passed on the first attempt.
+All 43 scoped checks passed: 20 exchange processes, 12 prepared-execution/update
+CTests, seven supporting recipe/projection/viewport CTests and four standalone
+warm CTests. Every injected owner allocation failure reclaimed its resources.
+Final build/run logs have no warnings. Source remained pinned/clean; the
+ tested-source-to-head delta is four Markdown files only. CPU/x64, Clang 15,
+libstdc++, shared host; no GPU, live database, browser rerun, full baseline or
+performance qualification. Earlier failures/warnings remain in prior records.
+
+Evidence directory `recipe-uuid-domain-dcc13ea3` retains commands, raw logs,
+configuration, compiler/source/binary/runtime hashes and layout probe. Local
+archive: `setup-evidence/recipe-uuid-domain-dcc13ea3.tar.gz`. Verified SHA256SUMS:
+
+    c34252001d6a76c061fbcd51cd07e559f874a0898eaee1b38d189e77c80b916c
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+checks remain authoritative. Next bounded scope: remaining retained projection
+UUID fields; other owner/input payload, complete setup, combined resources and
+operation/control integration remain separate.
