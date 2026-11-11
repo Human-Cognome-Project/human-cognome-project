@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; combined-head qualification is pending before integration. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
+**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; the combined head a75e3408 passed 45 scoped local CPU checks plus mirror/CI contract checks. Updated-head hosted qualification and maintainer integration remain pending. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
 
 
 Status: maintainer implementation sequencing, updated 2026-11-10. This organizes the
@@ -277,6 +277,17 @@ The full required hosted run and integration remain pending at inspection. After
 integration, carry the repair into the #275–#277 stack and qualify the updated
 code before merging. The identity contribution is based on #277 and does not
 silently include the independent repair. Preserve earlier failed/cancelled runs.
+
+
+**Combined-head audit (2026-11-11):** main `6067c641` is merged normally into
+#279 at `a75e34084bed5fcfc24280b54111081d6440d58d`. The remaining-cost audit in
+[OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md#remaining-identitycomparison-and-setup-cost-audit-2026-11-11)
+identifies comparison rendering, nil/temporary identity copies, by-value setup
+arguments, graph recursion/callable costs and unmetered declaration/binding work.
+Next concrete implementation: allocation-free ObjectKey ordering preserving
+encoded ordering and invalid-address rejection, with an independent rendering
+oracle and no-allocation controls. This audit does not change production behavior
+or establish complete constructor/combined accounting.
 
 ## A. Coherent source/hierarchy refresh
 

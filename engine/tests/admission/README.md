@@ -4393,3 +4393,54 @@ SHA256SUMS manifest digest:
 Hosted checks remain authoritative. At final dependency inspection, #278 native
 43087248989 had completed its compiler matrix; regression shards 3 and 4 remained
 running. No full hosted pass or integration is claimed.
+
+### Combined pending input-text stack and accepted main (2026-11-11)
+
+Review 5864859891 provisionally accepts #279 head
+`11a4813759c1e384fa6b077499c9f06998c66f58` and authorizes a normal merge from main.
+#278 is accepted and integrated at `3cadbff286b0c4553808595f624f8a98add36682`;
+its native 43087248989, smoke 43087248327 and viewport 43087248550 passed,
+with maintainer-inspected archive traffic. These later results supersede earlier
+pending labels without relabeling failed/cancelled attempts.
+
+Tested merge `a75e34084bed5fcfc24280b54111081d6440d58d` has parents #279's reviewed
+head and current main `6067c641`. The merge adds accepted CI repair/workflows and
+status records; it changes no engine, warm-value or viewport product source.
+Four documentation conflicts were resolved by preserving both historical evidence
+sets and distinguishing current acceptance from earlier queue labels. #275–#277
+and #279 remain unmerged into main pending combined qualification and disposition.
+
+The single/four-selection accounting agrees with #279 in every CPU configuration:
+selected live/peak 321185/392475 bytes, cumulative work 420714/790115,
+4117/7757 failure sites fully reclaimed, retained requested 321265/392555,
+peak requested 321938/395077 and capacity census 321153/392251. The independent
+complete projection backing witness remains exact. No physical-memory or
+performance claim follows from shared-host CPU execution.
+
+The accompanying identity/setup audit is recorded in OWNER-RESOURCES. A local
+source-pinned helper links the merged warm-values archive and records temporary
+C++ new calls for equality, ordering, containment, nil and UUID copies. Its first
+command named a nonexistent separate codec archive; corrected linking uses the
+codec already compiled into warm_values. The original helper-only diagnostic is
+retained as identity-audit-initial-build.log. No product source/build failure or
+product test rerun was needed for that helper correction.
+Combined native/standalone warm builds and all 45 scoped CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. Integrated mirror fixtures, ShellCheck and CI orchestration contracts
+also passed. No product build/test warnings or errors occurred in this run;
+prior source warnings and the audit-helper link diagnostic remain preserved.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No GPU, live database,
+browser/full accepted-baseline rerun or performance qualification.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/input-stack-main-domain-a75e3408.tar.gz`.
+The archive includes source/configuration, commands, logs, binary/runtime hashes,
+layouts and the identity audit helper/results. SHA256SUMS manifest digest:
+
+    462decf887b11ad9c00db49a70f6cec0ea412a795d90093af00978277da60e08
+
+This is contributor local qualification of the combined head. Hosted qualification
+of the updated head and maintainer integration remain pending; neither #279's
+prior-head jobs nor #278's accepted CI run substitutes for those checks.

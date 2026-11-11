@@ -1707,3 +1707,50 @@ The next audit starts with ObjectKey comparison in kernels/database/warm/values.
 (currently formatting keys) and MembershipFields::collect graph traversal/callable
 costs. Their existing semantics and accepted ordering must be preserved; retained
 input attachment alone does not bound these temporary requests.
+
+### Remaining identity/comparison and setup-cost audit (2026-11-11)
+
+Audited combined source `a75e34084bed5fcfc24280b54111081d6440d58d`, which merges
+accepted main `6067c641` into the provisionally reviewed #275–#277/#279 stack.
+This is an inventory and sequencing result, not a new complete setup budget.
+The accepted mirror repair is present; historical failed/cancelled evidence stays
+intact. Earlier text-slice “next” labels above describe their original scope.
+
+| Surface | Owning source and finding | Remaining boundary |
+|---|---|---|
+| ObjectKey ordering | `kernels/database/warm/values.cpp`, `operator<`, calls `key` twice. Membership tools/state/reached maps and target sets use it. Each comparison formats UUID/address strings outside the selected domain. | Remove formatting while preserving encoded-byte ordering and address validation, then qualify graph and owner callers. |
+| Containment and nil checks | `contains` formats both keys only to validate them; `Uuid::nil` constructs a default UUID. Projection/workbench validation uses nil checks; not every such call is on the adoption constructor path. | Separate nonallocating validation from rendering; preserve malformed-input rejection and nil semantics. |
+| Adoption identity/argument copies | `ExchangeOwner` passes `{projection_->study(), ...}` to declaration collection; ordinary UUID copy detaches. Owner and validating ExchangeBindings constructors take ordinary row/field vectors by value before building selected maps. | Inventory transient copies and their overlap explicitly. Input-admission logical byte/copy gates do not make these actual requests selected-domain allocations. Preserve caller ownership and detached snapshots. |
+| Membership graph traversal | `MembershipFields::collect` uses a recursive `std::function` and loops over tools, references and transitive target sets. Map/set nodes and key backing are already selected. | Callable storage is implementation-dependent; recursion consumes stack. Bound traversal/comparison work and depth independently of heap accounting. Removing type erasure alone would not bound recursion. |
+| Declaration and binding setup | `LetterExchangeContract::collect` searches selections/occurrences/tools and assembles declarations; `match_work_` bounds later matching, not collection. Adoption binding calls `prepare(..., UINT64_MAX)`. | Add a constructor/setup work boundary before these traversals; do not reuse later-operation matching/capture claims as constructor evidence. |
+| Conversion/output and fixed overhead | `study.cpp`, active binding and viewport deliberately convert to public ordinary strings. `ExchangeOwner::adopt` creates the reservation domain/control block outside its own quota. | Keep output conversion and caller/native/shared ownership separate in the combined inventory; count overlap once and preserve the documented overhead exclusion. |
+
+A local diagnostic linked against this source's `libwarm_values.a` measured C++
+new requests on Clang 15/libstdc++; inputs were built before observation:
+
+| Operation | Allocation calls | Cumulative requested bytes |
+|---|---:|---:|
+| ObjectKey equality, distinct one-element addresses | 0 | 0 |
+| ObjectKey ordering, one-element addresses | 4 | 220 |
+| Containment, distinct one-element addresses | 4 | 220 |
+| Nil check | 1 | 37 |
+| Ordinary UUID temporary copy | 1 | 37 |
+| Ordering with a 128-element right address | 9 | 1155 |
+
+These are transient request totals, not retained bytes, RSS or timings. The audit
+helper and commands are retained in the combined-head evidence archive. Its first
+link command incorrectly named a separate codec archive; the codec is already in
+warm_values. That helper-only diagnostic is retained; the corrected probe passed
+without a product-source change. No callable-allocation size or stack bound was
+measured by this probe.
+
+**Next concrete implementation:** remove ObjectKey comparison formatting first.
+Preserve `key(a) < key(b)` as an independent ordering oracle: canonical UUID text,
+Base62 byte order, both couplet positions, strict prefixes and long addresses.
+Validate both addresses even when scopes differ; empty, invalid-element and
+partial-tail addresses currently throw. Do not silently convert them into sortable
+keys or change the wire encoding. Verify zero C++ new for valid comparisons, exact
+ordering/equality properties, malformed-input behavior and unchanged owner/graph
+semantics. Nil/containment and temporary-copy changes can follow as separate
+bounded slices. Then meter membership/declaration/binding setup, address callable
+and stack costs, and reconcile combined resources before operation integration.
