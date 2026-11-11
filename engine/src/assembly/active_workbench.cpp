@@ -130,7 +130,7 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
         [&](const auto &d) { return d.id == warm::key(g.shared_definition); });
     require(found != input.definitions.end());
     found->centroid = g.centroid;
-    found->components = g.components;
+    found->components.assign(g.components.begin(),g.components.end());
   }
   return input;
 }
