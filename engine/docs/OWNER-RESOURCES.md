@@ -1288,3 +1288,32 @@ remains outside this domain and is the next slice. Their addresses/paths are alr
 attached. UUID/text/input payload, preceding setup, allocator metadata and combined
 resources remain separate. Selected reports overlap the retained census; do not
 add them together. See source-pinned admission evidence for qualification limits.
+### Nested recipe table allocation domain (contribution awaiting review)
+
+Tool.parents/member_of, Geometry.spheres and Selection.parts now use the same
+engine-independent RecipeTable storage as the eight top-level Bundle tables.
+Explicit retained projection copies select the destination domain before reserve,
+then move complete rows with attached addresses/paths. Spheres are copied directly
+into attached storage. Empty nested tables keep the domain without element
+allocation. Standalone copies detach recursively; moves retain backing/domain.
+
+The table visitor traverses top-level and nested stores without allocating test
+metadata. Both owner projections and validated legacy/structural copy controls
+include independent actual requests, exact selected backing, allocator attachment,
+snapshots after source death, moved lifetime, charge-boundary refusal/reclamation/
+exact retry, populated inactive pools and whole-owner allocation failures.
+The legacy validator's expected-parts temporary uses detached RecipeTable for
+same-type exact comparison; validation semantics and encoding stay unchanged.
+
+On the pinned Clang 15/libstdc++ x64 toolchain, Tool grows 304 -> 336 bytes,
+Geometry 120 -> 136 and Selection 40 -> 56; Bundle remains 456 bytes.
+C++ nested table types and Tool/Geometry/Selection layouts change, requiring all
+consumers to rebuild. This is not a stable-ABI claim. Domain headers and element
+requests remain distinct from allocator metadata/physical residency. Existing
+census code already visits nested stores and sizeof rows; selected totals overlap
+that census. No new numerical authority or runtime algorithm is introduced.
+
+Next: retained Tool.recipe and optional Tool.notation text, including exact bytes,
+terminators, short/long-string behavior, detached snapshots and before-allocation
+attachment. UUID/input payload, full setup and combined resources remain open.
+See admission evidence for source pins, compatibility/build results and limits.

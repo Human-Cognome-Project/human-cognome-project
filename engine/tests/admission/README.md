@@ -3358,3 +3358,84 @@ Selection.parts tables, with before-allocation attachment and C++ compatibility
 qualification. UUID/text/input payload, full setup and combined resources remain
 open before operation/control integration. Activity/GPU sequencing is unchanged;
 #156/#145/#229 remain open.
+
+
+## Nested retained recipe table domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `efefae4373037c1b2c81935b02be97c81d94ab79`, stacked on #264
+at `f52506c2f4a4e3ee5a683f1624651330763ec650`. #263 is maintainer-approved
+in the continuation instruction but remains open/unmerged at inspection. #264
+has no review notes at inspection and is not labeled accepted. Its smoke
+42925890864 and warm 42925891058 passed; native 42925891067 was running.
+Integrated implementation acceptance remains through #259 pending stack integration.
+
+Tool.parents, Tool.member_of, Geometry.spheres and Selection.parts now use the
+same engine-independent RecipeTable type as top-level Bundle stores. Explicit
+projection copies select the destination domain before reserve, then move rows
+with attached nested addresses/paths. Spheres copy directly into attached storage.
+Ordinary snapshots detach recursively; moves preserve domain/backing. Empty nested
+tables retain the allocator without element allocation. Complete recipe values,
+ordering, optional state, encoding and numerical behavior remain unchanged.
+
+Recursive nonallocating test visitors now include every top-level/nested table
+in exact selected backing, allocator attachment and independent allocation-request
+checks for both owner projections. Validated v1/v2 fixtures exercise complete
+recipe equivalence, charge-boundary refusal/reclamation/exact retry, snapshots
+after source death, moved lifetime and populated inactive pools. Whole-owner
+allocation-failure injection and repeated native zero-new controls stay active.
+
+C++ nested container types and row layouts change and require rebuilding consumers.
+The pinned Clang 15/libstdc++ x64 layout probe measures Tool 304 -> 336 bytes,
+Geometry 120 -> 136, Selection 40 -> 56; Bundle stays 456 bytes. The legacy
+validator's expected-parts temporary uses detached RecipeTable for same-type exact
+comparison; its validation semantics are unchanged. Full configured native and
+standalone warm targets build, including warm_active_integration and PostgreSQL
+clients/probe. These builds do not qualify live database I/O or a stable C++ ABI.
+
+CPU results (workers 1/2; bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1311 / 1538 | 1754 / 2806 |
+| Selected live / peak requested bytes | 243502 / 243502 | 286520 / 286520 |
+| Selected cumulative allocation work | 325872 | 615812 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 296961 / 297570 | 359131 / 361413 |
+| Retained capacity census | 297585 | 359563 |
+
+Selected totals grow by 10592 / 11264 bytes versus #264: 8640 / 9216 newly
+selected existing nested backing plus 1952 / 2048 larger retained row headers.
+Whole-owner retained/peak and census grow by 1952 / 2048; allocation-site counts
+are unchanged. Selected reports overlap the retained census and must not be added.
+No allocator-metadata, physical-residency or performance claim follows.
+
+Validation outcome: all 40 scoped checks passed, exit zero, with no warnings in the final build/run logs. The matrix comprises 20 exchange
+processes (owner, owner_multiple, bindings, commit, fields across four CPU modes),
+six projection/recipe CTests, 12 prepared-execution/update CTests and two standalone
+warm allocation CTests. Source remained clean/pinned; tested-to-head delta is
+four Markdown files only. No GPU, live database, full baseline or repeated codec
+qualification was run.
+
+The initial `a66e7dd5` native build failed because two converted callback visitor
+calls lacked closing syntax. Corrected in `efefae43`; no runtime matrix or warm
+build was reached in that failed attempt. Preserve its raw build log/source pin in
+`setup-evidence/recipe-nested-table-initial-a66e7dd5.tar.gz`, manifest SHA-256:
+
+    24a36e4b7a4983ca8f2f1d93786332a6801a1f960934d1ac2cc04964df1a62ab
+
+Earlier #261 fixture failure, #263 post-PASS cache warning and #264 consumer
+compile failures remain preserved in their own records, not relabeled as passes.
+
+Final contributor-local evidence: `recipe-nested-table-domain-efefae43`, including
+commands, raw build/run logs, source/configuration/toolchain, binary/runtime hashes
+and layout probe. Archive `setup-evidence/recipe-nested-table-domain-efefae43.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    378138ddc3a9fd34d39f2d976558ed442545e1f5619933eb1eae39df6b8bc3f2
+
+Raw evidence remains local, not independently inspected remotely. Hosted checks
+remain authoritative. Next: Tool.recipe and optional Tool.notation text payload,
+including short/long strings, terminators, exact text/optional semantics, detached
+snapshots and before-allocation attachment. UUID/input payload, full setup and
+combined resources remain before operation/control integration. Activity/GPU
+sequencing is unchanged; #156/#145/#229 remain open.
