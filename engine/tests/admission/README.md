@@ -4089,3 +4089,75 @@ identities/comparison-formatting, full setup, combined resources and operation/
 control integration remain separate. No GPU, live database, browser rerun, full
 baseline or performance qualification is claimed. Earlier failures/warnings remain
 preserved; raw local artifacts have not been independently inspected remotely.
+
+### Retained input parent-value text qualification (2026-11-11)
+
+Tested source `08e9ccf60d190cc99ce8d64b35e4d0a15da141ad`, stacked on #274 head
+`ce3642ee463beb76948a2497c9aeb50172c3267d`. Review 5859635152 found no blockers
+and authorized retained input text. The consumer audit splits that workstream:
+this contribution covers parent values; other IDs/references cross additional
+lookup and serialization paths and remain the next slice. Parent smoke 43030712985
+passed; native 43030713058 remains pending at inspection. Integrated through #267.
+
+ParentOccurrence.value uses InputText with the neutral shared allocator. Explicit
+projection copies select its domain before copying characters. Parent ordinals,
+counts, ordering and nested table attachment remain unchanged. Other input text
+is excluded. Projection construction converts encoded keys explicitly; native
+preparation converts parent values at existing public group/participation outputs.
+
+The text visitor covers parent values in both input variants. Independent pointer/
+request observations distinguish inline backing, check heap capacity plus terminator,
+verify domain identity and exact selected bytes. Supplemented v1/v2 copy fixtures
+include empty, short and 137-character parent values, alongside real encoded keys.
+Full input equality, detached source-death snapshots, moved lifetime, byte/work
+refusal, reclamation/exact retry and whole-owner all-site failure controls apply.
+Supplementary values qualify copying, not native model validity. The census uses
+inline-aware backing rather than charging inline characters twice.
+
+Initial source `df3315e13666dbcd6abb8fb3ad73d2902732108d` failed compilation in
+letter_projection_native_test.cpp:84, comparing InputText directly with std::string.
+The corrected test converts explicitly; production code was unchanged. No tests
+or standalone warm build ran at the initial source. Initial build/source archive:
+`setup-evidence/input-parent-text-initial-df3315e1.tar.gz`, manifest digest:
+
+    0c7f1d8e9fc0e080c8501521d018a8ede20dc617404a7ca469a57826f49b6053
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2747 / 3242 | 3667 / 5841 |
+| Selected live / peak requested bytes | 319541 / 319541 | 387531 / 387531 |
+| Selected cumulative allocation work | 419070 | 785171 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320849 / 321522 | 391275 / 393797 |
+| Retained capacity census | 320737 | 390971 |
+
+All four CPU configurations agree. Compared with #274, selected live/peak/work
+increases 680 bytes in each fixture: 520 existing text backing and 160 allocator
+state. Whole-owner retained/peak requests and census increase 160 bytes each;
+allocation-site counts are unchanged. InputText is 48 bytes, ParentOccurrence 64;
+StudyInput/StructuralStudyInput/LetterProjection remain 288/280/1304. UUID-related
+layouts/encoding are unchanged.
+
+Corrected native and standalone warm builds passed. All 45 CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. No corrected-source build or test warnings/errors. Clang 15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-parent-text-domain-08e9ccf6` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-parent-text-domain-08e9ccf6.tar.gz`.
+SHA256SUMS manifest digest:
+
+    fe1dd68cdf84a420a45f1bbcca178be832d891c7ff980f627a54d8495ed19c49
+
+Hosted checks remain authoritative. The corrected pass does not relabel the
+initial compiler failure or earlier warnings.
+
+Selected reports overlap the census and must not be summed. These observations
+are not physical-memory/performance bounds. Remaining input text, other identities,
+comparison-formatting, full setup, combined accounting and operation/control
+integration remain separate. No GPU, live database, browser/full baseline rerun
+or performance qualification. Earlier failures/warnings remain preserved; local
+raw artifacts have not been independently inspected remotely.

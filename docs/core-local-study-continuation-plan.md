@@ -208,7 +208,7 @@ other setup payload remain separate before combined resources and operations.
 `5ea60585234fbdea12a6f4441103d82884eb9417` for bounded continuation with no blockers.
 Smoke 43026470580 and warm 43026470847 passed; native 43026470568 remains running
 at inspection. Integrated acceptance remains through #267.
-**Active contribution (awaiting review):** nested retained input arrays:
+**Provisionally accepted (#274):** nested retained input arrays:
 Definition components/parents and Selection parts. Preserve complete values,
 detached public snapshots, domain lifetime and native handoff; attach storage
 before explicit owner copies. Input text, other identities/comparison formatting,
@@ -218,12 +218,26 @@ full setup and combined resources remain separate before operation integration.
 `8c142c3056736ba6a1a683b14ced8c79163a08ab` for bounded continuation with no blockers.
 Smoke 43028610415 passed; native 43028610546 remains running at inspection.
 Integrated acceptance remains through #267.
-**Next concrete slice after nested-input review:** retained input text in definition
+**Authorized text workstream after nested-input review:** retained input text in definition
 IDs/parent values, occurrence IDs/definitions, selection aggregates/parts, contacts,
 memberships and focal fields. Audit shared consumers; attach before copying, cover
 inline/heap strings and terminators, preserve complete values and detached snapshots.
 Other identities/comparison formatting, full setup and combined accounting remain
 separate before operation/control integration.
+
+**Dependency review (2026-11-11):** #274 review 5859635152 accepts head
+`ce3642ee463beb76948a2497c9aeb50172c3267d` for bounded continuation with no blockers.
+Smoke 43030712985 passed; native 43030713058 remains pending at inspection.
+Integrated acceptance remains through #267.
+**Active contribution (awaiting review):** retained input parent-value text.
+The shared-consumer audit splits the text workstream into reviewable slices:
+parent values first, preserving prepared public string outputs through explicit
+conversions. Other input identifiers cross additional lookup/serialization paths.
+**Next concrete slice:** remaining retained input text (definition and occurrence
+IDs/references, selection aggregates/parts, contacts, membership and focal fields).
+Audit the shared lookup and serialization consumers before adopting allocator-aware
+strings; preserve exact values, detached snapshots and native handoff. Other
+identities/comparison formatting, full setup and combined accounting remain separate.
 
 ## A. Coherent source/hierarchy refresh
 

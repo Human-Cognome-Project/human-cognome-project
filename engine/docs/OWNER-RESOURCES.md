@@ -1585,3 +1585,32 @@ Next: retained input text. Other identities/comparison formatting, full setup,
 combined resources and operation/control integration remain separately inventoried.
 Selected accounting overlaps the capacity census; no physical-memory or performance
 qualification follows from these requested-storage observations.
+
+### Retained input parent-value text domain (contribution awaiting review)
+
+The authorized input-text workstream is split at shared consumer boundaries.
+ParentOccurrence.value now uses InputText, the neutral shared-allocator string
+representation. Explicit projection copies construct parent text directly with
+the destination allocator, before character allocation, retaining ordinal/count.
+Parent tables keep their existing domain attachment. Other input strings remain
+outside this bounded slice.
+
+The independent text visitor includes parent values in both input variants.
+Existing pointer/request observations distinguish inline storage from heap backing,
+check capacity plus terminator and allocator identity, and feed exact selected-byte
+accounting. Supplemented v1/v2 fixtures add empty, short and 137-character parent
+values to exercise inline/heap copies, detached source-death snapshots, moved
+lifetime, byte/work refusal, reclamation and exact retry. Whole-owner all-site
+failure injection remains active. Supplementary values are copy fixtures, not
+claims of valid native model inputs.
+
+Projection construction explicitly converts encoded keys into InputText. Native
+preparation explicitly converts parent values at the existing public group and
+participation outputs; no public output encoding or numerical change is intended.
+The capacity census uses the same inline-aware backing rule as recipe text,
+avoiding a second charge for inline characters. ParentOccurrence layout grows;
+affected consumers must rebuild. Selected accounting overlaps the census.
+
+Next: remaining input text and its lookup/serialization boundaries. Other owner
+identities/comparison formatting, full setup, combined accounting and operations
+remain separate. This slice does not complete input-text or owner resource coverage.
