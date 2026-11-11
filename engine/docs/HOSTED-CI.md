@@ -216,3 +216,9 @@ manifest digest:
 
 Hosted installation logs must additionally demonstrate archive.ubuntu.com traffic;
 fixture success alone does not establish that the runner's failing endpoint changed.
+
+
+### Maintainer acceptance — 2026-11-11
+
+**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Bring current main into the stack with a history-preserving merge and qualify the combined head before integration. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
+
