@@ -3678,3 +3678,63 @@ No GPU or live database work was requested. Declaration/catalogue/map/other owne
 UUIDs and input payload remain separate from this contribution. Next bounded
 scope is retained declaration UUIDs, before full setup/combined resource work
 and operation/control integration.
+
+### Retained declaration UUID qualification (2026-11-11)
+
+Tested source `dbfd06463c25514dadc6dcdf06c666796157b52c`, stacked on #268 head
+`864eabe731f3238302ac6505516fa6cad4bd4e8e`. Review 5858272490 reported no blockers
+and explicitly authorized this slice. Parent smoke 43015222103 passed; native
+43015222274 was running at inspection. Integrated acceptance remains through
+#267, and #268's post-PASS cache warning remains preserved.
+
+Collection directly initializes owner/recipe identities with the destination
+domain instead of allocating detached defaults and then replacing them. Explicit
+copies also attach before allocation. Outgoing/incoming source study IDs,
+source/parent/leaf reference scopes and revisions use the same explicit copies.
+Public detached declarations, complete structural values and matching are unchanged.
+
+Both collection and copy controls observe each UUID request independently,
+including its terminator and allocator; retained live requests equal domain bytes.
+Zero byte/work budget refuses before any allocation attempt. Boundary sweeps,
+complete-value comparison, detached snapshots, source-death moves, reclamation
+and exact retry remain active. Whole-owner observations and every allocation
+failure-injection site include the new selected payload.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1551 / 2040 | 2038 / 3668 |
+| Selected live / peak requested bytes | 284442 / 284442 | 348940 / 348940 |
+| Selected cumulative allocation work | 372316 | 700552 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Selected live/peak/work increase by
+2220 / 8880 bytes from #268. Whole-owner retained/peak requests and capacity census
+are unchanged; allocation-site counts decrease by 1 / 4 after eliminating
+replaced default identity storage. UUID and containing-row layout are unchanged.
+The selected report overlaps the census and must not be added to it.
+
+Full configured native and standalone warm builds passed first attempt. All 43
+scoped CPU checks passed: 20 exchange processes (workers 1/2, bulk/default and
+direct/compiler-no-unroll), 12 prepared CTests, seven supporting CTests and four
+warm CTests. Final build/run logs contain no warnings/errors. Source remained
+clean/pinned; tested-source-to-final-head delta is four Markdown files only.
+Pinned Clang 15/libstdc++ x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, shared host; no timing claim.
+
+Evidence directory `declaration-uuid-domain-dbfd0646` retains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout measurements.
+Verified local archive: `setup-evidence/declaration-uuid-domain-dbfd0646.tar.gz`.
+SHA256SUMS manifest digest:
+
+    6d93c65ced4843aeb9b744df3cee41856bb6b6e877b34221868546efeeb70f97
+
+Local raw artifacts have not been independently inspected remotely; hosted
+checks remain authoritative. Historical failures/warnings remain in their
+original records; this run does not relabel #268's warning as warning-free.
+
+Next: catalogue UUIDs, auditing retained fields and temporary graph keys
+separately. Map/other owner UUIDs, input payload, full setup, combined accounting
+and operation/control integration remain open. No GPU, live database, browser
+rerun, full baseline or performance qualification is claimed.

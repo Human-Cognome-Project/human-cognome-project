@@ -1427,3 +1427,26 @@ UUID characters; selected accounting overlaps that census. Declaration,
 catalogue/map/other owner UUIDs and input payload remain outside this slice.
 Next bounded scope is retained declaration UUID payload. Complete setup and
 combined resource accounting remain open before operation/control integration.
+
+### Declaration UUID domain (contribution awaiting review)
+
+LetterExchangeContract collection now constructs owner and recipe identities
+with their destination allocator directly, eliminating detached default UUID
+payloads that were subsequently replaced. Explicit copies attach those same
+identities before allocation. Source occurrence study IDs, source/parent/leaf
+reference scopes and revisions use explicit Uuid(source, domain) construction.
+The public detached declaration path and exact matching semantics are preserved.
+
+A nonallocating UUID visitor extends independent request/terminator, domain,
+complete retained-byte, detached snapshot and moved/source-death controls for
+both collection and explicit copying. Zero byte/work allowance must refuse
+before any observed allocation attempt. Existing boundary sweeps qualify
+reclamation and exact retry; whole-owner observation and allocation-failure
+injection include every retained declaration UUID. No representation, encoding
+or numerical policy changes. Selected totals overlap the retained census.
+
+Next: catalogue UUIDs, auditing retained and temporary graph requests separately.
+Map/other owner UUIDs, input payload, complete setup, combined resources and
+operation/control integration remain open. #268 is provisionally accepted;
+its post-PASS cache warning remains preserved, and integrated acceptance is
+through #267 pending hosted reconciliation.
