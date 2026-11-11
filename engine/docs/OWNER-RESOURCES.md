@@ -1403,3 +1403,27 @@ Review 5858105951 accepts the recipe UUID scope at
 workflows passed. Scope limits and historical evidence remain unchanged.
 Next: remaining retained projection UUIDs; other owner/input UUID payload,
 full setup and combined resources remain open before operation/control integration.
+
+### Remaining projection UUID domain (contribution awaiting review)
+
+Explicit LetterProjection copies now attach study identity, occurrence and byte
+provenance owner-study IDs, occurrence/byte/complete-character reference scopes
+and revisions, and active/spare parent contribution study/field scopes. The
+existing projection key/object/reference helpers always select the destination
+UUID allocator before copying; reserve_exposure uses those same helpers when
+populating inactive contributions. The recipe-only switch is no longer needed.
+Existing recipe, table, address, path and text attachment is preserved.
+
+The nonallocating text/backing visitor includes each of these UUID fields,
+feeding independent actual requests (including terminators), domain identity,
+exact selected live bytes, budget refusal/reclamation/exact retry and detached/
+moved lifetime checks. Populated spare-pool copies also verify every backing
+allocator points to the new domain. Existing owner operation tests exercise
+repeated active/spare transfers without replacing retained UUID storage.
+
+This changes allocation-domain selection, not Uuid representation, projection
+values, encoding or numerical behavior. The prior census already counted these
+UUID characters; selected accounting overlaps that census. Declaration,
+catalogue/map/other owner UUIDs and input payload remain outside this slice.
+Next bounded scope is retained declaration UUID payload. Complete setup and
+combined resource accounting remain open before operation/control integration.

@@ -105,7 +105,7 @@ borrow the source owner's quota. These are not complete constructor limits.
 
 **Integration update (2026-11-11):** Reviewed #261–#267 are integrated into main at `4c0c3c56ea83c7868a62c7dd41de10d183053ec5`, preserving #260. #267 review 5858105951 found no blockers. All four hosted workflows at reviewed head `7d9a7e484d923d17edc223d95007171b273c2680` passed: native 42937702239 (12 jobs), warm 42937702260, viewport 42937702136 and smoke 42937702124. This supersedes earlier provisional/pending status observations below; their failures and source-pinned evidence remain historical. Continue from current main with the remaining projection UUID slice below.
 
-**Next concrete coding slice:** remaining retained projection UUID fields: study_, occurrence/provenance owner-study IDs, occurrence/byte/complete-character ToolRefs, and active/spare parent contribution study/field scopes. Reuse explicit pre-allocation Uuid copies, preserve already attached recipe/address/path/text stores and detached snapshots/moves, and extend independent request and refusal/reclamation/exact-retry/lifetime controls. Declaration, catalogue, map, other owner UUIDs and input payload remain separate after this slice, ahead of complete setup, combined accounting and operation/control integration.
+**Active contribution (awaiting review):** remaining retained projection UUID fields: study_, occurrence/provenance owner-study IDs, occurrence/byte/complete-character ToolRefs, and active/spare parent contribution study/field scopes. Reuse explicit pre-allocation Uuid copies, preserve already attached recipe/address/path/text stores and detached snapshots/moves, and extend independent request and refusal/reclamation/exact-retry/lifetime controls. Declaration, catalogue, map, other owner UUIDs and input payload remain separate after this slice, ahead of complete setup, combined accounting and operation/control integration.
 
 **Remaining sequence:** finish the inventoried map/recipe/input and UUID/address payload, preceding catalogue/declaration construction, graph temporaries and complete setup-work limits; then combined caller/borrowed accounting; then remaining-operation integration and same-execution controls (C/D below). Each handoff must name the next concrete slice and the remaining inventory. Do not reimplement accepted gates or add their overlapping domain report to the retained census. Gate before allocation/work and preserve cleanup, retry and exclusive synchronous access. Shared counters are not thread-safe; keep domain overhead and allocator/exception costs separate. See [OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md).
 
@@ -142,6 +142,15 @@ The contracts below retain required behavior for each slice; imperative wording
 in an accepted slice does not reopen its completed implementation. Local evidence
 permits scoped provisional continuation; hosted findings must be reconciled before
 final acceptance. Actual GPU qualification and Docker release remain later work.
+
+**Next bounded handoff after projection UUID review:** retained declaration UUID
+payload in LetterExchangeContract owner/recipe identity, outgoing/incoming source
+occurrences and references, parent references and leaf references. Audit both
+collect and explicit domain-copy paths before allocation; preserve ordinary
+snapshot detachment, moves, exact declaration/matching behavior and independent
+request/refusal/reclamation/retry/lifetime controls. Catalogue/map/other owner
+UUIDs and input payload remain separate; no complete setup or combined resource
+claim follows from this contribution.
 
 ## A. Coherent source/hierarchy refresh
 

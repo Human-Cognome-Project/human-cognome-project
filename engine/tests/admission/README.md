@@ -3619,3 +3619,62 @@ stack, without erasing earlier failures. No GPU or performance claim follows.
 Next authorized slice: remaining retained projection UUID payload, as listed in
 the continuation plan. Other owner/input payload, setup, combined resources and
 operation/control integration remain open.
+
+### Remaining projection UUID qualification (2026-11-11)
+
+Base: accepted integrated main `427977d8`; #267 review 5858105951 explicitly
+approves this slice. Tested source: `938d8ef507bea11d45149ee7fc4b9e569da000ae`.
+The reviewed #261–#267 stack is merged; no dependent provisional stack is needed.
+
+Explicit copies select the destination domain before allocating retained study,
+occurrence/provenance owner-study, occurrence/byte/complete-character reference,
+and active/spare parent study/field UUID characters. Reserving inactive parents
+uses the same helpers. Recipe/address/path/table/text attachment is preserved.
+The visitor independently checks these backing requests, their terminators and
+allocator identity. Existing v1/v2 controls cover complete values, detached
+snapshots, source-death moves, populated spare-pool copies, every byte/work
+refusal boundary, reclamation and exact retry. Repeated owner exchange retains
+active/spare objects rather than recreating their UUID storage.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1518 / 1980 | 2023 / 3428 |
+| Selected live / peak requested bytes | 282222 / 282222 | 340060 / 340060 |
+| Selected cumulative allocation work | 370096 | 691672 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Compared with #267, selected live/peak/work
+increase by 2072 / 8066 bytes. Whole-owner requests, allocation-site counts and
+capacity census are unchanged. Uuid and containing-row layout remain unchanged;
+this admits existing storage, not additional storage. Selected reports overlap
+the census and must not be summed; neither proves complete physical-memory bounds.
+
+Full native and standalone warm builds passed first attempt. All 43 scoped CPU
+checks passed: 20 exchange processes, 12 prepared CTests, seven supporting CTests
+and four warm CTests. Workers 1/2 and bulk/default or direct/compiler-no-unroll
+were exercised. Tested source stayed clean/pinned; final delta is four Markdown
+files only. Pinned Clang 15/libstdc++ x64 and Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+
+One warning is preserved in `2-bulk-exchange_commit.log`: line 202 reports PASS;
+line 203 reports Taichi offline-cache lock failure. The process exited zero.
+No cache cleanup or warning-erasing rerun was performed. No other warning/error
+was found in final build/run logs. Earlier historical failures remain preserved.
+A restricted Windows submodule-status read hit MSYS access denied; an authorized
+retry succeeded. This was not a source/build/test failure.
+
+Evidence directory `projection-uuid-domain-938d8ef5` contains commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout measurement.
+Verified local archive: `setup-evidence/projection-uuid-domain-938d8ef5.tar.gz`.
+SHA256SUMS manifest digest:
+
+    5468d4daca1d6ea074646121bdd4cb2bedfb342acc328d1a32239a631ea068c1
+
+Raw artifacts are local and have not been independently inspected remotely;
+hosted checks remain authoritative. No full baseline or browser rerun was made.
+No GPU or live database work was requested. Declaration/catalogue/map/other owner
+UUIDs and input payload remain separate from this contribution. Next bounded
+scope is retained declaration UUIDs, before full setup/combined resource work
+and operation/control integration.
