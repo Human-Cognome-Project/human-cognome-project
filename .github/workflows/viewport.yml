@@ -5,6 +5,7 @@ on:
     paths:
       - "tools/viewport/**"
       - ".github/workflows/viewport.yml"
+      - "engine/scripts/*hosted_ubuntu_mirror.sh"
   workflow_dispatch:
 
 jobs:
@@ -27,6 +28,8 @@ jobs:
       - run: npm run build
       - name: Verify retained bundle matches pinned sources
         run: git diff --exit-code -- vendor/
+      - name: Select Ubuntu package archive
+        run: sudo bash ../../engine/scripts/hosted_ubuntu_mirror.sh
       - run: npx playwright install --with-deps chromium
       - name: Test direct-file offline page with real native capture
         run: npm run test:browser

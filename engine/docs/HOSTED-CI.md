@@ -145,3 +145,74 @@ the main build successfully saved its toolchain-qualified cache under source
 This verifies cache publication, not warm-cache reuse or a warm-cache speedup.
 The rollout is complete. No additional benchmark rerun was needed, and these
 hosted CPU results do not qualify contributor-local or GPU execution.
+
+## Ubuntu archive resolution repair (2026-11-11, awaiting review)
+
+Reviews of #275–#277 identified repeated DNS resolution failures for
+azure.archive.ubuntu.com during apt/toolchain installation, before product
+compilation. #276 viewport attempts failed during Playwright dependency installation
+and were cancelled before browser tests. Repeated identical retries did not restore
+qualification. Those attempts remain failed/cancelled; skipped suites are not passes.
+
+`hosted_ubuntu_mirror.sh` replaces only the exact Azure Ubuntu archive URL with
+`archive.ubuntu.com` in legacy `.list` and deb822 `.sources` files. It preserves
+protocol, suites, components, Signed-By keys and security.ubuntu.com; unrelated
+repositories are untouched. This is Ubuntu's primary archive, documented in the
+[Ubuntu package archive reference](https://ubuntu.com/project/docs/how-ubuntu-is-made/concepts/package-archive/).
+No package authentication bypass, toolchain-version change, numerical expectation
+change or weakened test gate is introduced. A remaining download failure still
+fails the existing dependency command.
+
+All four native job definitions that install APT packages normalize sources before
+apt update. The viewport job does so before Playwright installs its dependencies.
+The viewport path filter includes the shared helper/test. Native paths already
+include engine/**. Local validation never changes this machine's APT configuration;
+the optional script argument points fixture tests at a temporary source root.
+
+Tested source `464e4410984f98b4bacff566c4bfc96e1f12a814`: ShellCheck passed for
+existing orchestration and new scripts; mirror fixtures passed legacy/deb822 exact
+URL replacement, signature/suite/security preservation, unrelated-host protection,
+idempotence and absent sources. Existing orchestration contracts passed complete
+shards, failure propagation, inventory and bundle provenance guards. Workflow wiring
+was inspected for all four native install sites and the viewport working directory.
+No product baseline or browser suite was rerun locally for this script-only change.
+
+Verified local archive `setup-evidence/ci-ubuntu-mirror-464e4410.tar.gz`; manifest:
+
+    14003deee241e272684696b970f235840e4f1927ddb0c77f375d6c9443aebd0e
+
+Final tested-to-head changes are documentation only. Local fixtures prove rewrite
+behavior, not remote mirror availability or hosted qualification. Raw local evidence
+has not been independently inspected remotely. Hosted runs must qualify this repair
+before the blocked allocation stack can integrate; no self-merge or automatic
+relabeling of earlier attempts follows. The identity-text coding slice remains queued.
+
+### Mirror-list correction after review
+
+Review #278/5863935970 found the initial helper did not cover the runner's actual
+`mirror+file:/etc/apt/apt-mirrors.txt` indirection. Hosted native job 130734677651
+still downloaded from Azure after the old normalization message. Earlier local
+direct-source passes did not prove the workaround effective; preserve this finding
+even where installation happened to succeed.
+
+The helper now also examines `apt-mirrors.txt` within the supplied APT root. It
+changes only matching archive URLs, preserving mirror metadata, unrelated endpoints
+and the source's mirror+file/Signed-By configuration. Diagnostics list changed files
+and count them, or explicitly report no matching URL and no files changed.
+The isolated fixture includes mirror+file sources and a mirror list with priorities,
+architecture/suite metadata, security and unrelated endpoints; exact-content and
+second-run assertions verify preservation and idempotence.
+
+Correction source f137938f52a9361f479697f975353a5209324d62 first stopped at ShellCheck
+SC2129 on repeated fixture redirects; fixture/orchestration tests did not run at
+that source. The retained local log is ci-ubuntu-mirror-f137938f/shellcheck.log.
+Grouping fixture writes fixed it without changing production behavior.
+Tested correction `f87fa4baef9ad9eebe9e8bc37f0ddb6c3c6b1282`: ShellCheck, direct and
+mirror-list fixtures and existing orchestration contracts passed. Local APT sources
+were untouched. Verified archive `setup-evidence/ci-ubuntu-mirror-f87fa4ba.tar.gz`;
+manifest digest:
+
+    35f463cb94e42385e4ef18902e3b468b513cbc21ce58e87444bef7af8e567a39
+
+Hosted installation logs must additionally demonstrate archive.ubuntu.com traffic;
+fixture success alone does not establish that the runner's failing endpoint changed.
