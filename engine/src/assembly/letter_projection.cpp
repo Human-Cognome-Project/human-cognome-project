@@ -96,7 +96,9 @@ void byte_definition(const Tools &tools, const warm::Tool &t,
 }
 struct ByteRef {
   std::vector<std::uint32_t> path;
-  warm::ToolRef character, byte;
+  // The source tool table is stable for the entire expansion consumer call.
+  // Published provenance/occurrences still copy their own identities.
+  const warm::ToolRef *character, *byte;
 };
 std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
   need(letter.notation && !letter.notation->empty() &&
@@ -121,7 +123,7 @@ std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
                       static_cast<unsigned char>(encoded[j]));
       need(out.size() < std::size_t(INT32_MAX),
            "byte occurrence count overflow");
-      out.push_back({{std::uint32_t(i), std::uint32_t(j)}, c.ref, ref});
+      out.push_back({{std::uint32_t(i), std::uint32_t(j)}, &c.ref, &ref});
     }
     exact_form += encoded;
   }
@@ -182,7 +184,7 @@ warm::Bundle normalize_letters(warm::Bundle b,
       const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
       const auto &state = r.bytes[i].initial;
       b.occurrences.push_back(
-          {id, v.byte.object, 0, state.position, state.velocity});
+          {id, v.byte->object, 0, state.position, state.velocity});
       selection.parts.push_back(id);
     }
     b.selections.push_back(std::move(selection));
@@ -221,7 +223,7 @@ warm::Bundle normalize_structural_letters(
     warm::Selection selection{r.entry, r.exposure, {}};
     for (const auto &v : expected) {
       const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
-      b.structural_occurrences.push_back({id, v.byte.object, 0});
+      b.structural_occurrences.push_back({id, v.byte->object, 0});
       selection.parts.push_back(id);
     }
     b.selections.push_back(std::move(selection));
@@ -277,7 +279,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
       provenance.emplace(
           s.parts[i],
           ByteProvenance{
-              {out.study_, aggregate}, v.character, v.path[0], v.path[1]});
+              {out.study_, aggregate}, *v.character, v.path[0], v.path[1]});
     }
     if (s.exposure == warm::Exposure::Aggregate)
       active.insert(aggregate);

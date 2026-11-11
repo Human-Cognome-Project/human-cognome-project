@@ -37,7 +37,11 @@ int main() {
         f.request(f.repeated, 6, warm::Exposure::Aggregate)};
     auto b = normalize_letters(f.base, requests);
     warm::validate(b);
-    auto p = project_letters(b);
+    // Published identities must outlive the source of borrowed expansion refs.
+    auto p = [&] {
+      const auto source = b;
+      return project_letters(source);
+    }();
     check(p.occurrences().size() == 18,
           "five aggregates and thirteen byte alternatives; no character/nibble "
           "particles");
