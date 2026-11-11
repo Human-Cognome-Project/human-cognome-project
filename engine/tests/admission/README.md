@@ -3597,3 +3597,25 @@ Raw local artifacts have not been independently inspected remotely. Hosted
 checks remain authoritative. Next bounded scope: remaining retained projection
 UUID fields; other owner/input payload, complete setup, combined resources and
 operation/control integration remain separate.
+
+
+### Maintainer integration through #267 (2026-11-11)
+
+Review 5858105951 accepts head `7d9a7e484d923d17edc223d95007171b273c2680`
+without blocking findings. Reviewed #261–#267 are integrated at
+`4c0c3c56ea83c7868a62c7dd41de10d183053ec5`, preserving #260's covenant addition.
+Independently verified: local tested source dcc13ea3 to reviewed head changes
+only four Markdown files. Raw local archives were not inspected or rerun.
+
+Hosted native 42937702239 passed all 12 jobs. Inspected regression jobs
+130254017744/130254017750/130254017788/130254017971 passed 29/28/29/29 tests
+(115 total); database job 130254017673 reports addressed_reads=24/private_reads=0.
+Warm 42937702260 passed; job 130251750153 reports four CTests and 90 Stage A
+PostgreSQL acceptance checks. Viewport 42937702136 passed; job 130251750116
+includes 15 model tests and successful direct-file navigation. Smoke 42937702124
+passed. These supersede pending hosted status observations for the integrated
+stack, without erasing earlier failures. No GPU or performance claim follows.
+
+Next authorized slice: remaining retained projection UUID payload, as listed in
+the continuation plan. Other owner/input payload, setup, combined resources and
+operation/control integration remain open.

@@ -1392,3 +1392,14 @@ other owner UUIDs and input payload. Complete setup and combined resources remai
 open before operation/control integration. Selected reports overlap the census;
 heap request observations do not qualify allocator metadata, physical residency
 or performance. Source-pinned scope/results are in admission evidence.
+
+### Integration acceptance through #267 (2026-11-11)
+
+The reviewed #261–#267 allocation contributions are integrated at
+`4c0c3c56ea83c7868a62c7dd41de10d183053ec5`, preserving #260. This supersedes
+provisional/awaiting-review status labels for those contributions above.
+Review 5858105951 accepts the recipe UUID scope at
+`7d9a7e484d923d17edc223d95007171b273c2680`; native, warm, viewport and smoke
+workflows passed. Scope limits and historical evidence remain unchanged.
+Next: remaining retained projection UUIDs; other owner/input UUID payload,
+full setup and combined resources remain open before operation/control integration.
