@@ -296,7 +296,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
       d.components.push_back({point(s.centre), s.radius});
     for (const auto &p : t.parents)
       d.parents.push_back(
-          {warm::key(p.target.object), p.ordinal, p.contribution});
+          {InputText(warm::key(p.target.object)), p.ordinal, p.contribution});
     out.structural_input_.definitions.push_back(std::move(d));
   }
   for (const auto &[id, o] : ordered) {
@@ -445,9 +445,13 @@ template<class T> T input_row(const T &row, const std::shared_ptr<detail::Reserv
   return row;
 }
 Definition input_row(const Definition &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  InputTable<ParentOccurrence> parents{detail::SharedReservationAllocator<ParentOccurrence>(domain)};
+  parents.reserve(row.parents.size());
+  for (const auto &p : row.parents)
+    parents.push_back({InputText(p.value.begin(),p.value.end(),detail::SharedReservationAllocator<char>(domain)),p.ordinal,p.count});
   return {row.id,row.mass,row.centroid,
       InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
-      InputTable<ParentOccurrence>(row.parents.begin(),row.parents.end(),detail::SharedReservationAllocator<ParentOccurrence>(domain))};
+      std::move(parents)};
 }
 Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {row.aggregate,

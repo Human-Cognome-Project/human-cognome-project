@@ -199,9 +199,9 @@ PreparedStudy prepare(const StudyInput &input) {
     target.participation.push_back({occurrence.id, occurrence.slot, sibling, "", 0,
                                    definition.mass, 1.0f});
     for (const auto &parent : definition.parents) {
-      const int group = group_for(GroupKind::ParentValue, parent.value);
+      const int group = group_for(GroupKind::ParentValue, std::string(parent.value));
       const float share = numerical(double(parent.count) / double(definition.mass));
-      target.participation.push_back({occurrence.id, occurrence.slot, group, parent.value,
+      target.participation.push_back({occurrence.id, occurrence.slot, group, std::string(parent.value),
                                      parent.ordinal, parent.count, share});
     }
   }

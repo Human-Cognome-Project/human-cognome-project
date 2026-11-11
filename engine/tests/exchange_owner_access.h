@@ -37,6 +37,8 @@ struct ExchangeOwnerAccess {
     for (const auto &f : b.focal_fields) visit(f.object.scope);
   }
   template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
+    for (const auto *input : {&p.input_.definitions,&p.structural_input_.definitions})
+      for (const auto &d : *input) for (const auto &parent : d.parents) visit(parent.value);
     recipe_uuids(p.recipe_,[&](const auto &uuid) { visit(uuid.str()); });
     visit(p.study_.str());
     const auto reference=[&](const auto &ref) {
@@ -168,6 +170,12 @@ struct ExchangeOwnerAccess {
   // normally filled only by the later public/native handoff.
   static void populate_input_tables(LetterProjection &p) {
     const auto fill=[](auto &input) {
+      if (!input.definitions.empty()) {
+        auto &parents=input.definitions.front().parents;
+        parents.push_back({InputText{},91,1});
+        parents.push_back({InputText("short"),92,2});
+        parents.push_back({InputText(137,'p'),93,3});
+      }
       input.nodes.push_back({nullptr,-1,ScaleRole::Root});
       input.memberships.push_back({"retained-occurrence","retained-group"});
       input.focal_fields.push_back({GroupKind::Membership,"retained-group"});

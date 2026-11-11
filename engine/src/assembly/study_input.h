@@ -12,6 +12,8 @@ class SNode;
 // Host input values only. Including these does not load the engine or libpq.
 namespace assembly {
 template<class T> using InputTable = hcp::resources::SharedReservedVector<T>;
+using InputText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
 struct Point {
   double x{0}, y{0}, z{0};
 };
@@ -35,7 +37,7 @@ struct ScaleBinding {
   double units{1};
 };
 struct ParentOccurrence {
-  std::string value;
+  InputText value;
   std::uint32_t ordinal{0};
   std::uint64_t count{0};
 };
