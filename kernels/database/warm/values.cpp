@@ -98,7 +98,18 @@ bool operator==(const ObjectKey &a, const ObjectKey &b) {
   return a.scope == b.scope && a.address == b.address;
 }
 bool operator<(const ObjectKey &a, const ObjectKey &b) {
-  return key(a) < key(b);
+  // Rendering used to validate both operands, even across different scopes.
+  for (const auto *address : {&a.address, &b.address})
+    need(!address->empty() && codec::is_valid_address(*address) &&
+             !address->back().partial,
+         "invalid, empty or wildcard object address");
+  if (a.scope != b.scope) return a.scope < b.scope;
+  // Full couplets have fixed width and the alphabet is in byte order.
+  // Dots occur at identical offsets; a strict address prefix sorts first.
+  return std::lexicographical_compare(a.address.begin(), a.address.end(),
+      b.address.begin(), b.address.end(), [](const auto &x, const auto &y) {
+        return std::tie(x.first, x.second) < std::tie(y.first, y.second);
+      });
 }
 bool operator==(const ToolRef &a, const ToolRef &b) {
   return a.object == b.object && a.revision == b.revision;
