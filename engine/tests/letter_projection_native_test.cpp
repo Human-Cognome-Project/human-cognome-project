@@ -81,7 +81,7 @@ void profiles() {
     CHECK_TRUE(input.definitions.size() == 2 &&
                    input.definitions[0].parents.size() == 2 &&
                    input.definitions[1].parents.size() == 1 &&
-                   input.definitions[1].parents[0].value ==
+                   std::string(input.definitions[1].parents[0].value) ==
                        warm::key(f.ref(object(floor_address('A' + 17))).object),
                name +
                    ": byte nibble parents and aggregate character parents "
