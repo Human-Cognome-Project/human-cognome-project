@@ -43,8 +43,8 @@ struct Definition {
   std::string id;
   std::uint64_t mass{0};
   Point centroid;
-  std::vector<Sphere> components;
-  std::vector<ParentOccurrence> parents;
+  InputTable<Sphere> components;
+  InputTable<ParentOccurrence> parents;
 };
 struct Occurrence {
   std::string id, definition;
@@ -56,7 +56,7 @@ struct Occurrence {
 enum class Exposure { Aggregate, Parts };
 struct Selection {
   std::string aggregate;
-  std::vector<std::string> parts;
+  InputTable<std::string> parts;
   Exposure exposure{Exposure::Aggregate};
 };
 struct Contact {

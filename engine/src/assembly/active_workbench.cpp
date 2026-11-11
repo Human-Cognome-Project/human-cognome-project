@@ -102,7 +102,7 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
     require(input.capacity < std::numeric_limits<int>::max());
     const auto id = occurrence(study(), {v.entry, {}});
     input.definitions.push_back(
-        {local_name(v.ref), v.mass, v.centroid, v.components, {}});
+        {local_name(v.ref), v.mass, v.centroid, {v.components.begin(),v.components.end()}, {}});
     input.occurrences.push_back({id, local_name(v.ref), input.capacity++, 0,
                                  point(v.initial.position),
                                  point(v.initial.velocity)});

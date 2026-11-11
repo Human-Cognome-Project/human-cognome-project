@@ -44,7 +44,7 @@ StudyInput couplets(const InputTable<StudyNode> &nodes) {
   StudyInput input;
   input.capacity = 6;
   input.nodes = nodes;
-  const std::vector<Sphere> geometry{{{-0.25, 0, 0}, 0.4}, {{0.25, 0, 0}, 0.4}};
+  const InputTable<Sphere> geometry{{{-0.25, 0, 0}, 0.4}, {{0.25, 0, 0}, 0.4}};
   input.definitions = {{"01", 2, {}, geometry, {{"0", 0, 1}, {"1", 1, 1}}},
                        {"10", 2, {}, geometry, {{"1", 0, 1}, {"0", 1, 1}}},
                        {"11", 2, {}, geometry, {{"1", 0, 1}, {"1", 1, 1}}}};

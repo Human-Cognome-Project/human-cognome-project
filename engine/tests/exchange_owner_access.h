@@ -11,6 +11,8 @@ struct ExchangeOwnerAccess {
       visit(value.nodes); visit(value.definitions); visit(value.occurrences);
       visit(value.selections); visit(value.contacts); visit(value.memberships);
       visit(value.focal_fields);
+      for (const auto &d : value.definitions) { visit(d.components); visit(d.parents); }
+      for (const auto &s : value.selections) visit(s.parts);
     };
     input(p.input_); input(p.structural_input_);
     visit(p.exposures_); visit(p.occurrences_); visit(p.parents_); visit(p.spare_parents_);

@@ -441,12 +441,26 @@ template<class T> auto projection_rows(const detail::SharedReservedVector<T> &ro
 }
 
 namespace {
+template<class T> T input_row(const T &row, const std::shared_ptr<detail::ReservationDomain> &) {
+  return row;
+}
+Definition input_row(const Definition &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.id,row.mass,row.centroid,
+      InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
+      InputTable<ParentOccurrence>(row.parents.begin(),row.parents.end(),detail::SharedReservationAllocator<ParentOccurrence>(domain))};
+}
+Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.aggregate,
+      InputTable<std::string>(row.parts.begin(),row.parts.end(),detail::SharedReservationAllocator<std::string>(domain)),row.exposure};
+}
 template<class Input> Input projection_input(const Input &source,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   Input result;
   const auto copy=[&](auto &target, const auto &rows) {
     using Table = std::decay_t<decltype(target)>;
-    target = Table(rows.begin(),rows.end(),typename Table::allocator_type(domain));
+    target = Table(typename Table::allocator_type(domain));
+    target.reserve(rows.size());
+    for (const auto &row : rows) target.push_back(input_row(row,domain));
   };
   copy(result.nodes,source.nodes); copy(result.definitions,source.definitions);
   copy(result.occurrences,source.occurrences); copy(result.selections,source.selections);
@@ -457,7 +471,7 @@ template<class Input> Input projection_input(const Input &source,
 }
 }
 // Explicit owner copies attach table, path, address, text and UUID backing.
-// Ordinary value copies detach; nested input payload remains outside this domain.
+// Ordinary value copies detach; input text remains outside this domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
     : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),
