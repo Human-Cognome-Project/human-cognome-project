@@ -43,7 +43,7 @@ CaptureContext context(const assembly::ActiveAssembly &a,
   CaptureContext out{h, ticks, std::move(label), {}, Json::object()};
   std::map<warm::ObjectKey, std::string> labels;
   for (const auto &t : a.shared_recipe().tools)
-    if (t.notation) labels.emplace(t.ref.object, *t.notation);
+    if (t.notation) labels.emplace(t.ref.object, std::string(*t.notation));
   std::map<std::string, DisplayContext> selected;
   for (const auto &s : a.shared_recipe().selections) {
     const auto aggregate = assembly::occurrence_text({a.study(), {s.entry, {}}});

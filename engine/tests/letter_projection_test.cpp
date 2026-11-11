@@ -86,7 +86,7 @@ int main() {
                       o.byte->byte_ordinal == o.key.source.path[1];
         if (o.key.source.entry == 4) {
           dutch_bytes.push_back(
-              *b.tools.at(f.tools.at(o.definition.object)).notation);
+              std::string(*b.tools.at(f.tools.at(o.definition.object)).notation));
           dutch_paths.emplace_back(o.key.source.path.begin(),o.key.source.path.end());
         }
       }
