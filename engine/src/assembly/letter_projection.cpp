@@ -125,7 +125,7 @@ std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
     }
     exact_form += encoded;
   }
-  need(exact_form == *letter.notation,
+  need(std::string_view(exact_form) == std::string_view(*letter.notation),
        "letter source form differs from exact UTF-8 construction");
   need(letter.mass && *letter.mass == out.size() * std::uint64_t(2),
        "byte projection does not conserve exact letter mass");
@@ -236,7 +236,7 @@ bool operator==(const OccurrenceKey &a, const OccurrenceKey &b) {
 std::string occurrence_text(const OccurrenceKey &k) {
   need(!k.study.nil() && (k.source.path.empty() || k.source.path.size() == 2),
        "invalid occurrence key");
-  auto text = k.study.str() + "/" + std::to_string(k.source.entry);
+  auto text = std::string(k.study.str()) + "/" + std::to_string(k.source.entry);
   for (auto ordinal : k.source.path) text += "/" + std::to_string(ordinal);
   return text;
 }
@@ -349,19 +349,73 @@ LetterProjection project_letters(const warm::Bundle &b) {
 }
 
 namespace {
+warm::OccurrenceId projection_id(const warm::OccurrenceId &id,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {id.entry,{id.path.begin(),id.path.end(),
+      detail::SharedReservationAllocator<std::uint32_t>(domain)}};
+}
 OccurrenceKey projection_key(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
-      detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+  return {key.study,projection_id(key.source,domain)};
 }
 warm::ObjectKey projection_object(const warm::ObjectKey &key,
-    const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.scope,{key.address.begin(),key.address.end(),
+    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
+  return {recipe_uuid ? warm::Uuid(key.scope,domain) : key.scope,{key.address.begin(),key.address.end(),
       detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
 }
 warm::ToolRef projection_reference(const warm::ToolRef &ref,
+    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
+  return {projection_object(ref.object,domain,recipe_uuid),
+      recipe_uuid ? warm::Uuid(ref.revision,domain) : ref.revision};
+}
+template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
+    const warm::RecipeTable<T> &rows,
+    const std::shared_ptr<detail::ReservationDomain> &domain, Copy copy) {
+  warm::RecipeTable<T> result{detail::SharedReservationAllocator<T>(domain)};
+  result.reserve(rows.size());
+  for (const auto &row : rows) result.push_back(copy(row));
+  return result;
+}
+warm::RecipeText projection_text(const warm::RecipeText &text,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {projection_object(ref.object,domain),ref.revision};
+  return {text.data(),text.size(),detail::SharedReservationAllocator<char>(domain)};
+}
+std::optional<warm::RecipeText> projection_text(const std::optional<warm::RecipeText> &text,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  if (!text) return {};
+  return projection_text(*text,domain);
+}
+warm::Bundle projection_recipe(const warm::Bundle &b,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  // Build addressed rows directly; a detached whole-recipe copy would allocate
+  // their backing before admission. Other recipe storage remains outside it.
+  return {{warm::Uuid(b.ref.selection,domain),warm::Uuid(b.ref.revision,domain)},
+      warm::Uuid(b.owner,domain),warm::Uuid(b.creator,domain),b.recipe_version,
+      recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
+        return {projection_reference(t.ref,domain,true),warm::Uuid(t.epoch,domain),projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
+            recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
+              return {projection_reference(p.target,domain,true),p.ordinal,p.stored_mass,p.contribution};
+            }),
+            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain,true); }),warm::Uuid(t.author,domain)};
+      }),
+      recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
+        return {projection_object(g.object,domain,true),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
+      }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
+      recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
+        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node,o.position,o.velocity};
+      }),
+      recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
+        return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
+      }),
+      recipe_tables(b.contacts,domain,[&](const auto &c) -> warm::Contact {
+        return {projection_id(c.a,domain),projection_id(c.b,domain)};
+      }),
+      recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
+        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node};
+      }),
+      recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
+        return {f.kind,projection_object(f.object,domain,true)};
+      })};
 }
 ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -387,11 +441,11 @@ template<class T> auto projection_rows(const detail::SharedReservedVector<T> &ro
 }
 
 // Explicit owner copies attach table, occurrence-path and row-address backing.
-// Ordinary value copies detach; recipe/input and UUID payload remain
+// Ordinary value copies detach; other recipe/input and UUID payload remain
 // outside this selected domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
-    : study_(other.study_), recipe_(other.recipe_),
+    : study_(other.study_), recipe_(projection_recipe(other.recipe_,domain)),
       exposures_(other.exposures_.begin(),other.exposures_.end(),detail::SharedReservationAllocator<warm::Exposure>(domain)),
       occurrences_(projection_rows(other.occurrences_,domain)),
       parents_(projection_rows(other.parents_,domain)),

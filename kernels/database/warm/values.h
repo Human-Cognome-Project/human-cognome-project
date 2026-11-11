@@ -4,6 +4,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "../codec/codec.h"
@@ -29,11 +30,14 @@ struct UnboundRoot : Error {
   using Error::Error;
 };
 
+using UuidText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
 class Uuid {
  public:
   Uuid();  // Shared scope / nil.
-  explicit Uuid(std::string value);
-  const std::string &str() const { return value_; }
+  explicit Uuid(std::string_view value);
+  Uuid(const Uuid &other, const std::shared_ptr<hcp::resources::ReservationDomain> &domain);
+  const UuidText &str() const { return value_; }
   bool nil() const;
   friend bool operator==(const Uuid &a, const Uuid &b) {
     return a.value_ == b.value_;
@@ -44,7 +48,7 @@ class Uuid {
   }
 
  private:
-  std::string value_;
+  UuidText value_;
 };
 Uuid new_uuid();
 
@@ -83,20 +87,32 @@ struct Context {
   WriterRole role{WriterRole::Reader};
 };
 
+// Recipe table backing may attach to an explicit owner allocation domain.
+// Ordinary copies detach through the engine-independent allocator.
+template<class T> using RecipeTable = hcp::resources::SharedReservedVector<T>;
 struct Parent {
   ToolRef target;
   std::uint32_t ordinal{0};
   std::optional<std::uint64_t> stored_mass;
   std::uint64_t contribution{0};
 };
+using RecipeText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
+// Inline characters are already part of the string/row object. Heap requests
+// include the terminator. Detect inline backing by location, not a fixed SSO size.
+inline std::size_t recipe_text_backing(const RecipeText &text) {
+  const auto data = reinterpret_cast<std::uintptr_t>(text.data());
+  const auto object = reinterpret_cast<std::uintptr_t>(&text);
+  return data >= object && data-object < sizeof(text) ? 0 : text.capacity()+1;
+}
 struct Tool {
   ToolRef ref;
   Uuid epoch;
-  std::string recipe;
-  std::optional<std::string> notation;
+  RecipeText recipe;
+  std::optional<RecipeText> notation;
   std::optional<std::uint64_t> mass;
-  std::vector<Parent> parents;
-  std::vector<ToolRef> member_of;
+  RecipeTable<Parent> parents;
+  RecipeTable<ToolRef> member_of;
   Uuid author;
 };
 struct Point {
@@ -109,7 +125,7 @@ struct Sphere {
 struct Geometry {
   ObjectKey object;
   Point centroid;
-  std::vector<Sphere> spheres;
+  RecipeTable<Sphere> spheres;
 };
 enum class ScaleRole {
   Root,
@@ -150,7 +166,7 @@ enum class Exposure { Aggregate, Parts };
 struct Selection {
   std::uint64_t entry{0};
   Exposure exposure{Exposure::Aggregate};
-  std::vector<OccurrenceId> parts;
+  RecipeTable<OccurrenceId> parts;
 };
 struct Contact {
   OccurrenceId a, b;
@@ -159,16 +175,16 @@ struct Bundle {
   BundleRef ref;
   Uuid owner, creator;
   int recipe_version{1};
-  std::vector<Tool> tools;
-  std::vector<Geometry> geometry;
-  std::vector<Node> nodes;
-  std::vector<Occurrence> occurrences;
-  std::vector<Selection> selections;
-  std::vector<Contact> contacts;
+  RecipeTable<Tool> tools;
+  RecipeTable<Geometry> geometry;
+  RecipeTable<Node> nodes;
+  RecipeTable<Occurrence> occurrences;
+  RecipeTable<Selection> selections;
+  RecipeTable<Contact> contacts;
   // Versioned alternatives: v1 uses occurrences, v2 uses these structural rows.
   // Mixing versions is rejected, rather than discarding supplied initial state.
-  std::vector<StructuralOccurrence> structural_occurrences;
-  std::vector<FocalField> focal_fields;
+  RecipeTable<StructuralOccurrence> structural_occurrences;
+  RecipeTable<FocalField> focal_fields;
 };
 
 // Validate a supplied normalized recipe, rather than derive one (Stage B).

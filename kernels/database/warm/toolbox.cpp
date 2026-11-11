@@ -32,7 +32,7 @@ std::string uuid_array(std::vector<Uuid> values) {
   std::string out = "{";
   for (const auto &v : values) {
     if (out.size() > 1) out += ',';
-    out += v.str();
+    out += std::string(v.str());
   }
   return out + "}";
 }
@@ -106,8 +106,8 @@ void Administrator::configure(std::vector<Binding> directory) {
   for (const auto &b : directory) {
     auto p = params(b.prefix);
     p.push_back(std::to_string(int(b.kind)));
-    p.push_back(b.epoch.str());
-    p.push_back(b.policy.str());
+    p.push_back(std::string(b.epoch.str()));
+    p.push_back(std::string(b.policy.str()));
     p.push_back(b.source_handle);
     p.push_back(b.snapshot_hash);
     p.push_back(uuid_array(b.writers));
@@ -124,7 +124,7 @@ void Administrator::configure(std::vector<Binding> directory) {
 std::vector<BundleRef> Administrator::affected(const ObjectKey &prefix,
                                                const Uuid &epoch) {
   auto p = params(prefix);
-  p.push_back(epoch.str());
+  p.push_back(std::string(epoch.str()));
   auto r = pg_->query(
       "SELECT selection,bundle_revision FROM warm_toolbox.epoch_use "
       "WHERE scope=$1 AND prefix=$2 AND epoch=$3 ORDER BY "
@@ -268,8 +268,8 @@ Tool Toolbox::read_tool(const ToolRef &ref) {
   need(PQntuples(r.get()) == 1, "missing tool revision");
   Tool tool{ref,
             Uuid(cell(r, 0, 0)),
-            cell(r, 0, 1),
-            nullable(r, 0, 2),
+            RecipeText(cell(r, 0, 1)),
+            std::optional<RecipeText>(nullable(r, 0, 2)),
             mass(r, 0, 3),
             {},
             {},
@@ -336,7 +336,7 @@ BundleRef Toolbox::publish(Prepared candidate,
       continue;
     }
     auto p = params(t.ref.object);
-    p.push_back(context_.actor.str());
+    p.push_back(std::string(context_.actor.str()));
     insert(*pg_, "object_slot", "scope,address,creator", p,
            " ON CONFLICT DO NOTHING");
     p = params(t.ref.object);
@@ -345,8 +345,8 @@ BundleRef Toolbox::publish(Prepared candidate,
         "scope=$1 AND address=$2 FOR UPDATE",
         p);
     auto head_p = p;
-    head_p.push_back(t.epoch.str());
-    head_p.push_back(t.recipe);
+    head_p.push_back(std::string(t.epoch.str()));
+    head_p.emplace_back(std::string(t.recipe));
     auto head = pg_->query(
         "SELECT revision FROM warm_toolbox.tool_head WHERE scope=$1 "
         "AND address=$2 AND epoch=$3 AND recipe=$4 FOR UPDATE",
@@ -384,11 +384,11 @@ BundleRef Toolbox::publish(Prepared candidate,
       const auto &root = roots.at(key(t.ref.object));
       auto p = params(t.ref);
       p.push_back(address_array(root.prefix.address));
-      p.push_back(t.epoch.str());
-      p.push_back(t.recipe);
-      p.push_back(t.notation);
+      p.push_back(std::string(t.epoch.str()));
+      p.emplace_back(std::string(t.recipe));
+      p.push_back(t.notation ? std::optional<std::string>(std::string(*t.notation)) : std::nullopt);
       p.push_back(number(t.mass));
-      p.push_back(context_.actor.str());
+      p.push_back(std::string(context_.actor.str()));
       p.push_back(root.snapshot_hash);
       insert(*pg_, "tool_revision",
              "scope,address,revision,binding_prefix,epoch,recipe,notation,mass,"
@@ -417,9 +417,9 @@ BundleRef Toolbox::publish(Prepared candidate,
             p);
       }
       auto p = params(t.ref.object);
-      p.push_back(t.epoch.str());
-      p.push_back(t.recipe);
-      p.push_back(t.ref.revision.str());
+      p.push_back(std::string(t.epoch.str()));
+      p.emplace_back(std::string(t.recipe));
+      p.push_back(std::string(t.ref.revision.str()));
       insert(*pg_, "tool_head", "scope,address,epoch,recipe,revision", p);
       if (roots.at(key(t.ref.object)).kind == BindingKind::Temporary) {
         p = params(t.ref);
@@ -429,18 +429,18 @@ BundleRef Toolbox::publish(Prepared candidate,
             p);
       }
     }
-  insert(*pg_, "bundle_head", "selection", {b.ref.selection.str()},
+  insert(*pg_, "bundle_head", "selection", {std::string(b.ref.selection.str())},
          " ON CONFLICT DO NOTHING");
   auto head = pg_->query(
       "SELECT revision FROM warm_toolbox.bundle_head WHERE "
       "selection=$1 FOR UPDATE",
-      {b.ref.selection.str()});
+      {std::string(b.ref.selection.str())});
   const auto previous = nullable(head, 0, 0);
   if (previous) {
     auto owner = pg_->query(
         "SELECT owner FROM warm_toolbox.bundle_revision "
         "WHERE selection=$1 AND revision=$2",
-        {b.ref.selection.str(), *previous});
+        {std::string(b.ref.selection.str()), *previous});
     if (Uuid(cell(owner, 0, 0)) != context_.instance)
       throw Unauthorized("selection belongs to another instance");
   }
@@ -449,8 +449,8 @@ BundleRef Toolbox::publish(Prepared candidate,
                        : std::nullopt))
     throw Conflict("selection head changed");
   auto p = params(b.ref);
-  p.push_back(b.owner.str());
-  p.push_back(b.creator.str());
+  p.push_back(std::string(b.owner.str()));
+  p.push_back(std::string(b.creator.str()));
   p.push_back(std::to_string(b.recipe_version));
   insert(*pg_, "bundle_revision",
          "selection,revision,owner,creator,recipe_version", p);
@@ -570,9 +570,9 @@ BundleRef Toolbox::publish(Prepared candidate,
   }
   for (const auto &root : candidate.bindings_) {
     p = params(root.prefix);
-    p.push_back(root.epoch.str());
-    p.push_back(b.ref.selection.str());
-    p.push_back(b.ref.revision.str());
+    p.push_back(std::string(root.epoch.str()));
+    p.push_back(std::string(b.ref.selection.str()));
+    p.push_back(std::string(b.ref.revision.str()));
     insert(*pg_, "epoch_use", "scope,prefix,epoch,selection,bundle_revision",
            p);
   }
@@ -740,7 +740,7 @@ Acquired Toolbox::acquire(const Uuid &selection, const Uuid &consumer,
   nonnil(consumer);
   auto head = pg_->query(
       "SELECT revision FROM warm_toolbox.bundle_head WHERE selection=$1",
-      {selection.str()});
+      {std::string(selection.str())});
   need(PQntuples(head.get()) == 1 && !PQgetisnull(head.get(), 0, 0),
        "selection not published");
   const BundleRef ref{selection, Uuid(cell(head, 0, 0))};
@@ -765,20 +765,20 @@ Acquired Toolbox::acquire(const Uuid &selection, const Uuid &consumer,
   head = pg_->query(
       "SELECT revision FROM warm_toolbox.bundle_head WHERE "
       "selection=$1 FOR SHARE",
-      {selection.str()});
-  if (cell(head, 0, 0) != ref.revision.str())
+      {std::string(selection.str())});
+  if (cell(head, 0, 0) != std::string(ref.revision.str()))
     throw Conflict("selection changed during acquire");
   auto p = params(ref);
-  p.push_back(consumer.str());
-  p.push_back(context_.actor.str());
-  p.push_back(context_.instance.str());
+  p.push_back(std::string(consumer.str()));
+  p.push_back(std::string(context_.actor.str()));
+  p.push_back(std::string(context_.instance.str()));
   insert(*pg_, "bundle_lease",
          "selection,bundle_revision,consumer,actor,instance", p,
          " ON CONFLICT DO NOTHING");
   auto lease = pg_->query(
       "SELECT actor,instance FROM warm_toolbox.bundle_lease WHERE "
       "selection=$1 AND bundle_revision=$2 AND consumer=$3",
-      {ref.selection.str(), ref.revision.str(), consumer.str()});
+      {std::string(ref.selection.str()), std::string(ref.revision.str()), std::string(consumer.str())});
   if (Uuid(cell(lease, 0, 0)) != context_.actor ||
       Uuid(cell(lease, 0, 1)) != context_.instance)
     throw Unauthorized("consumer lease ownership");
@@ -790,7 +790,7 @@ Acquired Toolbox::read_pinned(const BundleRef &ref, const Uuid &consumer) {
   nonnil(ref.revision);
   nonnil(consumer);
   auto p = params(ref);
-  p.push_back(consumer.str());
+  p.push_back(std::string(consumer.str()));
   Transaction tx(*pg_, true);
   auto r = pg_->query(
       "SELECT actor,instance FROM warm_toolbox.bundle_lease WHERE "
@@ -808,7 +808,7 @@ void Toolbox::release(const BundleRef &ref, const Uuid &consumer) {
   nonnil(ref.revision);
   nonnil(consumer);
   auto p = params(ref);
-  p.push_back(consumer.str());
+  p.push_back(std::string(consumer.str()));
   Transaction tx(*pg_);
   auto r = pg_->query(
       "SELECT actor,instance FROM warm_toolbox.bundle_lease WHERE selection=$1 "

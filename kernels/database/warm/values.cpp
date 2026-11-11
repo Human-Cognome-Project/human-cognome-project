@@ -25,11 +25,11 @@ void point(Point p) {
   need(std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z),
        "non-finite initial geometry/state");
 }
-bool text_value(const std::string &value) {
+bool text_value(std::string_view value) {
   return value.find('\0') == std::string::npos;
 }
 std::string ref_key(const ToolRef &r) {
-  return key(r.object) + "/" + r.revision.str();
+  return key(r.object) + "/" + std::string(r.revision.str());
 }
 void cycles(const std::map<std::string, const Tool *> &tools, bool membership) {
   std::map<std::string, int> state;
@@ -49,7 +49,7 @@ void cycles(const std::map<std::string, const Tool *> &tools, bool membership) {
 }  // namespace
 
 Uuid::Uuid() : value_("00000000-0000-0000-0000-000000000000") {}
-Uuid::Uuid(std::string value) : value_(std::move(value)) {
+Uuid::Uuid(std::string_view value) : value_(value) {
   need(value_.size() == 36, "malformed UUID");
   for (std::size_t i = 0; i < value_.size(); ++i) {
     auto &c = value_[i];
@@ -61,6 +61,9 @@ Uuid::Uuid(std::string value) : value_(std::move(value)) {
     }
   }
 }
+Uuid::Uuid(const Uuid &other, const std::shared_ptr<hcp::resources::ReservationDomain> &domain)
+    : value_(other.value_.data(),other.value_.size(),
+        hcp::resources::SharedReservationAllocator<char>(domain)) {}
 bool Uuid::nil() const { return *this == Uuid(); }
 Uuid new_uuid() {
   std::random_device random;
@@ -86,7 +89,7 @@ std::string address_array(const codec::Address &address) {
   return out + "}";
 }
 std::string key(const ObjectKey &o) {
-  return o.scope.str() + "/" + address_text(o.address);
+  return std::string(o.scope.str()) + "/" + address_text(o.address);
 }
 bool operator==(const ObjectKey &a, const ObjectKey &b) {
   return a.scope == b.scope && a.address == b.address;
@@ -273,7 +276,7 @@ void validate(const Bundle &b) {
              !s.parts.empty(),
          "missing/overlapping aggregate");
     const auto &letter = *tools.at(key(occurrences.at(aggregate).definition));
-    std::vector<OccurrenceId> expected;
+    RecipeTable<OccurrenceId> expected;
     for (const auto &character : letter.parents) {
       const auto &c = target(character.target);
       const bool ascii_byte = c.mass && *c.mass == 2;
@@ -386,7 +389,8 @@ Bundle structural_from_v1(const Bundle &legacy, BundleRef publication,
   for (const auto &o : legacy.occurrences)
     out.structural_occurrences.push_back({o.id, o.definition, o.node});
   out.occurrences.clear();
-  out.focal_fields = std::move(focal_fields);
+  out.focal_fields.assign(std::make_move_iterator(focal_fields.begin()),
+                          std::make_move_iterator(focal_fields.end()));
   validate(out);
   return out;
 }

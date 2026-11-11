@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
         Tool t{{id, new_uuid()},
                epoch,
                "stage-d-shared-fixture-v1",
-               r->notation,
+               std::optional<RecipeText>(r->notation),
                r->mass,
                {},
                {},

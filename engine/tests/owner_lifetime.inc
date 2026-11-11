@@ -507,12 +507,12 @@ void unique_reservation_controls() {
   require(destroyed == 2, "unbudgeted unique fixture did not destroy its object");
 }
 
-void projection_reservation_controls(const assembly::LetterProjection &projection) {
+void projection_reservation_controls(const assembly::LetterProjection &projection, bool reserve=true) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
   auto prepared=projection;
-  Access::reserve_projection(prepared);
+  if (reserve) Access::reserve_projection(prepared);
   auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   std::weak_ptr<ReservationDomain> watch = domain;
   std::optional<assembly::LetterProjection> snapshot;
@@ -521,27 +521,55 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   try {
     {
       auto copy = Access::projection_copy(projection,domain);
-      Access::reserve_projection(copy);
-      outer = Access::projection_table_bytes(copy);
+      if (reserve) Access::reserve_projection(copy);
+      outer = Access::projection_backing_bytes(copy);
+      Access::projection_texts(copy,[&](const auto &text) {
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        const auto bytes=observed==std::end(A::table) ? 0 : observed->bytes;
+        require(bytes==warm::recipe_text_backing(text) &&
+                    (!bytes || bytes==text.capacity()+1) && text.data()[text.size()]=='\0',
+                "recipe text request omitted terminator or charged inline storage");
+      });
+      for (std::size_t i=0; i<copy.recipe().tools.size(); ++i)
+        require(warm::tool_body(copy.recipe().tools[i])==warm::tool_body(projection.recipe().tools[i]),
+                "recipe text copy changed immutable encoding");
+      Access::projection_backing(copy,[&](const auto &table) { if (table.second) {
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==table.first; });
+        require(observed!=std::end(A::table) && observed->bytes==table.second,
+                "projection table backing differs from independent request");
+      }});
       Access::projection_paths(copy,[&](const auto &path) {
         require(path.get_allocator().domain == domain,"projection path detached during copy/reservation");
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==path.data(); });
+        require(path.empty() || (observed!=std::end(A::table) &&
+                    observed->bytes==path.capacity()*sizeof(std::uint32_t)),
+                "projection path backing differs from independent request");
         outer += path.capacity()*sizeof(std::uint32_t);
       });
       Access::projection_addresses(copy,[&](const auto &address) {
         require(address.get_allocator().domain == domain,"projection address detached during copy/reservation");
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==address.data(); });
+        require(address.empty() || (observed!=std::end(A::table) &&
+                    observed->bytes==address.capacity()*sizeof(codec::AddressElement)),
+                "projection address backing differs from independent request");
         outer += address.capacity()*sizeof(codec::AddressElement);
       });
       require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
               "projection domain omitted table/path backing or charged excluded payload");
-      for (const auto *d : Access::projection_domains(copy))
+      Access::projection_domains(copy,[&](const auto *d) {
         require(d == domain.get(), "explicit projection copy detached a table allocator");
+      });
       // Also copy a populated inactive pool; owner adoption normally copies
       // before reserving it, so that alone would not exercise this branch.
       {
         auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
         auto reserved_copy=Access::projection_copy(copy,other_domain);
-        Access::reserve_projection(reserved_copy);
-        std::uint64_t bytes=Access::projection_table_bytes(reserved_copy);
+        if (reserve) Access::reserve_projection(reserved_copy);
+        std::uint64_t bytes=Access::projection_backing_bytes(reserved_copy);
         Access::projection_paths(reserved_copy,[&](const auto &path) {
           require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
           bytes += path.capacity()*sizeof(std::uint32_t);
@@ -563,8 +591,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
       Access::projection_paths(*snapshot,[&](const auto &path) {
         require(!path.get_allocator().domain,"projection snapshot retained path domain");
       });
-      for (const auto *d : Access::projection_domains(*snapshot))
+      Access::projection_domains(*snapshot,[&](const auto *d) {
         require(!d, "ordinary projection snapshot borrowed source quota");
+      });
       require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
                   snapshot->occurrences().size() == copy.occurrences().size() &&
                   Access::projection_parent_sizes(*snapshot) == Access::projection_parent_sizes(copy),
@@ -574,7 +603,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain.reset();
     require(watch.expired(), "detached projection snapshot retained its source domain");
     // Restore full parent capacity on the independent snapshot after source death.
-    Access::reserve_projection(*snapshot);
+    if (reserve) Access::reserve_projection(*snapshot);
     require(Access::projection_equivalent(*snapshot,prepared),"snapshot references depended on destroyed projection");
     require(snapshot->study() == projection.study() &&
                 snapshot->occurrences().front().key == projection.occurrences().front().key,
@@ -600,14 +629,15 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
     watch = domain;
     auto copy = Access::projection_copy(projection,domain);
-    Access::reserve_projection(copy);
+    if (reserve) Access::reserve_projection(copy);
     moved.emplace(std::move(copy));
     domain.reset();
   }
   require(!watch.expired(), "moved projection lost its allocation domain");
   require(Access::projection_equivalent(*moved,prepared),"moved projection changed references or parent pools");
-  for (const auto *d : Access::projection_domains(*moved))
-    require(d != nullptr, "moved projection detached its backing allocator");
+  Access::projection_domains(*moved,[&](const auto *d) {
+        require(d != nullptr, "moved projection detached its backing allocator");
+      });
   Access::projection_paths(*moved,[&](const auto &path) {
     require(bool(path.get_allocator().domain),"moved projection detached path backing");
   });
@@ -622,7 +652,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
   for (const auto *source : {&projection,static_cast<const assembly::LetterProjection *>(&prepared)}) {
     const auto construct = [&](const auto &d) {
       auto value=Access::projection_copy(*source,d);
-      Access::reserve_projection(value);
+      if (reserve) Access::reserve_projection(value);
       return value;
     };
     domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
@@ -655,6 +685,49 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
             "exact projection path construction retry failed");
     require(Access::projection_equivalent(retry,prepared),"projection exact retry changed references or pool order");
   }
+}
+
+void recipe_payload_controls() {
+  membership_fixture::Fixture letters;
+  // Unreferenced valid tools exercise absent, empty, inline and heap text without
+  // changing the letter notation contract or the requested occurrence graph.
+  for (int i=0; i<4; ++i) {
+    auto tool=letters.base.tools.front();
+    tool.ref.object=letter_fixture::object("02.00.20.01.0"+std::to_string(i));
+    tool.parents.clear(); tool.member_of.clear(); tool.mass=1;
+    tool.recipe=i==3 ? warm::RecipeText(97,'r') : warm::RecipeText("short");
+    if (i==0) tool.notation.reset();
+    else if (i==1) tool.notation=warm::RecipeText{};
+    else if (i==2) tool.notation="q\"\\";
+    else tool.notation=warm::RecipeText(131,'n');
+    letters.base.tools.push_back(std::move(tool));
+  }
+  auto recipe=assembly::normalize_letters(letters.base,
+      {letters.request(letters.accented,0,warm::Exposure::Aggregate),
+       letters.request(letters.english,1,warm::Exposure::Parts),
+       letters.request(letters.french,2,warm::Exposure::Parts)});
+  recipe.contacts.push_back({recipe.occurrences.front().id,recipe.occurrences.back().id});
+  recipe.contacts.push_back({recipe.selections[1].parts.front(),recipe.selections[2].parts.front()});
+  require(!recipe.contacts.back().a.path.empty() && !recipe.contacts.back().b.path.empty(),
+          "legacy contact fixture lacks byte paths");
+  recipe.geometry.front().centroid={0.25,0.5,0.75};
+  recipe.geometry.front().spheres.front()={{0.5,0.25,0.125},0.625};
+  warm::validate(recipe);
+  auto projection=assembly::project_letters(recipe);
+  require(!recipe.occurrences.empty() && !recipe.contacts.empty() && !recipe.geometry.empty(),
+          "legacy recipe address fixture lost populated fields");
+  projection_reservation_controls(projection,false);
+  letters.base.focal_fields={{warm::FieldKind::Membership,letters.en}};
+  auto structural=assembly::normalize_structural_letters(letters.base,
+      {{0,letters.ref(letters.accented),warm::Exposure::Parts},
+       {1,letters.ref(letters.english),warm::Exposure::Aggregate}});
+  const auto &parts=structural.selections.front().parts;
+  require(parts.size()>=2 && !parts[0].path.empty() && !parts[1].path.empty(),
+          "structural contact fixture lacks byte paths");
+  structural.contacts.push_back({parts[0],parts[1]});
+  structural.contacts.push_back({{1,{}},parts[0]});
+  warm::validate(structural);
+  projection_reservation_controls(assembly::project_letters(structural));
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {
@@ -749,6 +822,109 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
           "exact catalogue construction retry failed");
 }
 
+// This fixture has only five-element addresses (15 requested bytes), empty or
+// two-ordinal paths, UUID text, table/node blocks and a larger callable. The
+// 15-byte request class therefore independently identifies address backing.
+namespace catalogue_address_witness {
+inline thread_local assembly::detail::ReservationDomain *domain{};
+inline thread_local std::uint64_t previous_work{}, live{}, peak{}, acquired{}, released{};
+inline thread_local bool prepaid=true;
+void acquire(std::size_t bytes) noexcept {
+  const auto work=domain->result().charged_work;
+  if (bytes == 5*sizeof(codec::AddressElement)) {
+    prepaid &= work-previous_work == bytes;
+    live += bytes; acquired += bytes; peak=std::max(peak,live);
+  }
+  previous_work=work;
+}
+void release(std::size_t bytes) noexcept {
+  if (bytes == 5*sizeof(codec::AddressElement)) { live-=bytes; released+=bytes; }
+}
+}
+
+void catalogue_graph_address_controls() {
+  using Access=assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A=allocation_lifetime;
+  namespace W=catalogue_address_witness;
+  letter_fixture::Fixture letters;
+  const auto left=letters.add(letter_fixture::object("02.00.00.01.00"),"left",0);
+  const auto right=letters.add(letter_fixture::object("02.00.00.02.00"),"right",0);
+  const auto top=letters.add(letter_fixture::object("02.00.00.03.00"),"top",0);
+  letters.base.tools.at(letters.tools.at(letters.english)).member_of={left,right,top};
+  letters.base.tools.at(letters.tools.at(left.object)).member_of={top};
+  letters.base.tools.at(letters.tools.at(right.object)).member_of={top};
+  letters.base.focal_fields={{warm::FieldKind::Membership,left.object}};
+  auto projection=assembly::project_letters(assembly::normalize_structural_letters(letters.base,
+      {{0,letters.ref(letters.english),warm::Exposure::Aggregate}}));
+  for (const auto &t : projection.recipe().tools)
+    require(t.ref.object.address.size()==5,"graph witness requires five-element addresses");
+  const auto reference=Access::catalogue(projection,{});
+  const auto address_size=5*sizeof(codec::AddressElement);
+  // Four visited graph vertices have state/reached keys. Their ancestor sets
+  // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
+  const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
+  const auto retained=reference.contributions().size()*2*address_size;
+  require(reference.contributions().size()==projection.occurrences().size()*3,
+          "diamond catalogue failed per-occurrence deduplication");
+  auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0; W::prepaid=true;
+  A::on_acquired=W::acquire; A::on_released=W::release;
+  A::begin();
+  try {
+    {
+      auto value=Access::catalogue(projection,domain);
+      require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
+                  W::acquired==temporary+retained && W::peak==temporary+retained &&
+                  W::live==retained && W::released==temporary,
+              "graph address requests, prepayment or transient overlap differ from independent fixture");
+    }
+  } catch (...) { A::on_acquired=nullptr; A::on_released=nullptr; A::end(); throw; }
+  A::on_acquired=nullptr; A::on_released=nullptr;
+  const auto released=A::end();
+  require(!released.live && !released.blocks && !W::live && W::acquired==W::released &&
+              !domain->result().live_bytes,"graph address witness leaked temporary or retained backing");
+  // Reuse the complete refusal/retry and lifetime controls with diamond ancestry.
+  catalogue_reservation_controls(projection);
+  for (std::size_t at=1; at<=released.attempts; ++at) {
+    domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin(at);
+    bool failed=false;
+    try { auto value=Access::catalogue(projection,domain); }
+    catch (const std::bad_alloc &) { failed=true; }
+    catch (...) { A::end(); throw; }
+    const auto observed=A::end();
+    require(failed && observed.attempts==at && !observed.live && !observed.blocks &&
+                !domain->result().live_bytes,"diamond allocation failure leaked graph backing");
+  }
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference),"diamond allocation failures prevented retry"); }
+  // Duplicate tool insertion keeps the first exact value and reclaims the rejected key.
+  auto &recipe=Access::catalogue_recipe(projection);
+  recipe.tools.push_back(recipe.tools.front());
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference),"duplicate graph key changed catalogue"); }
+  require(!domain->result().live_bytes,"duplicate graph key retained allocation");
+  // Introduce a cycle only after normal recipe validation; collection must reject
+  // it and reclaim every preceding node/key allocation.
+  auto top_it=std::find_if(recipe.tools.begin(),recipe.tools.end(),[&](const auto &t){return t.ref==top;});
+  require(top_it!=recipe.tools.end(),"graph cycle fixture lost ancestor");
+  top_it->member_of={left};
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  A::begin();
+  bool rejected=false;
+  try { auto value=Access::catalogue(projection,domain); }
+  catch (const warm::Error &) { rejected=true; }
+  catch (...) { A::end(); throw; }
+  const auto failed=A::end();
+  require(rejected && !domain->result().live_bytes && !failed.live && !failed.blocks,
+          "cyclic catalogue failed rejection or complete reclamation");
+  std::cout << "catalogue_graph_addresses,temporary_bytes=" << temporary
+            << ",retained_bytes=" << retained << ",address_peak=" << W::peak
+            << ",failure_sites=" << released.attempts << " PASS\n";
+}
 void contract_reservation_controls(const assembly::LetterProjection &projection) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
@@ -849,7 +1025,9 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
   shared_reservation_controls();
   unique_reservation_controls();
   projection_reservation_controls(projection);
+  recipe_payload_controls();
   catalogue_reservation_controls(projection);
+  catalogue_graph_address_controls();
   contract_reservation_controls(projection);
   const TickSnapshot before(f);
   ReservationResult full;
@@ -863,8 +1041,8 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
                 full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
                     Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
                     storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes+
-                    Access::projection_table_bytes(Access::projection(*owner))+
-                    Access::projection_table_bytes(Access::spare_projection(*owner)),
+                    Access::projection_backing_bytes(Access::projection(*owner))+
+                    Access::projection_backing_bytes(Access::spare_projection(*owner)),
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -1013,11 +1191,11 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
-      for (const auto &entry : Access::projection_tables(*p)) if (entry.second) {
+      Access::projection_backing(*p,[&](const auto &entry) { if (entry.second) {
         const auto request = containing_request(entry.first);
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
-      }
+      }});
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       Access::projection_paths(*p,[&](const auto &path) {
         const auto bytes=path.capacity()*sizeof(std::uint32_t);

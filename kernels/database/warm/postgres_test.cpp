@@ -58,7 +58,7 @@ std::vector<Tool> source_tools(ColdReader &core, ColdReader &ling) {
     auto &reader = address_text(id.address).substr(0, 2) == "02" ? ling : core;
     auto r = reader.read(id.address);
     if (!r) throw Error("retained fixture endpoint missing");
-    Tool t{{id, new_uuid()}, epoch, "seed-v1", r->notation,
+    Tool t{{id, new_uuid()}, epoch, "seed-v1", std::optional<RecipeText>(r->notation),
            r->mass,          {},    {},        actor};
     tools.emplace(id, t);
     for (const auto &parent : r->parents) {
@@ -85,7 +85,7 @@ Bundle fixture(const std::vector<Tool> &tools) {
   b.ref = {new_uuid(), new_uuid()};
   b.owner = instance;
   b.creator = actor;
-  b.tools = tools;
+  b.tools.assign(tools.begin(),tools.end());
   const auto letter = object("02.00.00.00.03");
   const auto &t = *std::find_if(tools.begin(), tools.end(), [&](const auto &v) {
     return v.ref.object == letter;
@@ -370,7 +370,7 @@ int main() {
     sql.command(
         "ALTER TABLE warm_toolbox.bundle_contact ADD CONSTRAINT "
         "injected_late_failure CHECK(selection <> '" +
-        failed.ref.selection.str() + "'::uuid)");
+        std::string(failed.ref.selection.str()) + "'::uuid)");
     const auto counts = [&] {
       auto r = sql.query(
           "SELECT (SELECT count(*) FROM warm_toolbox.tool_revision),(SELECT "
@@ -777,7 +777,7 @@ int main() {
     fresh_reader.release(private_ref, private_consumer);
     auto retained = sql.query(
         "SELECT count(*) FROM warm_toolbox.bundle_revision WHERE selection=$1",
-        {base.ref.selection.str()});
+        {std::string(base.ref.selection.str())});
     check(detail::cell(retained, 0, 0) == "3",
           "superseded revisions retained after consumer release");
     std::cout << checks << " Stage A PostgreSQL acceptance checks passed; "

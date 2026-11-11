@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
       if (tools.count(key)) return tools.at(key).ref;
       const auto record = manager.read(key);
       if (!record) throw Error("required retained letter endpoint absent");
-      Tool t{{key, new_uuid()}, epoch, "viewport-letter-capture-v1", record->notation,
+      Tool t{{key, new_uuid()}, epoch, "viewport-letter-capture-v1", std::optional<RecipeText>(record->notation),
               record->mass, {}, {}, actor};
       tools.emplace(key, t);
       for (const auto &p : record->parents) {

@@ -34,7 +34,7 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
   std::map<warm::ObjectKey, const warm::Tool *,std::less<warm::ObjectKey>,ToolAllocator>
       tools{ToolAllocator(domain)};
   for (const auto &t : projection.recipe().tools)
-    tools.emplace(t.ref.object, &t);
+    tools.emplace(catalogue_object(t.ref.object,domain), &t);
   auto get = [&](const warm::ToolRef &ref) -> const warm::Tool & {
     const auto it = tools.find(ref.object);
     need(it != tools.end() && it->second->ref == ref,
@@ -51,18 +51,27 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
       follow =
           [&](const warm::ToolRef &ref) -> const Targets & {
     const auto &t = get(ref);
-    auto &status = state[ref.object];
+    auto status_it = state.find(ref.object);
+    if (status_it == state.end())
+      status_it = state.try_emplace(catalogue_object(ref.object,domain),0).first;
+    auto &status = status_it->second;
     need(status != 1, "membership: cyclic upward membership");
     // operator[] would default-construct a detached nested set. Construct its
     // allocator explicitly in the node before any target insertion.
-    auto &targets = reached.try_emplace(ref.object,
-        detail::SharedReservationAllocator<warm::ObjectKey>(domain)).first->second;
+    auto reached_it = reached.find(ref.object);
+    if (reached_it == reached.end())
+      reached_it = reached.try_emplace(catalogue_object(ref.object,domain),
+          detail::SharedReservationAllocator<warm::ObjectKey>(domain)).first;
+    auto &targets = reached_it->second;
     if (status == 2) return targets;
     status = 1;
     for (const auto &group : t.member_of) {
       const auto &ancestors = follow(group);
-      targets.insert(group.object);
-      targets.insert(ancestors.begin(), ancestors.end());
+      const auto insert = [&](const warm::ObjectKey &key) {
+        if (targets.find(key) == targets.end()) targets.insert(catalogue_object(key,domain));
+      };
+      insert(group.object);
+      for (const auto &ancestor : ancestors) insert(ancestor);
     }
     status = 2;
     return targets;

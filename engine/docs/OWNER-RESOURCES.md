@@ -1,10 +1,10 @@
 # Private exchange-owner resource inventory
 
-Accepted through #246 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--245246-2026-11-10)
+Accepted through #259 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--247-through-259-2026-11-10)
 records the integrated stack. Remaining limits below are still open.
 
 This inventories the private `assembly::detail::ExchangeOwner` on the explicit
-integrated #228/#230–#235/#237–#243/#245/#246 stack. It accompanies the retained-capacity census and scoped
+integrated allocation stack through #259. It accompanies the retained-capacity census and scoped
 adoption lifetime witnesses; it does not claim complete machine peak measurement,
 a complete byte-budget admission gate or complete preparation-work
 enforcement, allocator accounting or GPU qualification. Those remain required
@@ -839,6 +839,98 @@ those nested addresses. UUID text, recipe/input payload, complete setup work and
 combined caller/borrowed resources remain open before operation integration and
 same-execution controls. Deferred activity and GPU sequencing are unchanged.
 
+<a id="catalogue-graph-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Catalogue graph-address allocation domain (provisionally accepted #261)
+
+Temporary catalogue `tools`, `state` and `reached` map keys and nested `Targets`
+set elements now construct addresses in the supplied domain before insertion.
+State/reached entries and target elements are looked up before constructing a
+missing key, avoiding detached ancestor-range copies and allocations for known
+targets. Tool insertion retains its existing first-value behavior for duplicate
+keys; rejected temporary keys release their backing. Exact graph identity,
+traversal, ancestor deduplication and cycle rejection remain unchanged.
+
+The diamond fixture has five-element addresses whose 15-byte requests are distinct
+from its UUID text, path, table/node and callable allocations. Optional nonthrowing
+callbacks in the test allocation witness independently count those requests and
+releases, compare their prepayment against the domain, and verify the expected
+transient-plus-retained address peak. Four visited vertices and ancestor-set
+sizes 3+1+1+0 provide a fixture-derived temporary count; direct and mediated paths
+to the same ancestor must deduplicate. This is a fixture-specific C++ allocation
+witness, not a production allocator-size assumption or total machine budget.
+
+The same fixture runs byte/work refusal and exact retry, every observed allocation
+failure, post-failure retry, duplicate-tool insertion and cycle-rejection cleanup.
+Existing owner retained-request, shared lifetime and native zero-new checks remain
+active. Temporary addresses release before collection returns and are not added
+to the retained census. Request work, peak overlap and retained totals are distinct.
+
+Next: addresses throughout both retained projection recipes (tool/parent/member
+refs, geometry, occurrence definitions and focal fields), attached during explicit
+copies before allocation. Recipe paths/tables, UUID/text/input payload, complete
+setup and combined caller/borrowed accounting remain open before operation/control
+integration. Deferred activity and GPU sequencing are unchanged.
+
+<a id="recipe-address-allocation-domain-contribution-awaiting-review"></a>
+
+### Recipe address allocation domain (provisionally accepted #262)
+
+Explicit owner copies of `LetterProjection` now build `recipe_` addressed rows
+with the supplied domain: tool references, parent targets, member-of references,
+geometry objects, legacy/structural occurrence definitions and focal fields.
+Each address is admitted before copying elements. A detached whole-recipe copy
+is not made first. Finished rows move into reserved ordinary recipe vectors;
+those vectors and other recipe payload remain outside this address-only gate.
+
+The copy preserves every Bundle field: publication/owner/creator pins, version,
+tool metadata, optional values, ordered parents/memberships, geometry/spheres,
+nodes, occurrence identity/state, selections, contacts and focal fields. Ordinary
+snapshots detach addresses recursively; moves retain their domain. There is no
+new type/layout, codec, schema or numerical change.
+
+Projection controls now include recipe addresses in exact backing totals and
+independently locate retained requests. A nonallocating comparison checks all
+recipe values alongside projection rows. Existing structural and populated-pool
+controls are joined by a legacy fixture with nonzero positions/velocities,
+geometry and contacts. Both versions exercise byte/work refusal, cleanup, exact
+retry, detached snapshots after source death and moved lifetime. Whole-owner
+allocation failures and repeated native zero-new checks remain active. Embedded
+headers belong to their containing rows; backing is counted once and overlapping
+selected/whole-owner/census reports must not be summed.
+
+Next: recipe occurrence paths in legacy/structural rows, selection parts and
+contact endpoints. Recipe tables, UUID/text/input payload, complete setup work
+and combined caller/borrowed accounting remain open before operation/control
+integration. Deferred activity and GPU sequencing are unchanged.
+
+<a id="recipe-path-allocation-domain-contribution-awaiting-review"></a>
+### Recipe path allocation domain (provisionally accepted #263)
+
+Explicit owner recipe copies now construct legacy/structural occurrence ID paths,
+every selection part path and both contact endpoint paths in the supplied domain
+before copying ordinals. The shared projection-ID helper preserves entry numbers;
+finished IDs and rows move into their tables. Empty aggregate paths retain the
+domain without allocating ordinal storage. Existing recipe addresses remain
+attached; no detached recipe/path copy precedes admission.
+
+Projection path controls now include every recipe path in exact backing totals,
+allocator attachment/detachment, source-death snapshots and moved lifetime.
+Independent allocation observation checks the actual requests. Existing complete
+recipe comparisons preserve IDs, order, contacts, metadata and other values.
+Validated legacy and structural fixtures cover empty aggregate endpoints and
+contacts with nonempty paths at both ends, alongside selection/occurrence paths.
+Both run refusal/reclamation/exact-retry controls; populated spare-pool, whole-owner
+allocation failures and repeated native zero-new checks remain active. No type/
+layout, codec, schema or numerical change is introduced. Reports overlap the
+retained census and must not be summed.
+
+Next: the eight top-level Bundle table stores, using engine-independent allocator
+support and explicitly qualified C++ type/layout compatibility. Nested recipe
+tables, UUID/text/input payload, complete setup and combined caller/borrowed
+resources remain open before operation/control integration. Deferred activity
+and GPU sequencing are unchanged.
+
 <a id="membership-construction-allocation-domain-contribution-awaiting-review"></a>
 
 ### Membership construction allocation domain (accepted #246)
@@ -1162,3 +1254,141 @@ in [admission evidence](../tests/admission/README.md).
 Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed head `a2636cad6e85b9582f7e37aa1dd537bbd7b5c430`. Native 42874078745 and smoke 42874078677 passed; all 12 native jobs succeeded. Inspected regression shards passed 29 + 29 + 29 + 28 = 115 tests; database log reports addressed_reads=24/private_reads=0.
 
 The scoped allocation gates above are accepted; this does not close complete owner resources, setup, operations or hardware qualification. Earlier provisional evidence remains historical.
+
+### Recipe table allocation domain (contribution awaiting review)
+
+The eight top-level retained Bundle stores (tools, geometry, nodes, legacy
+occurrences, selections, contacts, structural occurrences and focal fields) use
+`warm::RecipeTable<T>`, an alias of the existing engine-independent shared
+reservation vector. Explicit owner projection copies select the destination
+allocator before reserve, construct each row with existing nested address/path
+attachment, and move finished rows into tables. Empty tables retain the domain
+without allocating elements. Ordinary copy construction detaches recursively;
+moves keep backing and domain alive. This remains exclusive synchronous accounting.
+
+This changes C++ container types and Bundle layout, requiring consumers to rebuild.
+On the pinned Clang 15/libstdc++ x64 build, table headers grow from 24 to 40 bytes;
+Bundle grows from 328 to 456 bytes (+128). The eight vector headers each gain
+shared allocator state; no stable C++ ABI is
+claimed. Ordinary-vector assignments use explicit iterator conversion in the
+legacy focal adapter and PostgreSQL fixture. Prepared contacts use RecipeTable;
+the structural adapter test converts its focal table explicitly. The public
+adapter still accepts std::vector<FocalField>. Serialization, SQL, recipe versions,
+values and numerical behavior are unchanged. Standalone storage stays detached.
+
+The table visitor now includes all eight stores in exact selected backing and
+independent allocation-request checks for both owner projections. Existing v1/v2
+copy controls cover all domain charge boundaries, reclamation and exact retry,
+complete recipe equivalence, detached snapshots after source death, moved lifetime,
+populated inactive pools and whole-owner allocation-failure injection. Empty
+version-specific tables also participate in allocator attachment checks.
+
+Nested Tool.parents/member_of, Geometry.spheres and Selection.parts table backing
+remains outside this domain and is the next slice. Their addresses/paths are already
+attached. UUID/text/input payload, preceding setup, allocator metadata and combined
+resources remain separate. Selected reports overlap the retained census; do not
+add them together. See source-pinned admission evidence for qualification limits.
+<a id="nested-recipe-table-allocation-domain-contribution-awaiting-review"></a>
+### Nested recipe table allocation domain (provisionally accepted #265)
+
+Tool.parents/member_of, Geometry.spheres and Selection.parts now use the same
+engine-independent RecipeTable storage as the eight top-level Bundle tables.
+Explicit retained projection copies select the destination domain before reserve,
+then move complete rows with attached addresses/paths. Spheres are copied directly
+into attached storage. Empty nested tables keep the domain without element
+allocation. Standalone copies detach recursively; moves retain backing/domain.
+
+The table visitor traverses top-level and nested stores without allocating test
+metadata. Both owner projections and validated legacy/structural copy controls
+include independent actual requests, exact selected backing, allocator attachment,
+snapshots after source death, moved lifetime, charge-boundary refusal/reclamation/
+exact retry, populated inactive pools and whole-owner allocation failures.
+The legacy validator's expected-parts temporary uses detached RecipeTable for
+same-type exact comparison; validation semantics and encoding stay unchanged.
+
+On the pinned Clang 15/libstdc++ x64 toolchain, Tool grows 304 -> 336 bytes,
+Geometry 120 -> 136 and Selection 40 -> 56; Bundle remains 456 bytes.
+C++ nested table types and Tool/Geometry/Selection layouts change, requiring all
+consumers to rebuild. This is not a stable-ABI claim. Domain headers and element
+requests remain distinct from allocator metadata/physical residency. Existing
+census code already visits nested stores and sizeof rows; selected totals overlap
+that census. No new numerical authority or runtime algorithm is introduced.
+
+Next: retained Tool.recipe and optional Tool.notation text, including exact bytes,
+terminators, short/long-string behavior, detached snapshots and before-allocation
+attachment. UUID/input payload, full setup and combined resources remain open.
+See admission evidence for source pins, compatibility/build results and limits.
+<a id="recipe-text-allocation-domain-contribution-awaiting-review"></a>
+### Recipe text allocation domain (provisionally accepted #266)
+
+Tool.recipe and optional Tool.notation use RecipeText, a basic_string with the
+existing engine-independent shared reservation allocator. Explicit owner copies
+construct it with the destination allocator before character allocation. Empty
+optional state remains absent; empty/short strings retain the allocator without
+heap characters. Ordinary copies detach; moves keep domain/backing alive.
+
+Actual heap requests include capacity plus one terminating byte. Inline characters
+are already within the string/Tool object; recipe_text_backing detects them by
+whether data lies within that object, not a hard-coded short-string length.
+The retained census uses heap backing only for these fields. Logical-copy input
+preflight excludes strings fitting the default inline capacity, and otherwise
+charges size plus terminator; this is the payload-copy admission witness, not a
+new claim that all allocator overhead or global input payload is complete. Existing
+non-recipe UUID/input std::string accounting remains separate and unchanged.
+
+On pinned Clang 15/libstdc++ x64, string/optional string headers grow from 32/40 to
+48/56 bytes, Tool from 336 to 368; Bundle remains 456. Default inline capacity is
+15 in that build; a 131-character value requests 132 bytes. Consumers must rebuild;
+no stable ABI or other-library layout claim is made. Warm validation uses string
+views. SQL parameters, retained-data fixtures and viewport labels/capture use
+explicit standard-string/optional conversions, preserving NULL versus empty and
+exact bytes. Canonical tool_body encoding and numerical behavior stay unchanged.
+
+Selected-backing and domain visitors now cover text as well as table storage.
+Independent request observation checks capacity plus terminator and zero separate
+SSO backing. v1/v2 fixtures add valid unreferenced tools with absent, empty, escaped
+short and long notation/recipe text without changing requested letter semantics.
+Complete recipe and immutable-body comparisons, all charge-boundary refusal/
+reclamation/exact-retry, snapshots after source death, moves, populated pools and
+whole-owner failure injection remain active. Standalone text tests qualify exact
+encoding, optional states, short/long requests and lifetime. Affected viewport
+snapshot coverage and warm client builds remain scoped, without live database I/O.
+
+Next: retained recipe UUID payload, with a shared Uuid interface/consumer audit.
+Other UUID/input payload, complete setup and combined resources remain open.
+Selected allocation reports overlap the census; do not sum them. See admission
+evidence for exact source pins, failures, checks and observed resource changes.
+### Recipe UUID allocation domain (contribution awaiting review)
+
+Uuid stores UuidText, an engine-independent basic_string with the existing shared
+reservation allocator. Its string_view constructor immediately copies and applies
+the same length, separator, hexadecimal validation and lowercase normalization.
+str() now returns a const UuidText reference instead of const std::string&. Explicit
+standard-string conversions adapt SQL parameters, key formatting and viewport JSON;
+encoding/comparison/nil semantics remain unchanged. This is a C++ interface/layout
+change requiring consumer rebuilds, not a stable ABI promise.
+
+An explicit Uuid(source, domain) copy selects the allocator before copying the
+already normalized source payload. Recipe construction uses it for Bundle selection/
+revision/owner/creator, Tool reference scopes/revisions/epochs/authors, parent/member
+references, Geometry scopes, both occurrence-version scopes and focal-field scopes.
+Each UUID's payload includes its terminating byte. Ordinary copy construction
+detaches; moves retain the domain. Other projection UUIDs intentionally still use
+ordinary detached copies, as do declaration/catalogue/map/other owner UUID payloads.
+The shared representation enlarges their headers too; that is not payload admission.
+
+On pinned Clang 15/libstdc++ x64: Uuid is 48 bytes (formerly 32), ObjectKey 88,
+ToolRef 136, Tool 432, Parent 168, Geometry 152 and Bundle 520. A normalized
+36-character UUID requests 37 bytes. Existing sizeof-based censuses and domain
+requests reflect containing-row growth. The text visitor now includes every
+recipe UUID in independent actual-request, terminator, allocator attachment,
+complete copy/encoding, source-death snapshot, move, all refusal/reclamation/exact
+retry and whole-owner failure controls. The standalone UUID test also checks
+normalization, malformed values, ordering, nil/non-nil state and SQL parameter
+encoding without a live database.
+
+Next: remaining retained projection UUIDs, followed by declaration/catalogue/map/
+other owner UUIDs and input payload. Complete setup and combined resources remain
+open before operation/control integration. Selected reports overlap the census;
+heap request observations do not qualify allocator metadata, physical residency
+or performance. Source-pinned scope/results are in admission evidence.

@@ -3052,3 +3052,548 @@ Integrated at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9` through #259, reviewed 
 Reviewed stack: #247, #250, #252, #253 (including its two Markdown-only handoff commits), #254–#259. The final contributor test pin is `7910e75d45f208a52f5eeed329825334bad15cc0`; its delta to reviewed #259 head is four Markdown files only. Contributor-local artifacts remain distinct from inspected hosted logs. Regression jobs: 130036766716, 130036766528, 130036766848, 130036766609. Database job: 130036766421. Compiler jobs all passed. No duplicate baseline was run.
 
 Preserve earlier failures and warnings as recorded. This acceptance supersedes pending/integration status in earlier dated evidence without relabeling those observations. Remaining temporary graph addresses, UUID/recipe/input payload, complete setup and combined resource accounting, operation/control integration and GPU qualification remain open under #156/#145. Next bounded task: catalogue temporary graph-key addresses.
+
+## Catalogue graph-address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `26dc6b16af74a990f60ae65f247d8ae496b208f7`, based on integrated
+main `f4907da096924599a850cca1d4ce97237bac23f0`. The #247/#250/#252–#259 stack
+was merged at `d85213d2744a9ad4bb7cb733d7ad61dfef7e1ea9`; #259 native
+42874078745 and smoke 42874078677 passed, including all 12 native jobs.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/259#pullrequestreview-5849105996)
+found no blocking corrections and accepted this temporary-address slice;
+[integration disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/259#issuecomment-6778916353)
+explicitly authorizes continuation from main. No accepted baseline was rerun.
+
+Temporary `tools`/`state`/`reached` keys and nested `Targets` addresses now attach
+before insertion. State/reached and target lookups avoid constructing known keys;
+ancestor propagation explicitly constructs missing addresses rather than copying
+a detached range. Tool duplicates preserve first-value behavior and reclaim their
+temporary keys. Traversal, exact identity, deduplication and cycle rejection remain
+unchanged. No new type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#catalogue-graph-address-allocation-domain-contribution-awaiting-review).
+
+The diamond fixture independently identifies its five-element address requests
+by their 15-byte size, distinct from its UUID text, paths, nodes/tables, comparator
+text and callable requests. Optional nonthrowing test-only allocation callbacks
+check prepayment and count acquired/released bytes and peak overlap. Four visited
+vertices, tool keys and ancestor-set sizes 3+1+1+0 predict 570 temporary bytes;
+retained contributions use 180 bytes. Measured address peak is exactly 750 bytes;
+all 570 temporary bytes release before return, and all 180 retained bytes release
+at destruction. This classification is fixture-specific, not an allocator or ABI
+assumption for arbitrary production inputs.
+
+The diamond also passes byte/work refusal, exact retry, all 1,414 observed
+allocation-failure sites with complete reclamation, post-failure retry, duplicate
+tool insertion and post-validation cycle rejection. Existing owner failure-site,
+independent retained-request, strong/weak lifetime and repeated native zero-new
+controls remain active. Comparator text, UUID payload, callable/traversal/stack
+costs and complete setup accounting remain outside this new address gate.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,198 / 1,320 | 212,152 | 294,522 | 4,118 |
+| Four selections | 1,617 / 2,540 | 251,476 | 580,768 | 7,761 |
+
+The newly admitted transient address requests add 420 work bytes per owner fixture;
+selected retained/peak totals remain unchanged because other phases dominate the
+owner peak. Additional lookup comparisons create transient text requests (outside
+the selected domain); observed whole-owner allocation sites rise by 16. No timing
+or allocation-count improvement is claimed. Whole-adoption retained/peak requests
+remain 294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 / 357,259.
+All failure sites reclaim storage. These overlapping reports must not be summed;
+allocation-request work is not peak memory or CPU timing.
+
+Initial source `b3e9ea1178c509e1110c6b2d8f582ec324a0f896` built, but all four
+owner lanes stopped because the new structural fixture omitted explicit focus.
+Six supporting CTests passed; later exchange cases were not reached. The corrected
+fixture supplies a membership focus. Failed raw evidence is retained separately
+as `catalogue-graph-address-domain-b3e9ea11`, archive
+`setup-evidence/catalogue-graph-address-domain-b3e9ea11-failed.tar.gz`, verified
+manifest SHA-256:
+
+    8d12dac1bbe2069c9ab6a9a698d55483c4c7e591984628d3c33d48255cd02c9e
+
+At corrected source all 26 scoped checks pass: 20 exchange processes and six
+supporting CTests, all exit zero, with no build/runtime warnings. Source remained
+clean and unchanged during validation. Final delta is four Markdown files only.
+Next: retained projection recipe addresses; recipe paths/tables, UUID/text/input
+payload, complete setup, combined resources and operation/control integration
+remain open. Deferred activity/GPU sequencing is unchanged.
+
+Final contributor-local evidence: `catalogue-graph-address-domain-26dc6b16`,
+including commands, build/raw logs, source/configuration/toolchain and binary/
+runtime hashes. Archive:
+`setup-evidence/catalogue-graph-address-domain-26dc6b16.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    f3cd38ad26c5e0e92e19d2c8fefc2c9a14ecb5103f0936e4209c5d2949dc5977
+
+Raw evidence remains local; these hashes do not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Retained recipe address domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `64e85a5fcdcdc9da719def6f8d49f585ada61e06`, stacked on
+provisionally accepted #261 at `942c93aaa5f4487bd7abcecd0b6f9fb4cca64c9e`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/261#pullrequestreview-5849608177)
+found no blocking corrections and accepted this recipe-address slice. Parent
+smoke 42903689287 passed; native 42903689200 remains running at review inspection.
+Integrated acceptance remains through #259. The earlier #261 missing-focus fixture
+failure remains preserved in its separate source-pinned record above.
+
+Explicit owner copies now build addressed recipe rows directly in the supplied
+domain: tool refs, parent targets, member-of refs, geometry, legacy/structural
+occurrence definitions and focal-field objects. No detached whole-recipe copy
+precedes admission. Finished rows move into reserved ordinary recipe vectors;
+those tables, recipe paths and text remain separately scoped. Every Bundle field
+and pin is preserved. No new type/layout, codec, schema or numerical change.
+See [scope](../../docs/OWNER-RESOURCES.md#recipe-address-allocation-domain-contribution-awaiting-review).
+
+Projection address visitors now cover recipe addresses in exact backing totals,
+nested attachment/detachment, moved lifetime and independent retained requests.
+The nonallocating equivalence check compares every recipe field, including tool
+metadata/optional values, parent/membership order, geometry/spheres, nodes,
+legacy positions/velocities, selections, contacts and focal fields. Structural
+and populated spare-pool controls retain byte/work refusal, reclamation, exact
+retry and source-death snapshot checks. A validated legacy fixture with mixed
+exposures, nonzero state/geometry and populated contacts runs the same copy and
+lifetime controls without structural-only pool reservation. Whole-owner allocation
+failures and repeated native zero-new witnesses remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,267 / 1,458 | 214,222 | 296,592 | 4,118 |
+| Four selections | 1,695 / 2,696 | 253,816 | 583,108 | 7,761 |
+
+Newly selected backing adds 2,070 / 2,340 bytes. Whole-adoption retained/peak
+requested bytes remain 294,753 / 295,362 and 356,827 / 359,109; census remains
+295,377 / 357,259. Allocation-site counts are unchanged and all failure sites
+reclaim storage. Selected-domain, whole-owner and census reports overlap and
+must not be summed; allocation-request work is not peak memory or CPU timing.
+
+Next: retained recipe paths in legacy/structural occurrence IDs, selection parts
+and contact endpoints. Recipe tables, UUID/text/input payload, complete setup and
+combined resources remain open before operation/control integration. Deferred
+activity/GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero; no build/runtime warnings. Source remained clean and
+unchanged during validation. Final delta is four Markdown files only.
+
+Contributor-local evidence: `recipe-address-domain-64e85a5f`, including commands,
+build/raw logs, source/configuration/toolchain and binary/runtime hashes. Archive:
+`setup-evidence/recipe-address-domain-64e85a5f.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    6d002e0ca6c5760030ba908d92b301d2ee028c0779e737439d126a4bc628f1bf
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Retained recipe path domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `8c66c95ee51916271e2a6b9daa6193c629e50147`, stacked on
+provisionally accepted #262 at `3e04a02b07a4aa2872e2d974c39cc0d98b01a7da`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/262#pullrequestreview-5850532407)
+found no blocking corrections and accepted this recipe-path slice. Parent smoke
+42912109232 passed; native 42912109277 remains running at review inspection.
+Integrated implementation acceptance remains through #259. The earlier #261
+missing-focus fixture failure remains preserved in its separate record above.
+
+Explicit owner recipe copies now construct legacy/structural occurrence paths,
+every selection part path and both contact endpoint paths with the destination
+domain before copying ordinals. The shared projection-ID helper preserves entry
+numbers; finished IDs and rows move into their tables. Empty paths retain the
+domain without an ordinal allocation. Recipe addresses and all other values
+remain unchanged. No type/layout, codec, schema or numerical change. See
+[scope](../../docs/OWNER-RESOURCES.md#recipe-path-allocation-domain-contribution-awaiting-review).
+
+Expanded path visitors include all recipe paths in exact selected backing,
+attachment/detachment, moved lifetime and source-death snapshot controls.
+Independent observation checks actual path allocation requests. Complete recipe
+comparisons preserve entries, order, metadata and contact semantics. Validated
+legacy and structural fixtures now include contacts with nonempty paths at both
+ends, as well as empty aggregate endpoints, occurrence IDs and selection parts.
+Both versions run refusal/reclamation/exact-retry and lifetime controls; populated
+spare-pool, whole-owner failure injection and repeated native zero-new witnesses
+remain active.
+
+CPU checks use Clang/LLVM 15, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, workers 1/2 × bulk/default or
+direct/compiler-no-unroll on the shared personal host. Scope: owner, multiple
+owner, bindings, commit and fields × four variants, plus six structural-recipe,
+projection, membership and workbench CTests. No GPU, live database, full native
+baseline, separate compiler audit or repeated codec compatibility run.
+
+| Fixture | Owner byte/work boundaries | Selected live/peak bytes | Allocation-request work | Failure sites |
+|---|---:|---:|---:|---:|
+| One selection | 1,271 / 1,466 | 214,286 | 296,656 | 4,118 |
+| Four selections | 1,711 / 2,728 | 254,072 | 583,364 | 7,761 |
+
+Newly selected backing adds 64 / 256 bytes. Whole-adoption retained/peak requested
+bytes remain 294,753 / 295,362 and 356,827 / 359,109; census remains 295,377 /
+357,259. Allocation-site counts are unchanged and all failure sites reclaim
+storage. Selected-domain, whole-owner and census reports overlap and must not
+be summed; allocation-request work is not peak memory or CPU timing.
+
+Next: the eight top-level retained Bundle table stores, with engine-independent
+allocator support and explicit C++ container/layout compatibility qualification.
+Nested recipe tables, UUID/text/input payload, complete setup and combined
+resources remain open before operation/control integration. Deferred activity/
+GPU sequencing is unchanged; #156/#145/#229 remain open.
+
+All 26 scoped checks pass: 20 exchange processes and six supporting CTests.
+Each process exits zero. No build warnings were found. The two-worker direct
+commit case (`2-direct-exchange_commit.log`) emitted a post-PASS Taichi offline-
+cache lock warning at `offline_cache.h:run@187` for the shared `ticache.lock`.
+The warning is preserved; no cache cleanup or repeat run was used to suppress it,
+and no performance qualification is claimed. Source remained clean and
+unchanged during validation. Final delta is four Markdown files only.
+
+Contributor-local evidence: `recipe-path-domain-8c66c95e`, including commands,
+build/raw logs, source/configuration/toolchain and binary/runtime hashes. Archive:
+`setup-evidence/recipe-path-domain-8c66c95e.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    8796ef6e9e153b491b680a08ad2b26819c98d2307b7cbfa5dfc7557d3672d5d9
+
+Raw evidence remains local; this hash does not imply independent remote inspection
+or replace authoritative hosted checks.
+
+## Retained recipe table domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `73f015f1df59aaede65f6cfc2f5c056204e501cd`, stacked on
+provisionally accepted #263 at `8647cfc77fd00f9cb2cf7ac0a8b3d9619c06dfdf`.
+[Review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/263#pullrequestreview-5851136271)
+found no blocking source findings and approved this eight-table slice. Parent
+smoke 42917037200 and native 42917037269 are now confirmed passed; #262 native
+42912109277 passed as reported in that review. Integrated implementation
+acceptance remains through #259 pending stack integration. Earlier pending
+observations, #261's fixture failure and #263's post-PASS cache-lock warning
+remain historical evidence, not superseded results.
+
+All eight top-level Bundle stores now use engine-independent RecipeTable storage.
+Explicit projection copies attach the destination domain before reserve and move
+completed rows with attached addresses/paths. Nodes also construct in that domain.
+Ordinary snapshots detach recursively; moves retain domain/backing. Complete
+values/order and encoding remain unchanged. See [scope](../../docs/OWNER-RESOURCES.md#recipe-table-allocation-domain-contribution-awaiting-review).
+
+This is a C++ container/layout change, requiring rebuilds. The pinned x64
+Clang 15/libstdc++ layout probe measures ordinary/table headers at 24/40 bytes,
+and prior/current Bundle at 328/456 bytes (+128). Iterator conversions adapt the
+legacy focal adapter and PostgreSQL fixture. Prepared contacts use RecipeTable;
+the structural adapter test explicitly converts to the unchanged std::vector
+parameter. Full configured native targets and standalone warm targets build,
+including warm_active_integration, warm_postgres_test, structural_postgres_test
+and recipe_reader_probe. These client builds do not qualify live database I/O.
+
+The table visitor includes all eight stores in selected backing, attachment,
+snapshot/move lifetime and independent actual-request checks. Validated legacy
+and structural fixtures preserve complete recipe values, both contact endpoints
+and empty version-specific tables. Existing copy charge-boundary sweeps,
+refusal/reclamation/exact retry, populated inactive pools, whole-owner failure
+injection and repeated native zero-new controls remain active.
+
+CPU results (workers 1/2, bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1279 / 1478 | 1718 / 2740 |
+| Selected live / peak requested bytes | 232910 / 232910 | 275256 / 275256 |
+| Selected cumulative allocation work | 315280 | 604548 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 295009 / 295618 | 357083 / 359365 |
+| Retained capacity census | 295633 | 357515 |
+
+Selected totals increase by 18624 / 21184 bytes, of which 18368 / 20928 is
+newly selected existing table backing and 256 is the two larger retained Bundle
+headers. Whole-owner retained/peak and census increase by 256; allocation-site
+counts are unchanged. Selected reports overlap the census and must not be added.
+No allocator-metadata, physical-residency or performance qualification is implied.
+
+Validation outcome: all 40 scoped checks passed, exit zero, with no warnings in the final build/run logs. Source remained clean and pinned;
+final tested-to-head changes are documentation only. The 20 exchange processes
+cover owner, owner_multiple, bindings, commit and fields in four configurations.
+Supporting checks comprise six projection/membership/workbench/structural CTests,
+12 prepared-execution/update CTests and two standalone warm allocation CTests.
+No GPU, live database, full baseline or repeated codec qualification was run.
+
+Two earlier compiler failures are preserved, not counted as passes:
+
+- `0faa6998`: structural recipe test passed the new focal table directly to the
+  unchanged std::vector adapter parameter; corrected by explicit iterator conversion.
+  Standalone warm build and two tests passed at this source; native execution was
+  not reached. Archive `setup-evidence/recipe-table-initial-0faa6998.tar.gz`;
+  manifest SHA-256 `a794f1481ef50c7a2940a6dcf7c5adcd0ab425e562fff641568a8f8e1e49c6e2`.
+- `aa09786c`: broad native rebuild exposed prepared_sources.h assigning an ordinary
+  contact vector into the recipe table; corrected with RecipeTable fixture values.
+  Native execution was not reached. Warm logs retained in this failure directory
+  are earlier unchanged logs from the first source, not a second run at aa09786c.
+  Archive `setup-evidence/recipe-table-consumers-aa09786c.tar.gz`;
+  manifest SHA-256 `5672c7e0d8acdec4b4f6492a963e4d603bedada651636c0e9a32b63bc4cc762b`.
+
+Final local evidence: `recipe-table-domain-73f015f1`, including commands, raw logs,
+source/configuration/toolchain, layout probe and binary/runtime hashes. Archive
+`setup-evidence/recipe-table-domain-73f015f1.tar.gz`. Verified SHA256SUMS manifest:
+
+    3529818cef1fde7b0de182854d3cce4a381a1b1008ae4351f2624fceb0a0c169
+
+Raw evidence remains local, not independently inspected remotely. Hosted checks
+remain authoritative. Next: nested Tool.parents/member_of, Geometry.spheres and
+Selection.parts tables, with before-allocation attachment and C++ compatibility
+qualification. UUID/text/input payload, full setup and combined resources remain
+open before operation/control integration. Activity/GPU sequencing is unchanged;
+#156/#145/#229 remain open.
+
+
+## Nested retained recipe table domain — contributor CPU evidence (2026-11-10)
+
+Tested source: `efefae4373037c1b2c81935b02be97c81d94ab79`, stacked on #264
+at `f52506c2f4a4e3ee5a683f1624651330763ec650`. #263 is maintainer-approved
+in the continuation instruction but remains open/unmerged at inspection. #264
+has no review notes at inspection and is not labeled accepted. Its smoke
+42925890864 and warm 42925891058 passed; native 42925891067 was running.
+Integrated implementation acceptance remains through #259 pending stack integration.
+
+Tool.parents, Tool.member_of, Geometry.spheres and Selection.parts now use the
+same engine-independent RecipeTable type as top-level Bundle stores. Explicit
+projection copies select the destination domain before reserve, then move rows
+with attached nested addresses/paths. Spheres copy directly into attached storage.
+Ordinary snapshots detach recursively; moves preserve domain/backing. Empty nested
+tables retain the allocator without element allocation. Complete recipe values,
+ordering, optional state, encoding and numerical behavior remain unchanged.
+
+Recursive nonallocating test visitors now include every top-level/nested table
+in exact selected backing, allocator attachment and independent allocation-request
+checks for both owner projections. Validated v1/v2 fixtures exercise complete
+recipe equivalence, charge-boundary refusal/reclamation/exact retry, snapshots
+after source death, moved lifetime and populated inactive pools. Whole-owner
+allocation-failure injection and repeated native zero-new controls stay active.
+
+C++ nested container types and row layouts change and require rebuilding consumers.
+The pinned Clang 15/libstdc++ x64 layout probe measures Tool 304 -> 336 bytes,
+Geometry 120 -> 136, Selection 40 -> 56; Bundle stays 456 bytes. The legacy
+validator's expected-parts temporary uses detached RecipeTable for same-type exact
+comparison; its validation semantics are unchanged. Full configured native and
+standalone warm targets build, including warm_active_integration and PostgreSQL
+clients/probe. These builds do not qualify live database I/O or a stable C++ ABI.
+
+CPU results (workers 1/2; bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1311 / 1538 | 1754 / 2806 |
+| Selected live / peak requested bytes | 243502 / 243502 | 286520 / 286520 |
+| Selected cumulative allocation work | 325872 | 615812 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 296961 / 297570 | 359131 / 361413 |
+| Retained capacity census | 297585 | 359563 |
+
+Selected totals grow by 10592 / 11264 bytes versus #264: 8640 / 9216 newly
+selected existing nested backing plus 1952 / 2048 larger retained row headers.
+Whole-owner retained/peak and census grow by 1952 / 2048; allocation-site counts
+are unchanged. Selected reports overlap the retained census and must not be added.
+No allocator-metadata, physical-residency or performance claim follows.
+
+Validation outcome: all 40 scoped checks passed, exit zero, with no warnings in the final build/run logs. The matrix comprises 20 exchange
+processes (owner, owner_multiple, bindings, commit, fields across four CPU modes),
+six projection/recipe CTests, 12 prepared-execution/update CTests and two standalone
+warm allocation CTests. Source remained clean/pinned; tested-to-head delta is
+four Markdown files only. No GPU, live database, full baseline or repeated codec
+qualification was run.
+
+The initial `a66e7dd5` native build failed because two converted callback visitor
+calls lacked closing syntax. Corrected in `efefae43`; no runtime matrix or warm
+build was reached in that failed attempt. Preserve its raw build log/source pin in
+`setup-evidence/recipe-nested-table-initial-a66e7dd5.tar.gz`, manifest SHA-256:
+
+    24a36e4b7a4983ca8f2f1d93786332a6801a1f960934d1ac2cc04964df1a62ab
+
+Earlier #261 fixture failure, #263 post-PASS cache warning and #264 consumer
+compile failures remain preserved in their own records, not relabeled as passes.
+
+Final contributor-local evidence: `recipe-nested-table-domain-efefae43`, including
+commands, raw build/run logs, source/configuration/toolchain, binary/runtime hashes
+and layout probe. Archive `setup-evidence/recipe-nested-table-domain-efefae43.tar.gz`.
+Verified SHA256SUMS manifest SHA-256:
+
+    378138ddc3a9fd34d39f2d976558ed442545e1f5619933eb1eae39df6b8bc3f2
+
+Raw evidence remains local, not independently inspected remotely. Hosted checks
+remain authoritative. Next: Tool.recipe and optional Tool.notation text payload,
+including short/long strings, terminators, exact text/optional semantics, detached
+snapshots and before-allocation attachment. UUID/input payload, full setup and
+combined resources remain before operation/control integration. Activity/GPU
+sequencing is unchanged; #156/#145/#229 remain open.
+
+
+## Retained recipe text domain — contributor CPU evidence (2026-11-11)
+
+Tested source: `fe064fcc275dc910d446263c5fe42eea23f8a9cc`, stacked on
+provisionally accepted #265 at `21ae236fe19f8c4721ef46fbc602004014e730cb`.
+[Review 5851571884](https://github.com/Human-Cognome-Project/human-cognome-project/pull/265#pullrequestreview-5851571884)
+found no blocking source findings and approved this recipe/notation text slice.
+#264 is also provisionally accepted by review 5851571748; earlier awaiting-review
+statements remain historical. #265 smoke 42928854772 and warm 42928854774 passed;
+native 42928854860 was running at review inspection. Integrated implementation
+acceptance remains through #259 pending stack integration.
+
+Tool.recipe and optional Tool.notation use RecipeText with the existing shared
+reservation allocator. Explicit owner copies select the domain before heap
+character allocation. Heap backing includes capacity plus terminator; inline
+characters are already in row headers and incur no separate request. The helper
+detects inline storage by data location within the object rather than a fixed
+capacity threshold. Retained census excludes inline recipe text; logical input
+copy admission excludes text fitting the default inline capacity and otherwise
+charges size plus terminator. Other UUID/input string accounting is unchanged.
+
+Absent/empty optional state, exact bytes, ordinary detached copies and moved
+lifetime are preserved. Warm validation uses string views; SQL parameters,
+retained-data fixtures and viewport labels/capture convert explicitly between
+recipe and ordinary strings. Canonical immutable-body encoding and numerical
+behavior remain unchanged. Full configured native and standalone warm builds
+include PostgreSQL clients/probe, warm_active_integration and viewport capture.
+These builds do not qualify live database access or rendering.
+
+C++ string/Tool layout changes require consumer rebuilding. Pinned Clang 15 with
+libstdc++ x64 measures ordinary/recipe strings at 32/48 bytes, optional strings at
+40/56, Tool 336 -> 368, Bundle unchanged at 456. Default inline capacity is 15;
+131 characters request 132 bytes. No other-library ABI/layout claim is made.
+
+Independent request observation covers terminators and zero separate inline
+backing. Validated v1/v2 fixtures add unreferenced tools with absent, empty,
+escaped short and long notation/recipe text without altering the requested letter
+graph. Complete recipe and tool_body comparisons, snapshots after source death,
+moves, all copy charge-boundary refusals/reclamation/exact retries, populated pools
+and whole-owner failure/repeated native zero-new controls remain active. The new
+standalone recipe_text_test checks exact escaped serialization and optional
+states, short/long requests, detached/moved lifetime and terminator refusal/retry.
+
+CPU results (workers 1/2, bulk/default and direct/compiler-no-unroll):
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1334 / 1584 | 1777 / 2852 |
+| Selected live / peak requested bytes | 245986 / 245986 | 289004 / 289004 |
+| Selected cumulative allocation work | 328356 | 618296 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 298433 / 299042 | 360603 / 362885 |
+| Retained capacity census | 298321 | 360299 |
+
+For both fixtures, selected totals increase by 2484 bytes: 1012 existing heap
+character bytes newly selected plus 1472 larger Tool headers. Whole-owner retained/
+peak increase by 1472. Census increases by 736: +1472 row headers minus 736 formerly
+counted inline recipe characters. Allocation-site counts are unchanged. The census
+is not a complete allocator/physical-memory bound; selected reports overlap it and
+must not be summed. UUID/input/metadata and other resource domains remain separate.
+
+Validation outcome: all 42 scoped checks passed, exit zero, with no warnings in the final build/run logs. The 42 scoped checks comprise 20
+exchange processes, seven recipe/projection/viewport CTests, 12 prepared-execution/
+update CTests and three standalone warm CTests. Source remained clean/pinned;
+tested-to-head delta is four Markdown files plus the viewport runner pin described below. No GPU, live database, full
+baseline, browser rerun, physical-residency or performance qualification.
+
+Preserved compilation failures (neither reached runtime qualification or the
+standalone warm build in its failed script):
+
+- `3728945d`: warm_active_integration passed ordinary optional notation to the
+  new type without an explicit conversion. Corrected there and in the structural
+  PostgreSQL fixture. Archive `recipe-text-initial-3728945d.tar.gz`; manifest:
+  `694cc64df8bf98cb5954d49c78b4ad97f0c1292ab373aad1c0e4dc7fa2b548bb`.
+- `8be6d61f`: letter_projection_test pushed recipe text into an ordinary string
+  vector without explicit conversion. Corrected it and the viewport capture/label
+  boundaries. Archive `recipe-text-consumers-8be6d61f.tar.gz`; manifest:
+  `cf824a8ad228a3119ac490a468a9d6ed7710fd1ac12b0ac7320e353d3a35c9f8`.
+
+A rebuild invocation was not executed when automatic approval review returned an
+internal Bad Request error. The same authorized invocation succeeded on retry;
+this was an approval-service error, not a source/test result. Earlier parent
+compilation/fixture failures and cache warning remain preserved in their records.
+
+Final local evidence: `recipe-text-domain-fe064fcc`, with commands, raw logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe. Archive:
+`setup-evidence/recipe-text-domain-fe064fcc.tar.gz`. Verified SHA256SUMS manifest:
+
+    e2d00f171c9364c64c94e3baa805ebc2ac5bc87212e06cf46ba0e525a1c87286
+
+Raw local artifacts are not independently inspected remotely; hosted checks
+remain authoritative. Next: retained recipe UUID text, beginning with Uuid/str()
+and serialization consumer audit. Other UUID/input payload, full setup and
+combined resources remain before operation/control integration. Activity/GPU
+sequencing is unchanged; #156/#145/#229 remain open.
+
+Hosted follow-up at `dc368c594a0d4900a83facf0360c07b4147f31a5`: smoke
+42934750915 passed. Viewport run 42934750737 / job 130241920643 failed during
+Playwright installation, before browser execution: ubuntu-latest selected Ubuntu
+26.04.1, unsupported by pinned Playwright 1.56.1. Its 15 model tests, build and
+retained bundle comparison passed; browser tests were skipped. This is preserved
+as a hosted failure, not a browser pass. The [job log](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/42934750737/job/130241920643)
+was personally inspected. A separate follow-up commit pins only this workflow to
+Ubuntu 24.04, matching the native/warm baseline and the [pinned Playwright dependency map](https://github.com/microsoft/playwright/blob/v1.56.1/packages/playwright-core/src/server/registry/nativeDeps.ts#L452).
+Browser acceptance awaits the new hosted run. Native source and the 42 local CPU
+results are unchanged; no accepted local matrix was rerun for this CI-only repair.
+### Retained recipe UUID allocation-domain qualification (2026-11-11)
+
+Tested source: `dcc13ea368890f34f3a2744bf7de5fafd6963b23`, stacked on
+provisionally accepted #266 at `97ab2aafd4406f4d049397509de1ca4ccf54d4e1`.
+Review 5851957425 reported no blocking findings and approved this bounded slice.
+#266 smoke, replacement viewport and warm workflows passed; native was still
+running at inspection. The replacement viewport pass supersedes the earlier
+pending browser status, without erasing the preserved runner-install failure.
+Integrated acceptance remains through #259.
+
+Recipe UUID characters now select the reservation domain before heap allocation.
+Normalization, malformed input, nil/non-nil values, comparison and SQL encoding
+are preserved. Detached copies and moved/source-death lifetimes are covered.
+Uuid/str() and serialization consumers were audited; containing rows grow even
+where their UUID payload remains outside this selected scope. Other projection,
+owner and input UUID storage is not claimed as admitted.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1498 / 1924 | 1934 / 3210 |
+| Selected live / peak requested bytes | 280150 / 280150 | 331994 / 331994 |
+| Selected cumulative allocation work | 368024 | 683606 |
+| Whole-owner allocation sites, all reclaimed | 4118 | 7761 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree (workers 1/2, bulk/default and
+ direct/compiler-no-unroll). Allocation-site counts are unchanged from #266.
+Selected live growth is 34164 / 42990 bytes; whole-owner retained growth is
+21584 / 29744 bytes. Selected reports overlap the census and must not be summed;
+neither is a complete physical-memory bound.
+
+Full configured native and standalone warm builds passed on the first attempt.
+All 43 scoped checks passed: 20 exchange processes, 12 prepared-execution/update
+CTests, seven supporting recipe/projection/viewport CTests and four standalone
+warm CTests. Every injected owner allocation failure reclaimed its resources.
+Final build/run logs have no warnings. Source remained pinned/clean; the
+ tested-source-to-head delta is four Markdown files only. CPU/x64, Clang 15,
+libstdc++, shared host; no GPU, live database, browser rerun, full baseline or
+performance qualification. Earlier failures/warnings remain in prior records.
+
+Evidence directory `recipe-uuid-domain-dcc13ea3` retains commands, raw logs,
+configuration, compiler/source/binary/runtime hashes and layout probe. Local
+archive: `setup-evidence/recipe-uuid-domain-dcc13ea3.tar.gz`. Verified SHA256SUMS:
+
+    c34252001d6a76c061fbcd51cd07e559f874a0898eaee1b38d189e77c80b916c
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+checks remain authoritative. Next bounded scope: remaining retained projection
+UUID fields; other owner/input payload, complete setup, combined resources and
+operation/control integration remain separate.

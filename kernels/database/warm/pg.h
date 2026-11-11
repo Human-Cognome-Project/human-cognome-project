@@ -109,12 +109,12 @@ inline ToolRef reference(const Result &r, int row, int col) {
   return {object(r, row, col), Uuid(cell(r, row, col + 2))};
 }
 inline void append(Params &p, const ObjectKey &o) {
-  p.push_back(o.scope.str());
+  p.push_back(std::string(o.scope.str()));
   p.push_back(address_array(o.address));
 }
 inline void append(Params &p, const ToolRef &r) {
   append(p, r.object);
-  p.push_back(r.revision.str());
+  p.push_back(std::string(r.revision.str()));
 }
 inline Params params(const ObjectKey &o) {
   Params p;
@@ -127,7 +127,7 @@ inline Params params(const ToolRef &r) {
   return p;
 }
 inline Params params(const BundleRef &b) {
-  return {b.selection.str(), b.revision.str()};
+  return {std::string(b.selection.str()), std::string(b.revision.str())};
 }
 inline std::optional<std::string> number(std::optional<std::uint64_t> v) {
   if (v) return std::to_string(*v);
