@@ -5,6 +5,10 @@ accepted #194/#197 hierarchy and #170 operation contracts. The status table
 distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hierarchy/numerics), #156 (operations),
 #145 (hardware qualification).
 
+**Queue reconciliation — 2026-11-11:** Reviewed #268–#274 are integrated into main at `b05db31c2e591f8fbcd5c14dc7ddff14ef46b2e9`, reviewed tip `ce3642ee463beb76948a2497c9aeb50172c3267d`. Every head in that stack has successful native and smoke workflows; #272 warm also passed. #274 native 43030713058 passed all 12 jobs; inspected regression logs total 115 tests and database reports addressed_reads=24/private_reads=0. Earlier provisional/pending labels below are historical and superseded by this acceptance.
+
+**Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The active contribution attaches definition/occurrence identities and references to owner reservations, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
+
 ## Reviewed baseline and limits
 
 C3-2 is accepted and merged in #198 at `5ea9c76`, reviewed head `f4c5ba9`.
@@ -258,11 +262,18 @@ product compilation on apt DNS resolution; viewport 43034798156 had the same
 failure during Playwright dependencies and was cancelled before browser tests.
 Maintainer requested retries successfully; preserve these failed/cancelled attempts.
 Integrated acceptance remains through #267.
-**Active contribution (awaiting review):** selection aggregate/parts input text,
+**Provisionally accepted (#277):** selection aggregate/parts input text,
 plus requested membership.group.empty() cleanup avoiding an unnecessary copy.
-**Next concrete slice:** definition/occurrence identities and references, auditing
-public identity, lookup and serialization boundaries. Other identities/comparison
-formatting, full setup, combined accounting and operation integration remain separate.
+**Active contribution (awaiting review):** definition/occurrence identity and reference text, with explicit preparation/public-output/viewport conversions. All 45 scoped local CPU checks passed; one post-PASS cache warning and both corrected initial failures remain in the admission evidence. This completes retained input text attachment, not all owner resources. Next: audit remaining owner identities/comparison formatting and setup work, then combined accounting and operation/control integration.
+
+
+**CI dependency (2026-11-11):** #278 review 5864410183 accepts the source
+correction at `07f2d66763631afe8d62438351bfd7ece1f149c8`; the maintainer inspected
+native and viewport logs using archive.ubuntu.com after the mirror-list rewrite.
+The full required hosted run and integration remain pending at inspection. After
+integration, carry the repair into the #275–#277 stack and qualify the updated
+code before merging. The identity contribution is based on #277 and does not
+silently include the independent repair. Preserve earlier failed/cancelled runs.
 
 ## A. Coherent source/hierarchy refresh
 

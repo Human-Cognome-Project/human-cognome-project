@@ -4296,3 +4296,91 @@ comparison-formatting, full setup, combined accounting and operation integration
 remain separate. No GPU, live DB, browser/full baseline rerun or performance
 qualification. Raw local artifacts have not been independently inspected remotely;
 earlier failures/warnings remain preserved.
+
+### Retained input identity text qualification (2026-11-11)
+
+Tested source `e15108abd5defa6125946467fdd61a34ba81aacb`, stacked on #277 head
+`c3c89044fc9aed06b0aa18540137ab9b2f54d7e9`. #277 review 5863228338 and #278 review
+5864410183 identify definition/occurrence identity text as the next coding slice.
+Integrated main is accepted through #274; #275–#277 remain provisional. The
+separate #278 CI repair is source-accepted with full hosted qualification and
+integration pending at inspection. Carry it into this stack after integration
+and qualify the updated code before merging; this source does not include it.
+Earlier DNS-failed/cancelled hosted attempts remain preserved.
+
+Definition.id and both identity/reference fields of Occurrence and
+StructuralOccurrence use InputText. Explicit copies construct character backing
+in the selected domain. This completes retained input text attachment. Preparation,
+active binding, native fixtures and viewport snapshot consumers explicitly adapt
+ordinary-string boundaries without changing identity values or output encoding.
+Temporary boundary conversions and other setup costs remain separately scoped.
+
+The independent visitor observes each new field's pointer, heap request including
+terminator, inline storage and allocator domain. Supplemented v1/v2 copy fixtures
+cover empty, short and 139-character identities/references; these are not valid
+native-model claims. Exact complete projection backing coverage now replaces the
+old requirement that some retained payload remain excluded. Full row equality,
+refusal/reclamation/exact retry, detached source-death snapshots, moves and
+whole-owner allocation-failure controls remain active.
+
+Preserved attempts:
+
+- `5ea713115707a52be96c4ad8be98e83833427329` failed compilation at
+  live_hierarchy_test.cpp:2525: a viewport fixture conditional mixed InputText and
+  std::string. No tests or warm build ran. Explicit conversion fixed it in
+  `0c05b9b4af58dbd7e9d6d020be8047d2bae0dfe3`. Archive
+  `input-identity-text-domain-5ea71311-build-failure.tar.gz`, manifest digest
+  `4b853584132c05dbb49a17d632272e68440a01a18660e6465c4a9fb817f5c213`.
+- `0c05b9b4` built successfully and passed 12 prepared, nine supporting and four
+  warm checks. Each of the four exchange configurations stopped in exchange_owner
+  at the old partial-coverage assertion; subsequent exchange cases were not run.
+  With every retained projection string selected, requiring observed live bytes
+  to exceed selected bytes is obsolete. The correction requires exact equality
+  with independently observed requests rather than weakening the bound. Archive
+  `input-identity-text-domain-0c05b9b4.tar.gz`, manifest digest
+  `8a1890cc6b9474d2a68bf5985b7e37adfefff8aa350089bfcf4d501d05223deb`.
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2761 / 3268 | 3707 / 5921 |
+| Selected live / peak requested bytes | 321185 / 321185 | 392475 / 392475 |
+| Selected cumulative allocation work | 420714 | 790115 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 321265 / 321938 | 392555 / 395077 |
+| Retained capacity census | 321153 | 392251 |
+| Failure-sweep peak requested bytes | 321923 | 395062 |
+
+All four CPU configurations agree. Relative to #277, selected live/peak/work
+increases 1162 / 3424 bytes: 874 / 2560 existing identity character backing plus
+288 / 864 allocator state. Whole-owner retained/peak requests and census increase
+288 / 864; allocation-site counts are unchanged. Definition/Occurrence/
+StructuralOccurrence layouts are 160/152/104 bytes. StudyInput/StructuralStudyInput/
+LetterProjection remain 288/280/1304 bytes; UUID-related layouts are unchanged.
+
+Selected accounting overlaps the census; do not sum these reports. Complete
+retained projection backing coverage does not establish complete setup work,
+combined owner resources, physical-memory or performance bounds. Next: audit
+remaining owner identities/comparison formatting (including ObjectKey comparison)
+and membership traversal/callable costs before combined accounting and operation
+integration. No GPU, live DB, browser/full baseline rerun or performance
+qualification. Raw local artifacts have not been independently inspected remotely;
+earlier failures/warnings remain preserved.
+Final native and standalone warm builds passed. All 45 scoped CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No build warnings/errors.
+One Taichi offline-cache lock warning follows the final PASS line in
+1-bulk-exchange_commit.log; it remains in the archive, not erased or relabeled.
+No other build/test warnings or errors were found in the final run.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Evidence directory `input-identity-text-domain-e15108ab` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and the layout probe.
+Verified local archive: `setup-evidence/input-identity-text-domain-e15108ab.tar.gz`.
+SHA256SUMS manifest digest:
+
+    ba4beb87ca67e045e511d1788512a0c0fe35788fb139e7c4c2c045b458d70974
+
+Hosted checks remain authoritative. At final dependency inspection, #278 native
+43087248989 had completed its compiler matrix; regression shards 3 and 4 remained
+running. No full hosted pass or integration is claimed.

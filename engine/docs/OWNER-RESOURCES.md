@@ -1664,3 +1664,38 @@ moved lifetime and owner failure controls. Selected reports overlap the census.
 
 Next: definition/occurrence identities. Other owner identities/comparison formatting,
 full setup, combined resources and operation/control integration remain separate.
+
+### Retained input identity text domain (contribution awaiting review)
+
+Definition.id and both identity/reference fields of Occurrence and
+StructuralOccurrence now use InputText. Explicit projection copies construct
+these strings with the destination domain before allocating character backing.
+This completes retained text attachment in StudyInput and StructuralStudyInput,
+including their previously attached parent, selection, relation and focus text.
+Ordinary copies detach recursively; moves retain domain lifetime.
+
+Preparation lookup and public participation/group outputs keep their ordinary
+string interfaces through explicit boundary conversions. Active binding and
+viewport serialization preserve exact values. These temporary conversions remain
+unselected setup work; completion of retained input text does not qualify every
+owner identity, comparison/formatting allocation or constructor/setup cost.
+The shared inline-aware census counts heap capacity plus terminator without
+charging inline characters twice. Row layouts change and consumers must rebuild.
+
+The independent text visitor now includes definition IDs and occurrence IDs and
+references in both variants. Supplemented empty, short and 139-character copy
+fixtures exercise every new field; these are copy probes, not valid model inputs.
+Existing pointer/request/domain checks, exact selected accounting, complete v1/v2
+equality, refusal/reclamation/exact retry, detached source-death snapshots, moved
+lifetime and whole-owner failure injection cover the added backing. The projection
+copy witness now requires selected bytes to equal all independently observed
+retained allocations, rather than requiring some retained payload to stay excluded.
+
+Next: inventory remaining owner identities/comparison formatting and setup work,
+then combined resource accounting and operation/control integration. Selected
+accounting overlaps the capacity census; neither is a physical-memory or
+performance qualification.
+The next audit starts with ObjectKey comparison in kernels/database/warm/values.cpp
+(currently formatting keys) and MembershipFields::collect graph traversal/callable
+costs. Their existing semantics and accepted ordering must be preserved; retained
+input attachment alone does not bound these temporary requests.
