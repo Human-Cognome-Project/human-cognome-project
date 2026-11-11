@@ -4,15 +4,17 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Active rendering-copy contribution (2026-11-11):** #283 `38e81a95` has no blocking
-source finding and green exact-head native/smoke per review 5866277807. This
-continuation removes owning occurrence-key temporaries used only for initial
-projection text rendering; public validation and independent output remain intact.
-Both builds and 47 scoped CPU checks passed; a post-PASS cache warning is retained.
-Detailed evidence is in the admission record; hosted qualification/review remain
-pending. Initial projection indexes/provenance/equivalence, membership callable/
-recursion and declaration/binding setup budgets precede combined resources and
-remaining-operation integration.
+**Active provenance/equivalence contribution (2026-11-11):** #284 `09bafe48` is
+provisionally accepted with no blocker by review 5866703067. This continuation
+borrows stable source ToolRefs in temporary projection lookup values, constructing
+independent published identities at consumption. Source-death tests compare full
+pinned references; a source-to-source probe records 45 fewer UUID-sized requests.
+Both builds and all 47 scoped CPU checks passed without warnings; detailed evidence
+is in the admission record. Hosted qualification/review remain pending. Initial tool/occurrence indexes and publication setup, membership callable/
+recursion and declaration/binding setup budgets precede combined resource/operation
+integration. #279 remains unmerged; its fresh native matrix is running while
+smoke/viewport are green. #284 smoke 43116769371 is green and native 43116769390
+was running at maintainer review.
 
 **#279 queue remediation (2026-11-11):** old native/viewport/smoke attempts remained
 queued, yet cancel/force-cancel returned 409 and rerun 403. Close/reopen triggered

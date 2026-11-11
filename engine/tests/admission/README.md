@@ -4732,3 +4732,56 @@ Raw local artifacts have not been independently inspected remotely. Hosted
 qualification/review remain required. At final recheck, #279 fresh smoke
 43115507510 and viewport 43115507480 passed; native 43115507493 had passed build
 and projection-values and was running its matrix. No merge is inferred.
+
+### Temporary provenance/equivalence qualification (2026-11-11)
+
+Tested `f81dd2e383bff17188033c0e9108e7da80a39186`, stacked on provisionally accepted
+#284 head `09bafe48869ddf239e6e245d766c0c0e41a43364` under review 5866703067.
+Current main remains `6067c641`; #279 is still the pending integration PR.
+
+Temporary initial-projection lookup values now retain owner entry/ordinals and
+borrow character/equivalence ToolRefs from the const input's stable tool/parent
+tables. They do not point into returned expansion vectors. Published occurrence
+provenance/equivalence construct independently owned identities; no pointer escapes.
+Lookup keys, order and published record copying remain unchanged. The strengthened
+source-death test compares full ToolRefs against original request/parent values,
+including pinned revisions, for all five letters after the actual source dies.
+Existing structural source-death, repeated/multibyte and malformed-input tests apply.
+
+A local source-to-source probe constructs the same five-letter recipe before
+observing C++ new requests of 37 bytes during project_letters. Prior #284 source
+reports 840, current source 795, both producing 13 byte rows and three equivalence
+entries. The script requires exactly 45 fewer requests: three UUID character
+copies per provenance entry and two per equivalence entry. This size-filtered
+observation supports the bounded source change, not zero allocation, physical
+memory or performance. Commands, both source versions, builds and results are retained.
+
+The output strings and all published identities remain owned. Owner adoption begins
+after initial projection, so unchanged adoption counters cannot establish this
+removal. Initial tool/occurrence indexes and publication/setup costs remain separate;
+membership callable/recursion and declaration/binding budgets precede combined
+resources and remaining-operation integration. No GPU, live DB or browser work.
+
+All four owner configurations preserve #284 metrics: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251, and 3271/5927 failure sites fully reclaimed. These reports
+overlap and must not be summed. They qualify owner behavior, not initial projection
+allocation removal or performance.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot tests and six standalone warm CTests. No build/test/probe warnings
+or errors. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No GPU or performance claim.
+Final tested-to-head delta contains four Markdown records. Verified archive:
+`setup-evidence/projection-provenance-domain-f81dd2e3.tar.gz`; manifest digest:
+
+    6713a423634b9f96b3de7c84295a906c7ec71ab19c0e6910d3c23359a2468968
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. At final #279 check, fresh smoke
+43115507510 and viewport 43115507480 passed. Native 43115507493 had passed build,
+projection-values, all four compiler jobs, database and regression shards 2/3;
+shards 1/4 remained running. The original stuck attempts are preserved. No merge
+or final qualification is inferred from the partial matrix.

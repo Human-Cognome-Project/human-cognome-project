@@ -340,6 +340,16 @@ The next bounded change removes temporary OccurrenceKey construction from initia
 projection rendering, sharing unchanged validation with the public formatter.
 Remaining indexes/provenance/equivalence and traversal/setup budgets remain open.
 
+**Provenance/equivalence continuation (awaiting review):** #284 review 5866703067
+provisionally accepts `09bafe48` with no blocker. Temporary initial-projection
+lookup values now borrow pinned ToolRefs from stable input tools and retain only
+owner entry/ordinals; published records still copy owned identities. Source-death
+checks compare full references/revisions. Initial tool/occurrence indexes and
+publication copies/setup remain separate; membership callable/recursion and
+declaration/binding setup budgets precede combined resource/operation integration.
+#279 fresh native qualification remains in progress; smoke/viewport are green.
+No pending stack merge is inferred.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

@@ -1885,3 +1885,26 @@ in letter_projection_test. This neither eliminates output allocation nor complet
 initial projection/index or owner setup accounting. Initial indexes/provenance/
 equivalence copies, membership callable/recursion and declaration/binding setup
 budgets remain open before combined resources and operation integration.
+
+### Temporary provenance/equivalence lookups (awaiting review)
+
+Following #284 review 5866703067, initial projection's provenance lookup stores
+only owner entry/ordinals and a borrowed character ToolRef. Its equivalence lookup
+also borrows the pinned ToolRef. Both point into the input bundle's stable tool/
+parent tables, not into short-lived expansion rows. project_letters takes that
+bundle by const reference and never mutates it. When each published occurrence is
+constructed, provenance/equivalence become independent owned identities again.
+No pointer escapes. Lookup key ownership, ordering and the published record copy
+remain unchanged; this is not a broad conversion of retained maps to borrowed data.
+
+The source-death test now checks complete pinned character/equivalence references
+against the original input after the projection's actual source copy is destroyed.
+Repeated/multibyte characters, distinct letter entries and unknown equivalence
+remain covered. A source-to-source initial-projection probe counts 840 versus 795
+37-byte requests for five letters: 13 provenance rows lose three temporary UUID
+copies each, and three equivalence entries lose two each (45 requests removed).
+The observer is size-filtered, not a general allocation or performance proof.
+Published output and owner-adoption accounting remain independent of that temporary
+reduction. Initial tool/occurrence indexes, retained publication copies and their
+setup costs require separate treatment; membership callable/recursion and declaration/
+binding setup budgets remain open before combined resources/operations.
