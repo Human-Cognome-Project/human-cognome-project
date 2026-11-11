@@ -123,7 +123,7 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
   for (const auto &v : p.particles) {
     const auto &o = v.occurrence;
     need(o.slot >= 0 && std::size_t(o.slot) < N && slots.insert(o.slot).second &&
-             ids.insert(o.id).second && origins.count(o.id) && c.occurrences.count(o.id) &&
+             ids.insert(std::string(o.id)).second && origins.count(std::string(o.id)) && c.occurrences.count(std::string(o.id)) &&
              o.study_node >= 0 && std::size_t(o.study_node) < levels.size(),
          "viewport: invalid exposed occurrence mapping");
     const auto scalar = [&](int f) {
@@ -133,10 +133,10 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
     const auto mass = scalar(field::kMass), radius = scalar(field::kRadius);
     need(mass > 0 && radius >= 0 && v.exact_mass > 0,
          "viewport: invalid particle mass/extent");
-    const auto &d = c.occurrences.at(o.id);
+    const auto &d = c.occurrences.at(std::string(o.id));
     need(d.exposure == "aggregate" || d.exposure == "parts" || d.exposure == "standalone",
          "viewport: invalid supplied exposure");
-    particles.push_back({{"id", o.id}, {"definition", warm::key(origins.at(o.id)->definition)},
+    particles.push_back({{"id", std::string(o.id)}, {"definition", warm::key(origins.at(std::string(o.id))->definition)},
       {"slot", o.slot}, {"position", point(scalar(field::kPosX), scalar(field::kPosY), scalar(field::kPosZ))},
       {"radius", radius}, {"mass", mass}, {"exact_mass", std::to_string(v.exact_mass)},
       {"binding", o.study_node}, {"level", levels.at(o.study_node)},

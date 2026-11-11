@@ -117,10 +117,10 @@ PreparedStudy prepare(const StudyInput &input) {
   std::map<std::string, const Definition *> definitions;
   std::map<std::string, double> radii;
   for (const auto &definition : input.definitions) {
-    require(!definition.id.empty() && definitions.emplace(definition.id, &definition).second,
+    require(!definition.id.empty() && definitions.emplace(std::string(definition.id), &definition).second,
             "assembly: empty or duplicate definition identity");
     require(definition.mass > 0, "assembly: active definitions need positive exact mass");
-    radii.emplace(definition.id, enclosing_radius_impl(definition.centroid, definition.components));
+    radii.emplace(std::string(definition.id), enclosing_radius_impl(definition.centroid, definition.components));
     std::set<std::uint32_t> ordinals;
     std::uint64_t parent_mass = 0;
     for (const auto &parent : definition.parents) {
@@ -136,9 +136,9 @@ PreparedStudy prepare(const StudyInput &input) {
   std::map<std::string, const Occurrence *> occurrences;
   std::set<int> slots;
   for (const auto &occurrence : input.occurrences) {
-    require(!occurrence.id.empty() && occurrences.emplace(occurrence.id, &occurrence).second,
+    require(!occurrence.id.empty() && occurrences.emplace(std::string(occurrence.id), &occurrence).second,
             "assembly: empty or duplicate occurrence identity");
-    require(definitions.count(occurrence.definition) != 0,
+    require(definitions.count(std::string(occurrence.definition)) != 0,
             "assembly: unknown definition");
     require(occurrence.slot >= 0 && occurrence.slot < input.capacity &&
                 slots.insert(occurrence.slot).second,
@@ -157,7 +157,7 @@ PreparedStudy prepare(const StudyInput &input) {
   std::set<std::string> selected_members, inactive;
   for (const auto &selection : input.selections) {
     const auto &aggregate = occurrence_at(std::string(selection.aggregate));
-    require(!selection.parts.empty() && selected_members.insert(aggregate.id).second,
+    require(!selection.parts.empty() && selected_members.insert(std::string(aggregate.id)).second,
             "assembly: empty or overlapping exposure selection");
     require(selection.exposure == Exposure::Aggregate || selection.exposure == Exposure::Parts,
             "assembly: invalid exposure choice");
@@ -166,12 +166,12 @@ PreparedStudy prepare(const StudyInput &input) {
       const auto &part = occurrence_at(std::string(id));
       require(selected_members.insert(std::string(id)).second,
               "assembly: occurrence selected in more than one exposure");
-      part_mass = add_mass(part_mass, definitions.at(part.definition)->mass);
+      part_mass = add_mass(part_mass, definitions.at(std::string(part.definition))->mass);
       if (selection.exposure == Exposure::Aggregate) inactive.insert(std::string(id));
     }
-    require(part_mass == definitions.at(aggregate.definition)->mass,
+    require(part_mass == definitions.at(std::string(aggregate.definition))->mass,
             "assembly: aggregate/part exact mass mismatch");
-    if (selection.exposure == Exposure::Parts) inactive.insert(aggregate.id);
+    if (selection.exposure == Exposure::Parts) inactive.insert(std::string(aggregate.id));
   }
 
   std::map<std::pair<GroupKind, std::string>, int> groups;
@@ -182,10 +182,10 @@ PreparedStudy prepare(const StudyInput &input) {
   };
   std::map<std::string, int> active_slots;
   for (const auto &occurrence : input.occurrences) {
-    if (inactive.count(occurrence.id)) continue;
-    const auto &definition = *definitions.at(occurrence.definition);
+    if (inactive.count(std::string(occurrence.id))) continue;
+    const auto &definition = *definitions.at(std::string(occurrence.definition));
     const double units = target.scales[occurrence.study_node].units;
-    const double extent = radii.at(definition.id) * units;
+    const double extent = radii.at(std::string(definition.id)) * units;
     float radius = numerical(extent);
     // Outward rounding preserves enclosure when storing a prepared f32 radius.
     if (radius < extent) radius = std::nextafter(radius, std::numeric_limits<float>::infinity());
@@ -194,14 +194,14 @@ PreparedStudy prepare(const StudyInput &input) {
                                placed(occurrence.position, units),
                                convert(occurrence.velocity, units),
                                numerical(double(definition.mass)), radius});
-    active_slots.emplace(occurrence.id, occurrence.slot);
-    const int sibling = group_for(GroupKind::SiblingDefinition, definition.id);
-    target.participation.push_back({occurrence.id, occurrence.slot, sibling, "", 0,
+    active_slots.emplace(std::string(occurrence.id), occurrence.slot);
+    const int sibling = group_for(GroupKind::SiblingDefinition, std::string(definition.id));
+    target.participation.push_back({std::string(occurrence.id), occurrence.slot, sibling, "", 0,
                                    definition.mass, 1.0f});
     for (const auto &parent : definition.parents) {
       const int group = group_for(GroupKind::ParentValue, std::string(parent.value));
       const float share = numerical(double(parent.count) / double(definition.mass));
-      target.participation.push_back({occurrence.id, occurrence.slot, group, std::string(parent.value),
+      target.participation.push_back({std::string(occurrence.id), occurrence.slot, group, std::string(parent.value),
                                      parent.ordinal, parent.count, share});
     }
   }
@@ -212,9 +212,9 @@ PreparedStudy prepare(const StudyInput &input) {
     if (!memberships.emplace(std::string(membership.occurrence), std::string(membership.group)).second)
       continue;
     const auto &occurrence = occurrence_at(std::string(membership.occurrence));
-    const auto mass = definitions.at(occurrence.definition)->mass;
+    const auto mass = definitions.at(std::string(occurrence.definition))->mass;
     const int group = group_for(GroupKind::Membership, std::string(membership.group));
-    target.participation.push_back({occurrence.id, occurrence.slot, group, "", 0,
+    target.participation.push_back({std::string(occurrence.id), occurrence.slot, group, "", 0,
                                    mass, 1.0f});
   }
   std::set<std::pair<int, int>> pairs;

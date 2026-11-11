@@ -155,7 +155,7 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
         const auto id = occurrence_text({active.study(), {0, {}}});
         int moving = -1, context = -1;
         for (const auto &particle : initial.prepared.particles)
-          if (particle.occurrence.id == id) moving = particle.occurrence.slot;
+          if (std::string(particle.occurrence.id) == id) moving = particle.occurrence.slot;
         for (int g = 0; g < G; ++g)
           if (initial.prepared.groups[g].kind == GroupKind::Membership &&
               initial.prepared.groups[g].value ==

@@ -291,7 +291,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const auto &g =
         *std::find_if(b.geometry.begin(), b.geometry.end(),
                       [&](const auto &v) { return v.object == id; });
-    Definition d{warm::key(id), *t.mass, point(g.centroid), {}, {}};
+    Definition d{InputText(warm::key(id)), *t.mass, point(g.centroid), {}, {}};
     for (const auto &s : g.spheres)
       d.components.push_back({point(s.centre), s.radius});
     for (const auto &p : t.parents)
@@ -309,11 +309,11 @@ LetterProjection project_letters(const warm::Bundle &b) {
     if (equivalent.count(id)) record.complete_character = equivalent.at(id);
     out.occurrences_.push_back(record);
     out.structural_input_.occurrences.push_back(
-        {occurrence_text(k), warm::key(o.definition), o.node});
+        {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), o.node});
     if (b.recipe_version == 1) {
       const auto &initial = *legacy.at(id);
       out.input_.occurrences.push_back(
-          {occurrence_text(k), warm::key(o.definition), slot, o.node,
+          {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), slot, o.node,
            point(initial.position), point(initial.velocity)});
     }
     if (record.active)
@@ -449,7 +449,7 @@ Definition input_row(const Definition &row, const std::shared_ptr<detail::Reserv
   parents.reserve(row.parents.size());
   for (const auto &p : row.parents)
     parents.push_back({InputText(p.value.begin(),p.value.end(),detail::SharedReservationAllocator<char>(domain)),p.ordinal,p.count});
-  return {row.id,row.mass,row.centroid,
+  return {InputText(row.id.begin(),row.id.end(),detail::SharedReservationAllocator<char>(domain)),row.mass,row.centroid,
       InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
       std::move(parents)};
 }
@@ -463,6 +463,12 @@ Selection input_row(const Selection &row, const std::shared_ptr<detail::Reservat
 }
 InputText input_text(const InputText &text, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return InputText(text.begin(),text.end(),detail::SharedReservationAllocator<char>(domain));
+}
+Occurrence input_row(const Occurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.id,domain),input_text(row.definition,domain),row.slot,row.study_node,row.position,row.velocity};
+}
+StructuralOccurrence input_row(const StructuralOccurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.id,domain),input_text(row.definition,domain),row.study_node};
 }
 Contact input_row(const Contact &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {input_text(row.a,domain),input_text(row.b,domain)};
@@ -491,7 +497,7 @@ template<class Input> Input projection_input(const Input &source,
 }
 }
 // Explicit owner copies attach table, path, address, text and UUID backing.
-// Ordinary value copies detach; input text remains outside this domain.
+// Ordinary value copies detach, including every retained input string.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
     : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),

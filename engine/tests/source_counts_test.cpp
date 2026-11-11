@@ -145,7 +145,7 @@ assembly::PreparedStudy study(int n, taichi::lang::SNode &root) {
        {{"wide-A", 7, wide_mass - 1}, {"wide-B", 9, 1}}}};
   for (int i = 0; i < n; ++i) {
     const auto name = std::to_string(i);
-    s.occurrences.push_back({name,
+    s.occurrences.push_back({InputText(name),
                              i + 1 == n ? "wide" : "thirds",
                              i,
                              0,

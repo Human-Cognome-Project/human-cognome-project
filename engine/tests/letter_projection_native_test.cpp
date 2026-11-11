@@ -68,8 +68,8 @@ void profiles() {
                 particle.velocity.x == (letter ? 0.25 : -0.5) * units &&
                 particle.exact_mass == 2;
       identity &=
-          occurrence_text(typed.key) == particle.occurrence.id &&
-          warm::key(typed.definition.object) == particle.occurrence.definition;
+          occurrence_text(typed.key) == std::string(particle.occurrence.id) &&
+          warm::key(typed.definition.object) == std::string(particle.occurrence.definition);
     }
     CHECK_TRUE(values, name +
                            ": supplied position/radius/velocity use 1 or 64; "

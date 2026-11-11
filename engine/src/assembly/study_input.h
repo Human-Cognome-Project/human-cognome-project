@@ -42,14 +42,14 @@ struct ParentOccurrence {
   std::uint64_t count{0};
 };
 struct Definition {
-  std::string id;
+  InputText id;
   std::uint64_t mass{0};
   Point centroid;
   InputTable<Sphere> components;
   InputTable<ParentOccurrence> parents;
 };
 struct Occurrence {
-  std::string id, definition;
+  InputText id, definition;
   int slot{-1}, study_node{-1};
   Point position;
   // Node-local spatial units per tick-time unit, converted with position.
@@ -87,7 +87,7 @@ struct StudyInput {
 // Operational structural handoff. Native preparation/admission will assign
 // payload records and initialize numerical state; source projection cannot.
 struct StructuralOccurrence {
-  std::string id, definition;
+  InputText id, definition;
   int study_node{-1};
 };
 struct StructuralStudyInput {
