@@ -38,15 +38,19 @@ Suites: noble noble-updates noble-backports
 Components: main restricted universe multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 SOURCES
-printf '%s\t%s\n' 'http://azure.archive.ubuntu.com/ubuntu/' 'priority:1 arch:amd64' > "$scratch/indirect/apt-mirrors.txt"
-printf '%s\t%s\n' 'https://security.ubuntu.com/ubuntu' 'suite:noble-security' >> "$scratch/indirect/apt-mirrors.txt"
-printf '%s\t%s\n' 'https://mirror.example.invalid/ubuntu' 'priority:2' >> "$scratch/indirect/apt-mirrors.txt"
-printf '%s\n' '# mirror metadata comment' >> "$scratch/indirect/apt-mirrors.txt"
+{
+  printf '%s\t%s\n' 'http://azure.archive.ubuntu.com/ubuntu/' 'priority:1 arch:amd64'
+  printf '%s\t%s\n' 'https://security.ubuntu.com/ubuntu' 'suite:noble-security'
+  printf '%s\t%s\n' 'https://mirror.example.invalid/ubuntu' 'priority:2'
+  printf '%s\n' '# mirror metadata comment'
+} > "$scratch/indirect/apt-mirrors.txt"
 cp "$scratch/indirect/sources.list.d/ubuntu.sources" "$scratch/indirect.expected.source"
-printf '%s\t%s\n' 'http://archive.ubuntu.com/ubuntu/' 'priority:1 arch:amd64' > "$scratch/indirect.expected.mirrors"
-printf '%s\t%s\n' 'https://security.ubuntu.com/ubuntu' 'suite:noble-security' >> "$scratch/indirect.expected.mirrors"
-printf '%s\t%s\n' 'https://mirror.example.invalid/ubuntu' 'priority:2' >> "$scratch/indirect.expected.mirrors"
-printf '%s\n' '# mirror metadata comment' >> "$scratch/indirect.expected.mirrors"
+{
+  printf '%s\t%s\n' 'http://archive.ubuntu.com/ubuntu/' 'priority:1 arch:amd64'
+  printf '%s\t%s\n' 'https://security.ubuntu.com/ubuntu' 'suite:noble-security'
+  printf '%s\t%s\n' 'https://mirror.example.invalid/ubuntu' 'priority:2'
+  printf '%s\n' '# mirror metadata comment'
+} > "$scratch/indirect.expected.mirrors"
 bash "$scripts/hosted_ubuntu_mirror.sh" "$scratch/indirect" > "$scratch/indirect.log"
 grep -Fq 'updated 1 file(s)' "$scratch/indirect.log"
 grep -Fq '/apt-mirrors.txt' "$scratch/indirect.log"
