@@ -156,18 +156,18 @@ PreparedStudy prepare(const StudyInput &input) {
   };
   std::set<std::string> selected_members, inactive;
   for (const auto &selection : input.selections) {
-    const auto &aggregate = occurrence_at(selection.aggregate);
+    const auto &aggregate = occurrence_at(std::string(selection.aggregate));
     require(!selection.parts.empty() && selected_members.insert(aggregate.id).second,
             "assembly: empty or overlapping exposure selection");
     require(selection.exposure == Exposure::Aggregate || selection.exposure == Exposure::Parts,
             "assembly: invalid exposure choice");
     std::uint64_t part_mass = 0;
     for (const auto &id : selection.parts) {
-      const auto &part = occurrence_at(id);
-      require(selected_members.insert(id).second,
+      const auto &part = occurrence_at(std::string(id));
+      require(selected_members.insert(std::string(id)).second,
               "assembly: occurrence selected in more than one exposure");
       part_mass = add_mass(part_mass, definitions.at(part.definition)->mass);
-      if (selection.exposure == Exposure::Aggregate) inactive.insert(id);
+      if (selection.exposure == Exposure::Aggregate) inactive.insert(std::string(id));
     }
     require(part_mass == definitions.at(aggregate.definition)->mass,
             "assembly: aggregate/part exact mass mismatch");
@@ -207,7 +207,7 @@ PreparedStudy prepare(const StudyInput &input) {
   }
   std::set<std::pair<std::string, std::string>> memberships;
   for (const auto &membership : input.memberships) {
-    require(!std::string(membership.group).empty() && active_slots.count(std::string(membership.occurrence)),
+    require(!membership.group.empty() && active_slots.count(std::string(membership.occurrence)),
             "assembly: membership needs a named field and active occurrence");
     if (!memberships.emplace(std::string(membership.occurrence), std::string(membership.group)).second)
       continue;

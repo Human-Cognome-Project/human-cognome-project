@@ -57,8 +57,8 @@ struct Occurrence {
 };
 enum class Exposure { Aggregate, Parts };
 struct Selection {
-  std::string aggregate;
-  InputTable<std::string> parts;
+  InputText aggregate;
+  InputTable<InputText> parts;
   Exposure exposure{Exposure::Aggregate};
 };
 struct Contact {

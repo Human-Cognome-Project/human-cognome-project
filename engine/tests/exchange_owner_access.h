@@ -40,6 +40,7 @@ struct ExchangeOwnerAccess {
     for (const auto *input : {&p.input_.definitions,&p.structural_input_.definitions})
       for (const auto &d : *input) for (const auto &parent : d.parents) visit(parent.value);
     const auto relations=[&](const auto &input) {
+      for (const auto &s : input.selections) { visit(s.aggregate); for (const auto &part : s.parts) visit(part); }
       for (const auto &c : input.contacts) { visit(c.a); visit(c.b); }
       for (const auto &m : input.memberships) { visit(m.occurrence); visit(m.group); }
       for (const auto &f : input.focal_fields) visit(f.value);
@@ -183,6 +184,7 @@ struct ExchangeOwnerAccess {
         parents.push_back({InputText(137,'p'),93,3});
       }
       for (const auto &text : {InputText{},InputText("short"),InputText(139,'r')}) {
+        input.selections.push_back({text,{text},Exposure::Aggregate});
         input.contacts.push_back({text,text});
         input.memberships.push_back({text,text});
         input.focal_fields.push_back({GroupKind::Membership,text});

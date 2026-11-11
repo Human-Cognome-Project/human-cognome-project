@@ -324,13 +324,13 @@ LetterProjection project_letters(const warm::Bundle &b) {
                                 p.contribution});
   }
   for (const auto &s : b.selections) {
-    Selection selection{occurrence_text({out.study_, {s.entry, {}}}),
+    Selection selection{InputText(occurrence_text({out.study_, {s.entry, {}}})),
                         {},
                         s.exposure == warm::Exposure::Aggregate
                             ? Exposure::Aggregate
                             : Exposure::Parts};
     for (const auto &id : s.parts)
-      selection.parts.push_back(occurrence_text({out.study_, id}));
+      selection.parts.push_back(InputText(occurrence_text({out.study_, id})));
     out.structural_input_.selections.push_back(std::move(selection));
   }
   for (const auto &c : b.contacts)
